@@ -57,14 +57,14 @@ public class ControllersApi extends CommonWebApi {
 
     private static final long serialVersionUID = 1;
 
-    private static final String RENDER_METHOD_NAME = "render";
-    private static final String BIND_DATA_METHOD = "bindData";
-    private static final String SLASH = "/";
-    private RedirectDynamicMethod redirect = new RedirectDynamicMethod();
-    private RenderDynamicMethod render = new RenderDynamicMethod();
-    private BindDynamicMethod bind = new BindDynamicMethod();
-    private WithFormMethod withFormMethod = new WithFormMethod();
-    private ForwardMethod forwardMethod = new ForwardMethod();
+    protected static final String RENDER_METHOD_NAME = "render";
+    protected static final String BIND_DATA_METHOD = "bindData";
+    protected static final String SLASH = "/";
+    protected transient RedirectDynamicMethod redirect;
+    protected transient RenderDynamicMethod render;
+    protected transient BindDynamicMethod bind;
+    protected transient WithFormMethod withFormMethod;
+    protected transient ForwardMethod forwardMethod = new ForwardMethod();
 
     public ControllersApi() {
         this(null);
@@ -84,19 +84,19 @@ public class ControllersApi extends CommonWebApi {
     }
 
     public void setGspEncoding(String gspEncoding) {
-        render.setGspEncoding(gspEncoding);
+        getRenderMethod().setGspEncoding(gspEncoding);
     }
 
     public void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
-        redirect.setRedirectListeners(redirectListeners);
+        getRedirectMethod().setRedirectListeners(redirectListeners);
     }
 
     public void setUseJessionId(boolean useJessionId) {
-        redirect.setUseJessionId(useJessionId);
+        getRedirectMethod().setUseJessionId(useJessionId);
     }
 
     public void setLinkGenerator(LinkGenerator linkGenerator) {
-        redirect.setLinkGenerator(linkGenerator);
+        getRedirectMethod().setLinkGenerator(linkGenerator);
     }
 
     /**
@@ -205,7 +205,7 @@ public class ControllersApi extends CommonWebApi {
 
     /**
      * Return true if there are an errors
-     * @return True if there are errors
+     * @return true if there are errors
      */
     public boolean hasErrors(Object instance) {
         final Errors errors = getErrors(instance);
@@ -219,7 +219,7 @@ public class ControllersApi extends CommonWebApi {
      * @return null
      */
     public Object redirect(Object instance,Map args) {
-        return redirect.invoke(instance, "redirect", new Object[]{ args });
+        return getRedirectMethod().invoke(instance, "redirect", new Object[]{ args });
     }
 
     /**
@@ -254,8 +254,8 @@ public class ControllersApi extends CommonWebApi {
         return invokeRender(instance, args, c);
     }
 
-    private Object invokeRender(Object instance, Object... args) {
-        return render.invoke(instance, RENDER_METHOD_NAME, args);
+    protected Object invokeRender(Object instance, Object... args) {
+        return getRenderMethod().invoke(instance, RENDER_METHOD_NAME, args);
     }
 
     // the bindData method
@@ -283,8 +283,8 @@ public class ControllersApi extends CommonWebApi {
         return invokeBindData(instance, target, args, filter);
     }
 
-    private Object invokeBindData(Object instance, Object... args) {
-        return bind.invoke(instance, BIND_DATA_METHOD, args);
+    protected Object invokeBindData(Object instance, Object... args) {
+        return getBindMethod().invoke(instance, BIND_DATA_METHOD, args);
     }
 
     /**
@@ -295,11 +295,13 @@ public class ControllersApi extends CommonWebApi {
      * @param headerValue The header value
      */
     public void header(Object instance, String headerName, Object headerValue) {
-        if (headerValue != null) {
-            final HttpServletResponse response = getResponse(instance);
-            if (response != null) {
-                response.setHeader(headerName, headerValue.toString());
-            }
+        if (headerValue == null) {
+            return;
+        }
+
+        final HttpServletResponse response = getResponse(instance);
+        if (response != null) {
+            response.setHeader(headerName, headerValue.toString());
         }
     }
 
@@ -311,7 +313,7 @@ public class ControllersApi extends CommonWebApi {
      * @return The result of the closure execution
      */
     public Object withForm(Object instance, Closure callable) {
-        return withFormMethod.withForm(getWebRequest(instance), callable);
+        return getWithFormMethod().withForm(getWebRequest(instance), callable);
     }
 
     /**
@@ -322,6 +324,41 @@ public class ControllersApi extends CommonWebApi {
      * @return The forwarded URL
      */
     public String forward(Object instance, Map params) {
-        return forwardMethod.forward(getRequest(instance), getResponse(instance), params);
+        return getForwardMethod().forward(getRequest(instance), getResponse(instance), params);
+    }
+
+    protected RedirectDynamicMethod getRedirectMethod() {
+        if (redirect == null) {
+            redirect = new RedirectDynamicMethod();
+        }
+        return redirect;
+    }
+
+    protected RenderDynamicMethod getRenderMethod() {
+        if (render == null) {
+            render = new RenderDynamicMethod();
+        }
+        return render;
+    }
+
+    protected BindDynamicMethod getBindMethod() {
+        if (bind == null) {
+            bind = new BindDynamicMethod();
+        }
+        return bind;
+    }
+
+    protected WithFormMethod getWithFormMethod() {
+        if (withFormMethod == null) {
+            withFormMethod = new WithFormMethod();
+        }
+        return withFormMethod;
+    }
+
+    protected ForwardMethod getForwardMethod() {
+        if (forwardMethod == null) {
+            forwardMethod = new ForwardMethod();
+        }
+        return forwardMethod;
     }
 }

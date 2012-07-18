@@ -133,8 +133,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
                         && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
 
-                    if(!methodName.endsWith(FLOW_SUFFIX)) {
-
+                    if (!methodName.endsWith(FLOW_SUFFIX)) {
                         methodNames.add(methodName);
                         configureMappingForMethodAction(methodName);
                     }
@@ -291,12 +290,12 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (ip instanceof Map) {
             Map ipMap = (Map) ip;
             if (ipMap.containsKey(ACTION)) {
-                interceptor=(Closure) ipMap.get(ACTION);
+                interceptor = (Closure)ipMap.get(ACTION);
             }
         } else if (ip instanceof Closure) {
             interceptor=(Closure) ip;
         }
-        if(interceptor != null && interceptor.getDelegate() != controller) {
+        if (interceptor != null && interceptor.getDelegate() != controller) {
             interceptor = (Closure)interceptor.clone();
             interceptor.setDelegate(controller);
             interceptor.setResolveStrategy(Closure.DELEGATE_FIRST);

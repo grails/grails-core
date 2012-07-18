@@ -90,7 +90,7 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
             final Object key = it.next();
             Object thisValue=wrappedMap.get(key);
             Object thatValue=thatMap.wrappedMap.get(key);
-            if(thisValue==null && thatValue != null) {
+            if (thisValue == null && thatValue != null) {
                 return false;
             }
             if (!thisValue.equals(thatValue)) {
@@ -132,11 +132,10 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
         return null;
     }
 
-
     public Byte getByte(String name, Integer defaultValue) {
         Byte value=getByte(name);
-        if(value==null && defaultValue != null) {
-            value=Byte.valueOf((byte)defaultValue.intValue());
+        if (value == null && defaultValue != null) {
+            value = Byte.valueOf((byte)defaultValue.intValue());
         }
         return value;
     }
@@ -163,8 +162,8 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
 
     public Character getChar(String name, Integer defaultValue) {
         Character value=getChar(name);
-        if(value==null && defaultValue != null) {
-            value=Character.valueOf((char)defaultValue.intValue());
+        if (value == null && defaultValue != null) {
+            value = Character.valueOf((char)defaultValue.intValue());
         }
         return value;
     }
@@ -194,8 +193,8 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
 
     public Integer getInt(String name, Integer defaultValue) {
         Integer value=getInt(name);
-        if(value==null) {
-            value=defaultValue;
+        if (value == null) {
+            value = defaultValue;
         }
         return value;
     }
@@ -222,8 +221,8 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
 
     public Long getLong(String name, Long defaultValue) {
         Long value=getLong(name);
-        if(value==null) {
-            value=defaultValue;
+        if (value == null) {
+            value = defaultValue;
         }
         return value;
     }
@@ -253,8 +252,8 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
 
     public Short getShort(String name, Integer defaultValue) {
         Short value=getShort(name);
-        if(value==null && defaultValue != null) {
-            value=defaultValue.shortValue();
+        if (value == null && defaultValue != null) {
+            value = defaultValue.shortValue();
         }
         return value;
     }
@@ -284,8 +283,8 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
 
     public Double getDouble(String name, Double defaultValue) {
         Double value=getDouble(name);
-        if(value==null) {
-            value=defaultValue;
+        if (value == null) {
+            value = defaultValue;
         }
         return value;
     }
@@ -315,8 +314,8 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
 
     public Float getFloat(String name, Float defaultValue) {
         Float value=getFloat(name);
-        if(value==null) {
-            value=defaultValue;
+        if (value == null) {
+            value = defaultValue;
         }
         return value;
     }
@@ -371,7 +370,7 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
      */
     public Date getDate(String name, String format) {
         Object value = get(name);
-        if(value != null) {
+        if (value != null) {
             try {
                 return new SimpleDateFormat(format).parse(value.toString());
             } catch (ParseException e) {
@@ -402,7 +401,6 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
         return getDate(name, format);
     }
 
-
     /**
      * Obtains a date for the given parameter name and format
      *
@@ -417,11 +415,10 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     private Date getDate(String name, Collection<String> formats) {
         for (String format : formats) {
             Date date = getDate(name,format);
-            if(date != null) return date;
+            if (date != null) return date;
         }
         return null;
     }
-
 
     /**
      * Helper method for obtaining a list of values from parameter

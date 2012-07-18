@@ -81,8 +81,8 @@ public class HibernateProjectionAdapter {
     }
 
     public Projection toHibernateProjection() {
-        ProjectionAdapter projectionAdapter = adapterMap.get(this.projection.getClass());
-        return projectionAdapter.toHibernateProjection(this.projection);
+        ProjectionAdapter projectionAdapter = adapterMap.get(projection.getClass());
+        return projectionAdapter.toHibernateProjection(projection);
     }
 
     private static interface ProjectionAdapter {

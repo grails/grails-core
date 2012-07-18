@@ -20,8 +20,8 @@ import java.util.Collection;
 import org.springframework.validation.Errors;
 
 /**
- * Validates maximum size of the property, for strings and arrays this is the length, collections
- * the size and numbers the value.
+ * Validates maximum size or length of the property, for strings and arrays
+ * this is the length and collections the size.
  *
  * @author Graeme Rocher
  * @since 0.4

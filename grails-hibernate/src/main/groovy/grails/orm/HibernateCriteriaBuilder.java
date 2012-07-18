@@ -409,7 +409,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         List<Query.Criterion> criteriaList = queryableCriteria.getCriteria();
         for (Query.Criterion criterion : criteriaList) {
             Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion).toHibernateCriterion(null);
-            if(hibernateCriterion != null) {
+            if (hibernateCriterion != null) {
                 detachedCriteria.add(hibernateCriterion);
             }
         }
@@ -418,7 +418,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         ProjectionList projectionList = Projections.projectionList();
         for (Query.Projection projection : projections) {
             Projection hibernateProjection = new HibernateProjectionAdapter(projection).toHibernateProjection();
-            if(hibernateProjection != null) {
+            if (hibernateProjection != null) {
                  projectionList.add(hibernateProjection);
             }
         }
@@ -602,6 +602,42 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
             throwRuntimeException(new IllegalArgumentException("Call to [resultTransformer] not supported here"));
         }
         resultTransformer = transformer;
+    }
+
+    /**
+     * Join an association, assigning an alias to the joined association.
+     * <p/>
+     * Functionally equivalent to createAlias(String, String, int) using
+     * CriteriaSpecificationINNER_JOIN for the joinType.
+     *
+     * @param associationPath A dot-seperated property path
+     * @param alias The alias to assign to the joined association (for later reference).
+     *
+     * @return this (for method chaining)
+     * #see {@link #createAlias(String, String, int)}
+     * @throws HibernateException Indicates a problem creating the sub criteria
+     */
+    public Criteria createAlias(String associationPath, String alias) {
+        return criteria.createAlias(associationPath, alias);
+    }
+
+    /**
+     * Join an association using the specified join-type, assigning an alias
+     * to the joined association.
+     * <p/>
+     * The joinType is expected to be one of CriteriaSpecification.INNER_JOIN (the default),
+     * CriteriaSpecificationFULL_JOIN, or CriteriaSpecificationLEFT_JOIN.
+     *
+     * @param associationPath A dot-seperated property path
+     * @param alias The alias to assign to the joined association (for later reference).
+     * @param joinType The type of join to use.
+     *
+     * @return this (for method chaining)
+     * @see #createAlias(String, String)
+     * @throws HibernateException Indicates a problem creating the sub criteria
+     */
+    public Criteria createAlias(String associationPath, String alias, int joinType) {
+        return criteria.createAlias(associationPath, alias, joinType);
     }
 
     /**
@@ -855,13 +891,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
 
-
         Criterion gt;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             gt = Property.forName(propertyName).gt((org.hibernate.criterion.DetachedCriteria)propertyValue);
         }
         else {
-
             gt = Restrictions.gt(propertyName, propertyValue);
         }
         addToCriteria(gt);
@@ -883,15 +917,15 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
             throwRuntimeException(new IllegalArgumentException("Call to [ge] with propertyName [" +
                     propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
 
         Criterion ge;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             ge = Property.forName(propertyName).ge((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
-
             ge = Restrictions.ge(propertyName, propertyValue);
         }
         addToCriteria(ge);
@@ -913,11 +947,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         Criterion lt;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             lt = Property.forName(propertyName).lt((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
-
             lt = Restrictions.lt(propertyName, propertyValue);
         }
         addToCriteria(lt);
@@ -939,11 +972,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         Criterion le;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             le = Property.forName(propertyName).le((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
-
             le = Restrictions.le(propertyName, propertyValue);
         }
         addToCriteria(le);
@@ -964,14 +996,12 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         String propertyName = calculatePropertyName(property);
         addToCriteria(Restrictions.isNotEmpty(propertyName));
         return this;
-
     }
 
     public org.grails.datastore.mapping.query.api.Criteria isNull(String property) {
         String propertyName = calculatePropertyName(property);
         addToCriteria(Restrictions.isNull(propertyName));
         return this;
-
     }
 
     public org.grails.datastore.mapping.query.api.Criteria isNotNull(String property) {
@@ -1028,11 +1058,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         Criterion eq;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             eq = Property.forName(propertyName).eq((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
-
             eq =  Restrictions.eq(propertyName, propertyValue);
         }
         if (params != null && (eq instanceof SimpleExpression)) {
@@ -1088,7 +1117,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
 
         if (numberOfParameters > 0) {
             final TypeHelper typeHelper = sessionFactory.getTypeHelper();
-            for(int i = 0; i < typesArray.length; i++) {
+            for (int i = 0; i < typesArray.length; i++) {
                 final Object value = values.get(i);
                 typesArray[i] =  typeHelper.basic(value.getClass());
                 valuesArray[i] = value;
@@ -1639,7 +1668,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
                     targetClass = oldTargetClass;
 
                     return name;
-                } else if(type instanceof EmbeddedComponentType) {
+                }
+                if (type instanceof EmbeddedComponentType) {
                     associationStack.add(name);
                     logicalExpressionStack.add(new LogicalExpression(AND));
                     Class oldTargetClass = targetClass;

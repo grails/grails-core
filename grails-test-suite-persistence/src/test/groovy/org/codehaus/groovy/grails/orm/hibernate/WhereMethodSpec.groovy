@@ -7,12 +7,11 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException
 /**
  * Tests the where method in Grails
  */
-class WhereMethodSpec extends GormSpec{
+class WhereMethodSpec extends GormSpec {
     @Override
     List getDomainClasses() {
         [Person, Pet]
     }
-
 
     def "Test whereAny method"() {
         given:"some people"
@@ -118,7 +117,7 @@ class CallMe {
             people.size() == 3
     }
 
-    @Ignore    
+    @Ignore
     def "Test .count on a query with sort parameters"() {
         given:"A bunch of people"
               createPeople()
@@ -261,12 +260,14 @@ class CallMe {
             def query = Person.where {
                  def list = ["Bart", "Simpson"]
                  int total = 0
-                 while(total < list.size()) {
+                 while (total < list.size()) {
                      def name = list[total++]
-                     if(name == "Bart")
+                     if (name == "Bart") {
                         firstName == name
-                     else
+                     }
+                     else {
                         lastName == "Simpson"
+                     }
                  }
             }
             Person result = query.find()
@@ -281,11 +282,13 @@ class CallMe {
 
           when:"We use a for loop in a query"
             def query = Person.where {
-                 for(name in ["Bart", "Simpson"]) {
-                     if(name == "Bart")
+                 for (name in ["Bart", "Simpson"]) {
+                     if (name == "Bart") {
                         firstName == name
-                     else
+                     }
+                     else {
                         lastName == "Simpson"
+                     }
                  }
             }
             Person result = query.find()
@@ -381,6 +384,7 @@ class CallMe {
             result != null
             result.firstName == "Bart"
   }
+
   def "Test where method with if else block"() {
         given:"A bunch of people"
             createPeople()
@@ -388,10 +392,12 @@ class CallMe {
         when: "A where query is used with if statement"
             def useBart = true
             def query = Person.where {
-               if(useBart)
-                    firstName == "Bart"
-               else
-                    firstName == "Homer"
+               if (useBart) {
+                   firstName == "Bart"
+               }
+               else {
+                   firstName == "Homer"
+               }
             }
             def result = query.find()
 
@@ -400,14 +406,15 @@ class CallMe {
             result != null
             result.firstName == "Bart"
 
-
         when: "A where query is used with else statement"
              useBart = false
              query = Person.where {
-               if(useBart)
+               if (useBart) {
                     firstName == "Bart"
-               else
+               }
+               else {
                     firstName == "Marge"
+               }
             }
             result = query.find()
 
@@ -421,18 +428,19 @@ class CallMe {
              useBart = false
              int count = 1
              query = Person.where {
-               if(useBart)
+               if (useBart) {
                   firstName == "Bart"
-               else if(count == 1) {
+               }
+               else if (count == 1) {
                   firstName == "Lisa"
                }
-               else
+               else {
                   firstName == "Marge"
+               }
             }
             result = query.find()
 
         then:"The correct result is returned"
-
             result != null
             result.firstName == "Lisa"
     }

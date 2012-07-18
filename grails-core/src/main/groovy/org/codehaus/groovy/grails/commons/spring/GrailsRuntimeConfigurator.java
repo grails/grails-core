@@ -165,10 +165,10 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             reset();
 
             application.setMainContext(webSpringConfig.getUnrefreshedApplicationContext());
-            
-            System.setProperty(Environment.INITIALIZING, "true");
+
+            Environment.setInitializing(true);
             ctx = (WebApplicationContext) webSpringConfig.getApplicationContext();
-            System.setProperty(Environment.INITIALIZING, "");
+            Environment.setInitializing(false);
 
             pluginManager.setApplicationContext(ctx);
             pluginManager.doDynamicMethods();

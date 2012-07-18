@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.util.StringUtils;
 
 /**
  * Represents the current environment.
@@ -93,6 +92,7 @@ public enum Environment {
         TEST_ENVIRONMENT_SHORT_NAME, Environment.TEST.getName());
     private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
     private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
+    private static boolean initializingState = false;
     private String name;
 
     Environment() {
@@ -161,7 +161,7 @@ public enum Environment {
 
     /**
      * Returns true if the application is running in development mode (within grails run-app)
-     * @return True if the application is running in development mode
+     * @return true if the application is running in development mode
      */
     public static boolean isDevelopmentMode() {
         return getCurrent() == DEVELOPMENT && !(Metadata.getCurrent().isWarDeployed()) &&
@@ -170,15 +170,23 @@ public enum Environment {
 
     /**
      * Check whether the application is deployed
-     * @return True if is
+     * @return true if is
      */
     public static boolean isWarDeployed() {
         return Metadata.getCurrent().isWarDeployed();
     }
 
     /**
+     * Whether this is a fork of the Grails command line environment
+     * @return True if it is a fork
+     */
+    public static boolean isFork() {
+        return Boolean.getBoolean("grails.fork.active");
+    }
+
+    /**
      * Returns whether the environment is running within the Grails shell (executed via the 'grails' command line in a terminal window)
-     * @return True if is
+     * @return true if is
      */
     public static boolean isWithinShell() {
         return DefaultGroovyMethods.getRootLoader(Environment.class.getClassLoader()) != null;
@@ -314,7 +322,7 @@ public enum Environment {
         }
 
         private EnvironmentBlockEvaluator(Environment e) {
-            this.current = e;
+            current = e;
         }
 
         @SuppressWarnings("unused")
@@ -327,19 +335,19 @@ public enum Environment {
         @SuppressWarnings("unused")
         public void production(Closure<?> c) {
             if (current == Environment.PRODUCTION) {
-                this.callable = c;
+                callable = c;
             }
         }
         @SuppressWarnings("unused")
         public void development(Closure<?> c) {
             if (current == Environment.DEVELOPMENT) {
-                this.callable = c;
+                callable = c;
             }
         }
         @SuppressWarnings("unused")
         public void test(Closure<?> c) {
             if (current == Environment.TEST) {
-                this.callable = c;
+                callable = c;
             }
         }
 
@@ -348,7 +356,7 @@ public enum Environment {
             Object[] argsArray = (Object[])args;
             if (args != null && argsArray.length > 0 && (argsArray[0] instanceof Closure)) {
                 if (current == Environment.CUSTOM && current.getName().equals(name)) {
-                    this.callable = (Closure<?>) argsArray[0];
+                    callable = (Closure<?>) argsArray[0];
                 }
                 return null;
             }
@@ -382,7 +390,7 @@ public enum Environment {
         final boolean reloadOverride = Boolean.getBoolean(RELOAD_ENABLED);
 
         final String reloadLocation = getReloadLocationInternal();
-        final boolean reloadLocationSpecified = StringUtils.hasLength(reloadLocation);
+        final boolean reloadLocationSpecified = hasLocation(reloadLocation);
         return this == DEVELOPMENT && reloadLocationSpecified && !Metadata.getCurrent().isWarDeployed() ||
                 reloadOverride && reloadLocationSpecified;
     }
@@ -400,8 +408,14 @@ public enum Environment {
      * @return Whether interactive mode is enabled
      */
     public static boolean isInitializing() {
-        return Boolean.getBoolean(INITIALIZING);
+        return initializingState;
     }
+
+    public static void setInitializing(boolean initializing) {
+        initializingState = initializing;
+        System.setProperty(INITIALIZING, String.valueOf(initializing));
+    }
+
     /**
      * @return true if the reloading agent is active
      */
@@ -420,23 +434,28 @@ public enum Environment {
      */
     public String getReloadLocation() {
         String location = getReloadLocationInternal();
-        if (StringUtils.hasLength(location)) {
+        if (hasLocation(location)) {
             return location;
         }
         return "."; // default to the current directory
+    }
+
+    private boolean hasLocation(String location) {
+        return location != null && location.length() > 0;
     }
 
     /**
      * @return Whether a reload location is specified
      */
     public boolean hasReloadLocation() {
-        return StringUtils.hasLength(getReloadLocationInternal());
+        String reloadingLocation = getReloadLocationInternal();
+        return hasLocation(reloadingLocation);
     }
 
     private String getReloadLocationInternal() {
         String location = System.getProperty(RELOAD_LOCATION);
-        if (!StringUtils.hasLength(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
-        if (!StringUtils.hasLength(location)) {
+        if (!hasLocation(location)) location = System.getProperty(BuildSettings.APP_BASE_DIR);
+        if (!hasLocation(location)) {
             BuildSettings settings = BuildSettingsHolder.getSettings();
             if (settings != null) {
                 location = settings.getBaseDir().getAbsolutePath();

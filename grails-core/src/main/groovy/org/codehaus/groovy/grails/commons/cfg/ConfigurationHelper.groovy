@@ -17,12 +17,14 @@ package org.codehaus.groovy.grails.commons.cfg
 import grails.util.Environment
 import grails.util.Holder
 import grails.util.Metadata
+import groovy.transform.CompileStatic
 
-import java.util.Map
 import java.util.concurrent.ConcurrentHashMap
 
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
@@ -35,7 +37,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver
  */
 class ConfigurationHelper {
 
-    private static final LOG = LogFactory.getLog(this)
+    private static final Log LOG = LogFactory.getLog(this)
 
     private static final String CONFIG_BINDING_USER_HOME = "userHome"
     private static final String CONFIG_BINDING_GRAILS_HOME = "grailsHome"
@@ -45,33 +47,36 @@ class ConfigurationHelper {
     private static Holder<Map<Integer, ConfigObject>> cachedConfigs = new Holder<Map<Integer, ConfigObject>>('cachedConfigs')
     public static final int DEV_CACHE_KEY = -1
 
+    @CompileStatic
     static ConfigObject loadConfigFromClasspath(String environment) {
         loadConfigFromClasspath(null, environment)
     }
 
+    @CompileStatic
     static void clearCachedConfigs() {
         getCachedConfigs().clear()
     }
 
-    static ConfigObject loadConfigFromClasspath(GrailsApplication application = null,
+    @CompileStatic
+    static ConfigObject loadConfigFromClasspath(DefaultGrailsApplication application = null,
             String environment = Environment.current.name) {
 
         ConfigObject co
         ClassLoader classLoader
         Integer cacheKey = DEV_CACHE_KEY
 
-        if (application != null) {
+        if (application == null) {
+            classLoader = Thread.currentThread().contextClassLoader
+        }
+        else {
             classLoader = application.getClassLoader()
             if (Environment.isWarDeployed() || !Environment.isWithinShell()) {
                 // use unique cache keys for each config based on the application instance
-                // this to ensure each application gets a unique config and avoid the scenario
+                // to ensure each application gets a unique config and avoid the scenario
                 // where applications deployed in a shared library mode (shared jars) share the
                 // same config
                 cacheKey = System.identityHashCode(application)
             }
-        }
-        else {
-            classLoader = Thread.currentThread().contextClassLoader
         }
 
         co = getCachedConfigs().get(cacheKey)
@@ -80,22 +85,20 @@ class ConfigurationHelper {
             try {
                 try {
                     application?.config = new ConfigObject() // set empty config to avoid stack overflow
-                    Class scriptClass = classLoader.loadClass(GrailsApplication.CONFIG_CLASS)
-                    co = configSlurper.parse(scriptClass)
+                    co = configSlurper.parse(classLoader.loadClass(GrailsApplication.CONFIG_CLASS))
                     application?.config = co
                 }
                 catch (ClassNotFoundException e) {
-                    LOG.debug "Could not find config class [" + GrailsApplication.CONFIG_CLASS + "]. This is probably " +
-                            "nothing to worry about, it is not required to have a config: $e.message"
+                    LOG.debug "Could not find config class [$GrailsApplication.CONFIG_CLASS]. This is probably " +
+                            "nothing to worry about; it is not required to have a config: $e.message"
                     // ignore, it is ok not to have a configuration file
                     co = new ConfigObject()
                 }
                 try {
-                    Class dataSourceClass = classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)
-                    co.merge(configSlurper.parse(dataSourceClass))
+                    co.merge(configSlurper.parse(classLoader.loadClass(GrailsApplication.DATA_SOURCE_CLASS)))
                 }
                 catch (ClassNotFoundException e) {
-                    LOG.debug "Cound not find data source class [" + GrailsApplication.DATA_SOURCE_CLASS + "]. This may " +
+                    LOG.debug "Cound not find data source class [$GrailsApplication.DATA_SOURCE_CLASS]. This may " +
                         "be what you are expecting, but will result in Grails loading with an in-memory database"
                     // ignore
                 }
@@ -115,6 +118,7 @@ class ConfigurationHelper {
         return co
     }
 
+    @CompileStatic
     static ConfigSlurper getConfigSlurper(String environment, GrailsApplication application) {
         ConfigSlurper configSlurper = new ConfigSlurper(environment)
         Map binding = new HashMap()
@@ -136,6 +140,7 @@ class ConfigurationHelper {
     /**
      * Loads external configuration and merges with ConfigObject
      */
+    @CompileStatic
     static void initConfig(ConfigObject config, ResourceLoader resourceLoader = null, ClassLoader classLoader = null) {
 
         if (Environment.isWithinShell()) {
@@ -146,23 +151,32 @@ class ConfigurationHelper {
                 new PathMatchingResourcePatternResolver()
 
         // Get these now before we do any merging
-        def defaultsLocations = config.grails.config.defaults.locations
-        def locations = config.grails.config.locations
+        def defaultsLocations = getDefaultLocations(config)
+        def locations = getLocations(config)
 
         // We load defaults in a way that allows them to be overridden by the main config
         if (isLocations(defaultsLocations)) {
             def newConfigObject = new ConfigObject()
-            mergeInLocations(newConfigObject, defaultsLocations, resolver, classLoader)
+            mergeInLocations(newConfigObject, (List)defaultsLocations, resolver, classLoader)
             newConfigObject.merge(config)
             config.merge(newConfigObject)
         }
 
         // We load non-defaults in a way that overrides the main config
         if (isLocations(locations)) {
-            mergeInLocations(config, locations, resolver, classLoader)
+            mergeInLocations(config, (List)locations, resolver, classLoader)
         }
     }
 
+    private static getLocations(ConfigObject config) {
+        config.grails.config.locations
+    }
+
+    private static getDefaultLocations(ConfigObject config) {
+        config.grails.config.defaults.locations
+    }
+
+    @CompileStatic
     private static void mergeInLocations(ConfigObject config, List locations, PathMatchingResourcePatternResolver resolver, ClassLoader classLoader) {
         for (location in locations) {
             if (!location) {
@@ -174,7 +188,7 @@ class ConfigurationHelper {
                 configSlurper.setBinding(config)
                 if (classLoader) {
                     if (classLoader instanceof GroovyClassLoader) {
-                        configSlurper.classLoader = classLoader
+                        configSlurper.classLoader = (GroovyClassLoader)classLoader
                     }
                     else {
                         configSlurper.classLoader = new GroovyClassLoader(classLoader)
@@ -182,16 +196,16 @@ class ConfigurationHelper {
                 }
 
                 if (location instanceof Class) {
-                    def newConfig = configSlurper.parse(location)
+                    ConfigObject newConfig = configSlurper.parse((Class)location)
                     config.merge(newConfig)
                 }
                 else {
                     def resource = resolver.getResource(location.toString())
-                    def stream
+                    InputStream stream = null
                     try {
                         stream = resource.getInputStream()
                         if (resource.filename.endsWith('.groovy')) {
-                            def newConfig = configSlurper.parse(stream.text)
+                            def newConfig = configSlurper.parse(stream.getText())
                             config.merge(newConfig)
                         }
                         else if (resource.filename.endsWith('.properties')) {
@@ -201,7 +215,7 @@ class ConfigurationHelper {
                             config.merge(newConfig)
                         }
                         else if (resource.filename.endsWith('.class')) {
-                            def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass(null, stream.bytes)
+                            def configClass = new GroovyClassLoader(configSlurper.classLoader).defineClass( (String)null, stream.getBytes())
                             def newConfig = configSlurper.parse(configClass)
                             config.merge(newConfig)
                         }
@@ -217,6 +231,7 @@ class ConfigurationHelper {
         }
     }
 
+    @CompileStatic
     private static boolean isLocations(locations) {
         locations instanceof List
     }

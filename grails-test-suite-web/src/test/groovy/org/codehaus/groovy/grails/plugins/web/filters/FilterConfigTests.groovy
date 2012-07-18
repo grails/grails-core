@@ -24,11 +24,6 @@ class FilterConfigTests extends GroovyTestCase {
     private static final int INT_PROP_VALUE = 1000
     private static final String STRING_PROP_VALUE = 'Test property'
 
-    void setUp() {
-        ExpandoMetaClass.enableGlobally()
-        GroovySystem.metaClassRegistry.removeMetaClass(FilterConfig)
-    }
-
     void testPropertyMissing() {
         def mockDefinition = new MockFiltersDefinition()
         def testFilterConfig = new FilterConfig(name: 'Test filter', initialised: true, filtersDefinition: mockDefinition)
@@ -57,11 +52,15 @@ class FilterConfigTests extends GroovyTestCase {
 
     void testMethodMissing() {
         def mockDefinition = new MockFiltersDefinition()
-        def testFilterConfig = new FilterConfig(name: 'Test filter', initialised: true, filtersDefinition: mockDefinition)
+        def testFilterConfig = new MethodMissingCountingFilterConfig(name: 'Test filter', initialised: true, filtersDefinition: mockDefinition)
 
         // Try the 'run' method first.
         testFilterConfig.run()
         assert mockDefinition.runCalled
+
+        assert testFilterConfig.methodMissingCounter == 1
+
+        testFilterConfig.methodMissingCounter = 0
 
         // Now try it a couple more times to make sure that the metaclass
         // method has been registered correctly.
@@ -73,11 +72,15 @@ class FilterConfigTests extends GroovyTestCase {
         testFilterConfig.run()
         assert mockDefinition.runCalled
 
+        assert testFilterConfig.methodMissingCounter == 0
+
         // Now try with the next method.
         mockDefinition.reset()
         mockDefinition.returnValue = 6342
         assert testFilterConfig.generateNumber() == 6342
         assert mockDefinition.generateNumberCalled == true
+
+        testFilterConfig.methodMissingCounter = 0
 
         mockDefinition.reset()
         mockDefinition.returnValue = '101'
@@ -89,12 +92,16 @@ class FilterConfigTests extends GroovyTestCase {
         assert testFilterConfig.generateNumber() == 10.232
         assert mockDefinition.generateNumberCalled == true
 
+        assert testFilterConfig.methodMissingCounter == 0
+
         // Now for a method with arguments.
         mockDefinition.reset()
         mockDefinition.expectedStringArg = 'Test'
         mockDefinition.expectedIntArg = 1000
         testFilterConfig.checkArgs('Test', 1000)
         assert mockDefinition.checkArgsCalled
+
+        testFilterConfig.methodMissingCounter = 0
 
         mockDefinition.reset()
         mockDefinition.expectedStringArg = 'Test two'
@@ -108,10 +115,32 @@ class FilterConfigTests extends GroovyTestCase {
         testFilterConfig.checkArgs('Apples', -3423)
         assert mockDefinition.checkArgsCalled
 
+        assert testFilterConfig.methodMissingCounter == 0
+
+        mockDefinition.reset()
+        mockDefinition.expectedStringArg = 'Oranges'
+        mockDefinition.expectedDoubleArg = 1.23d
+        testFilterConfig.checkArgs('Oranges', 1.23d)
+        assert mockDefinition.checkArgsCalled
+
+        assert testFilterConfig.methodMissingCounter == 1
+
+        testFilterConfig.methodMissingCounter = 0
+
+        mockDefinition.reset()
+        mockDefinition.expectedStringArg = 'Pears'
+        mockDefinition.expectedDoubleArg = 2.56d
+        testFilterConfig.checkArgs('Pears', 2.56d)
+        assert mockDefinition.checkArgsCalled
+
+        assert testFilterConfig.methodMissingCounter == 0
+
         // A method that takes a list as an argument.
         mockDefinition.reset()
         assert testFilterConfig.sum([1, 2, 3, 4]) == 10
         assert mockDefinition.sumCalled
+
+        testFilterConfig.methodMissingCounter = 0
 
         mockDefinition.reset()
         assert testFilterConfig.sum([4, 5, 1, 10]) == 20
@@ -120,6 +149,8 @@ class FilterConfigTests extends GroovyTestCase {
         mockDefinition.reset()
         assert testFilterConfig.sum([12, 26, 3, 41]) == 82
         assert mockDefinition.sumCalled
+
+        assert testFilterConfig.methodMissingCounter == 0
 
         // And now make sure the 'run' method is still available.
         mockDefinition.reset()
@@ -132,9 +163,30 @@ class FilterConfigTests extends GroovyTestCase {
         }
     }
 
-    void tearDown() {
-        ExpandoMetaClass.disableGlobally()
-        GroovySystem.metaClassRegistry.removeMetaClass(FilterConfig)
+    // test for GRAILS-9050
+    void testMethodMissingForTwoFilters() {
+        def mockDefinition = new MockFiltersDefinition()
+        def testFilterConfig = new MethodMissingCountingFilterConfig(name: 'Test filter', initialised: true, filtersDefinition: mockDefinition)
+
+        def mockDefinition2 = new MockFiltersDefinition2()
+        def testFilterConfig2 = new MethodMissingCountingFilterConfig(name: 'Test filter 2', initialised: true, filtersDefinition: mockDefinition2)
+
+        mockDefinition2.reset()
+        assert testFilterConfig2.hello() == "Hello from definition 2"
+        assert mockDefinition2.helloCalled
+
+        mockDefinition.reset()
+        assert testFilterConfig.hello() == "Hello from definition 1"
+        assert mockDefinition.helloCalled
+    }
+}
+
+class MethodMissingCountingFilterConfig extends FilterConfig {
+    int methodMissingCounter=0
+
+    def methodMissing(String methodName, args) {
+        methodMissingCounter++
+        super.methodMissing(methodName, args)
     }
 }
 
@@ -147,7 +199,9 @@ class MockFiltersDefinition {
     def sumCalled
     def expectedStringArg
     def expectedIntArg
+    def expectedDoubleArg
     def returnValue
+    def helloCalled
 
     MockFiltersDefinition() {
         reset()
@@ -168,9 +222,20 @@ class MockFiltersDefinition {
         assert arg2 == expectedIntArg
     }
 
+    void checkArgs(String arg1, double arg2) {
+        checkArgsCalled = true
+        assert arg1 == expectedStringArg
+        assert arg2 == expectedDoubleArg
+    }
+
     def sum(items) {
         sumCalled = true
         items.sum()
+    }
+
+    def hello() {
+        helloCalled=true
+        "Hello from definition 1"
     }
 
     void reset() {
@@ -180,6 +245,16 @@ class MockFiltersDefinition {
         sumCalled = false
         expectedStringArg = null
         expectedIntArg = null
+        expectedDoubleArg = null
         returnValue = null
+        helloCalled = false
+    }
+}
+
+class MockFiltersDefinition2 extends MockFiltersDefinition {
+
+    def hello() {
+        helloCalled=true
+        "Hello from definition 2"
     }
 }

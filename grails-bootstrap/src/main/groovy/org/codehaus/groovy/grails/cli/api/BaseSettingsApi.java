@@ -22,18 +22,29 @@ import grails.util.GrailsNameUtils;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 import groovy.lang.Closure;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
 import groovy.util.ConfigSlurper;
-import org.codehaus.groovy.grails.cli.support.UaaIntegration;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.util.FileCopyUtils;
+import groovy.util.XmlSlurper;
+import groovy.util.slurpersupport.GPathResult;
+import org.codehaus.gant.GantBinding;
+import org.codehaus.groovy.grails.cli.ScriptExitException;
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
+import org.codehaus.groovy.grails.io.support.*;
+import org.codehaus.groovy.runtime.MethodClosure;
 
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -58,9 +69,14 @@ public class BaseSettingsApi {
     protected String grailsAppName;
     protected Object appClassName;
     protected ConfigSlurper configSlurper;
+    protected GrailsBuildEventListener buildEventListener;
 
     public BaseSettingsApi(final BuildSettings buildSettings, boolean interactive) {
-        this.buildSettings = buildSettings;
+        this(buildSettings, null, interactive);
+    }
+
+    public BaseSettingsApi(BuildSettings settings, GrailsBuildEventListener buildEventListener, boolean interactive) {
+        buildSettings = settings;
         buildProps = buildSettings.getConfig().toProperties();
         grailsHome = buildSettings.getGrailsHome();
 
@@ -88,11 +104,16 @@ public class BaseSettingsApi {
         }
         configSlurper = buildSettings.createConfigSlurper();
         configSlurper.setEnvironment(buildSettings.getGrailsEnv());
+        this.buildEventListener = buildEventListener;
     }
 
     public void enableUaa() {
-        if (UaaIntegration.isAvailable()) {
-            UaaIntegration.enable(buildSettings, pluginSettings, isInteractive);
+        try {
+            Class<?> uaaClass = BaseSettingsApi.class.getClassLoader().loadClass("org.codehaus.groovy.grails.cli.support.UaaIntegration");
+            MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(uaaClass);
+            metaClass.invokeMethod(uaaClass, "enable", new Object[]{buildSettings, pluginSettings, isInteractive});
+        } catch (ClassNotFoundException e) {
+            // UAA not present, ignore
         }
     }
 
@@ -201,7 +222,7 @@ public class BaseSettingsApi {
     public void copyGrailsResource(Object targetFile, Resource resource, boolean overwrite) throws FileNotFoundException, IOException {
         File file = new File(targetFile.toString());
         if (overwrite || !file.exists()) {
-            FileCopyUtils.copy(resource.getInputStream(), new FileOutputStream(file));
+            IOUtils.copy(resource.getInputStream(), new FileOutputStream(file));
         }
     }
 
@@ -258,6 +279,31 @@ public class BaseSettingsApi {
     }
 
     /**
+     * Reads a plugin.xml descriptor for the given plugin name
+     */
+    public GPathResult readPluginXmlMetadata(String pluginName) throws Exception {
+        Resource pluginResource = pluginSettings.getPluginDirForName(pluginName);
+        if (pluginResource != null) {
+            File pluginDir = pluginResource.getFile();
+            return new XmlSlurper().parse(new File(pluginDir, "plugin.xml"));
+        }
+        return null;
+    }
+
+    /**
+     * Reads all installed plugin descriptors returning a list
+     */
+    public List<GPathResult> readAllPluginXmlMetadata() throws Exception{
+        Resource[] allFiles = pluginSettings.getPluginXmlMetadata();
+        List<GPathResult> results = new ArrayList<GPathResult>();
+        for (Resource resource : allFiles) {
+            if (resource.exists()) {
+                results.add( new XmlSlurper().parse(resource.getFile())  );
+            }
+        }
+        return results;
+    }
+    /**
      * Times the execution of a closure, which can include a target. For
      * example,
      *
@@ -292,5 +338,101 @@ public class BaseSettingsApi {
 
     public String makeRelative(File file) {
         return makeRelative(file.getAbsolutePath());
+    }
+
+    /**
+     * Exits the build immediately with a given exit code.
+     */
+   public void exit(int code) {
+       if (buildEventListener != null) {
+           buildEventListener.triggerEvent("Exiting", code);
+       }
+
+        // Prevent system.exit during unit/integration testing
+        if (System.getProperty("grails.cli.testing") != null || System.getProperty("grails.disable.exit") != null) {
+            throw new ScriptExitException(code);
+        }
+        GrailsConsole.getInstance().flush();
+        System.exit(code);
+    }
+
+    /**
+     * Interactive prompt that can be used by any part of the build. Echos
+     * the given message to the console and waits for user input that matches
+     * either 'y' or 'n'. Returns <code>true</code> if the user enters 'y',
+     * <code>false</code> otherwise.
+     */
+    public boolean confirmInput(String message, String code ) {
+        if (code == null) code = "confirm.message";
+        GrailsConsole grailsConsole = GrailsConsole.getInstance();
+        if (!isInteractive) {
+            grailsConsole.error("Cannot ask for input when --non-interactive flag is passed. Please switch back to interactive mode.");
+            exit(1);
+        }
+        return "y".equalsIgnoreCase(grailsConsole.userInput(message, new String[] { "y","n" }));
+    }
+
+    public boolean confirmInput(String message ) {
+        return confirmInput(message, "confirm.message");
+    }
+
+    // Note: the following only work if you also include _GrailsEvents.
+    public void logError( String message, Throwable t ) {
+        GrailsConsole.getInstance().error(message, t);
+    }
+
+    public void logErrorAndExit( String message, Throwable t ) {
+        logError(message, t);
+        exit(1);
+    }
+
+
+
+    public void makeApiAvailableToScripts(final GantBinding binding, final Object cla) {
+        final Method[] declaredMethods = cla.getClass().getDeclaredMethods();
+        for (Method method : declaredMethods) {
+            final String name = method.getName();
+
+            final int modifiers = method.getModifiers();
+            if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
+                binding.setVariable(name, new MethodClosure(cla, name));
+            }
+        }
+
+        PropertyDescriptor[] propertyDescriptors;
+        try {
+            propertyDescriptors = Introspector.getBeanInfo(cla.getClass()).getPropertyDescriptors();
+            for (PropertyDescriptor pd : propertyDescriptors) {
+                final Method readMethod = pd.getReadMethod();
+                if (readMethod != null) {
+                    if (isDeclared(cla, readMethod)) {
+                        binding.setVariable(pd.getName(), invokeMethod(readMethod, cla));
+                    }
+                }
+            }
+        }
+        catch (IntrospectionException e1) {
+            // ignore
+        }
+    }
+
+    private Object invokeMethod(Method readMethod, Object cla) {
+        try {
+            return readMethod.invoke(cla);
+        } catch (IllegalAccessException e) {
+            return null;
+        } catch (InvocationTargetException e) {
+            return null;
+        }
+    }
+
+    protected boolean isDeclared(final Object cla, final Method readMethod) {
+        try {
+            return cla.getClass().getDeclaredMethod(readMethod.getName(),
+                    readMethod.getParameterTypes()) != null;
+        }
+        catch (Exception e) {
+            return false;
+        }
     }
 }

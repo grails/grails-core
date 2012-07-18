@@ -121,6 +121,24 @@ class GrailsArtefactTransformerSpec extends Specification {
         then:
             version == GrailsUtil.grailsVersion
     }
+
+    void 'Test mixins attribute on @Enhanced'() {
+        given:
+        def testClass = gcl.parseClass('''
+            @Mixin(Date)
+            class TestClass {
+                String firstName
+            }
+            ''')
+
+        when:
+            Enhanced enhancedAnnotation = testClass.getAnnotation(Enhanced)
+            def version = enhancedAnnotation.version()
+
+        then:
+            version == GrailsUtil.grailsVersion
+            enhancedAnnotation.mixins() == [Date] as Class[]
+    }
 }
 
 class TestTransformer extends AbstractGrailsArtefactTransformer {

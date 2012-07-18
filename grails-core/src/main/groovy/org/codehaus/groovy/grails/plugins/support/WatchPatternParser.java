@@ -60,7 +60,7 @@ public class WatchPatternParser {
         int i = pattern.lastIndexOf('*');
         if (i > -1) {
             String extension = pattern.substring(i + 1, pattern.length());
-            if(extension.startsWith(".")) {
+            if (extension.startsWith(".")) {
                 extension = extension.substring(1);
             }
             watchPattern.setExtension(extension);

@@ -19,11 +19,12 @@ import java.lang.reflect.Field
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.validation.TestClass
 import org.hibernate.cfg.ImprovedNamingStrategy
@@ -817,6 +818,134 @@ class TestManySide {
         assertEquals("EXPECTED_COLUMN_NAME", column.name)
     }
 
+    void testTableNamePrefixing() {
+        def widgetClass = new DefaultGrailsDomainClass(
+                    cl.parseClass('''
+class WidgetClass {
+    Long id
+    Long version
+}'''))
+        def personClass = new DefaultGrailsDomainClass(
+            cl.parseClass('''
+class MyPluginPersonClass {
+    Long id
+    Long version
+}'''))
+
+        def gadgetClass = new DefaultGrailsDomainClass(
+                    cl.parseClass('''
+class GadgetClass {
+    Long id
+    Long version
+}'''))
+
+        def authorClass = new DefaultGrailsDomainClass(
+                    cl.parseClass('''
+class AuthorClass {
+    Long id
+    Long version
+}'''))
+
+        def grailsApplication = new DefaultGrailsApplication([widgetClass.clazz, gadgetClass.clazz, personClass.clazz, authorClass.clazz] as Class[], cl)
+
+        def myPluginMap = [:]
+        myPluginMap.getName = { -> 'MyPlugin' }
+        def myPlugin = myPluginMap as org.codehaus.groovy.grails.plugins.GrailsPlugin
+
+        def publisherPluginMap = [:]
+        publisherPluginMap.getName = { -> 'Publisher' }
+        def publisherPlugin = publisherPluginMap as org.codehaus.groovy.grails.plugins.GrailsPlugin
+
+        def pluginManagerMap = [:]
+        def myPluginDomainClassNames = ['GadgetClass', 'MyPluginPersonClass']
+        def publisherPluginDomainClassNames = ['AuthorClass']
+        pluginManagerMap.getPluginForClass = { Class clz ->
+            if (myPluginDomainClassNames.contains(clz?.name)) {
+                return myPlugin
+            }
+            if (publisherPluginDomainClassNames.contains(clz?.name)) {
+                return publisherPlugin
+            }
+            return null
+        }
+        def pluginManager = pluginManagerMap as GrailsPluginManager
+
+        // no config property specified
+        def cfg = new ConfigSlurper().parse('''
+''')
+        grailsApplication.config = cfg
+        def config = getDomainConfig(grailsApplication, pluginManager)
+        def persistentClass = config.getClassMapping("WidgetClass")
+        assertEquals("widget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("GadgetClass")
+        assertEquals("gadget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("MyPluginPersonClass")
+        assertEquals("my_plugin_person_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("AuthorClass")
+        assertEquals("author_class", persistentClass.table.name)
+
+        // config property is true
+        cfg = new ConfigSlurper().parse('''
+grails.gorm.table.prefix.enabled = true
+''')
+        grailsApplication.config = cfg
+        config = getDomainConfig(grailsApplication, pluginManager)
+        persistentClass = config.getClassMapping("WidgetClass")
+        assertEquals("widget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("GadgetClass")
+        assertEquals("my_plugin_gadget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("MyPluginPersonClass")
+        assertEquals("my_plugin_person_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("AuthorClass")
+        assertEquals("publisher_author_class", persistentClass.table.name)
+
+        // config property is false
+        cfg = new ConfigSlurper().parse('''
+grails.gorm.table.prefix.enabled = false
+''')
+        grailsApplication.config = cfg
+        config = getDomainConfig(grailsApplication, pluginManager)
+        persistentClass = config.getClassMapping("WidgetClass")
+        assertEquals("widget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("GadgetClass")
+        assertEquals("gadget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("MyPluginPersonClass")
+        assertEquals("my_plugin_person_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("AuthorClass")
+        assertEquals("author_class", persistentClass.table.name)
+
+        // config property for one plugin is true
+        cfg = new ConfigSlurper().parse('''
+grails.gorm.publisher.table.prefix.enabled = true
+''')
+        grailsApplication.config = cfg
+        config = getDomainConfig(grailsApplication, pluginManager)
+        persistentClass = config.getClassMapping("WidgetClass")
+        assertEquals("widget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("GadgetClass")
+        assertEquals("gadget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("MyPluginPersonClass")
+        assertEquals("my_plugin_person_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("AuthorClass")
+        assertEquals("publisher_author_class", persistentClass.table.name)
+
+        // global config property is true and one plugin property is false
+        cfg = new ConfigSlurper().parse('''
+grails.gorm.table.prefix.enabled = true
+grails.gorm.myPlugin.table.prefix.enabled = false
+''')
+        grailsApplication.config = cfg
+        config = getDomainConfig(grailsApplication, pluginManager)
+        persistentClass = config.getClassMapping("WidgetClass")
+        assertEquals("widget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("GadgetClass")
+        assertEquals("gadget_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("MyPluginPersonClass")
+        assertEquals("my_plugin_person_class", persistentClass.table.name)
+        persistentClass = config.getClassMapping("AuthorClass")
+        assertEquals("publisher_author_class", persistentClass.table.name)
+    }
+
     void testCustomNamingStrategy() {
 
         // somewhat artificial in that it doesn't test that setting the property
@@ -947,6 +1076,8 @@ class Alert {
         assertNotNull(enumColumn)
         assertEquals(5, enumColumn.length)
         assertEquals('char', enumColumn.sqlType)
+        assertEquals(Column.DEFAULT_PRECISION, enumColumn.precision)
+        assertEquals(Column.DEFAULT_SCALE, enumColumn.scale)
     }
 
     private org.hibernate.mapping.Collection findCollection(DefaultGrailsDomainConfiguration config, String role) {
@@ -959,7 +1090,15 @@ class Alert {
     }
 
     private DefaultGrailsDomainConfiguration getDomainConfig(GroovyClassLoader cl, classes) {
-        GrailsApplication grailsApplication = new DefaultGrailsApplication(classes as Class[], cl)
+        def grailsApplication = new DefaultGrailsApplication(classes as Class[], cl)
+        def pluginManager = new MockGrailsPluginManager(grailsApplication);
+        getDomainConfig grailsApplication, pluginManager
+    }
+
+    private DefaultGrailsDomainConfiguration getDomainConfig(grailsApplication, pluginManager) {
+        def mainContext = new MockApplicationContext()
+        mainContext.registerMockBean 'pluginManager', pluginManager
+        grailsApplication.setMainContext(mainContext);
         grailsApplication.initialise()
         DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration(
             grailsApplication: grailsApplication)

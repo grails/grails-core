@@ -1,6 +1,6 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="@grails.project.key@" default="test">
     <property environment="env"/>
-  	<property name="ivy.install.version" value="2.0.0" />
+  	<property name="ivy.install.version" value="2.2.0" />
     <condition property="ivy.home" value="${env.IVY_HOME}">
       <isset property="env.IVY_HOME" />
     </condition>
@@ -16,7 +16,7 @@
 	<target name="-download-ivy" unless="ivy.available">
         <mkdir dir="${ivy.jar.dir}"/>
         <!-- download Ivy from web site so that it can be used even without any special installation -->
-        <get src="http://www.apache.org/dist/ant/ivy/${ivy.install.version}/apache-ivy-${ivy.install.version}-bin.zip"
+        <get src="http://archive.apache.org/dist/ant/ivy/${ivy.install.version}/apache-ivy-${ivy.install.version}-bin.zip"
             dest="${ivy.home}/ivy.zip" usetimestamp="true" verbose="true"/>
 	    <unzip src="${ivy.home}/ivy.zip" dest="${ivy.jar.dir}">
 		   <patternset>

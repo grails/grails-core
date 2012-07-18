@@ -37,6 +37,8 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
     private Binding parent;
     private GroovyPage owner;
     private Set<String> cachedParentVariableNames=new HashSet<String>();
+    private GroovyPageRequestBinding pageRequestBinding;
+    private boolean pageRequestBindingInitialized=false;
     private boolean root;
 
     public GroovyPageBinding() {
@@ -65,6 +67,24 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
         return getVariable(property);
     }
 
+    private GroovyPageRequestBinding findPageRequestBinding() {
+        if (!pageRequestBindingInitialized && parent != null) {
+            Binding nextParent = parent;
+            while(nextParent != null && pageRequestBinding==null) {
+                if (nextParent instanceof GroovyPageRequestBinding) {
+                    pageRequestBinding = (GroovyPageRequestBinding)nextParent;
+                }
+                if (nextParent instanceof GroovyPageBinding) {
+                    nextParent = ((GroovyPageBinding)nextParent).parent;
+                } else {
+                    nextParent = null;
+                }
+            }
+            pageRequestBindingInitialized=true;
+        }
+        return pageRequestBinding;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Object getVariable(String name) {
@@ -76,9 +96,11 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
             if (parent != null) {
                 val = parent.getVariable(name);
                 if (val != null) {
-                    // cache variable in this context since parent context cannot change during usage of this context
-                    getVariablesMap().put(name, val);
-                    cachedParentVariableNames.add(name);
+                    if (findPageRequestBinding() == null || !findPageRequestBinding().isRequestAttributeVariable(name)) {
+                        // cache variable in this context since parent context cannot change during usage of this context
+                        getVariablesMap().put(name, val);
+                        cachedParentVariableNames.add(name);
+                    }
                 }
             }
         }
@@ -129,7 +151,7 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
         if (!GroovyPage.isReservedName(name)) {
             if (bindingToUse == null) {
                 bindingToUse = findBindingForVariable(name);
-                if (bindingToUse == null || (bindingToUse instanceof GroovyPageBinding && ((GroovyPageBinding)bindingToUse).isRoot())) {
+                if (bindingToUse == null || (bindingToUse instanceof GroovyPageBinding && ((GroovyPageBinding)bindingToUse).shouldUseChildBinding(this))) {
                     bindingToUse = this;
                 }
             }
@@ -148,6 +170,15 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
                 log.debug("Cannot override reserved variable '" + name + "'");
             }
         }
+    }
+
+    private boolean shouldUseChildBinding(GroovyPageBinding childBinding) {
+        return isRoot() || hasSameOwnerClass(childBinding);
+    }
+
+    private boolean hasSameOwnerClass(GroovyPageBinding otherBinding) {
+        // owner class can be same in recursive rendering; in that case, the child binding should be used for setting variable values
+        return (getOwner() != null && otherBinding.getOwner() != null && getOwner().getClass()==otherBinding.getOwner().getClass());
     }
 
     public String getPluginContextPath() {

@@ -37,13 +37,11 @@ class RequestMimeTypesApi {
 
     RequestMimeTypesApi() {}
 
-    MimeType[] getMimeTypes() {
-        return this.mimeTypes
-    }
+    MimeType[] getMimeTypes() { mimeTypes }
 
     RequestMimeTypesApi(GrailsApplication application, MimeType[] mimeTypes) {
         this.mimeTypes = mimeTypes
-        this.grailsApplication = application
+        grailsApplication = application
     }
 
     /**

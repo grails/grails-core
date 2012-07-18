@@ -25,6 +25,9 @@ import java.util.Map;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.NullObject;
+import org.codehaus.groovy.runtime.ResourceGroovyMethods;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -112,6 +115,9 @@ public class ConverterUtil {
             return delegate;
         }
 
+        if (delegate instanceof NullObject) {
+            return ((NullObject)delegate).asType(clazz);
+        }
         if (delegate instanceof Collection<?> && clazz.isArray()) {
             int size = ((Collection<?>)delegate).size();
             if (clazz.getComponentType() == Object.class) {
@@ -143,15 +149,11 @@ public class ConverterUtil {
         }
 
         if (delegate instanceof File) {
-            return DefaultGroovyMethods.asType((File) delegate, clazz);
+            return ResourceGroovyMethods.asType((File) delegate, clazz);
         }
 
         if (delegate instanceof String) {
-            return DefaultGroovyMethods.asType((String) delegate, clazz);
-        }
-        
-        if(delegate instanceof Object[]) {
-            return DefaultGroovyMethods.asType((Object[]) delegate, clazz);
+            return StringGroovyMethods.asType((String) delegate, clazz);
         }
 
         return DefaultGroovyMethods.asType(delegate, clazz);

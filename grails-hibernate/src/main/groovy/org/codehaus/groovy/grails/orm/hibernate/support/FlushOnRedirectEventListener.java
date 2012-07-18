@@ -38,7 +38,7 @@ public class FlushOnRedirectEventListener implements RedirectEventListener {
     public void responseRedirected(String url) {
         new GrailsHibernateTemplate(sessionFactory).execute(new HibernateCallback<Void>() {
             public Void doInHibernate(Session session) {
-                if (session.getFlushMode() != FlushMode.MANUAL) {
+                if (!FlushMode.isManualFlushMode(session.getFlushMode())) {
                     session.flush();
                 }
                 return null;

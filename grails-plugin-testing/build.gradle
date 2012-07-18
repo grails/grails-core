@@ -22,6 +22,11 @@ dependencies {
     compile("org.grails:grails-datastore-simple:$datastoreVersion") {
         transitive = false
     }
+
+    compile("org.springframework:spring-test:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
 }
 
 jar.appendix = 'plugin-testing'

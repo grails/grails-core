@@ -24,7 +24,6 @@ import static org.apache.log4j.Level.WARN;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
-import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MarkerIgnoringBase;
 import org.slf4j.helpers.MessageFormatter;
@@ -35,22 +34,17 @@ import org.slf4j.helpers.MessageFormatter;
  * @author Graeme Rocher
  * @since 2.0
  */
-@SuppressWarnings("serial")
 public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
+
+    private static final long serialVersionUID = 1;
 
     static final String FQCN = GrailsLog4jLoggerAdapter.class.getName();
 
-    private Logger log4jLogger;
-    private String name;
+    private final Logger log4jLogger;
 
     public GrailsLog4jLoggerAdapter(org.apache.log4j.Logger logger) {
-        this.log4jLogger = logger;
-        this.name = logger.getName();
-    }
-
-    @Override
-    public String getName() {
-        return name;
+        log4jLogger = logger;
+        name = logger.getName();
     }
 
     public boolean isTraceEnabled() {
@@ -62,15 +56,15 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
     }
 
     public void trace(String format, Object arg) {
-        logMessageFormat(TRACE, getMessageFormat(format, arg));
+        logMessageFormat(TRACE, format, arg);
     }
 
     public void trace(String format, Object arg1, Object arg2) {
-        logMessageFormat(TRACE, getMessageFormat(format, arg1, arg2));
+        logMessageFormat(TRACE, format, arg1, arg2);
     }
 
     public void trace(String format, Object[] argArray) {
-        logMessageFormat(TRACE, getMessageFormat(format, argArray));
+        logMessageFormat(TRACE, format, argArray);
     }
 
     public void trace(String msg, Throwable t) {
@@ -82,19 +76,19 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
     }
 
     public void debug(String msg) {
-        logMessage(DEBUG, msg);
+        logMessage(DEBUG, msg, null);
     }
 
     public void debug(String format, Object arg) {
-        logMessageFormat(DEBUG, getMessageFormat(format, arg));
+        logMessageFormat(DEBUG, format, arg);
     }
 
     public void debug(String format, Object arg1, Object arg2) {
-        logMessageFormat(DEBUG, getMessageFormat(format, arg1, arg2));
+        logMessageFormat(DEBUG, format, arg1, arg2);
     }
 
     public void debug(String format, Object[] argArray) {
-        logMessageFormat(DEBUG, getMessageFormat(format, argArray));
+        logMessageFormat(DEBUG, format, argArray);
     }
 
     public void debug(String msg, Throwable t) {
@@ -106,19 +100,19 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
     }
 
     public void info(String msg) {
-        logMessage(INFO, msg);
+        logMessage(INFO, msg, null);
     }
 
     public void info(String format, Object arg) {
-        logMessageFormat(INFO, getMessageFormat(format, arg));
+        logMessageFormat(INFO, format, arg);
     }
 
     public void info(String format, Object arg1, Object arg2) {
-        logMessageFormat(INFO, getMessageFormat(format, arg1, arg2));
+        logMessageFormat(INFO, format, arg1, arg2);
     }
 
     public void info(String format, Object[] argArray) {
-        logMessageFormat(INFO, getMessageFormat(format, argArray));
+        logMessageFormat(INFO, format, argArray);
     }
 
     public void info(String msg, Throwable t) {
@@ -130,19 +124,19 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
     }
 
     public void warn(String msg) {
-        logMessage(WARN, msg);
+        logMessage(WARN, msg, null);
     }
 
     public void warn(String format, Object arg) {
-        logMessageFormat(WARN, getMessageFormat(format, arg));
+        logMessageFormat(WARN, format, arg);
     }
 
     public void warn(String format, Object[] argArray) {
-        logMessageFormat(WARN, getMessageFormat(format, argArray));
+        logMessageFormat(WARN, format, argArray);
     }
 
     public void warn(String format, Object arg1, Object arg2) {
-        logMessageFormat(WARN, getMessageFormat(format, arg1, arg2));
+        logMessageFormat(WARN, format, arg1, arg2);
     }
 
     public void warn(String msg, Throwable t) {
@@ -154,49 +148,47 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
     }
 
     public void error(String msg) {
-        logMessage(ERROR, msg);
+        logMessage(ERROR, msg, null);
     }
 
     public void error(String format, Object arg) {
-        logMessageFormat(ERROR, getMessageFormat(format, arg));
+        logMessageFormat(ERROR, format, arg);
     }
 
     public void error(String format, Object arg1, Object arg2) {
-        logMessageFormat(ERROR, getMessageFormat(format, arg1, arg2));
+        logMessageFormat(ERROR, format, arg1, arg2);
     }
 
     public void error(String format, Object[] argArray) {
-        logMessageFormat(ERROR, getMessageFormat(format, argArray));
+        logMessageFormat(ERROR, format, argArray);
     }
 
     public void error(String msg, Throwable t) {
         logMessage(ERROR, msg, t);
     }
 
-    private FormattingTuple getMessageFormat(String format, Object... args) {
+    private final FormattingTuple getMessageFormat(final String format, final Object... args) {
         FormattingTuple ft = MessageFormatter.arrayFormat(format, args);
         cleanIfException(ft.getThrowable());
         return ft;
     }
 
-    private Throwable cleanIfException(Throwable t) {
+    private final Throwable cleanIfException(final Throwable t) {
         if (t != null) {
             new DefaultStackTraceFilterer().filter(t, true);
         }
         return t;
     }
 
-    private void logMessageFormat(Level level, FormattingTuple ft) {
-        log4jLogger.log(FQCN, level, ft.getMessage(), ft.getThrowable());
+    private final void logMessageFormat(final Level level, final String format, final Object... args) {
+        if (log4jLogger.isEnabledFor(level)) {
+            FormattingTuple ft = getMessageFormat(format, args);
+            log4jLogger.log(FQCN, level, ft.getMessage(), ft.getThrowable());
+        }
     }
 
-    private void logMessage(Level level, String msg) {
-        logMessage(level, msg, null);
-    }
-
-    private void logMessage(Level level, String msg, Throwable t) {
-        Throwable filteredTrace = msg.startsWith(StackTraceFilterer.FULL_STACK_TRACE_MESSAGE) ? t : cleanIfException(t);
-
+    private final void logMessage(final Level level, final String msg, final Throwable t) {
+        Throwable filteredTrace = (t != null && log4jLogger.isEnabledFor(level) && !DefaultStackTraceFilterer.STACK_LOG_NAME.equals(name)) ? cleanIfException(t) : t;
         log4jLogger.log(FQCN, level, msg, filteredTrace);
     }
 }

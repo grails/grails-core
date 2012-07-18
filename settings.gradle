@@ -10,6 +10,7 @@ include 'grails-bootstrap',
         'grails-resources',
         'grails-scripts',
         'grails-logging',
+        'grails-wrapper',
         
         // Plugins
         'grails-plugin-domain-class',
@@ -29,7 +30,7 @@ include 'grails-bootstrap',
         'grails-plugin-scaffolding',
         'grails-plugin-testing',
         'grails-plugin-tomcat',
-		'grails-plugin-async',
+        'grails-plugin-async',
 
         // Test Suite
         'grails-test-suite-base',

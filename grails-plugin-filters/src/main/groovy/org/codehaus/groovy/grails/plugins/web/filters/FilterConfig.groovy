@@ -15,26 +15,27 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import org.springframework.web.servlet.ModelAndView
+import javax.servlet.ServletContext
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
+
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.FlashScope
-import javax.servlet.http.HttpSession
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.ServletContext
-import javax.servlet.http.HttpServletResponse
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.context.ApplicationContext
+import org.springframework.validation.Errors
+import org.springframework.web.servlet.ModelAndView
 
 /**
  * @author mike
  * @author Graeme Rocher
  */
-class FilterConfig extends ControllersApi{
+class FilterConfig extends ControllersApi {
     String name
     Map scope
     Closure before
@@ -43,6 +44,17 @@ class FilterConfig extends ControllersApi{
     // this modelAndView overrides ControllersApi's modelAndView
     ModelAndView modelAndView
     boolean initialised = false
+
+    public FilterConfig() {
+        initializeMetaClass()
+    }
+
+    void initializeMetaClass() {
+        // use per-instance metaclass
+        ExpandoMetaClass emc = new ExpandoMetaClass(getClass(), false, true)
+        emc.initialize()
+        setMetaClass(emc)
+    }
 
     /**
      * Redirects attempt to access an 'errors' property, so we provide
@@ -65,7 +77,7 @@ class FilterConfig extends ControllersApi{
         // Delegate to the parent definition if it has this property.
         if (filtersDefinition.metaClass.hasProperty(filtersDefinition, propertyName)) {
             def getterName = GrailsClassUtils.getGetterName(propertyName)
-            metaClass."$getterName" = {-> delegate.filtersDefinition."$propertyName" }
+            metaClass."$getterName" = {-> delegate.filtersDefinition.getProperty(propertyName) }
             return filtersDefinition."$propertyName"
         }
 
@@ -78,18 +90,15 @@ class FilterConfig extends ControllersApi{
      */
     def methodMissing(String methodName, args) {
         // Delegate to the parent definition if it has this method.
-        if (filtersDefinition.metaClass.respondsTo(filtersDefinition, methodName)) {
-            if (!args) {
-                // No argument method.
-                metaClass."$methodName" = {-> filtersDefinition."$methodName"() }
-            }
-            else {
-                metaClass."$methodName" = { varArgs -> filtersDefinition."$methodName"(varArgs) }
-            }
+        List<MetaMethod> respondsTo = filtersDefinition.metaClass.respondsTo(filtersDefinition, methodName, args)
+        if (respondsTo) {
+            // Use DelegateMetaMethod to proxy calls to actual MetaMethod for subsequent calls to this method
+            DelegateMetaMethod dmm=new DelegateMetaMethod(respondsTo[0], FilterConfigDelegateMetaMethodTargetStrategy.instance)
+            // register the metamethod to EMC
+            metaClass.registerInstanceMethod(dmm)
 
-            // We've created the forwarding method now, but we still
-            // need to invoke the target method this time around.
-            return filtersDefinition."$methodName"(*args)
+            // for this invocation we still have to make the call
+            return respondsTo[0].invoke(filtersDefinition, args)
         }
 
         // Ideally, we would throw a MissingMethodException here
@@ -119,7 +128,6 @@ class FilterConfig extends ControllersApi{
         return super.getTemplateUri(this, name)
     }
 
-
     String getViewUri(String name) {
         return super.getViewUri(this, name)
     }
@@ -127,7 +135,6 @@ class FilterConfig extends ControllersApi{
     void setErrors(Errors errors) {
         super.setErrors(this, errors)
     }
-
 
     Errors getErrors() {
         return super.getErrors(this)
@@ -176,7 +183,6 @@ class FilterConfig extends ControllersApi{
     Object bindData(Object target, Object args, List disallowed) {
         return super.bindData(this, target, args, disallowed)
     }
-
 
     Object bindData(Object target, Object args, List disallowed, String filter) {
         return super.bindData(this, target, args, disallowed, filter)
@@ -257,6 +263,4 @@ class FilterConfig extends ControllersApi{
     String getPluginContextPath() {
         return super.getPluginContextPath(this)
     }
-
-
 }

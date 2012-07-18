@@ -335,9 +335,9 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
     }
     /*
     void testPassingNullArgumentToAChainedNamedQuery() {
-        if(notYetImplemented()) return
+        if (notYetImplemented()) return
         // See http://jira.grails.org/browse/GRAILS-8672 and http://jira.codehaus.org/browse/GROOVY-5262
-        
+
         def now = new Date()
         assert new NamedCriteriaPublication(title: "Some Book", datePublished: now).save()
         assert new NamedCriteriaPublication(title: "Some Book", datePublished: now - 10).save()
@@ -345,14 +345,14 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         assert new NamedCriteriaPublication(title: "Some Book", datePublished: now - 1000).save()
 
         session.clear()
-        
+
         // See http://jira.grails.org/browse/GRAILS-8672 and http://jira.codehaus.org/browse/GROOVY-5262
         def results = NamedCriteriaPublication.publishedAfter(null).publishedAfter(null).list()
         assertEquals 4, results?.size()
-        
+
         results = NamedCriteriaPublication.publishedAfter(now - 50).publishedAfter(null).list()
         assertEquals 2, results?.size()
-        
+
         results = NamedCriteriaPublication.publishedAfter(null).publishedAfter(now - 50).list()
         assertEquals 2, results?.size()
     }

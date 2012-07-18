@@ -16,11 +16,11 @@
 
 package org.codehaus.groovy.grails.plugins.build.scopes
 
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
 /**
- * Encapsulates information about plugins contained within a particular scope
+ * Encapsulates information about plugins contained within a particular scope.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -45,8 +45,6 @@ class PluginScopeInfo {
         newInfo.pluginNames = this.pluginNames - other.pluginNames
         newInfo.pluginDescriptors = this.pluginDescriptors - other.pluginDescriptors
         newInfo.artefactResources = this.artefactResources - other.artefactResources
-
-        return newInfo;
+        newInfo
     }
-
 }

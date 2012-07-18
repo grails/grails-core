@@ -129,7 +129,7 @@ public interface GrailsDomainClassProperty {
 
     /**
      * Returns true if the property is a many-to-many relationship.
-     * @return True if it is a manyToMany
+     * @return true if it is a manyToMany
      */
     boolean isManyToMany();
 
@@ -146,7 +146,7 @@ public interface GrailsDomainClassProperty {
 
     /**
      * Returns true if the property is a one-to-one relationship.
-     * @return True if it is a one-to-one relationship
+     * @return true if it is a one-to-one relationship
      */
     boolean isOneToOne();
 
@@ -160,13 +160,13 @@ public interface GrailsDomainClassProperty {
 
     /**
      * Returns true if this property is a relationship property.
-     * @return True if it is an associative property
+     * @return true if it is an associative property
      */
     boolean isAssociation();
 
     /**
      * Returns true if this properties type is an enum.
-     * @return True if it is
+     * @return true if it is
      */
     boolean isEnum();
 
@@ -189,21 +189,21 @@ public interface GrailsDomainClassProperty {
 
     /**
      * Whether the property is inherited from a super class.
-     * @return True if its inherited
+     * @return true if its inherited
      */
     boolean isInherited();
 
     /**
      * Whether this side of the association is the "owning" side.
      *
-     * @return True if it is the owning side
+     * @return true if it is the owning side
      */
     boolean isOwningSide();
 
     /**
      * Whether the relationship is cirucular.
      *
-     * @return True if it is
+     * @return true if it is
      */
     boolean isCircular();
 
@@ -218,7 +218,7 @@ public interface GrailsDomainClassProperty {
     /**
      * Returns true if this propert is an embedded component.
      *
-     * @return True if it is, false otherwise
+     * @return true if it is, false otherwise
      */
     boolean isEmbedded();
 
@@ -237,7 +237,7 @@ public interface GrailsDomainClassProperty {
 
     /**
      * Return whether this is a collection of basic types like String, Integer etc.
-     * @return True if it is a collection of basic types
+     * @return true if it is a collection of basic types
      */
     boolean isBasicCollectionType();
 

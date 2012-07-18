@@ -71,7 +71,7 @@ class SimpleGrailsControllerHelperTests extends AbstractGrailsControllerTests {
 
 @Artefact("Controller")
 class Test1Controller {
-    @Action def list(){}
+    @Action def list() {}
 
     def afterInterceptor = {
          it.put("after", "value")
@@ -86,7 +86,7 @@ class Test1Controller {
 
 @Artefact("Controller")
 class Test2Controller {
-    @Action def list(){}
+    @Action def list() {}
 
     def afterInterceptor = { model ->
          model.put("after", "value")
@@ -96,8 +96,8 @@ class Test2Controller {
 
 @Artefact("Controller")
 class Test3Controller {
-    @Action def list(){}
-    @Action def getSomeAmbiguousActionName(){[a:true]}
+    @Action def list() {}
+    @Action def getSomeAmbiguousActionName() {[a:true]}
     def afterInterceptor = { model, modelAndView ->
          model.put("after", modelAndView.getViewName())
          return true
@@ -106,7 +106,7 @@ class Test3Controller {
 
 @Artefact("Controller")
 class Test4Controller {
-    @Action def list(){}
+    @Action def list() {}
 
     def afterInterceptor = { model, modelAndView ->
          return false

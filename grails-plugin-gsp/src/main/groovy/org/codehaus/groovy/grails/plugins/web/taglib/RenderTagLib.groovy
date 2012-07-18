@@ -246,13 +246,24 @@ class RenderTagLib implements RequestConstants {
 
         def invokeBody = true
         for (i in 0..<names.size()) {
-            String propertyValue = htmlPage.getProperty(names[i])
+            def propertyValue = null
+            if (htmlPage instanceof GSPSitemeshPage) {
+                // check if there is an component content buffer
+                propertyValue = htmlPage.getContentBuffer(names[i])
+            }
+
+            if (!propertyValue) {
+                propertyValue = htmlPage.getProperty(names[i])
+            }
+
             if (propertyValue) {
-                if (attrs.equals instanceof List) {
-                    invokeBody = attrs.equals[i] == propertyValue
-                }
-                else if (attrs.equals instanceof String) {
-                    invokeBody = attrs.equals == propertyValue
+                if (attrs.containsKey('equals')) {
+                    if (attrs.equals instanceof List) {
+                        invokeBody = attrs.equals[i] == propertyValue
+                    }
+                    else {
+                        invokeBody = attrs.equals == propertyValue
+                    }
                 }
             }
             else {
@@ -323,6 +334,7 @@ class RenderTagLib implements RequestConstants {
      * @attr max The number of records displayed per page (defaults to 10). Used ONLY if params.max is empty
      * @attr maxsteps The number of steps displayed for pagination (defaults to 10). Used ONLY if params.maxsteps is empty
      * @attr offset Used only if params.offset is empty
+     * @attr mapping The named URL mapping to use to rewrite the link
      * @attr fragment The link fragment (often called anchor tag) to use
      */
     Closure paginate = { attrs ->
@@ -335,7 +347,7 @@ class RenderTagLib implements RequestConstants {
         def locale = RCU.getLocale(request)
 
         def total = attrs.int('total') ?: 0
-        def action = (attrs.action ? attrs.action : (params.action ? params.action : "list"))
+        def action = (attrs.action ?: (params.action ?: ""))
         def offset = params.int('offset') ?: 0
         def max = params.int('max')
         def maxsteps = (attrs.int('maxsteps') ?: 10)
@@ -350,9 +362,14 @@ class RenderTagLib implements RequestConstants {
         if (params.sort) linkParams.sort = params.sort
         if (params.order) linkParams.order = params.order
 
-        def linkTagAttrs = [action: action]
-        if (attrs.controller) {
-            linkTagAttrs.controller = attrs.controller
+        def linkTagAttrs = [:]
+        if (attrs.containsKey('mapping')) {
+            linkTagAttrs.mapping = attrs.mapping
+        } else {
+            linkTagAttrs.action = action
+            if (attrs.controller) {
+                linkTagAttrs.controller = attrs.controller
+            }
         }
         if (attrs.id != null) {
             linkTagAttrs.id = attrs.id
@@ -400,9 +417,9 @@ class RenderTagLib implements RequestConstants {
             // display firststep link when beginstep is not firststep
             if (beginstep > firststep && !attrs.boolean('omitFirst')) {
                 linkParams.offset = 0
-                writer << link(linkTagAttrs.clone()) {firststep.toString()}	
+                writer << link(linkTagAttrs.clone()) {firststep.toString()}
             }
-            //show a gap if beginstep isn't immediately after firststep, and if were not omitting first or rev 
+            //show a gap if beginstep isn't immediately after firststep, and if were not omitting first or rev
             if (beginstep > firststep+1 && (!attrs.boolean('omitFirst') || !attrs.boolean('omitPrev')) ) {
                 writer << '<span class="step gap">..</span>'
             }
@@ -418,7 +435,7 @@ class RenderTagLib implements RequestConstants {
                 }
             }
 
-            //show a gap if beginstep isn't immediately before firststep, and if were not omitting first or rev 
+            //show a gap if beginstep isn't immediately before firststep, and if were not omitting first or rev
             if (endstep+1 < laststep && (!attrs.boolean('omitLast') || !attrs.boolean('omitNext'))) {
                 writer << '<span class="step gap">..</span>'
             }
@@ -514,6 +531,7 @@ class RenderTagLib implements RequestConstants {
         // determine column title
         def title = attrs.remove("title")
         def titleKey = attrs.remove("titleKey")
+        def mapping = attrs.remove('mapping')
         if (titleKey) {
             if (!title) title = titleKey
             def messageSource = grailsAttributes.messageSource
@@ -526,7 +544,17 @@ class RenderTagLib implements RequestConstants {
         attrs.each { k, v ->
             writer << "${k}=\"${v?.encodeAsHTML()}\" "
         }
-        writer << ">${link(action: action, params: linkParams) { title }}</th>"
+        writer << '>'
+        def linkAttrs = [params: linkParams]
+        if (mapping) {
+            linkAttrs.mapping = mapping
+        } else {
+            linkAttrs.action = action
+        }
+        writer << link(linkAttrs) {
+            title
+        }
+        writer << '</th>'
     }
 
     /**

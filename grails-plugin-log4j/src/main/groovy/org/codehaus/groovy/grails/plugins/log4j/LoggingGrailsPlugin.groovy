@@ -15,12 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.log4j
 
-import grails.util.GrailsUtil
-
-import org.apache.log4j.LogManager
-
-import org.slf4j.bridge.SLF4JBridgeHandler
 import org.codehaus.groovy.grails.plugins.log4j.web.util.Log4jConfigListener
+import grails.util.Metadata
 
 /**
  * Provides a lazy initialized commons logging log property for all classes.
@@ -32,7 +28,7 @@ import org.codehaus.groovy.grails.plugins.log4j.web.util.Log4jConfigListener
  */
 class LoggingGrailsPlugin {
 
-    def version = GrailsUtil.getGrailsVersion()
+    def version = Metadata.current.getGrailsVersion() ?: "1.0"
     def loadBefore = ['core']
     def observe = ['*']
 
@@ -41,7 +37,12 @@ class LoggingGrailsPlugin {
         if (usebridge) {
             def juLogMgr = application.classLoader.loadClass("java.util.logging.LogManager").logManager
             juLogMgr.readConfiguration(new ByteArrayInputStream(".level=INFO".bytes))
-            SLF4JBridgeHandler.install()
+            try {
+                application.classLoader.loadClass('org.slf4j.bridge.SLF4JBridgeHandler').install()
+            } catch (e) {
+                log.debug "SL4J bridge not installed due to ${e.message}", e
+            }
+
         }
     }
 

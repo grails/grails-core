@@ -246,7 +246,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 
     void testAllowedMethods() {
-        if(notYetImplemented()) return
+        if (notYetImplemented()) return
 
         def controller = getMockController()
 
@@ -381,6 +381,24 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         request.method = 'DELETE'
         controller.method3()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
+    }
+
+    void testMockForConstraintsTestOnValidateableObject() {
+        mockForConstraintsTests(SomeValidateableThing)
+        def obj = new SomeValidateableThing()
+        assert !obj.validate()
+        assert 'nullable' == obj.errors['email']
+        assert 'nullable' == obj.errors['name']
+
+        obj.name = 'Jeffrey'
+        obj.email = 'foo'
+        assert !obj.validate()
+        assert 'email' == obj.errors['email']
+        assert 'no.odd.characters' == obj.errors['name']
+
+        obj.name = 'Jeff'
+        obj.email = 'foo@bar.com'
+        assert obj.validate()
     }
 }
 
@@ -533,5 +551,20 @@ class TestCommand {
 class SubController extends TestController {
     def method1() {
         super.method1()
+    }
+}
+
+@grails.validation.Validateable
+class SomeValidateableThing {
+    String name
+    String email
+
+    static constraints = {
+        name validator: { val ->
+            if (val.size() % 2 == 1) {
+                'no.odd.characters'
+            }
+        }
+        email email: true
     }
 }

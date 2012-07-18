@@ -18,14 +18,13 @@ class ControllerWithMockCollabTests {
         executeCallTest()
     }
 
-    private void executeCallTest(){
+    private void executeCallTest() {
         //Prepare
         boolean called = false
         def mockCallable = mockFor(MyCallable)
         mockCallable.demand.callMe { -> called = true; println "called"}
         def mockCallableInstance = mockCallable.createMock()
         controller.myCallable = mockCallableInstance
-        
 
         //Call
         controller.index()
@@ -46,9 +45,6 @@ class ControllerWithCollabController {
     }
 }
 
-public interface MyCallable{
-
+interface MyCallable {
     void callMe();
-
 }
-

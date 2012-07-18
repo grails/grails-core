@@ -55,13 +55,14 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
                     ,thisObjectMethodCall);
     }
 
-    @Override
-    public void visitClosureExpression(ClosureExpression expression) {
-        innerClosures.push(expression);
-        introduceThisObjectVariable(expression);
-        super.visitClosureExpression(expression);
-        innerClosures.pop();
-    }
+// TODO: Research why http://jira.grails.org/browse/GRAILS-8679 happens with this enabled. See ElvisAndClosureGroovyPageTests
+//    @Override
+//    public void visitClosureExpression(ClosureExpression expression) {
+//        innerClosures.push(expression);
+//        introduceThisObjectVariable(expression);
+//        super.visitClosureExpression(expression);
+//        innerClosures.pop();
+//    }
 
     private void introduceThisObjectVariable(ClosureExpression closureExpression) {
         if (closureExpression.getCode() instanceof BlockStatement) {
@@ -79,7 +80,8 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
     public void visitMethodCallExpression(MethodCallExpression call) {
 
         if (isCallFromGroovyPageClass(call)) {
-            proceedCallFromGroovyPageClass(call);
+            // TODO: Research why http://jira.grails.org/browse/GRAILS-8679 happens with this enabled. See ElvisAndClosureGroovyPageTests
+            //proceedCallFromGroovyPageClass(call);
         } else if (isCallFromOutOrCodecOut(call)) {
             proceedCallFromOutOrCodecOut(call);
         }

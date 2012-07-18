@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.web.pages.AbstractGroovyPageBinding;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -32,7 +33,7 @@ import org.springframework.util.Assert;
 /**
  * Represents the body of a tag and captures its output returning the result
  * when invoked.
- * 
+ *
  * @author Graeme Rocher
  * @since 0.5
  */
@@ -43,14 +44,23 @@ public class GroovyPageTagBody extends Closure {
     private Closure<?> bodyClosure;
     private GrailsWebRequest webRequest;
 
+    public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest, Closure<?> bodyClosure) {
+        this(owner, webRequest, bodyClosure, false);
+    }
+
     public GroovyPageTagBody(Object owner, GrailsWebRequest webRequest,
-            Closure<?> bodyClosure) {
+            Closure<?> bodyClosure, boolean changeBodyClosureOwner) {
         super(owner);
 
         Assert.notNull(bodyClosure, "Argument [bodyClosure] cannot be null!");
         Assert.notNull(webRequest, "Argument [webRequest] cannot be null!");
 
-        this.bodyClosure = bodyClosure;
+        if (changeBodyClosureOwner && bodyClosure != null && !(bodyClosure instanceof GroovyPage.ConstantClosure)) {
+            this.bodyClosure = bodyClosure.rehydrate(bodyClosure.getDelegate(), owner, bodyClosure.getThisObject());
+            this.bodyClosure.setResolveStrategy(OWNER_ONLY);
+        } else {
+            this.bodyClosure = bodyClosure;
+        }
         this.webRequest = webRequest;
     }
 
@@ -64,33 +74,35 @@ public class GroovyPageTagBody extends Closure {
             pushCapturedOut(capturedOut);
 
             Object bodyResult;
-            
-            if(hasArgument) {
-                originalIt = saveItVariable(currentBinding, args);
-            }
 
-            if (args instanceof Map && ((Map)args).size() > 0) {
-                // The body can be passed a set of variables as a map that
-                // are then made available in the binding. This allows the
-                // contents of the body to reference any of these variables
-                // directly.
-                //
-                // For example, body(foo: 1, bar: 'test') would allow this
-                // GSP fragment to work:
-                //
-                // <td>Foo: ${foo} and bar: ${bar}</td>
-                //
-                // Note that any variables with the same name as one of the
-                // new ones will be overridden for the scope of the host
-                // tag's body.
+            if (currentBinding != null) {
+                if (hasArgument) {
+                    originalIt = saveItVariable(currentBinding, args);
+                }
 
-                // GRAILS-2675: Copy the current binding so that we can
-                // restore
-                // it to its original state.
+                if (args instanceof Map && ((Map)args).size() > 0) {
+                    // The body can be passed a set of variables as a map that
+                    // are then made available in the binding. This allows the
+                    // contents of the body to reference any of these variables
+                    // directly.
+                    //
+                    // For example, body(foo: 1, bar: 'test') would allow this
+                    // GSP fragment to work:
+                    //
+                    // <td>Foo: ${foo} and bar: ${bar}</td>
+                    //
+                    // Note that any variables with the same name as one of the
+                    // new ones will be overridden for the scope of the host
+                    // tag's body.
 
-                // Binding is only changed currently when body gets a map
-                // argument
-                savedVariablesMap = addAndSaveVariables(currentBinding, (Map)args);
+                    // GRAILS-2675: Copy the current binding so that we can
+                    // restore
+                    // it to its original state.
+
+                    // Binding is only changed currently when body gets a map
+                    // argument
+                    savedVariablesMap = addAndSaveVariables(currentBinding, (Map)args);
+                }
             }
             bodyResult = executeClosure(args);
 
@@ -100,19 +112,21 @@ public class GroovyPageTagBody extends Closure {
             return capturedOut.getBuffer();
         }
         finally {
-            restoreVariables(currentBinding, savedVariablesMap);
-            if (hasArgument) {
-                restoreItVariable(currentBinding, originalIt);
+            if (currentBinding != null) {
+                restoreVariables(currentBinding, savedVariablesMap);
+                if (hasArgument) {
+                    restoreItVariable(currentBinding, originalIt);
+                }
             }
             popCapturedOut();
         }
     }
 
     /**
-     * Sets "it" variable to binding and returns the previous value 
-     * 
-     * changing "it" variable is required to support refering to body argument with "it"; that was supported pre Grails 2.0 
-     * "it" is in binding because g:each loops are converted to ordinary for loops in Grails 2.0 with a generated variable name (if no variable name is specified)  
+     * Sets "it" variable to binding and returns the previous value.
+     *
+     * changing "it" variable is required to support refering to body argument with "it"; that was supported pre Grails 2.0
+     * "it" is in binding because g:each loops are converted to ordinary for loops in Grails 2.0 with a generated variable name (if no variable name is specified)
      */
     @SuppressWarnings("unchecked")
     private Object saveItVariable(Binding currentBinding, Object args) {
@@ -125,7 +139,7 @@ public class GroovyPageTagBody extends Closure {
     }
 
     /**
-     * Restores "it" variable to binding 
+     * Restores "it" variable to binding.
      */
     @SuppressWarnings("unchecked")
     private void restoreItVariable(Binding currentBinding, Object originalIt) {
@@ -135,16 +149,16 @@ public class GroovyPageTagBody extends Closure {
     }
 
     /**
-     * Adds variables to binding and returns a map with previous values 
+     * Adds variables to binding and returns a map with previous values.
      */
     @SuppressWarnings("unchecked")
     private Map<String,Object> addAndSaveVariables(Binding binding, Map args) {
         Map<String,Object> savedVariablesMap = new LinkedHashMap<String,Object>();
-        for (Iterator<Object> i = ((Map)args).keySet().iterator(); i.hasNext(); ) {
+        for (Iterator<Object> i = args.keySet().iterator(); i.hasNext(); ) {
             String varname = String.valueOf(i.next());
             savedVariablesMap.put(varname, binding.getVariable(varname));
         }
-        if(binding instanceof GroovyPageBinding) {
+        if (binding instanceof GroovyPageBinding) {
             ((GroovyPageBinding)binding).addMap(args);
         } else {
             for (Iterator<Map.Entry> i = args.entrySet().iterator(); i.hasNext(); ) {
@@ -156,11 +170,11 @@ public class GroovyPageTagBody extends Closure {
     }
 
     /**
-     * Restores variables to binding from a map with previous values  
+     * Restores variables to binding from a map with previous values.
      */
     private void restoreVariables(Binding binding, Map<String, Object> savedVariablesMap) {
         if (savedVariablesMap != null) {
-            for(Map.Entry<String, Object> entry : savedVariablesMap.entrySet()) {
+            for (Map.Entry<String, Object> entry : savedVariablesMap.entrySet()) {
                 binding.setVariable(entry.getKey(), entry.getValue());
             }
         }
@@ -213,7 +227,7 @@ public class GroovyPageTagBody extends Closure {
     public Object call(Object arguments) {
         return captureClosureOutput(arguments, true);
     }
-    
+
     @Override
     public int getMaximumNumberOfParameters() {
         return 1;
@@ -222,5 +236,9 @@ public class GroovyPageTagBody extends Closure {
     @Override
     public Class[] getParameterTypes() {
         return PARAMETER_TYPES;
-    }    
+    }
+
+    public Closure<?> getBodyClosure() {
+        return bodyClosure;
+    }
 }

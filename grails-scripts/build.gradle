@@ -9,7 +9,6 @@ dependencies {
             "org.apache.ivy:ivy:${ivyVersion}",
             "org.codehaus.gant:gant_groovy1.8:${gantVersion}"
 
-    compile 'org.tmatesoft.svnkit:svnkit:1.3.5'
     compile project(":grails-web"),
             project(':grails-hibernate'),
             project(':grails-docs'),
@@ -35,11 +34,11 @@ eclipse {
             whenMerged { classpath ->
                 // update ../scripts -> scripts
                 def scriptsSrc = classpath.entries.find { entry -> entry?.kind == 'src' && entry?.path == '../scripts' }
-                if(scriptsSrc) scriptsSrc.path='scripts'
+                if (scriptsSrc) scriptsSrc.path='scripts'
             }
         }
-    }    
-    
+    }
+
     project {
         linkedResource name: 'scripts', type: '2', location: new File('../scripts').canonicalPath
     }

@@ -15,7 +15,7 @@ class ValidationTagLibTests extends AbstractGrailsTagTests {
 import grails.persistence.*
 
 @Entity
-class Book {
+class ValidationTagLibBook {
     String title
     URL publisherURL
     Date releaseDate
@@ -27,7 +27,7 @@ class Book {
 import grails.persistence.*
 
 @Entity
-class Article {
+class ValidationTagLibArticle {
     String title
 }
 '''
@@ -36,7 +36,7 @@ class Article {
 import grails.persistence.*
 
 @Entity
-class Person {
+class ValidationTagLibPerson {
     Title title
     String name
 }
@@ -66,11 +66,11 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
 
     void testFieldValueWithClassAndPropertyNameLookupFromBundle() {
-        def domain = ga.getDomainClass("Book")
+        def domain = ga.getDomainClass("ValidationTagLibBook")
 
         LocaleContextHolder.setLocale(Locale.US)
-        messageSource.addMessage("Book.label", Locale.US, "Reading Material")
-        messageSource.addMessage("Book.title.label", Locale.US, "Subject")
+        messageSource.addMessage("ValidationTagLibBook.label", Locale.US, "Reading Material")
+        messageSource.addMessage("ValidationTagLibBook.title.label", Locale.US, "Subject")
         def b = domain.newInstance()
         b.validate()
         assertTrue b.hasErrors()
@@ -82,11 +82,11 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testFieldValueWithShortClassAndPropertyNameLookupFromBundle() {
-        def domain = ga.getDomainClass("Book")
+        def domain = ga.getDomainClass("ValidationTagLibBook")
 
         LocaleContextHolder.setLocale(Locale.US)
-        messageSource.addMessage("book.label", Locale.US, "Reading Material")
-        messageSource.addMessage("book.title.label", Locale.US, "Subject")
+        messageSource.addMessage("validationTagLibBook.label", Locale.US, "Reading Material")
+        messageSource.addMessage("validationTagLibBook.title.label", Locale.US, "Subject")
         def b = domain.newInstance()
         b.validate()
         assertTrue b.hasErrors()
@@ -98,14 +98,14 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testRenderErrorTag() {
-        def domain = ga.getDomainClass("Book")
+        def domain = ga.getDomainClass("ValidationTagLibBook")
         def b = domain.newInstance()
         b.validate()
         assertTrue b.hasErrors()
 
         def template = '''<g:fieldError bean="${book}" field="title" />'''
 
-        assertOutputEquals 'Property [title] of class [class Book] cannot be null', template, [book:b]
+        assertOutputEquals 'Property [title] of class [class ValidationTagLibBook] cannot be null', template, [book:b]
         b = domain.newInstance()
         b.title = "The Stand"
         b.validate()
@@ -114,7 +114,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testFieldValueHtmlEscaping() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [title:"<script>alert('escape me')</script>"]
 
         def template = '''<g:fieldValue bean="${book}" field="title" />'''
@@ -127,7 +127,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testFieldValueTag() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [publisherURL:"a_bad_url"]
         assertTrue b.hasErrors()
 
@@ -142,7 +142,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testFieldValueTagWithDecimalNumber() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [publisherURL:"http://google.com", usPrice: 1045.99]
 
         // First test with English.
@@ -166,7 +166,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testFieldValueTagWithFrenchLocaleInTextField() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [publisherURL:"http://google.com", usPrice: 1045.99]
 
         String template = '''<g:textField name="usPrice" value="${fieldValue(bean: book, field: 'usPrice')}" />'''
@@ -186,7 +186,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testHasErrorsTag() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.validate()
 
         assertTrue b.hasErrors()
@@ -195,7 +195,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
         assertOutputEquals("success", template, [book:b])
 
-        b = ga.getDomainClass("Book").newInstance()
+        b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.title = "Groovy In Action"
         b.publisherURL = new URL("http://canoo.com/gia")
         b.validate()
@@ -220,13 +220,13 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
         assertOutputEquals("", template, [book:b])
 
-        b = ga.getDomainClass("Book").newInstance()
+        b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.title = "Groovy In Action"
         b.publisherURL = new URL("http://canoo.com/gia")
         b.releaseDate = new Date()
         b.usPrice = 10.99
         b.validate()
-        def a = ga.getDomainClass("Article").newInstance()
+        def a = ga.getDomainClass("ValidationTagLibArticle").newInstance()
         a.validate()
         assertOutputEquals("success", '''<g:hasErrors bean="${article}">success</g:hasErrors>''', [book:b,article:a])
         assertOutputEquals("success", '''<g:hasErrors bean="${article}" field="title">success</g:hasErrors>''', [book:b,article:a])
@@ -242,7 +242,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testEachErrorTag() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.validate()
 
         assertTrue b.hasErrors()
@@ -261,8 +261,24 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertTrue result.contains("publisherURL|")
     }
 
+    void testEachErrorTagInController() {
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
+        b.validate()
+
+        assertTrue b.hasErrors()
+
+        def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher("g")
+        def errorFields = []
+        g.eachError(bean: b) {
+            errorFields << it.field
+        }
+        assertTrue errorFields.contains("title")
+        assertTrue errorFields.contains("releaseDate")
+        assertTrue errorFields.contains("publisherURL")
+    }
+
     void testRenderErrorsTag() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.validate()
 
         assertTrue b.hasErrors()
@@ -270,9 +286,9 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         def template = '''<g:renderErrors bean="${book}" />'''
 
         def result = applyTemplate(template,[book:b])
-        assertTrue result.contains("<li>Property [title] of class [class Book] cannot be null</li>")
-        assertTrue result.contains("<li>Property [publisherURL] of class [class Book] cannot be null</li>")
-        assertTrue result.contains("<li>Property [releaseDate] of class [class Book] cannot be null</li>")
+        assertTrue result.contains("<li>Property [title] of class [class ValidationTagLibBook] cannot be null</li>")
+        assertTrue result.contains("<li>Property [publisherURL] of class [class ValidationTagLibBook] cannot be null</li>")
+        assertTrue result.contains("<li>Property [releaseDate] of class [class ValidationTagLibBook] cannot be null</li>")
         assertTrue result.startsWith("<ul>")
         assertTrue result.endsWith("</ul>")
 
@@ -290,7 +306,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     void testRenderErrorsTagAsListWithNoBeanAttribute() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.validate()
 
         assertTrue b.hasErrors()
@@ -299,15 +315,15 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         def template = '''<g:renderErrors as="list" />'''
 
         def result = applyTemplate(template,[book:b])
-        assertEquals 1, result.count("<li>Property [title] of class [class Book] cannot be null</li>")
-        assertEquals 1, result.count("<li>Property [publisherURL] of class [class Book] cannot be null</li>")
-        assertEquals 1, result.count("<li>Property [releaseDate] of class [class Book] cannot be null</li>")
+        assertEquals 1, result.count("<li>Property [title] of class [class ValidationTagLibBook] cannot be null</li>")
+        assertEquals 1, result.count("<li>Property [publisherURL] of class [class ValidationTagLibBook] cannot be null</li>")
+        assertEquals 1, result.count("<li>Property [releaseDate] of class [class ValidationTagLibBook] cannot be null</li>")
         assertTrue result.startsWith("<ul>")
         assertTrue result.endsWith("</ul>")
     }
 
     void testRenderErrorsAsXMLTag() {
-        def b = ga.getDomainClass("Book").newInstance()
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.validate()
 
         assertTrue b.hasErrors()
@@ -321,9 +337,9 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         def xml = new XmlSlurper().parseText(result)
 
         assertEquals 4, xml.error.size()
-        assertEquals "Book", xml.error[0].@object.text()
+        assertEquals "ValidationTagLibBook", xml.error[0].@object.text()
         assertEquals "publisherURL", xml.error[0].@field.text()
-        assertEquals "Property [publisherURL] of class [class Book] cannot be null", xml.error[0].@message.text()
+        assertEquals "Property [publisherURL] of class [class ValidationTagLibBook] cannot be null", xml.error[0].@message.text()
     }
 
     void testHasErrorsWithRequestAttributes() {
@@ -389,7 +405,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
     void testFieldValueTagWithMessageSourceResolvablePropertyUsesDefaultMessage() {
         def Title = ga.getClassForName("Title")
-        def person = ga.getDomainClass("Person").newInstance()
+        def person = ga.getDomainClass("ValidationTagLibPerson").newInstance()
         person.properties = [title: Title.MR, name: "Al Coholic"]
 
         def template = '<g:fieldValue bean="${person}" field="title" />'
@@ -399,7 +415,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
 
     void testFieldValueTagWithMessageSourceResolvablePropertyUsesI18nBundle() {
         def Title = ga.getClassForName("Title")
-        def person = ga.getDomainClass("Person").newInstance()
+        def person = ga.getDomainClass("ValidationTagLibPerson").newInstance()
         person.properties = [title: Title.MR, name: "Al Coholic"]
 
         def locale = new Locale("af", "ZA")

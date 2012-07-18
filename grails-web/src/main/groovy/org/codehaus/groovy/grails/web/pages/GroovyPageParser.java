@@ -1096,6 +1096,7 @@ public class GroovyPageParser implements Tokens {
                     }
                 }
                 attrsVarsMapDefinition.put(tagIndex, buffer.toString());
+                buffer.close();
             }
 
             if (!emptyTag) {
@@ -1136,7 +1137,7 @@ public class GroovyPageParser implements Tokens {
             // parse name (before '=' character)
             int equalsignPos = attrTokens.indexOf('=', startPos);
             if (equalsignPos == -1) {
-                throw new GrailsTagException("Expecting '=' after attribute name", pageName, getCurrentOutputLineNumber());
+                throw new GrailsTagException("Expecting '=' after attribute name (" + attrTokens + ").", pageName, getCurrentOutputLineNumber());
             }
             String name = attrTokens.substring(startPos, equalsignPos).trim();
 
@@ -1147,14 +1148,14 @@ public class GroovyPageParser implements Tokens {
                 ch = attrTokens.charAt(startPos++);
             }
             if (!(ch=='\'' || ch=='"')) {
-                throw new GrailsTagException("Attribute value must be quoted.", pageName, getCurrentOutputLineNumber());
+                throw new GrailsTagException("Attribute value must be quoted (" + attrTokens + ").", pageName, getCurrentOutputLineNumber());
             }
             char quoteChar = ch;
 
             GroovyPageExpressionParser expressionParser = new GroovyPageExpressionParser(attrTokens, startPos, quoteChar, (char)0, false);
             int endQuotepos = expressionParser.parse();
             if (endQuotepos==-1) {
-                throw new GrailsTagException("Attribute value quote wasn't closed.", pageName, getCurrentOutputLineNumber());
+                throw new GrailsTagException("Attribute value quote wasn't closed (" + attrTokens + ").", pageName, getCurrentOutputLineNumber());
             }
 
             String val=attrTokens.substring(startPos, endQuotepos);
@@ -1168,11 +1169,11 @@ public class GroovyPageParser implements Tokens {
                 }
                 String quoteStr;
                 // use multiline groovy string if the value contains newlines
-                if(val.indexOf('\n')!=-1 || val.indexOf('\r')!=-1) {
-                    if(quoteChar=='"') {
-                        quoteStr=MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
+                if (val.indexOf('\n') != -1 || val.indexOf('\r') != -1) {
+                    if (quoteChar=='"') {
+                        quoteStr = MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
                     } else {
-                        quoteStr=MULTILINE_GROOVY_STRING_SINGLEQUOTES;
+                        quoteStr = MULTILINE_GROOVY_STRING_SINGLEQUOTES;
                     }
                 } else {
                     quoteStr = String.valueOf(quoteChar);

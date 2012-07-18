@@ -120,7 +120,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                         throw new GrailsQueryException("Named parameter's name must be of type String");
                     }
                     String parameterName = (String) entry.getKey();
-                    if(!QUERY_META_PARAMS.contains(parameterName)) {
+                    if (!QUERY_META_PARAMS.contains(parameterName)) {
                         Object parameterValue = entry.getValue();
                         if (parameterValue == null) {
                             throw new IllegalArgumentException("Named parameter [" + entry.getKey() + "] value may not be null");
@@ -162,7 +162,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         else if (arguments.length == 3) metaParamsIndex = 2;
         if (metaParamsIndex > 0) {
             Map sourceMap = (Map) arguments[metaParamsIndex];
-            for(String queryMetaParam : QUERY_META_PARAMS) {
+            for (String queryMetaParam : QUERY_META_PARAMS) {
                 if (sourceMap.containsKey(queryMetaParam)) {
                     result.put(queryMetaParam, sourceMap.get(queryMetaParam));
                 }

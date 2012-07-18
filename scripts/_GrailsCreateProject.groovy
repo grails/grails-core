@@ -40,10 +40,7 @@ target(createApp: "Creates a Grails application for the given name") {
     touch(file: metadataFile)
 
     // Set the default version number for the application
-    updateMetadata(
-        "app.version": grailsAppVersion ?: "0.1",
-        "app.servlet.version": servletVersion)
-
+    updateMetadata("app.version": grailsAppVersion ?: "0.1")
 
     event("StatusFinal", ["Created Grails Application at $basedir"])
 }

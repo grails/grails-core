@@ -1,7 +1,7 @@
 dependencies {
     runtime('ognl:ognl:2.7.3') {
-		transitive = false
-	}
+        transitive = false
+    }
     // Spring Web Flow
     compile("org.springframework.webflow:spring-binding:$springWebflowVersion") {
         transitive = false

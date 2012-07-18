@@ -23,12 +23,16 @@ import org.apache.ivy.core.module.descriptor.*;
 import org.apache.ivy.core.module.id.ArtifactId;
 import org.apache.ivy.core.module.id.ModuleId;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.apache.ivy.core.resolve.ResolveEngine;
 import org.apache.ivy.core.settings.IvySettings;
+import org.apache.ivy.plugins.parser.ModuleDescriptorParserRegistry;
 import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.apache.ivy.plugins.matcher.PatternMatcher;
-import org.apache.ivy.plugins.parser.m2.PomModuleDescriptorParser;
+import org.apache.ivy.util.Message;
+import org.apache.ivy.util.MessageLogger;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer;
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationContext;
+import org.codehaus.groovy.grails.resolve.maven.PomModuleDescriptorParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -138,18 +142,21 @@ public abstract class AbstractIvyDependencyManager {
     protected boolean hasApplicationDependencies = false;
     protected boolean readPom = false;
 
-    final protected IvySettings ivySettings;
-    final protected BuildSettings buildSettings;
-    final protected Metadata metadata;
+    protected final IvySettings ivySettings;
+    protected final BuildSettings buildSettings;
+    protected final Metadata metadata;
     private boolean offline;
 
     private ChainResolver chainResolver;
+    ResolveEngine resolveEngine;
+    MessageLogger logger;
 
     public AbstractIvyDependencyManager(IvySettings ivySettings, BuildSettings buildSettings, Metadata metadata) {
         this.ivySettings = ivySettings;
         this.buildSettings = buildSettings;
         this.metadata = metadata;
 
+        ModuleDescriptorParserRegistry.getInstance().addParser(org.codehaus.groovy.grails.resolve.maven.PomModuleDescriptorParser.getInstance());
         chainResolver = new ChainResolver();
 
         // Use the name cache because the root chain resolver is the one that is shown to have resolved the dependency
@@ -159,6 +166,23 @@ public abstract class AbstractIvyDependencyManager {
 
         chainResolver.setReturnFirst(true);
         updateChangingPattern();
+    }
+
+    public ResolveEngine getResolveEngine() {
+        return resolveEngine;
+    }
+
+    public void setResolveEngine(ResolveEngine resolveEngine) {
+        this.resolveEngine = resolveEngine;
+    }
+
+    public MessageLogger getLogger() {
+        return logger;
+    }
+
+    public void setLogger(MessageLogger logger) {
+        Message.setDefaultLogger(logger);
+        this.logger = logger;
     }
 
     public void setOffline(boolean offline) {
@@ -183,8 +207,20 @@ public abstract class AbstractIvyDependencyManager {
     }
 
     public void setChainResolver(ChainResolver chainResolver) {
+        resolveEngine.setDictatorResolver(chainResolver);
         this.chainResolver = chainResolver;
         updateChangingPattern();
+    }
+
+    public IvyDependencyManager createCopy(BuildSettings settings) {
+        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, settings);
+        copy.setOffline(isOffline());
+        copy.setChainResolver(getChainResolver());
+        copy.setResolveEngine(getResolveEngine());
+        if (getLogger() != null) {
+            copy.logger = getLogger();
+        }
+        return copy;
     }
 
     public boolean isOffline() {
@@ -245,7 +281,7 @@ public abstract class AbstractIvyDependencyManager {
     /**
      * Obtains a set of plugin dependency descriptors defined in the project
      */
-    Set<DependencyDescriptor> getPluginDependencyDescriptors() {
+    public Set<DependencyDescriptor> getPluginDependencyDescriptors() {
         return pluginDependencyDescriptors;
     }
 
@@ -291,7 +327,7 @@ public abstract class AbstractIvyDependencyManager {
      * Tests whether the given ModuleId is defined in the list of dependencies
      */
     boolean hasDependency(ModuleId mid) {
-        return modules.contains(mid);
+        return modules.contains(mid) || mid.getName().equals("grails-dependencies");
     }
 
     /**
@@ -337,7 +373,7 @@ public abstract class AbstractIvyDependencyManager {
      * Returns whether a plugin is transitive, ie whether its dependencies are resolved transitively
      *
      * @param pluginName The name of the plugin
-     * @return True if the plugin is transitive
+     * @return true if the plugin is transitive
      */
     public boolean isPluginTransitive(String pluginName) {
         DependencyDescriptor dd = pluginNameToDescriptorMap.get(pluginName);
@@ -347,7 +383,7 @@ public abstract class AbstractIvyDependencyManager {
     /**
      * Whether the plugin is directly included or a transitive dependency of another plugin
      * @param pluginName The plugin name
-     * @return True if is transitively included
+     * @return true if is transitively included
      */
     public boolean isPluginTransitivelyIncluded(String pluginName) {
         EnhancedDefaultDependencyDescriptor dd = (EnhancedDefaultDependencyDescriptor) pluginNameToDescriptorMap.get(pluginName);
@@ -416,6 +452,44 @@ public abstract class AbstractIvyDependencyManager {
 
         dependencyDescriptors.add(descriptor);
         if (shouldIncludeDependency(descriptor)) {
+            addToModuleDescriptor(scope, descriptor);
+        }
+    }
+
+    private boolean areSameLogicalDependency(ModuleRevisionId lhs, ModuleRevisionId rhs) {
+        return lhs.getModuleId().equals(rhs.getModuleId()) && lhs.getRevision().equals(rhs.getRevision());
+    }
+
+    private void addToModuleDescriptor(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        boolean foundDependency = false;
+        for (DependencyDescriptor existingDescriptor : moduleDescriptor.getDependencies()) {
+            if (existingDescriptor instanceof EnhancedDefaultDependencyDescriptor) {
+                EnhancedDefaultDependencyDescriptor existingEnhancedDefaultDependencyDescriptor = (EnhancedDefaultDependencyDescriptor) existingDescriptor;
+                if (!descriptor.getScope().equals(existingEnhancedDefaultDependencyDescriptor.getScope())) {
+                    continue;
+                }
+            }
+            if (areSameLogicalDependency(descriptor.getDependencyRevisionId(), existingDescriptor.getDependencyRevisionId())) {
+                foundDependency = true;
+                for (DependencyArtifactDescriptor artifactToAdd : descriptor.getAllDependencyArtifacts()) {
+                    boolean foundArtifact = false;
+                    for (DependencyArtifactDescriptor existingArtifact : existingDescriptor.getAllDependencyArtifacts()) {
+                        if (existingArtifact.equals(artifactToAdd)) {
+                            if (existingArtifact.getExtraAttributes().equals(artifactToAdd.getExtraAttributes())) {
+                                foundArtifact = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!foundArtifact) {
+                        ((DefaultDependencyDescriptor)existingDescriptor).addDependencyArtifact(scope, artifactToAdd);
+                    }
+                }
+                break;
+            }
+        }
+
+        if (!foundDependency) {
             moduleDescriptor.addDependency(descriptor);
         }
     }
@@ -437,31 +511,18 @@ public abstract class AbstractIvyDependencyManager {
         if (existing != null && descriptor.isTransitivelyIncluded()) {
             ModuleRevisionId dependencyRevisionId = existing.getDependencyRevisionId();
             if (dependencyRevisionId.equals(descriptor.getDependencyRevisionId())) return;
-            else if(descriptor.getPlugin() != null && (existing instanceof EnhancedDefaultDependencyDescriptor) && ((EnhancedDefaultDependencyDescriptor)existing).getPlugin() == null ) {
+            if (descriptor.getPlugin() != null && (existing instanceof EnhancedDefaultDependencyDescriptor) && ((EnhancedDefaultDependencyDescriptor)existing).getPlugin() == null) {
                 // if the descriptor is coming from a plugin and the dependency is already declared in an application then the one declared in the application takes priority
                 return;
             }
         }
-
-
-
-        String classifierAttribute = descriptor.getExtraAttribute("m:classifier");
-        String packaging;
-        if (classifierAttribute != null && classifierAttribute.equals("plugin")) {
-            packaging = "xml";
-        } else {
-            packaging = "zip";
-        }
-
-        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(descriptor, name, packaging, packaging, null, null);
-        descriptor.addDependencyArtifact(scope, artifact);
 
         registerDependencyCommon(scope, descriptor, true);
 
         pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
         if (shouldIncludeDependency(descriptor)) {
-            moduleDescriptor.addDependency(descriptor);
+            addToModuleDescriptor(scope, descriptor);
         }
     }
 
@@ -492,7 +553,7 @@ public abstract class AbstractIvyDependencyManager {
             setModuleDescriptor((DefaultModuleDescriptor)createModuleDescriptor());
         }
 
-        doParseDependencies(definition, null, NO_EXCLUDE_RULES);
+        doParseDependencies(definition, null, null, NO_EXCLUDE_RULES);
 
         // The dependency config can use the pom(Boolean) method to declare
         // that this project has a POM and it has the dependencies, which means
@@ -527,8 +588,8 @@ public abstract class AbstractIvyDependencyManager {
         if (moduleDescriptor == null) {
             throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies");
         }
-
-        doParseDependencies(definition, pluginName, NO_EXCLUDE_RULES);
+        String scope = getParentScope(pluginName);
+        doParseDependencies(definition, pluginName, scope, NO_EXCLUDE_RULES);
     }
 
     /**
@@ -546,7 +607,18 @@ public abstract class AbstractIvyDependencyManager {
             throw new IllegalStateException("Call parseDependencies(Closure) first to parse the application dependencies");
         }
 
-        doParseDependencies(definition, pluginName, excludeRules);
+        String scope = getParentScope(pluginName);
+
+        doParseDependencies(definition, pluginName, scope, excludeRules);
+    }
+
+    private String getParentScope(String pluginName) {
+        DependencyDescriptor pluginDependencyDescriptor = getPluginDependencyDescriptor(pluginName);
+        String scope = null;
+        if (pluginDependencyDescriptor instanceof EnhancedDefaultDependencyDescriptor) {
+            scope = ((EnhancedDefaultDependencyDescriptor)pluginDependencyDescriptor).getScope();
+        }
+        return scope;
     }
 
     /**
@@ -556,7 +628,7 @@ public abstract class AbstractIvyDependencyManager {
      *
      * @see EnhancedDefaultDependencyDescriptor#plugin
      */
-    private void doParseDependencies(Closure<?> definition, String pluginName, ExcludeRule[] excludeRules) {
+    private void doParseDependencies(Closure<?> definition, String pluginName, String scope, ExcludeRule[] excludeRules) {
         DependencyConfigurationContext context;
 
         // Temporary while we move all of the Groovy super class here
@@ -568,7 +640,8 @@ public abstract class AbstractIvyDependencyManager {
             context = DependencyConfigurationContext.forPlugin(dependencyManager, pluginName);
         }
 
-        context.setOffline(this.offline);
+        context.setOffline(offline);
+        context.setParentScope(scope);
         context.setExcludeRules(excludeRules);
 
         definition.setDelegate(new DependencyConfigurationConfigurer(context));
@@ -607,14 +680,13 @@ public abstract class AbstractIvyDependencyManager {
             return;
         }
 
-        if(!pluginDep && !"org.grails".equals(descriptor.getDependencyId().getOrganisation())) {
+        if (!pluginDep && !"org.grails".equals(descriptor.getDependencyId().getOrganisation())) {
             mappings = new ArrayList<String>(mappings);
 
-
-            if(includeJavadoc) {
+            if (includeJavadoc) {
                 mappings.add("javadoc");
             }
-            if(includeSource) {
+            if (includeSource) {
                 mappings.add("sources");
             }
         }
@@ -669,7 +741,6 @@ public abstract class AbstractIvyDependencyManager {
             return true;
         }
 
-
         ArtifactId aid = createExcludeArtifactId(dependencyName);
         return isExcludedFromPlugin(dd, aid);
     }
@@ -722,6 +793,7 @@ public abstract class AbstractIvyDependencyManager {
 
     private void registerPomDependency(DependencyDescriptor dependencyDescriptor) {
         ModuleRevisionId moduleRevisionId = dependencyDescriptor.getDependencyRevisionId();
+        moduleRevisionId = ModuleRevisionId.newInstance(moduleRevisionId.getOrganisation(), moduleRevisionId.getName(), moduleRevisionId.getRevision());
         ModuleId moduleId = moduleRevisionId.getModuleId();
         if (hasDependency(moduleId)) {
             return;
@@ -735,7 +807,19 @@ public abstract class AbstractIvyDependencyManager {
             enhancedDependencyDescriptor.addRuleForModuleId(excludedModule, scope);
         }
 
-        registerDependency(scope, enhancedDependencyDescriptor);
+        DependencyArtifactDescriptor[] allDependencyArtifacts = dependencyDescriptor.getAllDependencyArtifacts();
+        boolean isPlugin = false;
+        for (DependencyArtifactDescriptor dependencyArtifact : allDependencyArtifacts) {
+            if (dependencyArtifact.getType() != null && dependencyArtifact.getType().equals("zip")) {
+                isPlugin = true; break;
+            }
+        }
+        if (isPlugin) {
+            registerPluginDependency(scope, enhancedDependencyDescriptor);
+        }
+        else {
+            registerDependency(scope, enhancedDependencyDescriptor);
+        }
     }
 
     private void addMetadataPluginDependencies(Map<String, String> plugins) {

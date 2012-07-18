@@ -80,7 +80,7 @@ public abstract class AbstractGroovyPageBinding extends Binding {
         }
 
         public void putAll(Map m) {
-            for(Object entryObj : m.entrySet()) {
+            for (Object entryObj : m.entrySet()) {
                 Map.Entry entry=(Map.Entry)entryObj;
                 binding.setVariable(String.valueOf(entry.getKey()), entry.getValue());
             }
@@ -98,7 +98,7 @@ public abstract class AbstractGroovyPageBinding extends Binding {
         public Collection values() {
             Set<String> variableNames = binding.getVariableNames();
             Collection values = new ArrayList(variableNames.size());
-            for(String variable : variableNames) {
+            for (String variable : variableNames) {
                 values.add(binding.getVariable(variable));
             }
             return values;

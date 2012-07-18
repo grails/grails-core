@@ -25,7 +25,7 @@ class GroovyPageBindingTests extends GroovyTestCase {
         def shouldbe=[a:1,b:2,c:3,d:4]
         assertEquals(shouldbe, binding.getVariables())
         def copied=[:]
-        for(e in binding.getVariables().entrySet()) {
+        for (e in binding.getVariables().entrySet()) {
             copied.put(e.key, e.value)
         }
         assertEquals(shouldbe, copied)

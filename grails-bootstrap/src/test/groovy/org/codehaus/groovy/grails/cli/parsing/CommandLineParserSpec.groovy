@@ -26,12 +26,12 @@ class CommandLineParserSpec extends Specification {
 
     def cleanupSpec() {
         // reset grails.env and grails.env.default keys after running this spec
-        if(originalGrailsEnv != null) {
+        if (originalGrailsEnv != null) {
             System.setProperty(Environment.KEY, originalGrailsEnv)
         } else {
             System.clearProperty(Environment.KEY)
         }
-        if(originalGrailsEnvDefault != null) {
+        if (originalGrailsEnvDefault != null) {
             System.setProperty(Environment.DEFAULT, originalGrailsEnvDefault)
         } else {
             System.clearProperty(Environment.DEFAULT)
@@ -151,7 +151,7 @@ class CommandLineParserSpec extends Specification {
 
         then:
             String ls = System.getProperty("line.separator");
-            parser.helpMessage == "usage: grails [options] [command]${ls} -interactive-mode        Enabled interactive mode${ls} -version                 Shows the vesrion${ls}"
+            parser.optionsHelpMessage == "Available options:${ls} -interactive-mode        Enabled interactive mode${ls} -version                 Shows the vesrion${ls}"
     }
 
     // STRING tests

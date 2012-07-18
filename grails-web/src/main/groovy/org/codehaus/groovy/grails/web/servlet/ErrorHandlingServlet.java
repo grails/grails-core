@@ -18,9 +18,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collections;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.util.GrailsWebUtil;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
@@ -31,6 +33,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.beans.BeansException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -47,10 +50,24 @@ import org.springframework.web.servlet.ViewResolver;
  */
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
 
+    private static final String CONFIG_OPTION_GSP_ENCODING = "grails.views.gsp.encoding";
     private static final long serialVersionUID = 8792197458391395589L;
     private static final String GSP_SUFFIX = ".gsp";
     private static final String JSP_SUFFIX = ".jsp";
     private static final String TEXT_HTML = "text/html";
+    public static final String UTF_8 = "UTF-8";
+    private String defaultEncoding;
+
+    @Override
+    protected void initFrameworkServlet() throws ServletException, BeansException {
+        super.initFrameworkServlet();
+
+        final GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(getServletContext());
+        String encoding = (String) grailsApplication.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
+        if (encoding != null) {
+            defaultEncoding = encoding;
+        }
+    }
 
     @Override
     protected HttpServletRequest checkMultipart(HttpServletRequest request) throws MultipartException {
@@ -107,7 +124,6 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                 RequestContextHolder.setRequestAttributes(webRequest);
                 urlMappingInfo.configure(webRequest);
             }
-            request.setAttribute("com.opensymphony.sitemesh.APPLIED_ONCE", null);
 
             HttpServletResponse originalResponse = WrappedResponseHolder.getWrappedResponse();
 
@@ -123,7 +139,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                         View v;
                         try {
                             if (!response.isCommitted()) {
-                                response.setContentType(TEXT_HTML);
+                                response.setContentType("text/html;charset="+defaultEncoding);
                             }
                             v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
                             v.render(Collections.EMPTY_MAP, request, response);

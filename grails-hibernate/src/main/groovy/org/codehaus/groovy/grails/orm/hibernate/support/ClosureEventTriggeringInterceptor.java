@@ -86,6 +86,8 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     private ApplicationContext ctx;
     private Map<SessionFactory, HibernateDatastore> datastores;
 
+    private static final ThreadLocal<Boolean> insertActiveThreadLocal = new ThreadLocal<Boolean>();
+
     public ClosureEventTriggeringInterceptor() {
         try {
             markInterceptorDirtyMethod = ReflectionUtils.findMethod(AbstractSaveEventListener.class, "markInterceptorDirty", new Class[]{Object.class, EntityPersister.class, EventSource.class});
@@ -239,7 +241,6 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
         new ForeignKeys.Nullifier(entity, false, useIdentityColumn, source)
                 .nullifyTransientReferences(values, types);
-        new Nullability(source).checkNullability(values, persister, false);
 
         if (useIdentityColumn) {
             EntityIdentityInsertAction insert = new EntityIdentityInsertAction(
@@ -274,7 +275,6 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                     persister,
                     isVersionIncrementDisabled(),
                     false);
-            //source.getPersistenceContext().removeNonExist(new EntityKey(id, persister, source.getEntityMode()));
 
             if (!useIdentityColumn) {
                 source.getActionQueue().addAction(
@@ -289,5 +289,59 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
         }
 
         return id;
+    }
+
+    public static final void addNullabilityCheckerPreInsertEventListener(EventListeners listenerRegistry) {
+        PreInsertEventListener[] preListeners = listenerRegistry.getPreInsertEventListeners();
+
+        // Register the nullability check as the last PreInsertEventListener
+        if (preListeners == null) {
+            preListeners = new PreInsertEventListener[1];
+        } else {
+            PreInsertEventListener[] newPreListeners = new PreInsertEventListener[preListeners.length+1];
+            System.arraycopy(preListeners, 0, newPreListeners, 0, preListeners.length);
+            preListeners = newPreListeners;
+        }
+
+        preListeners[preListeners.length - 1] = NULLABILITY_CHECKER_INSTANCE;
+        listenerRegistry.setPreInsertEventListeners(preListeners);
+    }
+
+    private static final PreInsertEventListener NULLABILITY_CHECKER_INSTANCE = new NullabilityCheckerPreInsertEventListener();
+
+    @SuppressWarnings("serial")
+    private static class NullabilityCheckerPreInsertEventListener implements PreInsertEventListener {
+        @SuppressWarnings("deprecation")
+        public boolean onPreInsert(PreInsertEvent event) {
+            new Nullability(event.getSource()).checkNullability(event.getState(), event.getPersister(), false);
+            return false;
+        }
+    }
+
+    /**
+     * Prevents hitting the database for an extra check if the row exists in the database.
+     *
+     * ThreadLocal is used to pass the "insert:true" information to Hibernate.
+     *
+     * @see org.hibernate.event.def.AbstractSaveEventListener#getAssumedUnsaved()
+     */
+    @Override
+    protected Boolean getAssumedUnsaved() {
+        return insertActiveThreadLocal.get();
+    }
+
+    /**
+     * Called by org.codehaus.groovy.grails.orm.hibernate.metaclass.SavePersistentMethod's performInsert
+     * to set a ThreadLocal variable that determines the value for getAssumedUnsaved().
+     */
+    public static void markInsertActive() {
+        insertActiveThreadLocal.set(Boolean.TRUE);
+    }
+
+    /**
+     * Clears the ThreadLocal variable set by markInsertActive().
+     */
+    public static void resetInsertActive() {
+        insertActiveThreadLocal.remove();
     }
 }

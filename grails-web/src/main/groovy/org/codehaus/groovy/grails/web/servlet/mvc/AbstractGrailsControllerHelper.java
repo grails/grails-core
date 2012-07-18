@@ -18,7 +18,18 @@ package org.codehaus.groovy.grails.web.servlet.mvc;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.util.Proxy;
-import org.apache.commons.beanutils.BeanMap;
+
+import java.io.IOException;
+import java.security.AccessControlException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,16 +52,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.security.AccessControlException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * Processes Grails controller requests and responses.
@@ -138,7 +139,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         }
 
         String actionName = controllerClass.getMethodActionName(uri);
-        if(controllerClass.isFlowAction(actionName)) {
+        if (controllerClass.isFlowAction(actionName)) {
             // direct access to flow action not allowed
             return null;
         }
@@ -205,10 +206,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             // Step 6: get action from implementation
             Object action = retrieveAction(controller, actionName, response);
 
-                        // Step 7: process the action
+            // Step 7: process the action
             Object returnValue = null;
             try {
-                returnValue = handleAction(controller,action,request,response,params);
+                returnValue = handleAction(controller, action, request, response, params);
             }
             catch (Throwable t) {
                 String pluginName = GrailsPluginUtils.getPluginName(controller.getClass());

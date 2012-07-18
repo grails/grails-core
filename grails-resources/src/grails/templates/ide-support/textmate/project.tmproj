@@ -52,6 +52,10 @@
 			<key>sourceDirectory</key>
 			<string>web-app</string>
 		</dict>
+                <dict>
+                        <key>filename</key>
+                        <string>application.properties</string>
+                </dict>
 	</array>
 	<key>fileHierarchyDrawerWidth</key>
 	<integer>200</integer>

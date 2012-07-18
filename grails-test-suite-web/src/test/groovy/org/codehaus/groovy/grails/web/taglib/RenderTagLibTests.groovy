@@ -18,11 +18,14 @@ package org.codehaus.groovy.grails.web.taglib
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import com.opensymphony.module.sitemesh.RequestConstants
@@ -89,10 +92,10 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a><span class="step gap">..</span><a href="/book/list?offset=8&amp;max=2" class="step">5</a>', template
         assertOutputContains '<a href="/book/list?offset=12&amp;max=2" class="step">7</a><span class="step gap">..</span><a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
 
-	template = '<g:paginate  max="2" total="20" offset="4" maxsteps="3" controller="book" action="list" />'
+        template = '<g:paginate  max="2" total="20" offset="4" maxsteps="3" controller="book" action="list" />'
         assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a><a href="/book/list?offset=2&amp;max=2" class="step">2</a>', template
 
-	template = '<g:paginate  max="2" total="20" offset="14" maxsteps="3" controller="book" action="list" />'
+        template = '<g:paginate  max="2" total="20" offset="14" maxsteps="3" controller="book" action="list" />'
         assertOutputContains '<a href="/book/list?offset=16&amp;max=2" class="step">9</a><a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
     }
 
@@ -110,6 +113,28 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         template = '<g:pageProperty name="foo.bar" writeEntireProperty="true" />'
         assertOutputEquals " bar=\"good\"", template
+    }
+
+    void testIfPageProperty() {
+        def template = '<g:ifPageProperty name="foo.bar">Hello</g:ifPageProperty>'
+
+        TokenizedHTMLPage page = new TokenizedHTMLPage([] as char[], new CharArray(0), new CharArray(0))
+        request[RequestConstants.PAGE] = page
+
+        page.addProperty("foo.bar", "true")
+
+        assertOutputEquals "Hello", template
+
+        template = '<g:ifPageProperty name="page.contentbuffer">Hello 2</g:ifPageProperty>'
+
+        GSPSitemeshPage smpage = new GSPSitemeshPage()
+        request[RequestConstants.PAGE] = smpage
+
+        FastStringWriter sw=new FastStringWriter()
+        sw.write("true")
+        smpage.setContentBuffer("contentbuffer", sw.getBuffer())
+
+        assertOutputEquals "Hello 2", template
     }
 
     void testTemplateNamespace() {

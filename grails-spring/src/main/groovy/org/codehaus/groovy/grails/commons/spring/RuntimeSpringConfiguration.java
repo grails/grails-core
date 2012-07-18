@@ -154,7 +154,7 @@ public interface RuntimeSpringConfiguration {
      * Returns whether the runtime spring config contains the specified bean.
      *
      * @param name The bean name
-     * @return True if it does
+     * @return true if it does
      */
     boolean containsBean(String name);
 

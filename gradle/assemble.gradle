@@ -43,43 +43,40 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     }
 }
 
-task populateDependencies(type: Sync) {
-    into homeLibDir
-    includeEmptyDirs = false
+task configurePopulateDependencies << {
+    def projectNames = rootProject.subprojects*.name
 
-    grailsRepoCacheHash = "a5610c5703557b062da6cb64b3488b38"
-    eachFile { file -> file.path -= "$grailsRepoCacheHash/" }
+    ext {
+        baseCachesDir = "$gradle.gradleUserHomeDir/caches"
+        cacheDir = "$baseCachesDir/artifacts-8"
+        metadata = "$cacheDir/module-metadata"
+        filestore = "$cacheDir/filestore"
+    }
 
-    // Only configure this task if we are indeed going to run it because it forces a resolution of all of the subproject
-    // dependencies which is very costly and we want to avoid it if we aren't going to run this task. Because we do this
-    // after the task graph is ready we have to add the explicit dependency on the configurations as per above.
-    gradle.taskGraph.whenReady { taskGraph ->
-        if (taskGraph.hasTask(':populateDependencies')) {
-            def projectNames = rootProject.subprojects*.name
+    def seen = []
+    libsConfigurations.each { configuration ->
+        for (artifact in configuration.resolvedConfiguration.resolvedArtifacts) {
+            if (artifact in seen) continue
+            seen << artifact
+            def dependency = artifact.moduleVersion.id
+            if (!projectNames.contains(dependency.name)) {
+                populateDependencies.into("$dependency.group/$dependency.name/jars") {
+                    from artifact.file // this will trigger the actual download if necessary
+                }
 
-            baseCacheDir = "$gradle.gradleUserHomeDir/caches"
-            versionedCacheDir = "$baseCacheDir/artifacts-7/artifacts"
+                populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
+                    include "*.ivy.xml"
+                    eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
 
-            from versionedCacheDir
-            libsConfigurations.each { configuration ->
-                configuration.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-                    def dependency = artifact.moduleVersion.id
-
-                    // Force the download of the binary artifact
-                    // Gradle 1.0-milestone-7 will get the file until this is called with the way 
-                    // we are using the API.
-                    artifact.file
-
-                    if (!projectNames.contains(dependency.name)) {
-                        def base = "${grailsRepoCacheHash}/${dependency.group}/${dependency.name}/${dependency.version}"
-                        include "${base}/*-${dependency.version}.*"
-                        include "${base}/jar/${dependency.name}-${dependency.version}.jar"
-                        include "${base}/bundle/${dependency.name}-${dependency.version}.jar"
-                    }
                 }
             }
         }
     }
+}
+
+task populateDependencies(type: Sync, dependsOn: configurePopulateDependencies) {
+    into homeLibDir
+    includeEmptyDirs = false
 }
 
 // Can't use sync task here because this directory contains other things as well.
@@ -91,23 +88,25 @@ task sourcesJars(type: Sync) {
     from { sourcesFor(libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }.collect { it.transitive = false; it }) }
 }
 
-task pluginsFromSvn {
-    plugins = [
+task pluginsFromRepo {
+    ext.plugins = [
         hibernate: grailsVersion,
         tomcat: grailsVersion,
         resources: "1.1.6",
         webxml: "1.4.1",
-        jquery: "1.7.1"
+        jquery: "1.7.2",
+        'database-migration': "1.1",
+        cache: "1.0.0"
     ]
 
-    dir = file("$buildDir/pluginsFromSvn")
+    ext.dir = file("$buildDir/pluginsFromRepo")
     outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
     doFirst {
         ant {
             mkdir(dir: dir)
             plugins.each { name, version ->
                 def versionTag = version.replaceAll(/\./, '_').toUpperCase()
-                get(src: "http://plugins.grails.org/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
+                get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
                     dest: dir, verbose: true, usetimestamp: true)
             }
         }
@@ -115,7 +114,7 @@ task pluginsFromSvn {
 }
 
 task installResources(type: Copy) {
-    into projectDir // not actually used, but has to be set to something
+    into "$buildDir/home-dir" // not actually used, but has to be set to something
 
     into(homeLibDir.name) {
         from('grails-resources/src/grails/home/tests')
@@ -125,14 +124,22 @@ task installResources(type: Copy) {
     into(homeBinDir.name) {
         from("grails-resources/src/grails/home/bash")
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-        filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-        filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
+        filter(ReplaceTokens, tokens: ['starter.main.class': 'org.codehaus.groovy.grails.cli.support.GrailsStarter'])
+        filter(ReplaceTokens, tokens: ['windows.starter.classpath': "%GRAILS_HOME%\\lib\\org.codehaus.groovy\\groovy-all\\jars\\groovy-all-${groovyVersion}.jar;%GRAILS_HOME%\\dist\\grails-bootstrap-${grailsVersion}.jar".toString()])
+        filter(ReplaceTokens, tokens: ['starter.classpath': "\$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-${groovyVersion}.jar:\$GRAILS_HOME/dist/grails-bootstrap-${grailsVersion}.jar".toString()])
+        filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
+        filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:%GRAILS_HOME:\\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%".toString()])
+        filter(ReplaceTokens, tokens: ['startup.command': ''])
         fileMode = 0755
     }
 
     // the fileMode property above should take care of the chmod work, but
     // it doesn't per http://jira.codehaus.org/browse/GRADLE-971
     doLast {
+        ant.copy(todir:projectDir) {
+            fileset(dir:"$buildDir/home-dir")
+        }
+
         ant.chmod(dir: homeBinDir, perm: '755', includes: '*')
     }
 
@@ -196,7 +203,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         from(docs.destinationDir) {
             into "doc"
         }
-        from(pluginsFromSvn.outputs.files) {
+        from(pluginsFromRepo.outputs.files) {
             into "plugins"
             rename { it - "grails-" }
         }
@@ -210,8 +217,12 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         from("grails-resources/src/grails/home/bash") {
             into "bin"
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
-            filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
-            filter(ReplaceTokens, tokens: ['spring.loaded.version': springLoadedVersion])
+            filter(ReplaceTokens, tokens: ['starter.main.class': 'org.codehaus.groovy.grails.cli.support.GrailsStarter'])
+            filter(ReplaceTokens, tokens: ['windows.starter.classpath': "%GRAILS_HOME%\\lib\\org.codehaus.groovy\\groovy-all\\jars\\groovy-all-${groovyVersion}.jar;%GRAILS_HOME%\\dist\\grails-bootstrap-${grailsVersion}.jar".toString()])
+            filter(ReplaceTokens, tokens: ['starter.classpath': "\$GRAILS_HOME/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-${groovyVersion}.jar:\$GRAILS_HOME/dist/grails-bootstrap-${grailsVersion}.jar".toString()])
+            filter(ReplaceTokens, tokens: ['agent.string': "-javaagent:\$AGENT_GRAILS_HOME/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=\$SPRINGLOADED_PARAMS".toString()])
+            filter(ReplaceTokens, tokens: ['windows.agent.string': "-javaagent:%GRAILS_HOME:\\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-${springLoadedVersion}.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%".toString()])
+            filter(ReplaceTokens, tokens: ['startup.command': ''])
             fileMode = 0755
         }
         from("grails-resources/src/grails/home/conf") {
@@ -237,6 +248,7 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
         from("grails-resources/src/grails/grails-macros.xml") {
             into "src/grails"
             filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
+            filter(ReplaceTokens, tokens: ['groovy.version': groovyVersion])
         }
         from('grails-resources/src/grails/home/dsl-support') {
             into "dsl-support"

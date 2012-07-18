@@ -63,7 +63,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void validate(Object obj, Errors errors, boolean cascade) {
-        if (obj == null || !domainClass.getFullName().equals(obj.getClass().getName())) {
+        if (obj == null) {
             throw new IllegalArgumentException("Argument [" + obj + "] is not an instance of [" +
                     domainClass.getClazz() + "] which this validator is configured for");
         }
@@ -73,7 +73,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
         Map constrainedProperties = domainClass.getConstrainedProperties();
         Set<String> constrainedPropertyNames = new HashSet(constrainedProperties.keySet());
 
-        for(Object key : constrainedProperties.keySet()) {
+        for (Object key : constrainedProperties.keySet()) {
             String propertyName = (String) key;
             validatePropertyWithConstraint(propertyName, obj, errors, bean, constrainedProperties);
         }

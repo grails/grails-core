@@ -14,15 +14,19 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import grails.util.Environment;
 import grails.validation.ValidationErrors;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -49,6 +53,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 public class DataBindingUtils {
 
     private static final String BLANK = "";
+    private static final Map<Class, List> CLASS_TO_BINDING_INCLUDE_LIST = new ConcurrentHashMap<Class, List>();
 
     /**
      * Associations both sides of any bidirectional relationships found in the object and source map to bind
@@ -94,7 +99,32 @@ public class DataBindingUtils {
      * @return A BindingResult or null if it wasn't successful
      */
     public static BindingResult bindObjectToInstance(Object object, Object source) {
-        return bindObjectToInstance(object, source, Collections.EMPTY_LIST, Collections.EMPTY_LIST, null);
+        return bindObjectToInstance(object, source, getBindingIncludeList(object), Collections.EMPTY_LIST, null);
+    }
+
+    private static List getBindingIncludeList(final Object object) {
+        List includeList = Collections.EMPTY_LIST;
+        try {
+            final Class<? extends Object> objectClass = object.getClass();
+            if (CLASS_TO_BINDING_INCLUDE_LIST.containsKey(objectClass)) {
+                includeList = CLASS_TO_BINDING_INCLUDE_LIST.get(objectClass);
+            } else {
+                final Field whiteListField = objectClass.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST);
+                if (whiteListField != null) {
+                    if ((whiteListField.getModifiers() & Modifier.STATIC) != 0) {
+                         final Object whiteListValue = whiteListField.get(objectClass);
+                         if (whiteListValue instanceof List) {
+                             includeList = (List)whiteListValue;
+                         }
+                    }
+                }
+                if (!Environment.getCurrent().isReloadEnabled()) {
+                    CLASS_TO_BINDING_INCLUDE_LIST.put(objectClass, includeList);
+                }
+            }
+        } catch (Exception e) {
+        }
+        return includeList;
     }
 
     /**
@@ -109,7 +139,7 @@ public class DataBindingUtils {
      * @return A BindingResult or null if it wasn't successful
      */
     public static BindingResult bindObjectToDomainInstance(GrailsDomainClass domain, Object object, Object source) {
-        return bindObjectToDomainInstance(domain,object, source, Collections.EMPTY_LIST,Collections.EMPTY_LIST, null);
+        return bindObjectToDomainInstance(domain,object, source, getBindingIncludeList(object), Collections.EMPTY_LIST, null);
     }
 
     /**
@@ -124,6 +154,9 @@ public class DataBindingUtils {
      * @return A BindingResult or null if it wasn't successful
      */
     public static BindingResult bindObjectToInstance(Object object, Object source, List include, List exclude, String filter) {
+        if (include == null && exclude == null) {
+            include = getBindingIncludeList(object);
+        }
         GrailsApplication application = GrailsWebRequest.lookupApplication();
         GrailsDomainClass domain = null;
         if (application != null) {
@@ -261,7 +294,7 @@ public class DataBindingUtils {
 
     private static void includeExcludeFields(GrailsDataBinder dataBinder, List allowed, List disallowed) {
         updateAllowed(dataBinder, allowed);
-        updateDisallowed(dataBinder, disallowed);
+        updateDisallowed(dataBinder, allowed, disallowed);
     }
 
     @SuppressWarnings("unchecked")
@@ -279,14 +312,22 @@ public class DataBindingUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static void updateDisallowed(GrailsDataBinder binder, List disallowed) {
+    private static void updateDisallowed(GrailsDataBinder binder, List allowed, List disallowed) {
         if (disallowed == null) {
             return;
         }
 
         String[] currentDisallowed = binder.getDisallowedFields();
         List newDisallowed = new ArrayList(disallowed);
-        CollectionUtils.addAll(newDisallowed, currentDisallowed);
+        if (allowed == null) {
+            CollectionUtils.addAll(newDisallowed, currentDisallowed);
+        } else {
+            for (String s : currentDisallowed) {
+                if (!allowed.contains(s)) {
+                    newDisallowed.add(s);
+                }
+            }
+        }
         String[] value = new String[newDisallowed.size()];
         newDisallowed.toArray(value);
         binder.setDisallowedFields(value);

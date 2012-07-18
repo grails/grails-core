@@ -148,7 +148,6 @@ public class TagLibraryApi extends CommonWebApi {
         throw new MissingMethodException(methodName, instance.getClass(), args);
     }
 
-
     /**
      * Prpoerty missing implementation that looks up tag library namespaces or tags in the default namespace
      *
@@ -203,16 +202,16 @@ public class TagLibraryApi extends CommonWebApi {
     }
 
     @Autowired
-    public void setGspTagLibraryLookup(TagLibraryLookup gspTagLibraryLookup) {
-        this.tagLibraryLookup = gspTagLibraryLookup;
+    public void setGspTagLibraryLookup(TagLibraryLookup lookup) {
+        tagLibraryLookup = lookup;
     }
 
-    public void setTagLibraryLookup(TagLibraryLookup tagLibraryLookup) {
-        this.tagLibraryLookup = tagLibraryLookup;
+    public void setTagLibraryLookup(TagLibraryLookup lookup) {
+        tagLibraryLookup = lookup;
     }
 
     public TagLibraryLookup getTagLibraryLookup() {
-        if (this.tagLibraryLookup == null) {
+        if (tagLibraryLookup == null) {
             ApplicationContext applicationContext = getApplicationContext(null);
             if (applicationContext != null && applicationContext.containsBean("gspTagLibraryLookup")) {
                 tagLibraryLookup = applicationContext.getBean("gspTagLibraryLookup", TagLibraryLookup.class);

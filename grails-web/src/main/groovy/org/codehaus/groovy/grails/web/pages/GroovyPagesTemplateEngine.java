@@ -40,7 +40,7 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
-import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter;
+import org.codehaus.groovy.grails.exceptions.DefaultErrorsPrinter;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
@@ -52,7 +52,7 @@ import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -286,7 +286,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         GroovyPageMetaInfo meta = initializeCompiledMetaInfo(compiledScriptSource.getGroovyPageMetaInfo());
         if (isReloadEnabled()) {
             GroovyPageResourceScriptSource changedResourceScriptSource = compiledScriptSource.getReloadableScriptSource();
-            if(changedResourceScriptSource != null) {
+            if (changedResourceScriptSource != null) {
                 groovyPageLocator.removePrecompiledPage(compiledScriptSource);
                 return createTemplate(changedResourceScriptSource);
             }
@@ -475,7 +475,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
      *
      * @param resource The Resource to check.
      * @param meta The current GroovyPageMetaInfo instance
-     * @return True if it is reloadable
+     * @return true if it is reloadable
      */
     private boolean isGroovyPageReloadable(final Resource resource, GroovyPageMetaInfo meta) {
         return isReloadEnabled() && meta.shouldReload(new PrivilegedAction<Resource>() {
@@ -488,7 +488,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     /**
      * Return whether reload is enabled for the GroovyPagesTemplateEngine
      *
-     * @return True if it is
+     * @return true if it is
      */
     public boolean isReloadEnabled() {
         return reloadEnabled;
@@ -629,7 +629,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         // Compile the script into an object
         Class<?> scriptClass;
         try {
-            String groovySource = DefaultGroovyMethods.getText(in, GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING);
+            String groovySource = IOGroovyMethods.getText(in, GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING);
             //System.out.println(groovySource);
             scriptClass = groovyClassLoader.parseClass(groovySource, name);
         }
@@ -642,11 +642,11 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
             if (lineNumber>0 && lineNumber < lineMappings.length) {
                 lineNumber = lineMappings[lineNumber-1];
             }
-            String relativePageName = DefaultStackTracePrinter.makeRelativeIfPossible(pageName);
+            String relativePageName = DefaultErrorsPrinter.makeRelativeIfPossible(pageName);
             throw new GroovyPagesException("Could not parse script [" + relativePageName + "]: " + e.getMessage(),e, lineNumber, pageName);
         }
         catch (IOException e) {
-            String relativePageName = DefaultStackTracePrinter.makeRelativeIfPossible(pageName);
+            String relativePageName = DefaultErrorsPrinter.makeRelativeIfPossible(pageName);
             throw new GroovyPagesException("IO exception parsing script ["+ relativePageName + "]: " + e.getMessage(), e);
         }
         GroovyPagesMetaUtils.registerMethodMissingForGSP(scriptClass, tagLibraryLookup);

@@ -135,7 +135,7 @@ target(allTests: "Runs the project's tests.") {
     if (InteractiveMode.current && GrailsProjectWatcher.isReloadingAgentPresent()) {
         startPluginScanner()
     }
-    
+
     // Handle pre 1.2 style testing configuration
     def convertedPhases = [:]
     phasesToRun.each { phaseName ->
@@ -290,6 +290,7 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             def result = type.run(testEventPublisher)
             def end = new Date()
 
+            testCount = result.passCount + result.failCount
             grailsConsole.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${end.time - start.time}ms"
             grailsConsole.lastMessage = ""
 
@@ -325,7 +326,7 @@ unitTestPhaseCleanUp = {}
 /**
  * Initialises a persistence context and bootstraps the application.
  */
-def registryCleaner = new org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner()
+def registryCleaner = org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner.createAndRegister()
 
 integrationTestPhasePreparation = {
     GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
@@ -337,8 +338,8 @@ integrationTestPhasePreparation = {
     if (app.parentContext == null) {
         app.applicationContext = appCtx
     }
-    
-    if(projectWatcher) {
+
+    if (projectWatcher) {
         projectWatcher.pluginManager = pluginManager
     }
 
@@ -369,7 +370,7 @@ boolean notReloadingActive() {
  * Starts up the test server.
  */
 functionalTestPhasePreparation = {
-    GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)    
+    GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
     runningFunctionalTestsAgainstWar = testOptions.war
     runningFunctionalTestsInline = !runningFunctionalTestsAgainstWar && (!testOptions.containsKey('baseUrl') || testOptions.inline)
 
@@ -418,7 +419,6 @@ functionalTestPhaseCleanUp = {
     System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
     registryCleaner.clean()
     GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
-    
 }
 
 otherTestPhasePreparation = {}

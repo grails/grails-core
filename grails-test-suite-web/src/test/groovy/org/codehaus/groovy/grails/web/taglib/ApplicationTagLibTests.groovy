@@ -4,15 +4,11 @@ import grails.util.GrailsUtil
 
 import javax.servlet.http.Cookie
 
-import groovy.mock.interceptor.StubFor
-
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.springframework.mock.web.MockHttpServletResponse
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
@@ -182,6 +178,25 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:set var="e" value="${c.a}"/>${e?.b}'
         assertOutputEquals('', template, [c:[:]])
         assertOutputEquals('foo', template, [c:[a:[b:'foo']]])
+    }
+
+    void testSetTagWithScope() {
+        def template = '<g:set var="var1" value="1"/>${var1}<g:set var="var1" value="2"/> ${var1}<g:set var="var2" value="3" scope="request"/> ${var2}<g:set var="var2" value="4" scope="request"/> ${var2}'
+        assertOutputEquals('1 2 3 4', template)
+    }
+
+
+    void testSetTagWithBeanName() {
+        def template = '<g:set bean="grailsApplication" var="myVar"/>${myVar.initialised}'
+        assertOutputEquals('true', template)
+
+        template = '<g:set bean="grailsApplication" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
+        assertOutputEquals('true', template)
+    }
+
+    void testSetTagWithBeanType() {
+        def template = '<%@ page import="org.codehaus.groovy.grails.commons.*" %><g:set bean="${GrailsApplication}" var="myRequestVar" scope="request"/>${request.myRequestVar.initialised}'
+        assertOutputEquals('true', template)
     }
 
     void testIteration() {
@@ -402,12 +417,5 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
         template = '<g:external uri="/images/icons/iphone-icon.png" type="appleicon"/>'
         assertOutputEquals '<link href="/images/icons/iphone-icon.png" rel="apple-touch-icon"/>\r\n', template
-    }
-
-}
-
-class JsessionIdMockHttpServletResponse extends MockHttpServletResponse {
-    String encodeURL(String url) {
-        super.encodeURL("$url;jsessionid=test")
     }
 }

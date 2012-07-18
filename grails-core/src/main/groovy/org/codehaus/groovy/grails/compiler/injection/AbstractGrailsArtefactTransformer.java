@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.artefact.Enhanced;
 import grails.util.GrailsUtil;
+import groovy.lang.Mixin;
 
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -110,7 +111,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             else {
                 final ConstructorCallExpression constructorCallExpression = new ConstructorCallExpression(implementationNode, ZERO_ARGS);
                 FieldNode fieldNode = classNode.getField(apiInstanceProperty);
-                if(fieldNode == null || (Modifier.isPrivate(fieldNode.getModifiers()) && !fieldNode.getDeclaringClass().equals(classNode))) {
+                if (fieldNode == null || (Modifier.isPrivate(fieldNode.getModifiers()) && !fieldNode.getDeclaringClass().equals(classNode))) {
                     fieldNode = new FieldNode(apiInstanceProperty, PRIVATE_STATIC_MODIFIER,implementationNode, classNode,constructorCallExpression);
                     classNode.addField(fieldNode);
                 }
@@ -169,6 +170,14 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             final AnnotationNode annotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
             annotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
             classNode.addAnnotation(annotationNode);
+
+            AnnotationNode annotation = GrailsASTUtils.findAnnotation(classNode, Mixin.class);
+            if (annotation != null) {
+                Expression value = annotation.getMember("value");
+                if (value != null) {
+                    annotationNode.setMember("mixins", value);
+                }
+            }
         }
     }
 
@@ -184,7 +193,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         // if autowiring is required we add a default method that throws an exception
         // the method should be override via meta-programming in the Grails environment
         MethodNode lookupMethod = classNode.getMethod(lookupMethodName, ZERO_PARAMETERS);
-        if(lookupMethod == null) {
+        if (lookupMethod == null) {
             BlockStatement methodBody = new BlockStatement();
             lookupMethod = populateAutowiredApiLookupMethod(classNode, implementationNode, apiInstanceProperty, lookupMethodName, methodBody);
             classNode.addMethod(lookupMethod);

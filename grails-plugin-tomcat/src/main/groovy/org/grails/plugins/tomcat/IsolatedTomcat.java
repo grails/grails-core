@@ -15,14 +15,12 @@
  */
 package org.grails.plugins.tomcat;
 
+import javax.servlet.ServletException;
+
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
 import org.apache.coyote.http11.Http11NioProtocol;
-
-import javax.servlet.ServletException;
-import java.io.IOException;
-import java.net.ServerSocket;
 
 /**
  * An isolated version of Tomcat used to run Grails applications with run-war.
@@ -111,25 +109,7 @@ public class IsolatedTomcat {
         }
 
         final int serverPort = port;
-        new Thread(new Runnable() {
-            public void run() {
-                int killListenerPort = serverPort + 1;
-                ServerSocket serverSocket = createKillSwitch(killListenerPort);
-                if (serverSocket != null) {
-                    try {
-                        serverSocket.accept();
-                        try {
-                            tomcat.stop();
-                        } catch (LifecycleException e) {
-                            System.err.println("Error stopping Tomcat: " + e.getMessage());
-                            System.exit(1);
-                        }
-                    } catch (IOException e) {
-                        // just exit
-                    }
-                }
-            }
-        }).start();
+        startKillSwitch(tomcat, serverPort);
 
         try {
             tomcat.start();
@@ -142,12 +122,8 @@ public class IsolatedTomcat {
         }
     }
 
-    private static ServerSocket createKillSwitch(int killListenerPort) {
-        try {
-            return new ServerSocket(killListenerPort);
-        } catch (IOException e) {
-            return null;
-        }
+    public static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
+        new Thread(new TomcatKillSwitch(tomcat, serverPort)).start();
     }
 
     private static int argToNumber(String[] args, int i, int orDefault) {

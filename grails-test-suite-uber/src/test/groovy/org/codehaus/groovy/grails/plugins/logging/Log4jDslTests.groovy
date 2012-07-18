@@ -332,8 +332,39 @@ class Log4jDslTests extends GroovyTestCase {
         assert fa.name == 'fileSimple'
     }
 
+    void testPropertyMissing() {
+        shouldFail(MissingPropertyException) {
+            log4jConfig.nonExistentProp
+        }
+    }
+
+    void testPropertyMissingResortsToOwner() {
+
+        ConfigObject config = new ConfigSlurper().parse("""
+
+            configured.loggingRoot = 'configured/and/fake'
+
+            log4j = {
+                def loggingRoot = configured.loggingRoot
+                appenders {
+                    rollingFile name: 'quartz', file: "\${loggingRoot}/quartz.log"
+                }
+
+                debug quartz: 'org.quartz', additivity: false
+            }
+        """)
+
+        new Log4jConfig(config).configure(config.log4j)
+
+        Logger logger = Logger.getLogger('org.quartz')
+
+        Appender appender = logger.getAppender('quartz')
+        assert appender
+        assert "quartz" == appender.name
+        assert "configured/and/fake/quartz.log" == appender.file
+    }
+
     private void setEnv(String name) {
         System.setProperty Environment.KEY, name
-        //
     }
 }

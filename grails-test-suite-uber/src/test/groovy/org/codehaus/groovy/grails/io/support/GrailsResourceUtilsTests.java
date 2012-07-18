@@ -1,8 +1,6 @@
 package org.codehaus.groovy.grails.io.support;
 
 import junit.framework.TestCase;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletContext;
 

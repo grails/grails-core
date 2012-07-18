@@ -21,12 +21,12 @@ import java.util.regex.Pattern;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventTriggeringInterceptor;
+import org.hibernate.FlushMode;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.springframework.dao.DataAccessException;
 import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
 
 /**
  * Follows the semantics of saveOrUpdate of scheduling the object for persistence when a flush occurs.
@@ -57,14 +57,7 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 session.saveOrUpdate(target);
                 if (flush) {
-                    try {
-                        getHibernateTemplate().flush();
-                    }
-                    catch (DataAccessException e) {
-                        // session should not be flushed again after a data acccess exception!
-                        getHibernateTemplate().setFlushMode(HibernateTemplate.FLUSH_NEVER);
-                        throw e;
-                    }
+                    flushSession(session);
                 }
                 return target;
             }
@@ -75,19 +68,27 @@ public class SavePersistentMethod extends AbstractSavePersistentMethod {
     protected Object performInsert(final Object target, final boolean shouldFlush) {
         return getHibernateTemplate().execute(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
-                session.save(target);
-                if (shouldFlush) {
-                    try {
-                        getHibernateTemplate().flush();
+                try {
+                    ClosureEventTriggeringInterceptor.markInsertActive();
+                    session.save(target);
+                    if (shouldFlush) {
+                        flushSession(session);
                     }
-                    catch (DataAccessException e) {
-                        // session should not be flushed again after a data acccess exception!
-                        getHibernateTemplate().setFlushMode(HibernateTemplate.FLUSH_NEVER);
-                        throw e;
-                    }
+                    return target;
+                } finally {
+                    ClosureEventTriggeringInterceptor.resetInsertActive();
                 }
-                return target;
             }
         });
+    }
+
+    protected void flushSession(Session session) throws HibernateException {
+        try {
+            session.flush();
+        } catch (HibernateException e) {
+            // session should not be flushed again after a data acccess exception!
+            session.setFlushMode(FlushMode.MANUAL);
+            throw e;
+        }
     }
 }

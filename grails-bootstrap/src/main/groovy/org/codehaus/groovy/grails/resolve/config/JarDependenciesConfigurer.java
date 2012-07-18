@@ -24,6 +24,10 @@ public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
     @Override
     protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
+        DependencyConfigurationContext ctx = getContext();
+        if (ctx.getParentScope() != null) {
+            scope = ctx.getParentScope();
+        }
         getDependencyManager().registerDependency(scope, descriptor);
     }
 
@@ -35,5 +39,14 @@ public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
         else {
             descriptor.setExport(true);
         }
+    }
+
+    @Override
+    protected void addArtifacts(String scope, EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
+//        ModuleId dependencyId = dependencyDescriptor.getDependencyId();
+//        DependencyArtifactDescriptor artifact = new DefaultDependencyArtifactDescriptor(
+//                dependencyDescriptor, dependencyId.getName(), "jar", "jar", null, dependencyDescriptor.getExtraAttributes()
+//        );
+//        dependencyDescriptor.addDependencyArtifact(scope, artifact);
     }
 }

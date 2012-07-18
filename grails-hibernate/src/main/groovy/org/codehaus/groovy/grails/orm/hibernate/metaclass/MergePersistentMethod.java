@@ -60,7 +60,7 @@ public class MergePersistentMethod extends AbstractSavePersistentMethod {
                 session.lock(merged, LockMode.NONE);
 
                 if (flush) {
-                    getHibernateTemplate().flush();
+                    session.flush();
                 }
                 return merged;
             }

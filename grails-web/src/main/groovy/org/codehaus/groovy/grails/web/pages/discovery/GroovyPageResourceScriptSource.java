@@ -38,12 +38,11 @@ public class GroovyPageResourceScriptSource extends ResourceScriptSource impleme
         this.uri = uri;
         try {
             URL u = getResource().getURL();
-            if(u != null) {
-                String path = u.getPath();
-                isPublic = isPublicPath(path);
+            if (u == null) {
+                isPublic = isPublicPath(uri);
             }
             else {
-                isPublic = isPublicPath(uri);
+                isPublic = isPublicPath(u.getPath());
             }
         } catch (IOException e) {
             isPublic = isPublicPath(uri);

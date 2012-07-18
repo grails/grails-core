@@ -61,7 +61,7 @@ public interface GroovyPageLocator {
     /**
      * Removes any precompiled pages for the given URI so that they can be replaced by dynamic pages
      *
-     * @param uri The URI
+     * @param compiledScriptSource The compiled script source
      */
     void removePrecompiledPage(GroovyPageCompiledScriptSource compiledScriptSource);
 }

@@ -1,3 +1,4 @@
+*.swp
 /src
 /out
 /bin
@@ -59,10 +60,13 @@ target
 /grails-test-suite-base/bin/
 /grails-test-suite-persistence/bin/
 /grails-test-suite-uber/bin/
+/grails-test-suite-uber/configured/
 /grails-test-suite-web/bin/
 /grails-test/bin/
 /grails-web/bin/
 /grails-webflow/bin/
+/grails-wrapper/bin/
 /grails-plugin-log4j/bin/
 /grails-plugin-logging/bin/
 /grails-logging/bin/
+

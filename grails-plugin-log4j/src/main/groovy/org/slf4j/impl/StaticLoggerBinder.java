@@ -49,11 +49,7 @@ public class StaticLoggerBinder implements LoggerFactoryBinder {
      * The ILoggerFactory instance returned by the {@link #getLoggerFactory}
      * method should always be the same object
      */
-    private final ILoggerFactory loggerFactory;
-
-    private StaticLoggerBinder() {
-        this.loggerFactory = new GrailsSlf4jLoggerFactory();
-    }
+    private final ILoggerFactory loggerFactory = new GrailsSlf4jLoggerFactory();
 
     public ILoggerFactory getLoggerFactory() {
         return loggerFactory;

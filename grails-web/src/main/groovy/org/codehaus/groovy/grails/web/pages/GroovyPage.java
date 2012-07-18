@@ -47,6 +47,7 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
  * NOTE: Based on work done by on the GSP standalone project (https://gsp.dev.java.net/)
@@ -153,6 +154,10 @@ public abstract class GroovyPage extends Script {
         @Override
         public Object call(Object... args) {
             return retval;
+        }
+
+        public boolean asBoolean() {
+            return DefaultTypeTransformation.castToBoolean(retval);
         }
     }
 
@@ -323,7 +328,7 @@ public abstract class GroovyPage extends Script {
      * @param name  tag name
      * @return resolved tag if any
      */
-    public JspTag getJspTag(String uri, String name){
+    public JspTag getJspTag(String uri, String name) {
         if (jspTagLibraryResolver == null) {
             return null;
         }
@@ -608,7 +613,7 @@ public abstract class GroovyPage extends Script {
     }
 
     public final void createTagBody(int bodyClosureIndex, Closure<?> bodyClosure) {
-        GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure);
+        GroovyPageTagBody tagBody = new GroovyPageTagBody(this, webRequest, bodyClosure, true);
         setBodyClosure(bodyClosureIndex, tagBody);
     }
 

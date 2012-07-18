@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.MetaClass;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -29,10 +30,9 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.io.support.Resource;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.core.io.Resource;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -75,10 +75,10 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
 
     class PluginReadingPhaseOperation  extends CompilationUnit.PrimaryClassNodeOperation {
         private BasicGrailsPluginInfo pluginInfo;
-        private BeanWrapper wrapper;
+        private MetaClass pluginInfoMetaClass;
         public PluginReadingPhaseOperation(BasicGrailsPluginInfo pluginInfo) {
             this.pluginInfo = pluginInfo;
-            wrapper = new BeanWrapperImpl(pluginInfo);
+            pluginInfoMetaClass = pluginInfo.getMetaClass();
         }
 
         @Override
@@ -112,8 +112,9 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
                             value = expr.getText();
                         }
 
-                        if (wrapper.isWritableProperty(name)) {
-                                wrapper.setPropertyValue(name, value);
+
+                        if (DefaultGroovyMethods.hasProperty(pluginInfo, name) != null) {
+                            pluginInfoMetaClass.setProperty(pluginInfo,name, value);
                         }
                         else {
                             pluginInfo.setProperty(name, value);
@@ -131,7 +132,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
             classNode.visitContents(visitor);
             String className = classNode.getNameWithoutPackage();
 
-            wrapper.setPropertyValue("name", GrailsNameUtils.getPluginName(className + ".groovy"));
+            pluginInfoMetaClass.setProperty(pluginInfo, "name", GrailsNameUtils.getPluginName(className + ".groovy"));
         }
     }
 }

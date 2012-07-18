@@ -211,14 +211,14 @@ public class SnapshotAwareM2Resolver extends IBiblioResolver {
         return null;
     }
 
-    static private class SnapshotRevision {
+    private static class SnapshotRevision {
         public final String revision;
         public final String uniqueRevision;
         public final long lastModified;
 
         private SnapshotRevision(String revision, String uniqueRevisionSuffix, String lastModified) {
             this.revision = revision + "-SNAPSHOT";
-            this.uniqueRevision = revision + "-" + uniqueRevisionSuffix;
+            uniqueRevision = revision + "-" + uniqueRevisionSuffix;
             this.lastModified = calculateLastModified(lastModified);
         }
 

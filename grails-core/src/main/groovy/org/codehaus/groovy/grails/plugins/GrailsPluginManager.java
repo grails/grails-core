@@ -15,6 +15,12 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
+import java.io.File;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
@@ -23,12 +29,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.web.context.ServletContextAware;
-
-import java.io.File;
-import java.io.Writer;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 /**
  * <p>Handles the loading and management of plug-ins in the Grails system.
@@ -147,7 +147,7 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
     /**
      *
      * @param name The name of the plugin
-     * @return True if the the manager has a loaded plugin with the given name
+     * @return true if the the manager has a loaded plugin with the given name
      */
     boolean hasGrailsPlugin(String name);
 
@@ -242,7 +242,7 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      * Returns true if the given plugin supports the current BuildScope
      * @param pluginName The name of the plugin
      *
-     * @return True if the plugin supports the current build scope
+     * @return true if the plugin supports the current build scope
      * @see grails.util.BuildScope#getCurrent()
      */
     boolean supportsCurrentBuildScope(String pluginName);

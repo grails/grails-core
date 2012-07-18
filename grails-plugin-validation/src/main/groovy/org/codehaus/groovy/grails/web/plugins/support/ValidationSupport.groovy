@@ -34,20 +34,20 @@ class ValidationSupport {
             def ctx = null
 
             def sch = ServletContextHolder.servletContext
-            if(sch) {
+            if (sch) {
                 ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
             }
 
             def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
             def localErrors = new ValidationErrors(object, object.class.name)
             def originalErrors = object.errors
-            for(originalError in originalErrors.allErrors) {
-                if(originalErrors.getFieldError(originalError.field)?.bindingFailure) {
+            for (originalError in originalErrors.allErrors) {
+                if (originalErrors.getFieldError(originalError.field)?.bindingFailure) {
                     localErrors.rejectValue originalError.field, originalError.code, originalError.arguments, originalError.defaultMessage
                 }
             }
             for (prop in constraints.values()) {
-                if(fieldsToValidate == null || fieldsToValidate.contains(prop.propertyName)) {
+                if (fieldsToValidate == null || fieldsToValidate.contains(prop.propertyName)) {
                     prop.messageSource = messageSource
                     prop.validate(object, object.getProperty(prop.propertyName), localErrors)
                 }

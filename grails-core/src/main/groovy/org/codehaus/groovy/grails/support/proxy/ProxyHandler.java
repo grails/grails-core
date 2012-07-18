@@ -27,7 +27,7 @@ public interface ProxyHandler {
     /**
      * Returns true if the specified object is a proxy.
      * @param o The object in question
-     * @return True if it is a proxy
+     * @return true if it is a proxy
      */
     boolean isProxy(Object o);
 
@@ -43,7 +43,7 @@ public interface ProxyHandler {
      * Returns whether a lazy proxied instance has been initialized.
      *
      * @param o The instance to test
-     * @return True if it has been initialized false otherwise
+     * @return true if it has been initialized false otherwise
      */
     boolean isInitialized(Object o);
 
@@ -57,7 +57,7 @@ public interface ProxyHandler {
      * Tests whether an association of the given object has been initialized.
      * @param obj The object to check
      * @param associationName The association
-     * @return True if has been init
+     * @return true if has been init
      */
     boolean isInitialized(Object obj, String associationName);
 }

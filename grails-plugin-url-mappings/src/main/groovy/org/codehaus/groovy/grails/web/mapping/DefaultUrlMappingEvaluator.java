@@ -46,7 +46,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -107,7 +107,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         InputStream inputStream = null;
         try {
             inputStream = resource.getInputStream();
-            return evaluateMappings(classLoader.parseClass(DefaultGroovyMethods.getText(inputStream)));
+            return evaluateMappings(classLoader.parseClass(IOGroovyMethods.getText(inputStream)));
         }
         catch (IOException e) {
             throw new UrlMappingException("Unable to read mapping file [" + resource.getFilename() + "]: " + e.getMessage(), e);
@@ -383,11 +383,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
                         }
 
-                        if(binding != null) {
+                        if (binding != null) {
                             Map bindingVariables = binding.getVariables();
-                            Object parseRequest = getParseRequest(Collections.EMPTY_MAP,bindingVariables);
-                            if(parseRequest instanceof Boolean) {
-                                urlMapping.setParseRequest((Boolean)parseRequest);
+                            Object parse = getParseRequest(Collections.EMPTY_MAP, bindingVariables);
+                            if (parse instanceof Boolean) {
+                                urlMapping.setParseRequest((Boolean)parse);
                             }
                         }
                         configureUrlMapping(urlMapping);

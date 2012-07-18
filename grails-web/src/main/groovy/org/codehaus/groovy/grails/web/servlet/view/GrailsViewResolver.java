@@ -77,7 +77,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     @Override
     protected View loadView(String viewName, Locale locale) throws Exception {
         Assert.notNull(templateEngine, "Property [templateEngine] cannot be null");
-        if(viewName.endsWith(GSP_SUFFIX)) {
+        if (viewName.endsWith(GSP_SUFFIX)) {
             viewName = viewName.substring(0, viewName.length() - GSP_SUFFIX.length());
         }
 
@@ -102,8 +102,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         };
 
         View view=null;
-
-        if(entry==null) {
+        if (entry == null) {
             try {
                 view = updater.run();
             } catch (WrappedInitializationException e) {

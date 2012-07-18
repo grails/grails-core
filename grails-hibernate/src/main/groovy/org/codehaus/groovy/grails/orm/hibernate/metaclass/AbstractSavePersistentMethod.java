@@ -28,7 +28,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
@@ -67,12 +72,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * the value. Note that this only works because the session is
      * flushed when a domain instance is saved without validation.
      */
-    private static ThreadLocal<Set<Integer>> disableAutoValidationFor = new ThreadLocal<Set<Integer>>() {
-        @Override
-        protected Set<Integer> initialValue() {
-            return new HashSet<Integer>();
-        }
-    };
+    private static ThreadLocal<Set<Integer>> disableAutoValidationFor = new ThreadLocal<Set<Integer>>();
 
     static {
         ShutdownOperations.addOperation(new Runnable() {
@@ -82,17 +82,24 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         });
     }
 
-    public static boolean isAutoValidationDisabled(Object obj) {
+    private static Set<Integer> getDisableAutoValidationFor() {
         Set<Integer> identifiers = disableAutoValidationFor.get();
+        if (identifiers == null)
+            disableAutoValidationFor.set(identifiers = new HashSet<Integer>());
+        return identifiers;
+    }
+
+    public static boolean isAutoValidationDisabled(Object obj) {
+        Set<Integer> identifiers = getDisableAutoValidationFor();
         return obj != null && identifiers.contains(System.identityHashCode(obj));
     }
 
     public static void clearDisabledValidations(Object obj) {
-        disableAutoValidationFor.get().remove(System.identityHashCode(obj));
+        getDisableAutoValidationFor().remove(System.identityHashCode(obj));
     }
 
     public static void clearDisabledValidations() {
-        disableAutoValidationFor.get().clear();
+        getDisableAutoValidationFor().clear();
     }
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
@@ -143,7 +150,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         if (shouldValidate) {
             Validator validator = domainClass.getValidator();
 
-            if(domainClass instanceof DefaultGrailsDomainClass) {
+            if (domainClass instanceof DefaultGrailsDomainClass) {
                 GrailsHibernateUtil.autoAssociateBidirectionalOneToOnes((DefaultGrailsDomainClass) domainClass, target);
             }
             Errors errors = setupErrorsProperty(target);
@@ -174,7 +181,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
                 }
 
                 if (errors.hasErrors()) {
-                    handleValidationError(target,errors);
+                    handleValidationError(domainClass,target,errors);
                     boolean shouldFail = shouldFail(application, domainClass);
                     if (argsMap != null && argsMap.containsKey(ARGUMENT_FAIL_ON_ERROR)) {
                         shouldFail = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FAIL_ON_ERROR, argsMap);
@@ -197,7 +204,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         }
 
         if (!shouldValidate) {
-            Set<Integer> identifiers = disableAutoValidationFor.get();
+            Set<Integer> identifiers = getDisableAutoValidationFor();
             identifiers.add(System.identityHashCode(target));
         }
 
@@ -278,13 +285,27 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * if a validation error occurs. If save() is called again and validation passes the code will check if there
      * is a manual flush mode and flush manually if necessary
      *
+     * @param domainClass The domain class
      * @param target The target object that failed validation
-     * @param errors The Errors instance
-     * @return This method will return null signaling a validation failure
+     * @param errors The Errors instance  @return This method will return null signaling a validation failure
      */
-    protected Object handleValidationError(final Object target, Errors errors) {
+    protected Object handleValidationError(GrailsDomainClass domainClass, final Object target, Errors errors) {
         // if a validation error occurs set the object to read-only to prevent a flush
         setObjectToReadOnly(target);
+        if (domainClass instanceof DefaultGrailsDomainClass) {
+            DefaultGrailsDomainClass dgdc = (DefaultGrailsDomainClass) domainClass;
+            List<GrailsDomainClassProperty> associations = dgdc.getAssociations();
+            for (GrailsDomainClassProperty association : associations) {
+                if (association.isOneToOne() || association.isManyToOne()) {
+                    BeanWrapper bean = new BeanWrapperImpl(target);
+                    Object propertyValue = bean.getPropertyValue(association.getName());
+                    if (propertyValue != null) {
+                        setObjectToReadOnly(propertyValue);
+                    }
+
+                }
+            }
+        }
         setErrorsOnInstance(target, errors);
         return null;
     }
@@ -307,7 +328,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
 
     /**
      * Checks whether validation should be performed
-     * @return True if the domain class should be validated
+     * @return true if the domain class should be validated
      * @param arguments  The arguments to the validate method
      * @param domainClass The domain class
      */
@@ -344,7 +365,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
      * @param shouldFlush Whether to flush
      * @return The target object
      */
-    abstract protected Object performSave(Object target, boolean shouldFlush);
+    protected abstract Object performSave(Object target, boolean shouldFlush);
 
     /**
      * Subclasses should override and perform an insert operation, flushing the session if the second argument is true

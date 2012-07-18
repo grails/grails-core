@@ -136,6 +136,9 @@ public class GrailsFlashScope implements FlashScope {
         if (next.containsKey(key)) {
             return next.get(key);
         }
+        if ("now".equals(key)) {
+            return getNow();
+        }
         return current.get(key);
     }
 

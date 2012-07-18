@@ -23,6 +23,8 @@
  */
 
 import grails.util.GrailsNameUtils
+import grails.util.Environment
+import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 
 includeTargets << grailsScript("_GrailsInit")
 
@@ -75,17 +77,24 @@ target ('default' : "Prints out the help for each script") {
     else {
         println """
 Usage (optionals marked with *):
-grails [environment]* [target] [arguments]*
+grails [environment]* [options]* [target] [arguments]*
 
 Examples:
 grails dev run-app
 grails create-app books
 
+"""
+        println GrailsScriptRunner.commandLineParser.optionsHelpMessage
+        println """
 Available Targets (type grails help 'target-name' for more info):"""
 
         scripts.unique { it.name }. sort{ it.name }.each { file ->
             def scriptName = GrailsNameUtils.getScriptName(file.name)
-            println "grails ${scriptName}"
+            if (System.getProperty(Environment.INTERACTIVE_MODE_ENABLED)) {
+                println scriptName
+            } else {
+                println "grails ${scriptName}"
+            }
         }
     }
 }

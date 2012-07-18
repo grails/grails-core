@@ -16,19 +16,16 @@ package grails.test;
 
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
-import grails.util.PluginBuildSettings;
 import groovy.util.GroovyTestSuite;
-import junit.framework.Test;
-import junit.textui.TestRunner;
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
-import org.springframework.core.io.Resource;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import junit.framework.Test;
+import junit.textui.TestRunner;
+
+import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 
 /**
  *
@@ -45,14 +42,15 @@ import java.util.List;
  *
  * @author Graeme Rocher
  * @author Lari Hotari
- * @since 1.1
  *
+ * @deprecated
+ * @since 1.1
  */
+@Deprecated
 public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
 
     private GrailsAwareClassLoader gcl;
     private BuildSettings grailsSettings;
-    private PluginBuildSettings pluginSettings;
     protected boolean registerContextClassLoader = true;
 
     /**
@@ -68,7 +66,6 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
 
     private void createClassLoader() {
         gcl = new GrailsAwareClassLoader(getClass().getClassLoader());
-        gcl.setResourceLoader(new GrailsResourceLoader(resolveGrailsResources()));
         customizeClassLoader(gcl);
     }
 
@@ -80,14 +77,7 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
         // do nothing by default
     }
 
-    private Resource[] resolveGrailsResources() {
-        Resource[] baseResources = pluginSettings.getArtefactResources();
-        List<Resource> grailsResources = new ArrayList<Resource>(Arrays.asList(baseResources));
-        customizeGrailsResources(grailsResources);
-        return grailsResources.toArray(new Resource[grailsResources.size()]);
-    }
-
-    protected void customizeGrailsResources(@SuppressWarnings("unused") List<Resource> grailsResources) {
+    protected void customizeGrailsResources(@SuppressWarnings("unused") List<org.codehaus.groovy.grails.io.support.Resource> grailsResources) {
         // do nothing by default
     }
 
@@ -96,7 +86,6 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
         final File grailsHome = findGrailsHome();
         System.setProperty(BuildSettings.APP_BASE_DIR, basedir.getPath());
         grailsSettings = new BuildSettings(grailsHome, basedir);
-        pluginSettings = new PluginBuildSettings(grailsSettings);
         customizeBuildSettings(grailsSettings);
         BuildSettingsHolder.setSettings(grailsSettings);
     }

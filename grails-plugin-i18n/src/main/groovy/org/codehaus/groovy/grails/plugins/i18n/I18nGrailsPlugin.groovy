@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 
 import org.springframework.core.io.ContextResource
+import org.springframework.core.io.Resource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
@@ -113,6 +114,40 @@ class I18nGrailsPlugin {
         localeResolver(SessionLocaleResolver)
     }
 
+    def isChildOfFile(File child, File parent) {
+        def currentFile = child.canonicalFile
+        while(currentFile != null) {
+            if (currentFile == parent) {
+                return true
+            }
+            currentFile = currentFile.parentFile
+        }
+        return false
+    }
+
+    def relativePath(File relbase, File file) {
+        def pathParts = []
+        def currentFile = file
+        while (currentFile != null && currentFile != relbase) {
+            pathParts += currentFile.name
+            currentFile = currentFile.parentFile
+        }
+        pathParts.reverse().join('/')
+    }
+
+    def findGrailsPluginDir(File propertiesFile) {
+        File currentFile = propertiesFile.canonicalFile
+        File previousFile = null
+        while (currentFile != null) {
+            if (currentFile.name == 'grails-app' && previousFile?.name == 'i18n') {
+                return currentFile.parentFile
+            }
+            previousFile = currentFile
+            currentFile = currentFile.parentFile
+        }
+        null
+    }
+
     def onChange = { event ->
         def context = event.ctx
         if (!context) {
@@ -121,22 +156,54 @@ class I18nGrailsPlugin {
         }
 
         def resourcesDir = BuildSettingsHolder?.settings?.resourcesDir?.path
-        if (resourcesDir) {
-            String i18nDir = "${resourcesDir}/grails-app/i18n"
-
-            def ant = new GrailsConsoleAntBuilder()
-
+        if (resourcesDir && event.source instanceof Resource) {
+            def eventFile = event.source.file.canonicalFile
             def nativeascii = event.application.config.grails.enable.native2ascii
             nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
-            if (nativeascii) {
-                ant.native2ascii(src:"./grails-app/i18n",
-                                 dest:i18nDir,
-                                 includes:"*.properties",
-                                 encoding:"UTF-8")
-            }
-            else {
-                ant.copy(todir:i18nDir) {
-                    fileset(dir:"./grails-app/i18n", includes:"*.properties")
+            def ant = new GrailsConsoleAntBuilder()
+            File appI18nDir = new File("./grails-app/i18n").canonicalFile
+            if (isChildOfFile(eventFile, appI18nDir)) {
+                String i18nDir = "${resourcesDir}/grails-app/i18n"
+
+                def eventFileRelative = relativePath(appI18nDir, eventFile)
+
+                if (nativeascii) {
+                    ant.native2ascii(src:"./grails-app/i18n",
+                                     dest:i18nDir,
+                                     includes:eventFileRelative,
+                                     encoding:"UTF-8")
+                }
+                else {
+                    ant.copy(todir:i18nDir) {
+                        fileset(dir:"./grails-app/i18n", includes:eventFileRelative)
+                    }
+                }
+            } else {
+                def pluginDir = findGrailsPluginDir(eventFile)
+
+                if (pluginDir) {
+                    def info = event.manager.userPlugins.find { plugin ->
+                        plugin.pluginDir?.file?.canonicalFile == pluginDir
+                    }
+
+                    if (info) {
+                        def pluginI18nDir = new File(pluginDir, "grails-app/i18n")
+                        def eventFileRelative = relativePath(pluginI18nDir, eventFile)
+
+                        def destDir = "${resourcesDir}/plugins/${info.fileSystemName}/grails-app/i18n"
+
+                        ant.mkdir(dir: destDir)
+                        if (nativeascii) {
+                            ant.native2ascii(src: pluginI18nDir.absolutePath,
+                                    dest: destDir,
+                                    includes: eventFileRelative,
+                                    encoding: "UTF-8")
+                        } else {
+                            ant.copy(todir:destDir) {
+                                fileset(dir:pluginI18nDir.absolutePath, includes:eventFileRelative)
+                            }
+                        }
+                    }
                 }
             }
         }

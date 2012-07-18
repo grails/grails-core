@@ -18,6 +18,19 @@ package org.codehaus.groovy.grails.web.pages.discovery;
 
 import grails.util.CollectionUtils;
 import grails.util.Environment;
+
+import java.security.PrivilegedAction;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import javax.servlet.ServletContext;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
@@ -35,18 +48,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.support.ServletContextResourceLoader;
-
-import javax.servlet.ServletContext;
-
-import java.security.PrivilegedAction;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Used to locate GSPs whether in development or WAR deployed mode from static
@@ -80,7 +81,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     }
 
     public void setPrecompiledGspMap(Map<String, String> precompiledGspMap) {
-        if(precompiledGspMap != null) {
+        if (precompiledGspMap != null) {
             this.precompiledGspMap = new ConcurrentHashMap<String, String>(precompiledGspMap);
         } else {
             this.precompiledGspMap = null;
@@ -171,7 +172,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
 
     protected GroovyPageCompiledScriptSource createGroovyPageCompiledScriptSource(final String uri, String fullPath, Class<?> viewClass) {
         GroovyPageCompiledScriptSource scriptSource = new GroovyPageCompiledScriptSource(uri, fullPath,viewClass);
-        if(reloadEnabled) {
+        if (reloadEnabled) {
             scriptSource.setResourceCallable(new PrivilegedAction<Resource>() {
                 public Resource run() {
                     return findReloadablePage(uri);
@@ -191,7 +192,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
                 continue;
             }
             GroovyPageScriptSource scriptSource = resolveViewInBinaryPlugin((BinaryGrailsPlugin) plugin, uri);
-            if(scriptSource != null) {
+            if (scriptSource != null) {
                 return scriptSource;
             }
         }
@@ -251,7 +252,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     }
 
     protected String removePrefix(String uri, String prefix) {
-        if(uri.startsWith(prefix)) {
+        if (uri.startsWith(prefix)) {
             uri = uri.substring(prefix.length());
         }
         return uri;
@@ -312,8 +313,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         }
 
         Resource foundResource = findResource(searchPaths);
-
-        return foundResource != null ? new GroovyPageResourceScriptSource(uri,foundResource) : null;
+        return foundResource == null ? null : new GroovyPageResourceScriptSource(uri,foundResource);
     }
 
     protected Resource findResource(String uri) {
@@ -364,7 +364,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
         public PluginViewPathInfo(String uri) {
             basePath = uri.substring(PLUGINS_PATH.length(), uri.length());
             int i = basePath.indexOf("/");
-            if(i > -1) {
+            if (i > -1) {
                 pluginName = basePath.substring(0,i);
                 path = basePath.substring(i, basePath.length());
             }

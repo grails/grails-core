@@ -121,7 +121,7 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
 
     private GrailsContentBufferingResponse getContentBufferingResponse(HttpServletResponse response) {
         while(response instanceof HttpServletResponseWrapper) {
-            if(response instanceof GrailsContentBufferingResponse) {
+            if (response instanceof GrailsContentBufferingResponse) {
                 return (GrailsContentBufferingResponse) response;
             }
             response = (HttpServletResponse) ((HttpServletResponseWrapper) response).getResponse();
@@ -131,7 +131,7 @@ public class GrailsOpenSessionInViewInterceptor extends OpenSessionInViewInterce
 
     @Override
     protected void flushIfNecessary(Session session, boolean existingTransaction) throws HibernateException {
-        if (session != null && session.getFlushMode() != FlushMode.MANUAL) {
+        if (session != null && !FlushMode.isManualFlushMode(session.getFlushMode())) {
             super.flushIfNecessary(session, existingTransaction);
         }
     }

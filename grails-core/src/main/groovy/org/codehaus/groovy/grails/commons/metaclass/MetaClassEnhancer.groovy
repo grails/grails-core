@@ -31,7 +31,7 @@ class MetaClassEnhancer extends BaseApiProvider {
 
     void enhance(MetaClass metaClass) {
         def cls = metaClass.theClass
-        for(c in constructors) {
+        for (c in constructors) {
             def method = c
             def paramTypes = method.parameterTypes.length == 1 ? [] : method.parameterTypes[1..-1] as Class[]
             metaClass.constructor = new Closure(this) {

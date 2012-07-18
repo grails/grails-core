@@ -18,10 +18,20 @@ import grails.artefact.ApiDelegate
 import grails.converters.JSON
 import grails.converters.XML
 
+import javax.servlet.AsyncContext
+import javax.servlet.AsyncEvent
+import javax.servlet.AsyncListener
+import javax.servlet.DispatcherType
+import javax.servlet.ServletContext
+import javax.servlet.ServletRequest
+import javax.servlet.ServletResponse
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.Part
 
 import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
@@ -41,7 +51,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     @ApiDelegate(HttpServletRequest) RequestMimeTypesApi requestMimeTypesApi = new RequestMimeTypesApi()
 
     boolean invalidToken
-    MultiValueMap<String, MultipartFile> multipartFiles = new LinkedMultiValueMap<String, MultipartFile>();
+    MultiValueMap multipartFiles = new LinkedMultiValueMap<String, MultipartFile>();
 
     private Map<String, String> multipartContentTypes = Collections.emptyMap();
     private Map<String, HttpHeaders> multipartHeaders = Collections.emptyMap();
@@ -51,6 +61,8 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
 
     private cachedJson
     private cachedXml
+    DispatcherType dispatcherType;
+    AsyncContext asyncContext;
 
     /**
      * Sets the request format to use
@@ -379,5 +391,148 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
 
     HttpMethod setRequestMethod(HttpMethod method) {
         requestMethod = method;
+    }
+
+    Collection<Part> getParts() {
+        getFileMap().values().collect {new MockPart(it)}
+    }
+
+    Part getPart(String name) {
+        MultipartFile file = getFile(name)
+        if (file) {
+            return new MockPart(file)
+        }
+    }
+
+    AsyncContext startAsync() {
+        def webRequest = GrailsWebRequest.lookup()
+        def response = webRequest?.currentResponse
+        if (response == null) {
+            response = new GrailsMockHttpServletResponse()
+        }
+        startAsync(this,response)
+    }
+
+    AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) {
+        return new MockAsyncContext(servletRequest, servletResponse)
+    }
+
+    boolean isAsyncStarted() { asyncContext != null }
+
+    boolean isAsyncSupported() { true }
+
+}
+
+class MockPart implements Part {
+
+    MultipartFile file
+    MultiValueMap<String, String> headers = new LinkedMultiValueMap<String, String>()
+
+    MockPart(MultipartFile file) {
+        this.file = file
+    }
+
+
+    InputStream getInputStream() {
+        file.inputStream
+    }
+
+    String getContentType() {
+        file.contentType
+    }
+
+    String getName() {
+        file.name
+    }
+
+    long getSize() {
+        file.size
+    }
+
+    void write(String fileName) {
+        file.transferTo(new File(fileName))
+    }
+
+    void delete() {
+        // no-op
+    }
+
+    String getHeader(String name) {
+        return headers.getFirst(name)
+    }
+
+    Collection<String> getHeaders(String name) {
+        return headers[name]
+    }
+
+    Collection<String> getHeaderNames() {
+        return headers.keySet()
+    }
+}
+
+class MockAsyncContext implements AsyncContext {
+
+    ServletRequest request
+    ServletResponse response
+    String dispatchUri
+    long timeout = -1
+    List asyncListeners = []
+
+    MockAsyncContext(HttpServletRequest request, HttpServletResponse response) {
+        this.request = request
+        this.response = response
+    }
+
+    boolean hasOriginalRequestAndResponse() {
+        return true
+    }
+
+    void dispatch() {
+        dispatchUri = request.requestURI
+    }
+
+    void dispatch(String path) {
+        dispatchUri = path
+    }
+
+    void dispatch(ServletContext context, String path) {
+        dispatchUri = path
+    }
+
+    void complete() {
+        // no op
+    }
+
+    void start(Runnable run) {
+        try {
+            for (listener in asyncListeners) {
+                AsyncListener al = listener.listener
+                al.onStartAsync(listener.event)
+            }
+            run.run()
+            for (listener in asyncListeners) {
+                AsyncListener al = listener.listener
+                al.onComplete(listener.event)
+            }
+
+        } catch (e) {
+            for (listener in asyncListeners) {
+                AsyncListener al = listener.listener
+                al.onError(new AsyncEvent(this, e))
+            }
+
+        }
+    }
+
+    void addListener(AsyncListener listener) {
+        asyncListeners << [listener:listener, event:new AsyncEvent(this, request, response)]
+    }
+
+    void addListener(AsyncListener listener, ServletRequest servletRequest, ServletResponse servletResponse) {
+        asyncListeners << [listener:listener, event:new AsyncEvent(this, servletRequest, servletResponse)]
+    }
+
+    def <T extends AsyncListener> T createListener(Class<T> clazz) {
+        return clazz.newInstance()
     }
 }

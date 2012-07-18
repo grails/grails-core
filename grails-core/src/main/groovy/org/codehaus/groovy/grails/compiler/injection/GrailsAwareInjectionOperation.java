@@ -55,7 +55,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     public GrailsAwareInjectionOperation(ClassInjector[] classInjectors) {
         this();
-        this.localClassInjectors = classInjectors;
+        localClassInjectors = classInjectors;
     }
 
     /**
@@ -64,7 +64,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     @Deprecated
     @SuppressWarnings("unused")
     public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
-        this.localClassInjectors = classInjectors;
+        localClassInjectors = classInjectors;
     }
 
     public static ClassInjector[] getClassInjectors() {

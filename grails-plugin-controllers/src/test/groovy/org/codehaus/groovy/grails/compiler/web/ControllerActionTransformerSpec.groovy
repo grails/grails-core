@@ -56,7 +56,7 @@ class ControllerActionTransformerSpec extends Specification {
           controller
           controller.getClass().getMethod("action", [] as Class[]) != null
     }
-    
+
     void 'Test action overiding'() {
         given:
             def superControllerClass = gcl.parseClass('''
@@ -81,41 +81,39 @@ class ControllerActionTransformerSpec extends Specification {
             }
 ''')
             def subController = subControllerClass.newInstance()
-            
 
         when:
             def model = superController.methodAction()
-            
+
         then:
             'SuperController.methodAction' == model.actionInvoked
-            
+
         when:
             superController.params.s = 'Super Controller Param'
             model = superController.methodActionWithParam()
-            
+
         then:
             'Super Controller Param' == model.paramValue
-            
+
         when:
             model = subController.methodAction()
-            
+
         then:
             'SubController.methodAction' == model.actionInvoked
-            
+
         when:
             subController.params.s = 'Super Controller Param'
             model = subController.methodActionWithParam()
-            
+
         then:
             null == model.paramValue
-            
+
         when:
             subController.params.i = 42
             model = subController.methodActionWithParam()
-            
+
         then:
             42 == model.paramValue
-            
     }
 
    /* void "Test annotated controllers"() {

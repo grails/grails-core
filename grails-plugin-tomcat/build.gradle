@@ -1,4 +1,4 @@
-def tomcatVersion = "7.0.25"
+def tomcatVersion = "7.0.27"
 dependencies {
     compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
     compile "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"

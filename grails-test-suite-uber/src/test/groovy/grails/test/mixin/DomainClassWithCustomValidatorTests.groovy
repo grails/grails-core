@@ -28,7 +28,7 @@ class Uniqueable {
     }
 
     static onlyOneSomething = { value, obj ->
-        if (value == "something" && Uniqueable.countByWordAndIdNot("something", obj.id)){
+        if (value == "something" && Uniqueable.countByWordAndIdNot("something", obj.id)) {
             return "unique"
         }
     }

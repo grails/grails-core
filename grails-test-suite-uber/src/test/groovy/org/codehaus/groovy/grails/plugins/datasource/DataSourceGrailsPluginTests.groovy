@@ -141,7 +141,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals "org.h2.Driver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", parentBeanDef.propertyValues.getPropertyValue('username').value
         assertEquals "", parentBeanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:h2:mem:grailsDB;MVCC=TRUE", parentBeanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     void testDataSourcePluginPoolingOn() {
@@ -373,7 +373,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         def config = new ConfigSlurper().parse '''
             dataSource {
                 driverClassName = "org.h2.Driver"
-                url = "jdbc:h2:mem:devDb;MVCC=TRUE"
+                url = "jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000"
                 username = "sa"
                 password = ""
                 pooled = true
@@ -391,7 +391,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals "org.h2.Driver", parentBeanDef.propertyValues.getPropertyValue('driverClassName').value
         assertEquals "sa", parentBeanDef.propertyValues.getPropertyValue('username').value
         assertEquals "", parentBeanDef.propertyValues.getPropertyValue('password').value
-        assertEquals "jdbc:h2:mem:devDb;MVCC=TRUE", parentBeanDef.propertyValues.getPropertyValue('url').value
+        assertEquals "jdbc:h2:mem:devDb;MVCC=TRUE;LOCK_TIMEOUT=10000", parentBeanDef.propertyValues.getPropertyValue('url').value
     }
 
     private createAppCtx(config) {

@@ -12,6 +12,7 @@ dependencies {
                 project(':grails-plugin-datasource'),
                 project(':grails-plugin-i18n'),
                 project(':grails-plugin-servlets'),
+                project(':grails-plugin-async'),
                 project(':grails-plugin-log4j'),
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-services'),

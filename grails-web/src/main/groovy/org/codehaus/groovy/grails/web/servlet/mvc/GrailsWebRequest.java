@@ -16,6 +16,17 @@
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
 import grails.validation.DeferredBindingActions;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
@@ -32,15 +43,6 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
 import org.springframework.web.servlet.support.RequestContextUtils;
 import org.springframework.web.util.UrlPathHelper;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Encapsulates a Grails request. An instance of this class is bound to the current thread using
@@ -112,7 +114,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 
     /**
      * Whether the web request is still active
-     * @return True if it is
+     * @return true if it is
      */
     public boolean isActive() {
         return super.isRequestActive();
@@ -228,7 +230,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     /**
-     * @return True if the view for this GrailsWebRequest should be rendered
+     * @return true if the view for this GrailsWebRequest should be rendered
      */
     public boolean isRenderView() {
         return renderView;
@@ -242,7 +244,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     /**
      * Returns true if the current executing request is a flow request
      *
-     * @return True if it is a flow request
+     * @return true if it is a flow request
      */
     public boolean isFlowRequest() {
         GrailsApplication application = getAttributes().getGrailsApplication();

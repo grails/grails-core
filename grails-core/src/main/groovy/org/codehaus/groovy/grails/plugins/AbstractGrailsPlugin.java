@@ -17,6 +17,12 @@ package org.codehaus.groovy.grails.plugins;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
@@ -24,10 +30,6 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.w3c.dom.Element;
-
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Abstract implementation that provides some default behaviours
@@ -47,11 +49,11 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
     protected boolean isBase = false;
     protected String version = "1.0";
     protected Map<String, Object> dependencies = new HashMap<String, Object>();
-    protected String[] dependencyNames = new String[0];
+    protected String[] dependencyNames = {};
     protected Class<?> pluginClass;
     protected ApplicationContext applicationContext;
     protected GrailsPluginManager manager;
-    protected String[] evictionList = new String[0];
+    protected String[] evictionList = {};
 
     /**
      * Wrapper Grails class for plugins.
@@ -93,7 +95,7 @@ public abstract class AbstractGrailsPlugin extends GroovyObjectSupport implement
         this.isBase = isBase;
     }
 
-    public java.util.List<WatchPattern> getWatchedResourcePatterns() {
+    public List<WatchPattern> getWatchedResourcePatterns() {
         return Collections.emptyList();
     }
 

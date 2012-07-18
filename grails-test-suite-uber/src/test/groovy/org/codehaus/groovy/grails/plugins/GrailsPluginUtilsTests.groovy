@@ -5,7 +5,7 @@ import grails.util.BuildSettingsHolder
 
 import org.apache.commons.io.FileUtils
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * @author Graeme Rocher

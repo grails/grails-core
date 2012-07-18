@@ -15,14 +15,18 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import org.codehaus.groovy.grails.commons.*;
+import java.util.Map;
+
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BindingResult;
-
-import java.util.Map;
 
 /**
  * Enhancements made to domain classes to for data binding.
@@ -51,7 +55,6 @@ public class ControllersDomainBindingApi {
      * @param namedArgs The named arguments
      */
     public static void initialize(Object instance, Map namedArgs) {
-        initialize(instance);
         GrailsDomainClass dc = getDomainClass(instance);
         if (dc != null) {
             DataBindingUtils.bindObjectToDomainInstance(dc, instance, namedArgs);
@@ -60,6 +63,7 @@ public class ControllersDomainBindingApi {
         else {
             DataBindingUtils.bindObjectToInstance(instance, namedArgs);
         }
+        autowire(instance);
     }
 
     /**

@@ -88,8 +88,8 @@ The following libraries are included in Grails because they are required either 
 - Gant 1.9.5 (http://gant.codehaus.org) Apache 2.0 License
 - required for the command line tools (Gant)
 
-* groovy-all-1.8.6.jar
-- Groovy 1.8.6 (http://groovy.codehaus.org) Apache 2.0 License
+* groovy-all-2.0.0.jar
+- Groovy 2.0.0 (http://groovy.codehaus.org) Apache 2.0 License
 - required for the command line tools (Gant)
 - required for building Grails core
 - required for running Grails applications
@@ -98,7 +98,7 @@ The following libraries are included in Grails because they are required either 
 - Hibernate Annotations 3.2.0 GA (http://annotations.hibernate.org) LGPL License
 - required for running Grails applications (When using Hibernate EJB3 annotations)
 
-* hibernate-core-3.6.8.Final.jar
+* hibernate-core-3.6.10.Final.jar
 - Hibernate 3.6.8 GA (http://www.hibernate.org) LGPL License
 - required for building Grails core
 - required for running Grails applications
@@ -108,8 +108,8 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications (With an in-memory database)
 
-* h2-1.2.144.jar
-- H2 1.2.144 (http://www.h2database.com/) H2 License (see http://www.h2database.com/html/license.html)
+* h2-1.3.164.jar
+- H2 1.3.164 (http://www.h2database.com/) H2 License (see http://www.h2database.com/html/license.html)
 - required for building Grails core
 - required for running Grails applications (With an in-memory database)
 
@@ -147,6 +147,9 @@ The following libraries are included in Grails because they are required either 
 - Jakarta ORO 2.0.8 (http://jakarta.apache.org/oro/) Apache 2.0 License
 - required for running Grails applications
 
+* protobuf-java-2.4.1.jar
+- Google's language-neutral, platform-neutral, extensible mechanism or serializing structured data
+
 * sitemesh-2.4.jar
 - Sitemesh 2.4 (http://www.opensymphony.com/sitemesh) OpenSymphony Software License (see http://www.opensymphony.com/sitemesh/license.action) 
 - required for building Grails core
@@ -158,7 +161,7 @@ The following libraries are included in Grails because they are required either 
 - required for running Grails applications
 
 * org.springframework.*.jar
-- Spring Framework 3.1.0.RELEASE (http://www.springframework.org) Apache 2.0 License
+- Spring Framework 3.1.1.RELEASE (http://www.springframework.org) Apache 2.0 License
 - required for building Grails core
 - required for the command line tools (Gant)
 - required for running Grails applications
@@ -167,10 +170,6 @@ The following libraries are included in Grails because they are required either 
 - Spring Web Flow 2.0.8 (http://www.springframework.org) Apache 2.0 License
 - required for building Grails core
 - required for running Grails applications (When using Web flows)
-
-* svnkit-1.3.5.jar
-- SVNKit 1.3.5 (http://svnkit.com/) TMate Open Source License (see http://svnkit.com/license.html)
-- required for the command line tools (Gant)
 
 * xpp3_min-1.1.3.4.O.jar
 - XML Pull Parser (XPP) 1.1.3.4.O (http://www.extreme.indiana.edu/xgws/xsoap/xpp/)  Indiana University Extreme! Lab Software License (see http://www.extreme.indiana.edu/viewcvs/~checkout~/XPP3/java/LICENSE.txt)

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2011 SpringSource
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.codehaus.groovy.grails.cli.parsing;
 
 import grails.util.Environment;
@@ -17,7 +32,7 @@ import java.util.Properties;
 public class DefaultCommandLine implements CommandLine {
 
     Properties systemProperties = new Properties();
-    Map<String, Object> undeclaredOptions = new HashMap<String, Object> ();
+    Map<String, Object> undeclaredOptions = new HashMap<String, Object>();
     Map<String, SpecifiedOption> declaredOptions = new HashMap<String, SpecifiedOption>();
     List<String> remainingArgs = new ArrayList<String>();
     private String environment;
@@ -45,6 +60,7 @@ public class DefaultCommandLine implements CommandLine {
 
     public void setEnvironment(String environment) {
         this.environment = environment;
+        System.setProperty(Environment.KEY, environment);
     }
 
     public void setCommand(String name) {
@@ -79,10 +95,10 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void setCommandName(String cmd) {
-        if ("refresh-dependencies".equals(cmd)) {
+        if (REFRESH_DEPENDENCIES_ARGUMENT.equals(cmd)) {
             addUndeclaredOption(REFRESH_DEPENDENCIES_ARGUMENT);
         }
-        this.commandName = cmd;
+        commandName = cmd;
     }
 
     public String getCommandName() {
@@ -152,7 +168,7 @@ public class DefaultCommandLine implements CommandLine {
     }
 
     public void addSystemProperty(String name, String value) {
-        if(Environment.KEY.equals(name)) {
+        if (Environment.KEY.equals(name)) {
             setEnvironment(value);
         }
         systemProperties.put(name, value);

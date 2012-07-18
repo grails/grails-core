@@ -32,7 +32,7 @@ public interface GrailsClass extends GrailsApplicationAware {
     /**
      * Whether the class is abstract or not
      *
-     * @return True if it is abstract
+     * @return true if it is abstract
      */
     boolean isAbstract();
 
@@ -53,7 +53,7 @@ public interface GrailsClass extends GrailsApplicationAware {
     /**
      * Returns true if the class has the specified property.
      * @param name The name of the property
-     * @return True if it does
+     * @return true if it does
      */
     boolean hasProperty(String name);
 

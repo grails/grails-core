@@ -44,7 +44,7 @@ class TestUrlMappings {
         def template = '''<g:javascript library="test" /><p><g:remoteLink controller="bar" action="list" /></p><g:render template="part" model="['foo1':foo2]" />'''
 
         String newLine = EOL
-        assertOutputContains('<script src="/js/test.js" type="text/javascript"></script>\r\n<p><a href="/bar/list" onclick="<remote>return false;" controller="bar" action="list"></a></p><a href="/foo/list" onclick="<remote>return false;" controller="foo" action="list"></a>', template)
+        assertOutputContains('<script src="/js/test.js" type="text/javascript"></script>\r\n<p><a href="/bar/list" onclick="<remote>return false;"></a></p><a href="/foo/list" onclick="<remote>return false;"></a>', template)
     }
 
     void testJavascriptIncludeWithPluginAttribute() {

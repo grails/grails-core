@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.validation.DeferredBindingActions;
 import groovy.lang.GroovyObject;
@@ -25,6 +26,7 @@ import groovy.lang.MetaProperty;
 import groovy.lang.MissingMethodException;
 import groovy.lang.MissingPropertyException;
 
+import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -39,7 +41,6 @@ import java.util.Collections;
 import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -70,6 +71,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.ConfigurablePropertyAccessor;
@@ -115,6 +117,8 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 @SuppressWarnings("rawtypes")
 public class GrailsDataBinder extends ServletRequestDataBinder {
 
+    private static final String BIND_EVENT_LISTENERS = "org.codehaus.groovy.grails.BIND_EVENT_LISTENERS";
+    private static final String PROPERTY_EDITOR_REGISTRARS = "org.codehaus.groovy.grails.PROPERTY_EDITOR_REGISTRARS";
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
     private static final String JSON_DATE_FORMAT = "yyyy-MM-dd'T'hh:mm:ss'Z'";
 
@@ -177,7 +181,14 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             return;
         }
 
-        Map<String, PropertyEditorRegistrar> editors = context.getBeansOfType(PropertyEditorRegistrar.class);
+        @SuppressWarnings("unchecked")
+        Map<String, PropertyEditorRegistrar> editors = (Map<String, PropertyEditorRegistrar>)servletContext.getAttribute(PROPERTY_EDITOR_REGISTRARS);
+        if (editors == null) {
+            editors = context.getBeansOfType(PropertyEditorRegistrar.class);
+            if (!Environment.isDevelopmentMode()) {
+                servletContext.setAttribute(PROPERTY_EDITOR_REGISTRARS, editors);
+            }
+        }
         for (PropertyEditorRegistrar editorRegistrar : editors.values()) {
             editorRegistrar.registerCustomEditors(registry);
         }
@@ -202,11 +213,12 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private static void initializeFromWebRequest(GrailsDataBinder binder, GrailsWebRequest webRequest) {
-        if (webRequest != null) {
-            final GrailsApplication grailsApplication = webRequest.getAttributes().getGrailsApplication();
-            binder.setGrailsApplication(grailsApplication);
-
+        if (webRequest == null) {
+            return;
         }
+
+        final GrailsApplication grailsApplication = webRequest.getAttributes().getGrailsApplication();
+        binder.setGrailsApplication(grailsApplication);
     }
 
     private void setGrailsApplication(GrailsApplication grailsApplication) {
@@ -280,7 +292,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         binder.registerCustomEditor(TimeZone.class, new TimeZoneEditor());
         binder.registerCustomEditor(URI.class, new UriEditor());
 //        GenericConversionService conversionService = new GenericConversionService();
-//        conversionService.addConverter(new GenericConverter(){
+//        conversionService.addConverter(new GenericConverter() {
 //
 //            @Override
 //            public Set<ConvertiblePair> getConvertibleTypes() {
@@ -296,18 +308,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 //        });
 //        binder.setConversionService(conversionService);
 
-
-
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if (webRequest != null) {
+        if (webRequest == null) {
+            registerCustomEditors(null, binder);
+        }
+        else {
             initializeFromWebRequest(binder, webRequest);
             Locale locale = RequestContextUtils.getLocale(webRequest.getCurrentRequest());
             registerCustomEditors(webRequest, binder, locale);
         }
-        else {
-            registerCustomEditors(null, binder);
-        }
-
 
         return binder;
     }
@@ -366,7 +375,15 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         if (webRequest != null) {
             final ApplicationContext applicationContext = webRequest.getApplicationContext();
             if (applicationContext != null) {
-                final Map<String, BindEventListener> bindEventListenerMap = applicationContext.getBeansOfType(BindEventListener.class);
+                ServletContext servletContext = webRequest.getServletContext();
+                @SuppressWarnings("unchecked")
+                Map<String, BindEventListener> bindEventListenerMap = (Map<String, BindEventListener>)servletContext.getAttribute(BIND_EVENT_LISTENERS);
+                if (bindEventListenerMap==null) {
+                    bindEventListenerMap = applicationContext.getBeansOfType(BindEventListener.class);
+                    if (!Environment.isDevelopmentMode()) {
+                        servletContext.setAttribute(BIND_EVENT_LISTENERS, bindEventListenerMap);
+                    }
+                }
                 for (BindEventListener bindEventListener : bindEventListenerMap.values()) {
                     bindEventListener.doBind(getTarget(), mpvs, getTypeConverter());
                 }
@@ -424,11 +441,10 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
                 }
             }
+            return null;
         }
-        else {
-            return (ConstrainedProperty)constrainedProperties.get(propertyName);
-        }
-        return null;
+
+        return (ConstrainedProperty)constrainedProperties.get(propertyName);
     }
 
     private Map resolveConstrainedProperties(Object object) {
@@ -494,14 +510,29 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             if (JSONObject.NULL.getClass().isInstance(value)) {
                 mpvs.removePropertyValue(pv);
             }
-            if (isNotCandidateForBinding(value)) {
+            if (!isCandidateForBinding(pv)) {
                 mpvs.removePropertyValue(pv);
             }
         }
     }
 
-    private boolean isNotCandidateForBinding(Object value) {
-        return value instanceof Map;
+    private boolean isCandidateForBinding(PropertyValue pv) {
+        boolean isCandidate = true;
+        final Object value = pv.getValue();
+        if (value instanceof GrailsParameterMap || value instanceof JSONObject) {
+            isCandidate = false;
+        } else if (value instanceof Map) {
+            isCandidate = false;
+            final String propertyName = pv.getName();
+            final PropertyDescriptor property = BeanUtils.getPropertyDescriptor(getTarget().getClass(), propertyName);
+            if (property != null) {
+                final Class<?> propertyType = property.getPropertyType();
+                if (propertyType.isAssignableFrom(value.getClass())) {
+                    isCandidate = true;
+                }
+            }
+        }
+        return isCandidate;
     }
 
     private PropertyValues filterPropertyValues(PropertyValues propertyValues, String prefix) {
@@ -698,8 +729,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
 
             int j = 0;
-            for (Iterator i = c.iterator(); i.hasNext();j++) {
-                Object o = i.next();
+            for (Object o : c) {
+                j++;
                 if (j == index) return o;
             }
         }
@@ -785,7 +816,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                                                 public void run() {
                                                     if (otherSide.isOneToMany()) {
                                                         Collection collection = GrailsMetaClassUtils.getPropertyIfExists(persisted, otherSide.getName(), Collection.class);
-                                                        if(collection != null && !collection.contains(getTarget())) {
+                                                        if (collection != null && !collection.contains(getTarget())) {
                                                             String methodName = "addTo" + GrailsNameUtils.getClassName(otherSide.getName());
                                                             GrailsMetaClassUtils.invokeMethodIfExists(persisted, methodName, new Object[]{getTarget()});
                                                         }
@@ -870,7 +901,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                     }
                     mpvs.removePropertyValue(pv);
                 }
-                else if (v!=null && (v instanceof String)) {
+                else if (v instanceof String) {
                     associateObjectForId(pv,v, associatedType);
                     mpvs.removePropertyValue(pv);
                 }

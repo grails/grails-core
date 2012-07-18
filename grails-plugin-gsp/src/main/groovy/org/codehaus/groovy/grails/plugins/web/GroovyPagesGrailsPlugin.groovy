@@ -248,10 +248,7 @@ class GroovyPagesGrailsPlugin {
         def gspServlet = webXml.servlet.find {it.'servlet-name'?.text() == 'gsp' }
         gspServlet.'servlet-class' + {
             'init-param' {
-                description """
-                Allows developers to view the intermediate source code, when they pass
-                a spillGroovy argument in the URL.
-                """
+                description "Allows developers to view the intermediate source code, when they pass a showSource argument in the URL."
                 'param-name'('showSource')
                 'param-value'(1)
             }
@@ -272,7 +269,7 @@ class GroovyPagesGrailsPlugin {
                 superClass = superClass.superclass
             }
         }
-        if(nonEnhancedClasses) {
+        if (nonEnhancedClasses) {
             def enhancer = new MetaClassEnhancer()
             enhancer.addApi apiObject
             nonEnhancedClasses.each { enhancer.enhance it.getMetaClass() }

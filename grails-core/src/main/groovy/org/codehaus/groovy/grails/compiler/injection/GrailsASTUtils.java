@@ -20,14 +20,19 @@ import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 import groovy.lang.MissingMethodException;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -44,16 +49,22 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
@@ -61,6 +72,7 @@ import org.codehaus.groovy.control.Janitor;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
@@ -73,6 +85,8 @@ import org.codehaus.groovy.syntax.Types;
  */
 public class GrailsASTUtils {
 
+    public static final String DOMAIN_DIR = "domain";
+    public static final String GRAILS_APP_DIR = "grails-app";
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
     public static final Token EQUALS_OPERATOR = Token.newSymbol("==", 0, 0);
@@ -82,15 +96,14 @@ public class GrailsASTUtils {
     public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
     public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
 
-    
     public static void warning(final SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
         final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
         GrailsConsole.getInstance().warning(warningMessage + "\n\n" + sample);
     }
-    
+
     /**
-     * Generates a fatal compilation error
-     * 
+     * Generates a fatal compilation error.
+     *
      * @param sourceUnit the SourceUnit
      * @param astNode the ASTNode which caused the error
      * @param message The error message
@@ -100,8 +113,8 @@ public class GrailsASTUtils {
     }
 
     /**
-     * Generates a fatal compilation error
-     * 
+     * Generates a fatal compilation error.
+     *
      * @param sourceUnit the SourceUnit
      * @param astNode the ASTNode which caused the error
      * @param message The error message
@@ -112,13 +125,13 @@ public class GrailsASTUtils {
         final SyntaxErrorMessage syntaxErrorMessage = new SyntaxErrorMessage(syntaxException, sourceUnit);
         sourceUnit.getErrorCollector().addError(syntaxErrorMessage, fatal);
     }
-    
+
     /**
      * Returns whether a classNode has the specified property or not
      *
      * @param classNode    The ClassNode
      * @param propertyName The name of the property
-     * @return True if the property exists in the ClassNode
+     * @return true if the property exists in the ClassNode
      */
     public static boolean hasProperty(ClassNode classNode, String propertyName) {
         if (classNode == null || StringUtils.isBlank(propertyName)) {
@@ -158,7 +171,7 @@ public class GrailsASTUtils {
      *
      * @param classNode  The ClassNode
      * @param methodName The method name
-     * @return True if it does implement the method
+     * @return true if it does implement the method
      */
     public static boolean implementsZeroArgMethod(ClassNode classNode, String methodName) {
         MethodNode method = classNode.getDeclaredMethod(methodName, Parameter.EMPTY_ARRAY);
@@ -245,11 +258,11 @@ public class GrailsASTUtils {
             return null;
         }
         String propertyName = GrailsClassUtils.getPropertyForGetter(methodName);
-        if(propertyName != null && parameterTypes.length == 0 && classNode.hasProperty(propertyName)) {
+        if (propertyName != null && parameterTypes.length == 0 && classNode.hasProperty(propertyName)) {
             return null;
         }
         propertyName = GrailsClassUtils.getPropertyForSetter(methodName);
-        if(propertyName != null && parameterTypes.length == 1 && classNode.hasProperty(propertyName)) {
+        if (propertyName != null && parameterTypes.length == 1 && classNode.hasProperty(propertyName)) {
             return null;
         }
 
@@ -382,7 +395,7 @@ public class GrailsASTUtils {
             declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
         }
         MethodNode methodNode = classNode.getDeclaredMethod(declaredMethodName, parameterTypes);
-        if(methodNode == null) {
+        if (methodNode == null) {
             methodNode = new MethodNode(declaredMethodName,
                 Modifier.PUBLIC | Modifier.STATIC,
                 returnType, copyParameters(parameterTypes),
@@ -409,7 +422,7 @@ public class GrailsASTUtils {
                 new ClassExpression(constructorMethod.getDeclaringClass()), "initialize", arguments);
         constructCallExpression.setMethodTarget(constructorMethod);
         ExpressionStatement constructorInitExpression = new ExpressionStatement(constructCallExpression);
-        if(constructorParams.length>0) {
+        if (constructorParams.length > 0) {
             constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(ClassNode.THIS, GrailsArtefactClassInjector.ZERO_ARGS)));
         }
         constructorBody.addStatement(constructorInitExpression);
@@ -420,9 +433,9 @@ public class GrailsASTUtils {
             ConstructorNode constructorNode = getDefaultConstructor(classNode);
             if (constructorNode != null) {
                 List<AnnotationNode> annotations = constructorNode.getAnnotations(new ClassNode(GrailsDelegatingConstructor.class));
-                if(annotations.size() == 0) {
+                if (annotations.size() == 0) {
                     Statement existingBodyCode = constructorNode.getCode();
-                    if(existingBodyCode instanceof BlockStatement) {
+                    if (existingBodyCode instanceof BlockStatement) {
                         ((BlockStatement) existingBodyCode).addStatement(constructorInitExpression);
                     }
                     else {
@@ -444,7 +457,7 @@ public class GrailsASTUtils {
             }
             else {
                 List<AnnotationNode> annotations = cn.getAnnotations(new ClassNode(GrailsDelegatingConstructor.class));
-                if(annotations.size() == 0) {
+                if (annotations.size() == 0) {
                     Statement code = cn.getCode();
                     constructorBody.addStatement(code);
                     cn.setCode(constructorBody);
@@ -579,6 +592,31 @@ public class GrailsASTUtils {
                 declaredMethod.getParameters()[0].getType().equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS);
     }
 
+    public static boolean isDomainClass(final ClassNode classNode, final SourceUnit sourceNode) {
+        @SuppressWarnings("unchecked")
+        boolean isDomainClass = GrailsASTUtils.hasAnyAnnotations(classNode,
+                grails.persistence.Entity.class,
+                javax.persistence.Entity.class);
+
+        if (!isDomainClass) {
+            final String sourcePath = sourceNode.getName();
+            final File sourceFile = new File(sourcePath);
+            File parent = sourceFile.getParentFile();
+            while (parent != null && !isDomainClass) {
+                final File parentParent = parent.getParentFile();
+                if (parent.getName().equals(DOMAIN_DIR) &&
+                        parentParent != null &&
+                        parentParent.getName().equals(GRAILS_APP_DIR)) {
+                    isDomainClass = true;
+                }
+                parent = parentParent;
+            }
+        }
+
+        return isDomainClass;
+    }
+
+
     public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
         addDelegateInstanceMethods(classNode, classNode,delegateNode, delegateInstance);
     }
@@ -612,16 +650,16 @@ public class GrailsASTUtils {
         List<AnnotationNode> annotations = classNode.getAnnotations();
         ClassNode annotationClassNode = new ClassNode(Entity.class);
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
-        if(annotations.isEmpty()) {
+        if (annotations.isEmpty()) {
             classNode.addAnnotation(annotationToAdd);
         }
         else {
             boolean foundAnn = findAnnotation(annotationClassNode, annotations) != null;
-            if(!foundAnn) classNode.addAnnotation(annotationToAdd);
+            if (!foundAnn) classNode.addAnnotation(annotationToAdd);
         }
     }
 
-    public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations){
+    public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations) {
         for (AnnotationNode annotation : annotations) {
             if (annotation.getClassNode().equals(annotationClassNode)) {
                 return annotation;
@@ -629,7 +667,12 @@ public class GrailsASTUtils {
         }
         return null;
     }
-    
+
+    public static AnnotationNode findAnnotation(ClassNode classNode, Class<?> type) {
+        List<AnnotationNode> annotations = classNode.getAnnotations();
+        return annotations == null ? null : findAnnotation(new ClassNode(type),annotations);
+    }
+
     /**
      * Returns true if classNode is marked with annotationClass
      * @param classNode A ClassNode to inspect
@@ -637,10 +680,9 @@ public class GrailsASTUtils {
      * @return true if classNode is marked with annotationClass, otherwise false
      */
     public static boolean hasAnnotation(final ClassNode classNode, final Class<? extends Annotation> annotationClass) {
-        List<AnnotationNode> annotations = classNode.getAnnotations(new ClassNode(annotationClass));
-        return annotations.size() > 0;
+        return !classNode.getAnnotations(new ClassNode(annotationClass)).isEmpty();
     }
-    
+
     /**
      * @param classNode a ClassNode to search
      * @param annotationsToLookFor Annotations to look for
@@ -648,6 +690,7 @@ public class GrailsASTUtils {
      */
     public static boolean hasAnyAnnotations(final ClassNode classNode, final Class<? extends Annotation>... annotationsToLookFor) {
         return CollectionUtils.exists(Arrays.asList(annotationsToLookFor), new Predicate() {
+            @SuppressWarnings({ "unchecked", "rawtypes" })
             public boolean evaluate(Object object) {
                 return hasAnnotation(classNode, (Class)object);
             }
@@ -656,7 +699,7 @@ public class GrailsASTUtils {
 
     public static void addMethodIfNotPresent(ClassNode controllerClassNode, MethodNode methodNode) {
         MethodNode existing = controllerClassNode.getMethod(methodNode.getName(), methodNode.getParameters());
-        if(existing == null) {
+        if (existing == null) {
             controllerClassNode.addMethod(methodNode);
         }
     }
@@ -688,8 +731,100 @@ public class GrailsASTUtils {
         tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Throwable.class), "e"),catchBlock));
     }
 
+    /**
+     * Evaluates a constraints closure and returns metadata about the constraints configured in the closure.  The
+     * Map returned has property names as keys and the value associated with each of those property names is
+     * a Map<String, Expression> which has constraint names as keys and the Expression associated with that constraint
+     * as values.
+     *
+     * @param closureExpression the closure expression to evaluate
+     * @return the Map as described above
+     */
+    public static Map<String, Map<String, Expression>> getConstraintMetadata(final ClosureExpression closureExpression) {
+
+        final List<MethodCallExpression> methodExpressions = new ArrayList<MethodCallExpression>();
+
+        final Map<String, Map<String, Expression>> results = new LinkedHashMap<String, Map<String, Expression>>();
+        final Statement closureCode = closureExpression.getCode();
+        if (closureCode instanceof BlockStatement) {
+            final List<Statement> closureStatements = ((BlockStatement) closureCode).getStatements();
+            for (final Statement closureStatement : closureStatements) {
+                if (closureStatement instanceof ExpressionStatement) {
+                    final Expression expression = ((ExpressionStatement) closureStatement).getExpression();
+                    if (expression instanceof MethodCallExpression) {
+                        methodExpressions.add((MethodCallExpression) expression);
+                    }
+                } else if (closureStatement instanceof ReturnStatement) {
+                    final ReturnStatement returnStatement = (ReturnStatement) closureStatement;
+                    Expression expression = returnStatement.getExpression();
+                    if (expression instanceof MethodCallExpression) {
+                        methodExpressions.add((MethodCallExpression) expression);
+                    }
+                }
+
+                for (final MethodCallExpression methodCallExpression : methodExpressions) {
+                    final Expression objectExpression = methodCallExpression.getObjectExpression();
+                    if (objectExpression instanceof VariableExpression && "this".equals(((VariableExpression)objectExpression).getName())) {
+                        final Expression methodCallArguments = methodCallExpression.getArguments();
+                        if (methodCallArguments instanceof TupleExpression) {
+                            final List<Expression> methodCallArgumentExpressions = ((TupleExpression) methodCallArguments).getExpressions();
+                            if (methodCallArgumentExpressions != null && methodCallArgumentExpressions.size() == 1 && methodCallArgumentExpressions.get(0) instanceof NamedArgumentListExpression) {
+                                final Map<String, Expression> constraintNameToExpression = new LinkedHashMap<String, Expression>();
+                                final List<MapEntryExpression> mapEntryExpressions = ((NamedArgumentListExpression) methodCallArgumentExpressions.get(0)).getMapEntryExpressions();
+                                for (final MapEntryExpression mapEntryExpression : mapEntryExpressions) {
+                                    final Expression keyExpression = mapEntryExpression.getKeyExpression();
+                                    if (keyExpression instanceof ConstantExpression) {
+                                        final Object value = ((ConstantExpression) keyExpression).getValue();
+                                        if (value instanceof String) {
+                                            constraintNameToExpression.put((String)value, mapEntryExpression.getValueExpression());
+                                        }
+                                    }
+                                }
+                                results.put(methodCallExpression.getMethodAsString(), constraintNameToExpression);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return results;
+    }
+
+
+    /**
+     * Returns a map containing the names and types of the given association type. eg. GrailsDomainClassProperty.HAS_MANY
+     * @param classNode The target class ndoe
+     * @param associationType The associationType
+     * @return A map
+     */
+    public static Map<String, ClassNode> getAssocationMap(ClassNode classNode, String associationType) {
+        PropertyNode property = classNode.getProperty(associationType);
+        Map<String, ClassNode> associationMap = new HashMap<String, ClassNode>();
+        if (property != null && property.isStatic()) {
+            Expression e = property.getInitialExpression();
+            if (e instanceof MapExpression) {
+                MapExpression me = (MapExpression) e;
+                for (MapEntryExpression mee : me.getMapEntryExpressions()) {
+                    String key = mee.getKeyExpression().getText();
+                    Expression valueExpression = mee.getValueExpression();
+                    if (valueExpression instanceof ClassExpression) {
+                        associationMap.put(key, valueExpression.getType());
+                    }
+                }
+            }
+        }
+        return associationMap;
+    }
+
+    public static Map<String,ClassNode> getAllAssociationMap(ClassNode classNode) {
+        Map<String, ClassNode> associationMap = new HashMap<String, ClassNode>();
+        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.HAS_MANY));
+        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.HAS_ONE));
+        associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.BELONGS_TO));
+        return associationMap;
+    }
+
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)
     private static @interface GrailsDelegatingConstructor {}
 }
-

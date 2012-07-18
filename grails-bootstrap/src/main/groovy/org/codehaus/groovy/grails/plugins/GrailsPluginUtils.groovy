@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Utility class containing methods that aid in loading and evaluating plug-ins.

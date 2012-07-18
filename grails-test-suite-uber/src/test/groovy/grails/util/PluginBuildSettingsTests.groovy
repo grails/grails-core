@@ -2,7 +2,7 @@ package grails.util
 
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * @author Graeme Rocher
@@ -16,12 +16,11 @@ class PluginBuildSettingsTests extends GroovyTestCase {
 
     private static File locateRelativeFile(String path) {
         def file = new File(path)
-        if(!file.exists()) {
+        if (!file.exists()) {
             file = new File("grails-test-suite-uber/$path")
         }
         return file
     }
-
 
     def absoluteTestDir
 
@@ -124,8 +123,8 @@ class PluginBuildSettingsTests extends GroovyTestCase {
         def ps = new PluginBuildSettings(bs)
 
         assert 0 == ps.availableScripts.size()
-
     }
+
     void testGetAvailableScripts() {
         PluginBuildSettings pluginSettings = createPluginBuildSettings()
         def scripts = pluginSettings.getAvailableScripts()
@@ -135,7 +134,7 @@ class PluginBuildSettingsTests extends GroovyTestCase {
                 nonUserScripts << script
             }
         }
-        assertEquals 52, nonUserScripts.size()
+        assertEquals 55, nonUserScripts.size()
     }
 
     void testGetPluginScripts() {

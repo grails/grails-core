@@ -8,6 +8,8 @@ class OneToManySelfInheritanceTests extends AbstractGrailsHibernateTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
+package onetomanyselfinheritancetests
+
 import grails.persistence.*
 
 @Entity
@@ -30,8 +32,8 @@ class ExtOrg extends Org {}
     }
 
     void testOneToManyWithSelf() {
-        def Root = ga.getDomainClass("OrgRoot").clazz
-        def Org = ga.getDomainClass("Org").clazz
+        def Root = ga.getDomainClass("onetomanyselfinheritancetests.OrgRoot").clazz
+        def Org = ga.getDomainClass("onetomanyselfinheritancetests.Org").clazz
 
         def org1 = Org.newInstance(name:"org1")
         assertNotNull "should have saved",org1.save(flush:true)
@@ -59,7 +61,7 @@ class ExtOrg extends Org {}
 
     void testOneToManyExt() {
 
-        def ExtOrg = ga.getDomainClass("ExtOrg").clazz
+        def ExtOrg = ga.getDomainClass("onetomanyselfinheritancetests.ExtOrg").clazz
 
         def org1 = ExtOrg.newInstance(name:"org1")
         assertNotNull "should have saved",org1.save(flush:true)

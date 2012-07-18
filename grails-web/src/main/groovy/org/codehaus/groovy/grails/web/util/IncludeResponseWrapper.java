@@ -74,6 +74,7 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
         super.sendRedirect(s);
     }
 
+    // don't add @Override since it's only a method as of Servlet 3.0
     public int getStatus() {
         return status;
     }

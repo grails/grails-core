@@ -16,12 +16,6 @@ package org.codehaus.groovy.grails.resolve.config;
 
 import grails.build.logging.GrailsConsole;
 import groovy.lang.Closure;
-import org.apache.ivy.core.module.descriptor.ExcludeRule;
-import org.apache.ivy.core.module.id.ArtifactId;
-import org.apache.ivy.core.module.id.ModuleRevisionId;
-import org.apache.ivy.plugins.matcher.MatcherHelper;
-import org.apache.ivy.plugins.matcher.PatternMatcher;
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -29,6 +23,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.ivy.core.module.descriptor.ExcludeRule;
+import org.apache.ivy.core.module.id.ArtifactId;
+import org.apache.ivy.core.module.id.ModuleRevisionId;
+import org.apache.ivy.plugins.matcher.MatcherHelper;
+import org.apache.ivy.plugins.matcher.PatternMatcher;
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 
 @SuppressWarnings("unchecked")
 abstract class AbstractDependenciesConfigurer extends AbstractDependencyManagementConfigurer {
@@ -182,13 +183,14 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         }
 
         ModuleRevisionId mrid;
-        if (branch != null) {
-            mrid = ModuleRevisionId.newInstance(group, name, branch, version, attrs);
-        } else {
+        if (branch == null) {
             mrid = ModuleRevisionId.newInstance(group, name, version, attrs);
+        } else {
+            mrid = ModuleRevisionId.newInstance(group, name, branch, version, attrs);
         }
 
-        EnhancedDefaultDependencyDescriptor dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, transitive, scope);
+        EnhancedDefaultDependencyDescriptor dependencyDescriptor = new EnhancedDefaultDependencyDescriptor(
+                mrid, false, transitive, scope);
         handleExport(dependencyDescriptor,export);
 
         boolean inherited = context.inherited || context.dependencyManager.getInheritsAll() || context.pluginName != null;
@@ -201,18 +203,20 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         if (configurer != null) {
             dependencyDescriptor.configure(configurer);
         }
-        if(!isExcluded(context, dependencyDescriptor)) {
 
+        addArtifacts(scope, dependencyDescriptor);
+
+        if (!isExcluded(dependencyDescriptor)) {
             addDependency(scope, dependencyDescriptor);
         }
     }
 
-    private boolean isExcluded(DependencyConfigurationContext context, EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
+    private boolean isExcluded(EnhancedDefaultDependencyDescriptor dependencyDescriptor) {
         ExcludeRule[] excludeRules = context.getExcludeRules();
-        if(excludeRules != null) {
+        if (excludeRules != null) {
             ArtifactId aid = new ArtifactId(dependencyDescriptor.getDependencyId(),PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION,PatternMatcher.ANY_EXPRESSION);
             for (ExcludeRule excludeRule : excludeRules) {
-                if(MatcherHelper.matches(excludeRule.getMatcher(), excludeRule.getId(), aid )) {
+                if (MatcherHelper.matches(excludeRule.getMatcher(), excludeRule.getId(), aid )) {
                     return true;
                 }
             }
@@ -232,7 +236,9 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         // used in plugin subclass to populate default group id
     }
 
-    abstract protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor);
+    protected abstract void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor);
 
-    abstract protected void handleExport(EnhancedDefaultDependencyDescriptor descriptor, Boolean export);
+    protected abstract void handleExport(EnhancedDefaultDependencyDescriptor descriptor, Boolean export);
+
+    protected abstract void addArtifacts(String scope, EnhancedDefaultDependencyDescriptor dependencyDescriptor);
 }

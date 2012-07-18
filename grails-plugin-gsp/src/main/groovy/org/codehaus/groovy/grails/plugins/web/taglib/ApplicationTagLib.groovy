@@ -100,9 +100,11 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
     /**
      * Sets a variable in the pageContext or the specified scope.
+     * The value can be specified directly or can be a bean retrieved from the applicationContext.
      *
      * @attr var REQUIRED the variable name
      * @attr value the variable value; if not specified uses the rendered body
+     * @attr bean the name or the type of a bean in the applicationContext; the type can be an interface or superclass
      * @attr scope the scope name; defaults to pageScope
      */
     Closure set = { attrs, body ->
@@ -112,10 +114,14 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         def scope = attrs.scope ? SCOPES[attrs.scope] : 'pageScope'
         if (!scope) throw new IllegalArgumentException("Invalid [scope] attribute for tag <g:set>!")
 
-        def value = attrs.value
-        def containsValue = attrs.containsKey('value')
-
-        if (!containsValue && body) value = body()
+        def value
+        if (attrs.bean) {
+            value = applicationContext.getBean(attrs.bean)
+        } else {
+            value = attrs.value
+            def containsValue = attrs.containsKey('value')
+            if (!containsValue && body) value = body()
+        }
 
         this."$scope"."$var" = value
         null
