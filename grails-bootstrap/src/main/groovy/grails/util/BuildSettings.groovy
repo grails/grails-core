@@ -321,6 +321,11 @@ class BuildSettings extends AbstractBuildSettings {
      */
     File proxySettingsFile;
 
+    /**
+     * Fork Settings. These are the default settings used to control forked mode, and what
+     */
+    Map<String, Object> forkSettings = [run:false, test:false, console:false, shell:false]
+
     /** Implementation of the "grailsScript()" method used in Grails scripts.  */
     Closure getGrailsScriptClosure() {
         return new OwnerlessClosure() {
@@ -1003,6 +1008,7 @@ class BuildSettings extends AbstractBuildSettings {
      * corresponding config object. If the file does not exist, this
      * returns an empty config.
      */
+    @CompileStatic
     ConfigObject loadConfig(File configFile) {
         try {
             loadSettingsFile()
@@ -1015,7 +1021,7 @@ class BuildSettings extends AbstractBuildSettings {
                 ConfigSlurper slurper = createConfigSlurper()
 
                 URL configUrl = configFile.toURI().toURL()
-                Script script = gcl.parseClass(configFile)?.newInstance()
+                Script script = (Script)gcl.parseClass(configFile)?.newInstance()
 
                 config.setConfigFile(configUrl)
                 loadConfig(slurper.parse(script))
@@ -1364,6 +1370,11 @@ class BuildSettings extends AbstractBuildSettings {
         // null, a default value. This ensures that we don't override
         // settings provided by, for example, the Maven plugin.
         def props = config.toProperties()
+
+        final forkConfig = getForkConfig()
+        if((forkConfig instanceof Map) && forkConfig) {
+            forkSettings = (Map)forkConfig
+        }
         Metadata metadata = Metadata.getCurrent()
 
         offline = Boolean.valueOf(getPropertyValue(OFFLINE_MODE, props, String.valueOf(offline)))
@@ -1492,6 +1503,10 @@ class BuildSettings extends AbstractBuildSettings {
         if (!verboseCompileSet) {
             verboseCompile = getPropertyValue(VERBOSE_COMPILE, props, '').toBoolean()
         }
+    }
+
+    private def getForkConfig() {
+        config.grails.project.fork
     }
 
     protected void parseGrailsBuildListeners() {

@@ -16,11 +16,17 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
 
     @CompileStatic
     EmbeddableServer createInline(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
-        return new InlineExplodedTomcatServer(basedir, webXml, contextPath, classLoader)
+        final obj = buildSettings?.forkSettings?.get("run")
+        if(obj) {
+            return createForked(contextPath, obj)
+        }
+        else {
+            return new InlineExplodedTomcatServer(basedir, webXml, contextPath, classLoader)
+        }
     }
 
     @CompileStatic
-    private ForkedTomcatServer createForked(String contextPath) {
+    private ForkedTomcatServer createForked(String contextPath, forkConfig) {
         TomcatExecutionContext ec = new TomcatExecutionContext()
         List<File> buildDependencies = buildMinimalIsolatedClasspath()
 
@@ -38,7 +44,21 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
         ec.testClassesDir = buildSettings.testClassesDir
         ec.resourcesDir = buildSettings.resourcesDir
 
-        return new ForkedTomcatServer(ec)
+        final forkedTomcat = new ForkedTomcatServer(ec)
+
+
+        if(forkConfig instanceof Map) {
+
+            final Map<String, Object> runSettings = (Map<String, Object>) forkConfig
+            runSettings.each { Map.Entry<String, Object> entry ->
+                try {
+                    forkedTomcat.setProperty(entry.getKey(),entry.getValue())
+                } catch (MissingPropertyException e) {
+                    // ignore
+                }
+            }
+        }
+        return forkedTomcat
     }
 
     @CompileStatic
