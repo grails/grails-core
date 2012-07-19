@@ -6,7 +6,8 @@ grails.project.target.level = 1.6
 grails.project.source.level = 1.6
 // Use the following to control whether to fork a JVM to isolate classpaths in Grails. The memory and debug settings for the forked JVM can be specified here.
 grails.project.fork = [
-        run: [maxMemory:1024, minMemory:64, debug:false, maxPerm:256],
+//        run: [maxMemory:1024, minMemory:64, debug:false, maxPerm:256],
+        run:false,
         console:false,
         shell:false,
         test:false
