@@ -17,7 +17,6 @@ package org.grails.plugins.tomcat.fork
 
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
-import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
 import groovy.transform.CompileStatic
 import org.apache.catalina.Context
@@ -27,8 +26,6 @@ import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.InlineExplodedTomcatServer
 import org.grails.plugins.tomcat.TomcatKillSwitch
-
-import java.lang.reflect.Method
 
 /**
  * An implementation of the Tomcat server that runs in forked mode.
@@ -56,6 +53,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         new ForkedTomcatServer().run()
     }
 
+    @CompileStatic
     def run() {
         TomcatExecutionContext ec = executionContext
         def buildSettings = new BuildSettings(ec.grailsHome, ec.baseDir)
@@ -63,13 +61,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
         BuildSettingsHolder.settings = buildSettings
 
-        def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURL() }
-        urls.add(buildSettings.classesDir.toURL())
-        urls.add(buildSettings.pluginClassesDir.toURL())
-        urls.add(buildSettings.pluginBuildClassesDir.toURL())
-        urls.add(buildSettings.pluginProvidedClassesDir.toURL())
-
-        URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+        URLClassLoader classLoader = createClassLoader(buildSettings)
 
         initializeLogging(ec.grailsHome,classLoader)
 
@@ -81,30 +73,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     }
 
-    protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
-        try {
-            final projectCompiler = classLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectCompiler").newInstance(new PluginBuildSettings(buildSettings), classLoader)
-            projectCompiler.configureClasspath()
-            final holders = classLoader.loadClass("grails.util.Holders")
-            final projectWatcher = classLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectWatcher").newInstance(projectCompiler, holders.getPluginManager())
-            projectWatcher.run()
-        } catch (e) {
-            e.printStackTrace()
-            println "WARNING: There was an error setting up reloading. Changes to classes will not be reflected: ${e.message}"
-        }
-    }
 
-    protected void initializeLogging(File grailsHome, ClassLoader classLoader) {
-        try {
-            Class<?> cls = classLoader.loadClass("org.apache.log4j.PropertyConfigurator");
-            Method configure = cls.getMethod("configure", URL.class);
-            configure.setAccessible(true);
-            File f = new File(grailsHome.absolutePath + "/scripts/log4j.properties");
-            configure.invoke(cls, f.toURI().toURL());
-        } catch (Throwable e) {
-            println("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage());
-        }
-    }
 
     @CompileStatic
     void start(String host, int port) {
@@ -192,5 +161,5 @@ class TomcatExecutionContext extends ExecutionContext implements Serializable {
     String host = EmbeddableServer.DEFAULT_HOST
     int port = EmbeddableServer.DEFAULT_PORT
     int securePort = EmbeddableServer.DEFAULT_SECURE_PORT
-    File grailsHome
+
 }

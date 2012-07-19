@@ -20,6 +20,8 @@ import grails.build.logging.GrailsConsole
 import org.apache.commons.logging.Log
 import gant.Gant
 import grails.util.BuildSettings
+import grails.util.PluginBuildSettings
+import java.lang.reflect.Method
 
 /**
  * Helper class for kicking off forked JVM processes, helpful in managing the setup and
@@ -28,7 +30,7 @@ import grails.util.BuildSettings
  * @author Graeme Rocher
  * @since 2.2
  */
-@CompileStatic
+
 abstract class ForkedGrailsProcess {
 
     int maxMemory = 1024;
@@ -37,8 +39,44 @@ abstract class ForkedGrailsProcess {
     boolean debug = false;
     File reloadingAgent;
 
+    @CompileStatic
+    void configure(Map forkConfig) {
+        if(forkConfig instanceof Map) {
+
+            final Map<String, Object> runSettings = (Map<String, Object>) forkConfig
+            runSettings.each { Map.Entry<String, Object> entry ->
+                try {
+                    ((GroovyObject)this).setProperty(entry.getKey(),entry.getValue())
+                } catch (MissingPropertyException e) {
+                    // ignore
+                }
+            }
+        }
+
+    }
+
+    @CompileStatic
+    protected void discoverAndSetAgent(ExecutionContext executionContext) {
+        try {
+            final agentClass = Thread.currentThread().contextClassLoader.loadClass('com.springsource.loaded.ReloadEventProcessorPlugin')
+            setReloadingAgent(ForkedGrailsProcess.findJarFile(agentClass))
+        } catch (e) {
+            final grailsHome = executionContext.grailsHome
+            if (grailsHome && grailsHome.exists()) {
+                def agentHome = new File(grailsHome, "lib/com.springsource.springloaded/springloaded-core/jars")
+                final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar")}
+                if (agentJar) {
+                    setReloadingAgent(agentJar)
+                }
+            }
+        }
+    }
+
+    @CompileStatic
     Process fork() {
         ExecutionContext executionContext = createExecutionContext()
+
+        discoverAndSetAgent(executionContext)
         def processBuilder = new ProcessBuilder()
         def cp = new StringBuilder()
         for (File file : executionContext.getBuildDependencies()) {
@@ -100,6 +138,7 @@ abstract class ForkedGrailsProcess {
 
     abstract ExecutionContext createExecutionContext()
 
+    @CompileStatic
     ExecutionContext readExecutionContext() {
         String location = System.getProperty("grails.build.execution.context");
 
@@ -155,6 +194,44 @@ abstract class ForkedGrailsProcess {
         jarFile
     }
 
+    @CompileStatic
+    protected URLClassLoader createClassLoader(BuildSettings buildSettings) {
+        def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURL() }
+        urls.add(buildSettings.classesDir.toURL())
+        urls.add(buildSettings.pluginClassesDir.toURL())
+        urls.add(buildSettings.pluginBuildClassesDir.toURL())
+        urls.add(buildSettings.pluginProvidedClassesDir.toURL())
+
+        URLClassLoader classLoader = new URLClassLoader(urls as URL[])
+        return classLoader
+    }
+
+    protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
+        try {
+            final projectCompiler = classLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectCompiler").newInstance(new PluginBuildSettings(buildSettings), classLoader)
+            projectCompiler.configureClasspath()
+            final holders = classLoader.loadClass("grails.util.Holders")
+            final projectWatcher = classLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectWatcher").newInstance(projectCompiler, holders.getPluginManager())
+            projectWatcher.run()
+        } catch (e) {
+            e.printStackTrace()
+            println "WARNING: There was an error setting up reloading. Changes to classes will not be reflected: ${e.message}"
+        }
+    }
+
+    protected void initializeLogging(File grailsHome, ClassLoader classLoader) {
+        try {
+            Class<?> cls = classLoader.loadClass("org.apache.log4j.PropertyConfigurator");
+            Method configure = cls.getMethod("configure", URL.class)
+            configure.setAccessible(true);
+            File f = new File(grailsHome.absolutePath + "/scripts/log4j.properties");
+            configure.invoke(cls, f.toURI().toURL());
+        } catch (Throwable e) {
+            println("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage());
+        }
+    }
+
+    @CompileStatic
     static class TextDumper implements Runnable {
         InputStream input
         Appendable app
@@ -176,7 +253,7 @@ abstract class ForkedGrailsProcess {
 }
 
 @CompileStatic
-class ExecutionContext {
+class ExecutionContext implements Serializable{
     List<File> runtimeDependencies
     List<File> buildDependencies
     List<File> providedDependencies
@@ -190,4 +267,5 @@ class ExecutionContext {
     File baseDir
 
     String env
+    File grailsHome
 }

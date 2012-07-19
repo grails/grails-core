@@ -1,3 +1,18 @@
+/*
+ * Copyright 2012 SpringSource
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.grails.plugins.tomcat
 
 import grails.web.container.EmbeddableServer
@@ -9,6 +24,7 @@ import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import grails.util.Environment
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
+
 
 class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware {
 
@@ -45,39 +61,13 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
         ec.resourcesDir = buildSettings.resourcesDir
 
         final forkedTomcat = new ForkedTomcatServer(ec)
+        if(forkConfig instanceof Map)
+            forkedTomcat.configure((Map)forkConfig)
 
-        discoverAndSetAgent(forkedTomcat, buildSettings)
 
-        if(forkConfig instanceof Map) {
-
-            final Map<String, Object> runSettings = (Map<String, Object>) forkConfig
-            runSettings.each { Map.Entry<String, Object> entry ->
-                try {
-                    forkedTomcat.setProperty(entry.getKey(),entry.getValue())
-                } catch (MissingPropertyException e) {
-                    // ignore
-                }
-            }
-        }
         return forkedTomcat
     }
 
-    @CompileStatic
-    protected void discoverAndSetAgent(ForkedGrailsProcess forkedProcess, BuildSettings buildSettings) {
-        try {
-            final agentClass = Thread.currentThread().contextClassLoader.loadClass('com.springsource.loaded.ReloadEventProcessorPlugin')
-            forkedProcess.setReloadingAgent(ForkedGrailsProcess.findJarFile(agentClass))
-        } catch (e) {
-            final grailsHome = buildSettings.grailsHome
-            if (grailsHome && grailsHome.exists()) {
-                def agentHome = new File(grailsHome, "lib/com.springsource.springloaded/springloaded-core/jars")
-                final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar")}
-                if (agentJar) {
-                    forkedProcess.setReloadingAgent(agentJar)
-                }
-            }
-        }
-    }
 
     @CompileStatic
     private List<File> buildMinimalIsolatedClasspath() {
