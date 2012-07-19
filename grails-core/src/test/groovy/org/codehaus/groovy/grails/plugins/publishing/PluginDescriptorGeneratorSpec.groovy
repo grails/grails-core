@@ -1,8 +1,8 @@
 package org.codehaus.groovy.grails.plugins.publishing
 
-import org.springframework.core.io.FileSystemResource
 import spock.lang.Specification
 import grails.util.BuildSettings
+import org.codehaus.groovy.grails.io.support.FileSystemResource
 
 class PluginDescriptorGeneratorSpec extends Specification {
 

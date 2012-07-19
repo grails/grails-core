@@ -62,7 +62,7 @@ public abstract class BaseApiProvider {
                 }
 
                 if (Modifier.isStatic(modifiers)) {
-                    if(isConstructorCallMethod(javaMethod)) {
+                    if (isConstructorCallMethod(javaMethod)) {
                         constructors.add(javaMethod);
                     }
                     else {

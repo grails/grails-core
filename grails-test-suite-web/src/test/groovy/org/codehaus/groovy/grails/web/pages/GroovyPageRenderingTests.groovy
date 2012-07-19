@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.web.pages
 
-import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException
 import grails.util.Environment
+
+import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException
+import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 
 /**
  * @author Graeme Rocher
@@ -43,7 +44,7 @@ class GroovyPageRenderingTests extends AbstractGrailsTagTests {
         def result = applyTemplate(template, [toplist: [[sublist:['a','b']],[sublist:['c','d']]]])
         assertEquals 'abcd', result
     }
-    
+
     void testForeachIteratingMap() {
         def template='<g:each var="k,v" in="[a:1,b:2,c:3]">${k}=${v},</g:each>'
         def result = applyTemplate(template, [:])
@@ -151,5 +152,4 @@ is a test action description" class="buttons" onclick="if (testForm.testField.va
         def result = applyTemplate(template, [:])
         assertEquals 'hello hello', result
     }
-
 }

@@ -7,5 +7,6 @@ dependencies {
     }
 
     compile project(":grails-web"), project(":grails-plugin-controllers")
+    compile "junit:junit:${junitVersion}"
 }
 jar.appendix = 'plugin-url-mappings'

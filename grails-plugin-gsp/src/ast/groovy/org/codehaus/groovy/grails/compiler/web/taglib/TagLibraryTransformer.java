@@ -180,7 +180,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
                         property.setType(CLOSURE_CLASS_NODE);
                     }
                 }
-                else if(initialExpression instanceof VariableExpression) {
+                else if (initialExpression instanceof VariableExpression) {
                     potentialAliases.add(property);
                 }
             }
@@ -191,7 +191,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
 
             String propertyName = pe.getName();
             PropertyNode property = classNode.getProperty(propertyName);
-            if(property != null && tags.contains(property)) {
+            if (property != null && tags.contains(property)) {
                 potentialAlias.setType(CLOSURE_CLASS_NODE);
                 tags.add(potentialAlias);
             }

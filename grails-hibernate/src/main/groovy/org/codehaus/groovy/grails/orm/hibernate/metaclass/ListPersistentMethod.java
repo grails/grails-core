@@ -59,7 +59,7 @@ public class ListPersistentMethod extends AbstractStaticPersistentMethod {
                 getHibernateTemplate().applySettings(c);
                 if (arguments.length > 0 && arguments[0] instanceof Map) {
                     Map argMap = (Map)arguments[0];
-                    if(argMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
+                    if (argMap.containsKey(GrailsHibernateUtil.ARGUMENT_MAX)) {
                         c.setMaxResults(Integer.MAX_VALUE);
                         GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, c,argMap);
                         c.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);

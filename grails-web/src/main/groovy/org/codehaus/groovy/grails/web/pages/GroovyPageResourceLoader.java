@@ -85,8 +85,8 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
                 if (r.exists()) return r;
             }
 
-            Resource[] inlinePluginDirectories = pluginSettings.getInlinePluginDirectories();
-            for (Resource inlinePluginDirectory : inlinePluginDirectories) {
+            org.codehaus.groovy.grails.io.support.Resource[] inlinePluginDirectories = pluginSettings.getInlinePluginDirectories();
+            for (org.codehaus.groovy.grails.io.support.Resource inlinePluginDirectory : inlinePluginDirectories) {
                 try {
                     File dirFile = inlinePluginDirectory.getFile();
                     File pageFile = new File(dirFile, pathRelativeToPlugin);

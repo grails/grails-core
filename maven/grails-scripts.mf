@@ -11,7 +11,6 @@ Import-Template:
  org.codehaus.groovy.grails.*;version="${grails.version:[=.=.=, =.+1.0)}",
  grails.*;version="${grails.version:[=.=.=, =.+1.0)}", 
  javax.xml.*;version="0",
- org.tmatesoft.*;version="${svnkit.version:[=.=.=, +1.0.0)}",
  groovy.*;version="${groovy.version:[=.=.=, =.+1.0)}",
  org.codehaus.groovy.runtime.*;version="${groovy.version:[=.=.=, =.+1.0)}",
  org.codehaus.groovy.classgen.*;version="${groovy.version:[=.=.=, =.+1.0)}",

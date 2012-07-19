@@ -112,7 +112,7 @@ class NamedCriteriaProxy<T> {
             paramsMap = params[-1]
         }
 
-        if(paramsMap) {
+        if (paramsMap) {
             domainClass.clazz.createCriteria().list(paramsMap, listClosure)
         } else {
             domainClass.clazz.withCriteria(listClosure)
@@ -188,13 +188,13 @@ class NamedCriteriaProxy<T> {
     }
 
     void order(String propName) {
-        if(!inCountMethod) {
+        if (!inCountMethod) {
             queryBuilder?.order propName
         }
     }
 
     void order(String propName, String direction) {
-        if(!inCountMethod) {
+        if (!inCountMethod) {
             queryBuilder?.order propName, direction
         }
     }

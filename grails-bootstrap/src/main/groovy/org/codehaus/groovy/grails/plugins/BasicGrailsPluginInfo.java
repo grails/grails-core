@@ -18,12 +18,11 @@ package org.codehaus.groovy.grails.plugins;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.MissingPropertyException;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.core.io.Resource;
+import org.codehaus.groovy.grails.io.support.Resource;
 
 /**
  * Simple Javabean implementation of the GrailsPluginInfo interface.
@@ -87,12 +86,7 @@ public class BasicGrailsPluginInfo extends GroovyObjectSupport implements Grails
     }
 
     public Resource getPluginDir() {
-        try {
-            return descriptor.createRelative(".");
-        }
-        catch (IOException e) {
-            return null;
-        }
+        return descriptor.createRelative(".");
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

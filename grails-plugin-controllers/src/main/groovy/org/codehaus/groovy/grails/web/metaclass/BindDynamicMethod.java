@@ -31,7 +31,7 @@ import org.springframework.util.Assert;
  *
  * <code>
  *         def a = new Account()
- *         bindData(a, this.params)
+ *         bindData(a, params)
  * </code>
  *
  * @author Graeme Rocher

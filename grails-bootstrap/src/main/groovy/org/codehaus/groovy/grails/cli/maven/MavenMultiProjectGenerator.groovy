@@ -17,10 +17,9 @@ package org.codehaus.groovy.grails.cli.maven
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import grails.util.BuildSettings
-import org.springframework.core.io.Resource
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
-import org.springframework.core.io.FileSystemResource
 import grails.util.Metadata
+import org.codehaus.groovy.grails.io.support.FileSystemResource
 
 /**
  * Generates a Maven multi-module build structure for a Grails project and plugins
@@ -40,28 +39,27 @@ class MavenMultiProjectGenerator extends BaseSettingsApi{
         def parentPom = new File(baseDir, "pom.xml")
         copyGrailsResource(parentPom, rootTemplate)
         def ant = new AntBuilder()
-        
+
         List<File> allModules = baseDir.listFiles().findAll { File dir ->
             dir.isDirectory() && !dir.isHidden() && (new File(dir, 'grails-app').exists() || dir.listFiles().find { File f -> f.name.endsWith("GrailsPlugin.groovy")})
         }
-        
+
         def moduleNames = allModules.collect() { File f -> f.name }
-        
+
         def plugins = allModules.findAll() { File dir -> dir.listFiles().find { File f -> f.name.endsWith("GrailsPlugin.groovy")} }
         def apps  = allModules.findAll() { File dir -> !dir.listFiles().find { File f -> f.name.endsWith("GrailsPlugin.groovy")} }
-
 
         def reader = new AstPluginDescriptorReader()
         def binaryPlugins = []
         def sourcePlugins = []
-        for(File pluginDir in plugins) {
+        for (File pluginDir in plugins) {
             def descriptor = pluginDir.listFiles().find { it.name.endsWith("GrailsPlugin.groovy")}
             def info = reader.readPluginInfo(new FileSystemResource(descriptor))
             def packaging = info.packaging ?: "source"
             def isBinary = "binary" == packaging
             def template = isBinary ? grailsResource("src/grails/templates/maven/binary-plugin.pom") :  grailsResource("src/grails/templates/maven/plugin.pom")
             def pluginPom = new File(pluginDir, "pom.xml")
-            if(!pluginPom.exists()) {
+            if (!pluginPom.exists()) {
                 copyGrailsResource(pluginPom, template)
                 def pluginGroup = info.group ?: "org.grails.plugins"
                 ant.replace(file:pluginPom) {
@@ -78,14 +76,13 @@ class MavenMultiProjectGenerator extends BaseSettingsApi{
                 (isBinary ? binaryPlugins : sourcePlugins ) << [group:pluginGroup, name: info.name, version:info.version]
             }
         }
-        
-        for(File appDir in apps) {
+
+        for (File appDir in apps) {
             def template = grailsResource("src/grails/templates/maven/app.pom")
             def appPom = new File(appDir, "pom.xml")
-            if(!appPom.exists()) {
+            if (!appPom.exists()) {
                 copyGrailsResource(appPom, template)
-                
-                
+
                 def appProps = new File(appDir, "application.properties")
                 def props = Metadata.getInstance(appProps)
 
@@ -95,7 +92,7 @@ class MavenMultiProjectGenerator extends BaseSettingsApi{
         <groupId>$it.group</groupId>
         <artifactId>$it.name</artifactId>
         <version>$it.version</version>
-    </dependency>        
+    </dependency>
                     """
                 }
                 dependencies.addAll( sourcePlugins.collect {
@@ -106,8 +103,8 @@ class MavenMultiProjectGenerator extends BaseSettingsApi{
         <version>$it.version</version>
         <type>zip</type>
         <scope>compile</scope>
-    </dependency>   
-    
+    </dependency>
+
 """.toString()
                 })
 
@@ -120,7 +117,7 @@ class MavenMultiProjectGenerator extends BaseSettingsApi{
                     replacefilter token:"@name@", value:props.getApplicationName()
                     replacefilter token:"@version@", value:props.getApplicationVersion()
                     replacefilter token:"@plugins@", value: dependencies.join('')
-                }                
+                }
             }
         }
 

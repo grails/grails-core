@@ -16,13 +16,11 @@
 
 package org.codehaus.groovy.grails.test.support
 
+import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.GrailsTestTypeResult
-import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
 import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper
-
-import org.springframework.core.io.Resource
 import org.springframework.context.ApplicationContext
 
 /**
@@ -106,7 +104,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      * Typically, implementations with call {@link #getTestClassLoader()} and load the appropriate tests
      * that match the {@code testTargetPatterns}.
      */
-    abstract protected int doPrepare()
+    protected abstract int doPrepare()
 
     /**
      * Sets the current thread's contextClassLoader to the {@link #getTestClassLoader() test class loader},
@@ -127,7 +125,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      * Performs the tests, and appropriately calls {@link GrailsTestEventPublisher eventPublisher}
      * to communicate the status.
      */
-    abstract protected GrailsTestTypeResult doRun(GrailsTestEventPublisher eventPublisher)
+    protected abstract GrailsTestTypeResult doRun(GrailsTestEventPublisher eventPublisher)
 
     /**
      * Called after the tests have completed, regardless of success or not.
@@ -259,9 +257,9 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      */
     protected ApplicationContext getApplicationContext() {
         if (buildBinding.variables.containsKey("appCtx")) {
-            buildBinding.getProperty("appCtx")
-        } else {
-            throw new IllegalStateException("ApplicationContext requested, but is not present in the build binding")
+            return buildBinding.getProperty("appCtx")
         }
+
+        throw new IllegalStateException("ApplicationContext requested, but is not present in the build binding")
     }
 }

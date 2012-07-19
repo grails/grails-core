@@ -139,7 +139,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         }
 
         String actionName = controllerClass.getMethodActionName(uri);
-        if(controllerClass.isFlowAction(actionName)) {
+        if (controllerClass.isFlowAction(actionName)) {
             // direct access to flow action not allowed
             return null;
         }
@@ -206,10 +206,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             // Step 6: get action from implementation
             Object action = retrieveAction(controller, actionName, response);
 
-                        // Step 7: process the action
+            // Step 7: process the action
             Object returnValue = null;
             try {
-                returnValue = handleAction(controller,action,request,response,params);
+                returnValue = handleAction(controller, action, request, response, params);
             }
             catch (Throwable t) {
                 String pluginName = GrailsPluginUtils.getPluginName(controller.getClass());

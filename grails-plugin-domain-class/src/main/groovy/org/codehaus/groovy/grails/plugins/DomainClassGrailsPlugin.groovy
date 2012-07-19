@@ -16,33 +16,30 @@
 package org.codehaus.groovy.grails.plugins
 
 import grails.artefact.Enhanced
-import grails.util.ClosureToMapPopulator
 import grails.util.GrailsUtil
+import grails.validation.ValidationErrors
 
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
+import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
-import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
-import grails.util.Environment
-import grails.validation.ValidationErrors
 
 /**
- * A plugin that configures the domain classes in the spring context.
+ * Configures the domain classes in the spring context.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -109,7 +106,7 @@ class DomainClassGrailsPlugin {
     def onChange = { event ->
         def cls = event.source
         try {
-            org.grails.datastore.mapping.reflect.ClassPropertyFetcher.@cachedClassPropertyFetchers.clear()
+            ClassPropertyFetcher.@cachedClassPropertyFetchers.clear()
         } catch (e) {
             // restricted environment, ignore
         }
@@ -203,9 +200,9 @@ class DomainClassGrailsPlugin {
                         return gormValidationApi
                     }
                 }
-                
-                AutowireCapableBeanFactory autowireCapableBeanFactory=ctx.autowireCapableBeanFactory
-                int byName=AutowireCapableBeanFactory.AUTOWIRE_BY_NAME
+
+                AutowireCapableBeanFactory autowireCapableBeanFactory = ctx.autowireCapableBeanFactory
+                int byName = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME
                 metaClass.static.autowireDomain = { instance ->
                     autowireCapableBeanFactory.autowireBeanProperties(instance, byName, false)
                 }
@@ -288,6 +285,7 @@ class DomainClassGrailsPlugin {
         }
         obj
     }
+
     public static addRelationshipManagementMethods(GrailsDomainClass dc, ApplicationContext ctx) {
         def metaClass = dc.metaClass
         for (p in dc.persistentProperties) {

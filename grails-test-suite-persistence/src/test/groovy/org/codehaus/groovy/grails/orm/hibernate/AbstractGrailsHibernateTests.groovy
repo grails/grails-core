@@ -104,6 +104,9 @@ dataSource {
     password = ""
     dbCreate = "create-drop"
     url = "jdbc:h2:mem:grailsIntTestDB"
+    properties {
+      maxWait = 10000
+    }
 }
 hibernate {
     cache.use_second_level_cache=true
@@ -278,4 +281,5 @@ class MockHibernateGrailsPlugin {
     def loadAfter = ['controllers']
     def doWithSpring = HibernatePluginSupport.doWithSpring
     def doWithDynamicMethods = HibernatePluginSupport.doWithDynamicMethods
+    def onChange = HibernatePluginSupport.onChange
 }

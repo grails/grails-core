@@ -30,7 +30,13 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateTemplate;
 import org.codehaus.groovy.grails.orm.hibernate.proxy.GroovyAwareJavassistProxyFactory;
@@ -445,7 +451,7 @@ public class GrailsHibernateUtil {
      *
      * @param obj The name of the object
      * @param associationName The name of the association
-     * @return True if is initialized
+     * @return true if is initialized
      */
     public static boolean isInitialized(Object obj, String associationName) {
         return proxyHandler.isInitialized(obj, associationName);
@@ -535,7 +541,7 @@ public class GrailsHibernateUtil {
         // Mappings won't have been built yet when this is called from
         // HibernatePluginSupport.doWithSpring  so do a temporary evaluation but don't cache it
         Mapping mapping = isMappedWithHibernate(domainClass) ? GrailsDomainBinder.evaluateMapping(domainClass, null, false) : null;
-        if(mapping == null) {
+        if (mapping == null) {
             mapping = new Mapping();
         }
         return mapping.getDatasources();
@@ -548,18 +554,17 @@ public class GrailsHibernateUtil {
     public static void autoAssociateBidirectionalOneToOnes(DefaultGrailsDomainClass domainClass, Object target) {
         List<GrailsDomainClassProperty> associations = domainClass.getAssociations();
         for (GrailsDomainClassProperty association : associations) {
-            if(association.isOneToOne() && association.isBidirectional() && association.isOwningSide()) {
-                if(isInitialized(target, association.getName())) {
+            if (association.isOneToOne() && association.isBidirectional() && association.isOwningSide()) {
+                if (isInitialized(target, association.getName())) {
                     GrailsDomainClassProperty otherSide = association.getOtherSide();
-                    if(otherSide != null) {
+                    if (otherSide != null) {
                         BeanWrapper bean = new BeanWrapperImpl(target);
                         Object inverseObject = bean.getPropertyValue(association.getName());
-                        if(inverseObject != null) {
-
-                            if(isInitialized(inverseObject,otherSide.getName())) {
+                        if (inverseObject != null) {
+                            if (isInitialized(inverseObject,otherSide.getName())) {
                                 BeanWrapper inverseBean = new BeanWrapperImpl(inverseObject);
                                 Object propertyValue = inverseBean.getPropertyValue(otherSide.getName());
-                                if(propertyValue == null) {
+                                if (propertyValue == null) {
                                     inverseBean.setPropertyValue(otherSide.getName(), target);
                                 }
                             }
@@ -569,5 +574,4 @@ public class GrailsHibernateUtil {
             }
         }
     }
-
 }

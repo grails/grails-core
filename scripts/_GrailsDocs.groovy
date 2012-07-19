@@ -38,6 +38,7 @@ groovydocDir = "${grailsSettings.docsOutputDir}/gapi"
 docEncoding = "UTF-8"
 docSourceLevel = "1.5"
 links = ['http://java.sun.com/j2se/1.5.0/docs/api/']
+apiLinks = [:]
 
 docsDisabled = { argsMap.nodoc == true }
 pdfEnabled = { argsMap.pdf == true }
@@ -146,9 +147,19 @@ target(groovydoc:"Produces groovydoc documentation") {
         sourcePath.add new Path(ant.project, tmpDir.absolutePath)
     }
 
+    // Prepare external API links
+    readApiLinks()
+
     try {
         ant.groovydoc(destdir:groovydocDir, sourcepath:sourcePath, use:"true",
-                      windowtitle:grailsAppName,'private':"true")
+                      windowtitle:grailsAppName,'private':"true") {
+            // Apply external API links
+            apiLinks?.each { pkg,href ->
+                if (pkg && href) {
+                    link(packages:"${pkg}.", href:"${href}")
+                }
+            }
+        }
     }
     catch(Exception e) {
         event("StatusError", ["Error generating groovydoc: ${e.message}"])
@@ -254,7 +265,7 @@ ${m.arguments?.collect { '* @'+GrailsNameUtils.getPropertyName(it)+'@\n' }}
         publisher.license = ""
         publisher.copyright = ""
         publisher.footer = ""
-        publisher.engineProperties = config?.grails?.doc
+        publisher.engineProperties = config?.grails?.doc?.flatten()
         // if this is a plugin obtain additional metadata from the plugin
         readPluginMetadataForDocs(publisher)
         readDocProperties(publisher)
@@ -392,4 +403,14 @@ private readIfSet(DocPublisher publisher,String prop) {
 
 private loadBasePlugin() {
     pluginManager?.allPlugins?.find { it.basePlugin }
+}
+
+/**
+ * Read external API doc links from grails.doc.api in Config.groovy
+ */
+def readApiLinks() {
+    if (!config?.grails?.doc?.api) return
+    def apiLinksFromConfig = config.grails.doc.api.flatten()
+    if (apiLinks == null) apiLinks = apiLinksFromConfig
+    else apiLinks.putAll(apiLinksFromConfig)
 }

@@ -205,7 +205,7 @@ public class ControllersApi extends CommonWebApi {
 
     /**
      * Return true if there are an errors
-     * @return True if there are errors
+     * @return true if there are errors
      */
     public boolean hasErrors(Object instance) {
         final Errors errors = getErrors(instance);

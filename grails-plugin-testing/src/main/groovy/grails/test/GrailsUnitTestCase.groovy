@@ -225,9 +225,10 @@ class GrailsUnitTestCase extends GroovyTestCase {
     }
 
     protected void addConverters(Class clazz, boolean register = true) {
-        if(register)
+        if (register) {
             registerMetaClass(clazz)
-        clazz.metaClass.asType = {Class asClass ->
+        }
+        clazz.metaClass.asType = { Class asClass ->
             if (ConverterUtil.isConverterClass(asClass)) {
                 return ConverterUtil.createConverter(asClass, delegate, applicationContext)
             }

@@ -2,9 +2,9 @@ package org.codehaus.groovy.grails.plugins
 
 import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
+import org.codehaus.groovy.grails.io.support.ByteArrayResource
+import org.codehaus.groovy.grails.io.support.Resource
 
-import org.springframework.core.io.ByteArrayResource
-import org.springframework.core.io.Resource
 
 class PluginDescriptorReaderTests extends GroovyTestCase {
 

@@ -333,10 +333,12 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         response = null
         RequestContextHolder.setRequestAttributes(null)
         views.clear()
-        if(ctx?.containsBean("groovyPagesTemplateEngine"))
+        if (ctx?.containsBean("groovyPagesTemplateEngine")) {
             ctx?.getBean("groovyPagesTemplateEngine")?.clearPageCache()
-        if(ctx?.containsBean("grovyPagesTemplateRenderer"))
+        }
+        if (ctx?.containsBean("grovyPagesTemplateRenderer")) {
             ctx?.getBean("groovyPagesTemplateRenderer")?.clearCache()
+        }
     }
 }
 

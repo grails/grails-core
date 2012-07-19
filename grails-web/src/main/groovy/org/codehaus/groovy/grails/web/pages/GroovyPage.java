@@ -155,7 +155,7 @@ public abstract class GroovyPage extends Script {
         public Object call(Object... args) {
             return retval;
         }
-        
+
         public boolean asBoolean() {
             return DefaultTypeTransformation.castToBoolean(retval);
         }
@@ -328,7 +328,7 @@ public abstract class GroovyPage extends Script {
      * @param name  tag name
      * @return resolved tag if any
      */
-    public JspTag getJspTag(String uri, String name){
+    public JspTag getJspTag(String uri, String name) {
         if (jspTagLibraryResolver == null) {
             return null;
         }

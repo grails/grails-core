@@ -34,7 +34,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -60,7 +60,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
     public GrailsProjectWatcher(final GrailsProjectCompiler compiler, GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
-        this.compilerExtensions = compiler.getCompilerExtensions();
+        compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
         if (isReloadingAgentPresent()) {
             GrailsPluginManagerReloadPlugin.register();
@@ -94,7 +94,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
     /**
      * Whether the watcher is active
-     * @return True if it is
+     * @return true if it is
      */
     public static boolean isActive() {
         return active;
@@ -121,8 +121,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         for (String directory : compiler.getSrcDirectories()) {
             addWatchDirectory(new File(directory), compilerExtensions);
         }
-        Resource[] pluginSourceFiles = compiler.getPluginSettings().getPluginSourceFiles();
-        for (Resource pluginSourceFile : pluginSourceFiles) {
+        org.codehaus.groovy.grails.io.support.Resource[] pluginSourceFiles = compiler.getPluginSettings().getPluginSourceFiles();
+        for (org.codehaus.groovy.grails.io.support.Resource pluginSourceFile : pluginSourceFiles) {
             try {
                 if (pluginSourceFile.getFile().isDirectory()) {
                     addWatchDirectory(pluginSourceFile.getFile(), compilerExtensions);
@@ -155,10 +155,9 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             }
         });
 
-        if(pluginManager != null) {
+        if (pluginManager != null) {
             initPluginWatchPatterns();
         }
-
 
         super.run();
     }
@@ -172,8 +171,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
             if (info != null && info.getDescriptor() != null) {
                 try {
-                    Resource descriptor = info.getDescriptor();
-                    plugin.setDescriptor(descriptor);
+                    org.codehaus.groovy.grails.io.support.Resource descriptor = info.getDescriptor();
+                    plugin.setDescriptor(new FileSystemResource(descriptor.getFile()));
                     File pluginFile = descriptor.getFile();
                     descriptorToPluginMap.put(pluginFile, plugin);
                     addWatchFile(pluginFile);
@@ -204,7 +203,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     }
 
     private void informPluginManager(final File file, boolean isNew) {
-        if(pluginManager == null)  return;
+        if (pluginManager == null)  return;
+
         if (!isSourceFile(file) || isNew) {
             try {
                 pluginManager.informOfFileChange(file);

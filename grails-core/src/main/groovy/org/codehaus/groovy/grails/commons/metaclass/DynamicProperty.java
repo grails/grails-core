@@ -25,7 +25,7 @@ public interface DynamicProperty {
     /**
      * Whether the target class contains the specified property
      * @param propertyName The name of the property
-     * @return True if the class has the property
+     * @return true if the class has the property
      */
     boolean isPropertyMatch(String propertyName);
 

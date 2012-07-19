@@ -85,7 +85,7 @@ public class ScaffoldingViewResolver extends GrailsViewResolver {
                         LOG.error("Error generating scaffolded view [" + viewName + "]: " + e.getMessage(),e);
                         return resolvedView;
                     }
-                    if(StringUtils.hasLength( viewCode )) {
+                    if (StringUtils.hasLength(viewCode)) {
                         v = createScaffoldedView(viewName, viewCode);
                         scaffoldedViews.put(viewKey, v);
                     }

@@ -14,18 +14,12 @@
  * limitations under the License.
  */
 
-import groovy.xml.MarkupBuilder
-import grails.util.GrailsNameUtils
-import grails.util.PluginBuildSettings
-
-import org.apache.commons.io.FilenameUtils
-import org.apache.ivy.core.report.ArtifactDownloadReport
+import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
-
-import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.plugins.publishing.PluginPackager
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
  * Gant script that deals with those tasks required for plugin developers
@@ -111,16 +105,15 @@ target(packagePlugin: "Implementation target") {
     try {
         pluginZip = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
     }
-    catch ( e) {
-        if(e.cause instanceof org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException) {
-            grailsConsole.error "GSP Compilation Error (${e.cause.fileName}:${e.cause.lineNumber}) - $e.cause.message", e.cause            
+    catch (e) {
+        if (e.cause instanceof GrailsTagException) {
+            grailsConsole.error "GSP Compilation Error (${e.cause.fileName}:${e.cause.lineNumber}) - $e.cause.message", e.cause
         }
         else {
             grailsConsole.error "Plugin Packaging Error: ${e.message}", e
         }
         exit 1
     }
-    
 
     grailsConsole.addStatus "Plugin packaged ${new File(pluginZip).name}"
 

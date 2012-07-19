@@ -6,9 +6,10 @@ import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 /**
  * Tests for the MetaClassEnhancer API
  */
-class MetaClassEnhancerSpec extends Specification{
+class MetaClassEnhancerSpec extends Specification {
 
-    def cleaner 
+    def cleaner
+
     void setup() {
         cleaner = MetaClassRegistryCleaner.createAndRegister()
     }
@@ -24,7 +25,7 @@ class MetaClassEnhancerSpec extends Specification{
         then:"The constructor is correctly overriden"
             dog.name == "Fred"
             dog.age == 3
-        
+
         when:"A constructor that takes arguments is used"
             dog = new Dog(10)
 
@@ -47,13 +48,13 @@ class MetaClassEnhancerSpec extends Specification{
     void "Test that static methods are added correctly"() {
         when:"A class is enhanced with new static methods"
             enhanceClass()
-            
+
         then:"The static methods can be called"
             Dog.colors == ["brown", "black", "white"]
             Dog.getColors() == ["brown", "black", "white"]
             Dog.create("Bob").name == "Bob"
     }
-    
+
     private enhanceClass() {
         def enhancer = new MetaClassEnhancer()
         enhancer.addApi(new DogApi())
@@ -68,9 +69,8 @@ class Dog {
     Dog() {
         name = "Fred"
     }
-    
-    
 }
+
 class DogApi {
     static initialize(target) {
         target.age = 3
@@ -78,8 +78,8 @@ class DogApi {
 
     static initialize(target, int age) {
         target.age = age
-    }    
-    
+    }
+
     def bark(Object instance) {
         "woof"
     }
@@ -87,14 +87,12 @@ class DogApi {
     def bark(Object instance, boolean friendly) {
         "woof: $friendly"
     }
-    
+
     static getColors() {
         ["brown", "black", "white"]
     }
-    
+
     static create(String name) {
         new Dog(name: name)
     }
-
-
 }

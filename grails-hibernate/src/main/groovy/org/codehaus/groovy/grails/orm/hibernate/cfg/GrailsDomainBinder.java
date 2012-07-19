@@ -228,7 +228,7 @@ public final class GrailsDomainBinder {
         }
 
         public void doSecondPass(Map<?, ?> persistentClasses, @SuppressWarnings("unused") Map<?, ?> inheritedMetas) throws MappingException {
-            bindCollectionSecondPass(this.property, mappings, persistentClasses, collection, sessionFactoryBeanName);
+            bindCollectionSecondPass(property, mappings, persistentClasses, collection, sessionFactoryBeanName);
             createCollectionKeys();
         }
 
@@ -926,7 +926,7 @@ public final class GrailsDomainBinder {
      * Checks whether a property is a unidirectional non-circular one-to-many
      *
      * @param property The property to check
-     * @return True if it is unidirectional and a one-to-many
+     * @return true if it is unidirectional and a one-to-many
      */
     private static boolean isUnidirectionalOneToMany(GrailsDomainClassProperty property) {
         return property.isOneToMany() && !property.isBidirectional();
@@ -1059,7 +1059,7 @@ public final class GrailsDomainBinder {
      * Establish whether a collection property is sorted
      *
      * @param property The property
-     * @return True if sorted
+     * @return true if sorted
      */
     private static boolean isSorted(GrailsDomainClassProperty property) {
         return SortedSet.class.isAssignableFrom(property.getType());
@@ -1272,20 +1272,19 @@ public final class GrailsDomainBinder {
                         if (!shortName.toLowerCase().startsWith(pluginName.toLowerCase())) {
                             final String pluginSpecificConfigProperty = "grails.gorm." + GrailsNameUtils.getPropertyName(pluginName) + ".table.prefix.enabled";
                             final Map<String, Object> flatConfig = grailsApplication.getFlatConfig();
-                            if(flatConfig.containsKey(pluginSpecificConfigProperty)) {
+                            if (flatConfig.containsKey(pluginSpecificConfigProperty)) {
                                 shouldApplyPluginPrefix = Boolean.TRUE.equals(flatConfig.get(pluginSpecificConfigProperty));
                             } else {
                                 shouldApplyPluginPrefix = Boolean.TRUE.equals(flatConfig.get("grails.gorm.table.prefix.enabled"));
                             }
                         }
-                        if(shouldApplyPluginPrefix) {
+                        if (shouldApplyPluginPrefix) {
                             shortName = pluginName + shortName;
                         }
                     }
                 }
             }
-            tableName = getNamingStrategy(sessionFactoryBeanName)
-                    .classToTableName(shortName);
+            tableName = getNamingStrategy(sessionFactoryBeanName).classToTableName(shortName);
         }
         return tableName;
     }

@@ -27,12 +27,12 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import junit.framework.Assert;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.core.io.Resource;
+import org.springframework.util.Assert;
 
 /**
  * @author Graeme Rocher
@@ -70,8 +70,8 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void registerMockPlugin(GrailsPlugin plugin) {
-        this.plugins.put(plugin.getName(), plugin);
-        this.pluginList.add(plugin);
+        plugins.put(plugin.getName(), plugin);
+        pluginList.add(plugin);
     }
 
     public GrailsPlugin[] getUserPlugins() {
@@ -79,12 +79,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void loadPlugins() throws PluginException {
-        this.initialised = true;
+        initialised = true;
     }
 
     public void checkForChanges() {
-        Assert.assertTrue(this.checkForChangesExpected);
-        this.checkForChangesExpected = false;
+        Assert.isTrue(checkForChangesExpected);
+        checkForChangesExpected = false;
     }
 
     public void doWebDescriptor(Resource descriptor, Writer target) {
@@ -122,12 +122,12 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     }
 
     public void expectCheckForChanges() {
-        Assert.assertFalse(this.checkForChangesExpected);
-        this.checkForChangesExpected = true;
+        Assert.state(!checkForChangesExpected);
+        checkForChangesExpected = true;
     }
 
     public void verify() {
-        Assert.assertFalse(this.checkForChangesExpected);
+        Assert.state(!checkForChangesExpected);
     }
 
     public BuildSettings getBuildSettings() {

@@ -1,7 +1,6 @@
 package grails.util
 
 import grails.build.GrailsBuildListener
-import groovy.mock.interceptor.StubFor
 
 /**
  * Test case for {@link BuildSettings}.
@@ -14,7 +13,11 @@ class BuildSettingsTests extends GroovyTestCase {
 
     protected void setUp() {
         def props = new Properties()
-        new File("../build.properties").withInputStream { InputStream is ->
+        final buildProps = new File("../build.properties")
+        if (!buildProps.exists()) {
+            buildProps = new File("build.properties")
+        }
+        buildProps.withInputStream { InputStream is ->
             props.load(is)
         }
 
@@ -176,36 +179,6 @@ class BuildSettingsTests extends GroovyTestCase {
         assertEquals new File("target").canonicalFile, settings.projectTargetDir
     }
 
-    void testWorkDirIsBasedOnAppNameNotBaseDirName() {
-        // GRAILS-6232
-        def stubMetaData = new StubFor(Metadata)
-        stubMetaData.demand.getInstance(2) {}
-        stubMetaData.demand.getCurrent(2) {
-            [getApplicationName: {'myappname'}, getApplicationVersion: {'1.1'}]
-        }
-
-        stubMetaData.use {
-            def settings = new BuildSettings()
-            settings.baseDir = new File("base/dir")
-            assertEquals 'myappname', settings.projectWorkDir.name
-        }
-    }
-
-    void testWorkDirIsDotCoreWhenCreatingNewApp() {
-        // GRAILS-6232
-        def stubMetaData = new StubFor(Metadata)
-        stubMetaData.demand.getInstance(2) {}
-        stubMetaData.demand.getCurrent(2) {
-            [getApplicationName: {}, getApplicationVersion: {}]
-        }
-
-        stubMetaData.use {
-            def settings = new BuildSettings()
-            settings.baseDir = new File("base/dir")
-            assertEquals '.core', settings.projectWorkDir.name
-        }
-    }
-
     void testSetBaseDir() {
         def settings = new MockBuildSettings()
         settings.baseDir = new File("base/dir")
@@ -311,6 +284,7 @@ class BuildSettingsTests extends GroovyTestCase {
         }
     }
 }
+
 class MockBuildSettings extends BuildSettings {
 
     MockBuildSettings() {
@@ -325,9 +299,8 @@ class MockBuildSettings extends BuildSettings {
     @Override protected loadBuildPropertiesFromClasspath(Properties buildProps) {
         buildProps['grails.version'] = version
     }
-
-
 }
+
 class BuildSettingsTestsGrailsBuildListener implements GrailsBuildListener {
     void receiveGrailsBuildEvent(String name, Object[] args) {}
 }

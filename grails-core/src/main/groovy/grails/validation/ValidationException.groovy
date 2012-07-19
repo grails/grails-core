@@ -16,13 +16,11 @@ class ValidationException extends GrailsException {
 
     ValidationException(String msg, Errors e) {
         super(msg)
-        this.errors = e
-        this.fullMessage = formatErrors(e, msg)
+        errors = e
+        fullMessage = formatErrors(e, msg)
     }
 
-    String getMessage() {
-        return fullMessage
-    }
+    String getMessage() { fullMessage }
 
     static String formatErrors(Errors errors, String msg = null) {
         StringBuilder b = new StringBuilder(msg ? """$msg:

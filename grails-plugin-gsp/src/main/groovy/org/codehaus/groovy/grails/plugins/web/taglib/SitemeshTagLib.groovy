@@ -196,7 +196,7 @@ class SitemeshTagLib implements RequestConstants {
             smpage.setTitleCaptured(true)
         }
     }
-    
+
     /**
      * Wraps the title tag so that the buffer can be cleared out from the head buffer
      */

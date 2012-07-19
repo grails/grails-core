@@ -37,7 +37,12 @@ projectCompiler = new GrailsProjectCompiler(pluginSettings, classLoader)
 projectCompiler.ant = ant
 
 target(name:'classpath', description: "Sets the Grails classpath", prehook:null, posthook:null) {
-    setClasspath()
+    // Make sure the following code is only executed once.
+    if (classpathSet) return
+
+    projectCompiler.configureClasspath()
+    compConfig = projectCompiler.config
+    classpathSet = true
 }
 
 // The following variables are here for compatibility with older versions of Grails
@@ -50,11 +55,4 @@ compileClasspath = projectCompiler.compileClasspath
 testClasspath = projectCompiler.testClasspath
 runtimeClasspath = projectCompiler.runtimeClasspath
 
-void setClasspath() {
-    // Make sure the following code is only executed once.
-    if (classpathSet) return
 
-    projectCompiler.configureClasspath()
-    compConfig = projectCompiler.config
-    classpathSet = true
-}

@@ -24,7 +24,7 @@
         out << renderManyToOne(domainClass, property)
     else if ((property.oneToMany && !property.bidirectional) || (property.manyToMany && property.isOwningSide())) {
         def str = renderManyToMany(domainClass, property)
-        if(str != null) {
+        if (str != null) {
             out << str
         }
     }
@@ -109,13 +109,13 @@
 
     private renderManyToMany(domainClass, property) {
         def cls = property.referencedDomainClass?.clazz
-        if(cls == null) {
-            if(property.type instanceof Collection) {
+        if (cls == null) {
+            if (property.type instanceof Collection) {
                 cls = org.springframework.core.GenericCollectionTypeResolver.getCollectionType(property.type)
             }
         }
 
-        if(cls != null) {
+        if (cls != null) {
             def sb = new StringBuilder()
             sb << '<g:select name="' << property.name << '"'
             sb << ' from="${' << cls.name << '.list()}"'
@@ -173,13 +173,17 @@
 				sb << renderNoSelection(property)
 				sb << '/>'
             } else {
-				sb << '<g:field type="number" name="' << property.name << '"'
-				if (cp.scale != null && cp.scale < 7) sb << ' step="' << BigDecimal.valueOf(1).movePointLeft(cp.scale).toString() << '"'
-				else if (property.type in [float, double, Float, Double, BigDecimal]) sb << ' step="any"'
-				if (cp.min != null) sb << ' min="' << cp.min << '"'
-				if (cp.max != null) sb << ' max="' << cp.max << '"'
+				sb << '<g:field'
+				sb << ' name="' << property.name << '"'
+				if (property.type in [float, double, Float, Double, BigDecimal]) {
+					sb << ' value="${' << "fieldValue(bean: ${domainInstance}, field: '${property.name}')" << '}"'
+				} else {
+					sb << ' type="number"'
+					if (cp.min != null) sb << ' min="' << cp.min << '"'
+					if (cp.max != null) sb << ' max="' << cp.max << '"'
+					sb << ' value="${' << domainInstance << '.' << property.name << '}"'
+				}
 				if (isRequired()) sb << ' required=""'
-				sb << ' value="${' << domainInstance << '.' << property.name << '}"'
 				sb << '/>'
             }
 			sb as String
@@ -214,7 +218,7 @@
                 cp.attributes.each { k, v ->
                     sb << "${k}=\"${v}\" "
                 }
-                if (!cp.attributes.precision){
+                if (!cp.attributes.precision) {
                     sb << "precision=\"${precision}\" "
                 }
                 sb << " value=\"\${${domainInstance}?.${property.name}}\" ${renderNoSelection(property)} />"
@@ -256,7 +260,7 @@
 	}
 
 	private boolean isOptional() {
-	    if(!cp) {
+	    if (!cp) {
 	        return false
 	    }
 	    else {

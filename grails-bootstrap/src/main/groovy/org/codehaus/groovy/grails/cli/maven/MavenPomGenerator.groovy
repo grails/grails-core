@@ -23,8 +23,8 @@ import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 /**
- * Generates a POM for a Grails application
- * 
+ * Generates a POM for a Grails application.
+ *
  * @author Graeme Rocher
  * @since 2.1
  */

@@ -149,7 +149,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
-        if (this.linkGenerator == null) {
+        if (linkGenerator == null) {
             ApplicationContext applicationContext = webRequest.getApplicationContext();
             if (applicationContext != null) {
                 linkGenerator = applicationContext.getBean("grailsLinkGenerator", LinkGenerator.class);

@@ -21,18 +21,6 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.AntBuilder;
-
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import java.io.File;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.net.URLClassLoader;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.apache.tools.ant.BuildLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.LogLevel;
@@ -41,8 +29,15 @@ import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleBuildListener;
 import org.codehaus.groovy.grails.cli.parsing.CommandLine;
-import org.codehaus.groovy.runtime.MethodClosure;
-import org.springframework.util.ReflectionUtils;
+
+import java.io.File;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Configures the binding used when running Grails scripts.
@@ -157,8 +152,10 @@ public class ScriptBindingInitializer {
              cla.enableUaa();
          }
 
-         makeApiAvailableToScripts(binding, cla);
-         makeApiAvailableToScripts(binding, cla.getPluginSettings());
+
+
+         cla.makeApiAvailableToScripts(binding, cla);
+         cla.makeApiAvailableToScripts(binding, cla.getPluginSettings());
 
          // Hide the deprecation warnings that occur with plugins that
          // use "Ant" instead of "ant".
@@ -224,41 +221,6 @@ public class ScriptBindingInitializer {
          }
      }
 
-     protected void makeApiAvailableToScripts(final GantBinding binding, final Object cla) {
-         final Method[] declaredMethods = cla.getClass().getDeclaredMethods();
-         for (Method method : declaredMethods) {
-             final String name = method.getName();
 
-             final int modifiers = method.getModifiers();
-             if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
-                 binding.setVariable(name, new MethodClosure(cla, name));
-             }
-         }
 
-         PropertyDescriptor[] propertyDescriptors;
-         try {
-             propertyDescriptors = Introspector.getBeanInfo(cla.getClass()).getPropertyDescriptors();
-             for (PropertyDescriptor pd : propertyDescriptors) {
-                 final Method readMethod = pd.getReadMethod();
-                 if (readMethod != null) {
-                     if (isDeclared(cla, readMethod)) {
-                         binding.setVariable(pd.getName(), ReflectionUtils.invokeMethod(readMethod, cla));
-                     }
-                 }
-             }
-         }
-         catch (IntrospectionException e1) {
-             // ignore
-         }
-     }
-
-     protected boolean isDeclared(final Object cla, final Method readMethod) {
-         try {
-             return cla.getClass().getDeclaredMethod(readMethod.getName(),
-                 readMethod.getParameterTypes()) != null;
-         }
-         catch (Exception e) {
-             return false;
-         }
-     }
 }

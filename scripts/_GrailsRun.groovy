@@ -13,16 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import grails.util.GrailsUtil
-import grails.util.Metadata
-import grails.web.container.EmbeddableServer
-import grails.web.container.EmbeddableServerFactory
-
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.net.ServerSocket
-
+import org.codehaus.groovy.grails.project.container.*
 import org.codehaus.groovy.grails.cli.ScriptExitException
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
@@ -36,10 +27,13 @@ import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
  * @since 0.4
  */
 
-includeTargets << grailsScript("_GrailsPlugins")
+includeTargets << grailsScript("_GrailsWar")
 
-SCHEME_HTTP = "http"
-SCHEME_HTTPS = "https"
+SCHEME_HTTP = GrailsProjectRunner.SCHEME_HTTP
+SCHEME_HTTPS = GrailsProjectRunner.SCHEME_HTTPS
+
+
+projectRunner = new GrailsProjectRunner(projectPackager, warCreator, classLoader)
 
 // Keep track of whether we're running in HTTPS mode in case we need
 // to restart the server.
@@ -47,7 +41,6 @@ usingSecureServer = false
 
 grailsServer = null
 grailsContext = null
-autoRecompile = System.getProperty("disable.auto.recompile") ? !(System.getProperty("disable.auto.recompile").toBoolean()) : true
 
 // How often should recompilation occur while the application is running (in seconds)?
 // Defaults to 3s.
@@ -64,139 +57,30 @@ ant.path(id: "grails.runtime.classpath", runtimeClasspath)
  * Runs the application in dev mode, i.e. with class-reloading.
  */
 target(runApp: "Main implementation that executes a Grails application") {
-    runInline(SCHEME_HTTP, serverHost, serverPort, serverPortHttps)
+    grailsServer = projectRunner.runApp()
+    startPluginScanner()
 }
 
 /**
  * Runs the application in dev mode over HTTPS.
  */
 target(runAppHttps: "Main implementation that executes a Grails application with an HTTPS listener") {
-    runInline(SCHEME_HTTPS, serverHost, serverPort, serverPortHttps)
+    grailsServer = projectRunner.runAppHttps()
+    startPluginScanner()
 }
 
 /**
  * Runs the application using the WAR file directly.
  */
 target (runWar : "Main implementation that executes a Grails application WAR") {
-    runWar(SCHEME_HTTP, serverHost, serverPort, serverPortHttps)
+    grailsServer = projectRunner.runWar()
 }
 
 /**
  * Runs the application over HTTPS using the WAR file directly.
  */
 target (runWarHttps : "Main implementation that executes a Grails application WAR") {
-    runWar(SCHEME_HTTPS, serverHost, serverPort, serverPortHttps)
-}
-
-private EmbeddableServerFactory loadServerFactory() {
-    def load = { name -> classLoader.loadClass(name).newInstance() }
-
-    String defaultServer = "org.grails.plugins.tomcat.TomcatServerFactory"
-    def containerClass = getPropertyValue("grails.server.factory", defaultServer)
-    EmbeddableServerFactory serverFactory
-    try {
-        serverFactory = load(containerClass)
-    }
-    catch (ClassNotFoundException cnfe) {
-        if (containerClass == defaultServer) {
-            grailsConsole.error "WARNING: No default container found, installing Tomcat.."
-            doInstallPlugin "tomcat", GrailsUtil.grailsVersion
-            pluginSettings.clearCache()
-            compilePlugins()
-            loadPlugins()
-            serverFactory = load(containerClass)
-        }
-    }
-    catch (Throwable e) {
-        grailsConsole.error e
-        event("StatusFinal", ["Failed to load container [$containerClass]: ${e.message}"])
-        exit(1)
-    }
-    return serverFactory
-}
-
-private runInline(scheme, host, httpPort, httpsPort) {
-    EmbeddableServerFactory serverFactory = loadServerFactory()
-    grailsServer = serverFactory.createInline("${basedir}/web-app", webXmlFile.absolutePath, serverContextPath, classLoader)
-    runServer server: grailsServer, host:host, httpPort: httpPort, httpsPort: httpsPort, scheme:scheme
-    startPluginScanner()
-}
-
-private runWar(scheme, host, httpPort, httpsPort) {
-    EmbeddableServerFactory serverFactory = loadServerFactory()
-    grailsServer = serverFactory.createForWAR(warName, serverContextPath)
-
-    Metadata.getCurrent().put(Metadata.WAR_DEPLOYED, "true")
-    runServer server:grailsServer, host:host, httpPort:httpPort, httpsPort: httpsPort, scheme: scheme
-}
-
-/**
- * Runs the Server. You can pass these named arguments:
- *
- *   server - The server instance to use (required).
- *   port - The network port the server is running on (used to display the URL) (required).
- *   scheme - The network scheme to display in the URL (optional; defaults to "http").
- */
-runServer = { Map args ->
-    try {
-        event("StatusUpdate", ["Running Grails application"])
-        def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
-
-        EmbeddableServer server = args["server"]
-        if (server.hasProperty('eventListener')) {
-            server.eventListener = this
-        }
-        if (server.hasProperty('grailsConfig')) {
-            server.grailsConfig = config
-        }
-
-        profile("start server") {
-
-            try { new ServerSocket(args.httpPort).close() }
-            catch (IOException e) {
-                event("StatusError", ["Server failed to start for port $args.httpPort: $e.message"])
-                exit(1)
-            }
-
-            if (args.scheme == 'https') {
-
-                try { new ServerSocket(args.httpsPort).close() }
-                catch (IOException e) {
-                    event("StatusError", ["Server failed to start for port $args.httpsPort: $e.message"])
-                    exit(1)
-                }
-
-                usingSecureServer = true
-                server.startSecure args.host, args.httpPort, args.httpsPort
-
-                // Update the message to reflect the fact we are running HTTPS as well.
-                message += " or https://${args.host ?: 'localhost'}:${args.httpsPort}$serverContextPath"
-            }
-            else {
-                server.start args.host, args.httpPort
-            }
-        }
-        event("StatusFinal", [message])
-
-        boolean isWindows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1
-        if (isWindows) {
-            grailsConsole?.reader?.addTriggeredAction((char)3, new ActionListener() {
-                void actionPerformed(ActionEvent e) {
-                    stopServer()
-                    exit(0)
-                }
-            })
-        }
-    }
-    catch (Throwable t) {
-        if (t instanceof ScriptExitException) throw t
-        GrailsUtil.deepSanitize(t)
-        if (!(t instanceof SocketException) && !(t.cause instanceof SocketException)) {
-            grailsConsole.error t
-        }
-        event("StatusError", ["Server failed to start: $t"])
-        exit(1)
-    }
+    grailsServer = projectRunner.runWarHttps()
 }
 
 /**
@@ -204,10 +88,12 @@ runServer = { Map args ->
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-    if(GrailsProjectWatcher.isReloadingAgentPresent() && !GrailsProjectWatcher.isActive()) {
-        projectWatcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
-        projectWatcher.start()        
+    if (!GrailsProjectWatcher.isReloadingAgentPresent() || GrailsProjectWatcher.isActive()) {
+        return
     }
+
+    projectWatcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
+    projectWatcher.start()
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
@@ -257,20 +143,5 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
 }
 
 target(stopServer: "Stops the Grails servlet container") {
-    if (grailsServer) {
-        try {
-            grailsServer.stop()
-        }
-        catch (Throwable e) {
-            grailsConsole.error "Error stopping server: ${e.message}", e
-        }
-
-        try {
-            stopPluginScanner()
-        }
-        catch (Throwable e) {
-            grailsConsole.error "Error stopping plugin change scanner: ${e.message}", e
-        }
-    }
-    event("StatusFinal", ["Server stopped"])
+    projectWatcher?.stopServer()
 }

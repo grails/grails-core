@@ -85,7 +85,7 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
     private Method markInterceptorDirtyMethod;
     private ApplicationContext ctx;
     private Map<SessionFactory, HibernateDatastore> datastores;
-    
+
     private static final ThreadLocal<Boolean> insertActiveThreadLocal = new ThreadLocal<Boolean>();
 
     public ClosureEventTriggeringInterceptor() {
@@ -193,6 +193,9 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
         Serializable id = key == null ? null : key.getIdentifier();
 
+        boolean inTxn = source.getJDBCContext().isTransactionInProgress();
+        boolean shouldDelayIdentityInserts = !inTxn && !requiresImmediateIdAccess;
+
         // Put a placeholder in entries, so we don't recurse back and try to save() the
         // same object again. QUESTION: should this be done before onSave() is called?
         // likewise, should it be done before onUpdate()?
@@ -211,8 +214,10 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
         cascadeBeforeSave(source, persister, entity, anything);
 
-        log.trace("executing insertions");
-        source.getActionQueue().executeInserts();
+        if (useIdentityColumn && !shouldDelayIdentityInserts) {
+            log.trace("executing insertions");
+            source.getActionQueue().executeInserts();
+        }
 
         Object[] values = persister.getPropertyValuesToInsert(entity, getMergeMap(anything), source);
         Type[] types = persister.getPropertyTypes();
@@ -236,25 +241,28 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
 
         new ForeignKeys.Nullifier(entity, false, useIdentityColumn, source)
                 .nullifyTransientReferences(values, types);
-        
-        boolean insertVetoed = false;
-        
+
         if (useIdentityColumn) {
             EntityIdentityInsertAction insert = new EntityIdentityInsertAction(
-                    values, entity, persister, source, false);
-            log.debug("executing identity-insert immediately");
-            source.getActionQueue().execute(insert);
-            id = insert.getGeneratedId();
-            if (id != null) {
-                // As of HHH-3904, if the id is null the operation was vetoed so we bail
-                key = new EntityKey(id, persister, source.getEntityMode());
-                source.getPersistenceContext().checkUniqueness(key, entity);
-            } else {
-                insertVetoed = true;
+                    values, entity, persister, source, shouldDelayIdentityInserts);
+            if (!shouldDelayIdentityInserts) {
+                log.debug("executing identity-insert immediately");
+                source.getActionQueue().execute(insert);
+                id = insert.getGeneratedId();
+                if (id != null) {
+                    // As of HHH-3904, if the id is null the operation was vetoed so we bail
+                    key = new EntityKey(id, persister, source.getEntityMode());
+                    source.getPersistenceContext().checkUniqueness(key, entity);
+                }
+            }
+            else {
+                log.debug("delaying identity-insert due to no transaction in progress");
+                source.getActionQueue().addAction(insert);
+                key = insert.getDelayedEntityKey();
             }
         }
 
-        if (!insertVetoed) {
+        if (key != null) {
             Object version = Versioning.getVersion(values, persister);
             source.getPersistenceContext().addEntity(
                     entity,
@@ -269,73 +277,71 @@ public class ClosureEventTriggeringInterceptor extends SaveOrUpdateEventListener
                     false);
 
             if (!useIdentityColumn) {
-                EntityInsertAction insert = new EntityInsertAction(id, values, entity, version, persister, source); 
-                source.getActionQueue().execute(insert);
-                if(!source.getPersistenceContext().wasInsertedDuringTransaction(persister, id)) {
-                    insertVetoed=true;
-                }
+                source.getActionQueue().addAction(
+                        new EntityInsertAction(id, values, entity, version, persister, source));
             }
 
-            if(!insertVetoed) {
-                cascadeAfterSave(source, persister, entity, anything);
-                // Very unfortunate code, but markInterceptorDirty is private. Once HHH-3904 is resolved remove this overridden method!
-                if (markInterceptorDirtyMethod != null) {
-                    ReflectionUtils.invokeMethod(markInterceptorDirtyMethod, this, entity, persister, source);
-                }
+            cascadeAfterSave(source, persister, entity, anything);
+            // Very unfortunate code, but markInterceptorDirty is private. Once HHH-3904 is resolved remove this overridden method!
+            if (markInterceptorDirtyMethod != null) {
+                ReflectionUtils.invokeMethod(markInterceptorDirtyMethod, this, entity, persister, source);
             }
         }
 
         return id;
     }
-    
+
     public static final void addNullabilityCheckerPreInsertEventListener(EventListeners listenerRegistry) {
         PreInsertEventListener[] preListeners = listenerRegistry.getPreInsertEventListeners();
-        
+
         // Register the nullability check as the last PreInsertEventListener
-        if(preListeners==null) {
-            preListeners=new PreInsertEventListener[1];
+        if (preListeners == null) {
+            preListeners = new PreInsertEventListener[1];
         } else {
-            PreInsertEventListener[] newPreListeners=new PreInsertEventListener[preListeners.length+1];
+            PreInsertEventListener[] newPreListeners = new PreInsertEventListener[preListeners.length+1];
             System.arraycopy(preListeners, 0, newPreListeners, 0, preListeners.length);
-            preListeners=newPreListeners;
+            preListeners = newPreListeners;
         }
-        
-        preListeners[preListeners.length-1]=NULLABILITY_CHECKER_INSTANCE;
+
+        preListeners[preListeners.length - 1] = NULLABILITY_CHECKER_INSTANCE;
         listenerRegistry.setPreInsertEventListeners(preListeners);
     }
 
     private static final PreInsertEventListener NULLABILITY_CHECKER_INSTANCE = new NullabilityCheckerPreInsertEventListener();
 
+    @SuppressWarnings("serial")
     private static class NullabilityCheckerPreInsertEventListener implements PreInsertEventListener {
+        @SuppressWarnings("deprecation")
         public boolean onPreInsert(PreInsertEvent event) {
             new Nullability(event.getSource()).checkNullability(event.getState(), event.getPersister(), false);
             return false;
         }
     }
-    
+
     /**
-     * Prevents hitting the database for an extra check if the row exists in the database
-     * 
-     * ThreadLocal is used to pass the "insert:true" information to Hibernate
-     * 
+     * Prevents hitting the database for an extra check if the row exists in the database.
+     *
+     * ThreadLocal is used to pass the "insert:true" information to Hibernate.
+     *
      * @see org.hibernate.event.def.AbstractSaveEventListener#getAssumedUnsaved()
      */
+    @Override
     protected Boolean getAssumedUnsaved() {
         return insertActiveThreadLocal.get();
     }
 
     /**
-     * Called by org.codehaus.groovy.grails.orm.hibernate.metaclass.SavePersistentMethod's performInsert 
-     * to set a ThreadLocal variable that determines the value for getAssumedUnsaved() 
+     * Called by org.codehaus.groovy.grails.orm.hibernate.metaclass.SavePersistentMethod's performInsert
+     * to set a ThreadLocal variable that determines the value for getAssumedUnsaved().
      */
     public static void markInsertActive() {
         insertActiveThreadLocal.set(Boolean.TRUE);
     }
 
     /**
-     * Clears the ThreadLocal variable set by markInsertActive() 
+     * Clears the ThreadLocal variable set by markInsertActive().
      */
     public static void resetInsertActive() {
         insertActiveThreadLocal.remove();
-    }    
+    }
 }

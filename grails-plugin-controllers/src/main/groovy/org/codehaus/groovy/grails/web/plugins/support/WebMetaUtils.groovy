@@ -15,13 +15,16 @@
  */
 package org.codehaus.groovy.grails.web.plugins.support
 
-import org.springframework.web.context.request.RequestContextHolder as RCH
+import grails.artefact.Enhanced
+import grails.validation.ValidationErrors
 
 import java.lang.reflect.Method
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -30,12 +33,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
-
 import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-
-import grails.artefact.Enhanced;
-import grails.validation.ValidationErrors
+import org.springframework.web.context.request.RequestContextHolder as RCH
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -169,7 +168,7 @@ class WebMetaUtils {
     /**
      * Checks whether the given action is a command object action
      * @param callable The action to check
-     * @return True if it is a command object action
+     * @return true if it is a command object action
      */
     static boolean isCommandObjectAction(Closure callable) {
         def paramTypes = callable.parameterTypes

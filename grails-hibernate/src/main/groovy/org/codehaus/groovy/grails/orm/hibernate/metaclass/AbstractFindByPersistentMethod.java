@@ -2,20 +2,19 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 
 import grails.gorm.DetachedCriteria;
 import groovy.lang.Closure;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
-import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
+import org.hibernate.*;
 import org.hibernate.criterion.Disjunction;
 import org.hibernate.criterion.Restrictions;
+import org.hibernate.impl.CriteriaImpl;
 import org.springframework.orm.hibernate3.HibernateCallback;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 public abstract class AbstractFindByPersistentMethod extends AbstractClausedStaticPersistentMethod {
@@ -23,6 +22,7 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
     public static final String OPERATOR_AND = "And";
     public static final String[] OPERATORS = new String[]{ OPERATOR_AND, OPERATOR_OR };
     private HibernateDatastore datastore;
+    private static final Map<String, Boolean> useLimitCache = new ConcurrentHashMap<String, Boolean>();
 
     public AbstractFindByPersistentMethod(HibernateDatastore datastore, GrailsApplication application,
                                           SessionFactory sessionFactory, ClassLoader classLoader,
@@ -37,18 +37,58 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
         return getHibernateTemplate().execute(new HibernateCallback<Object>() {
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
-
                 Criteria crit = buildCriteria(session, detachedCriteria, additionalCriteria, clazz, arguments, operator, expressions);
 
-                return getResult(crit);
+                boolean useLimit = establishWhetherToUseLimit(clazz);
+                return getResult(crit, useLimit);
             }
         });
     }
 
+    private boolean establishWhetherToUseLimit(Class<?> clazz) {
+        boolean useLimit = true;
+        GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, clazz.getName());
+        if (domainClass != null) {
+            Boolean aBoolean = useLimitCache.get(domainClass.getName());
+            if (aBoolean != null) {
+                useLimit = aBoolean;
+            }
+            else {
+
+                for (GrailsDomainClassProperty property : domainClass.getPersistentProperties()) {
+                    if ((property.isOneToMany()||property.isManyToMany()) && property.getFetchMode() == GrailsDomainClassProperty.FETCH_EAGER) {
+                        useLimit = false;
+                        useLimitCache.put(domainClass.getName(), useLimit);
+                        break;
+                    }
+                }
+            }
+        }
+        return useLimit;
+    }
+
     protected Object getResult(Criteria crit) {
-        final List<?> list = crit.list();
-        if (!list.isEmpty()) {
-            return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
+        CriteriaImpl impl = (CriteriaImpl) crit;
+        String entityOrClassName = impl.getEntityOrClassName();
+        GrailsClass domainClass = application.getArtefact(DomainClassArtefactHandler.TYPE, entityOrClassName);
+        boolean useLimit = establishWhetherToUseLimit(domainClass.getClazz());
+
+        return getResult(crit, useLimit);
+    }
+
+    protected Object getResult(Criteria crit, boolean useLimit) {
+        if (useLimit) {
+            final List<?> list = crit.list();
+            if (!list.isEmpty()) {
+                return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
+            }
+        }
+        else {
+            try {
+                return crit.uniqueResult();
+            } catch (NonUniqueResultException e) {
+                return null;
+            }
         }
         return null;
     }
@@ -57,20 +97,29 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
             Closure<?> additionalCriteria, Class<?> clazz, Object[] arguments,
             String operator, List<?> expressions) {
         Criteria crit = getCriteria(datastore, application, session, detachedCriteria, additionalCriteria, clazz);
+
+        boolean useLimit = establishWhetherToUseLimit(clazz);
+
         if (arguments.length > 0) {
             if (arguments[0] instanceof Map<?, ?>) {
                 Map<?, ?> argMap = (Map<?, ?>)arguments[0];
                 GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit, argMap);
                 if (!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
-                    crit.setMaxResults(1);
+                    if (useLimit) {
+                        crit.setMaxResults(1);
+                    }
                 }
             }
             else {
-                crit.setMaxResults(1);
+                if (useLimit) {
+                    crit.setMaxResults(1);
+                }
             }
         }
         else {
-            crit.setMaxResults(1);
+            if (useLimit) {
+                crit.setMaxResults(1);
+            }
         }
 
         if (operator.equals(OPERATOR_OR)) {

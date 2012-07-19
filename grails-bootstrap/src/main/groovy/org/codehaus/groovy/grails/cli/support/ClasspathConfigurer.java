@@ -17,9 +17,6 @@ package org.codehaus.groovy.grails.cli.support;
 
 import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
-import org.apache.ivy.core.report.ResolveReport;
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
-import org.codehaus.groovy.grails.resolve.ResolveException;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -27,7 +24,16 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.ivy.core.report.ResolveReport;
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
+import org.codehaus.groovy.grails.resolve.ResolveException;
 
 /**
  * Support class that configures the Grails classpath when executing command line scripts.

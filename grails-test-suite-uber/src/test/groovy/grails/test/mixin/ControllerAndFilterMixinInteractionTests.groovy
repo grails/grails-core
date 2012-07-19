@@ -30,7 +30,7 @@ class SecurityFilters {
     def filters = {
         all(controller:'*', action:'*') {
             before = {
-                if(!session.user) {
+                if (!session.user) {
                     flash.message = "Sorry, Unknown"
                     redirect controller:"user", action:"login"
                 }

@@ -69,7 +69,7 @@ public class DependencyConfigurationContext {
 
     /**
      * Gives access to the grails core dependencies.
-     * 
+     *
      * @throws IllegalStateException If the dependency manager is unable to provide this information
      */
     public GrailsCoreDependencies getGrailsCoreDependencies() {
@@ -89,7 +89,7 @@ public class DependencyConfigurationContext {
     }
 
     public void setParentScope(String scope) {
-        this.parentScope = scope;
+        parentScope = scope;
     }
     public String getParentScope() {
         return parentScope;

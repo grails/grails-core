@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.test.junit4
 
 import java.lang.reflect.Modifier
+
 import org.codehaus.groovy.grails.test.GrailsTestTypeResult
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
 import org.codehaus.groovy.grails.test.event.GrailsTestRunNotifier
@@ -94,7 +95,7 @@ class JUnit4GrailsTestType extends GrailsTestTypeSupport {
 
     protected createNotifier(eventPublisher) {
         int total = 0
-        if(suite.hasProperty("children")) {
+        if (suite.hasProperty("children")) {
             total = suite.children.collect {
                 it.hasProperty("children") ? it.children.size() : 0
             }.sum()

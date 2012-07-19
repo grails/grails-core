@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
+import grails.util.BuildSettings;
+import grails.util.BuildSettingsHolder;
+import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
@@ -24,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -59,50 +63,59 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
     }
 
     public void afterPropertiesSet() throws Exception {
-        pluginManager = PluginManagerHolder.getPluginManager();
+        pluginManager = Holders.getPluginManager();
 
         if (pluginManager == null) {
             Assert.state(descriptor != null, "Cannot create PluginManager, /WEB-INF/grails.xml not found!");
 
-            ClassLoader classLoader = application.getClassLoader();
-            List<Class<?>> classes = new ArrayList<Class<?>>();
-            InputStream inputStream = null;
+            if(!descriptor.exists()) {
+                BuildSettings buildSettings = BuildSettingsHolder.getSettings();
+                GrailsProjectPluginLoader pluginLoader = new GrailsProjectPluginLoader(application, application.getClassLoader(),buildSettings, null);
+                pluginManager = pluginLoader.loadPlugins();
+            }
+            else {
 
-            try {
-                inputStream = descriptor.getInputStream();
+                ClassLoader classLoader = application.getClassLoader();
+                List<Class<?>> classes = new ArrayList<Class<?>>();
+                InputStream inputStream = null;
 
-                // Xpath: /grails/plugins/plugin, where root is /grails
-                GPathResult root = new XmlSlurper().parse(inputStream);
-                GPathResult plugins = (GPathResult) root.getProperty("plugins");
-                GPathResult nodes = (GPathResult) plugins.getProperty("plugin");
+                try {
+                    inputStream = descriptor.getInputStream();
 
-                for (int i = 0, count = nodes.size(); i < count; i++) {
-                    GPathResult node = (GPathResult) nodes.getAt(i);
-                    final String pluginName = node.text();
-                    Class<?> clazz;
-                    if (classLoader instanceof GroovyClassLoader) {
-                        clazz = classLoader.loadClass(pluginName);
-                    }
-                    else {
-                        clazz = Class.forName(pluginName, true, classLoader);
-                    }
-                    if (!classes.contains(clazz)) {
-                        classes.add(clazz);
+                    // Xpath: /grails/plugins/plugin, where root is /grails
+                    GPathResult root = new XmlSlurper().parse(inputStream);
+                    GPathResult plugins = (GPathResult) root.getProperty("plugins");
+                    GPathResult nodes = (GPathResult) plugins.getProperty("plugin");
+
+                    for (int i = 0, count = nodes.size(); i < count; i++) {
+                        GPathResult node = (GPathResult) nodes.getAt(i);
+                        final String pluginName = node.text();
+                        Class<?> clazz;
+                        if (classLoader instanceof GroovyClassLoader) {
+                            clazz = classLoader.loadClass(pluginName);
+                        }
+                        else {
+                            clazz = Class.forName(pluginName, true, classLoader);
+                        }
+                        if (!classes.contains(clazz)) {
+                            classes.add(clazz);
+                        }
                     }
                 }
-            }
-            finally {
-                if (inputStream != null) {
-                    inputStream.close();
+                finally {
+                    if (inputStream != null) {
+                        inputStream.close();
+                    }
                 }
+
+                Class<?>[] loadedPlugins = classes.toArray(new Class[classes.size()]);
+
+                pluginManager = new DefaultGrailsPluginManager(loadedPlugins, application);
+                pluginManager.setApplicationContext(applicationContext);
+                Holders.setPluginManager(pluginManager);
+                pluginManager.loadPlugins();
             }
 
-            Class<?>[] loadedPlugins = classes.toArray(new Class[classes.size()]);
-
-            pluginManager = new DefaultGrailsPluginManager(loadedPlugins, application);
-            pluginManager.setApplicationContext(applicationContext);
-            PluginManagerHolder.setPluginManager(pluginManager);
-            pluginManager.loadPlugins();
         }
 
         pluginManager.setApplication(application);

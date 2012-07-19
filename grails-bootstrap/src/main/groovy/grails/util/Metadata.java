@@ -56,7 +56,7 @@ public class Metadata extends Properties {
     }
 
     private Metadata(File f) {
-        this.metadataFile = f;
+        metadataFile = f;
         loadFromFile(f);
     }
 

@@ -118,7 +118,7 @@ public class LazyTagLibraryLookup extends TagLibraryLookup{
     }
 
     @Override
-    protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib){
+    protected void putTagLib(Map<String, Object> tags, String name, GrailsTagLibClass taglib) {
         tags.put(name, taglib.getFullName());
     }
 

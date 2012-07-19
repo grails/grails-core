@@ -32,7 +32,6 @@ import org.codehaus.groovy.runtime.typehandling.NumberMath;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
-import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -51,7 +50,7 @@ import static org.fusesource.jansi.Ansi.ansi;
 public class GrailsConsole {
 
     private static GrailsConsole instance;
-    
+
     public static final String ENABLE_TERMINAL = "grails.console.enable.terminal";
     public static final String ENABLE_INTERACTIVE = "grails.console.enable.interactive";
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -70,7 +69,7 @@ public class GrailsConsole {
     /**
      * Whether to enable verbose mode
      */
-    private boolean verbose;
+    private boolean verbose = Boolean.getBoolean("grails.verbose");;
 
     /**
      * Whether to show stack traces
@@ -155,7 +154,7 @@ public class GrailsConsole {
     }
 
     private boolean isActivateTerminal() {
-        return readPropOrTrue(ENABLE_TERMINAL); 
+        return readPropOrTrue(ENABLE_TERMINAL);
     }
 
     private boolean readPropOrTrue(String prop) {
@@ -298,6 +297,14 @@ public class GrailsConsole {
     }
 
     /**
+     *
+     * @return Whether to show stack traces
+     */
+    public boolean isStacktrace() {
+        return stacktrace;
+    }
+
+    /**
      * @return The input stream being read from
      */
     public InputStream getInput() {
@@ -344,7 +351,7 @@ public class GrailsConsole {
     public void indicateProgress() {
         progressIndicatorActive = true;
         if (isAnsiEnabled()) {
-            if (StringUtils.hasText(lastMessage)) {
+            if (lastMessage != null && lastMessage.length() > 0) {
                 if (!lastMessage.contains(maxIndicatorString)) {
                     updateStatus(lastMessage + indicator);
                 }

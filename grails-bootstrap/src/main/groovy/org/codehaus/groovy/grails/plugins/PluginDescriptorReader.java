@@ -15,7 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import org.springframework.core.io.Resource;
+
+import org.codehaus.groovy.grails.io.support.Resource;
 
 /**
  * Reads information about a plugin

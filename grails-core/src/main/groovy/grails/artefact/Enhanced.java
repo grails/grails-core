@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 
 /**
  * An annotation for classes that are compile-time enhanced. Used to
- * fallback to runtime enhancement if compile time enhancement does not occur
+ * fallback to runtime enhancement if compile time enhancement does not occur.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -32,5 +32,5 @@ import java.lang.annotation.Target;
 public @interface Enhanced {
     String version();
     String[] enhancedFor() default {};
-    Class[] mixins() default {};
+    Class<?>[] mixins() default {};
 }

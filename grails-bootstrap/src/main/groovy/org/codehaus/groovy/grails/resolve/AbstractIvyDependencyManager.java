@@ -142,15 +142,14 @@ public abstract class AbstractIvyDependencyManager {
     protected boolean hasApplicationDependencies = false;
     protected boolean readPom = false;
 
-    final protected IvySettings ivySettings;
-    final protected BuildSettings buildSettings;
-    final protected Metadata metadata;
+    protected final IvySettings ivySettings;
+    protected final BuildSettings buildSettings;
+    protected final Metadata metadata;
     private boolean offline;
 
     private ChainResolver chainResolver;
     ResolveEngine resolveEngine;
     MessageLogger logger;
-
 
     public AbstractIvyDependencyManager(IvySettings ivySettings, BuildSettings buildSettings, Metadata metadata) {
         this.ivySettings = ivySettings;
@@ -169,7 +168,6 @@ public abstract class AbstractIvyDependencyManager {
         updateChangingPattern();
     }
 
-
     public ResolveEngine getResolveEngine() {
         return resolveEngine;
     }
@@ -183,7 +181,7 @@ public abstract class AbstractIvyDependencyManager {
     }
 
     public void setLogger(MessageLogger logger) {
-        Message.setDefaultLogger( logger );
+        Message.setDefaultLogger(logger);
         this.logger = logger;
     }
 
@@ -214,8 +212,8 @@ public abstract class AbstractIvyDependencyManager {
         updateChangingPattern();
     }
 
-    public IvyDependencyManager createCopy(BuildSettings buildSettings) {
-        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, buildSettings);
+    public IvyDependencyManager createCopy(BuildSettings settings) {
+        IvyDependencyManager copy = new IvyDependencyManager(applicationName, applicationVersion, settings);
         copy.setOffline(isOffline());
         copy.setChainResolver(getChainResolver());
         copy.setResolveEngine(getResolveEngine());
@@ -375,7 +373,7 @@ public abstract class AbstractIvyDependencyManager {
      * Returns whether a plugin is transitive, ie whether its dependencies are resolved transitively
      *
      * @param pluginName The name of the plugin
-     * @return True if the plugin is transitive
+     * @return true if the plugin is transitive
      */
     public boolean isPluginTransitive(String pluginName) {
         DependencyDescriptor dd = pluginNameToDescriptorMap.get(pluginName);
@@ -385,7 +383,7 @@ public abstract class AbstractIvyDependencyManager {
     /**
      * Whether the plugin is directly included or a transitive dependency of another plugin
      * @param pluginName The plugin name
-     * @return True if is transitively included
+     * @return true if is transitively included
      */
     public boolean isPluginTransitivelyIncluded(String pluginName) {
         EnhancedDefaultDependencyDescriptor dd = (EnhancedDefaultDependencyDescriptor) pluginNameToDescriptorMap.get(pluginName);
@@ -454,7 +452,7 @@ public abstract class AbstractIvyDependencyManager {
 
         dependencyDescriptors.add(descriptor);
         if (shouldIncludeDependency(descriptor)) {
-            addToModuleDescriptor(scope, descriptor, moduleDescriptor);
+            addToModuleDescriptor(scope, descriptor);
         }
     }
 
@@ -462,12 +460,12 @@ public abstract class AbstractIvyDependencyManager {
         return lhs.getModuleId().equals(rhs.getModuleId()) && lhs.getRevision().equals(rhs.getRevision());
     }
 
-    private void addToModuleDescriptor(String scope, EnhancedDefaultDependencyDescriptor descriptor, DefaultModuleDescriptor moduleDescriptor) {
+    private void addToModuleDescriptor(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
         boolean foundDependency = false;
         for (DependencyDescriptor existingDescriptor : moduleDescriptor.getDependencies()) {
-            if(existingDescriptor instanceof EnhancedDefaultDependencyDescriptor) {
+            if (existingDescriptor instanceof EnhancedDefaultDependencyDescriptor) {
                 EnhancedDefaultDependencyDescriptor existingEnhancedDefaultDependencyDescriptor = (EnhancedDefaultDependencyDescriptor) existingDescriptor;
-                if(!descriptor.getScope().equals(existingEnhancedDefaultDependencyDescriptor.getScope())) {
+                if (!descriptor.getScope().equals(existingEnhancedDefaultDependencyDescriptor.getScope())) {
                     continue;
                 }
             }
@@ -513,7 +511,7 @@ public abstract class AbstractIvyDependencyManager {
         if (existing != null && descriptor.isTransitivelyIncluded()) {
             ModuleRevisionId dependencyRevisionId = existing.getDependencyRevisionId();
             if (dependencyRevisionId.equals(descriptor.getDependencyRevisionId())) return;
-            else if(descriptor.getPlugin() != null && (existing instanceof EnhancedDefaultDependencyDescriptor) && ((EnhancedDefaultDependencyDescriptor)existing).getPlugin() == null ) {
+            if (descriptor.getPlugin() != null && (existing instanceof EnhancedDefaultDependencyDescriptor) && ((EnhancedDefaultDependencyDescriptor)existing).getPlugin() == null) {
                 // if the descriptor is coming from a plugin and the dependency is already declared in an application then the one declared in the application takes priority
                 return;
             }
@@ -524,7 +522,7 @@ public abstract class AbstractIvyDependencyManager {
         pluginNameToDescriptorMap.put(name, descriptor);
         pluginDependencyDescriptors.add(descriptor);
         if (shouldIncludeDependency(descriptor)) {
-            addToModuleDescriptor(scope, descriptor, moduleDescriptor);
+            addToModuleDescriptor(scope, descriptor);
         }
     }
 
@@ -617,7 +615,7 @@ public abstract class AbstractIvyDependencyManager {
     private String getParentScope(String pluginName) {
         DependencyDescriptor pluginDependencyDescriptor = getPluginDependencyDescriptor(pluginName);
         String scope = null;
-        if(pluginDependencyDescriptor instanceof EnhancedDefaultDependencyDescriptor) {
+        if (pluginDependencyDescriptor instanceof EnhancedDefaultDependencyDescriptor) {
             scope = ((EnhancedDefaultDependencyDescriptor)pluginDependencyDescriptor).getScope();
         }
         return scope;
@@ -642,7 +640,7 @@ public abstract class AbstractIvyDependencyManager {
             context = DependencyConfigurationContext.forPlugin(dependencyManager, pluginName);
         }
 
-        context.setOffline(this.offline);
+        context.setOffline(offline);
         context.setParentScope(scope);
         context.setExcludeRules(excludeRules);
 
@@ -682,14 +680,13 @@ public abstract class AbstractIvyDependencyManager {
             return;
         }
 
-        if(!pluginDep && !"org.grails".equals(descriptor.getDependencyId().getOrganisation())) {
+        if (!pluginDep && !"org.grails".equals(descriptor.getDependencyId().getOrganisation())) {
             mappings = new ArrayList<String>(mappings);
 
-
-            if(includeJavadoc) {
+            if (includeJavadoc) {
                 mappings.add("javadoc");
             }
-            if(includeSource) {
+            if (includeSource) {
                 mappings.add("sources");
             }
         }
@@ -743,7 +740,6 @@ public abstract class AbstractIvyDependencyManager {
         if (!dd.isTransitive()) {
             return true;
         }
-
 
         ArtifactId aid = createExcludeArtifactId(dependencyName);
         return isExcludedFromPlugin(dd, aid);
@@ -814,11 +810,11 @@ public abstract class AbstractIvyDependencyManager {
         DependencyArtifactDescriptor[] allDependencyArtifacts = dependencyDescriptor.getAllDependencyArtifacts();
         boolean isPlugin = false;
         for (DependencyArtifactDescriptor dependencyArtifact : allDependencyArtifacts) {
-            if(dependencyArtifact.getType() != null && dependencyArtifact.getType().equals("zip")) {
+            if (dependencyArtifact.getType() != null && dependencyArtifact.getType().equals("zip")) {
                 isPlugin = true; break;
             }
         }
-        if(isPlugin) {
+        if (isPlugin) {
             registerPluginDependency(scope, enhancedDependencyDescriptor);
         }
         else {

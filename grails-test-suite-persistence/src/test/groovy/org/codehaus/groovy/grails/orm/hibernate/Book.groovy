@@ -32,9 +32,9 @@ class OneBookAuthor {
 class OneAuthorPublisher {
     String name
     OneBookAuthor author
-    
+
     static embedded = ['author']
-    
+
     static namedQueries = {
         withPopularBooks {
             author {

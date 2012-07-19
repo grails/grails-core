@@ -70,7 +70,7 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
     }
 
     private void initialize() {
-        if(beanFactory.containsBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN)) {
+        if (beanFactory.containsBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN)) {
             transactionManager = beanFactory.getBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN, PlatformTransactionManager.class);
         } else {
             // Fetch the names of all the beans that are of type

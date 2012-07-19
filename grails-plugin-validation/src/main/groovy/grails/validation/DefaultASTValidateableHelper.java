@@ -55,8 +55,8 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
 
     protected void addConstraintsField(final ClassNode classNode) {
         FieldNode field = classNode.getField(CONSTRAINED_PROPERTIES_PROPERTY_NAME);
-        if(field == null || !field.getDeclaringClass().equals(classNode)) {
-        classNode.addField(CONSTRAINED_PROPERTIES_PROPERTY_NAME,
+        if (field == null || !field.getDeclaringClass().equals(classNode)) {
+            classNode.addField(CONSTRAINED_PROPERTIES_PROPERTY_NAME,
                 Modifier.STATIC | Modifier.PRIVATE, new ClassNode(Map.class),
                 new ConstantExpression(null));
         }
@@ -74,7 +74,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
     protected void addGetConstraintsMethod(final ClassNode classNode) {
         final String getConstraintsMethodName = "getConstraints";
         MethodNode getConstraintsMethod = classNode.getMethod(getConstraintsMethodName, ZERO_PARAMETERS);
-        if(getConstraintsMethod == null || !getConstraintsMethod.getDeclaringClass().equals(classNode)) {
+        if (getConstraintsMethod == null || !getConstraintsMethod.getDeclaringClass().equals(classNode)) {
             final BooleanExpression isConstraintsPropertyNull = new BooleanExpression(new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(
                         Types.COMPARE_EQUAL, 0, 0), new ConstantExpression(null)));
 
@@ -102,7 +102,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             methodBlockStatement.addStatement(returnStatement);
 
             final MethodNode methodNode = new MethodNode(getConstraintsMethodName, Modifier.STATIC | Modifier.PUBLIC, new ClassNode(Map.class), ZERO_PARAMETERS, null, methodBlockStatement);
-            if(classNode.redirect() == null) {
+            if (classNode.redirect() == null) {
                 classNode.addMethod(methodNode);
             } else {
                 classNode.redirect().addMethod(methodNode);

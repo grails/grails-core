@@ -10,7 +10,7 @@ import grails.artefact.Artefact
 @Mock([Ship2, Pirate2])
 class UnitTestDataBindingAssociatonTests {
     @Test
-    void testBindingAssociationInUnitTest(){
+    void testBindingAssociationInUnitTest() {
         def pirate = new Pirate2(name: 'Joe')
         pirate.save(failOnError: true, validate: false)
 

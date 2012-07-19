@@ -140,7 +140,9 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
             buf.append(SLASH_UNDR);
             buf.append(templateName.substring(1,templateName.length()));
         }
-        return buf.append(GroovyPage.EXTENSION).toString();
+        String uri = buf.append(GroovyPage.EXTENSION).toString();
+        buf.close();
+        return uri;
     }
 
     /**

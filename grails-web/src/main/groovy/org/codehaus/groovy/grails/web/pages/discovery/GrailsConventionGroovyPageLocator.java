@@ -48,8 +48,7 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      * @return The script source
      */
     public GroovyPageScriptSource findViewByPath(String uri) {
-        if(uri==null) return null;
-        return findPage(uriService.getAbsoluteViewURI(uri));
+        return uri == null ? null : findPage(uriService.getAbsoluteViewURI(uri));
     }
 
     /**

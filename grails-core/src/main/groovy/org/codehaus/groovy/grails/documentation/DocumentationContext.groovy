@@ -48,11 +48,9 @@ class DocumentationContext {
         !methods?.isEmpty() || !staticMethods?.isEmpty() || !properties?.isEmpty()
     }
 
-    boolean isActive() {
-        this.active
-    }
+    boolean isActive() { active }
 
-    void setActive(boolean b) { this.active = b }
+    void setActive(boolean b) { active = b }
 
     void reset() {
         active = false

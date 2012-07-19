@@ -246,7 +246,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 
     void testAllowedMethods() {
-        if(notYetImplemented()) return
+        if (notYetImplemented()) return
 
         def controller = getMockController()
 
@@ -382,7 +382,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         controller.method3()
         assert response.status == HttpServletResponse.SC_METHOD_NOT_ALLOWED
     }
-    
+
     void testMockForConstraintsTestOnValidateableObject() {
         mockForConstraintsTests(SomeValidateableThing)
         def obj = new SomeValidateableThing()
@@ -561,7 +561,7 @@ class SomeValidateableThing {
 
     static constraints = {
         name validator: { val ->
-            if(val.size() % 2 == 1) {
+            if (val.size() % 2 == 1) {
                 'no.odd.characters'
             }
         }

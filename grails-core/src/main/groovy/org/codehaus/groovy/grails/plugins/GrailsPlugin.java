@@ -213,19 +213,19 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * Return whether this plugin supports the given PluginScope
      *
      * @param buildScope The PluginScope
-     * @return True if it does
+     * @return true if it does
      */
     boolean supportsScope(BuildScope buildScope);
 
     /**
      * Returns whether this plugin supports the given environment name
      * @param environment The environment name
-     * @return True if it does
+     * @return true if it does
      */
     boolean supportsEnvironment(Environment environment);
 
     /**
-     * @return True if the current plugin supports the current BuildScope and Environment
+     * @return true if the current plugin supports the current BuildScope and Environment
      */
     boolean supportsCurrentScopeAndEnvironment();
 
@@ -392,7 +392,7 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * Returns whether this plugin is loaded from the current plugin. In other words when you execute grails run-app from a plugin project
      * the plugin project's *GrailsPlugin.groovy file represents the base plugin and this method will return true for this plugin
      *
-     * @return True if it is the base plugin
+     * @return true if it is the base plugin
      */
     boolean isBasePlugin();
 
@@ -422,7 +422,7 @@ public interface GrailsPlugin extends ApplicationContextAware, Comparable, Grail
      * Whether the plugin is interested in a particular change
      *
      * @param path The path to the resource that changed
-     * @return True if it is
+     * @return true if it is
      */
     boolean hasInterestInChange(String path);
 

@@ -184,7 +184,7 @@ public class DirectoryWatcher extends Thread {
 
         for (File file : files) {
             if (file.isDirectory() && !file.isHidden()) {
-                if(!SVN_DIR_NAME.equals(file.getName())) {
+                if (!SVN_DIR_NAME.equals(file.getName())) {
                     cacheFilesForDirectory(file, fileExtensions, fireEvent);
                 }
             }

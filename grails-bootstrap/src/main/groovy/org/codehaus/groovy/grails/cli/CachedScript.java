@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.cli;
 
 import org.codehaus.gant.GantBinding;
-import org.springframework.core.io.Resource;
+import org.codehaus.groovy.grails.io.support.Resource;
 
 import java.util.List;
 

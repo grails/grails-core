@@ -41,7 +41,7 @@ public class PluginAwareAstTransformer implements AllArtefactClassInjector {
     PluginBuildSettings pluginBuildSettings;
 
     public PluginAwareAstTransformer() {
-        this.pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
+        pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {

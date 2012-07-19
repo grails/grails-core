@@ -37,7 +37,7 @@ public abstract class AbstractDynamicConstructor implements DynamicConstructor {
     }
 
     /**
-     * @return True if the arguments types match those specified in the constructor
+     * @return true if the arguments types match those specified in the constructor
      */
     public boolean isArgumentsMatch(Object[] args) {
         if (args.length != argumentTypes.length) {

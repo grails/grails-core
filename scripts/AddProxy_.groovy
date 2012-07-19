@@ -35,7 +35,8 @@ target(default:"Adds a proxy configuration") {
         config[argsMap.params[0]] = ['http.proxyHost':argsMap.host,
                                      'http.proxyPort':argsMap.port,
                                      "http.proxyUser": argsMap.username?: '',
-                                     "http.proxyPassword": argsMap.password?: '']
+                                     "http.proxyPassword": argsMap.password?: '',
+                                     'http.nonProxyHosts': argsMap.noproxy?: '']
 
         settingsFile.withWriter { w -> config.writeTo(w) }
 
@@ -49,8 +50,8 @@ target(default:"Adds a proxy configuration") {
 
 String msg() {
     return '''\
-Usage: grails add-proxy [name] --host=[server] --port=[port] --username=[username]* --password=[password]*
-Example: grails add-proxy client --host=proxy-server --port=4300 --username=guest --password=guest
+Usage: grails add-proxy [name] --host=[server] --port=[port] --username=[username]* --password=[password]* --noproxy=[no|proxy|hosts]*
+Example: grails add-proxy client --host=proxy-server --port=4300 --username=guest --password=guest --noproxy=somehost|*.intra.net
 
 * Optional
 '''

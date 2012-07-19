@@ -99,7 +99,7 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
 
         public ParentOnlyGetResourcesClassLoader(ClassLoader parent) {
             super(parent);
-            this.rootLoader = DefaultGroovyMethods.getRootLoader(parent);
+            rootLoader = DefaultGroovyMethods.getRootLoader(parent);
             ReflectionUtils.makeAccessible(findResourceMethod);
             ReflectionUtils.makeAccessible(findResourcesMethod);
         }
@@ -217,7 +217,7 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
                     if (!warDeployed && classesDir!= null && url.equals(classesDir)) {
                         result.add(convertClassLoaderURL(url));
                     }
-                    else if (warDeployed){
+                    else if (warDeployed) {
                         result.add(convertClassLoaderURL(url));
                     }
                     */
@@ -226,7 +226,7 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
                 return result.toArray(new Resource[result.size()]);
             }
         };
-        resourceResolver.setPathMatcher(new AntPathMatcher(){
+        resourceResolver.setPathMatcher(new AntPathMatcher() {
             @Override
             public boolean match(String pattern, String path) {
                 if (path.endsWith(".class")) {

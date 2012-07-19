@@ -44,9 +44,7 @@ class ResponseMimeTypesApi {
     ResponseMimeTypesApi() {
     }
 
-    MimeType[] getMimeTypes() {
-        return this.mimeTypes
-    }
+    MimeType[] getMimeTypes() { mimeTypes }
 
     /**
      * Initialize with settings provided by GrailsApplication and the given MimeType[]
@@ -132,7 +130,7 @@ class ResponseMimeTypesApi {
             if (msie) header = "*/*"
             if (!header && useAcceptHeader) header = request.getHeader(HttpHeaders.ACCEPT)
             result = parser.parse(header)
-            
+
             // GRAILS-8341 - If no header the parser would have returned all configured mime types.  Since no format
             // was specified in the request we look for the 'all' format and return that if found.  If 'all' is
             // not found the fallback behavior is to return all configured mime types from the parser.

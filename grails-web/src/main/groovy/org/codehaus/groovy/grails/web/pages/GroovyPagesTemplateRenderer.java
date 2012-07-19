@@ -62,11 +62,11 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     }
 
     public void render(GrailsWebRequest webRequest, GroovyPageBinding pageScope, Map<String, Object> attrs, Object body, Writer out) throws IOException {
-        if (groovyPagesTemplateEngine==null) {
+        if (groovyPagesTemplateEngine == null) {
             throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!");
         }
 
-        String templateName=getStringValue(attrs, "template");
+        String templateName = getStringValue(attrs, "template");
         if (StringUtils.isBlank(templateName)) {
             throw new GrailsTagException("Tag [render] is missing required attribute [template]");
         }
@@ -78,7 +78,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         Template t = findAndCacheTemplate(webRequest, pageScope, templateName,
                 contextPath, pluginName, uri);
 
-        if (t==null) {
+        if (t == null) {
             throw new GrailsTagException("Template not found for name [" + templateName + "] and path [" + uri + "]");
         }
 
@@ -113,12 +113,12 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                 if (cacheEntry != null) {
                     // prevent several competing threads to update the template at the same time
                     cacheEntry.getLock().lock();
-                    if(cacheEntry.isValid()) {
+                    if (cacheEntry.isValid()) {
                         // another thread already updated the entry
                         t = cacheEntry.template;
                     }
                 }
-                if(t == null) {
+                if (t == null) {
                     if (scriptSource != null) {
                         t = groovyPagesTemplateEngine.createTemplate(scriptSource);
                     }

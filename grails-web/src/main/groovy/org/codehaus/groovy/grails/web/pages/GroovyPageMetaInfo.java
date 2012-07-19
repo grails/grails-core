@@ -78,7 +78,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     private String pluginPath;
     private GrailsPlugin pagePlugin;
-    private boolean initialized=false;
+    private boolean initialized = false;
 
     private CacheEntry<Resource> shouldReloadCacheEntry = new CacheEntry<Resource>(null);
 
@@ -109,7 +109,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     }
 
     synchronized void initializeOnDemand(GroovyPageMetaInfoInitializer initializer) {
-        if(!initialized) {
+        if (!initialized) {
             initializer.initialize(this);
         }
     }
@@ -127,13 +127,12 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         }
 
         GrailsClass codecGrailsClass = null;
-        if (codecName != null) {
-            if (grailsApplication != null) {
+        if (codecName != null&& grailsApplication != null) {
+            codecGrailsClass = grailsApplication.getArtefactByLogicalPropertyName(
+                    CodecArtefactHandler.TYPE, codecName);
+            if (codecGrailsClass == null) {
                 codecGrailsClass = grailsApplication.getArtefactByLogicalPropertyName(
-                        CodecArtefactHandler.TYPE, codecName);
-                if (codecGrailsClass == null)
-                    codecGrailsClass = grailsApplication.getArtefactByLogicalPropertyName(
-                            CodecArtefactHandler.TYPE, codecName.toUpperCase());
+                        CodecArtefactHandler.TYPE, codecName.toUpperCase());
             }
         }
 
@@ -155,7 +154,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         }
 
         final ApplicationContext applicationContext = grailsApplication.getMainContext();
-        if (applicationContext ==null || !applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
+        if (applicationContext == null || !applicationContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
             return;
         }
 
@@ -177,7 +176,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         try {
             InputStream resourceStream = pageClass.getResourceAsStream(dataResourceName);
 
-            if(resourceStream != null) {
+            if (resourceStream != null) {
 
                 input = new DataInputStream(resourceStream);
                 int arrayLen = input.readInt();
@@ -410,7 +409,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
      * @return true if the available gsp source file is newer than the loaded one.
      */
     public boolean shouldReload(final PrivilegedAction<Resource> resourceCallable) {
-        if(resourceCallable == null) return false;
+        if (resourceCallable == null) return false;
         Resource resource=checkIfReloadableResourceHasChanged(resourceCallable);
         return (resource != null);
     }

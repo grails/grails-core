@@ -17,24 +17,23 @@ package org.codehaus.groovy.grails.resolve
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
-
-import java.util.concurrent.ConcurrentLinkedQueue
-
 import org.apache.ivy.core.event.EventManager
-import org.apache.ivy.core.module.descriptor.*
-import org.apache.ivy.core.module.id.ArtifactId
+import org.apache.ivy.core.module.descriptor.Artifact
+import org.apache.ivy.core.module.descriptor.Configuration
+import org.apache.ivy.core.module.descriptor.DependencyDescriptor
+import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.apache.ivy.core.module.id.ModuleRevisionId
-import org.apache.ivy.core.report.*
 import org.apache.ivy.core.resolve.IvyNode
 import org.apache.ivy.core.resolve.ResolveEngine
 import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
 import org.apache.ivy.plugins.repository.TransferListener
-import org.apache.ivy.plugins.resolver.ChainResolver
-import org.apache.ivy.util.Message
-import org.apache.ivy.util.MessageLogger
 import org.codehaus.groovy.grails.plugins.VersionComparator
+
+import java.util.concurrent.ConcurrentLinkedQueue
+
+import org.apache.ivy.core.report.*
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -44,9 +43,7 @@ import org.codehaus.groovy.grails.plugins.VersionComparator
  */
 class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
 
-
     Collection repositoryData = new ConcurrentLinkedQueue()
-
     Collection moduleExcludes = new ConcurrentLinkedQueue()
     TransferListener transferListener
 
@@ -80,9 +77,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         this.applicationVersion = applicationVersion
     }
 
-
-
-
     /**
      * Resets the Grails plugin resolver if it is used
      */
@@ -91,7 +85,6 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         chainResolver.resolvers.remove(resolver)
         chainResolver.resolvers.add(new GrailsPluginsDirectoryResolver(buildSettings, ivySettings))
     }
-
 
     /**
      * Serializes the parsed dependencies using the given builder.
@@ -230,7 +223,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 options.confs = [conf] as String[]
             }
 
-            if(!options.download) {
+            if (!options.download) {
                 def date = new Date()
                 def report = new ResolveReport(moduleDescriptor)
                 def ivyNodes = resolveEngine.getDependencies(moduleDescriptor, options, report)
@@ -251,12 +244,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 }
                 return report
             }
-            else {
 
-                ResolveReport resolve = resolveEngine.resolve(moduleDescriptor, options)
-                resolveErrors = resolve.hasError()
-                return resolve
-            }
+            ResolveReport resolve = resolveEngine.resolve(moduleDescriptor, options)
+            resolveErrors = resolve.hasError()
+            return resolve
         }
 
         // return an empty resolve report
@@ -269,7 +260,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
      * @return A ResolveReport containing all of the configurations
      */
     ResolveReport resolveAllDependencies() {
-       resolveErrors = false
+        resolveErrors = false
         def options = new ResolveOptions(checkIfChanged: false, outputReport: true, validate: false)
         options.confs = usedConfigurations as String[]
 
@@ -288,18 +279,18 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     ResolveReport loadDependencies(String conf = '') {
 
         URLClassLoader rootLoader = getClass().classLoader.rootLoader
-        if (rootLoader) {
-            def urls = rootLoader.URLs.toList()
-            ResolveReport report = resolveDependencies(conf)
-            for (ArtifactDownloadReport downloadReport in report.allArtifactsReports) {
-                def url = downloadReport.localFile.toURI().toURL()
-                if (!urls.contains(url)) {
-                    rootLoader.addURL(url)
-                }
-            }
+        if (!rootLoader) {
+            throw new IllegalStateException("No root loader found. Could not load dependencies. " +
+                "Note this method cannot be called when running in a WAR.")
         }
-        else {
-            throw new IllegalStateException("No root loader found. Could not load dependencies. Note this method cannot be called when running in a WAR.")
+
+        def urls = rootLoader.URLs.toList()
+        ResolveReport report = resolveDependencies(conf)
+        for (ArtifactDownloadReport downloadReport in report.allArtifactsReports) {
+            def url = downloadReport.localFile.toURI().toURL()
+            if (!urls.contains(url)) {
+                rootLoader.addURL(url)
+            }
         }
     }
 
