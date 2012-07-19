@@ -35,6 +35,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         config.grails.project.dependency.resolution = {
             repositories {
                 grailsCentral()
+                mavenRepo "http://repo.grails.org/grails/core"
             }
             plugins {
                 test ":hibernate:2.0.3"
