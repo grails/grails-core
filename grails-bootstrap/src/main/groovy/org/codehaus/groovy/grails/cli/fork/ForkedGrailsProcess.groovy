@@ -148,7 +148,7 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    private static File findJarFile(Class targetClass) {
+    public static File findJarFile(Class targetClass) {
         def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class").getPath()
         final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
         final jarFile = new File(jarPath)

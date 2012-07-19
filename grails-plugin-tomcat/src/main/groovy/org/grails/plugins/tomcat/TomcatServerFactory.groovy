@@ -46,6 +46,7 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
 
         final forkedTomcat = new ForkedTomcatServer(ec)
 
+        discoverAndSetAgent(forkedTomcat, buildSettings)
 
         if(forkConfig instanceof Map) {
 
@@ -59,6 +60,23 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
             }
         }
         return forkedTomcat
+    }
+
+    @CompileStatic
+    protected void discoverAndSetAgent(ForkedGrailsProcess forkedProcess, BuildSettings buildSettings) {
+        try {
+            final agentClass = Thread.currentThread().contextClassLoader.loadClass('com.springsource.loaded.ReloadEventProcessorPlugin')
+            forkedProcess.setReloadingAgent(ForkedGrailsProcess.findJarFile(agentClass))
+        } catch (e) {
+            final grailsHome = buildSettings.grailsHome
+            if (grailsHome && grailsHome.exists()) {
+                def agentHome = new File(grailsHome, "lib/com.springsource.springloaded/springloaded-core/jars")
+                final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar")}
+                if (agentJar) {
+                    forkedProcess.setReloadingAgent(agentJar)
+                }
+            }
+        }
     }
 
     @CompileStatic

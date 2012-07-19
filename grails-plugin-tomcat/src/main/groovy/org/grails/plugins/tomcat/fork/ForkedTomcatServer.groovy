@@ -17,6 +17,7 @@ package org.grails.plugins.tomcat.fork
 
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
+import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
 import groovy.transform.CompileStatic
 import org.apache.catalina.Context
@@ -24,11 +25,10 @@ import org.codehaus.groovy.grails.cli.fork.ExecutionContext
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.plugins.tomcat.InlineExplodedTomcatServer
+import org.grails.plugins.tomcat.TomcatKillSwitch
 
 import java.lang.reflect.Method
-import org.grails.plugins.tomcat.InlineExplodedTomcatServer
-import org.grails.plugins.tomcat.IsolatedTomcat
-import org.grails.plugins.tomcat.TomcatKillSwitch
 
 /**
  * An implementation of the Tomcat server that runs in forked mode.
@@ -76,6 +76,22 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         tomcatRunner = new TomcatRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
         tomcatRunner.start(ec.host, ec.port)
 
+
+        setupReloading(classLoader, buildSettings)
+
+    }
+
+    protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
+        try {
+            final projectCompiler = classLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectCompiler").newInstance(new PluginBuildSettings(buildSettings), classLoader)
+            projectCompiler.configureClasspath()
+            final holders = classLoader.loadClass("grails.util.Holders")
+            final projectWatcher = classLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectWatcher").newInstance(projectCompiler, holders.getPluginManager())
+            projectWatcher.run()
+        } catch (e) {
+            e.printStackTrace()
+            println "WARNING: There was an error setting up reloading. Changes to classes will not be reflected: ${e.message}"
+        }
     }
 
     protected void initializeLogging(File grailsHome, ClassLoader classLoader) {
