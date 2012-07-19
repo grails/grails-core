@@ -27,6 +27,8 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperati
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
 import grails.util.Environment
+import org.apache.tools.ant.AntTypeDefinition
+import org.apache.tools.ant.ComponentHelper
 
 /**
  * Encapsulates the compilation logic required for a Grails application.
@@ -112,16 +114,13 @@ class GrailsProjectCompiler {
     AntBuilder getAnt() {
         if (ant == null) {
            ant = new AntBuilder()
-           ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc') {
-               classpath {
-                   if(classLoader instanceof URLClassLoader) {
-
-                       for(url in classLoader.URLs) {
-                           pathelement location:url.getFile()
-                       }
-                   }
-               }
-           }
+            AntTypeDefinition atd = new AntTypeDefinition();
+            atd.setName('groovyc');
+            atd.setClassName(org.codehaus.groovy.grails.compiler.Grailsc.name);
+            atd.setClass(org.codehaus.groovy.grails.compiler.Grailsc);
+            atd.setClassLoader(classLoader);
+            ComponentHelper.getComponentHelper(ant.project)
+                    .addDataTypeDefinition(atd);
            ant.path(id: "grails.compile.classpath", compileClasspath)
         }
         return ant
