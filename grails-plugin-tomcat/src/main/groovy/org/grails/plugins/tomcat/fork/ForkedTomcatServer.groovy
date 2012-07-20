@@ -99,6 +99,9 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         } )
 
         t.start()
+        while(!isAvailable(host, httpPort)) {
+            sleep 100
+        }
         System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
     }
 

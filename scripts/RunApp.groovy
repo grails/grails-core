@@ -32,5 +32,8 @@ target('default': "Runs a Grails application") {
     else {
         runApp()
     }
-    watchContext()
+    if(!(grailsServer instanceof org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess)) {
+        watchContext()        
+    }
+
 }
