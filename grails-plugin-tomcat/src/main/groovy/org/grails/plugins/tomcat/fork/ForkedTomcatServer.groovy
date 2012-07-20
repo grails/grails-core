@@ -66,7 +66,12 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         initializeLogging(ec.grailsHome,classLoader)
 
         tomcatRunner = new TomcatRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
-        tomcatRunner.start(ec.host, ec.port)
+        if(ec.securePort > 0) {
+            tomcatRunner.startSecure(ec.host, ec.port, ec.securePort)
+        }
+        else {
+            tomcatRunner.start(ec.host, ec.port)
+        }
 
 
         setupReloading(classLoader, buildSettings)
@@ -77,9 +82,15 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @CompileStatic
     void start(String host, int port) {
+        startSecure(host, port, 0)
+    }
+
+    @CompileStatic
+    void startSecure(String host, int httpPort, int httpsPort) {
         final ec = executionContext
         ec.host = host
-        ec.port = port
+        ec.port = httpPort
+        ec.securePort = httpsPort
         def t = new Thread( {
             final process = fork()
             Runtime.addShutdownHook {
@@ -90,6 +101,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         t.start()
         System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
     }
+
 
     @CompileStatic
     boolean isAvailable(String host, int port) {
@@ -160,6 +172,6 @@ class TomcatExecutionContext extends ExecutionContext implements Serializable {
     String contextPath
     String host = EmbeddableServer.DEFAULT_HOST
     int port = EmbeddableServer.DEFAULT_PORT
-    int securePort = EmbeddableServer.DEFAULT_SECURE_PORT
+    int securePort
 
 }
