@@ -61,11 +61,21 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
         ec.resourcesDir = buildSettings.resourcesDir
 
         final forkedTomcat = new ForkedTomcatServer(ec)
-        if(forkConfig instanceof Map)
+        if(forkConfig instanceof Map) {
+
             forkedTomcat.configure((Map)forkConfig)
+        }
+        def tomcatJvmArgs = getTomcatJvmArgs()
+        if(tomcatJvmArgs instanceof List) {
+            forkedTomcat.jvmArgs = (List<String>)tomcatJvmArgs
+        }
 
 
         return forkedTomcat
+    }
+
+    private getTomcatJvmArgs() {
+        buildSettings.config?.grails?.tomcat?.jvmArgs
     }
 
 
