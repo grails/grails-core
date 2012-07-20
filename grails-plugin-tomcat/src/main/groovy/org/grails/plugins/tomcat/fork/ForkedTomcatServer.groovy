@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.InlineExplodedTomcatServer
 import org.grails.plugins.tomcat.TomcatKillSwitch
+import org.apache.catalina.startup.Tomcat
 
 /**
  * An implementation of the Tomcat server that runs in forked mode.
@@ -136,6 +137,24 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
         TomcatRunner(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
             super(basedir, webXml, contextPath, classLoader)
+        }
+
+        @Override
+        @CompileStatic
+        protected void initialize(Tomcat tomcat) {
+            final autodeployDir = buildSettings.autodeployDir
+            if(autodeployDir.exists()) {
+
+                final wars = autodeployDir.listFiles()
+                if(wars != null) {
+                    for(File f in wars) {
+                        final fileName = f.name
+                        if(fileName.endsWith(".war")) {
+                            tomcat.addWebapp(f.name - '.war', f.absolutePath)
+                        }
+                    }
+                }
+            }
         }
 
         @Override

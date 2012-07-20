@@ -159,6 +159,11 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_WAR_FILE = "grails.project.war.file"
 
     /**
+     * The name of the WAR file of the project
+     */
+    public static final String PROJECT_AUTODEPLOY_DIR = "grails.project.autodeploy.dir"
+
+    /**
      * The name of the system property for enabling osgi headers in the WAR Manifest
      */
     public static final String PROJECT_WAR_OSGI_HEADERS = "grails.project.war.osgi.headers"
@@ -263,6 +268,11 @@ class BuildSettings extends AbstractBuildSettings {
      * The WAR file of the project
      */
     File projectWarFile
+
+    /**
+     * Directory where additional war files to be autodeployed are located
+     */
+    File autodeployDir
 
     /**
      * Setting for whether or not to enable OSGI headers in the WAR Manifest, can be overridden via -verboseCompile(=[true|false])?
@@ -755,6 +765,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean docsOutputDirSet
     private boolean testSourceDirSet
     private boolean projectWarFileSet
+    private boolean autodeployDirSet
     private boolean projectWarOsgiHeadersSet
     private boolean buildListenersSet
     private boolean verboseCompileSet
@@ -1407,6 +1418,13 @@ class BuildSettings extends AbstractBuildSettings {
             projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
             if (!projectWarFile.absolute) {
                 projectWarFile = new File(baseDir, projectWarFile.path)
+            }
+        }
+
+        if (!autodeployDirSet) {
+            autodeployDir = new File(getPropertyValue(PROJECT_AUTODEPLOY_DIR, props, "$baseDir/src/autodeploy"))
+            if (!autodeployDir.absolute) {
+                autodeployDir = new File(baseDir, autodeployDir.path)
             }
         }
 
