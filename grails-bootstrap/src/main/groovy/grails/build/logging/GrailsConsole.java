@@ -583,6 +583,9 @@ public class GrailsConsole {
     public void log(String msg) {
         PrintStream printStream = out;
         try {
+            if(userInputActive) {
+                erasePrompt(printStream);
+            }
             if (msg.endsWith(LINE_SEPARATOR)) {
                 printStream.print(msg);
             }
@@ -591,8 +594,14 @@ public class GrailsConsole {
             }
             cursorMove = 0;
         } finally {
+            printStream.flush();
             postPrintMessage();
         }
+    }
+
+    private void erasePrompt(PrintStream printStream) {
+        printStream.print(ansi()
+                .eraseLine(Ansi.Erase.BACKWARD).cursorLeft(PROMPT.length()));
     }
 
     /**
@@ -701,6 +710,7 @@ public class GrailsConsole {
         }
 
         out.print(prompt);
+        out.flush();
         return null;
     }
 

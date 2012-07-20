@@ -249,7 +249,7 @@ abstract class ForkedGrailsProcess {
 
             br.eachLine { String next ->
                 if(next) {
-                    GrailsConsole.getInstance().append(next)
+                    GrailsConsole.getInstance().log(next)
                 }
             }
         }
