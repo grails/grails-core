@@ -246,9 +246,10 @@ abstract class ForkedGrailsProcess {
         void run() {
             def isr = new InputStreamReader(input)
             def br = new BufferedReader(isr)
+
             br.eachLine { String next ->
                 if(next) {
-                    GrailsConsole.getInstance().log(next)
+                    GrailsConsole.getInstance().append(next)
                 }
             }
         }
