@@ -38,6 +38,7 @@ abstract class ForkedGrailsProcess {
     int maxPerm = 256;
     boolean debug = false;
     File reloadingAgent;
+    List<String> jvmArgs
 
     @CompileStatic
     void configure(Map forkConfig) {
@@ -109,6 +110,9 @@ abstract class ForkedGrailsProcess {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded=profile=grails"])
         }
         cmd << getClass().name
+        if(jvmArgs) {
+            cmd.addAll(jvmArgs)
+        }
 
         processBuilder
                 .directory(executionContext.getBaseDir())
@@ -119,15 +123,15 @@ abstract class ForkedGrailsProcess {
 
         def is = process.inputStream
         def es = process.errorStream
-        def t1 = new Thread(new TextDumper(is, System.out))
-        def t2 = new Thread(new TextDumper(es, System.err))
+        def t1 = new Thread(new TextDumper(is))
+        def t2 = new Thread(new TextDumper(es))
         t1.start()
         t2.start()
 
         int result = process.waitFor()
         if (result == 1) {
             try { t1.join() } catch (InterruptedException ignore) {}
-            try { t1.join() } catch (InterruptedException ignore) {}
+            try { t2.join() } catch (InterruptedException ignore) {}
             try { es.close() } catch (IOException ignore) {}
             try { is.close() } catch (IOException ignore) {}
 
@@ -234,19 +238,18 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     static class TextDumper implements Runnable {
         InputStream input
-        Appendable app
 
-        TextDumper(InputStream input, Appendable app) {
+        TextDumper(InputStream input) {
             this.input = input
-            this.app = app
         }
 
         void run() {
             def isr = new InputStreamReader(input)
             def br = new BufferedReader(isr)
             br.eachLine { String next ->
-                if(next)
-                    app.append(next)
+                if(next) {
+                    GrailsConsole.getInstance().log(next)
+                }
             }
         }
     }
