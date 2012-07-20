@@ -38,6 +38,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @Delegate TomcatRunner tomcatRunner
     TomcatExecutionContext executionContext
+    ClassLoader forkedClassLoader
 
     ForkedTomcatServer(TomcatExecutionContext executionContext) {
         this.executionContext = executionContext
@@ -63,6 +64,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         BuildSettingsHolder.settings = buildSettings
 
         URLClassLoader classLoader = createClassLoader(buildSettings)
+        forkedClassLoader = classLoader
 
         initializeLogging(ec.grailsHome,classLoader)
 
@@ -153,6 +155,25 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
                             tomcat.addWebapp(f.name - '.war', f.absolutePath)
                         }
                     }
+                }
+            }
+
+            invokeCustomizer(tomcat)
+        }
+
+        private void invokeCustomizer(Tomcat tomcat) {
+            Class cls = null
+            try {
+                cls = forkedClassLoader.loadClass("org.grails.plugins.tomcat.ForkedTomcatCustomizer")
+            } catch (Throwable e) {
+                // ignore
+            }
+            if(cls != null) {
+
+                try {
+                    cls.newInstance().customize(tomcat)
+                } catch (e) {
+                    throw new RuntimeException("Error invoking Tomcat server customizer: " + e.getMessage(), e)
                 }
             }
         }
