@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate;
 
+import java.beans.PropertyDescriptor;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -21,10 +22,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
-import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
@@ -111,6 +109,10 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         for (String propertyName : propertyNames) {
             if (!propertyName.equals(ident) && !(versionPropertyName != null &&
                     propertyName.equals(versionPropertyName))) {
+
+                PropertyDescriptor pd = GrailsClassUtils.getProperty(clazz,propertyName);
+                if(pd == null) continue;
+
                 GrailsHibernateDomainClassProperty prop = new GrailsHibernateDomainClassProperty(this, propertyName);
                 prop.setType(getPropertyType(propertyName));
                 Type hibernateType = metaData.getPropertyType(propertyName);
