@@ -66,7 +66,6 @@ target(loadApp:"Loads the Grails application object") {
     packageApp()
     PluginManagerHolder.pluginManager = null
     loadPlugins()
-    pluginManager = PluginManagerHolder.pluginManager
     pluginManager.application = grailsApp
     pluginManager.doArtefactConfiguration()
 

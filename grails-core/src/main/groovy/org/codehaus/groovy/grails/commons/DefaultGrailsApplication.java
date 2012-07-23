@@ -137,6 +137,27 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
 
+
+    /**
+     * Loads a GrailsApplication using the given ResourceLocator instance which will search for appropriate class names
+     *
+     */
+    public DefaultGrailsApplication(org.codehaus.groovy.grails.io.support.Resource[] resources) {
+        this();
+        for (org.codehaus.groovy.grails.io.support.Resource resource : resources) {
+
+            Class<?> aClass;
+            try {
+                aClass = cl.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
+            } catch (ClassNotFoundException e) {
+                throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
+            } catch (IOException e) {
+                throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
+            }
+            loadedClasses.add(aClass);
+        }
+
+    }
     /**
      * Initialises the default set of ArtefactHandler instances.
      *
