@@ -1374,7 +1374,7 @@ class BuildSettings extends AbstractBuildSettings {
         return slurper
     }
 
-//    @CompileStatic
+    @CompileStatic
     private void establishProjectStructure() {
         // The third argument to "getPropertyValue()" is either the
         // existing value of the corresponding field, or if that's
