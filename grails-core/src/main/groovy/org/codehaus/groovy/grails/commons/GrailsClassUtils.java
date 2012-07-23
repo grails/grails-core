@@ -276,7 +276,7 @@ public class GrailsClassUtils {
 
         try {
             PropertyDescriptor pd = BeanUtils.getPropertyDescriptor(clazz, propertyName);
-            if (pd.getPropertyType().equals(propertyType)) {
+            if (pd != null && pd.getPropertyType().equals(propertyType)) {
                 return pd;
             }
             return null;
@@ -287,6 +287,26 @@ public class GrailsClassUtils {
         }
     }
 
+    /**
+     * Retrieves a property of the given class of the specified name and type
+     * @param clazz The class to retrieve the property from
+     * @param propertyName The name of the property
+     *
+     * @return A PropertyDescriptor instance or null if none exists
+     */
+    public static PropertyDescriptor getProperty(Class<?> clazz, String propertyName) {
+        if (clazz == null || propertyName == null) {
+            return null;
+        }
+
+        try {
+            return BeanUtils.getPropertyDescriptor(clazz, propertyName);
+        }
+        catch (Exception e) {
+            // if there are any errors in instantiating just return null for the moment
+            return null;
+        }
+    }
     /**
      * Returns the class name without the package prefix
      *
