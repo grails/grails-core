@@ -17,10 +17,12 @@ package grails.util
 
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.build.logging.GrailsConsole
+import groovy.transform.CompileStatic
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
+import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.plugins.repository.TransferEvent
 import org.apache.ivy.plugins.repository.TransferListener
@@ -29,12 +31,10 @@ import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
-import org.apache.ivy.core.module.descriptor.ExcludeRule
-import groovy.transform.CompileStatic
 
 /**
  * <p>Represents the project paths and other build settings
@@ -1383,7 +1383,7 @@ class BuildSettings extends AbstractBuildSettings {
         def props = config.toProperties()
 
         final forkConfig = getForkConfig()
-        if((forkConfig instanceof Map) && forkConfig) {
+        if ((forkConfig instanceof Map) && forkConfig) {
             forkSettings = (Map)forkConfig
         }
         Metadata metadata = Metadata.getCurrent()

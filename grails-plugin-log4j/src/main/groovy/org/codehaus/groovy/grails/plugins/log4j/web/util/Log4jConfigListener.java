@@ -15,19 +15,17 @@
 package org.codehaus.groovy.grails.plugins.log4j.web.util;
 
 import grails.util.Environment;
-import grails.util.GrailsWebUtil;
 import groovy.util.ConfigObject;
+
+import java.lang.reflect.Method;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.helpers.LogLog;
-import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig;
-
-import java.lang.reflect.Method;
 
 /**
  * Configures Log4j in WAR deployment using Grails Log4j DSL.

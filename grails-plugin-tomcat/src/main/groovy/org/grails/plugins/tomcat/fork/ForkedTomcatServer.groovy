@@ -19,14 +19,15 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.web.container.EmbeddableServer
 import groovy.transform.CompileStatic
+
 import org.apache.catalina.Context
+import org.apache.catalina.startup.Tomcat
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.InlineExplodedTomcatServer
 import org.grails.plugins.tomcat.TomcatKillSwitch
-import org.apache.catalina.startup.Tomcat
 
 /**
  * An implementation of the Tomcat server that runs in forked mode.
@@ -69,19 +70,15 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         initializeLogging(ec.grailsHome,classLoader)
 
         tomcatRunner = new TomcatRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
-        if(ec.securePort > 0) {
+        if (ec.securePort > 0) {
             tomcatRunner.startSecure(ec.host, ec.port, ec.securePort)
         }
         else {
             tomcatRunner.start(ec.host, ec.port)
         }
 
-
         setupReloading(classLoader, buildSettings)
-
     }
-
-
 
     @CompileStatic
     void start(String host, int port) {
@@ -107,7 +104,6 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         }
         System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
     }
-
 
     @CompileStatic
     boolean isAvailable(String host, int port) {
@@ -145,15 +141,12 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         @CompileStatic
         protected void initialize(Tomcat tomcat) {
             final autodeployDir = buildSettings.autodeployDir
-            if(autodeployDir.exists()) {
-
+            if (autodeployDir.exists()) {
                 final wars = autodeployDir.listFiles()
-                if(wars != null) {
-                    for(File f in wars) {
-                        final fileName = f.name
-                        if(fileName.endsWith(".war")) {
-                            tomcat.addWebapp(f.name - '.war', f.absolutePath)
-                        }
+                for(File f in wars) {
+                    final fileName = f.name
+                    if (fileName.endsWith(".war")) {
+                        tomcat.addWebapp(f.name - '.war', f.absolutePath)
                     }
                 }
             }
@@ -168,8 +161,8 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
             } catch (Throwable e) {
                 // ignore
             }
-            if(cls != null) {
 
+            if (cls != null) {
                 try {
                     cls.newInstance().customize(tomcat)
                 } catch (e) {
@@ -211,10 +204,9 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     }
 }
 
-class TomcatExecutionContext extends ExecutionContext implements Serializable {
+class TomcatExecutionContext extends ExecutionContext {
     String contextPath
     String host = EmbeddableServer.DEFAULT_HOST
     int port = EmbeddableServer.DEFAULT_PORT
     int securePort
-
 }
