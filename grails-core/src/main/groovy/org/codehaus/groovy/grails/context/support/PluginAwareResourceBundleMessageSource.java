@@ -18,17 +18,12 @@ import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 import grails.util.Metadata;
-import grails.util.PluginBuildSettings;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.logging.LogFactory;
-import org.apache.commons.logging.Log;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.DevelopmentResourceLoader;
@@ -38,8 +33,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.io.File;
-import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,8 +45,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBundleMessageSource implements GrailsApplicationAware, PluginManagerAware, InitializingBean{
 
-	private static final Log LOG = LogFactory.getLog(PluginAwareResourceBundleMessageSource.class);
-
     private static final String WEB_INF_PLUGINS_PATH = "/WEB-INF/plugins/";
     protected GrailsApplication application;
     protected GrailsPluginManager pluginManager;
@@ -62,7 +53,6 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private PathMatchingResourcePatternResolver resourceResolver;
     private Map<Locale, PropertiesHolder> cachedMergedPluginProperties = new ConcurrentHashMap<Locale, PropertiesHolder>();
     private int pluginCacheMillis = -1;
-	private final PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
 
     public List<String> getPluginBaseNames() {
         return pluginBaseNames;
@@ -82,97 +72,29 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
     public void afterPropertiesSet() throws Exception {
         if (pluginManager != null && localResourceLoader != null) {
-
             GrailsPlugin[] plugins = pluginManager.getAllPlugins();
             for (GrailsPlugin plugin : plugins) {
                 Resource[] pluginBundles;
-                pluginBundles = getPluginBundles(plugin);
-                for (Resource pluginBundle : pluginBundles) {
-					String basePath = null;
-					final String baseName = StringUtils.substringBefore(FilenameUtils.getBaseName(pluginBundle.getFilename()), "_");
 
-					// If the plugin is an inline plugin, use the abosolute path to the plugin's i18n files.
-					// Otherwise, use the relative path to the plugin from the application's perspective.
-					if(isInlinePlugin(plugin)) {
-						basePath = getInlinePluginPath(plugin);
-					} else {
-                    	basePath = WEB_INF_PLUGINS_PATH.substring(1) + plugin.getFileSystemName();
-					}
-					
-					pluginBaseNames.add(basePath + "/grails-app/i18n/" + baseName);
+                final String pluginName = plugin.getFileSystemName();
+                pluginBundles = getPluginBundles(pluginName);
+                for (Resource pluginBundle : pluginBundles) {
+                    String baseName = FilenameUtils.getBaseName(pluginBundle.getFilename());
+                    baseName = StringUtils.substringBefore(baseName,"_");
+                    pluginBaseNames.add(WEB_INF_PLUGINS_PATH.substring(1) + pluginName + "/grails-app/i18n/" + baseName);
                 }
             }
         }
     }
 
-	/**
-	 * Returns the i18n message bundles for the provided plugin or an empty
-	 * array if the plugin does not contain any .properties files in its
-	 * grails-app/i18n folder.
-	 * @param grailsPlugin The grails plugin that may or may not contain i18n internationalization files.
-	 * @returns An array of {@code Resource} objects representing the internationalization files or
-	 *    an empty array if no files are found.
-	 */
-    protected Resource[] getPluginBundles(GrailsPlugin grailsPlugin) {
+    protected Resource[] getPluginBundles(String pluginName) {
         try {
-			String basePath = null;
-			
-			// If the plugin is inline, use the absolute path to the internationalization files
-			// in order to convert to resources.  Otherwise, use the relative WEB-INF path.
-			if(isInlinePlugin(grailsPlugin)) {
-				basePath = getInlinePluginPath(grailsPlugin);
-			} else {
-				basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
-			}
-			
-            return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
+            return resourceResolver.getResources(WEB_INF_PLUGINS_PATH + pluginName + "/grails-app/i18n/*.properties");
         }
         catch (Exception e) {
-			LOG.debug("Could not resolve any resources for plugin " + grailsPlugin.getFileSystemName(), e);
             return new Resource[0];
         }
     }
-
-    /**
-     * Tests whether or not the Grails plugin is currently being run "inline".
-     * @param grailsPlugin The Grails plugin to test.
-     * @returns {@code true} if the plugin is being used "inline" or {@code false} if the
-     *   plugin is not being used "inline".
-	 */
-	protected boolean isInlinePlugin(GrailsPlugin grailsPlugin) {
-		return (getInlinePluginPath(grailsPlugin) != null);
-	}
-
-    /**
-     * Returns the absolute path to the provided Grails plugin if it is being used "inline" or {@code null}
-     * if the plugin is <b>not</b> being used "inline".
-     * @param grailsPlugin The Grails plugin.
-     * @returns The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
-     */
-	protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
-		String path = null;
-		try {
-			final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
-			if(pluginInfo != null) {
-				String pluginDirPath = pluginInfo.getPluginDir().getFile().getPath();
-				if(pluginDirPath != null) {
-					// Remove the "/." added to the end of the plugin path by the PluginInfo class.  This is necessary
-					// so that the path matches the key used in the BuildSettings class for the stored inline plugins map.
-					if(pluginDirPath.endsWith("/.")) {
-						pluginDirPath = pluginDirPath.substring(0, pluginDirPath.length() - 2);
-					}
-					
-					// If the path to the plugin represents an inline plugin, use that path (minus the trailing "/.")
-					if(BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(pluginDirPath))) {
-						path = pluginDirPath;
-					}
-				}
-			}
-		} catch(final IOException e) {
-			LOG.debug("Unable to retrieve plugin directory for plugin " + grailsPlugin.getFileSystemShortName() + ".", e);
-		}
-		return path;
-	}
 
     @Override
     protected String resolveCodeWithoutArguments(String code, Locale locale) {

@@ -15,8 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins.i18n
 
-import java.io.File
-
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
@@ -25,7 +23,7 @@ import org.apache.commons.lang.StringUtils
 import org.apache.commons.logging.LogFactory
 
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 
@@ -33,7 +31,6 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource
 import org.springframework.core.io.Resource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
-import org.springframework.util.ResourceUtils
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 
@@ -91,7 +88,7 @@ class I18nGrailsPlugin {
                 int firstUnderscore = fileName.indexOf('_')
 
                 if (firstUnderscore > 0) {
-                    // grab everything up to but not including
+                    // grab everyting up to but not including
                     // the first underscore in the file name
                     int numberOfCharsToRemove = fileName.length() - firstUnderscore
                     int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
