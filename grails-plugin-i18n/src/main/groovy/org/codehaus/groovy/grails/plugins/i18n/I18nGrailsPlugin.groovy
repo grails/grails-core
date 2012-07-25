@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 
+import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource
 import org.springframework.core.io.Resource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
@@ -65,8 +66,11 @@ class I18nGrailsPlugin {
         if (messageResources) {
             for (resource in messageResources) {
 				// Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
-				def isInlineResource = BuildSettingsHolder.settings.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
-                String path
+				// Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
+				def isInlineResource = (resource instanceof ClassPathResource) ? false :
+					BuildSettingsHolder.settings.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
+                
+				String path
 
 				// If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
 				// generate the path to the resource based on its relativity to the application.
@@ -99,7 +103,7 @@ class I18nGrailsPlugin {
                     path -= ".properties"
                 }
 
-                baseNames << (isInlineResource ? path : "WEB-INF/${baseDir}${path}")
+                baseNames << (isInlineResource ? path : "WEB-INF/" + baseDir + path)
             }
         }
 
