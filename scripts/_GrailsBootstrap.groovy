@@ -72,7 +72,7 @@ target(loadApp:"Loads the Grails application object") {
     def builder = new WebBeanBuilder(ctx)
     newBeans = builder.beans {
         delegate."pluginManager"(MethodInvokingFactoryBean) {
-            targetClass = PluginManagerHolder
+            targetClass = grails.util.Holders
             targetMethod = "getPluginManager"
         }
     }
