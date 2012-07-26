@@ -480,29 +480,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void doWithApplicationContext(ApplicationContext ctx) {
-        try {
-            if (!pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
-                return;
-            }
-
-            Closure c = (Closure)plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
-            if (enableDocumentationGeneration()) {
-                DocumentationContext.getInstance().setActive(true);
-            }
-
-            c.setDelegate(this);
-            c.call(new Object[]{ctx});
+        if (!pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
+            return;
         }
-        finally {
-            if (enableDocumentationGeneration()) {
-                DocumentationContext.getInstance().reset();
-            }
-        }
+
+        Closure c = (Closure)plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
+        c.setDelegate(this);
+        c.call(new Object[]{ctx});
     }
 
-    private boolean enableDocumentationGeneration() {
-        return !Metadata.getCurrent().isWarDeployed() && isBasePlugin();
-    }
 
     public void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
 
@@ -580,10 +566,12 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return !(excludes != null && excludes.contains(value));
     }
 
+    /**
+     * @deprecated Dynamic document generation no longer supported
+     * @param text
+     */
     public void doc(String text) {
-        if (enableDocumentationGeneration()) {
-            DocumentationContext.getInstance().document(text);
-        }
+        // no-op
     }
 
     @Override
@@ -709,21 +697,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void doWithDynamicMethods(ApplicationContext ctx) {
-        try {
-            if (pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
-                Closure c = (Closure)plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
-                if (enableDocumentationGeneration()) {
-                    DocumentationContext.getInstance().setActive(true);
-                }
-
-                c.setDelegate(this);
-                c.call(new Object[]{ctx});
-            }
-        }
-        finally {
-            if (enableDocumentationGeneration()) {
-                DocumentationContext.getInstance().reset();
-            }
+        if (pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
+            Closure c = (Closure)plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
+            c.setDelegate(this);
+            c.call(new Object[]{ctx});
         }
     }
 

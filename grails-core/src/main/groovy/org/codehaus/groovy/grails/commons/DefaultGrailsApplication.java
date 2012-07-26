@@ -37,7 +37,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
-import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
@@ -508,9 +507,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @return An array of classes for the given artefact
      */
     public GrailsClass[] getArtefacts(String artefactType) {
-        if (!isWarDeployed()) {
-            DocumentationContext.getInstance().setArtefactType(artefactType);
-        }
         return getArtefactInfo(artefactType, true).getGrailsClasses();
     }
 
