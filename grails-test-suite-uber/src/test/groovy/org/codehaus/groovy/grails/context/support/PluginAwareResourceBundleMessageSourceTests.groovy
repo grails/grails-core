@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.context.support
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.support.MockFileResource
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.springframework.core.io.Resource
@@ -58,7 +59,7 @@ one.two=test
 }
 
 class TestPluginAwareResourceBundleMessageSource extends PluginAwareResourceBundleMessageSource {
-    protected Resource[] getPluginBundles(String pluginName) {
+    protected Resource[] getPluginBundles(GrailsPlugin grailsPlugin) {
         [new MockFileResource("grails-app/i18n/messages.properties", '''
 foo.bar=test
 ''')] as Resource[]
