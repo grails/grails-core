@@ -14,7 +14,7 @@ buildscript {
 apply plugin: 'idea'
 
 ext {
-    grailsVersion = '2.1.0'
+    grailsVersion = '2.1.1.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     antTraxVersion = "1.7.1"
     antVersion = "1.8.2"
@@ -27,7 +27,7 @@ ext {
     datastoreVersion = "1.0.9.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = "1.8.6"
+    groovyVersion = "1.8.7"
     gradleGroovyVersion = groovyVersion
     gradleGroovyVersion = "1.8.2"
     ivyVersion = "2.2.0"
@@ -133,6 +133,8 @@ subprojects { project ->
     configure([compileGroovy, compileTestGroovy]) {
         groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
         groovyOptions.encoding = "UTF-8"
+        groovyOptions.useAnt = true
+        options.useAnt = true
     }
 
     configure([compileJava, compileTestJava]) {
@@ -326,5 +328,6 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion "1.0-milestone-9"
+    gradleVersion = '1.1-rc-1'
+    jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
