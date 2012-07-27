@@ -111,7 +111,7 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
                     propertyName.equals(versionPropertyName))) {
 
                 PropertyDescriptor pd = GrailsClassUtils.getProperty(clazz,propertyName);
-                if(pd == null) continue;
+                if (pd == null) continue;
 
                 GrailsHibernateDomainClassProperty prop = new GrailsHibernateDomainClassProperty(this, propertyName);
                 prop.setType(getPropertyType(propertyName));

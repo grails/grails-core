@@ -68,7 +68,7 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
         if (pluginManager == null) {
             Assert.state(descriptor != null, "Cannot create PluginManager, /WEB-INF/grails.xml not found!");
 
-            if(!descriptor.exists()) {
+            if (!descriptor.exists()) {
                 BuildSettings buildSettings = BuildSettingsHolder.getSettings();
                 GrailsProjectPluginLoader pluginLoader = new GrailsProjectPluginLoader(application, application.getClassLoader(),buildSettings, null);
                 pluginManager = pluginLoader.loadPlugins();

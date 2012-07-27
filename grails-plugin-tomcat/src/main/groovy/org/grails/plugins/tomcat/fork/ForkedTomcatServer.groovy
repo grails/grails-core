@@ -143,7 +143,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
             final autodeployDir = buildSettings.autodeployDir
             if (autodeployDir.exists()) {
                 final wars = autodeployDir.listFiles()
-                for(File f in wars) {
+                for (File f in wars) {
                     final fileName = f.name
                     if (fileName.endsWith(".war")) {
                         tomcat.addWebapp(f.name - '.war', f.absolutePath)
