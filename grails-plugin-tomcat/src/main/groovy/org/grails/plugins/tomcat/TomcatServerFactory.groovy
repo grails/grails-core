@@ -15,16 +15,16 @@
  */
 package org.grails.plugins.tomcat
 
+import grails.util.BuildSettings
+import grails.util.Environment
 import grails.web.container.EmbeddableServer
 import grails.web.container.EmbeddableServerFactory
+import groovy.transform.CompileStatic
+
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
+import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import org.grails.plugins.tomcat.fork.ForkedTomcatServer
 import org.grails.plugins.tomcat.fork.TomcatExecutionContext
-import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
-import grails.util.BuildSettings
-import groovy.transform.CompileStatic
-import grails.util.Environment
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
-
 
 class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware {
 
@@ -33,12 +33,11 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
     @CompileStatic
     EmbeddableServer createInline(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
         final obj = buildSettings?.forkSettings?.get("run")
-        if(obj) {
+        if (obj) {
             return createForked(contextPath, obj)
         }
-        else {
-            return new InlineExplodedTomcatServer(basedir, webXml, contextPath, classLoader)
-        }
+
+        return new InlineExplodedTomcatServer(basedir, webXml, contextPath, classLoader)
     }
 
     @CompileStatic
@@ -61,15 +60,14 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
         ec.resourcesDir = buildSettings.resourcesDir
 
         final forkedTomcat = new ForkedTomcatServer(ec)
-        if(forkConfig instanceof Map) {
-
+        if (forkConfig instanceof Map) {
             forkedTomcat.configure((Map)forkConfig)
         }
+
         def tomcatJvmArgs = getTomcatJvmArgs()
-        if(tomcatJvmArgs instanceof List) {
+        if (tomcatJvmArgs instanceof List) {
             forkedTomcat.jvmArgs = (List<String>)tomcatJvmArgs
         }
-
 
         return forkedTomcat
     }
@@ -77,7 +75,6 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
     private getTomcatJvmArgs() {
         buildSettings.config?.grails?.tomcat?.jvmArgs
     }
-
 
     @CompileStatic
     private List<File> buildMinimalIsolatedClasspath() {

@@ -583,7 +583,7 @@ public class GrailsConsole {
     public void log(String msg) {
         PrintStream printStream = out;
         try {
-            if(userInputActive) {
+            if (userInputActive) {
                 erasePrompt(printStream);
             }
             if (msg.endsWith(LINE_SEPARATOR)) {
@@ -613,7 +613,7 @@ public class GrailsConsole {
     public void append(String msg) {
         PrintStream printStream = out;
         try {
-            if(userInputActive && !appendCalled) {
+            if (userInputActive && !appendCalled) {
                 printStream.print(moveDownToSkipPrompt());
                 appendCalled = true;
             }

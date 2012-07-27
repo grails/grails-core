@@ -93,12 +93,12 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
 					// If the plugin is an inline plugin, use the abosolute path to the plugin's i18n files.
 					// Otherwise, use the relative path to the plugin from the application's perspective.
-					if(isInlinePlugin(plugin)) {
+					if (isInlinePlugin(plugin)) {
 						basePath = getInlinePluginPath(plugin);
 					} else {
                     	basePath = WEB_INF_PLUGINS_PATH.substring(1) + plugin.getFileSystemName();
 					}
-					
+
 					pluginBaseNames.add(basePath + "/grails-app/i18n/" + baseName);
                 }
             }
@@ -110,21 +110,21 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 	 * array if the plugin does not contain any .properties files in its
 	 * grails-app/i18n folder.
 	 * @param grailsPlugin The grails plugin that may or may not contain i18n internationalization files.
-	 * @returns An array of {@code Resource} objects representing the internationalization files or
+	 * @return An array of {@code Resource} objects representing the internationalization files or
 	 *    an empty array if no files are found.
 	 */
     protected Resource[] getPluginBundles(GrailsPlugin grailsPlugin) {
         try {
 			String basePath = null;
-			
+
 			// If the plugin is inline, use the absolute path to the internationalization files
 			// in order to convert to resources.  Otherwise, use the relative WEB-INF path.
-			if(isInlinePlugin(grailsPlugin)) {
+			if (isInlinePlugin(grailsPlugin)) {
 				basePath = getInlinePluginPath(grailsPlugin);
 			} else {
 				basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
 			}
-			
+
             return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
         }
         catch (Exception e) {
@@ -136,7 +136,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     /**
      * Tests whether or not the Grails plugin is currently being run "inline".
      * @param grailsPlugin The Grails plugin to test.
-     * @returns {@code true} if the plugin is being used "inline" or {@code false} if the
+     * @return {@code true} if the plugin is being used "inline" or {@code false} if the
      *   plugin is not being used "inline".
 	 */
 	protected boolean isInlinePlugin(GrailsPlugin grailsPlugin) {
@@ -147,23 +147,23 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      * Returns the absolute path to the provided Grails plugin if it is being used "inline" or {@code null}
      * if the plugin is <b>not</b> being used "inline".
      * @param grailsPlugin The Grails plugin.
-     * @returns The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
+     * @return The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
      */
 	protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
 		String path = null;
 		try {
 			final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
-			if(pluginInfo != null) {
+			if (pluginInfo != null) {
 				String pluginDirPath = pluginInfo.getPluginDir().getFile().getPath();
-				if(pluginDirPath != null) {
+				if (pluginDirPath != null) {
 					// Remove the "/." added to the end of the plugin path by the PluginInfo class.  This is necessary
 					// so that the path matches the key used in the BuildSettings class for the stored inline plugins map.
-					if(pluginDirPath.endsWith("/.")) {
+					if (pluginDirPath.endsWith("/.")) {
 						pluginDirPath = pluginDirPath.substring(0, pluginDirPath.length() - 2);
 					}
-					
+
 					// If the path to the plugin represents an inline plugin, use that path (minus the trailing "/.")
-					if(BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(pluginDirPath))) {
+					if (BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(pluginDirPath))) {
 						path = pluginDirPath;
 					}
 				}

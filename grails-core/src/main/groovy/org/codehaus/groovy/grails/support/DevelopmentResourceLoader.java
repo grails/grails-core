@@ -84,43 +84,43 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
 		// the inline plugin map) matches an "inline" plugin, use the location as-is
 		// for the resource location.  Otherwise, perform the logic to "normalize" the resource location based on
 		// its relativity to the application (i.e. is it from a non-inline plugin, etc).
-		if(BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(location.replaceAll(GRAILS_APP_DIR_PATTERN, "")))) {
+		if (BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(location.replaceAll(GRAILS_APP_DIR_PATTERN, "")))) {
 			return "file:" + location;
-		} else {
-	        if (!location.startsWith(GrailsResourceUtils.WEB_INF)) {
-	            return GrailsResourceUtils.WEB_APP_DIR+location;
-	        }
-
-	        final String noWebInf = location.substring(GrailsResourceUtils.WEB_INF.length() + 1);
-	        final String defaultPath = "file:" + baseLocation + SLASH + noWebInf;
-	        if (!noWebInf.startsWith(PLUGINS_PREFIX)) {
-	            return defaultPath;
-	        }
-
-	        if (application != null) {
-
-	            BuildSettings settings = BuildSettingsHolder.getSettings();
-	            PluginBuildSettings pluginBuildSettings = org.codehaus.groovy.grails.plugins.GrailsPluginUtils.getPluginBuildSettings();
-	            String pluginPath = StringUtils.substringAfter(noWebInf, SLASH);
-	            String pluginName = StringUtils.substringBefore(pluginPath, SLASH);
-	            String remainingPath = StringUtils.substringAfter(pluginPath, SLASH);
-	            org.codehaus.groovy.grails.io.support.Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
-	            if (r != null) {
-	                try {
-	                    return "file:" + r.getFile().getAbsolutePath() + SLASH + remainingPath;
-	                }
-	                catch (IOException e) {
-						LOG.debug("Unable to locate plugin resource -- returning default path " + defaultPath + ".", e);
-	                    return defaultPath;
-	                }
-	            }
-
-	            if (settings != null) {
-	                return "file:" + settings.getProjectPluginsDir().getAbsolutePath() + SLASH + pluginName + SLASH + remainingPath;
-	            }
-	        }
-
-	        return defaultPath;
 		}
+
+        if (!location.startsWith(GrailsResourceUtils.WEB_INF)) {
+            return GrailsResourceUtils.WEB_APP_DIR+location;
+        }
+
+        final String noWebInf = location.substring(GrailsResourceUtils.WEB_INF.length() + 1);
+        final String defaultPath = "file:" + baseLocation + SLASH + noWebInf;
+        if (!noWebInf.startsWith(PLUGINS_PREFIX)) {
+            return defaultPath;
+        }
+
+        if (application != null) {
+
+            BuildSettings settings = BuildSettingsHolder.getSettings();
+            PluginBuildSettings pluginBuildSettings = org.codehaus.groovy.grails.plugins.GrailsPluginUtils.getPluginBuildSettings();
+            String pluginPath = StringUtils.substringAfter(noWebInf, SLASH);
+            String pluginName = StringUtils.substringBefore(pluginPath, SLASH);
+            String remainingPath = StringUtils.substringAfter(pluginPath, SLASH);
+            org.codehaus.groovy.grails.io.support.Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
+            if (r != null) {
+                try {
+                    return "file:" + r.getFile().getAbsolutePath() + SLASH + remainingPath;
+                }
+                catch (IOException e) {
+					LOG.debug("Unable to locate plugin resource -- returning default path " + defaultPath + ".", e);
+                    return defaultPath;
+                }
+            }
+
+            if (settings != null) {
+                return "file:" + settings.getProjectPluginsDir().getAbsolutePath() + SLASH + pluginName + SLASH + remainingPath;
+            }
+        }
+
+        return defaultPath;
     }
 }
