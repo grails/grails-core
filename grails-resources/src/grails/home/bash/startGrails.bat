@@ -57,11 +57,11 @@ if "%GRAILS_HOME%" == "" set GRAILS_HOME=%DIRNAME%..
 
 :init
 
-set SPRINGLOADED_PARAMS="profile=grails"
-if not "%GRAILS_AGENT_CACHE_DIR%" == "" (
-set SPRINGLOADED_PARAMS="%SPRINGLOADED_PARAMS%;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
+for %%x in ("%HOMEPATH%") do set SHORTHOME=%%~fsx
+if "x%GRAILS_AGENT_CACHE_DIR%" == "x" set GRAILS_AGENT_CACHE_DIR=%SHORTHOME%/.grails/@grails.version@/
+set SPRINGLOADED_PARAMS="profile=grails;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
 if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
-)
+
 set AGENT_STRING=-javaagent:%GRAILS_HOME:\=/%/lib/com.springsource.springloaded/springloaded-core/jars/springloaded-core-@spring.loaded.version@.jar -noverify -Dspringloaded=%SPRINGLOADED_PARAMS%
 
 set DISABLE_RELOADING=
