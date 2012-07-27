@@ -468,8 +468,7 @@ public class GrailsScriptRunner {
         return attemptPrecompiledScriptExecute(commandLine, scriptName, env, binding, allScripts);
     }
 
-    private List<File> getPotentialScripts(String scriptName,
-            List<File> allScripts) {
+    private List<File> getPotentialScripts(String scriptName, List<File> allScripts) {
         List<File> potentialScripts;
         boolean exactMatchFound = false;
         potentialScripts = new ArrayList<File>();
@@ -494,8 +493,7 @@ public class GrailsScriptRunner {
         return potentialScripts;
     }
 
-    private void insertArgumentsInFrontOfExistingArguments(CommandLine commandLine,
-            String[] argumentsToInsert) {
+    private void insertArgumentsInFrontOfExistingArguments(CommandLine commandLine, String[] argumentsToInsert) {
         List<String> remainingArgs = commandLine.getRemainingArgs();
         for (int i = argumentsToInsert.length - 1; i >= 0; i-- ) {
             remainingArgs.add(0, argumentsToInsert[i]);
@@ -517,32 +515,35 @@ public class GrailsScriptRunner {
             loadScriptClass(gant, scriptName);
         }
         catch (ScriptNotFoundException e) {
-            if (isInteractive && !InteractiveMode.isActive()) {
-                scriptName = fixScriptName(scriptName, allScripts);
-                if (scriptName == null) {
-                    throw e;
-                }
-
-                loadScriptClass(gant, scriptName);
-
-                // at this point if they were calling a script that has a non-default
-                // env (e.g. war or test-app) it wouldn't have been correctly set, so
-                // set it now, but only if they didn't specify the env (e.g. "grails test war" -> "grails test war")
-
-                if (Boolean.TRUE.toString().equals(System.getProperty(Environment.DEFAULT))) {
-                    commandLine.setCommand(GrailsNameUtils.getScriptName(scriptName));
-                    env = commandLine.lookupEnvironmentForCommand();
-                    binding.setVariable("grailsEnv", env);
-                    settings.setGrailsEnv(env);
-                    System.setProperty(Environment.KEY, env);
-                    settings.setDefaultEnv(false);
-                    System.setProperty(Environment.DEFAULT, Boolean.FALSE.toString());
-                }
-            } else {
+            if (!isInteractive || InteractiveMode.isActive()) {
                 throw e;
             }
-        }
+            scriptName = fixScriptName(scriptName, allScripts);
+            if (scriptName == null) {
+                throw e;
+            }
 
+            try {
+                loadScriptClass(gant, scriptName);
+            }
+            catch (ScriptNotFoundException ce) {
+                return executeScriptWithCaching(commandLine, scriptName, env);
+            }
+
+            // at this point if they were calling a script that has a non-default
+            // env (e.g. war or test-app) it wouldn't have been correctly set, so
+            // set it now, but only if they didn't specify the env (e.g. "grails test war" -> "grails test war")
+
+            if (Boolean.TRUE.toString().equals(System.getProperty(Environment.DEFAULT))) {
+                commandLine.setCommand(GrailsNameUtils.getScriptName(scriptName));
+                env = commandLine.lookupEnvironmentForCommand();
+                binding.setVariable("grailsEnv", env);
+                settings.setGrailsEnv(env);
+                System.setProperty(Environment.KEY, env);
+                settings.setDefaultEnv(false);
+                System.setProperty(Environment.DEFAULT, Boolean.FALSE.toString());
+            }
+        }
 
         return executeWithGantInstance(gant, DO_NOTHING_CLOSURE, binding).exitCode;
     }
