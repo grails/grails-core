@@ -384,7 +384,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     /**
      * Minimum size for a String to be added as a StringChunk instead of copying content to the char[] buffer of the current StreamCharBufferChunk
      *
-     * @param stringChunkMinSize
+     * @param size
      */
     public void setSubStringChunkMinSize(int size) {
         subStringChunkMinSize = size;
@@ -405,7 +405,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     /**
      * Minimum size for a String or char[] to get written directly to connected writer (in "connectTo" mode).
      *
-     * @param writeDirectlyToConnectedMinSize
+     * @param size
      */
     public void setWriteDirectlyToConnectedMinSize(int size) {
         writeDirectlyToConnectedMinSize = size;
