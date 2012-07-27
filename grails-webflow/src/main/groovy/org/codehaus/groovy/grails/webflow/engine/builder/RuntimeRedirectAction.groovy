@@ -33,6 +33,7 @@ class RuntimeRedirectAction extends AbstractAction {
 
     def controller
     def action
+    def plugin
     Map params
     UrlMappingsHolder urlMapper
 
@@ -63,8 +64,8 @@ class RuntimeRedirectAction extends AbstractAction {
         Map params = params.clone()
         resolveExpressionsInParams(delegate, params)
 
-        UrlCreator creator = urlMapper.getReverseMapping(controller, action, params)
-        def url = creator.createRelativeURL(controller, action, params, 'utf-8')
+        UrlCreator creator = urlMapper.getReverseMapping(controller, action, plugin, params)
+        def url = creator.createRelativeURL(controller, action, plugin, params, 'utf-8')
 
         context.getExternalContext().requestExternalRedirect("contextRelative:$url")
         return success()

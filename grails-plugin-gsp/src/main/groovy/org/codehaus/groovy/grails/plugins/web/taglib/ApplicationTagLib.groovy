@@ -219,7 +219,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (elementId) {
             writer << " id=\"${elementId}\""
         }
-
+        attrs.remove('plugin')
         def remainingKeys = attrs.keySet() - LinkGenerator.LINK_ATTRIBUTES
         for (key in remainingKeys) {
             writer << " " << key << "=\"" << attrs[key]?.encodeAsHTML() << "\""

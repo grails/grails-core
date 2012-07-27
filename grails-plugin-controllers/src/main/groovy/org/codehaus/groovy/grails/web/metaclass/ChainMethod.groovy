@@ -35,6 +35,7 @@ class ChainMethod {
         def controller = args.controller ?: GrailsNameUtils.getLogicalPropertyName(
             target.class.name, ControllerArtefactHandler.TYPE)
         def action = args.action
+        def plugin = args.remove('plugin')
         def id = args.id
         def params = args.params ?: [:]
         def model = args.model ?: [:]
@@ -70,10 +71,10 @@ class ChainMethod {
         // the reverse URL mapping.
         if (id) params.id = id
 
-        UrlCreator creator = mappings.getReverseMapping(controller, action, params)
+        UrlCreator creator = mappings.getReverseMapping(controller, action, plugin, params)
         def response = webRequest.getCurrentResponse()
 
-        def url = response.encodeRedirectURL(creator.createURL(controller,action, params, 'utf-8'))
+        def url = response.encodeRedirectURL(creator.createURL(controller, action, plugin, params, 'utf-8'))
         response.sendRedirect url
     }
 }

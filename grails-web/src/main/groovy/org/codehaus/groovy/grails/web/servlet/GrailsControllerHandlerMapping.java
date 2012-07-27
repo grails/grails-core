@@ -24,8 +24,10 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -53,8 +55,18 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
         if (logger.isDebugEnabled()) {
             logger.debug("Looking up Grails controller for URI ["+uri+"]");
         }
-        GrailsControllerClass controllerClass = (GrailsControllerClass) grailsApplication.getArtefactForFeature(
-                ControllerArtefactHandler.TYPE, uri);
+        GrailsControllerClass controllerClass;
+        Object controllerAttribute = null;
+        GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+        if(webRequest != null) {
+            controllerAttribute = webRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
+        }
+        if(controllerAttribute instanceof GrailsControllerClass) {
+        	controllerClass = (GrailsControllerClass) controllerAttribute;
+        } else {
+        	controllerClass = (GrailsControllerClass) grailsApplication.getArtefactForFeature(
+        			ControllerArtefactHandler.TYPE, uri);
+        }
 
         return getHandlerForControllerClass(controllerClass, request);
     }

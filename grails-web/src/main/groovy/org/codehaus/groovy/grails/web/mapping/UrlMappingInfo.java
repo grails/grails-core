@@ -50,6 +50,8 @@ public interface UrlMappingInfo {
      * @return The name of the action or null if not known
      */
     String getActionName();
+    
+    String getPluginName();
 
     /**
      * The name of the view that the URL mappping maps to

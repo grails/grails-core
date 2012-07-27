@@ -15,8 +15,13 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import grails.util.Environment;
+import java.util.Map;
 
+import grails.util.Environment;
+import grails.util.GrailsNameUtils;
+
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
@@ -68,12 +73,22 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
     }
 
     @Override
-    public GrailsClass getArtefactForFeature(Object feature) {
+    public GrailsClass getArtefactForFeature(Object featureId) {
         if (artefactInfo == null) {
             return null;
         }
+        
+        String uri = null;
+        String pluginName = null;
 
-        String uri = feature.toString();
+        if(featureId instanceof Map) {
+        	Map featureIdMap = (Map)featureId;
+        	uri = (String)featureIdMap.get("uri");
+        	pluginName = (String)featureIdMap.get("pluginName");
+        } else {
+        	uri = featureId.toString();
+        }
+
         GrailsClass controllerClass = uriToControllerClassCache.get(uri);
         if (controllerClass == null) {
             final GrailsClass[] controllerClasses = artefactInfo.getGrailsClasses();
@@ -81,8 +96,23 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
             for (int i = (controllerClasses.length-1); i >= 0; i--) {
                 GrailsClass c = controllerClasses[i];
                 if (((GrailsControllerClass) c).mapsToURI(uri)) {
-                    controllerClass = c;
-                    break;
+                	boolean foundController = false;
+                	if(pluginName != null) {
+                		Object bean = grailsApplication.getMainContext().getBean("pluginManager");
+                		if(bean instanceof GrailsPluginManager) {
+                			GrailsPluginManager gpm = (GrailsPluginManager) bean;
+                			GrailsPlugin pluginForClass = gpm.getPluginForClass(c.getClazz());
+                			if(pluginForClass != null && pluginName.equals(pluginForClass.getName())) {
+                				foundController = true;
+                			}
+                		}
+                	} else {
+                		foundController = true;
+                	}
+                	if(foundController) {
+                		controllerClass = c;
+                		break;
+                	}
                 }
             }
             if (controllerClass == null) {

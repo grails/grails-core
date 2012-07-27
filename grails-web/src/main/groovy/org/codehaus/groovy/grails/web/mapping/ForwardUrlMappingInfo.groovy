@@ -26,6 +26,7 @@ class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
 
     String controllerName
     String actionName
+    String pluginName
     String viewName
     String URI
     String id
@@ -33,6 +34,7 @@ class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
 
     void setController(String controller) { controllerName = controller }
     void setAction(String action) { actionName = action }
+    void setPluginName(String plugin) { pluginName = plugin }
     void setView(String view) { viewName = view }
     void setParams(Map params) {
         if (params) {

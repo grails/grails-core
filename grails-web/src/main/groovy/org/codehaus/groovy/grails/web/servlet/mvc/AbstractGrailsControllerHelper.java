@@ -51,6 +51,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.ModelAndView;
 
 /**
@@ -132,7 +133,13 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         }
 
         // Step 2: lookup the controller in the application.
-        GrailsControllerClass controllerClass = getControllerClassByURI(uri);
+        GrailsControllerClass controllerClass;
+        Object attribute = grailsWebRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
+        if(attribute instanceof GrailsControllerClass) {
+        	controllerClass = (GrailsControllerClass) attribute;
+        } else {
+        	controllerClass = getControllerClassByURI(uri);
+        }
 
         if (controllerClass == null) {
             throw new UnknownControllerException("No controller found for URI [" + uri + "]!");

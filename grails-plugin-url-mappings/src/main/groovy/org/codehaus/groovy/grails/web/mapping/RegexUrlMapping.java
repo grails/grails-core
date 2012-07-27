@@ -85,9 +85,9 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param servletContext
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
      */
-    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName,
+    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object pluginName,
             Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        super(controllerName, actionName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
+        super(controllerName, actionName, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
         this.grailsApplication = GrailsWebUtil.lookupApplication(servletContext);
         parse(data, constraints);
     }
@@ -290,17 +290,22 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     }
 
     public String createURL(String controller, String action, Map paramValues, String encoding) {
-        return createURLInternal(controller, action, paramValues, encoding, true);
+        return createURL(controller, action, null, paramValues, encoding);
     }
 
+    public String createURL(String controller, String action, String pluginName, Map paramValues, String encoding) {
+        return createURLInternal(controller, action, pluginName, paramValues, encoding, true);
+    }
+    
     @SuppressWarnings("unchecked")
-    private String createURLInternal(String controller, String action, Map paramValues,
+    private String createURLInternal(String controller, String action, String pluginName, Map paramValues,
             String encoding, boolean includeContextPath) {
 
         if (paramValues == null) paramValues = new HashMap();
 
         boolean hasController = !StringUtils.isBlank(controller);
         boolean hasAction = !StringUtils.isBlank(action);
+        boolean hasPlugin = !StringUtils.isBlank(pluginName);
 
         try {
             if (hasController) {
@@ -308,6 +313,9 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             }
             if (hasAction) {
                 paramValues.put(ACTION, action);
+            }
+            if (hasPlugin) {
+                paramValues.put("plugin", pluginName);
             }
 
             return createURLInternal(paramValues, encoding, includeContextPath);
@@ -319,25 +327,42 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             if (hasAction) {
                 paramValues.remove(ACTION);
             }
+            if (hasPlugin) {
+                paramValues.remove("plugin");
+            }
         }
     }
 
     public String createRelativeURL(String controller, String action, Map paramValues, String encoding) {
-        return createURLInternal(controller, action, paramValues, encoding, false);
+        return createRelativeURL(controller, action, null, paramValues, encoding);
     }
 
+    public String createRelativeURL(String controller, String action, String pluginName, Map paramValues, String encoding) {
+        return createURLInternal(controller, action, pluginName, paramValues, encoding, false);
+    }
+    
     public String createRelativeURL(String controller, String action, Map paramValues,
             String encoding, String fragment) {
-        final String url = createURLInternal(controller, action, paramValues, encoding, false);
-        return createUrlWithFragment(url, fragment, encoding);
+        return createRelativeURL(controller, action, null, paramValues, encoding, fragment);
     }
 
+    public String createRelativeURL(String controller, String action, String pluginName, Map paramValues,
+            String encoding, String fragment) {
+        final String url = createURLInternal(controller, action, pluginName, paramValues, encoding, false);
+        return createUrlWithFragment(url, fragment, encoding);
+    }
+    
     public String createURL(String controller, String action, Map paramValues,
             String encoding, String fragment) {
-        String url = createURL(controller, action, paramValues, encoding);
-        return createUrlWithFragment(url, fragment, encoding);
+        return createURL(controller, action, null, paramValues, encoding, fragment);
     }
 
+    public String createURL(String controller, String action, String pluginName, Map paramValues,
+            String encoding, String fragment) {
+        String url = createURL(controller, action, pluginName, paramValues, encoding);
+        return createUrlWithFragment(url, fragment, encoding);
+    }
+    
     private String createUrlWithFragment(String url, String fragment, String encoding) {
         if (fragment != null) {
             // A 'null' encoding will cause an exception, so default to 'UTF-8'.
@@ -483,7 +508,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             info = new DefaultUrlMappingInfo(viewName, params, urlData, servletContext);
         }
         else {
-            info = new DefaultUrlMappingInfo(controllerName, actionName, getViewName(), params, urlData, servletContext);
+            info = new DefaultUrlMappingInfo(controllerName, actionName, pluginName, getViewName(), params, urlData, servletContext);
         }
 
         if (parseRequest) {

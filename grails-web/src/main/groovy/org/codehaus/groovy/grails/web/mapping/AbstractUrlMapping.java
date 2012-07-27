@@ -33,6 +33,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected final ConstrainedProperty[] constraints;
     protected Object controllerName;
     protected Object actionName;
+    protected Object pluginName;
     protected Object viewName;
     protected Object forwardURI;
     protected ServletContext servletContext;
@@ -50,9 +51,10 @@ public abstract class AbstractUrlMapping implements UrlMapping {
      * @param constraints Any constraints that apply to the mapping
      * @param servletContext
      */
-    public AbstractUrlMapping(Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+    public AbstractUrlMapping(Object controllerName, Object actionName, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
         this.controllerName = controllerName;
         this.actionName = actionName;
+        this.pluginName = pluginName;
         this.constraints = constraints;
         this.viewName = viewName;
         this.servletContext = servletContext;
@@ -91,6 +93,10 @@ public abstract class AbstractUrlMapping implements UrlMapping {
         return actionName;
     }
 
+    public Object getPluginName() {
+        return pluginName;
+    }
+    
     /**
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping#getViewName()
      *
