@@ -59,11 +59,11 @@ if "%GRAILS_HOME:~-1%"=="\" SET GRAILS_HOME=%GRAILS_HOME:~0,-1%
 
 :init
 
-set SPRINGLOADED_PARAMS="profile=grails"
-if not "%GRAILS_AGENT_CACHE_DIR%" == "" (
-set SPRINGLOADED_PARAMS="%SPRINGLOADED_PARAMS%;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
+for %%x in ("%HOMEPATH%") do set SHORTHOME=%%~fsx
+if "x%GRAILS_AGENT_CACHE_DIR%" == "x" set GRAILS_AGENT_CACHE_DIR=%SHORTHOME%/.grails/@grails.version@/
+set SPRINGLOADED_PARAMS="profile=grails;cacheDir=%GRAILS_AGENT_CACHE_DIR%"
 if not exist "%GRAILS_AGENT_CACHE_DIR%" mkdir "%GRAILS_AGENT_CACHE_DIR%"
-)
+
 set AGENT_STRING=@windows.agent.string@
 set DISABLE_RELOADING=
 if "%GRAILS_OPTS%" == "" set GRAILS_OPTS=-server -Xmx768M -Xms768M -XX:PermSize=256m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8
