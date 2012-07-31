@@ -286,7 +286,7 @@ class RenderTagLib implements RequestConstants {
      * @attr default the value to use if the title isn't specified in the GSP
      */
     Closure layoutTitle = { attrs ->
-        String title = page.title
+        String title = page.title.encodeAsHTML()
         if (!title && attrs.'default') title = attrs.'default'
         if (title) out << title
     }
