@@ -59,6 +59,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     boolean useJsessionId = false
     boolean hasResourceProcessor = false
 
+    def requestDataValueProcessor = null
+
     void afterPropertiesSet() {
         def config = applicationContext.getBean(GrailsApplication.APPLICATION_ID).config
         if (config.grails.views.enable.jsessionid instanceof Boolean) {
@@ -215,14 +217,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             linkAttrs = [:]
         }
         writer <<  '<a href=\"'
-
-        // RequestDataValueProcessor change link if necessary
-        def currentLink = createLink(attrs).encodeAsHTML()
-        if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
-            def requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
-            currentLink = requestDataValueProcessor.processUrl(request,currentLink)
-        }
-        writer << currentLink
+        writer << createLink(attrs).encodeAsHTML()
 
         writer << '"'
         if (elementId) {
@@ -374,7 +369,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             urlAttrs.params = params
         }
         def generatedLink = linkGenerator.link(attrs, request.characterEncoding)
-
+        generatedLink = processedUrl(generatedLink,request);
         if (useJsessionId) {
             return response.encodeURL(generatedLink)
         }
@@ -443,5 +438,25 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             throwTagError('Tag ["meta"] missing required attribute ["name"]')
         }
         return Metadata.current[attrs.name]
+    }
+
+    /**
+     * getter to obtain RequestDataValueProcessor from 
+     */
+    private initRequestDataValueProcessor() {
+        if (requestDataValueProcessor == null && grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
+            requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+        }
+    }
+    Closure processedUrl = { link,request ->
+        if(!link) {
+            throwTagError('processedUrl missing required attribute ["link"]')
+        }
+        initRequestDataValueProcessor();
+        def currentLink = link;
+        if(requestDataValueProcessor != null) {
+            currentLink = requestDataValueProcessor.processUrl(request,link);
+        }   
+        return currentLink;
     }
 }

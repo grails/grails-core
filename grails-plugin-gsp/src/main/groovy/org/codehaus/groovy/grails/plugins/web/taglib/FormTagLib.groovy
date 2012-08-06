@@ -167,18 +167,22 @@ class FormTagLib {
         if (checked instanceof String) checked = Boolean.valueOf(checked)
 
         if (value == null) value = false
-        def hiddenValue = null;
+        def hiddenValue = "";
         
-        value = processFormFieldValueIfNecessary(name, "${value}","checkbox")
-        hiddenValue = processFormFieldValueIfNecessary("_${name}", "${hiddenValue}", "hidden")
+        value = processFormFieldValueIfNecessary(name, value,"checkbox")
+        hiddenValue = processFormFieldValueIfNecessary("_${name}", hiddenValue, "hidden")
         
-        out << "<input type=\"hidden\" name=\"_${name}\" value=\"${hiddenValue}\" /><input type=\"checkbox\" name=\"${name}\" "
+        out << "<input type=\"hidden\" name=\"_${name}\"";
+        if(hiddenValue != "") {
+            out << " value=\"${hiddenValue}\"";
+        }
+        out << " /><input type=\"checkbox\" name=\"${name}\" "
         if (checkedAttributeWasSpecified) {
-            if (checked) {
+            if (checked) { 
                 out << 'checked="checked" '
             }
         }
-        else if (value) {
+        else if (value && value != "") {
             out << 'checked="checked" '
         }
 
@@ -911,9 +915,9 @@ class FormTagLib {
                 def keyValue = null
                 writer << '<option '
                 if (keys) {
-                    keyValue = processFormFieldValueIfNecessary(attrs.name, "${keys[i]}","option")
+                    keyValue = keys[i];//processFormFieldValueIfNecessary(attrs.name, "${keys[i]}","option")
                     
-                    writeValueAndCheckIfSelected(keyValue, value, writer)
+                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
                 }
                 else if (optionKey) {
                     def keyValueObject = null
@@ -928,14 +932,14 @@ class FormTagLib {
                         keyValue = el[optionKey]
                         keyValueObject = el
                     }
-                    keyValue = processFormFieldValueIfNecessary(attrs.name, "${keyValue}","option")
-                    writeValueAndCheckIfSelected(keyValue, value, writer, keyValueObject)
+                    //keyValue = processFormFieldValueIfNecessary(attrs.name, "${keyValue}","option")
+                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, keyValueObject)
                 }
                 else {
                     keyValue = el
-                    keyValue = processFormFieldValueIfNecessary(attrs.name, "${keyValue}","option")
+                    //keyValue = processFormFieldValueIfNecessary(attrs.name, "${keyValue}","option")
                     
-                    writeValueAndCheckIfSelected(keyValue, value, writer)
+                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
                 }
                 writer << '>'
                 if (optionValue) {
@@ -978,11 +982,11 @@ class FormTagLib {
         writer << '</select>'
     }
 
-    private writeValueAndCheckIfSelected(keyValue, value, writer) {
-        writeValueAndCheckIfSelected(keyValue, value, writer, null)
+    private writeValueAndCheckIfSelected(selectName, keyValue, value, writer) {
+        writeValueAndCheckIfSelected(selectName, keyValue, value, writer, null)
     }
 
-    private writeValueAndCheckIfSelected(keyValue, value, writer, el) {
+    private writeValueAndCheckIfSelected(selectName, keyValue, value, writer, el) {
 
         boolean selected = false
         def keyClass = keyValue?.getClass()
@@ -1011,6 +1015,7 @@ class FormTagLib {
                 // ignore
             }
         }
+        keyValue = processFormFieldValueIfNecessary(selectName, "${keyValue}","option")
         writer << "value=\"${keyValue}\" "
         if (selected) {
             writer << 'selected="selected" '
@@ -1093,19 +1098,17 @@ class FormTagLib {
      * getter to obtain RequestDataValueProcessor from 
      */
     private getRequestDataValueProcessor() {
-        def requestDataValueProcessor = null
-        if (grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
+        if (requestDataValueProcessor == null && grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
             requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
         }
         return requestDataValueProcessor;
     }
 
     private processFormFieldValueIfNecessary(name, value, type) {
-        // TODO Cacheatu hau
         def requestDataValueProcessor = getRequestDataValueProcessor();  
         def processedValue = value;
         if(requestDataValueProcessor != null) {
-            processedValue = requestDataValueProcessor.processFormFieldValue(request, name, value, type);
+            processedValue = requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type);
         } 
         return processedValue;
     }
