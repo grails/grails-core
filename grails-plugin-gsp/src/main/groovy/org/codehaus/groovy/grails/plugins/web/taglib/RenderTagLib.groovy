@@ -288,7 +288,7 @@ class RenderTagLib implements RequestConstants {
     Closure layoutTitle = { attrs ->
         String title = page.title
         if (!title && attrs.'default') title = attrs.'default'
-        if (title) out << title.encodeAsHTML()
+        if (title) out << title
     }
 
     /**
