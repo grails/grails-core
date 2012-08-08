@@ -51,7 +51,7 @@ import static org.fusesource.jansi.Ansi.ansi;
 public class GrailsConsole {
 
     private static GrailsConsole instance;
-    
+
     public static final String ENABLE_TERMINAL = "grails.console.enable.terminal";
     public static final String ENABLE_INTERACTIVE = "grails.console.enable.interactive";
     public static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -138,7 +138,9 @@ public class GrailsConsole {
             }
 
             history = prepareHistory();
-            reader.setHistory(history);
+            if (history != null) {
+                reader.setHistory(history);
+            }
         }
         else if (isActivateTerminal()) {
             terminal = createTerminal();
@@ -155,7 +157,7 @@ public class GrailsConsole {
     }
 
     private boolean isActivateTerminal() {
-        return readPropOrTrue(ENABLE_TERMINAL); 
+        return readPropOrTrue(ENABLE_TERMINAL);
     }
 
     private boolean readPropOrTrue(String prop) {
@@ -200,9 +202,8 @@ public class GrailsConsole {
      * will live in the home directory of the user.
      */
     protected History prepareHistory() throws IOException {
-        String historyFile = System.getProperty("user.home") + File.separator + HISTORYFILE;
-        history = new History(new File(historyFile));
-        return history;
+        File file = new File(System.getProperty("user.home"), HISTORYFILE);
+        return file.canWrite() ? new History(file) : null;
     }
 
     /**
