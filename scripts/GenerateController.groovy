@@ -29,6 +29,11 @@ target ('default': "Generates the CRUD controller for a specified domain class")
     depends(checkVersion, parseArguments, packageApp)
     promptForName(type: "Domain Class")
     generateViews = false
-    generateForName = argsMap["params"][0]
-    generateForOne()
+    def name = argsMap['params'][0]
+    if(!name || name == '*') {
+        uberGenerate()
+    } else {
+        generateForName = name
+        generateForOne()
+    }
 }
