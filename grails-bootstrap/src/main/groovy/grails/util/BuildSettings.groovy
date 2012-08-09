@@ -17,10 +17,12 @@ package grails.util
 
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.build.logging.GrailsConsole
+import groovy.transform.CompileStatic
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
+import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.plugins.repository.TransferEvent
 import org.apache.ivy.plugins.repository.TransferListener
@@ -29,12 +31,10 @@ import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
-import org.apache.ivy.core.module.descriptor.ExcludeRule
-import groovy.transform.CompileStatic
 
 /**
  * <p>Represents the project paths and other build settings
@@ -159,6 +159,11 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_WAR_FILE = "grails.project.war.file"
 
     /**
+     * The name of the WAR file of the project
+     */
+    public static final String PROJECT_AUTODEPLOY_DIR = "grails.project.autodeploy.dir"
+
+    /**
      * The name of the system property for enabling osgi headers in the WAR Manifest
      */
     public static final String PROJECT_WAR_OSGI_HEADERS = "grails.project.war.osgi.headers"
@@ -265,6 +270,11 @@ class BuildSettings extends AbstractBuildSettings {
     File projectWarFile
 
     /**
+     * Directory where additional war files to be autodeployed are located
+     */
+    File autodeployDir
+
+    /**
      * Setting for whether or not to enable OSGI headers in the WAR Manifest, can be overridden via -verboseCompile(=[true|false])?
      */
     boolean projectWarOsgiHeaders = false
@@ -320,6 +330,11 @@ class BuildSettings extends AbstractBuildSettings {
      * The file containing the proxy settings
      */
     File proxySettingsFile;
+
+    /**
+     * Fork Settings. These are the default settings used to control forked mode, and what
+     */
+    Map<String, Object> forkSettings = [run:false, test:false, console:false, shell:false]
 
     /** Implementation of the "grailsScript()" method used in Grails scripts.  */
     Closure getGrailsScriptClosure() {
@@ -750,6 +765,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean docsOutputDirSet
     private boolean testSourceDirSet
     private boolean projectWarFileSet
+    private boolean autodeployDirSet
     private boolean projectWarOsgiHeadersSet
     private boolean buildListenersSet
     private boolean verboseCompileSet
@@ -1003,6 +1019,7 @@ class BuildSettings extends AbstractBuildSettings {
      * corresponding config object. If the file does not exist, this
      * returns an empty config.
      */
+    @CompileStatic
     ConfigObject loadConfig(File configFile) {
         try {
             loadSettingsFile()
@@ -1015,7 +1032,7 @@ class BuildSettings extends AbstractBuildSettings {
                 ConfigSlurper slurper = createConfigSlurper()
 
                 URL configUrl = configFile.toURI().toURL()
-                Script script = gcl.parseClass(configFile)?.newInstance()
+                Script script = (Script)gcl.parseClass(configFile)?.newInstance()
 
                 config.setConfigFile(configUrl)
                 loadConfig(slurper.parse(script))
@@ -1364,6 +1381,11 @@ class BuildSettings extends AbstractBuildSettings {
         // null, a default value. This ensures that we don't override
         // settings provided by, for example, the Maven plugin.
         def props = config.toProperties()
+
+        final forkConfig = getForkConfig()
+        if ((forkConfig instanceof Map) && forkConfig) {
+            forkSettings = (Map)forkConfig
+        }
         Metadata metadata = Metadata.getCurrent()
 
         offline = Boolean.valueOf(getPropertyValue(OFFLINE_MODE, props, String.valueOf(offline)))
@@ -1396,6 +1418,13 @@ class BuildSettings extends AbstractBuildSettings {
             projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
             if (!projectWarFile.absolute) {
                 projectWarFile = new File(baseDir, projectWarFile.path)
+            }
+        }
+
+        if (!autodeployDirSet) {
+            autodeployDir = new File(getPropertyValue(PROJECT_AUTODEPLOY_DIR, props, "$baseDir/src/autodeploy"))
+            if (!autodeployDir.absolute) {
+                autodeployDir = new File(baseDir, autodeployDir.path)
             }
         }
 
@@ -1492,6 +1521,10 @@ class BuildSettings extends AbstractBuildSettings {
         if (!verboseCompileSet) {
             verboseCompile = getPropertyValue(VERBOSE_COMPILE, props, '').toBoolean()
         }
+    }
+
+    private def getForkConfig() {
+        config.grails.project.fork
     }
 
     protected void parseGrailsBuildListeners() {

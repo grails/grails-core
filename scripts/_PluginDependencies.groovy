@@ -14,17 +14,11 @@
  * limitations under the License.
  */
 
-import grails.util.BuildSettings
-import grails.util.GrailsNameUtils
-import grails.util.GrailsUtil
-import grails.util.PluginBuildSettings
-
-
 import org.codehaus.groovy.grails.compiler.support.*
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.grails.resolve.PluginInstallEngine
-
 
 /**
  * Plugin stuff. If included, must be included after "_ClasspathAndEvents".
@@ -77,11 +71,10 @@ target(loadPluginsAsync:"Asynchronously loads plugins") {
 }
 
 target(loadPlugins:"Loads Grails' plugins") {
-    def pluginLoader = new org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader(grailsApp, classLoader, buildSettings, eventListener)
+    def pluginLoader = new GrailsProjectPluginLoader(grailsApp, classLoader, buildSettings, eventListener)
     pluginManager = pluginLoader.loadPlugins()
     grailsApp = pluginLoader.grailsApplication
 }
-
 
 /**
  * Runs a script contained within a plugin

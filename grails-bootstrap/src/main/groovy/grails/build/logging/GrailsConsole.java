@@ -469,6 +469,7 @@ public class GrailsConsole {
 
     private void postPrintMessage() {
         progressIndicatorActive = false;
+        appendCalled = false;
         if (userInputActive) {
             showPrompt();
         }
@@ -582,6 +583,9 @@ public class GrailsConsole {
     public void log(String msg) {
         PrintStream printStream = out;
         try {
+            if (userInputActive) {
+                erasePrompt(printStream);
+            }
             if (msg.endsWith(LINE_SEPARATOR)) {
                 printStream.print(msg);
             }
@@ -590,9 +594,41 @@ public class GrailsConsole {
             }
             cursorMove = 0;
         } finally {
+            printStream.flush();
             postPrintMessage();
         }
     }
+
+    private void erasePrompt(PrintStream printStream) {
+        printStream.print(ansi()
+                .eraseLine(Ansi.Erase.BACKWARD).cursorLeft(PROMPT.length()));
+    }
+
+    /**
+     * Logs a message below the current status message
+     *
+     * @param msg The message to log
+     */
+    private boolean appendCalled = false;
+    public void append(String msg) {
+        PrintStream printStream = out;
+        try {
+            if (userInputActive && !appendCalled) {
+                printStream.print(moveDownToSkipPrompt());
+                appendCalled = true;
+            }
+            if (msg.endsWith(LINE_SEPARATOR)) {
+                printStream.print(msg);
+            }
+            else {
+                printStream.println(msg);
+            }
+            cursorMove = 0;
+        } finally {
+            progressIndicatorActive = false;
+        }
+    }
+
 
     /**
      * Synonym for #log
@@ -674,6 +710,7 @@ public class GrailsConsole {
         }
 
         out.print(prompt);
+        out.flush();
         return null;
     }
 

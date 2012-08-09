@@ -842,7 +842,7 @@ public class GrailsResourceUtils {
         return forName(className, DefaultResourceLoader.getDefaultClassLoader()).newInstance();
     }
 
-    private static Class forName(String className, ClassLoader defaultClassLoader) throws ClassNotFoundException {
+    private static Class<?> forName(String className, ClassLoader defaultClassLoader) throws ClassNotFoundException {
         return defaultClassLoader.loadClass(className);
     }
 }

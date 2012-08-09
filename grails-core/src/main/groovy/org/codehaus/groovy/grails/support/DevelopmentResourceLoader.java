@@ -19,9 +19,12 @@ import grails.util.BuildSettingsHolder;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.logging.Log;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -36,10 +39,13 @@ import org.springframework.core.io.Resource;
  */
 public class DevelopmentResourceLoader extends DefaultResourceLoader {
 
+	private static final Log LOG = LogFactory.getLog(DevelopmentResourceLoader.class);
+
     private String baseLocation = ".";
     private GrailsApplication application;
     private static final String PLUGINS_PREFIX = "plugins/";
     private static final String SLASH = "/";
+	private static final String GRAILS_APP_DIR_PATTERN = "/grails-app/.*";
 
     public DevelopmentResourceLoader(GrailsApplication application) {
         this.application = application;
@@ -73,6 +79,15 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
 
         if (!location.startsWith(SLASH)) location = SLASH + location;
 
+
+		// If the location (minus the "grails-app/.*" ending so that it matches the key value used in BuildSettings for
+		// the inline plugin map) matches an "inline" plugin, use the location as-is
+		// for the resource location.  Otherwise, perform the logic to "normalize" the resource location based on
+		// its relativity to the application (i.e. is it from a non-inline plugin, etc).
+		if (BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(location.replaceAll(GRAILS_APP_DIR_PATTERN, "")))) {
+			return "file:" + location;
+		}
+
         if (!location.startsWith(GrailsResourceUtils.WEB_INF)) {
             return GrailsResourceUtils.WEB_APP_DIR+location;
         }
@@ -96,6 +111,7 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
                     return "file:" + r.getFile().getAbsolutePath() + SLASH + remainingPath;
                 }
                 catch (IOException e) {
+					LOG.debug("Unable to locate plugin resource -- returning default path " + defaultPath + ".", e);
                     return defaultPath;
                 }
             }

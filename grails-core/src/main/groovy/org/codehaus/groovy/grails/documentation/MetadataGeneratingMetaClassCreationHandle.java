@@ -53,7 +53,6 @@ public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassC
                theClass == DocumentedMethod.class ||
                theClass == DocumentedProperty.class ||
                theClass == DocumentedElement.class ||
-               theClass == DocumentationContextThreadLocal.class ||
                theClass == Boolean.class || Closure.class.isAssignableFrom(theClass);
     }
 
@@ -76,20 +75,12 @@ public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassC
      * Enables the ExpandoMetaClassCreationHandle with the registry.
      *
      * <code>ExpandoMetaClassCreationHandle.enable();</code>
+     *
+     * @deprecated Dynamic document generation no longer supported
      */
     public static void enable() {
-        final MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
-        if (metaClassRegistry.getMetaClassCreationHandler() != INSTANCE) {
-            ClassInfo.clearModifiedExpandos();
-            metaClassRegistry.setMetaClassCreationHandle(INSTANCE);
-        }
     }
 
     public static void disable() {
-        final MetaClassRegistry metaClassRegistry = GroovySystem.getMetaClassRegistry();
-        if (metaClassRegistry.getMetaClassCreationHandler() == INSTANCE) {
-            ClassInfo.clearModifiedExpandos();
-            metaClassRegistry.setMetaClassCreationHandle(new MetaClassRegistry.MetaClassCreationHandle());
-        }
     }
 }

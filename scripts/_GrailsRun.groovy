@@ -58,7 +58,6 @@ ant.path(id: "grails.runtime.classpath", runtimeClasspath)
  */
 target(runApp: "Main implementation that executes a Grails application") {
     grailsServer = projectRunner.runApp()
-    startPluginScanner()
 }
 
 /**
@@ -66,7 +65,6 @@ target(runApp: "Main implementation that executes a Grails application") {
  */
 target(runAppHttps: "Main implementation that executes a Grails application with an HTTPS listener") {
     grailsServer = projectRunner.runAppHttps()
-    startPluginScanner()
 }
 
 /**

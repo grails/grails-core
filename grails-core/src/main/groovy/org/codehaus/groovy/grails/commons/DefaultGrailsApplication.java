@@ -37,7 +37,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
-import org.codehaus.groovy.grails.documentation.DocumentationContext;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
@@ -137,6 +136,27 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     }
 
 
+
+    /**
+     * Loads a GrailsApplication using the given ResourceLocator instance which will search for appropriate class names
+     *
+     */
+    public DefaultGrailsApplication(org.codehaus.groovy.grails.io.support.Resource[] resources) {
+        this();
+        for (org.codehaus.groovy.grails.io.support.Resource resource : resources) {
+
+            Class<?> aClass;
+            try {
+                aClass = cl.loadClass(org.codehaus.groovy.grails.io.support.GrailsResourceUtils.getClassName(resource.getFile().getAbsolutePath()));
+            } catch (ClassNotFoundException e) {
+                throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
+            } catch (IOException e) {
+                throw new GrailsConfigurationException("Class not found loading Grails application: " + e.getMessage(), e);
+            }
+            loadedClasses.add(aClass);
+        }
+
+    }
     /**
      * Initialises the default set of ArtefactHandler instances.
      *
@@ -487,9 +507,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @return An array of classes for the given artefact
      */
     public GrailsClass[] getArtefacts(String artefactType) {
-        if (!isWarDeployed()) {
-            DocumentationContext.getInstance().setArtefactType(artefactType);
-        }
         return getArtefactInfo(artefactType, true).getGrailsClasses();
     }
 

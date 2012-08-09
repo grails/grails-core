@@ -27,6 +27,8 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperati
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
 import grails.util.Environment
+import org.apache.tools.ant.AntTypeDefinition
+import org.apache.tools.ant.ComponentHelper
 
 /**
  * Encapsulates the compilation logic required for a Grails application.
@@ -112,7 +114,13 @@ class GrailsProjectCompiler {
     AntBuilder getAnt() {
         if (ant == null) {
            ant = new AntBuilder()
-           ant.taskdef (name: 'groovyc', classname : 'org.codehaus.groovy.grails.compiler.Grailsc')
+            AntTypeDefinition atd = new AntTypeDefinition();
+            atd.setName('groovyc');
+            atd.setClassName(org.codehaus.groovy.grails.compiler.Grailsc.name);
+            atd.setClass(org.codehaus.groovy.grails.compiler.Grailsc);
+            atd.setClassLoader(classLoader);
+            ComponentHelper.getComponentHelper(ant.project)
+                    .addDataTypeDefinition(atd);
            ant.path(id: "grails.compile.classpath", compileClasspath)
         }
         return ant
@@ -127,6 +135,7 @@ class GrailsProjectCompiler {
      */
     void configureClasspath() {
 
+        final ant = getAnt()
         ant.path(id: "grails.compile.classpath", compileClasspath)
         ant.path(id: "grails.test.classpath", testClasspath)
         ant.path(id: "grails.runtime.classpath", runtimeClasspath)
@@ -248,6 +257,7 @@ class GrailsProjectCompiler {
         }
 
         def classesDirPath = new File(targetDir.toString())
+        final ant = getAnt()
         ant.mkdir(dir:classesDirPath)
         String classpathId = "grails.compile.classpath"
         ant.groovyc(destdir:classesDirPath,
@@ -279,7 +289,7 @@ class GrailsProjectCompiler {
      */
     void compilePlugins(targetDir) {
         def classesDirPath = targetDir
-        ant.mkdir(dir:classesDirPath)
+        getAnt().mkdir(dir:classesDirPath)
 
 
         final pluginClassesDir = buildSettings.pluginClassesDir
@@ -312,6 +322,7 @@ class GrailsProjectCompiler {
         if (pluginResources) {
             // Only perform the compilation if there are some plugins
             // installed or otherwise referenced.
+            final ant = getAnt()
             ant.mkdir(dir:classesDirPath)
             ant.groovyc(destdir: classesDirPath,
                     classpathref: CLASSPATH_REF,
@@ -364,6 +375,7 @@ class GrailsProjectCompiler {
      * @param classesDir The optional classes dir, defaults to one provided by PluginBuildSettings in constructor
      */
     void compileGroovyPages(String grailsAppName, classesDir = targetClassesDir) {
+        final ant = getAnt()
         ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
         // compile gsps in grails-app/views directory
         File gspTmpDir = new File(buildSettings.projectWorkDir, "gspcompile")
@@ -408,7 +420,7 @@ class GrailsProjectCompiler {
         def classFile = new File(classesDir, "${className}.class")
 
         if (descriptor.lastModified() > classFile.lastModified()) {
-            ant.echo(message: "Compiling plugin descriptor...")
+            getAnt().echo(message: "Compiling plugin descriptor...")
             config.setTargetDirectory(classesDir)
             def cl = new URLClassLoader([classesDir,targetPluginClassesDir]*.toURI()*.toURL() as URL[], classLoader)
 

@@ -72,9 +72,7 @@ class GrailsProjectRunner extends BaseSettingsApi{
         webXmlFile = buildSettings.webXmlLocation
         basedir = buildSettings.baseDir.absolutePath
         warName = warCreator.configureWarName()
-        serverContextPath = projectPackager.configureServerContextPath()
         this.classLoader = classLoader
-        this.config = projectPackager.createConfig()
     }
 
     /**
@@ -111,6 +109,9 @@ class GrailsProjectRunner extends BaseSettingsApi{
 
     @CompileStatic
     private EmbeddableServerFactory loadServerFactory() {
+        serverContextPath = projectPackager.configureServerContextPath()
+        this.config = projectPackager.createConfig()
+
         def load = { String name -> classLoader.loadClass(name).newInstance() }
 
         String defaultServer = "org.grails.plugins.tomcat.TomcatServerFactory"
