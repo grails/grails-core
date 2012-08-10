@@ -53,6 +53,8 @@ public class GrailsWrapper {
             distUrl += "/";
         }
 
+        addSystemProperties(wrapperBundle);
+
         final File grailsHome = configureGrailsInstallation(distUrl, grailsVersion);
         
         System.setProperty("grails.home", grailsHome.getAbsolutePath());
@@ -90,6 +92,16 @@ public class GrailsWrapper {
         final Method mainMethod = loadClass.getMethod("main", String[].class);
         
         mainMethod.invoke(null, new Object[]{newArgsArray});
+    }
+
+    private static void addSystemProperties(ResourceBundle wrapperBundle) {
+        String prefix = "systemProp.";
+        for (String key : wrapperBundle.keySet()) {
+            if (key.startsWith(prefix)) {
+                String systemKey = key.substring(prefix.length());
+                System.getProperties().put(systemKey, wrapperBundle.getString(key));
+            }
+        }
     }
 
     private static File findGroovyAllJar(final File directoryToSearch) {
