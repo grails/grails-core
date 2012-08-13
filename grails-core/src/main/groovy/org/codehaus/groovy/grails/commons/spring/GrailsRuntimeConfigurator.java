@@ -37,7 +37,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.xml.XmlBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -273,11 +274,12 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
             }
 
             if (springResources != null && springResources.exists()) {
-                LOG.debug("[RuntimeConfiguration] Configuring additional beans from " + springResources.getURL());
-                XmlBeanFactory xmlBf = new XmlBeanFactory(springResources);
+                if (LOG.isDebugEnabled()) LOG.debug("[RuntimeConfiguration] Configuring additional beans from " + springResources.getURL());
+                DefaultListableBeanFactory xmlBf = new DefaultListableBeanFactory();
+                new XmlBeanDefinitionReader(xmlBf).loadBeanDefinitions(springResources);
                 xmlBf.setBeanClassLoader(classLoader);
                 String[] beanNames = xmlBf.getBeanDefinitionNames();
-                LOG.debug("[RuntimeConfiguration] Found [" + beanNames.length + "] beans to configure");
+                if (LOG.isDebugEnabled()) LOG.debug("[RuntimeConfiguration] Found [" + beanNames.length + "] beans to configure");
                 for (String beanName : beanNames) {
                     BeanDefinition bd = xmlBf.getBeanDefinition(beanName);
                     final String beanClassName = bd.getBeanClassName();

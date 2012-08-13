@@ -52,7 +52,8 @@ import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.TypeMismatchException
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.PropertiesFactoryBean
-import org.springframework.beans.factory.xml.XmlBeanFactory
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.context.ApplicationContext
 import org.springframework.dao.DataAccessException
 import org.grails.datastore.mapping.model.MappingContext
@@ -688,7 +689,8 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
         try {
             def resourcesXml = parent?.getResource(GrailsRuntimeConfigurator.SPRING_RESOURCES_XML)
             if (resourcesXml && resourcesXml.exists()) {
-                def xmlBeans = new XmlBeanFactory(resourcesXml)
+                def xmlBeans = new DefaultListableBeanFactory()
+                new XmlBeanDefinitionReader(xmlBeans).loadBeanDefinitions(resourcesXml)
                 if (xmlBeans.containsBean("dataSource")) {
                     LOG.info("Using dataSource bean definition from ${GrailsRuntimeConfigurator.SPRING_RESOURCES_XML}")
                     return xmlBeans.getMergedBeanDefinition("dataSource")
