@@ -359,36 +359,37 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
     }
 
     @CompileStatic
-    String configureWarName() {
-        if (warName == null) {
+    String configureWarName(String commandLineName = null) {
+        if (warName) {
+            return warName
+        }
 
-            def warFileDest = grailsSettings.projectWarFile.absolutePath
+        def warFileDest = grailsSettings.projectWarFile.absolutePath
 
-            if (warFileDest || !warName ) {
-                // Pick up the name of the WAR to create from the command-line
-                // argument or the 'grails.project.war.file' configuration option.
-                // The command-line argument takes precedence.
-                warName = warFileDest
+        if (warFileDest || commandLineName) {
+            // Pick up the name of the WAR to create from the command-line
+            // argument or the 'grails.project.war.file' configuration option.
+            // The command-line argument takes precedence.
+            warName = commandLineName ?: warFileDest
 
-                // Find out whether WAR name is an absolute file path or a relative one.
-                def warFile = new File(warName.toString())
-                if (!warFile.absolute) {
-                    // It's a relative path, so adjust it for 'basedir'.
-                    warFile = new File(basedir, warFile.path)
-                    warName = warFile.canonicalPath
-                }
+            // Find out whether WAR name is an absolute file path or a relative one.
+            def warFile = new File(warName.toString())
+            if (!warFile.absolute) {
+                // It's a relative path, so adjust it for 'basedir'.
+                warFile = new File(basedir, warFile.path)
+                warName = warFile.canonicalPath
+            }
+        }
+        else {
+            def fileName = grailsAppName
+            def version = metadata.getApplicationVersion()
+            if (version) {
+                version = '-' + version
             }
             else {
-                def fileName = grailsAppName
-                def version = metadata.getApplicationVersion()
-                if (version) {
-                    version = '-' + version
-                }
-                else {
-                    version = ''
-                }
-                warName = "${basedir}/${fileName}${version}.war"
+                version = ''
             }
+            warName = "${basedir}/${fileName}${version}.war"
         }
         return warName
     }
