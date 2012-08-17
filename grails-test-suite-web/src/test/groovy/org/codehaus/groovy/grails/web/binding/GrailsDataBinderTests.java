@@ -150,10 +150,7 @@ public class GrailsDataBinderTests extends TestCase {
             }
 
             String time = (String) fieldValues.get("time");
-            if (StringUtils.isBlank(time))
-            {
-                time = "00:00 AM";
-            }
+            if (StringUtils.isBlank(time)) time = "00:00 AM";
 
             String dateTime = date + " " + time;
 
