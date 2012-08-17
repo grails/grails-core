@@ -331,7 +331,7 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.1-rc-1'
+    gradleVersion = '1.1'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
 
