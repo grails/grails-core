@@ -448,7 +448,7 @@ class FormTagLib {
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
         // Change value if necessary in requestDataValueProcessor
-        value = processFormFieldValueIfNecessary("_action_${action}","${value}","submit")
+        value = processFormFieldValueIfNecessary("_action_${action}",value,"submit")
         booleanToAttribute(attrs, 'disabled')
 
         out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
