@@ -23,7 +23,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
             def value = dependency.moduleVersion
 
             def versions = moduleToVersionsMap[key]
-            if(!versions) {
+            if (!versions) {
                 versions = [] as Set
                 moduleToVersionsMap[key] = versions
             }
@@ -33,7 +33,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     def dups = moduleToVersionsMap.findAll { k, v ->
         v.size() > 1
     }
-    if(dups) {
+    if (dups) {
         def msg = 'Multiple versions of some dependencies have been identified in the dependency graph'
         println msg
         dups.each { k, v ->
