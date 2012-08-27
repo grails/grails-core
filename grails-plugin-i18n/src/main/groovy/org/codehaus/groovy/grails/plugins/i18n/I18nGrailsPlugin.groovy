@@ -68,7 +68,7 @@ class I18nGrailsPlugin {
 				// Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
 				// Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
 				def isInlineResource = (resource instanceof ClassPathResource) ? false :
-					BuildSettingsHolder.settings.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
+					BuildSettingsHolder.settings?.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
 
 				String path
 

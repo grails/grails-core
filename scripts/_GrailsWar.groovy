@@ -29,7 +29,6 @@ includeTargets << grailsScript("_GrailsPackage")
 
 includeJars = true
 buildExplodedWar = getPropertyValue("grails.war.exploded", false).toBoolean()
-warName = null
 warCreator = new GrailsProjectWarCreator(grailsSettings, eventListener, projectPackager, ant, isInteractive)
 
 defaultWarDependencies = warCreator.defaultWarDependencies
@@ -39,14 +38,13 @@ target (configureRunningScript: "Sets the currently running script, in case call
 }
 
 target (war: "The implementation target") {
-    depends(parseArguments, configureRunningScript, cleanWarFile, packageApp, compilegsp)
+    depends(parseArguments, configureRunningScript, cleanWarFile, packageApp, compilegsp, configureWarName)
     warCreator.packageWar()
 }
 
 target(createDescriptor:"Creates the WEB-INF/grails.xml file used to load Grails classes in WAR mode") {
     warCreator.createDescriptor()
 }
-
 
 target(cleanUpAfterWar:"Cleans up after performing a WAR") {
     ant.delete(dir:"${stagingDir}", failonerror:true)
@@ -57,7 +55,6 @@ target(warPlugins:"Includes the plugins in the WAR") {
     warCreator.warPluginsInternal(pluginInfos)
 }
 
-
 target(configureWarName: "Configuring WAR name") {
-    warName = warCreator.configureWarName()
+    warCreator.configureWarName(argsMap.params ? argsMap.params[0] : null)
 }

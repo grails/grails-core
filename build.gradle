@@ -223,7 +223,7 @@ subprojects { project ->
                     final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
                     final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
 
-                    if(username && password) {
+                    if (username && password) {
                         org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
                     }
 
@@ -331,7 +331,7 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.1-rc-1'
+    gradleVersion = '1.1'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
 
