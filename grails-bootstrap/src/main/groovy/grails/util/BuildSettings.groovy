@@ -192,8 +192,12 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      *  A property name to enable/disable AST conversion of closures actions&tags to methods
      */
-
     public static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
+
+    /**
+     *  Property name to enable/disable script event time logging.
+     */
+    public static final String LOG_SCRIPT_TIMING_KEY = 'grails.script.logTiming'
 
     /**
      * The base directory for the build, which is normally the root
@@ -395,6 +399,8 @@ class BuildSettings extends AbstractBuildSettings {
      * Whether the build is allowed to connect to remote servers to resolve dependencies
      */
     boolean offline = false
+
+    boolean logScriptTiming = false
 
     GrailsCoreDependencies coreDependencies
 
@@ -770,6 +776,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean buildListenersSet
     private boolean verboseCompileSet
     private boolean convertClosuresArtefactsSet
+    private boolean logScriptTimingSet
     private String resolveChecksum
     private Map resolveCache = new ConcurrentHashMap()
     private boolean readFromCache = false
@@ -921,6 +928,11 @@ class BuildSettings extends AbstractBuildSettings {
     void setConvertClosuresArtefacts(boolean convert) {
         convertClosuresArtefacts = convert
         convertClosuresArtefactsSet = true
+    }
+
+    void setLogScriptTiming(boolean b) {
+        logScriptTiming = b
+        logScriptTimingSet = true
     }
 
     boolean getProjectWarOsgiHeaders() { projectWarOsgiHeaders }
@@ -1435,6 +1447,10 @@ class BuildSettings extends AbstractBuildSettings {
         if (!convertClosuresArtefactsSet) {
             convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props, 'false').toBoolean()
             System.setProperty(CONVERT_CLOSURES_KEY, "$convertClosuresArtefacts")
+        }
+
+        if (!logScriptTimingSet) {
+            logScriptTiming = getPropertyValue(LOG_SCRIPT_TIMING_KEY, props, 'false').toBoolean()
         }
 
         if (!projectWarOsgiHeadersSet) {
