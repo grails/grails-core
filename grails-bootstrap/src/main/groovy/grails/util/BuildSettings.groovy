@@ -1036,10 +1036,8 @@ class BuildSettings extends AbstractBuildSettings {
         try {
             loadSettingsFile()
             if (configFile.exists()) {
-                // To avoid class loader issues, we make sure that the
-                // Groovy class loader used to parse the config file has
-                // the root loader as its parent. Otherwise we get something
-                // like NoClassDefFoundError for Script.
+                // To avoid class loader issues, we make sure that the Groovy class loader used to parse the config file has
+                // the root loader as its parent. Otherwise we get something like NoClassDefFoundError for Script.
                 GroovyClassLoader gcl = obtainGroovyClassLoader()
                 ConfigSlurper slurper = createConfigSlurper()
 
@@ -1102,7 +1100,6 @@ class BuildSettings extends AbstractBuildSettings {
                         return
                     }
 
-
                     if (dependencyMap?.isEmpty()) {
                         modified = true
                     }
@@ -1117,7 +1114,7 @@ class BuildSettings extends AbstractBuildSettings {
                             compileDeps = findAndRemovePluginDependencies("compile", compileDeps, internalPluginCompileDependencies)
                             if (compileDeps.any({ File f -> !f.exists() })) modified = true
                             internalCompileDependencies = compileDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1125,7 +1122,7 @@ class BuildSettings extends AbstractBuildSettings {
                             runtimeDeps = findAndRemovePluginDependencies("runtime", runtimeDeps, internalPluginRuntimeDependencies)
                             if (runtimeDeps.any({ File f -> !f.exists() })) modified = true
                             internalRuntimeDependencies = runtimeDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1133,7 +1130,7 @@ class BuildSettings extends AbstractBuildSettings {
                             testDeps = findAndRemovePluginDependencies("test", testDeps, internalPluginTestDependencies)
                             if (testDeps.any({ File f -> !f.exists() })) modified = true
                             internalTestDependencies = testDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1141,7 +1138,7 @@ class BuildSettings extends AbstractBuildSettings {
                             buildDeps = findAndRemovePluginDependencies("build", buildDeps, internalPluginBuildDependencies)
                             if (buildDeps.any({ File f -> !f.exists() })) modified = true
                             internalBuildDependencies = buildDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1149,7 +1146,7 @@ class BuildSettings extends AbstractBuildSettings {
                             providedDeps = findAndRemovePluginDependencies("provided", providedDeps, internalPluginProvidedDependencies)
                             if (providedDeps.any({ File f -> !f.exists() })) modified = true
                             internalProvidedDependencies = providedDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1416,10 +1413,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!projectTargetDirSet) {
-            projectTargetDir = new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target"))
-            if (!projectTargetDir.absolute) {
-                projectTargetDir = new File(baseDir, projectTargetDir.path)
-            }
+            projectTargetDir = makeAbsolute(new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target")))
         }
 
         if (!projectWarFileSet) {
@@ -1427,17 +1421,11 @@ class BuildSettings extends AbstractBuildSettings {
             def appName = metadata.getApplicationName() ?: baseDir.name
             def warName = version ? "$baseDir/target/${appName}-${version}.war" : "$baseDir/target/${appName}.war"
 
-            projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
-            if (!projectWarFile.absolute) {
-                projectWarFile = new File(baseDir, projectWarFile.path)
-            }
+            projectWarFile = makeAbsolute(new File(getPropertyValue(PROJECT_WAR_FILE, props, warName)))
         }
 
         if (!autodeployDirSet) {
-            autodeployDir = new File(getPropertyValue(PROJECT_AUTODEPLOY_DIR, props, "$baseDir/src/autodeploy"))
-            if (!autodeployDir.absolute) {
-                autodeployDir = new File(baseDir, autodeployDir.path)
-            }
+            autodeployDir = makeAbsolute(new File(getPropertyValue(PROJECT_AUTODEPLOY_DIR, props, "$baseDir/src/autodeploy")))
         }
 
         if (!projectWarExplodedDirSet) {
@@ -1458,42 +1446,23 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!classesDirSet) {
-            classesDir = new File(getPropertyValue(PROJECT_CLASSES_DIR, props, "$projectWorkDir/classes"))
-            if (!classesDir.absolute) {
-                classesDir = new File(baseDir, classesDir.path)
-            }
+            classesDir = makeAbsolute(new File(getPropertyValue(PROJECT_CLASSES_DIR, props, "$projectWorkDir/classes")))
         }
 
         if (!testClassesDirSet) {
-            testClassesDir = new File(getPropertyValue(PROJECT_TEST_CLASSES_DIR, props, "$projectWorkDir/test-classes"))
-            if (!testClassesDir.absolute) {
-                testClassesDir = new File(baseDir, testClassesDir.path)
-            }
-
+            testClassesDir = makeAbsolute(new File(getPropertyValue(PROJECT_TEST_CLASSES_DIR, props, "$projectWorkDir/test-classes")))
         }
 
         if (!pluginClassesDirSet) {
-            pluginClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes"))
-            if (!pluginClassesDir.absolute) {
-                pluginClassesDir = new File(baseDir, pluginClassesDir.path)
-            }
-
+            pluginClassesDir = makeAbsolute(new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes")))
         }
 
         if (!pluginBuildClassesDirSet) {
-            pluginBuildClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_BUILD_CLASSES_DIR, props, "$projectWorkDir/plugin-build-classes"))
-            if (!pluginBuildClassesDir.absolute) {
-                pluginBuildClassesDir = new File(baseDir, pluginBuildClassesDir.path)
-            }
-
+            pluginBuildClassesDir = makeAbsolute(new File(getPropertyValue(PROJECT_PLUGIN_BUILD_CLASSES_DIR, props, "$projectWorkDir/plugin-build-classes")))
         }
 
         if (!pluginProvidedClassesDirSet) {
-            pluginProvidedClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_PROVIDED_CLASSES_DIR, props, "$projectWorkDir/plugin-provided-classes"))
-            if (!pluginProvidedClassesDir.absolute) {
-                pluginProvidedClassesDir = new File(baseDir, pluginProvidedClassesDir.path)
-            }
-
+            pluginProvidedClassesDir = makeAbsolute(new File(getPropertyValue(PROJECT_PLUGIN_PROVIDED_CLASSES_DIR, props, "$projectWorkDir/plugin-provided-classes")))
         }
 
         if (!resourcesDirSet) {
@@ -1517,17 +1486,11 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!testReportsDirSet) {
-            testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
-            if (!testReportsDir.absolute) {
-                testReportsDir = new File(baseDir, testReportsDir.path)
-            }
+            testReportsDir = makeAbsolute(new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports")))
         }
 
         if (!docsOutputDirSet) {
-            docsOutputDir = new File(getPropertyValue(PROJECT_DOCS_OUTPUT_DIR, props, "${projectTargetDir}/docs"))
-            if (!docsOutputDir.absolute) {
-                docsOutputDir = new File(baseDir, docsOutputDir.path)
-            }
+            docsOutputDir = makeAbsolute(new File(getPropertyValue(PROJECT_DOCS_OUTPUT_DIR, props, "${projectTargetDir}/docs")))
         }
 
         if (!testSourceDirSet) {
@@ -1539,8 +1502,15 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
-    private def getForkConfig() {
+    private getForkConfig() {
         config.grails.project.fork
+    }
+
+    protected File makeAbsolute(File dir) {
+        if (!dir.absolute) {
+            dir = new File(baseDir, dir.path)
+        }
+        dir
     }
 
     protected void parseGrailsBuildListeners() {
