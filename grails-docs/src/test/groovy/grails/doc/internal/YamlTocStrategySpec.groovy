@@ -7,13 +7,13 @@ class YamlTocStrategySpec extends Specification {
       given: "A YAML loader"
         def loader = new YamlTocStrategy(new MockResourceChecker([
                 "intro.gdoc",
-                "intro" + File.separatorChar + "whatsNew.gdoc",
-                "intro" + File.separatorChar + "whatsNew" + File.separatorChar + "devEnvFeatures.gdoc",
-                "intro" + File.separatorChar + "whatsNew" + File.separatorChar + "coreFeatures.gdoc",
-                "intro" + File.separatorChar + "whatsNew" + File.separatorChar + "webFeatures.gdoc",
-                "intro" + File.separatorChar + "changes.gdoc",
-                "intro" + File.separatorChar + "partOne.gdoc",
-                "intro" + File.separatorChar + "partTwo.gdoc",
+                "intro/whatsNew.gdoc",
+                "intro/whatsNew/devEnvFeatures.gdoc",
+                "intro/whatsNew/coreFeatures.gdoc",
+                "intro/whatsNew/webFeatures.gdoc",
+                "intro/changes.gdoc",
+                "intro/partOne.gdoc",
+                "intro/partTwo.gdoc",
                 "gettingStarted.gdoc",
                 "downloading.gdoc",
                 "upgrading.gdoc",
@@ -48,10 +48,10 @@ class YamlTocStrategySpec extends Specification {
         toc.children[0].parent == toc
         toc.children[0].children*.name == ["whatsNew", "changes"]
         toc.children[0].children*.title == ["What's new in Grails 2.0?", "Breaking Changes"]
-        toc.children[0].children*.file == ["intro" + File.separatorChar + "whatsNew.gdoc", "intro" + File.separatorChar + "changes.gdoc"]
+        toc.children[0].children*.file == ["intro/whatsNew.gdoc", "intro/changes.gdoc"]
         toc.children[0].children[0].children[1].name == "coreFeatures"
         toc.children[0].children[0].children[1].title == "Core Features"
-        toc.children[0].children[0].children[1].file == "intro" + File.separatorChar + "whatsNew" + File.separatorChar + "coreFeatures.gdoc"
+        toc.children[0].children[0].children[1].file == "intro/whatsNew/coreFeatures.gdoc"
         toc.children[1].children*.name == ["downloading", "upgrading", "creatingApp"]
         toc.children[1].children*.title == [
                 "Downloading and Installing",
