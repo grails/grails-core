@@ -1,6 +1,6 @@
 <% import grails.persistence.Event %>
 <%=packageName%>
-<!doctype html>
+<!DOCTYPE html>
 <html>
 	<head>
 		<meta name="layout" content="main">
