@@ -90,6 +90,7 @@ class ControllersGrailsPlugin {
 
         instanceControllersApi(ControllersApi, pluginManager) {
             linkGenerator = ref("grailsLinkGenerator")
+            urlConverter = ref("grailsUrlConverter")
         }
 
         for (controller in application.controllerClasses) {

@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins.web.api;
 import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
+import grails.web.UrlConverter;
 import groovy.lang.Closure;
 
 import java.util.Collection;
@@ -97,6 +98,10 @@ public class ControllersApi extends CommonWebApi {
 
     public void setLinkGenerator(LinkGenerator linkGenerator) {
         getRedirectMethod().setLinkGenerator(linkGenerator);
+    }
+
+    public void setUrlConverter(UrlConverter urlConverter) {
+        getForwardMethod().setUrlConverter(urlConverter);
     }
 
     /**
