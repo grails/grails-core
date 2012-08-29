@@ -209,11 +209,21 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         }
     }
 
-    private boolean fileIsReloadable(File file) {
+    protected boolean fileIsReloadable(File file) {
         String classname = GrailsResourceUtils.getClassName(file.getAbsolutePath());
-        boolean fileIsExcluded = (reloadExcludes != null) ? !reloadExcludes.contains(classname) : false;
+        boolean fileIsExcluded = (reloadExcludes != null) ? reloadExcludes.contains(classname) : false;
         boolean fileIsIncluded = (reloadIncludes != null) ? reloadIncludes.contains(classname) : true;
-        return (fileIsExcluded || fileIsIncluded);
+
+        // These are expanded for readability
+        if (fileIsExcluded == true) {
+            return false;
+        } else if (fileIsIncluded == true) {
+            return true;
+        } else if (fileIsExcluded == false && fileIsIncluded == false && reloadIncludes.size() > 0) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private void reloadPlugin(File file) {
