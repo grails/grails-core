@@ -47,6 +47,9 @@ grailsContext = null
 recompileFrequency = System.getProperty("recompile.frequency")
 recompileFrequency = recompileFrequency ? recompileFrequency.toInteger() : 3
 
+// Should the reloading agent be enabled?
+isReloading = Boolean.getBoolean("grails.reload.enabled")
+
 shouldPackageTemplates = true
 
 // This isn't used within this script but may come in handy for scripts
@@ -90,8 +93,10 @@ target(startPluginScanner: "Starts the plugin manager's scanner that detects cha
         return
     }
 
-    projectWatcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
-    projectWatcher.start()
+    if (isReloading) {
+        projectWatcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
+        projectWatcher.start()
+    }
 }
 
 target(stopPluginScanner: "Stops the plugin manager's scanner that detects changes to artifacts.") {
