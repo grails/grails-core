@@ -57,6 +57,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     private Map<File, GrailsPlugin> descriptorToPluginMap = new ConcurrentHashMap<File, GrailsPlugin>();
     private static MultipleCompilationErrorsException currentCompilationError = null;
     private static Throwable currentReloadError = null;
+    private static List<String> reloadExcludes;
+    private static List<String> reloadIncludes;
 
     public GrailsProjectWatcher(final GrailsProjectCompiler compiler, GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
@@ -65,6 +67,14 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         if (isReloadingAgentPresent()) {
             GrailsPluginManagerReloadPlugin.register();
         }
+    }
+
+    public static void setReloadExcludes(List<String> reloadExcludes) {
+        GrailsProjectWatcher.reloadExcludes = reloadExcludes;
+    }
+
+    public static void setReloadIncludes(List<String> reloadIncludes) {
+        GrailsProjectWatcher.reloadIncludes = reloadIncludes;
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
@@ -134,24 +144,29 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
         addListener(new FileChangeListener() {
             public void onChange(File file) {
-                LOG.info("File [" + file + "] changed. Applying changes to application.");
-                if (descriptorToPluginMap.containsKey(file)) {
-                    reloadPlugin(file);
-                }
-                else {
-                    compileIfSource(file);
-                    informPluginManager(file, false);
+                if (fileIsReloadable(file)) {
+                    LOG.info("File [" + file + "] changed. Applying changes to application.");
+                    if (descriptorToPluginMap.containsKey(file)) {
+                        reloadPlugin(file);
+                    }
+                    else {
+                        compileIfSource(file);
+                        informPluginManager(file, false);
+                    }
                 }
             }
 
             public void onNew(File file) {
-                LOG.info("File [" + file + "] added. Applying changes to application.");
-                if (!file.getName().toLowerCase().endsWith(".properties")) {
-                    // only sleep for source files, not i18n files
-                    sleep(5000);
+                if (fileIsReloadable(file)) {
+                    LOG.info("File [" + file + "] added. Applying changes to application.");
+                    if (!file.getName().toLowerCase().endsWith(".properties")) {
+                        // only sleep for source files, not i18n files
+                        sleep(5000);
+                    }
+
+                    compileIfSource(file);
+                    informPluginManager(file, true);
                 }
-                compileIfSource(file);
-                informPluginManager(file, true);
             }
         });
 
@@ -192,6 +207,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
                 }
             }
         }
+    }
+
+    private boolean fileIsReloadable(File file) {
+        String classname = GrailsResourceUtils.getClassName(file.getAbsolutePath());
+        boolean fileIsExcluded = (reloadExcludes != null) ? !reloadExcludes.contains(classname) : false;
+        boolean fileIsIncluded = (reloadIncludes != null) ? reloadIncludes.contains(classname) : true;
+        return (fileIsExcluded || fileIsIncluded);
     }
 
     private void reloadPlugin(File file) {
@@ -274,6 +296,18 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             }
         }
         return false;
+    }
+
+    private String getDottedClassName(File file) {
+        String absolutePath = file.getName();
+        for (String dir : compiler.getSrcDirectories()) {
+            if (absolutePath.startsWith(dir)) {
+                String srcPath = absolutePath.replaceAll(String.format("^%s", dir), "");
+                String dottedPath = srcPath.replaceAll(file.separator, ".");
+                return dottedPath;
+            }
+        }
+        return null;
     }
 
     private interface ClassUpdate {
