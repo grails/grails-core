@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,28 +14,27 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
-
 /**
- * Gant script that executes Grails using an embedded Jetty server
+ * Stops the forked Grails application if it is running.
  *
  * @author Graeme Rocher
  *
- * @since 0.4
+ * @since 2.2
  */
 
 includeTargets << grailsScript("_GrailsRun")
 
-target('default': "Runs a Grails application") {
-    depends(checkVersion, configureProxy, packageApp, parseArguments)
-    if (argsMap.https) {
-        runAppHttps()
-    }
-    else {
-        runApp()
-    }
+target('default': "Stops a forked Grails application") {
+    depends(checkVersion, configureProxy)
 
-    if (!(grailsServer instanceof ForkedGrailsProcess)) {
-        watchContext()
+    try {
+        grailsConsole.updateStatus "Stopping Grails Server..."
+        def url = "http://${serverHost ?: 'localhost'}:${serverPort+1}"
+        grailsConsole.verbose "URL to stop server is $url"
+        new URL(url).getText(connectTimeout: 10000, readTimeout: 10000)
+        grailsConsole.updateStatus "Server Stopped"
+    }
+    catch(e) {
+        grailsConsole.updateStatus "Server Stopped"
     }
 }

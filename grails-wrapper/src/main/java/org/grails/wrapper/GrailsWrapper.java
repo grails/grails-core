@@ -46,12 +46,14 @@ public class GrailsWrapper {
         final ResourceBundle wrapperBundle = ResourceBundle.getBundle("grails-wrapper");
         final String grailsVersion = applicationBundle.getString("app.grails.version");
         String distUrl = wrapperBundle.getString("wrapper.dist.url");
-        if(distUrl == null) {
+        if (distUrl == null) {
             distUrl = "http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/";
         }
-        if(!distUrl.endsWith("/")) {
+        if (!distUrl.endsWith("/")) {
             distUrl += "/";
         }
+
+        addSystemProperties(wrapperBundle);
 
         final File grailsHome = configureGrailsInstallation(distUrl, grailsVersion);
         
@@ -60,10 +62,10 @@ public class GrailsWrapper {
         final List<String> newArgsList = new ArrayList<String>();
         for(int i = 0; i < args.length; i++) {
             final String arg = args[i];
-            if("--main".equals(arg) && i < args.length - 1) {
+            if ("--main".equals(arg) && i < args.length - 1) {
                 // skip --main and the following argument
                 i++;
-            } else if("--conf".equals(arg) && i < args.length - 1) {
+            } else if ("--conf".equals(arg) && i < args.length - 1) {
                 newArgsList.add(arg);
                 final File groovyStarterConf = new File(grailsHome, "conf/groovy-starter.conf");
                 newArgsList.add(groovyStarterConf.getAbsolutePath());
@@ -78,7 +80,7 @@ public class GrailsWrapper {
         urls[0] = new File(grailsHome, "dist/grails-bootstrap-" + grailsVersion + ".jar").toURI().toURL();
         final File directoryToSearchForGroovyAllJar = new File(grailsHome, "/lib/org.codehaus.groovy");
         final File groovyJar = findGroovyAllJar(directoryToSearchForGroovyAllJar);
-        if(groovyJar == null) {
+        if (groovyJar == null) {
             System.err.println("An error occurred locating the groovy jar under " + directoryToSearchForGroovyAllJar.getAbsolutePath());
             System.exit(-1);
         }
@@ -92,14 +94,24 @@ public class GrailsWrapper {
         mainMethod.invoke(null, new Object[]{newArgsArray});
     }
 
+    private static void addSystemProperties(ResourceBundle wrapperBundle) {
+        String prefix = "systemProp.";
+        for (String key : wrapperBundle.keySet()) {
+            if (key.startsWith(prefix)) {
+                String systemKey = key.substring(prefix.length());
+                System.getProperties().put(systemKey, wrapperBundle.getString(key));
+            }
+        }
+    }
+
     private static File findGroovyAllJar(final File directoryToSearch) {
         final File[] files = directoryToSearch.listFiles();
         for(File file : files) {
-            if(file.isDirectory()) {
+            if (file.isDirectory()) {
                 return findGroovyAllJar(file);
             }
             final String fileName = file.getName();
-            if(fileName.startsWith("groovy-all-") && fileName.endsWith(".jar")) {
+            if (fileName.startsWith("groovy-all-") && fileName.endsWith(".jar")) {
                 return file;
             }
         }
@@ -122,7 +134,7 @@ public class GrailsWrapper {
         final File downloadFile = new File(wrapperDir, "grails-" + grailsVersion + "-download.zip");
         new RemoteFileHelper().retrieve(uri, downloadFile);
         final File installDir = new File(wrapperDir, grailsVersion);
-        if(!installDir.exists()) {
+        if (!installDir.exists()) {
             extract(downloadFile, installDir);
         }
         final File grailsHome = new File(installDir, "grails-" + grailsVersion);

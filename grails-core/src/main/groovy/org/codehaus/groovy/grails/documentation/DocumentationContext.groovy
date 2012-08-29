@@ -26,15 +26,9 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
  */
 class DocumentationContext {
 
-    private static DocumentationContextThreadLocal threadLocalDocumentContext;
-    static {
-        if (!Metadata.current.warDeployed) {
-            threadLocalDocumentContext = new DocumentationContextThreadLocal()
-        }
-    }
 
     static DocumentationContext getInstance() {
-        threadLocalDocumentContext?.get()
+        new DocumentationContext()
     }
 
     String artefactType = "Unknown"
@@ -107,13 +101,6 @@ class DocumentationContext {
         properties << new DocumentedProperty(artefact:artefact, type:type, name:name, text:currentDocumentation)
         currentDocumentation = null
         return this
-    }
-}
-
-class DocumentationContextThreadLocal extends InheritableThreadLocal {
-
-    protected Object initialValue() {
-        return new DocumentationContext()
     }
 }
 

@@ -19,7 +19,9 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.web.container.EmbeddableServer
 import groovy.transform.CompileStatic
+
 import org.apache.catalina.Context
+import org.apache.catalina.startup.Tomcat
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.io.support.Resource
@@ -37,6 +39,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @Delegate TomcatRunner tomcatRunner
     TomcatExecutionContext executionContext
+    ClassLoader forkedClassLoader
 
     ForkedTomcatServer(TomcatExecutionContext executionContext) {
         this.executionContext = executionContext
@@ -62,24 +65,32 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         BuildSettingsHolder.settings = buildSettings
 
         URLClassLoader classLoader = createClassLoader(buildSettings)
+        forkedClassLoader = classLoader
 
         initializeLogging(ec.grailsHome,classLoader)
 
         tomcatRunner = new TomcatRunner("$buildSettings.baseDir/web-app", buildSettings.webXmlLocation.absolutePath, ec.contextPath, classLoader)
-        tomcatRunner.start(ec.host, ec.port)
-
+        if (ec.securePort > 0) {
+            tomcatRunner.startSecure(ec.host, ec.port, ec.securePort)
+        }
+        else {
+            tomcatRunner.start(ec.host, ec.port)
+        }
 
         setupReloading(classLoader, buildSettings)
-
     }
-
-
 
     @CompileStatic
     void start(String host, int port) {
+        startSecure(host, port, 0)
+    }
+
+    @CompileStatic
+    void startSecure(String host, int httpPort, int httpsPort) {
         final ec = executionContext
         ec.host = host
-        ec.port = port
+        ec.port = httpPort
+        ec.securePort = httpsPort
         def t = new Thread( {
             final process = fork()
             Runtime.addShutdownHook {
@@ -88,6 +99,9 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         } )
 
         t.start()
+        while(!isAvailable(host, httpPort)) {
+            sleep 100
+        }
         System.setProperty(TomcatKillSwitch.TOMCAT_KILL_SWITCH_ACTIVE, "true")
     }
 
@@ -124,6 +138,40 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         }
 
         @Override
+        @CompileStatic
+        protected void initialize(Tomcat tomcat) {
+            final autodeployDir = buildSettings.autodeployDir
+            if (autodeployDir.exists()) {
+                final wars = autodeployDir.listFiles()
+                for (File f in wars) {
+                    final fileName = f.name
+                    if (fileName.endsWith(".war")) {
+                        tomcat.addWebapp(f.name - '.war', f.absolutePath)
+                    }
+                }
+            }
+
+            invokeCustomizer(tomcat)
+        }
+
+        private void invokeCustomizer(Tomcat tomcat) {
+            Class cls = null
+            try {
+                cls = forkedClassLoader.loadClass("org.grails.plugins.tomcat.ForkedTomcatCustomizer")
+            } catch (Throwable e) {
+                // ignore
+            }
+
+            if (cls != null) {
+                try {
+                    cls.newInstance().customize(tomcat)
+                } catch (e) {
+                    throw new RuntimeException("Error invoking Tomcat server customizer: " + e.getMessage(), e)
+                }
+            }
+        }
+
+        @Override
         protected void configureAliases(Context context) {
             def aliases = []
             final directories = GrailsPluginUtils.getPluginDirectories()
@@ -156,10 +204,9 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     }
 }
 
-class TomcatExecutionContext extends ExecutionContext implements Serializable {
+class TomcatExecutionContext extends ExecutionContext {
     String contextPath
     String host = EmbeddableServer.DEFAULT_HOST
     int port = EmbeddableServer.DEFAULT_PORT
-    int securePort = EmbeddableServer.DEFAULT_SECURE_PORT
-
+    int securePort
 }

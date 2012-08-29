@@ -70,7 +70,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     }
 
     public void addInternalPackage(String name) {
-        if(name == null) throw new IllegalArgumentException("Package name cannot be null");
+        if (name == null) throw new IllegalArgumentException("Package name cannot be null");
         packagesToFilter.add(name);
     }
 

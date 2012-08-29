@@ -58,7 +58,6 @@ ant.path(id: "grails.runtime.classpath", runtimeClasspath)
  */
 target(runApp: "Main implementation that executes a Grails application") {
     grailsServer = projectRunner.runApp()
-    startPluginScanner()
 }
 
 /**
@@ -66,7 +65,6 @@ target(runApp: "Main implementation that executes a Grails application") {
  */
 target(runAppHttps: "Main implementation that executes a Grails application with an HTTPS listener") {
     grailsServer = projectRunner.runAppHttps()
-    startPluginScanner()
 }
 
 /**
@@ -108,12 +106,14 @@ target(stopPluginScanner: "Stops the plugin manager's scanner that detects chang
 target(watchContext: "Watches the WEB-INF/classes directory for changes and restarts the server if necessary") {
     depends(classpath)
 
-    if (InteractiveMode.current) {
-        Thread.start {
-            def im = InteractiveMode.current
-            im.grailsServer = grailsServer
-            im.run()
-        }
+    def im = InteractiveMode.current
+    if (!im) {
+        return
+    }
+
+    Thread.start {
+        im.grailsServer = grailsServer
+        im.run()
     }
 
     keepServerAlive()

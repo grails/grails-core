@@ -257,6 +257,14 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
      * @return The view class which is a subclass of GroovyPage
      */
     public Class resolveView(String viewName)  {
+
+        // this is a workaround for GRAILS-9234; in that scenario the viewName will be
+        // "/WEB-INF/grails-app/views/plugins/plugin9234-0.1/junk/_book.gsp" with the
+        // extra "/plugins/plugin9234-0.1". I'm not sure if that's needed elsewhere, so
+        // removing it here for the lookup
+        String extraPath = "/plugins/" + getName() + '-' + getVersion() + '/';
+        viewName = viewName.replace(extraPath, "/");
+
         return precompiledViewMap.get(viewName);
     }
 }

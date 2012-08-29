@@ -27,7 +27,7 @@ ext {
     datastoreVersion = "1.0.9.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = "2.0.0"
+    groovyVersion = "2.0.1"
     gradleGroovyVersion = groovyVersion
     gradleGroovyVersion = "1.8.2"
     ivyVersion = "2.2.0"
@@ -223,7 +223,7 @@ subprojects { project ->
                     final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
                     final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
 
-                    if(username && password) {
+                    if (username && password) {
                         org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
                     }
 
@@ -331,7 +331,7 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.0'
+    gradleVersion = '1.1'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
 

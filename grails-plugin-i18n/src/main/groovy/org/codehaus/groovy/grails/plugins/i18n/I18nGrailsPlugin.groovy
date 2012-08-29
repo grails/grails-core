@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.i18n
 
+import java.io.File
+
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
@@ -23,13 +25,15 @@ import org.apache.commons.lang.StringUtils
 import org.apache.commons.logging.LogFactory
 
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 
+import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource
 import org.springframework.core.io.Resource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
+import org.springframework.util.ResourceUtils
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 
@@ -61,14 +65,25 @@ class I18nGrailsPlugin {
 
         if (messageResources) {
             for (resource in messageResources) {
-                // Extract the file path of the file's parent directory
-                // that comes after "grails-app/i18n".
-                String path
-                if (resource instanceof ContextResource) {
-                    path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
-                }
-                else {
-                    path = StringUtils.substringAfter(resource.path, baseDir)
+				// Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
+				// Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
+				def isInlineResource = (resource instanceof ClassPathResource) ? false :
+					BuildSettingsHolder.settings?.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
+
+				String path
+
+				// If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
+				// generate the path to the resource based on its relativity to the application.
+				if (isInlineResource) {
+					path = resource.file.path
+				} else {
+                    // Extract the file path of the file's parent directory
+                    // that comes after "grails-app/i18n".
+                    if (resource instanceof ContextResource) {
+                        path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
+                    } else {
+                        path = StringUtils.substringAfter(resource.path, baseDir)
+                    }
                 }
 
                 // look for an underscore in the file name (not the full path)
@@ -76,7 +91,7 @@ class I18nGrailsPlugin {
                 int firstUnderscore = fileName.indexOf('_')
 
                 if (firstUnderscore > 0) {
-                    // grab everyting up to but not including
+                    // grab everything up to but not including
                     // the first underscore in the file name
                     int numberOfCharsToRemove = fileName.length() - firstUnderscore
                     int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
@@ -87,7 +102,8 @@ class I18nGrailsPlugin {
                     // message source cannot have entries with an extension.
                     path -= ".properties"
                 }
-                baseNames << "WEB-INF/" + baseDir + path
+
+                baseNames << (isInlineResource ? path : "WEB-INF/" + baseDir + path)
             }
         }
 

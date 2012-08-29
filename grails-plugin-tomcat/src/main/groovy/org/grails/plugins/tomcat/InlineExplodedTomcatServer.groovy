@@ -61,6 +61,11 @@ class InlineExplodedTomcatServer extends TomcatServer {
         def loader = createTomcatLoader(classLoader)
         loader.container = context
         context.loader = loader
+        initialize(tomcat)
+    }
+
+    protected void initialize(Tomcat tomcat) {
+        // do nothing, for subclasses to override
     }
 
     protected void configureAliases(Context context) {

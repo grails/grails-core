@@ -39,6 +39,7 @@ public class TomcatKillSwitch implements Runnable {
                     tomcat.stop();
                     tomcat.destroy();
                     System.setProperty(TOMCAT_KILL_SWITCH_ACTIVE, "false");
+                    System.exit(0);
                 } catch (LifecycleException e) {
                     System.err.println("Error stopping Tomcat: " + e.getMessage());
                     System.exit(1);

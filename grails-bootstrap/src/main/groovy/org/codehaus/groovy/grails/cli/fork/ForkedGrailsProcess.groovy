@@ -15,13 +15,15 @@
  */
 package org.codehaus.groovy.grails.cli.fork
 
-import groovy.transform.CompileStatic
-import grails.build.logging.GrailsConsole
-import org.apache.commons.logging.Log
 import gant.Gant
+import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
+import groovy.transform.CompileStatic
+
 import java.lang.reflect.Method
+
+import org.apache.commons.logging.Log
 
 /**
  * Helper class for kicking off forked JVM processes, helpful in managing the setup and
@@ -30,36 +32,32 @@ import java.lang.reflect.Method
  * @author Graeme Rocher
  * @since 2.2
  */
-
 abstract class ForkedGrailsProcess {
 
-    int maxMemory = 1024;
-    int minMemory = 64;
-    int maxPerm = 256;
-    boolean debug = false;
-    File reloadingAgent;
+    int maxMemory = 1024
+    int minMemory = 64
+    int maxPerm = 256
+    boolean debug = false
+    File reloadingAgent
+    List<String> jvmArgs
 
     @CompileStatic
     void configure(Map forkConfig) {
-        if(forkConfig instanceof Map) {
-
-            final Map<String, Object> runSettings = (Map<String, Object>) forkConfig
-            runSettings.each { Map.Entry<String, Object> entry ->
-                try {
-                    ((GroovyObject)this).setProperty(entry.getKey(),entry.getValue())
-                } catch (MissingPropertyException e) {
-                    // ignore
-                }
+        final Map<String, Object> runSettings = (Map<String, Object>) forkConfig
+        runSettings.each { Map.Entry<String, Object> entry ->
+            try {
+                ((GroovyObject)this).setProperty(entry.getKey(),entry.getValue())
+            } catch (MissingPropertyException e) {
+                // ignore
             }
         }
-
     }
 
     @CompileStatic
     protected void discoverAndSetAgent(ExecutionContext executionContext) {
         try {
             final agentClass = Thread.currentThread().contextClassLoader.loadClass('com.springsource.loaded.ReloadEventProcessorPlugin')
-            setReloadingAgent(ForkedGrailsProcess.findJarFile(agentClass))
+            setReloadingAgent(findJarFile(agentClass))
         } catch (e) {
             final grailsHome = executionContext.grailsHome
             if (grailsHome && grailsHome.exists()) {
@@ -94,21 +92,24 @@ abstract class ForkedGrailsProcess {
         }
 
         List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(),"-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", cp.toString()]
-        if(debug) {
-            cmd.addAll( ["-Xdebug","-Xnoagent","-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"] )
+        if (debug) {
+            cmd.addAll(["-Xdebug","-Xnoagent","-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"] )
         }
         final console = GrailsConsole.getInstance()
-        if(console.isVerbose()) {
+        if (console.isVerbose()) {
             cmd.add("-Dgrails.verbose=true")
             cmd.add("-Dgrails.full.stacktrace=true")
         }
-        if(console.isStacktrace()) {
+        if (console.isStacktrace()) {
             cmd.add("-Dgrails.show.stacktrace=true")
         }
-        if(reloadingAgent != null) {
+        if (reloadingAgent != null) {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded=profile=grails"])
         }
         cmd << getClass().name
+        if (jvmArgs) {
+            cmd.addAll(jvmArgs)
+        }
 
         processBuilder
                 .directory(executionContext.getBaseDir())
@@ -119,15 +120,15 @@ abstract class ForkedGrailsProcess {
 
         def is = process.inputStream
         def es = process.errorStream
-        def t1 = new Thread(new TextDumper(is, System.out))
-        def t2 = new Thread(new TextDumper(es, System.err))
+        def t1 = new Thread(new TextDumper(is))
+        def t2 = new Thread(new TextDumper(es))
         t1.start()
         t2.start()
 
         int result = process.waitFor()
         if (result == 1) {
             try { t1.join() } catch (InterruptedException ignore) {}
-            try { t1.join() } catch (InterruptedException ignore) {}
+            try { t2.join() } catch (InterruptedException ignore) {}
             try { es.close() } catch (IOException ignore) {}
             try { is.close() } catch (IOException ignore) {}
 
@@ -140,7 +141,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     ExecutionContext readExecutionContext() {
-        String location = System.getProperty("grails.build.execution.context");
+        String location = System.getProperty("grails.build.execution.context")
 
         if (location != null) {
             final file = new File(location)
@@ -158,21 +159,20 @@ abstract class ForkedGrailsProcess {
     public static List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         List<File> buildDependencies = []
 
-
         buildDependencies.add findJarFile(GroovySystem)
         buildDependencies.add findJarFile(Log)
         buildDependencies.add findJarFile(Gant)
 
         List<File> bootstrapJars = []
-        for(File f in buildSettings.runtimeDependencies) {
+        for (File f in buildSettings.runtimeDependencies) {
             final fileName = f.name
-            if( fileName.contains('log4j') ) {
+            if (fileName.contains('log4j') ) {
                 bootstrapJars.add(f)
             }
         }
-        for(File f in buildSettings.buildDependencies) {
+        for (File f in buildSettings.buildDependencies) {
             final fileName = f.name
-            if( fileName.contains('grails-bootstrap') ||
+            if (fileName.contains('grails-bootstrap') ||
                     fileName.contains('slf4j-api') ||
                     fileName.contains('ivy') ||
                     fileName.contains('ant') ||
@@ -190,20 +190,18 @@ abstract class ForkedGrailsProcess {
     public static File findJarFile(Class targetClass) {
         def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class").getPath()
         final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
-        final jarFile = new File(jarPath)
-        jarFile
+        new File(jarPath)
     }
 
     @CompileStatic
     protected URLClassLoader createClassLoader(BuildSettings buildSettings) {
-        def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURL() }
-        urls.add(buildSettings.classesDir.toURL())
-        urls.add(buildSettings.pluginClassesDir.toURL())
-        urls.add(buildSettings.pluginBuildClassesDir.toURL())
-        urls.add(buildSettings.pluginProvidedClassesDir.toURL())
+        def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURI().toURL() }
+        urls.add(buildSettings.classesDir.toURI().toURL())
+        urls.add(buildSettings.pluginClassesDir.toURI().toURL())
+        urls.add(buildSettings.pluginBuildClassesDir.toURI().toURL())
+        urls.add(buildSettings.pluginProvidedClassesDir.toURI().toURL())
 
-        URLClassLoader classLoader = new URLClassLoader(urls as URL[])
-        return classLoader
+        return new URLClassLoader(urls as URL[])
     }
 
     protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
@@ -221,39 +219,37 @@ abstract class ForkedGrailsProcess {
 
     protected void initializeLogging(File grailsHome, ClassLoader classLoader) {
         try {
-            Class<?> cls = classLoader.loadClass("org.apache.log4j.PropertyConfigurator");
+            Class<?> cls = classLoader.loadClass("org.apache.log4j.PropertyConfigurator")
             Method configure = cls.getMethod("configure", URL.class)
-            configure.setAccessible(true);
-            File f = new File(grailsHome.absolutePath + "/scripts/log4j.properties");
-            configure.invoke(cls, f.toURI().toURL());
+            configure.setAccessible(true)
+            File f = new File(grailsHome.absolutePath + "/scripts/log4j.properties")
+            configure.invoke(cls, f.toURI().toURL())
         } catch (Throwable e) {
-            println("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage());
+            println("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage())
         }
     }
 
     @CompileStatic
     static class TextDumper implements Runnable {
         InputStream input
-        Appendable app
 
-        TextDumper(InputStream input, Appendable app) {
+        TextDumper(InputStream input) {
             this.input = input
-            this.app = app
         }
 
         void run() {
             def isr = new InputStreamReader(input)
-            def br = new BufferedReader(isr)
-            br.eachLine { String next ->
-                if(next)
-                    app.append(next)
+            new BufferedReader(isr).eachLine { String next ->
+                if (next) {
+                    GrailsConsole.getInstance().log(next)
+                }
             }
         }
     }
 }
 
 @CompileStatic
-class ExecutionContext implements Serializable{
+class ExecutionContext implements Serializable {
     List<File> runtimeDependencies
     List<File> buildDependencies
     List<File> providedDependencies

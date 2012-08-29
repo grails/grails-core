@@ -136,7 +136,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
         }
 
         ClassInjector[] classInjectors1 = getLocalClassInjectors();
-        if(classInjectors1 == null || classInjectors1.length == 0) {
+        if (classInjectors1 == null || classInjectors1.length == 0) {
             classInjectors1 = getClassInjectors();
         }
         for (ClassInjector classInjector : classInjectors1) {

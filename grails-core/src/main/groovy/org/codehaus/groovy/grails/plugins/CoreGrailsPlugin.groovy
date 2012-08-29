@@ -30,7 +30,8 @@ import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
-import org.springframework.beans.factory.xml.XmlBeanFactory
+import org.springframework.beans.factory.support.DefaultListableBeanFactory
+import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.core.io.Resource
 import grails.util.*
 
@@ -146,7 +147,8 @@ class CoreGrailsPlugin {
 
     def onChange = { event ->
         if (event.source instanceof Resource) {
-            def xmlBeans = new XmlBeanFactory(event.source)
+            def xmlBeans = new DefaultListableBeanFactory()
+            new XmlBeanDefinitionReader(xmlBeans).loadBeanDefinitions(event.source)
             xmlBeans.beanDefinitionNames.each { name ->
                 event.ctx.registerBeanDefinition(name, xmlBeans.getBeanDefinition(name))
             }

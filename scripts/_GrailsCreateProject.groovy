@@ -42,7 +42,7 @@ target(createApp: "Creates a Grails application for the given name") {
     // Set the default version number for the application
     updateMetadata("app.version": grailsAppVersion ?: "0.1")
 
-    event("StatusFinal", ["Created Grails Application at $basedir"])
+    event("StatusFinal", ["Created Grails Application at ${new File(basedir).canonicalPath}"])
 }
 
 def resetBaseDirectory(String basedir) {

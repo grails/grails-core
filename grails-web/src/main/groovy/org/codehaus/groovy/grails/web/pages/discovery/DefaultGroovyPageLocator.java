@@ -81,10 +81,10 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     }
 
     public void setPrecompiledGspMap(Map<String, String> precompiledGspMap) {
-        if (precompiledGspMap != null) {
-            this.precompiledGspMap = new ConcurrentHashMap<String, String>(precompiledGspMap);
-        } else {
+        if (precompiledGspMap == null) {
             this.precompiledGspMap = null;
+        } else {
+            this.precompiledGspMap = new ConcurrentHashMap<String, String>(precompiledGspMap);
         }
     }
 
@@ -160,7 +160,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
     }
 
     protected GroovyPageScriptSource resolveViewInBinaryPlugin(BinaryGrailsPlugin binaryPlugin, String uri) {
-        GroovyPageScriptSource scriptSource=null;
+        GroovyPageScriptSource scriptSource = null;
         uri = removeViewLocationPrefixes(uri);
         uri = GrailsResourceUtils.appendPiecesForUri(PATH_TO_WEB_INF_VIEWS, uri);
         Class<?> viewClass = binaryPlugin.resolveView(uri);
@@ -210,8 +210,7 @@ public class DefaultGroovyPageLocator implements GroovyPageLocator, ServletConte
                 continue;
             }
 
-            GroovyPageScriptSource scriptSource = findResourceScriptSource(
-                    resolvePluginViewPath(uri, plugin));
+            GroovyPageScriptSource scriptSource = findResourceScriptSource(resolvePluginViewPath(uri, plugin));
             if (scriptSource != null) {
                 return scriptSource;
             }
