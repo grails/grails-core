@@ -35,6 +35,8 @@ target('default': "Runs a Grails application") {
         runApp()
     }
 
+    startPluginScanner()
+
     if (!(grailsServer instanceof ForkedGrailsProcess)) {
         watchContext()
     }
