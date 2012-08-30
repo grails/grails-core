@@ -406,8 +406,14 @@ public final class GrailsDomainBinder {
         bindCollectionSecondPass(property, mappings, persistentClasses, list, sessionFactoryBeanName);
 
         String columnName = getIndexColumnName(property, sessionFactoryBeanName);
+        final boolean isManyToMany = property.isManyToMany();
 
-        SimpleValue iv = new SimpleValue(mappings, list.getCollectionTable());
+        if(isManyToMany && !property.isOwningSide()) {
+            throw new MappingException("Invalid association ["+property.getDomainClass().getName()+"->"+ property.getName() +"]. List collection types only supported on the owning side of a many-to-many relationship.");
+        }
+
+        Table collectionTable = list.getCollectionTable();
+        SimpleValue iv = new SimpleValue(mappings, collectionTable);
         bindSimpleValue("integer", iv, true, columnName, mappings);
         iv.setTypeName("integer");
         list.setIndex(iv);
@@ -430,7 +436,6 @@ public final class GrailsDomainBinder {
 
             PersistentClass referenced = mappings.getClass(entityName);
 
-            final boolean isManyToMany = property.isManyToMany();
             Class<?> mappedClass = referenced.getMappedClass();
             Mapping m = getMapping(mappedClass);
 
