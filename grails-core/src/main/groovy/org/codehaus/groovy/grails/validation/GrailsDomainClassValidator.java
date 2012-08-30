@@ -157,7 +157,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
         if (collection instanceof List || collection instanceof SortedSet) {
             int idx = 0;
             for (Object associatedObject : ((Collection)collection)) {
-                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName + "[" + (idx++) + "]", idx);
+                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, idx++);
             }
         }
         else if (collection instanceof Collection) {
