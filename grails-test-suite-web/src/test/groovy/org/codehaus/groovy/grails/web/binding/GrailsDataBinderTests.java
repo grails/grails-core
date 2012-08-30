@@ -18,16 +18,12 @@ import java.beans.PropertyEditorSupport;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.collections.FactoryUtils;
+import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -271,7 +267,7 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals("tom",testBean.getName());
     }
 
-    class Author {
+    static class Author {
 
         private String name;
         private int age;
@@ -364,6 +360,62 @@ public class GrailsDataBinderTests extends TestCase {
         assertEquals(new BigInteger("4120834546"), testBean.getBigNumber());
         assertEquals(new BigDecimal("1203.45"), testBean.getCredit());
         assertEquals(103.48674D, testBean.getAngle().doubleValue(), 0.1D);
+    }
+
+    // Test an embedded type
+    public static class Book {
+        private String name;
+        private Author author;
+
+        // Make it embedded type
+        static List embedded = new ArrayList(Arrays.asList("author"));
+
+        public String getName() { return name; }
+        public void setName(String name) { this.name = name; }
+        public Author getAuthor() { return author; }
+        public void setAuthor(Author author) { this.author = author; }
+    }
+
+    // Test a list of beans which contain both simple and embedded types
+    public static class TestCommand {
+        private List<Book> books = ListUtils.lazyList(new ArrayList(), FactoryUtils.instantiateFactory(Book.class));
+        public List<Book> getBooks() {
+            return books;
+        }
+        public void setBooks(List<Book> books) {
+            this.books = books;
+        }
+    }
+
+    public void testBasicPropertyCollectionBinding() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addPreferredLocale(Locale.US);
+
+        request.addParameter("books[0].name", "Grails In Action 2");
+
+        TestCommand instance = new TestCommand();
+        GrailsDataBinder binder = GrailsDataBinder.createBinder(instance, "testCommand", request);
+        binder.bind(request);
+
+        assertEquals(1, instance.getBooks().size());
+        assertEquals("Grails In Action 2", instance.getBooks().get(0).getName());
+    }
+
+    public void testEmbeddedCollectionBinding() throws Exception {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addPreferredLocale(Locale.US);
+
+        request.addParameter("books[0].name", "Grails In Action 2");
+        request.addParameter("books[0].author.name", "Aaron");
+
+        TestCommand instance = new TestCommand();
+        GrailsDataBinder binder = GrailsDataBinder.createBinder(instance, "testCommand", request);
+        binder.bind(request);
+
+        assertEquals(1, instance.getBooks().size());
+        assertEquals("Grails In Action 2", instance.getBooks().get(0).getName());
+        assertNotNull(instance.getBooks().get(0).getAuthor());
+        assertEquals("Aaron", instance.getBooks().get(0).getAuthor().getName());
     }
 
     /**
