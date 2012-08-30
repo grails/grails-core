@@ -49,7 +49,8 @@ recompileFrequency = System.getProperty("recompile.frequency")
 recompileFrequency = recompileFrequency ? recompileFrequency.toInteger() : 3
 
 // Should the reloading agent be enabled? By default, yes...
-isReloading = Boolean.getBoolean("grails.reload.enabled") ?: true
+isReloading = Boolean.getBoolean("grails.reload.enabled")
+isReloading = isReloading != null ? isReloading : true
 
 shouldPackageTemplates = true
 
