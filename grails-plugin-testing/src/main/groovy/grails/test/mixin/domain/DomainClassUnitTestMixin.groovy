@@ -142,7 +142,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
                 bean.singleton = false
                 bean.autowire = "byName"
             }
-            "$validationBeanName"(GrailsDomainClassValidator) { bean ->
+            "$validationBeanName"(MockCascadingDomainClassValidator) { bean ->
                 delegate.messageSource = ref("messageSource")
                 bean.lazyInit = true
                 domainClass = domain
