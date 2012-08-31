@@ -90,6 +90,10 @@ p = new Permission(user:u, permission:"uber")
 
                static belongsTo = [one:EntityTransformTest]
                static hasMany = [many:EntityTransformTest]
+
+               static constraints = {
+                    id bindable:true
+               }
           }
           new EntityTransformTest(id:1L, version:2L)
         """)
