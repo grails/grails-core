@@ -41,14 +41,16 @@ usingSecureServer = false
 
 grailsServer = null
 grailsContext = null
+autoRecompile = System.getProperty("disable.auto.recompile") ? !(System.getProperty("disable.auto.recompile").toBoolean()) : true
 
 // How often should recompilation occur while the application is running (in seconds)?
 // Defaults to 3s.
 recompileFrequency = System.getProperty("recompile.frequency")
 recompileFrequency = recompileFrequency ? recompileFrequency.toInteger() : 3
 
-// Should the reloading agent be enabled?
+// Should the reloading agent be enabled? By default, yes...
 isReloading = Boolean.getBoolean("grails.reload.enabled")
+isReloading = isReloading != null ? isReloading : true
 
 shouldPackageTemplates = true
 
@@ -94,8 +96,11 @@ target(startPluginScanner: "Starts the plugin manager's scanner that detects cha
     }
 
     if (isReloading) {
-        projectWatcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
-        projectWatcher.start()
+        new GrailsProjectWatcher(projectCompiler, pluginManager).with {
+            reloadExcludes = (config?.grails?.reload?.excludes instanceof List) ? config?.grails?.reload?.excludes : []
+            reloadIncludes = (config?.grails?.reload?.includes instanceof List) ? config?.grails?.reload?.includes : []
+            start()
+        }
     }
 }
 
