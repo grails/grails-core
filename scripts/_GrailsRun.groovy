@@ -95,7 +95,7 @@ target(startPluginScanner: "Starts the plugin manager's scanner that detects cha
         return
     }
 
-    if (isReloading) {
+    if (isReloading) {        
         new GrailsProjectWatcher(projectCompiler, pluginManager).with {
             reloadExcludes = (config?.grails?.reload?.excludes instanceof List) ? config?.grails?.reload?.excludes : []
             reloadIncludes = (config?.grails?.reload?.includes instanceof List) ? config?.grails?.reload?.includes : []
@@ -118,6 +118,7 @@ target(watchContext: "Watches the WEB-INF/classes directory for changes and rest
 
     def im = InteractiveMode.current
     if (!im) {
+        keepServerAlive()        
         return
     }
 
