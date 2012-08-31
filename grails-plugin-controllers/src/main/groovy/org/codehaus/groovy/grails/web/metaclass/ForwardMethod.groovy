@@ -68,7 +68,7 @@ class ForwardMethod {
         this.urlConverter = urlConverter
     }
 
-    private UrlConverter getUrlConverter(GrailsWebRequest webRequest) {
+    private UrlConverter lookupUrlConverter(GrailsWebRequest webRequest) {
         if (!urlConverter) {
             ApplicationContext applicationContext = webRequest?.getApplicationContext()
             if (applicationContext) {
@@ -80,7 +80,7 @@ class ForwardMethod {
     }
 
     private String convert(GrailsWebRequest webRequest, String value) {
-        UrlConverter urlConverter = getUrlConverter(webRequest)
+        UrlConverter urlConverter = lookupUrlConverter(webRequest)
         (urlConverter) ? urlConverter.toUrlElement(value) : value
     }
 }
