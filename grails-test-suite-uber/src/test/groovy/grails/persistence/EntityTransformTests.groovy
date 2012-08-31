@@ -90,12 +90,16 @@ p = new Permission(user:u, permission:"uber")
 
                static belongsTo = [one:EntityTransformTest]
                static hasMany = [many:EntityTransformTest]
+
+               static constraints = {
+                    id bindable:true
+               }
           }
-          new EntityTransformTest(id:1L, version:2L)
+          new EntityTransformTest()
         """)
 
-        assertEquals 1L, entity.id
-        assertEquals 2L, entity.version
+        assertNull entity.id
+        assertNull entity.version
 
         entity.many = new HashSet()
         assertEquals 0, entity.many.size()
