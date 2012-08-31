@@ -95,10 +95,10 @@ p = new Permission(user:u, permission:"uber")
                     id bindable:true
                }
           }
-          new EntityTransformTest(id:1L, version:2L)
+          new EntityTransformTest(version:2L)
         """)
 
-        assertEquals 1L, entity.id
+        assertNull entity.id
         assertEquals 2L, entity.version
 
         entity.many = new HashSet()
