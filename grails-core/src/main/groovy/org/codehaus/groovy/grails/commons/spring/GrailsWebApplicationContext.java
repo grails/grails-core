@@ -32,10 +32,12 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import org.springframework.ui.context.ThemeSource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.ConfigurableWebApplicationContext;
+import org.springframework.web.context.ConfigurableWebEnvironment;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.support.ServletContextAwareProcessor;
 import org.springframework.web.context.support.ServletContextResource;
 import org.springframework.web.context.support.ServletContextResourcePatternResolver;
+import org.springframework.web.context.support.StandardServletEnvironment;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
@@ -79,7 +81,7 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
 
         return super.getClassLoader();
     }
-
+    
     private GrailsApplication getGrailsApplication() {
         ApplicationContext parent = getParent();
         GrailsApplication application = null;
@@ -184,6 +186,15 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
         if (grailsApplication != null) {
             return new GrailsEnvironment(grailsApplication);
         }
-        return super.createEnvironment();
+        return new StandardServletEnvironment();
+    }
+
+    @Override
+    public ConfigurableWebEnvironment getEnvironment() {
+        ConfigurableEnvironment env = super.getEnvironment();
+        Assert.isInstanceOf(ConfigurableWebEnvironment.class, env,
+                "ConfigurableWebApplication environment must be of type " +
+                "ConfigurableWebEnvironment");
+        return (ConfigurableWebEnvironment) env;
     }
 }
