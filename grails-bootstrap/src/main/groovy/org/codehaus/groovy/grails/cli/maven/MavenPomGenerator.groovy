@@ -21,6 +21,7 @@ import grails.util.Metadata
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import grails.util.PluginBuildSettings
 
 /**
  * Generates a POM for a Grails application.
@@ -34,13 +35,16 @@ class MavenPomGenerator extends BaseSettingsApi{
     }
 
     void generate(String group) {
-        def rootTemplate = grailsResource("src/grails/templates/maven/single.pom")
+
+        def rootTemplate = buildSettings.isPluginProject() ?
+                                grailsResource("src/grails/templates/maven/plugin-single.pom") :
+                                grailsResource("src/grails/templates/maven/single.pom")
 
         def baseDir = buildSettings.baseDir
 
         final metadata = Metadata.getCurrent()
         def name = metadata.getApplicationName()
-        def version = metadata.getApplicationVersion()
+        def version = readVersion(buildSettings, metadata)
 
         final pomFile = new File(baseDir, "pom.xml")
         copyGrailsResource(pomFile,rootTemplate)
@@ -69,6 +73,17 @@ class MavenPomGenerator extends BaseSettingsApi{
             replacefilter token:"@dependencies@", value:dependencies.join(System.getProperty("line.separator"))
             replacefilter token:"@plugins@", value:plugins.join(System.getProperty("line.separator"))
 
+        }
+    }
+
+    private String readVersion(BuildSettings buildSettings, metadata) {
+        if(buildSettings.isPluginProject()) {
+            def pluginSettings = new PluginBuildSettings(buildSettings)
+            final info = pluginSettings.getPluginInfo(buildSettings.getBaseDir().absolutePath)
+            return info.version
+        }
+        else {
+            return metadata.getApplicationVersion()
         }
     }
 
