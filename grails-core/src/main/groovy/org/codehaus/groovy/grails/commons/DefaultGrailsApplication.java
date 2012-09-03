@@ -538,11 +538,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @see org.codehaus.groovy.grails.commons.ArtefactHandler
      */
     public GrailsClass addArtefact(String artefactType, GrailsClass artefactGrailsClass) {
-        // @todo should we filter abstracts here?
-        if (Modifier.isAbstract(artefactGrailsClass.getClazz().getModifiers())) {
-            return null;
-        }
-
         ArtefactHandler handler = artefactHandlersByName.get(artefactType);
         if (handler.isArtefactGrailsClass(artefactGrailsClass)) {
             // Store the GrailsClass in cache
