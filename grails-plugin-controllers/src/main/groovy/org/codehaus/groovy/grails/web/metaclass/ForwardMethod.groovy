@@ -17,10 +17,12 @@ package org.codehaus.groovy.grails.web.metaclass
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+import grails.web.*
 import org.apache.commons.beanutils.BeanUtils
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.springframework.context.ApplicationContext
 
 /**
  * Implements performing a forward.
@@ -31,6 +33,8 @@ import org.codehaus.groovy.grails.web.util.WebUtils
 class ForwardMethod {
 
     public static final String CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED"
+
+    private UrlConverter urlConverter
 
     String forward(HttpServletRequest request, HttpServletResponse response, Map params) {
         def urlInfo = new ForwardUrlMappingInfo()
