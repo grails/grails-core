@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2012 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,31 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package grails.test.mixin.domain
 
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
+import org.grails.datastore.gorm.validation.CascadingValidator
+import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 
 /**
- * Gant script that executes Grails using an embedded Jetty server
+ * Integrates Grails cascading validation with datastore API
  *
  * @author Graeme Rocher
- *
- * @since 0.4
+ * @since 2.1.1
  */
-
-includeTargets << grailsScript("_GrailsRun")
-
-target('default': "Runs a Grails application") {
-    depends(checkVersion, configureProxy, packageApp, parseArguments)
-    if (argsMap.https) {
-        runAppHttps()
-    }
-    else {
-        runApp()
-    }
-
-    startPluginScanner()
-
-    if (!(grailsServer instanceof ForkedGrailsProcess)) {
-        watchContext()
-    }
+class MockCascadingDomainClassValidator extends GrailsDomainClassValidator implements CascadingValidator  {
 }

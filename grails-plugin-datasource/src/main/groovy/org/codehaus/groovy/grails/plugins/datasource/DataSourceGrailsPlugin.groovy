@@ -281,6 +281,12 @@ class DataSourceGrailsPlugin {
         }
         finally {
             try { connection?.close() } catch (ignored) {}
+            try {
+                if (dataSource.respondsTo('close')) {
+                    dataSource.close()
+                }
+            }
+            catch (ignored) {}
         }
     }
 

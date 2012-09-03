@@ -142,11 +142,6 @@ public class GrailsHibernateUtil {
     private static void configureDomainClass(SessionFactory sessionFactory, String sessionFactoryName,
             GrailsApplication application, ClassMetadata cmd, Class<?> persistentClass,
             Map<String, GrailsDomainClass> hibernateDomainClassMap) {
-
-        if (Modifier.isAbstract(persistentClass.getModifiers())) {
-            return;
-        }
-
         LOG.trace("Configuring domain class [" + persistentClass + "]");
         GrailsDomainClass dc = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, persistentClass.getName());
         if (dc == null && sessionFactory.getClassMetadata(persistentClass) != null) {

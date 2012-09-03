@@ -16,6 +16,7 @@
 
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.cli.logging.*
+
 /**
  * Gant script containing the Grails build event system.
  *
@@ -47,9 +48,16 @@ classpath()
 // Now load them.
 eventListener.initialize()
 
+long eventInitStart = System.currentTimeMillis()
+
 // Send a scripting event notification to any and all event hooks in plugins/user scripts
 event = {String name, args ->
     try {
+        boolean logTiming = binding.variables.containsKey('buildSettings') ? buildSettings.logScriptTiming : false
+        if (logTiming) {
+            grailsConsole.addStatus "#### (${System.currentTimeMillis() - eventInitStart}) $name $args"
+            grailsConsole.lastMessage = ''
+        }
         eventListener.triggerEvent(name, * args)
     }
     catch(e) {

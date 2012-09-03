@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
 /**
- * Creates a WAR file from a Grails project
+ * Creates a WAR file from a Grails project.
  *
  * @author Graeme Rocher
  * @since 2.1
@@ -39,7 +39,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
 
     boolean includeJars = true
     boolean buildExplodedWar
-    String warName = null
+    String warName
     BuildSettings grailsSettings
     GrailsBuildEventListener eventListener
     def additionalEventArgs
@@ -59,8 +59,11 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
     private GrailsConsole grailsConsole = GrailsConsole.getInstance()
     Closure defaultWarDependencies
 
-    GrailsProjectWarCreator(BuildSettings settings, GrailsBuildEventListener buildEventListener,GrailsProjectPackager projectPackager, AntBuilder ant = new AntBuilder(), boolean interactive = false) {
+    GrailsProjectWarCreator(BuildSettings settings, GrailsBuildEventListener buildEventListener, GrailsProjectPackager projectPackager,
+            AntBuilder ant = new AntBuilder(), boolean interactive = false) {
+
         super(settings, buildEventListener, interactive)
+
         this.eventListener = buildEventListener
         this.projectPackager = projectPackager
         this.ant = ant
@@ -110,7 +113,6 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
     }
 
     void packageWar() {
-
 
         def includeOsgiHeaders = grailsSettings.projectWarOsgiHeaders
 
@@ -297,14 +299,12 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                 entry(key:Metadata.SERVLET_VERSION, value:grailsSettings.servletVersion)
             }
 
-            ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml",
-                    token:"classpath*:", value:"")
+            ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml", token:"classpath*:", value:"")
 
             if (buildConfig.grails.war.resources instanceof Closure) {
                 Closure callable = buildConfig.grails.war.resources
                 callable.delegate = ant
                 callable.resolveStrategy = Closure.DELEGATE_FIRST
-
 
                 if (callable.maximumNumberOfParameters == 1) {
                     callable(stagingDir)
@@ -338,7 +338,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                 ant.jar(destfile:warName, basedir:stagingDir, manifest:manifestFile)
             }
 
-            eventListener.triggerEvent("CreateWarEnd",warName, stagingDir)
+            eventListener.triggerEvent("CreateWarEnd", warName, stagingDir)
         }
         finally {
             if (!buildExplodedWar) cleanUpAfterWar()
@@ -359,37 +359,37 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
     }
 
     @CompileStatic
-    String configureWarName() {
-        if (warName == null) {
+    String configureWarName(String commandLineName = null) {
+        if (warName) {
+            return warName
+        }
 
-            def warFileDest = grailsSettings.projectWarFile.absolutePath
+        def warFileDest = grailsSettings.projectWarFile.absolutePath
 
-            if (warFileDest || !warName ) {
-                // Pick up the name of the WAR to create from the command-line
-                // argument or the 'grails.project.war.file' configuration option.
-                // The command-line argument takes precedence.
-                warName = warFileDest
+        if (warFileDest || commandLineName) {
+            // Pick up the name of the WAR to create from the command-line
+            // argument or the 'grails.project.war.file' configuration option.
+            // The command-line argument takes precedence.
+            warName = commandLineName ?: warFileDest
 
-                // Find out whether WAR name is an absolute file path or a
-                // relative one.
-                def warFile = new File(warName.toString())
-                if (!warFile.absolute) {
-                    // It's a relative path, so adjust it for 'basedir'.
-                    warFile = new File(basedir, warFile.path)
-                    warName = warFile.canonicalPath
-                }
+            // Find out whether WAR name is an absolute file path or a relative one.
+            def warFile = new File(warName.toString())
+            if (!warFile.absolute) {
+                // It's a relative path, so adjust it for 'basedir'.
+                warFile = new File(basedir, warFile.path)
+                warName = warFile.canonicalPath
+            }
+        }
+        else {
+            def fileName = grailsAppName
+            def version = metadata.getApplicationVersion()
+            if (version) {
+                version = '-' + version
             }
             else {
-                def fileName = grailsAppName
-                def version = metadata.getApplicationVersion()
-                if (version) {
-                    version = '-' + version
-                }
-                else {
-                    version = ''
-                }
-                warName = "${basedir}/${fileName}${version}.war"
+                version = ''
             }
+            warName = "${basedir}/${fileName}${version}.war"
         }
         return warName
     }

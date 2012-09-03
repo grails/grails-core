@@ -23,7 +23,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
             def value = dependency.moduleVersion
 
             def versions = moduleToVersionsMap[key]
-            if(!versions) {
+            if (!versions) {
                 versions = [] as Set
                 moduleToVersionsMap[key] = versions
             }
@@ -33,7 +33,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     def dups = moduleToVersionsMap.findAll { k, v ->
         v.size() > 1
     }
-    if(dups) {
+    if (dups) {
         def msg = 'Multiple versions of some dependencies have been identified in the dependency graph'
         println msg
         dups.each { k, v ->
@@ -94,7 +94,7 @@ task pluginsFromRepo {
         tomcat: grailsVersion,
         resources: "1.1.6",
         webxml: "1.4.1",
-        jquery: "1.7.2",
+        jquery: "1.8.0",
         'database-migration': "1.1",
         cache: "1.0.0"
     ]

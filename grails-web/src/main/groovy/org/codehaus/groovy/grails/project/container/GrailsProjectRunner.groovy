@@ -15,31 +15,29 @@
  */
 package org.codehaus.groovy.grails.project.container
 
+import grails.build.logging.GrailsConsole
+import grails.util.Metadata
+import grails.web.container.EmbeddableServer
+import grails.web.container.EmbeddableServerFactory
+import groovy.transform.CompileStatic
+
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+
+import org.codehaus.groovy.grails.cli.ScriptExitException
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
+import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectWarCreator
-import grails.util.Metadata
-import grails.web.container.EmbeddableServerFactory
-
-import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
-import grails.build.logging.GrailsConsole
-import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import groovy.transform.CompileStatic
-import grails.web.container.EmbeddableServer
-import java.awt.event.ActionListener
-import java.awt.event.ActionEvent
-import org.codehaus.groovy.grails.cli.ScriptExitException
-
-import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 
 /**
- * Responsible for running the container embedded within the current JVM
+ * Runs the container embedded within the current JVM.
  *
  * @author Graeme Rocher
  * @since 2.2
  */
-
-class GrailsProjectRunner extends BaseSettingsApi{
-
+class GrailsProjectRunner extends BaseSettingsApi {
 
     public static String SCHEME_HTTP = "http"
     public static String SCHEME_HTTPS = "https"
@@ -57,7 +55,6 @@ class GrailsProjectRunner extends BaseSettingsApi{
     private String warName
     boolean usingSecureServer = false
     private ConfigObject config
-
 
     GrailsProjectRunner(GrailsProjectPackager projectPackager, GrailsProjectWarCreator warCreator, ClassLoader classLoader) {
         super(projectPackager.buildSettings, warCreator.eventListener, false)

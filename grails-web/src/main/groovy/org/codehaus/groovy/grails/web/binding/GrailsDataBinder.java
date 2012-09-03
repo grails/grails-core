@@ -641,31 +641,33 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 if (wrapper.isWritableProperty(propertyName) && c != null) {
                     wrapper.setPropertyValue(propertyName, c);
                 }
+
                 val = c;
 
                 if (c != null && currentKeyStart > -1 && currentKeyEnd > -1) {
                     String indexString = propertyNameWithIndex.substring(currentKeyStart + 1, currentKeyEnd);
                     int index = Integer.parseInt(indexString);
 
-                    if (isDomainClass(referencedType)) {
-                        Object instance = findIndexedValue(c, index);
+                    // See if we have an instance in the collection. If so, that specific instance
+                    // is the value to return for this indexed property.
+                    Object instance = findIndexedValue(c, index);
+                    if (instance != null) {
+                        val = instance;
+                    }
+                    // If no value in the collection, this might be a domain class
+                    else if (isDomainClass(referencedType)) {
+                        instance = autoInstantiateDomainInstance(referencedType);
                         if (instance != null) {
                             val = instance;
-                        }
-                        else {
-                            instance = autoInstantiateDomainInstance(referencedType);
-                            if (instance !=null) {
-                                val = instance;
-                                if (index == c.size()) {
-                                    addAssociationToTarget(propertyName, beanInstance, instance);
+                            if (index == c.size()) {
+                                addAssociationToTarget(propertyName, beanInstance, instance);
+                            }
+                            else if (index > c.size()) {
+                                while (index > c.size()) {
+                                    addAssociationToTarget(propertyName, beanInstance, autoInstantiateDomainInstance(referencedType));
                                 }
-                                else if (index > c.size()) {
-                                    while (index > c.size()) {
-                                        addAssociationToTarget(propertyName, beanInstance, autoInstantiateDomainInstance(referencedType));
-                                    }
 
-                                    addAssociationToTarget(propertyName, beanInstance, instance);
-                                }
+                                addAssociationToTarget(propertyName, beanInstance, instance);
                             }
                         }
                     }
@@ -723,17 +725,24 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private Object findIndexedValue(Collection c, int index) {
-        if (index < c.size()) {
-            if (c instanceof List) {
+        if (c instanceof List) {
+            // If we have a list, try to return the element by index. For data binding, it's very possible
+            // that this may be a LazyList so we'll just go right for the index instead of checking the
+            // size first.
+            try {
                 return ((List)c).get(index);
             }
-
+            catch( IndexOutOfBoundsException ignored) {
+            }
+        }
+        else {
             int j = 0;
             for (Object o : c) {
                 j++;
                 if (j == index) return o;
             }
         }
+
         return null;
     }
 

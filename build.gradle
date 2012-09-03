@@ -36,7 +36,7 @@ ext {
     jnaVersion = "3.2.3"
     slf4jVersion = "1.6.2"
     springLoadedVersion = "1.0.6"
-    springVersion = "3.1.1.RELEASE"
+    springVersion = "3.1.2.RELEASE"
     springWebflowVersion= "2.0.8.RELEASE"
     hibernateVersion = "3.6.10.Final"
     ehcacheVersion = "2.4.6"
@@ -80,7 +80,6 @@ if (jointBuildGroovyJarProperty) {
 allprojects {
     repositories {
         maven { url "http://repo.grails.org/grails/core" }
-
         // TODO configure this as a remote for repo.grails.org so we don't need this here...
         maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
     }
@@ -331,7 +330,6 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.1-rc-1'
+    gradleVersion = '1.1'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
-

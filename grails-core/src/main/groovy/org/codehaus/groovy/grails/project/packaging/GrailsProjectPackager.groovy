@@ -189,7 +189,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
      * @param compilePlugin Whether the compile the plugin
      * @return The plugin properties
      */
-    @CompileStatic
+//    @CompileStatic
     def generatePluginXml(File descriptor, boolean compilePlugin = true ) {
         def pluginBaseDir = descriptor.parentFile
         def pluginProps = pluginSettings.getPluginInfo(pluginBaseDir.absolutePath)
@@ -229,7 +229,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
         // Use MarkupBuilder with indenting to generate the file.
         pluginXml.withWriter { Writer writer ->
-            def generator = new PluginDescriptorGenerator(buildSettings, pluginName, resourceList)
+            def generator = new PluginDescriptorGenerator(buildSettings, pluginName, resourceList.toList())
 
             pluginProps["type"] = descriptor.name - '.groovy'
             generator.generatePluginXml(pluginProps, writer)

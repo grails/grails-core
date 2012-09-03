@@ -221,7 +221,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
 
     @CompileStatic
-    void mavenLocal(String repoPath) {
+    void mavenLocal(String repoPath = null) {
         if (isResolverNotAlreadyDefined('mavenLocal')) {
             dependencyManager.repositoryData << ['type':'mavenLocal']
             FileSystemResolver localMavenResolver = new FileSystemResolver()

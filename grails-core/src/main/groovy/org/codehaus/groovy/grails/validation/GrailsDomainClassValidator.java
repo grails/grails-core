@@ -53,6 +53,8 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
     protected MessageSource messageSource;
     protected GrailsApplication grailsApplication;
 
+
+
     @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz) {
         return targetClass.equals(clazz);
@@ -155,10 +157,10 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
         if (collection instanceof List || collection instanceof SortedSet) {
             int idx = 0;
             for (Object associatedObject : ((Collection)collection)) {
-                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName + "[" + (idx++) + "]", idx);
+                cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, idx++);
             }
         }
-        if (collection instanceof Collection) {
+        else if (collection instanceof Collection) {
             Integer index = 0;
             for (Object associatedObject : ((Collection)collection)) {
                 cascadeValidationToOne(errors, bean,associatedObject, persistentProperty, propertyName, index++);

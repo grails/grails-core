@@ -17,38 +17,70 @@ package org.codehaus.groovy.grails.web.metaclass
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+import grails.web.UrlConverter
+
 import org.apache.commons.beanutils.BeanUtils
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.springframework.context.ApplicationContext
 
 /**
  * Implements performing a forward.
  *
  * @author Graeme Rocher
+ * @author Jonathan Pearlin
  * @since 1.1
  */
 class ForwardMethod {
 
     public static final String CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED"
 
+    UrlConverter urlConverter
+
     String forward(HttpServletRequest request, HttpServletResponse response, Map params) {
         def urlInfo = new ForwardUrlMappingInfo()
 
         GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
-
-        if (params.controller) {
-            webRequest?.controllerName = params.controller
+        Map cleansedParams = [:]
+		
+        /*
+         * Make sure that any controller/action parameter is passed through the URL converter
+         * to ensure that it will match the URL mappings based on the configured URL converter
+         * scheme (camel case, hyphenated, etc).
+         */
+        cleansedParams = params?.collectEntries([:]) { key, value ->
+            (key == 'controller' || key == 'action') ? [(key) : (convert(webRequest, value))] : [(key) : value]
         }
-        else {
-            urlInfo.controllerName = webRequest?.controllerName
-        }
 
-        BeanUtils.populate(urlInfo, params)
+        // If the cleansed map contains a controller/action parameter, use it.  Otherwise, cleanse the value from the web request and use that.
+        urlInfo.controllerName = (cleansedParams.controller) ? cleansedParams.controller : webRequest?.controllerName
+        urlInfo.actionName = (cleansedParams.action) ? cleansedParams.action : webRequest?.actionName
+        BeanUtils.populate(urlInfo, cleansedParams)
 
-        def model = params.model instanceof Map ? params.model : Collections.EMPTY_MAP
+        def model = cleansedParams.model instanceof Map ? cleansedParams.model : Collections.EMPTY_MAP
         String uri = WebUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, model, true)
         request.setAttribute(CALLED, true)
         return uri
+    }
+
+    void setUrlConverter(UrlConverter urlConverter) {
+        this.urlConverter = urlConverter
+    }
+
+    private UrlConverter lookupUrlConverter(GrailsWebRequest webRequest) {
+        if (!urlConverter) {
+            ApplicationContext applicationContext = webRequest?.getApplicationContext()
+            if (applicationContext) {
+                urlConverter = applicationContext.getBean("grailsUrlConverter", UrlConverter)
+            }
+        }
+
+        urlConverter
+    }
+
+    private String convert(GrailsWebRequest webRequest, String value) {
+        UrlConverter urlConverter = lookupUrlConverter(webRequest)
+        (urlConverter) ? urlConverter.toUrlElement(value) : value
     }
 }

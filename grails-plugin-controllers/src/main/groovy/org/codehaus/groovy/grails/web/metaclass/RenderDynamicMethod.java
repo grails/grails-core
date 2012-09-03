@@ -486,6 +486,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private boolean renderMarkup(Closure closure, HttpServletResponse response) {
         boolean renderView;
         StreamingMarkupBuilder b = new StreamingMarkupBuilder();
+        b.setEncoding(response.getCharacterEncoding());
         Writable markup = (Writable) b.bind(closure);
         try {
             markup.writeTo(response.getWriter());
