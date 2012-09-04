@@ -66,6 +66,7 @@ import org.springframework.validation.Validator
 import org.springframework.transaction.PlatformTransactionManager
 import org.codehaus.groovy.grails.domain.GrailsDomainClassPersistentEntity
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
+import org.grails.datastore.mapping.core.Datastore
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -297,6 +298,8 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 sessionFactory = ref("sessionFactory$suffix")
             }
 
+            "hibernateDatastore$suffix"(HibernateDatastore, ref('grailsDomainClassMappingContext'), ref("sessionFactory$suffix"), application.config)
+
             if (manager?.hasGrailsPlugin("controllers")) {
                 "flushingRedirectEventListener$suffix"(FlushOnRedirectEventListener, ref("sessionFactory$suffix"))
 
@@ -513,7 +516,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
 
         MappingContext mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
         PlatformTransactionManager transactionManager = ctx.getBean("transactionManager$suffix", PlatformTransactionManager)
-        final datastore = new HibernateDatastore(mappingContext, sessionFactory, ctx, application.config)
+        final datastore = ctx.getBean("hibernateDatastore$suffix", Datastore)
         datastores[sessionFactory] = datastore
         String datasourceName = suffix ? suffix[1..-1] : GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
 
