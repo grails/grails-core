@@ -13,7 +13,6 @@ import org.junit.Ignore
 class AddToAndServiceInjectionTests {
 
     @Test
-    @Ignore // TODO: remove when upgrading to datastore 1.0.9
     void testAddTo() {
         def pirate = new Pirate(name: 'Billy')
         def ship = new Ship()
