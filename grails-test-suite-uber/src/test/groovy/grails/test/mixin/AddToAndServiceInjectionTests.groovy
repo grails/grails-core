@@ -1,9 +1,8 @@
 package grails.test.mixin
 
-import spock.lang.Specification
 import grails.persistence.Entity
+
 import org.junit.Test
-import org.junit.Ignore
 
 /**
  */
