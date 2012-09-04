@@ -21,7 +21,9 @@ class AbstractFindByPersistentMethodSpec extends GormSpec{
     @Issue('GRAILS-8762')
     void "Test that findBy configures a limit of 1"() {
         given:"A finder method"
-            def finder = new TestFindBy(new HibernateDatastore( applicationContext.getBean(MappingContext), sessionFactory, applicationContext, grailsApplication.config), grailsApplication)
+        final datastore = new HibernateDatastore(applicationContext.getBean(MappingContext), sessionFactory, grailsApplication.config)
+        datastore.applicationContext = applicationContext
+        def finder = new TestFindBy(datastore, grailsApplication)
         
         when:"The finder is invoked"
             CriteriaImpl c  = finder.invoke(Customer, "findByName", "Bob")
