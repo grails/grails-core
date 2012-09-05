@@ -49,12 +49,24 @@ public interface UrlMappingsHolder {
      *
      * @param controller The name of the controller
      * @param action The name of the action or null
+     * @param pluginName the name of the plugin which provides the controller
      * @param params The parameters or null
      * @return A URI for the given arguments
      */
     @SuppressWarnings("rawtypes")
     UrlCreator getReverseMapping(String controller, String action, String pluginName, Map params);
 
+    /**
+     * Retrieves the best guess of a URI for the given controller, action and parameters
+     *
+     * @param controller The name of the controller
+     * @param action The name of the action or null
+     * @param params The parameters or null
+     * @return A URI for the given arguments
+     */
+    @SuppressWarnings("rawtypes")
+    UrlCreator getReverseMapping(String controller, String action, Map params);
+    
     /**
      * Retrieves the best guess of a URI for the given controller, action and parameters or null if non could be found.
      *
@@ -64,8 +76,20 @@ public interface UrlMappingsHolder {
      * @return A URI for the given arguments
      */
     @SuppressWarnings("rawtypes")
-    UrlCreator getReverseMappingNoDefault(String controller, String action, String pluginName, Map params);
+    UrlCreator getReverseMappingNoDefault(String controller, String action, Map params);
 
+    /**
+     * Retrieves the best guess of a URI for the given controller, action and parameters or null if non could be found.
+     *
+     * @param controller The name of the controller
+     * @param action The name of the action or null
+     * @param pluginName the name of the plugin which provides the controller
+     * @param params The parameters or null
+     * @return A URI for the given arguments
+     */
+    @SuppressWarnings("rawtypes")
+    UrlCreator getReverseMappingNoDefault(String controller, String action, String pluginName, Map params);
+    
     /**
      * Match and return the first UrlMappingInfo instance possible
      *

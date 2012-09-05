@@ -209,6 +209,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         return resolveUrlCreator(controller, action, pluginName, params, true);
     }
 
+    public UrlCreator getReverseMappingNoDefault(String controller, String action, Map params) {
+        return getReverseMappingNoDefault(controller, action, null, params);
+    }
+    
     public UrlCreator getReverseMappingNoDefault(String controller, String action, String pluginName, Map params) {
         if (params == null) params = Collections.EMPTY_MAP;
 
