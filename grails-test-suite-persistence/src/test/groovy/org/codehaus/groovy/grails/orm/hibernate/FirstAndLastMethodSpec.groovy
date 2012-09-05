@@ -116,11 +116,10 @@ class FirstAndLastMethodSpec extends GormSpec {
         result?.spanishName == 'uno'
     }
     
-    @Ignore
     void "Test first and last method with non standard identifier"() {
         given:
         ['one', 'two', 'three'].each { name ->
-            assert new SimpleWidgetWithNonStandardId(name: name).save()
+            assert new SimpleWidgetWithNonStandardId(name: name).save(validate: false)
         }
         assert SimpleWidgetWithNonStandardId.count() == 3
 
