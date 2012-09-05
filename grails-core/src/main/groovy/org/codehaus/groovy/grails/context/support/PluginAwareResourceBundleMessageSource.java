@@ -110,7 +110,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 	 * array if the plugin does not contain any .properties files in its
 	 * grails-app/i18n folder.
 	 * @param grailsPlugin The grails plugin that may or may not contain i18n internationalization files.
-	 * @returns An array of {@code Resource} objects representing the internationalization files or
+	 * @return An array of {@code Resource} objects representing the internationalization files or
 	 *    an empty array if no files are found.
 	 */
     protected Resource[] getPluginBundles(GrailsPlugin grailsPlugin) {
@@ -136,7 +136,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     /**
      * Tests whether or not the Grails plugin is currently being run "inline".
      * @param grailsPlugin The Grails plugin to test.
-     * @returns {@code true} if the plugin is being used "inline" or {@code false} if the
+     * @return {@code true} if the plugin is being used "inline" or {@code false} if the
      *   plugin is not being used "inline".
 	 */
 	protected boolean isInlinePlugin(GrailsPlugin grailsPlugin) {
@@ -147,7 +147,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      * Returns the absolute path to the provided Grails plugin if it is being used "inline" or {@code null}
      * if the plugin is <b>not</b> being used "inline".
      * @param grailsPlugin The Grails plugin.
-     * @returns The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
+     * @return The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
      */
 	protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
 		String path = null;
