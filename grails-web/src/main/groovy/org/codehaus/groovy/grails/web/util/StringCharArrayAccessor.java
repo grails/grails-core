@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -38,6 +41,7 @@ import java.lang.reflect.Field;
  */
 public class StringCharArrayAccessor {
 
+    private static final Log LOG  = LogFactory.getLog(StringCharArrayAccessor.class);
     static volatile boolean enabled = !Boolean.getBoolean("stringchararrayaccessor.disabled");
 
     static Field valueField;
@@ -58,8 +62,7 @@ public class StringCharArrayAccessor {
             }
             catch (Exception e) {
                 enabled = false;
-                System.err.println("Unable to use direct char[] access of java.lang.String");
-                e.printStackTrace();
+                LOG.debug("Unable to use direct char[] access of java.lang.String",e);
             }
         }
     }
