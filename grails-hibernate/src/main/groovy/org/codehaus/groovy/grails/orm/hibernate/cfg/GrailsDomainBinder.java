@@ -38,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -1350,6 +1351,20 @@ public final class GrailsDomainBinder {
 
                 if (o instanceof Closure) {
                     m = builder.evaluate((Closure<?>) o,ctx);
+                }
+
+                final Object identity = m.getIdentity();
+                if(identity instanceof Identity) {
+                    final Identity identityObject = (Identity) identity;
+                    final String idName = identityObject.getName();
+                    if(idName != null && !GrailsDomainClassProperty.IDENTITY.equals(idName)) {
+                        GrailsDomainClassProperty persistentProperty = domainClass.getPersistentProperty(idName);
+                        if(!persistentProperty.isIdentity()) {
+                            if(persistentProperty instanceof DefaultGrailsDomainClassProperty) {
+                                ((DefaultGrailsDomainClassProperty)persistentProperty).setIdentity(true);
+                            }
+                        }
+                    }
                 }
 
                 if (cache) {
