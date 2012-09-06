@@ -58,7 +58,7 @@ dependencies {
         exclude group: 'commons-collections', module:'commons-collections'
         exclude group: 'antlr', module: 'antlr'
     }
-    compile 'javassist:javassist:3.12.0.GA'
+    compile 'org.javassist:javassist:3.16.1-GA'
     compile 'javax.transaction:jta:1.1'
 
     runtime( 'org.hibernate:hibernate-commons-annotations:3.2.0.Final') {
