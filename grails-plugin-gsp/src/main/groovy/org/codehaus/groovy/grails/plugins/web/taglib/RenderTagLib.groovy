@@ -365,6 +365,9 @@ class RenderTagLib implements RequestConstants {
         def linkTagAttrs = [:]
         if (attrs.containsKey('mapping')) {
             linkTagAttrs.mapping = attrs.mapping
+            if (attrs.containsKey('action')) {
+                linkTagAttrs.action = action
+            }
         } else {
             linkTagAttrs.action = action
             if (attrs.controller) {
