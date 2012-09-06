@@ -55,6 +55,7 @@ class MavenPomGenerator extends BaseSettingsApi{
         addDependenciesForScope(dependencyManager, "runtime", dependencies)
         addDependenciesForScope(dependencyManager, "test", dependencies)
         addDependenciesForScope(dependencyManager, "provided", dependencies)
+        addDependenciesForScope(dependencyManager, "build", dependencies, "", "provided")
         List<String> plugins = []
         addDependenciesForScope(dependencyManager, "compile", plugins, "<type>zip</type>")
         addDependenciesForScope(dependencyManager, "runtime", plugins, "<type>zip</type>")
