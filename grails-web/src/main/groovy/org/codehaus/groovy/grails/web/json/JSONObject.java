@@ -90,7 +90,7 @@ public class JSONObject implements JSONElement,Map {
      * whilst Java's null is equivalent to the value that JavaScript calls
      * undefined.
      */
-    private static final class Null {
+    public static final class Null {
 
         /**
          * There is only intended to be a single instance of the NULL object,
@@ -114,6 +114,15 @@ public class JSONObject implements JSONElement,Map {
         @Override
         public boolean equals(Object object) {
             return object == null || object == this;
+        }
+
+        /**
+         * Null in JSON should evaluate to false
+         *
+         * @return false
+         */
+        public boolean asBoolean() {
+            return false;
         }
 
 
