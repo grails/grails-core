@@ -91,29 +91,28 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
 
         GrailsClass controllerClass = uriToControllerClassCache.get(uri);
         if (controllerClass == null) {
-            final Object pluginManagerBean = grailsApplication.getMainContext().getBean("pluginManager");
-            GrailsPluginManager grailsPluginManager = null;
-            if(pluginManagerBean instanceof GrailsPluginManager) {
-                grailsPluginManager = (GrailsPluginManager) pluginManagerBean;
-            }
             final GrailsClass[] controllerClasses = artefactInfo.getGrailsClasses();
             // iterate in reverse in order to pick up application classes first
             for (int i = (controllerClasses.length-1); i >= 0; i--) {
                 GrailsClass c = controllerClasses[i];
                 if (((GrailsControllerClass) c).mapsToURI(uri)) {
-                    boolean foundController = false;
-                    if(pluginName != null && grailsPluginManager != null) {
-                        final GrailsPlugin pluginForClass = grailsPluginManager.getPluginForClass(c.getClazz());
-                        if(pluginForClass != null && pluginName.equals(pluginForClass.getName())) {
-                            foundController = true;
-                        }
-                    } else {
-                        foundController = true;
-                    }
-                    if(foundController) {
-                        controllerClass = c;
-                        break;
-                    }
+                	boolean foundController = false;
+                	if(pluginName != null) {
+                		Object bean = grailsApplication.getMainContext().getBean("pluginManager");
+                		if(bean instanceof GrailsPluginManager) {
+                			GrailsPluginManager gpm = (GrailsPluginManager) bean;
+                			GrailsPlugin pluginForClass = gpm.getPluginForClass(c.getClazz());
+                			if(pluginForClass != null && pluginName.equals(pluginForClass.getName())) {
+                				foundController = true;
+                			}
+                		}
+                	} else {
+                		foundController = true;
+                	}
+                	if(foundController) {
+                		controllerClass = c;
+                		break;
+                	}
                 }
             }
             if (controllerClass == null) {
