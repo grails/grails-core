@@ -222,6 +222,7 @@ class FormTagLib {
             escapeHtml = attrs.boolean('escapeHtml')
             attrs.remove 'escapeHtml'
         }
+
         // Add textarea field to requestDataValueProcessor
         def content = (escapeHtml ? value.encodeAsHTML() : value)
         if(attrs.name) {
@@ -488,6 +489,7 @@ class FormTagLib {
         //Change this button to use requestDataValueProcessor
         value = processFormFieldValueIfNecessary("_action_${action}","${value}","image")
         booleanToAttribute(attrs, 'disabled')
+
         out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
 
         // add image src
@@ -617,6 +619,7 @@ class FormTagLib {
                 years = (tempyear - 100)..(tempyear + 100)
             }
         }
+
         booleanToAttribute(attrs, 'disabled')
         booleanToAttribute(attrs, 'readonly')
 
@@ -667,7 +670,6 @@ class FormTagLib {
             dfs.months.eachWithIndex {m, i ->
                 if (m) {
                     def monthIndex = i + 1
-                    //TODO Change this option to use requestDataValueProcessor
                     monthIndex = processFormFieldValueIfNecessary("${name}_month","${monthIndex}","option")
                     out.println "<option value=\"${monthIndex}\"${i == month ? ' selected="selected"' : ''}>$m</option>"
                 }
@@ -749,7 +751,6 @@ class FormTagLib {
             for (i in 0..59) {
                 def m = '' + i
                 if (i < 10) m = '0' + m
-                //TODO Change this option to use requestDataValueProcessor
                 m  = processFormFieldValueIfNecessary("${name}_minute","${m}","option")
                 out.println "<option value=\"${m}\"${i == minute ? ' selected="selected"' : ''}>$m</option>"
             }
@@ -915,7 +916,7 @@ class FormTagLib {
                 def keyValue = null
                 writer << '<option '
                 if (keys) {
-                    keyValue = keys[i];//processFormFieldValueIfNecessary(attrs.name, "${keys[i]}","option")
+                    keyValue = keys[i];
                     
                     writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
                 }
@@ -932,13 +933,10 @@ class FormTagLib {
                         keyValue = el[optionKey]
                         keyValueObject = el
                     }
-                    //keyValue = processFormFieldValueIfNecessary(attrs.name, "${keyValue}","option")
                     writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, keyValueObject)
                 }
                 else {
                     keyValue = el
-                    //keyValue = processFormFieldValueIfNecessary(attrs.name, "${keyValue}","option")
-                    
                     writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
                 }
                 writer << '>'
@@ -1041,7 +1039,6 @@ class FormTagLib {
         booleanToAttribute(attrs, 'readonly')
 
         def checked = attrs.remove('checked') ? true : false
-
         value = processFormFieldValueIfNecessary(name, "${value?.toString()?.encodeAsHTML()}","radio")
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         if (!attrs.containsKey('id')) {
@@ -1080,7 +1077,6 @@ class FormTagLib {
             }
             // Generate 
             def processedVal = processFormFieldValueIfNecessary(name, val.toString().encodeAsHTML(), "radio");
-            
             it.radio << "value=\"${processedVal}\" "
 
             // process remaining attributes
