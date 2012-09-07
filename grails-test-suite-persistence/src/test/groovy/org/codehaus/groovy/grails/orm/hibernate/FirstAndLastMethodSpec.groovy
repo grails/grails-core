@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
-import spock.lang.Ignore
 
 class FirstAndLastMethodSpec extends GormSpec {
 
@@ -136,75 +135,48 @@ class FirstAndLastMethodSpec extends GormSpec {
         result?.name == 'three'
     }
     
-    @Ignore
     void "Test first and last method with composite key"() {
-        given:
-        assert new PersonWithCompositeKey(firstName: 'Steve', lastName: 'Harris', age: 56).save()
-        assert new PersonWithCompositeKey(firstName: 'Dave', lastName: 'Murray', age: 54).save()
-        assert new PersonWithCompositeKey(firstName: 'Adrian', lastName: 'Smith', age: 55).save()
-        assert new PersonWithCompositeKey(firstName: 'Bruce', lastName: 'Dickinson', age: 53).save()
-        session.flush()
-        assert PersonWithCompositeKey.count() == 4
-
         when:
-        def result = PersonWithCompositeKey.first()
+        PersonWithCompositeKey.first()
 
         then:
-        result?.firstName == 'Steve'
-            
-        when:
-        result = PersonWithCompositeKey.last()
-            
-        then:
-        result?.firstName == 'Bruce'
-
-        when:
-        result = PersonWithCompositeKey.first('firstName')
-
-        then:
-        result?.firstName == 'Adrian'
-            
-        when:
-        result = PersonWithCompositeKey.last('firstName')
-            
-        then:
-        result?.firstName == 'Steve'
+        UnsupportedOperationException ex = thrown()
+        'The first() method is not supported for domain classes that have composite keys.' == ex.message
         
         when:
-        result = PersonWithCompositeKey.first(sort: 'firstName')
+        PersonWithCompositeKey.first(sort: 'firstName')
 
         then:
-        result?.firstName == 'Adrian'
-            
-        when:
-        result = PersonWithCompositeKey.last(sort: 'firstName')
-            
-        then:
-        result?.firstName == 'Steve'
-
-        when:
-        result = PersonWithCompositeKey.first('age')
-
-        then:
-        result?.firstName == 'Bruce'
-            
-        when:
-        result = PersonWithCompositeKey.last('age')
-            
-        then:
-        result?.firstName == 'Steve'
+        ex = thrown()
+        'The first() method is not supported for domain classes that have composite keys.' == ex.message
         
         when:
-        result = PersonWithCompositeKey.first(sort: 'age')
+        PersonWithCompositeKey.first('firstName')
 
         then:
-        result?.firstName == 'Bruce'
-            
+        ex = thrown()
+        'The first() method is not supported for domain classes that have composite keys.' == ex.message
+        
         when:
-        result = PersonWithCompositeKey.last(sort: 'age')
-            
+        PersonWithCompositeKey.last()
+
         then:
-        result?.firstName == 'Steve'
+        ex = thrown()
+        'The last() method is not supported for domain classes that have composite keys.' == ex.message
+        
+        when:
+        PersonWithCompositeKey.last(sort: 'firstName')
+
+        then:
+        ex = thrown()
+        'The last() method is not supported for domain classes that have composite keys.' == ex.message
+        
+        when:
+        PersonWithCompositeKey.last('firstName')
+
+        then:
+        ex = thrown()
+        'The last() method is not supported for domain classes that have composite keys.' == ex.message
     }
     
     @Override
