@@ -32,7 +32,7 @@ import org.springframework.context.ApplicationContextAware
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
-/** 
+/**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
  * This tag library tends to get extended by others as tags within here can be re-used in said libraries
  *
@@ -218,7 +218,6 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         writer <<  '<a href=\"'
         writer << createLink(attrs).encodeAsHTML()
-
         writer << '"'
         if (elementId) {
             writer << " id=\"${elementId}\""
@@ -370,6 +369,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         def generatedLink = linkGenerator.link(attrs, request.characterEncoding)
         generatedLink = processedUrl(generatedLink,request);
+
         if (useJsessionId) {
             return response.encodeURL(generatedLink)
         }
