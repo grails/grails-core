@@ -59,7 +59,7 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
         Object controllerAttribute = null;
         GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
         if(webRequest != null) {
-            controllerAttribute = webRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER_ATTRIBUTE, WebRequest.SCOPE_REQUEST);
+            controllerAttribute = webRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
         }
         if(controllerAttribute instanceof GrailsControllerClass) {
         	controllerClass = (GrailsControllerClass) controllerAttribute;
