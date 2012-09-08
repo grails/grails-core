@@ -117,14 +117,14 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
 
     // this should possibly be somewhere in utility classes , MapUtils.getInteger doesn't handle GStrings/CharSequence
     private static Integer mapGetInteger(Map map, String key) {
-        Object value=map.get(key);
+        Object value = map.get(key);
         if (value == null) {
             return null;
         }
         if (value instanceof Integer) {
             return (Integer)value;
         }
-        return (value instanceof Number) ? Integer.valueOf(((Number)value).intValue()) : Integer.valueOf(String.valueOf(value));
+        return value instanceof Number ? ((Number)value).intValue() : Integer.valueOf(String.valueOf(value));
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {

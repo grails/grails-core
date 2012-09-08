@@ -1312,7 +1312,7 @@ public final class GrailsDomainBinder {
      */
     public static void bindClass(GrailsDomainClass domainClass, Mappings mappings, String sessionFactoryBeanName)
             throws MappingException {
-        //if (domainClass.getClazz().getSuperclass() == java.lang.Object.class) {
+        //if (domainClass.getClazz().getSuperclass() == Object.class) {
         if (domainClass.isRoot()) {
             bindRoot(domainClass, mappings, sessionFactoryBeanName);
         }
@@ -1897,28 +1897,32 @@ public final class GrailsDomainBinder {
 
     private static void bindNaturalIdentifier(Table table, Mapping mapping, PersistentClass persistentClass) {
         Object o = mapping != null ? mapping.getIdentity() : null;
-        if (o instanceof Identity) {
-            Identity identity = (Identity) o;
-            final NaturalId naturalId = identity.getNatural();
-            if (naturalId != null && !naturalId.getPropertyNames().isEmpty()) {
-                UniqueKey uk = new UniqueKey();
-                uk.setName("_UniqueKey");
-                uk.setTable(table);
-
-                boolean mutable = naturalId.isMutable();
-
-                for (String propertyName : naturalId.getPropertyNames()) {
-                    Property property = persistentClass.getProperty(propertyName);
-
-                    property.setNaturalIdentifier(true);
-                    if (!mutable) property.setUpdateable(false);
-
-                    uk.addColumns(property.getColumnIterator());
-                }
-
-                table.addUniqueKey(uk);
-            }
+        if (!(o instanceof Identity)) {
+            return;
         }
+
+        Identity identity = (Identity) o;
+        final NaturalId naturalId = identity.getNatural();
+        if (naturalId == null || naturalId.getPropertyNames().isEmpty()) {
+            return;
+        }
+
+        UniqueKey uk = new UniqueKey();
+        uk.setName("_UniqueKey");
+        uk.setTable(table);
+
+        boolean mutable = naturalId.isMutable();
+
+        for (String propertyName : naturalId.getPropertyNames()) {
+            Property property = persistentClass.getProperty(propertyName);
+
+            property.setNaturalIdentifier(true);
+            if (!mutable) property.setUpdateable(false);
+
+            uk.addColumns(property.getColumnIterator());
+        }
+
+        table.addUniqueKey(uk);
     }
 
     private static boolean canBindOneToOneWithSingleColumnAndForeignKey(GrailsDomainClassProperty currentGrailsProp) {
@@ -2359,15 +2363,15 @@ public final class GrailsDomainBinder {
         Properties params = new Properties();
         entity.setIdentifier(id);
 
-        if (mappedId != null) {
+        if (mappedId == null) {
+            // configure generator strategy
+            id.setIdentifierGeneratorStrategy("native");
+        } else {
             id.setIdentifierGeneratorStrategy(mappedId.getGenerator());
             params.putAll(mappedId.getParams());
             if ("assigned".equals(mappedId.getGenerator())) {
                 id.setNullValue("undefined");
             }
-        } else {
-            // configure generator strategy
-            id.setIdentifierGeneratorStrategy("native");
         }
 
         params.put(PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER, mappings.getObjectNameNormalizer());
@@ -2724,7 +2728,7 @@ public final class GrailsDomainBinder {
         } else {
             Object val = cp != null ? cp.getMetaConstraintValue(UniqueConstraint.UNIQUE_CONSTRAINT) : null;
             if (val instanceof Boolean) {
-                column.setUnique(((Boolean) val).booleanValue());
+                column.setUnique((Boolean)val);
             } else if (val instanceof String) {
                 createKeyForProps(property, path, table, columnName, Arrays.asList(new String[]{(String) val}), sessionFactoryBeanName);
             } else if (val instanceof List<?> && ((List<?>)val).size() > 0) {

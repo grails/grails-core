@@ -51,7 +51,7 @@ public class CreditCardConstraint extends AbstractConstraint {
                     constraintOwningClass + "] must be a boolean value");
         }
 
-        creditCard = ((Boolean)constraintParameter).booleanValue();
+        creditCard = (Boolean)constraintParameter;
         super.setParameter(constraintParameter);
     }
 

@@ -25,11 +25,11 @@ import grails.util.Holders;
  */
 public abstract class PluginManagerHolder {
 
-
     /**
      * @deprecated
      */
-    public static void setInCreation(boolean inCreation) {
+    @Deprecated
+    public static void setInCreation(@SuppressWarnings("unused") boolean inCreation) {
     }
 
     /**

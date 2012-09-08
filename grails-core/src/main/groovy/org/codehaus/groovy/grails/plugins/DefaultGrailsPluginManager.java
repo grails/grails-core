@@ -299,20 +299,20 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
     private void attemptLoadPlugins(ClassLoader gcl) {
         // retrieve load core plugins first
 
-        List<GrailsPlugin>  grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
+        List<GrailsPlugin> grailsCorePlugins = loadCorePlugins ? findCorePlugins() : new ArrayList<GrailsPlugin>();
 
-        List<GrailsPlugin>  grailsUserPlugins = findUserPlugins(gcl);
+        List<GrailsPlugin> grailsUserPlugins = findUserPlugins(gcl);
         userPlugins = grailsUserPlugins;
 
-        List<GrailsPlugin>  allPlugins = new ArrayList<GrailsPlugin> (grailsCorePlugins);
+        List<GrailsPlugin> allPlugins = new ArrayList<GrailsPlugin> (grailsCorePlugins);
         allPlugins.addAll(grailsUserPlugins);
 
         //filtering applies to user as well as core plugins
         List<GrailsPlugin> filteredPlugins = getPluginFilter().filterPluginList(allPlugins);
 
         //make sure core plugins are loaded first
-        List<GrailsPlugin>  orderedCorePlugins = new ArrayList<GrailsPlugin> ();
-        List<GrailsPlugin>  orderedUserPlugins = new ArrayList<GrailsPlugin> ();
+        List<GrailsPlugin> orderedCorePlugins = new ArrayList<GrailsPlugin> ();
+        List<GrailsPlugin> orderedUserPlugins = new ArrayList<GrailsPlugin> ();
 
         for (GrailsPlugin plugin : filteredPlugins) {
             if (grailsCorePlugins != null) {
@@ -371,8 +371,8 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         return new DefaultGrailsPlugin(pluginClass, resource, application);
     }
 
-    private List<GrailsPlugin>  findUserPlugins(ClassLoader gcl) {
-        List<GrailsPlugin>  grailsUserPlugins = new ArrayList<GrailsPlugin>();
+    private List<GrailsPlugin> findUserPlugins(ClassLoader gcl) {
+        List<GrailsPlugin> grailsUserPlugins = new ArrayList<GrailsPlugin>();
 
         LOG.info("Attempting to load [" + pluginResources.length + "] user defined plugins");
         for (Resource r : pluginResources) {

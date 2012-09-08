@@ -91,7 +91,7 @@ public class ValidatePersistentMethod extends AbstractDynamicPersistentMethod {
 
         if (arguments.length > 0) {
             if (arguments[0] instanceof Boolean) {
-                evict = ((Boolean)arguments[0]).booleanValue();
+                evict = (Boolean)arguments[0];
             }
             if (arguments[0] instanceof Map) {
                 Map argsMap = (Map)arguments[0];

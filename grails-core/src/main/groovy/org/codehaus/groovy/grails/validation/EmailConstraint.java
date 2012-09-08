@@ -48,7 +48,7 @@ public class EmailConstraint extends AbstractConstraint {
                     "] must be a boolean value");
         }
 
-        email = ((Boolean)constraintParameter).booleanValue();
+        email = (Boolean)constraintParameter;
         super.setParameter(constraintParameter);
     }
 

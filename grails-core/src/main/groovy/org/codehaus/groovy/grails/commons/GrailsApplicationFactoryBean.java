@@ -18,6 +18,11 @@ package org.codehaus.groovy.grails.commons;
 import grails.util.Environment;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
@@ -27,10 +32,6 @@ import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Creates a Grails application object based on Groovy files.
@@ -128,7 +129,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
      * @param resourceLoader
      */
     @Deprecated
-    public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {
+    public void setGrailsResourceLoader(@SuppressWarnings("unused") GrailsResourceLoader resourceLoader) {
         // do nothing
     }
 

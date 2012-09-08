@@ -18,8 +18,8 @@ package org.codehaus.groovy.grails.plugins.web.filters
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 
@@ -31,7 +31,7 @@ import org.springframework.web.servlet.ModelAndView
  */
 class CompositeInterceptor implements HandlerInterceptor {
 
-    static final LOG = LogFactory.getLog(CompositeInterceptor)
+    static final Log LOG = LogFactory.getLog(CompositeInterceptor)
 
     def handlers
 
@@ -44,7 +44,7 @@ class CompositeInterceptor implements HandlerInterceptor {
         return true
     }
 
-    void postHandle(HttpServletRequest request, HttpServletResponse response,Object o, ModelAndView modelAndView) throws java.lang.Exception {
+    void postHandle(HttpServletRequest request, HttpServletResponse response,Object o, ModelAndView modelAndView) throws Exception {
         if (LOG.isDebugEnabled()) LOG.debug "postHandle ${request}, ${response}, ${o}, ${modelAndView}"
 
         handlers.reverseEach { handler ->
@@ -52,7 +52,7 @@ class CompositeInterceptor implements HandlerInterceptor {
         }
     }
 
-    void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws java.lang.Exception {
+    void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws Exception {
         if (LOG.isDebugEnabled()) LOG.debug "afterCompletion ${request}, ${response}, ${o}, ${e}"
 
         handlers.reverseEach { handler ->
