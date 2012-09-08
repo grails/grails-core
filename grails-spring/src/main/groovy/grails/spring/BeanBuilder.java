@@ -715,11 +715,11 @@ public class BeanBuilder extends GroovyObjectSupport {
     protected List resolveConstructorArguments(Object[] args, int start, int end) {
         Object[] constructorArgs = subarray(args, start, end);
         filterGStringReferences(constructorArgs);
-        for (Object constructorArg : constructorArgs) {
-            if (constructorArg instanceof List) {
-                constructorArg = manageListIfNecessary(constructorArg);
-            } else if(constructorArg instanceof Map) {
-                constructorArg = manageMapIfNecessary(constructorArg);
+        for (int i = 0; i < constructorArgs.length; i++) {
+            if (constructorArgs[i] instanceof List) {
+                constructorArgs[i] = manageListIfNecessary(constructorArgs[i]);
+            } else if(constructorArgs[i] instanceof Map) {
+                constructorArgs[i] = manageMapIfNecessary(constructorArgs[i]);
             }
         }
         return Arrays.asList(constructorArgs);
