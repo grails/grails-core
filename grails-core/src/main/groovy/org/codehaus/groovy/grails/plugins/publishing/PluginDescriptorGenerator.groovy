@@ -27,6 +27,7 @@ import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.plugins.resolver.URLResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
+import org.springframework.util.AntPathMatcher
 
 /**
  * Generates the plugin.xml descriptor.
@@ -42,6 +43,7 @@ class PluginDescriptorGenerator {
     Resource[] resourceList
     List excludes = ["UrlMappings", "DataSource", "BuildConfig", "Config"]
     BuildSettings buildSettings
+    AntPathMatcher antPathMatcher = new AntPathMatcher()
 
     PluginDescriptorGenerator(BuildSettings buildSettings, pluginName, List<Resource> resourceList) {
         this.buildSettings = buildSettings
@@ -80,6 +82,53 @@ class PluginDescriptorGenerator {
         generatePluginXml(pluginProps, xml)
     }
 
+    /* the pluginExcludes are Ant matched from the base of the application, but since the
+       pluginProps is not necessarily a class and we don't actually know where it is, we need
+       to go through the resources figuring out what the common resource base is. We are going to assume
+       a common Grails application layout to fudge this.
+    */
+    private String resourceBaseMatchDirs = ['grails-app', 'web-app', 'scripts', 'test', 'src']
+    private File findCommonResourceBase() {
+        if (!resourceList) return null // no resources, won't loop
+
+        for (Resource r in resourceList) {
+            File f = r.file
+
+            while (f != null && !resourceBaseMatchDirs.contains(f.name)) {
+                f = f.parentFile
+            }
+
+            if (f) {
+                  if (f.parentFile == null) { // wonderful, thanks Resource
+                    return new File(f.absolutePath.substring(0, f.absolutePath.lastIndexOf(File.separator)))
+                } else {
+                    return f.parentFile
+                }
+            }
+        }
+
+        GrailsUtil.warn("Unable to determine common resource base when generating plugin.xml")
+
+        return null
+    }
+
+    private boolean matchesPluginExcludes(List<String> pluginExcludes, File commonResourceBase, Resource r) {
+
+        // if we have no excludes or no common resource base, we don't match
+        if (!pluginExcludes) return false
+        if (!commonResourceBase) return false
+
+        if (r.file.absolutePath.indexOf(commonResourceBase.absolutePath) == 0) {
+            String path = r.file.absolutePath.substring(commonResourceBase.absolutePath.length()+1)
+            for(String pattern : pluginExcludes) {
+                if (antPathMatcher.match(pattern, path)) return true
+            }
+
+        }
+
+        return false
+    }
+
     protected void generatePluginXml(pluginProps, MarkupBuilder xml) {
         // Write the content!
         def props = ['author', 'authorEmail', 'title', 'description', 'documentation', 'type', 'packaging']
@@ -88,6 +137,13 @@ class PluginDescriptorGenerator {
         Arrays.sort(resourceList, rcComparator)
 
         def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
+
+        // check to see if we have the property, grab it if so
+        def pluginExcludes
+        if (pluginProps['pluginExcludes'])
+            pluginExcludes = pluginProps.pluginExcludes
+        else
+            pluginExcludes = []
 
         if (pluginProps != null) {
             if (pluginProps["grailsVersion"]) {
@@ -99,10 +155,12 @@ class PluginDescriptorGenerator {
                     if (pluginProps[p]) "${p}"(pluginProps[p])
                 }
                 xml.resources {
+                    File commonResourceBase = findCommonResourceBase()
+
                     for (r in resourceList) {
                         def matcher = r.URL.toString() =~ ARTEFACT_PATTERN
                         def name = matcher[0][1].replaceAll('/', /\./)
-                        if (!excludes.contains(name)) {
+                        if (!excludes.contains(name) && !matchesPluginExcludes(pluginExcludes, commonResourceBase, r)) {
                             xml.resource(name)
                         }
                     }
