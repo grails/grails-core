@@ -9,6 +9,6 @@
     <classpathentry kind="src" path="test/integration"/>
     <classpathentry kind="src" path="test/unit"/>
     <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-    <classpathentry kind="con" path="com.springsource.sts.grails.core.CLASSPATH_CONTAINER"/>
-    <classpathentry kind="output" path="web-app/WEB-INF/classes"/>
+    <classpathentry kind="con" path="org.grails.ide.eclipse.core.CLASSPATH_CONTAINER"/>
+    <classpathentry kind="output" path="target/eclipseclasses"/>
 </classpath>
