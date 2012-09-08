@@ -32,7 +32,7 @@ class PluginDescriptorGeneratorSpec extends Specification {
             def generator = new PluginDescriptorGenerator(new BuildSettings(),"foo", [])
         when:
             def sw = new StringWriter()
-            generator.generatePluginXml([version:1.0, dependsOn:[core:1.0], author:"Bob", pluginExcludes: ["**/test/**"]], sw)
+            generator.generatePluginXml([version:1.0, dependsOn:[core:1.0], author:"Bob", pluginDir: new FileSystemResource(new File(".")), pluginExcludes: ["**/test/**"]], sw)
             def xml = new XmlSlurper().parseText(sw.toString())
         then:
             xml.@name == 'foo'
@@ -45,7 +45,7 @@ class PluginDescriptorGeneratorSpec extends Specification {
 
     def "Test plugin/excludes is honoured for resources"() {
         given:
-            def generator = new PluginDescriptorGenerator(new BuildSettings(),"foo", [
+            def generator = new PluginDescriptorGenerator(new BuildSettings(),"foo",  [
                 new FileSystemResource(new File("grails-app/controllers/FooController.groovy")),
                 new FileSystemResource(new File("grails-app/controllers/test/BarController.groovy")),
                 new FileSystemResource(new File("grails-app/services/test/MyService.groovy")),
@@ -53,7 +53,7 @@ class PluginDescriptorGeneratorSpec extends Specification {
             ])
         when:
             def sw = new StringWriter()
-            generator.generatePluginXml([version:1.0, dependsOn:[core:1.0], author:"Bob", pluginExcludes: ["**/test/**"]], sw)
+            generator.generatePluginXml([version:1.0, dependsOn:[core:1.0], author:"Bob", pluginDir: new FileSystemResource(new File(".")), pluginExcludes: ["**/test/**"]], sw)
             def xml = new XmlSlurper().parseText(sw.toString())
         then:
             xml.@name == 'foo'

@@ -82,36 +82,6 @@ class PluginDescriptorGenerator {
         generatePluginXml(pluginProps, xml)
     }
 
-    /* the pluginExcludes are Ant matched from the base of the application, but since the
-       pluginProps is not necessarily a class and we don't actually know where it is, we need
-       to go through the resources figuring out what the common resource base is. We are going to assume
-       a common Grails application layout to fudge this.
-    */
-    private String resourceBaseMatchDirs = ['grails-app', 'web-app', 'scripts', 'test', 'src']
-    private File findCommonResourceBase() {
-        if (!resourceList) return null // no resources, won't loop
-
-        for (Resource r in resourceList) {
-            File f = r.file
-
-            while (f != null && !resourceBaseMatchDirs.contains(f.name)) {
-                f = f.parentFile
-            }
-
-            if (f) {
-                  if (f.parentFile == null) { // wonderful, thanks Resource
-                    return new File(f.absolutePath.substring(0, f.absolutePath.lastIndexOf(File.separator)))
-                } else {
-                    return f.parentFile
-                }
-            }
-        }
-
-        GrailsUtil.warn("Unable to determine common resource base when generating plugin.xml")
-
-        return null
-    }
-
     private boolean matchesPluginExcludes(List<String> pluginExcludes, File commonResourceBase, Resource r) {
 
         // if we have no excludes or no common resource base, we don't match
@@ -127,6 +97,17 @@ class PluginDescriptorGenerator {
         }
 
         return false
+    }
+
+    // this is needed to pass the test as the resources don't really exist
+    private File filterPluginDir(File pluginDir) {
+        if (!pluginDir) return null
+
+        if (pluginDir.absolutePath.endsWith(File.separator + ".")) {
+            return new File(pluginDir.absolutePath.substring(0, pluginDir.absolutePath.lastIndexOf(File.separator)))
+        } else {
+            return pluginDir
+        }
     }
 
     protected void generatePluginXml(pluginProps, MarkupBuilder xml) {
@@ -155,7 +136,7 @@ class PluginDescriptorGenerator {
                     if (pluginProps[p]) "${p}"(pluginProps[p])
                 }
                 xml.resources {
-                    File commonResourceBase = findCommonResourceBase()
+                    File commonResourceBase = filterPluginDir(pluginProps['pluginDir']?.file)
 
                     for (r in resourceList) {
                         def matcher = r.URL.toString() =~ ARTEFACT_PATTERN
