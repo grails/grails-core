@@ -225,7 +225,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
     private boolean shouldFlush(Object[] arguments) {
         final boolean shouldFlush;
         if (arguments.length > 0 && arguments[0] instanceof Boolean) {
-            shouldFlush = ((Boolean) arguments[0]).booleanValue();
+            shouldFlush = (Boolean)arguments[0];
         }
         else if (arguments.length > 0 && arguments[0] instanceof Map && ((Map) arguments[0]).containsKey(ARGUMENT_FLUSH)) {
             shouldFlush = GrailsClassUtils.getBooleanFromMap(ARGUMENT_FLUSH, ((Map) arguments[0]));
@@ -343,7 +343,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
         }
 
         if (arguments[0] instanceof Boolean) {
-            return ((Boolean)arguments[0]).booleanValue();
+            return (Boolean)arguments[0];
         }
 
         if (arguments[0] instanceof Map) {

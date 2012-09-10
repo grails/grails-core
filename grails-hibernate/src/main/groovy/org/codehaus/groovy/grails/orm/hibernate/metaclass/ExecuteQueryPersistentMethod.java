@@ -91,7 +91,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                     q.setFirstResult(offsetParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_CACHE)) {
-                    q.setCacheable(((Boolean)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_CACHE)).booleanValue());
+                    q.setCacheable((Boolean)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_CACHE));
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE)) {
                     Integer fetchSizeParam = converter.convertIfNecessary(queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE), Integer.class);
@@ -102,10 +102,10 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                     q.setTimeout(timeoutParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_READ_ONLY)) {
-                    q.setReadOnly(((Boolean) queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_READ_ONLY)).booleanValue());
+                    q.setReadOnly((Boolean)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_READ_ONLY));
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE)) {
-                    q.setFlushMode((FlushMode) queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
+                    q.setFlushMode((FlushMode)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
                 }
                 // process positional HQL params
                 int index = 0;

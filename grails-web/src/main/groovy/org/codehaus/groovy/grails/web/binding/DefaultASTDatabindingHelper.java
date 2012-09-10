@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.web.binding;
 import grails.util.GrailsNameUtils;
 
 import java.lang.reflect.Modifier;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +25,6 @@ import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 
 public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
@@ -36,26 +37,26 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
 
     @SuppressWarnings("serial")
     private static final List<ClassNode> SIMPLE_TYPES = new ArrayList<ClassNode>() {{
-       add(new ClassNode(java.lang.Boolean.class));
-       add(new ClassNode(java.lang.Boolean.TYPE));
-       add(new ClassNode(java.lang.Byte.class));
-       add(new ClassNode(java.lang.Byte.TYPE));
-       add(new ClassNode(java.lang.Character.class));
-       add(new ClassNode(java.lang.Character.TYPE));
-       add(new ClassNode(java.lang.Short.class));
-       add(new ClassNode(java.lang.Short.TYPE));
-       add(new ClassNode(java.lang.Integer.class));
-       add(new ClassNode(java.lang.Integer.TYPE));
-       add(new ClassNode(java.lang.Long.class));
-       add(new ClassNode(java.lang.Long.TYPE));
-       add(new ClassNode(java.lang.Float.class));
-       add(new ClassNode(java.lang.Float.TYPE));
-       add(new ClassNode(java.lang.Double.class));
-       add(new ClassNode(java.lang.Double.TYPE));
-       add(new ClassNode(java.math.BigInteger.class));
-       add(new ClassNode(java.math.BigDecimal.class));
-       add(new ClassNode(java.lang.String.class));
-       add(new ClassNode(java.net.URL.class));
+       add(new ClassNode(Boolean.class));
+       add(new ClassNode(Boolean.TYPE));
+       add(new ClassNode(Byte.class));
+       add(new ClassNode(Byte.TYPE));
+       add(new ClassNode(Character.class));
+       add(new ClassNode(Character.TYPE));
+       add(new ClassNode(Short.class));
+       add(new ClassNode(Short.TYPE));
+       add(new ClassNode(Integer.class));
+       add(new ClassNode(Integer.TYPE));
+       add(new ClassNode(Long.class));
+       add(new ClassNode(Long.TYPE));
+       add(new ClassNode(Float.class));
+       add(new ClassNode(Float.TYPE));
+       add(new ClassNode(Double.class));
+       add(new ClassNode(Double.TYPE));
+       add(new ClassNode(BigInteger.class));
+       add(new ClassNode(BigDecimal.class));
+       add(new ClassNode(String.class));
+       add(new ClassNode(URL.class));
     }};
 
     public void injectDatabindingCode(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) {
@@ -63,67 +64,48 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         addDatabindingApi(source, context, classNode);
     }
 
-
-    private void addDatabindingApi(final SourceUnit source,
-            final GeneratorContext context, final ClassNode classNode) {
-        final ClassInjector classInjector = new AbstractGrailsArtefactTransformer() {
-
-            public boolean shouldInject(final URL url) {
-                return true;
-            }
-
-            @Override
-            public Class<?> getInstanceImplementation() {
-                return DatabindingApi.class;
-            }
-
-            @Override
-            public Class<?> getStaticImplementation() {
-                return null;
-            }
-
-            @Override
-            protected boolean requiresAutowiring() {
-                return false;
-            }
-        };
-        classInjector.performInjection(source, context, classNode);
+    private void addDatabindingApi(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) {
+        new AbstractGrailsArtefactTransformer() {
+            public boolean shouldInject(final URL url) { return true; }
+            @Override public Class<?> getInstanceImplementation() { return DatabindingApi.class; }
+            @Override public Class<?> getStaticImplementation() { return null; }
+            @Override protected boolean requiresAutowiring() { return false; }
+        }.performInjection(source, context, classNode);
     }
 
     private void addDefaultDatabindingWhitelistField(final SourceUnit sourceUnit, final ClassNode classNode) {
         final FieldNode defaultWhitelistField = classNode.getDeclaredField(DEFAULT_DATABINDING_WHITELIST);
-        if (defaultWhitelistField == null) {
-            final Set<String> propertyNamesToIncludeInWhiteList = getPropertyNamesToIncludeInWhiteList(sourceUnit, classNode);
+        if (defaultWhitelistField != null) {
+            return;
+        }
 
-            final ListExpression listExpression = new ListExpression();
-            for (String propertyName : propertyNamesToIncludeInWhiteList) {
-                listExpression.addExpression(new ConstantExpression(propertyName));
+        final Set<String> propertyNamesToIncludeInWhiteList = getPropertyNamesToIncludeInWhiteList(sourceUnit, classNode);
 
-                final FieldNode declaredField = getDeclaredFieldInInheritanceHierarchy(classNode, propertyName);
-                boolean isSimpleType = false;
-                if (declaredField != null) {
-                    final ClassNode type = declaredField.getType();
-                    if (type != null) {
-                        isSimpleType = SIMPLE_TYPES.contains(type);
-                    }
-                }
-                if (!isSimpleType) {
-                    listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
-                    listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
+        final ListExpression listExpression = new ListExpression();
+        for (String propertyName : propertyNamesToIncludeInWhiteList) {
+            listExpression.addExpression(new ConstantExpression(propertyName));
+
+            final FieldNode declaredField = getDeclaredFieldInInheritanceHierarchy(classNode, propertyName);
+            boolean isSimpleType = false;
+            if (declaredField != null) {
+                final ClassNode type = declaredField.getType();
+                if (type != null) {
+                    isSimpleType = SIMPLE_TYPES.contains(type);
                 }
             }
+            if (!isSimpleType) {
+                listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
+                listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
+            }
+        }
 
-            classNode.addField(DEFAULT_DATABINDING_WHITELIST,
-                    Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL, new ClassNode(List.class),
-                    listExpression);
-         }
+        classNode.addField(DEFAULT_DATABINDING_WHITELIST,
+                Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL, new ClassNode(List.class),
+                listExpression);
     }
 
-
-    private FieldNode getDeclaredFieldInInheritanceHierarchy(
-            final ClassNode classNode, String propertyName) {
-        FieldNode fieldNode = null;
-        fieldNode = classNode.getDeclaredField(propertyName);
+    private FieldNode getDeclaredFieldInInheritanceHierarchy(final ClassNode classNode, String propertyName) {
+        FieldNode fieldNode = classNode.getDeclaredField(propertyName);
         if (fieldNode == null) {
             if (!classNode.getSuperClass().equals(new ClassNode(Object.class))) {
                 return getDeclaredFieldInInheritanceHierarchy(classNode.getSuperClass(), propertyName);
@@ -174,8 +156,9 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                                     unbindablePropertyNames.add(propertyName);
                                 }
                             } else {
-                                final String message = "The bindable constraint for property [" + propertyName + "] in class [" + classNode.getName() + "] has a value which is not a boolean literal and will be ignored.";
-                                GrailsASTUtils.warning(sourceUnit, valueExpression, message);
+                                GrailsASTUtils.warning(sourceUnit, valueExpression, "The bindable constraint for property [" +
+                                        propertyName + "] in class [" + classNode.getName() +
+                                        "] has a value which is not a boolean literal and will be ignored.");
                             }
                         }
                     }

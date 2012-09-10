@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
 import grails.util.GrailsUtil
+
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -25,7 +26,7 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
 
 /**
- * Plugins that handles the configuration of Filters in a Grails application
+ * Configures Filters.
  *
  * @author Mike
  * @author Graeme Rocher
@@ -39,9 +40,8 @@ class FiltersGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [controllers:version]
-    def artefacts = [ FiltersConfigArtefactHandler ]
+    def artefacts = [FiltersConfigArtefactHandler]
     def watchedResources = "file:./grails-app/conf/**/*Filters.groovy"
-    def log = LogFactory.getLog(FiltersGrailsPlugin)
 
     static final BEANS = { GrailsClass filter ->
         "${filter.fullName}Class"(MethodInvokingFactoryBean) {
@@ -64,7 +64,6 @@ class FiltersGrailsPlugin {
             callable.call()
         }
     }
-
 
     def doWithApplicationContext = { applicationContext ->
         reloadFilters(application, applicationContext)
@@ -90,38 +89,38 @@ class FiltersGrailsPlugin {
         def list = new ArrayList(Arrays.asList(filterConfigs))
         def addedDeps = [:]
 
-        while (list.size() > 0) {
-            def filtersAdded = 0;
+        while (list) {
+            int filtersAdded = 0
 
             LOG.debug("Current filter order is '${filterConfigs.join(",")}'")
 
             for (Iterator iter = list.iterator(); iter.hasNext();) {
-                def c = iter.next();
+                def c = iter.next()
                 def filterClass = applicationContext.getBean("${c.fullName}Class")
                 def bean = applicationContext.getBean(c.fullName)
-                LOG.debug("Processing filter '${bean.class.name}'")
+                LOG.debug("Processing filter '${bean.getClass().name}'")
 
                 def dependsOn = null
                 if (bean.metaClass.hasProperty(bean, "dependsOn")) {
                     dependsOn = bean.dependsOn
-                    LOG.debug("  depends on '"+dependsOn.join(",")+"'")
+                    LOG.debug("  depends on '${dependsOn.join(",")}'")
                 }
 
                 if (dependsOn != null) {
                     // check dependencies to see if all the filters it depends on are already in the list
-                    LOG.debug("  Checking filter '${bean.class.name}' dependencies (${dependsOn.size()})")
+                    LOG.debug("  Checking filter '${bean.getClass().name}' dependencies (${dependsOn.size()})")
 
-                    def failedDep = false;
+                    boolean failedDep = false
                     for (dep in dependsOn) {
-                        LOG.debug("  Checking filter '${bean.class.name}' dependencies: ${dep.name}")
+                        LOG.debug("  Checking filter '${bean.getClass().name}' dependencies: ${dep.name}")
                         //if (sortedFilterConfigs.find{def b = applicationContext.getBean(it.fullName); b.class == dep} == null) {
                         if (!addedDeps.containsKey(dep)) {
                             // dep not in the list yet, we need to skip adding this to the list for now
-                            LOG.debug("  Skipped Filter '${bean.class.name}', since dependency '${dep.name}' not yet added")
+                            LOG.debug("  Skipped Filter '${bean.getClass().name}', since dependency '${dep.name}' not yet added")
                             failedDep = true
                             break
                         } else {
-                            LOG.debug("  Filter '${bean.class.name}' dependency '${dep.name}' already added")
+                            LOG.debug("  Filter '${bean.getClass().name}' dependency '${dep.name}' already added")
                         }
                     }
 
@@ -131,9 +130,9 @@ class FiltersGrailsPlugin {
                     }
                 }
 
-                LOG.debug("  Adding filter '${bean.class.name}', since all dependencies have been added")
+                LOG.debug("  Adding filter '${bean.getClass().name}', since all dependencies have been added")
                 sortedFilterConfigs.add(c)
-                addedDeps.put(bean.getClass(), null);
+                addedDeps.put(bean.getClass(), null)
                 iter.remove()
                 filtersAdded++
             }
@@ -150,12 +149,12 @@ class FiltersGrailsPlugin {
                     def bean = applicationContext.getBean(c.fullName)
 
                     // display this as a cyclical dep
-                    LOG.warn("::   Filter "+bean.class.name)
+                    LOG.warn("::   Filter ${bean.getClass().name}")
                     def dependsOn = null
                     if (bean.metaClass.hasProperty(bean, "dependsOn")) {
                         dependsOn = bean.dependsOn
                         for (dep in dependsOn) {
-                            LOG.warn("::    depends on "+dep.name)
+                            LOG.warn("::    depends on $dep.name")
                         }
                     } else {
                         // we should only have items left in the list with deps, so this should never happen
@@ -177,19 +176,20 @@ class FiltersGrailsPlugin {
         LOG.debug("Resulting handlers:")
         for (c in sortedFilterConfigs) {
             def filterClass = applicationContext.getBean("${c.fullName}Class")
-            def bean = applicationContext.getBean(c.fullName)
-            if (filterClass != null) {
-                for (filterConfig in filterClass.getConfigs(bean)) {
-                    applicationContext.autowireCapableBeanFactory.autowireBeanProperties(filterConfig, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
-                    def handlerAdapter = new FilterToHandlerAdapter(filterConfig:filterConfig, configClass:bean)
-                    handlerAdapter.afterPropertiesSet()
-                    handlers <<  handlerAdapter
-                    LOG.debug("  $handlerAdapter")
-                }
+            if (filterClass == null) {
+                continue
             }
 
+            def bean = applicationContext.getBean(c.fullName)
+            for (filterConfig in filterClass.getConfigs(bean)) {
+                applicationContext.autowireCapableBeanFactory.autowireBeanProperties(filterConfig, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+                def handlerAdapter = new FilterToHandlerAdapter(filterConfig: filterConfig, configClass: bean)
+                handlerAdapter.afterPropertiesSet()
+                handlers << handlerAdapter
+                LOG.debug("  $handlerAdapter")
+            }
         }
 
-        applicationContext.getBean('filterInterceptor').handlers = handlers
+        applicationContext.filterInterceptor.handlers = handlers
     }
 }

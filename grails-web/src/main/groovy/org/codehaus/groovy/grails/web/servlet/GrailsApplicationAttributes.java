@@ -51,13 +51,14 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
     String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
+    String GSP_CODEC = "org.codehaus.groovy.grails.GSP_CODEC";
     String WEB_REQUEST = "org.codehaus.groovy.grails.WEB_REQUEST";
     String PAGE_SCOPE = "org.codehaus.groovy.grails.PAGE_SCOPE";
     String GSP_TMP_WRITER = "org.codehaus.groovy.grails.GSP_TMP_WRITER";
     String REQUEST_REDIRECTED_ATTRIBUTE = "org.codehaus.groovy.grails.request_redirected";
     String ACTION_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.ACTION_NAME_ATTRIBUTE";
     String CONTROLLER_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.CONTROLLER_NAME_ATTRIBUTE";
-    String CONTROLLER_ATTRIBUTE = "org.codehaus.groovy.grails.CONTROLLER_ATTRIBUTE";
+    String GRAILS_CONTROLLER_CLASS = "org.codehaus.groovy.grails.GRAILS_CONTROLLER_CLASS";
     String APP_URI_ATTRIBUTE = "org.codehaus.groovy.grails.APP_URI_ATTRIBUTE";
     String RENDERING_ERROR_ATTRIBUTE = "org.codehaus.groovy.grails.RENDERING_ERROR_ATTRIBUTE";
     String REDIRECT_ISSUED = "org.codehaus.groovy.grails.REDIRECT_ISSUED";

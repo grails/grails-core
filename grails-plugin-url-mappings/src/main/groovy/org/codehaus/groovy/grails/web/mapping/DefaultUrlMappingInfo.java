@@ -192,10 +192,10 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         Object disableMultipart = app.getFlatConfig().get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
         boolean disabled = false;
         if (disableMultipart instanceof Boolean) {
-            disabled = ((Boolean) disableMultipart).booleanValue();
+            disabled = (Boolean)disableMultipart;
         }
         else if (disableMultipart instanceof String) {
-            disabled = Boolean.valueOf((String) disableMultipart).booleanValue();
+            disabled = Boolean.valueOf((String)disableMultipart);
         }
         return disabled;
     }

@@ -17,17 +17,21 @@
 package org.codehaus.groovy.grails.plugins.publishing
 
 import groovy.util.slurpersupport.GPathResult
+import groovy.xml.StreamingMarkupBuilder
+
 import javax.xml.transform.OutputKeys
 import javax.xml.transform.Source
 import javax.xml.transform.Transformer
 import javax.xml.transform.TransformerFactory
 import javax.xml.transform.stream.StreamResult
 import javax.xml.transform.stream.StreamSource
+
 import org.springframework.core.io.Resource
+import org.springframework.util.Assert
 
  /**
  * Utility methods for manipulating the plugin-list.xml file used
- * when publishing plugins to a Grails plugin repository
+ * when publishing plugins to a Grails plugin repository.
  *
  * @author Graeme Rocher
  * @since 1.2
@@ -39,11 +43,12 @@ class DefaultPluginPublisher {
     File baseDir
 
     DefaultPluginPublisher(File baseDir, String revNumber, String repositoryURL) {
+        Assert.hasLength(repositoryURL, "Argument [repositoryURL] must be specified!")
+
         if (revNumber) {
             this.revision = revNumber
         }
         this.baseDir = baseDir
-        if (!repositoryURL) throw new IllegalArgumentException("Argument [repositoryURL] must be specified!")
         this.repositoryURL = repositoryURL
     }
 
@@ -52,24 +57,24 @@ class DefaultPluginPublisher {
     }
 
     /**
-     * Writes the given plugin list to the given writer
+     * Writes the given plugin list to the given writer.
      */
     void writePluginList(GPathResult pluginList, Writer targetWriter) {
         def stringWriter = new StringWriter()
-        stringWriter << new groovy.xml.StreamingMarkupBuilder().bind {
-              mkp.yield pluginList
+        stringWriter << new StreamingMarkupBuilder().bind {
+            mkp.yield pluginList
         }
-        Source xmlInput = new StreamSource(new StringReader(stringWriter.toString()));
+        Source xmlInput = new StreamSource(new StringReader(stringWriter.toString()))
 
-        StreamResult xmlOutput = new StreamResult(targetWriter);
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", String.valueOf(4));
+        StreamResult xmlOutput = new StreamResult(targetWriter)
+        Transformer transformer = TransformerFactory.newInstance().newTransformer()
+        transformer.setOutputProperty(OutputKeys.INDENT, "yes")
+        transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", '4')
         transformer.transform(xmlInput, xmlOutput)
     }
 
     /**
-     * Publishes a plugin release to the given plugin list
+     * Publishes a plugin release to the given plugin list.
      *
      * @param pluginName the name of the plugin
      * @param pluginsListFile The plugin list file
@@ -108,7 +113,7 @@ class DefaultPluginPublisher {
 
         // find plugin
         def allPlugins = xml.plugin
-        if (allPlugins.size()==0) {
+        if (allPlugins.size() == 0) {
             // create new plugin list
             xml << pluginInfo
         }
@@ -136,25 +141,24 @@ class DefaultPluginPublisher {
     }
 
     protected GPathResult parsePluginList(Resource pluginsListFile) {
-        if (pluginsListFile.exists()) {
-            InputStream stream = pluginsListFile.getInputStream()
-            try {
-                return new XmlSlurper().parse(stream)
-            }
-            finally {
-                stream?.close()
-            }
-        }
-        else {
+        if (!pluginsListFile.exists()) {
             return new XmlSlurper().parseText('<?xml version="1.0" encoding="UTF-8"?><plugins revision="0" />')
+        }
+
+        InputStream stream = pluginsListFile.getInputStream()
+        try {
+            return new XmlSlurper().parse(stream)
+        }
+        finally {
+            stream?.close()
         }
     }
 
     GPathResult publishRelease(String pluginName, Resource pluginsList) {
-         publishRelease(pluginName, pluginsList, true)
+        publishRelease(pluginName, pluginsList, true)
     }
 
     protected GPathResult getPluginMetadata(String pluginName) {
-        return new XmlSlurper().parse(new File("${baseDir.absolutePath}/plugin.xml"))
+        return new XmlSlurper().parse(new File(baseDir.absolutePath, 'plugin.xml'))
     }
 }

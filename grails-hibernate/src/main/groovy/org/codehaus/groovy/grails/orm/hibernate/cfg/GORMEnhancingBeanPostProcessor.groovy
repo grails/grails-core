@@ -29,20 +29,19 @@ import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.orm.hibernate.ConfigurableLocalSessionFactoryBean
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
+import org.codehaus.groovy.grails.plugins.support.BeanPostProcessorAdapter
 
 /**
- * A BeanPostProcessor that enhances an existing SessionFactory with GORM behavior.
+ * Enhances an existing SessionFactory with GORM behavior.
  *
  * @author Graeme Rocher
  * @since 1.1
  */
-class GORMEnhancingBeanPostProcessor implements BeanPostProcessor, ApplicationContextAware {
+class GORMEnhancingBeanPostProcessor extends BeanPostProcessorAdapter implements ApplicationContextAware {
 
     ApplicationContext applicationContext
 
-    def postProcessBeforeInitialization(Object bean, String beanName) { bean }
-
-    Object postProcessAfterInitialization(Object bean, String beanName) {
+    Object postProcessAfterInitialization(bean, String beanName) {
         if (bean instanceof SessionFactory) {
             GrailsApplication application
             if (applicationContext.containsBean(GrailsApplication.APPLICATION_ID)) {

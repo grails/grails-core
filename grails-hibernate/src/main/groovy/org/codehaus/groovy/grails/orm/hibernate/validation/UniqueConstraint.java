@@ -107,7 +107,7 @@ public class UniqueConstraint extends AbstractPersistentConstraint {
             unique = true;
         }
         else {
-            unique = ((Boolean)constraintParameter).booleanValue();
+            unique = (Boolean)constraintParameter;
         }
 
         if (!uniquenessGroup.isEmpty()) {

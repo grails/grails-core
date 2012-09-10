@@ -95,7 +95,7 @@ public class ValidatorConstraint extends AbstractConstraint {
 
         if (result != null) {
             if (result instanceof Boolean) {
-                bad = !((Boolean)result).booleanValue();
+                bad = !(Boolean)result;
             }
             else if (result instanceof CharSequence) {
                 bad = true;

@@ -21,6 +21,8 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
+import org.codehaus.groovy.grails.orm.hibernate.cfg.CompositeIdentity
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.cfg.HibernateNamedQueriesBuilder
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
@@ -328,6 +330,22 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         findMethod.invoke(persistentClass, "find", [example, args] as Object[])
     }
 
+    D first(Map m) {
+        def entityMapping = GrailsDomainBinder.getMapping(persistentEntity.javaClass)
+        if(entityMapping?.identity instanceof CompositeIdentity) {
+            throw new UnsupportedOperationException('The first() method is not supported for domain classes that have composite keys.')
+        }
+        super.first(m)
+    }
+
+    D last(Map m) {
+        def entityMapping = GrailsDomainBinder.getMapping(persistentEntity.javaClass)
+        if(entityMapping?.identity instanceof CompositeIdentity) {
+            throw new UnsupportedOperationException('The last() method is not supported for domain classes that have composite keys.')
+        }
+        super.last(m)
+    }
+    
     /**
      * Finds a single result for the given query and arguments and a maximum results to return value
      *

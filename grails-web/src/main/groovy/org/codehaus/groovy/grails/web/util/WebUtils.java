@@ -640,7 +640,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static boolean areFileExtensionsEnabled() {
         Map config = GrailsWebUtil.currentFlatConfiguration();
         Object o = config.get(ENABLE_FILE_EXTENSIONS);
-        return !(o != null && o instanceof Boolean) || ((Boolean) o).booleanValue();
+        return !(o != null && o instanceof Boolean) || (Boolean)o;
     }
 
     /**

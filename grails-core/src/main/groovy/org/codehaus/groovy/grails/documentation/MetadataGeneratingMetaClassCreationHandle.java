@@ -21,8 +21,6 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaClassRegistry;
 
-import org.codehaus.groovy.reflection.ClassInfo;
-
 /**
  * Used to enable the Metadata generating EMC creation handle.
  *
@@ -30,8 +28,6 @@ import org.codehaus.groovy.reflection.ClassInfo;
  * @since 1.2
  */
 public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassCreationHandle {
-
-    private static final MetadataGeneratingMetaClassCreationHandle INSTANCE = new MetadataGeneratingMetaClassCreationHandle();
 
     /* (non-Javadoc)
      * @see groovy.lang.MetaClassRegistry.MetaClassCreationHandle#create(java.lang.Class, groovy.lang.MetaClassRegistry)
@@ -78,6 +74,7 @@ public class MetadataGeneratingMetaClassCreationHandle extends ExpandoMetaClassC
      *
      * @deprecated Dynamic document generation no longer supported
      */
+    @Deprecated
     public static void enable() {
     }
 

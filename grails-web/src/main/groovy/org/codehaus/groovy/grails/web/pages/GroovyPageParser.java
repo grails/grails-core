@@ -240,7 +240,7 @@ public class GroovyPageParser implements Tokens {
 
     private boolean isSitemeshPreprocessingEnabled(String gspFilePreprocessDirective) {
         if (gspFilePreprocessDirective != null) {
-            return BooleanUtils.toBoolean(String.valueOf(gspFilePreprocessDirective).trim());
+            return BooleanUtils.toBoolean(gspFilePreprocessDirective.trim());
         }
         return enableSitemeshPreprocessing;
     }
@@ -615,7 +615,7 @@ public class GroovyPageParser implements Tokens {
         // de-dupe constants
         Integer constantNumber = constantsToNumbers.get(text);
         if (constantNumber == null) {
-            constantNumber = Integer.valueOf(constantCount++);
+            constantNumber = constantCount++;
             constantsToNumbers.put(text, constantNumber);
             htmlParts.add(text);
         }
@@ -842,8 +842,7 @@ public class GroovyPageParser implements Tokens {
     private boolean shouldAddLineNumbers() {
         try {
             // for now, we support this through a system property.
-            String prop = System.getenv("GROOVY_PAGE_ADD_LINE_NUMBERS");
-            return Boolean.valueOf(prop).booleanValue();
+            return Boolean.valueOf(System.getenv("GROOVY_PAGE_ADD_LINE_NUMBERS"));
         } catch (Exception e) {
             // something wild happened
             return false;
