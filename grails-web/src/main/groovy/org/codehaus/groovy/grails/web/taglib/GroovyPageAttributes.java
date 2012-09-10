@@ -29,13 +29,27 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
  * @since 1.2
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
+public class GroovyPageAttributes extends TypeConvertingMap  implements Cloneable {
+    boolean gspTagSyntaxCall=true;
     public GroovyPageAttributes() {
         super();
     }
 
     public GroovyPageAttributes(Map map) {
+        this(map, true);
+    }
+
+    public GroovyPageAttributes(Map map, boolean gspTagSyntaxCall) {
         super(map);
+        this.gspTagSyntaxCall=gspTagSyntaxCall;
+    }
+    
+    public boolean isGspTagSyntaxCall() {
+        return gspTagSyntaxCall;
+    }
+    
+    public void setGspTagSyntaxCall(boolean gspTagSyntaxCall) {
+        this.gspTagSyntaxCall=gspTagSyntaxCall;
     }
 
     @Override

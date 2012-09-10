@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.beans.factory.support.RootBeanDefinition
 import org.springframework.context.MessageSourceResolvable
@@ -118,14 +119,49 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         b.properties = [title:"<script>alert('escape me')</script>"]
 
         def template = '''<g:fieldValue bean="${book}" field="title" />'''
+        def htmlCodecDirective = '<%@page defaultCodec="HTML" %>'
+        def expected = "&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;"
+        assertOutputEquals(expected, template, [book:b])
+        assertOutputEquals(expected, htmlCodecDirective + template, [book:b])
+    }
+    
+    void testFieldValueHtmlEscapingWithFunctionSyntaxCall() {
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
+        b.properties = [title:"<script>alert('escape me')</script>"]
 
-        assertOutputEquals("&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;", template, [book:b])
-
-        request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", 'html')
-
-        assertOutputEquals("<script>alert('escape me')</script>", template, [book:b])
+        def template = '''${fieldValue(bean:book, field:"title")}'''
+        def htmlCodecDirective = '<%@page defaultCodec="HTML" %>'
+        def expected = "&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;"
+        assertOutputEquals(expected, template, [book:b])
+        assertOutputEquals(expected, htmlCodecDirective + template, [book:b])
     }
 
+    void testFieldValueHtmlEscapingDifferentEncodings() {
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
+        b.properties = [title:"<script>alert('escape me')</script>"]
+
+        def template = '''${fieldValue(bean:book, field:"title")}'''
+        def htmlCodecDirective = '<%@page defaultCodec="HTML" %>'
+        def expected = "&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;"
+        
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/_sometemplate.gsp', htmlCodecDirective + template)
+        resourceLoader.registerMockResource('/_sometemplate_nocodec.gsp', template)
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+        
+        assertOutputEquals(expected, '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, template + '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, htmlCodecDirective + template + '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, '<g:render template="/sometemplate" model="[book:book]" />' + template, [book:b])
+        assertOutputEquals(expected + expected, htmlCodecDirective + '<g:render template="/sometemplate" model="[book:book]" />' + template, [book:b])
+
+        assertOutputEquals(expected, '<g:render template="/sometemplate_nocodec" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, template + '<g:render template="/sometemplate_nocodec" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, htmlCodecDirective + template + '<g:render template="/sometemplate_nocodec" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, '<g:render template="/sometemplate_nocodec" model="[book:book]" />' + template, [book:b])
+        assertOutputEquals(expected + expected, htmlCodecDirective + '<g:render template="/sometemplate_nocodec" model="[book:book]" />' + template, [book:b])
+    }
+    
     void testFieldValueTag() {
         def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [publisherURL:"a_bad_url"]

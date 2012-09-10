@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -40,7 +41,7 @@ public class HTMLCodec {
     public static boolean shouldEncode() {
         final RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         if (attributes != null) {
-            Object codecName = attributes.getAttribute("org.codehaus.groovy.grails.GSP_CODEC",
+            Object codecName = attributes.getAttribute(GrailsApplicationAttributes.GSP_CODEC,
                     RequestAttributes.SCOPE_REQUEST);
             if (codecName != null && codecName.toString().equalsIgnoreCase("html")) {
                 return false;
