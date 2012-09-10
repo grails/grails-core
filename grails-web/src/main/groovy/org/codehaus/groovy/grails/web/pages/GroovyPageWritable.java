@@ -50,9 +50,9 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @since 0.5
  */
 class GroovyPageWritable implements Writable {
-
     private static final Log LOG = LogFactory.getLog(GroovyPageWritable.class);
     private static final String ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER = "org.codehaus.groovy.grails.web.pages.DEBUG_TEMPLATES_COUNTER";
+    private static final String GSP_NONE_CODEC_NAME = "none";
     private HttpServletResponse response;
     private HttpServletRequest request;
     private GroovyPageMetaInfo metaInfo;
@@ -163,15 +163,21 @@ class GroovyPageWritable implements Writable {
             }
 
             GroovyPageBinding binding = createBinding(parentBinding);
+            String previousGspCode = GSP_NONE_CODEC_NAME;
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
+                previousGspCode = (String)request.getAttribute(GrailsApplicationAttributes.GSP_CODEC);                
             }
+            
             if (metaInfo.getCodecClass() != null) {
                 if (hasRequest) {
-                    request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
+                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getCodecName());
                 }
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
             } else {
+                if (hasRequest) {
+                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, GSP_NONE_CODEC_NAME);
+                }
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
             }
             binding.setVariableDirectly(GroovyPage.RESPONSE, response);
@@ -219,6 +225,7 @@ class GroovyPageWritable implements Writable {
                     } else  {
                         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
                     }
+                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, previousGspCode != null ? previousGspCode : GSP_NONE_CODEC_NAME);
                 }
             }
             if (debugTemplates) {

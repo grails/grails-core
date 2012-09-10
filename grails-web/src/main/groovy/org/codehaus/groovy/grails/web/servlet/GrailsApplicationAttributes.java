@@ -51,6 +51,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
     String GSP_TO_RENDER = "org.codehaus.groovy.grails.GSP_TO_RENDER";
+    String GSP_CODEC = "org.codehaus.groovy.grails.GSP_CODEC";
     String WEB_REQUEST = "org.codehaus.groovy.grails.WEB_REQUEST";
     String PAGE_SCOPE = "org.codehaus.groovy.grails.PAGE_SCOPE";
     String GSP_TMP_WRITER = "org.codehaus.groovy.grails.GSP_TMP_WRITER";

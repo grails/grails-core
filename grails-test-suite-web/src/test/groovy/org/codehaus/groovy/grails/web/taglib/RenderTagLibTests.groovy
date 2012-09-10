@@ -17,15 +17,15 @@ package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsUtil
 
+import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
-import org.codehaus.groovy.grails.web.pages.FastStringWriter;
+import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
-import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage;
+import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import com.opensymphony.module.sitemesh.RequestConstants
@@ -39,7 +39,6 @@ import com.opensymphony.module.sitemesh.parser.TokenizedHTMLPage
  * @author Marcel Overdijk
  */
 class RenderTagLibTests extends AbstractGrailsTagTests {
-
     // test for GRAILS-5376
     void testPaginateTag() {
          def template = '<g:paginate controller="book" total="" offset="" />'
@@ -97,6 +96,28 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         template = '<g:paginate  max="2" total="20" offset="14" maxsteps="3" controller="book" action="list" />'
         assertOutputContains '<a href="/book/list?offset=16&amp;max=2" class="step">9</a><a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
+    }
+    
+    protected void onInit() {
+        if(name == 'testPaginateMappingAndAction') {
+            def mappingClass = gcl.parseClass('''
+    class TestUrlMappings {
+        static mappings = {
+            name claimTab: "/claim/$id/$action" {
+                controller = 'Claim'
+                constraints { id(matches: /\\d+/) }
+            }
+        }
+    }
+            ''')
+                
+            grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, mappingClass)
+        }
+    }    
+    
+    void testPaginateMappingAndAction() {
+        def template = '<g:paginate next="Forward" prev="Back" maxsteps="8" max="10" id="1" mapping="claimTab" total="12" action="documents"/>'
+        assertOutputEquals '<span class="currentStep">1</span><a href="/claim/1/documents?offset=10&amp;max=10" class="step">2</a><a href="/claim/1/documents?offset=10&amp;max=10" class="nextLink">Forward</a>', template
     }
 
     void testPageProperty() {
