@@ -157,15 +157,21 @@ class GroovyPageWritable implements Writable {
             }
 
             GroovyPageBinding binding = createBinding(parentBinding);
+            String previousGspCode = null;
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
+                previousGspCode = (String)request.getAttribute(GrailsApplicationAttributes.GSP_CODEC);                
             }
+            
             if (metaInfo.getCodecClass() != null) {
                 if (hasRequest) {
-                    request.setAttribute("org.codehaus.groovy.grails.GSP_CODEC", metaInfo.getCodecName());
+                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getCodecName());
                 }
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
             } else {
+                if (hasRequest) {
+                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, null);
+                }
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
             }
             binding.setVariableDirectly(GroovyPage.RESPONSE, response);
@@ -213,6 +219,7 @@ class GroovyPageWritable implements Writable {
                     } else  {
                         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
                     }
+                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, previousGspCode);
                 }
             }
             if (debugTemplates) {

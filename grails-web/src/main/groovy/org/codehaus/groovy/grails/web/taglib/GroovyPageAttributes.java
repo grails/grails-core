@@ -30,14 +30,29 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class GroovyPageAttributes extends TypeConvertingMap {
+    boolean gspTagSyntaxCall=true;
+    
     public GroovyPageAttributes() {
         super();
     }
-
+    
     public GroovyPageAttributes(Map map) {
-        super(map);
+        this(map, true);
     }
 
+    public GroovyPageAttributes(Map map, boolean gspTagSyntaxCall) {
+        super(map);
+        this.gspTagSyntaxCall=gspTagSyntaxCall;
+    }
+    
+    public boolean isGspTagSyntaxCall() {
+        return gspTagSyntaxCall;
+    }
+    
+    public void setGspTagSyntaxCall(boolean gspTagSyntaxCall) {
+        this.gspTagSyntaxCall=gspTagSyntaxCall;
+    }
+    
     @Override
     public Object clone() {
         return new GroovyPageAttributes(new LinkedHashMap(wrappedMap));
