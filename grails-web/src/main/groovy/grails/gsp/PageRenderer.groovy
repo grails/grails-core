@@ -299,7 +299,11 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         }
 
         void setAttribute(String name, Object o) {
-            attributes[name] = o
+            if(o != null) {
+                attributes[name] = o
+            } else {
+                attributes.remove name
+            }
         }
 
         void removeAttribute(String name) {

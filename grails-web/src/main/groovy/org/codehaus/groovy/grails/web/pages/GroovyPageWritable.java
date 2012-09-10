@@ -17,23 +17,29 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.Environment;
 import groovy.lang.Binding;
 import groovy.lang.Writable;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.Writer;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * An instance of groovy.lang.Writable that writes itself to the specified
@@ -44,9 +50,9 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @since 0.5
  */
 class GroovyPageWritable implements Writable {
-
     private static final Log LOG = LogFactory.getLog(GroovyPageWritable.class);
     private static final String ATTRIBUTE_NAME_DEBUG_TEMPLATES_ID_COUNTER = "org.codehaus.groovy.grails.web.pages.DEBUG_TEMPLATES_COUNTER";
+    private static final String GSP_NONE_CODEC_NAME = "none";
     private HttpServletResponse response;
     private HttpServletRequest request;
     private GroovyPageMetaInfo metaInfo;
@@ -157,7 +163,7 @@ class GroovyPageWritable implements Writable {
             }
 
             GroovyPageBinding binding = createBinding(parentBinding);
-            String previousGspCode = null;
+            String previousGspCode = GSP_NONE_CODEC_NAME;
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
                 previousGspCode = (String)request.getAttribute(GrailsApplicationAttributes.GSP_CODEC);                
@@ -170,7 +176,7 @@ class GroovyPageWritable implements Writable {
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
             } else {
                 if (hasRequest) {
-                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, null);
+                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, GSP_NONE_CODEC_NAME);
                 }
                 binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
             }
@@ -219,7 +225,7 @@ class GroovyPageWritable implements Writable {
                     } else  {
                         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, parentBinding);
                     }
-                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, previousGspCode);
+                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, previousGspCode != null ? previousGspCode : GSP_NONE_CODEC_NAME);
                 }
             }
             if (debugTemplates) {
