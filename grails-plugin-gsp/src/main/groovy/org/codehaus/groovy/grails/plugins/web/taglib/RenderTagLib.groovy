@@ -347,7 +347,6 @@ class RenderTagLib implements RequestConstants {
         def locale = RCU.getLocale(request)
 
         def total = attrs.int('total') ?: 0
-        def action = (attrs.action ?: (params.action ?: ""))
         def offset = params.int('offset') ?: 0
         def max = params.int('max')
         def maxsteps = (attrs.int('maxsteps') ?: 10)
@@ -363,13 +362,18 @@ class RenderTagLib implements RequestConstants {
         if (params.order) linkParams.order = params.order
 
         def linkTagAttrs = [:]
+        def action
         if(attrs.containsKey('mapping')) {
             linkTagAttrs.mapping = attrs.mapping
+            action = attrs.action
         } else {
+            action = attrs.action ?: params.action
+        }
+        if(action) {
             linkTagAttrs.action = action
-            if (attrs.controller) {
-                linkTagAttrs.controller = attrs.controller
-            }
+        }
+        if (attrs.controller) {
+            linkTagAttrs.controller = attrs.controller
         }
         if (attrs.id != null) {
             linkTagAttrs.id = attrs.id
