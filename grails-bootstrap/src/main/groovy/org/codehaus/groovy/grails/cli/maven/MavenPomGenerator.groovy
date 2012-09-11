@@ -88,7 +88,7 @@ class MavenPomGenerator extends BaseSettingsApi{
     }
 
     def addDependenciesForScope(IvyDependencyManager dependencyManager, String scope, ArrayList<String> dependencies, String type = "", String newScope = null) {
-        final appDependencies = type ? dependencyManager.pluginDependencyDescriptors : dependencyManager.getApplicationDependencyDescriptors(scope)
+        final appDependencies = type ? dependencyManager.effectivePluginDependencyDescriptors : dependencyManager.getApplicationDependencyDescriptors(scope)
         dependencies.addAll(appDependencies.findAll {  EnhancedDefaultDependencyDescriptor dd -> dd.scope == scope }.collect() {  EnhancedDefaultDependencyDescriptor dd ->
             """
     <dependency>

@@ -1,4 +1,4 @@
-def tomcatVersion = "7.0.27"
+def tomcatVersion = "7.0.30"
 dependencies {
     compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
     compile "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
@@ -6,7 +6,7 @@ dependencies {
 
     runtime "org.apache.tomcat:tomcat-catalina-ant:$tomcatVersion"
     runtime "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"
-    runtime "org.eclipse.jdt.core.compiler:ecj:3.6.2"
+    runtime "org.eclipse.jdt.core.compiler:ecj:3.7.2"
     compile project(":grails-core"),
             project(":grails-web"),
             project(':grails-bootstrap')
