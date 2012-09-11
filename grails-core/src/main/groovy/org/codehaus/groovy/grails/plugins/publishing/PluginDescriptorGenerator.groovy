@@ -27,6 +27,7 @@ import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.plugins.resolver.URLResolver
 import org.apache.ivy.plugins.resolver.IBiblioResolver
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
+import org.springframework.util.AntPathMatcher
 
 /**
  * Generates the plugin.xml descriptor.
@@ -42,6 +43,7 @@ class PluginDescriptorGenerator {
     Resource[] resourceList
     List excludes = ["UrlMappings", "DataSource", "BuildConfig", "Config"]
     BuildSettings buildSettings
+    AntPathMatcher antPathMatcher = new AntPathMatcher()
 
     PluginDescriptorGenerator(BuildSettings buildSettings, pluginName, List<Resource> resourceList) {
         this.buildSettings = buildSettings
@@ -80,6 +82,34 @@ class PluginDescriptorGenerator {
         generatePluginXml(pluginProps, xml)
     }
 
+    private boolean matchesPluginExcludes(List<String> pluginExcludes, File commonResourceBase, Resource r) {
+
+        // if we have no excludes or no common resource base, we don't match
+        if (!pluginExcludes) return false
+        if (!commonResourceBase) return false
+
+        if (r.file.absolutePath.indexOf(commonResourceBase.absolutePath) == 0) {
+            String path = r.file.absolutePath.substring(commonResourceBase.absolutePath.length()+1)
+            for(String pattern : pluginExcludes) {
+                if (antPathMatcher.match(pattern, path)) return true
+            }
+
+        }
+
+        return false
+    }
+
+    // this is needed to pass the test as the resources don't really exist
+    private File filterPluginDir(File pluginDir) {
+        if (!pluginDir) return null
+
+        if (pluginDir.absolutePath.endsWith(File.separator + ".")) {
+            return new File(pluginDir.absolutePath.substring(0, pluginDir.absolutePath.lastIndexOf(File.separator)))
+        } else {
+            return pluginDir
+        }
+    }
+
     protected void generatePluginXml(pluginProps, MarkupBuilder xml) {
         // Write the content!
         def props = ['author', 'authorEmail', 'title', 'description', 'documentation', 'type', 'packaging']
@@ -88,6 +118,13 @@ class PluginDescriptorGenerator {
         Arrays.sort(resourceList, rcComparator)
 
         def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
+
+        // check to see if we have the property, grab it if so
+        def pluginExcludes
+        if (pluginProps['pluginExcludes'])
+            pluginExcludes = pluginProps.pluginExcludes
+        else
+            pluginExcludes = []
 
         if (pluginProps != null) {
             if (pluginProps["grailsVersion"]) {
@@ -99,10 +136,12 @@ class PluginDescriptorGenerator {
                     if (pluginProps[p]) "${p}"(pluginProps[p])
                 }
                 xml.resources {
+                    File commonResourceBase = filterPluginDir(pluginProps['pluginDir']?.file)
+
                     for (r in resourceList) {
                         def matcher = r.URL.toString() =~ ARTEFACT_PATTERN
                         def name = matcher[0][1].replaceAll('/', /\./)
-                        if (!excludes.contains(name)) {
+                        if (!excludes.contains(name) && !matchesPluginExcludes(pluginExcludes, commonResourceBase, r)) {
                             xml.resource(name)
                         }
                     }
