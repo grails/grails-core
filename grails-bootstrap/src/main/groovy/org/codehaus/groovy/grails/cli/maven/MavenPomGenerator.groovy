@@ -94,7 +94,7 @@ class MavenPomGenerator extends BaseSettingsApi{
         <groupId>$dd.dependencyId.organisation</groupId>
         <artifactId>$dd.dependencyId.name</artifactId>
         <version>$dd.dependencyRevisionId.revision</version>
-        <scope>runtime</scope>
+        <scope>$newScope</scope>
         $type
     </dependency>
                     """.toString()
