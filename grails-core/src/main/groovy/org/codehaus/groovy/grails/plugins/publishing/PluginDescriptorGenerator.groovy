@@ -136,7 +136,8 @@ class PluginDescriptorGenerator {
                     if (pluginProps[p]) "${p}"(pluginProps[p])
                 }
                 xml.resources {
-                    File commonResourceBase = filterPluginDir(pluginProps['pluginDir']?.file)
+                    final pluginDir = pluginProps['pluginDir'] instanceof String ? new File(pluginProps['pluginDir']) : pluginProps['pluginDir']?.file
+                    File commonResourceBase = filterPluginDir(pluginDir)
 
                     for (r in resourceList) {
                         def matcher = r.URL.toString() =~ ARTEFACT_PATTERN
