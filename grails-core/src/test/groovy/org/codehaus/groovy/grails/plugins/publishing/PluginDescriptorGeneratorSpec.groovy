@@ -27,6 +27,46 @@ class PluginDescriptorGeneratorSpec extends Specification {
             xml.resources.resource[1].text() == 'bar.BarController'
     }
 
+    def "Test plugin excludes causes no problems when no resources"() {
+        given:
+            def generator = new PluginDescriptorGenerator(new BuildSettings(),"foo", [])
+        when:
+            def sw = new StringWriter()
+            generator.generatePluginXml([version:1.0, dependsOn:[core:1.0], author:"Bob", pluginDir: new FileSystemResource(new File(".")), pluginExcludes: ["**/test/**"]], sw)
+            def xml = new XmlSlurper().parseText(sw.toString())
+        then:
+            xml.@name == 'foo'
+            xml.@version == '1.0'
+            xml.author.text() == 'Bob'
+            xml.runtimePluginRequirements.plugin[0].@name == 'core'
+            xml.runtimePluginRequirements.plugin[0].@version == '1.0'
+            xml.resources.resource.size() == 0
+    }
+
+    def "Test plugin/excludes is honoured for resources"() {
+        given:
+            def generator = new PluginDescriptorGenerator(new BuildSettings(),"foo",  [
+                new FileSystemResource(new File("grails-app/controllers/FooController.groovy")),
+                new FileSystemResource(new File("grails-app/controllers/test/BarController.groovy")),
+                new FileSystemResource(new File("grails-app/services/test/MyService.groovy")),
+                new FileSystemResource(new File("grails-app/services/MyService2.groovy"))
+            ])
+        when:
+            def sw = new StringWriter()
+            generator.generatePluginXml([version:1.0, dependsOn:[core:1.0], author:"Bob", pluginDir: new FileSystemResource(new File(".")), pluginExcludes: ["**/test/**"]], sw)
+            def xml = new XmlSlurper().parseText(sw.toString())
+        then:
+            xml.@name == 'foo'
+            xml.@version == '1.0'
+            xml.author.text() == 'Bob'
+            xml.runtimePluginRequirements.plugin[0].@name == 'core'
+            xml.runtimePluginRequirements.plugin[0].@version == '1.0'
+            xml.resources.resource.size() == 2
+            xml.resources.resource[0].text() == 'FooController'
+            xml.resources.resource[1].text() == 'MyService2'
+
+    }
+
     void "Test that dependencies and repositories are correctly populated from BuildSettings"() {
         given:"A plugin descriptor generator with a BuildSettings instance that defines repositories and dependencies"
             PluginDescriptorGenerator generator = systemUnderTest()

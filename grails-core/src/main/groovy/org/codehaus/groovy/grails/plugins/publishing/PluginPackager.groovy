@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import grails.util.BuildSettings
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.springframework.util.AntPathMatcher
 
 /**
  * Packages a plugin in source or binary form.
@@ -68,6 +69,7 @@ class PluginPackager {
     private AntBuilder ant
     private File resourcesDir
     private BuildSettings buildSettings
+    private AntPathMatcher antPathMatcher = new AntPathMatcher()
 
     List<File> jarFiles = []
     boolean hasApplicationDependencies
@@ -180,6 +182,59 @@ class PluginPackager {
         return pluginZip
     }
 
+    private boolean matchesExcludes(excludes, path) {
+        for(String exclude : excludes) {
+            if (antPathMatcher.match(exclude, path)) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private void extraExcludesProcessDirectory(File dir, int stripLength, int fullStripLength, excludes, List<String> ejectedFiles) {
+        dir.listFiles().each { File f ->
+            if (f.isFile()) {
+                if (matchesExcludes(excludes, f.absolutePath.substring(stripLength+1))) {
+                    ejectedFiles << f.absolutePath.substring(fullStripLength+1)
+                }
+            } else if (f.isDirectory() && !f.name.startsWith(".")) {
+                extraExcludesProcessDirectory(f, stripLength, fullStripLength, excludes, ejectedFiles)
+            }
+        }
+    }
+
+    /**
+     * We have to go through and build up a list of exclusions because the plugin excludes are based from to "basedir" and all of the excludes
+     * when copying are based from the directory we are copying from (e.g. APP/web-app will not match web-app/** because the exclude doesn't include
+     * web-app when determining that pattern). This makes all plugin excludes worthless when copy files unless we go through and manually match them
+     * ourselves and return a list of specifically excluded files.
+     *
+     * @param basedir - the Grails Applications base directory
+     * @param subdir - the sub directory we are copying from so we can prefix this for our pattern matching
+     * @param excludes - the excludes from pluginExcludes
+     * @param base - the ones that the Ant copy wants to include no matter what (originally included as specific exclude: lines)
+     * @return returns a list of files to exclude relative to basedir/subdir
+     */
+    private List<String> extraExcludes(File basedir, String subdir, excludes, List<String> base = []) {
+        if (!excludes) return base
+
+        List<String> ejectedFiles = []
+
+        File dir = new File(basedir, subdir)
+
+        if (dir.exists()) {
+            int stripLength = basedir.absolutePath.size() // e.g. [/blah/blah/]web-dir/ - preserve web-dir so we can match it
+            int fullStripLength = stripLength + 1 + subdir.size() // e.g. /blah/blah/[web-dir/]
+
+            extraExcludesProcessDirectory(dir, stripLength, fullStripLength, excludes, ejectedFiles)
+        }
+
+        ejectedFiles.addAll(base)
+
+        return ejectedFiles
+    }
+
     String packageBinary(String pluginName, File classesDir, File targetDir) {
         def pluginProps = pluginInfo
         ant.taskdef (name: 'gspc', classname : 'org.codehaus.groovy.grails.web.pages.GroovyPageCompilerTask')
@@ -219,29 +274,44 @@ class PluginPackager {
             mkdir(dir:"${metaInf}/grails-app/i18n")
             if (new File("${resourcesDir}/grails-app/i18n").exists()) {
                 copy(todir:"${metaInf}/grails-app/i18n", includeEmptyDirs:false,failonerror:false) {
-                    fileset(dir:"${resourcesDir}/grails-app/i18n")
+                    fileset(dir:"${resourcesDir}/grails-app/i18n") {
+                        extraExcludes(basedir, "grails-app/i18n", pluginProps?.pluginExcludes).each {
+                            exclude name: it
+                        }
+                    }
                 }
             }
+
+            // the excludes get more difficult now, as they are from the root of the project and these
+            // excludes would be from the fileset's dir
+
             mkdir(dir:"${metaInf}/static")
             copy(todir:"${metaInf}/static", includeEmptyDirs:false, failonerror:false) {
                 fileset(dir:"${basedir}/web-app") {
-                    exclude name:"plugins/**"
-                    exclude name:"**/WEB-INF/**"
-                    exclude name:"**/META-INF/**"
-                    exclude name:"**/*.gsp"
-                    exclude name:"**/*.jsp"
+                    extraExcludes(basedir, "web-app",
+                        pluginProps?.pluginExcludes, ["plugins/**", "**/WEB-INF/**", "**/META-INF/**",
+                        "**/*.gsp", "**/*.jsp"]).each {
+                            exclude name: it
+                    }
+
                 }
             }
             mkdir(dir:"${metaInf}/scripts")
             copy(todir:"${metaInf}/scripts") {
-                fileset(dir:"${basedir}/scripts",
-                        excludes:"_Install.groovy,_Uninstall.groovy,_Upgrade.groovy")
+                fileset(dir:"${basedir}/scripts") {
+                    extraExcludes(basedir, "scripts", pluginProps?.pluginExcludes, ["_Install.groovy","_Uninstall.groovy","_Upgrade.groovy"]).each {
+                        exclude name: it
+                    }
+                }
             }
             mkdir(dir:"${classesDir}/src")
             copy(todir:"${classesDir}/src") {
-                fileset(dir:"${basedir}/src", excludes:"groovy/**,java/**")
+                fileset(dir:"${basedir}/src") {
+                    extraExcludes(basedir, "src", pluginProps?.pluginExcludes, ["groovy/**","java/**"]).each {
+                        exclude name: it
+                    }
+                }
             }
-
 
             jar(destfile:destinationFile) {
                 fileset(dir:classesDir, excludes:excludeList.join(','))
