@@ -20,17 +20,22 @@ import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrors
 import grails.converters.JSON
 import grails.converters.XML
 import grails.util.GrailsNameUtils
+import grails.validation.ValidationErrors
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.codehaus.groovy.grails.commons.DefaultArtefactInfo
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.commons.*
-import grails.validation.ValidationErrors
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 
 /**
  * Support class for writing unit tests in Grails. It mainly provides
@@ -41,6 +46,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
     Set loadedCodecs
     def applicationContext
+    def grailsApplication
     Map errorsMap
     private MetaClassRegistryCleaner registryCleaner = MetaClassRegistryCleaner.createAndRegister()
 
@@ -63,7 +69,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
         // Register some common classes so that they can be converted to XML, JSON, etc.
         def convertersInit = new ConvertersConfigurationInitializer()
-        convertersInit.initialize(new DefaultGrailsApplication())
+        convertersInit.initialize(getGrailsApplication())
         [ List, Set, Map, Errors ].each { addConverters(it) }
         def xmlErrorMarshaller = new XmlErrorsMarshaller()
         XML.registerObjectMarshaller(xmlErrorMarshaller)
@@ -141,6 +147,8 @@ class GrailsUnitTestCase extends GroovyTestCase {
     protected void mockDomain(Class domainClass, List instances = []) {
         registerMetaClass(domainClass)
         def dc = MockUtils.mockDomain(domainClass, errorsMap, instances)
+
+        getGrailsApplication()?.addArtefact("Domain", domainClass)
 
         domainClassesInfo.addGrailsClass(dc)
         addConverters(domainClass, false)
@@ -235,5 +243,18 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
             return ConverterUtil.invokeOriginalAsTypeMethod(delegate, asClass)
         }
+    }
+
+    protected GrailsApplication getGrailsApplication() {
+        getGrailsApplication([] as Class[])
+    }
+
+    protected GrailsApplication getGrailsApplication(Class... classes) {
+        classes = classes ?: [] as Class[]
+        if (!grailsApplication) {
+            grailsApplication = new DefaultGrailsApplication(classes, this.class.classLoader)
+            grailsApplication.initialise()
+        }
+        grailsApplication
     }
 }
