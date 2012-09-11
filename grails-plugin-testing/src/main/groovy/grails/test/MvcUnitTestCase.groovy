@@ -14,19 +14,22 @@
  */
 package grails.test
 
-import grails.util.Holders
+import grails.util.GrailsNameUtils
+
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
-import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+
 import org.springframework.mock.web.MockHttpSession
-import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.WebApplicationContext
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 
 /**
  * Common test case support class for controllers, tag libraries, and
@@ -114,12 +117,11 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
 
     protected def bindMockWebRequest(GrailsMockHttpServletRequest mockRequest, GrailsMockHttpServletResponse mockResponse) {
         MockApplicationContext ctx = new MockApplicationContext()
-        grailsApplication = getGrailsApplication([testClass] as Class[])
-        grailsApplication.initialise()
+        def application = new DefaultGrailsApplication([testClass] as Class[], getClass().classLoader)
+        application.initialise()
         ctx.registerMockBean(testClass.name, testClass.newInstance())
-        def lookup = new TagLibraryLookup(applicationContext: ctx, grailsApplication: grailsApplication)
+        def lookup = new TagLibraryLookup(applicationContext: ctx, grailsApplication: application)
         lookup.afterPropertiesSet()
-        ctx.registerMockBean(Holders.APPLICATION_BEAN_NAME, grailsApplication)
         ctx.registerMockBean("gspTagLibraryLookup", lookup)
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
         mockRequest.servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, ctx)
