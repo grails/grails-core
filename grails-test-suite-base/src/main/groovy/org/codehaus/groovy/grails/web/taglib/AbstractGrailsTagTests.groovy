@@ -391,10 +391,12 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         try {
             request.setAttribute(RequestConstants.PAGE, page)
+            request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage())
             return applyTemplate(layout, params,null, "/layouts/test_"+System.currentTimeMillis())
         }
         finally {
             request.removeAttribute(RequestConstants.PAGE)
+            request.removeAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
         }
     }
     /**
