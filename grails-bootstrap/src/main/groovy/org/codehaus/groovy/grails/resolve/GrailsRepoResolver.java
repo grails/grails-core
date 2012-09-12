@@ -74,7 +74,7 @@ public class GrailsRepoResolver extends URLResolver{
     public String transformGrailsRepositoryPattern(ModuleRevisionId mrid, String pattern) {
         final String revision = mrid.getRevision();
         String versionTag;
-        if (revision.equals("latest.integration") || revision.equals("latest")) {
+        if (revision.equals("latest.integration") || revision.equals("latest")|| revision.equals("latest.release")) {
             versionTag = "LATEST_RELEASE";
         }
         else {
