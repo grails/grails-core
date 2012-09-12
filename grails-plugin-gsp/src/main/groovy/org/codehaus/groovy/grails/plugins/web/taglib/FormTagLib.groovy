@@ -268,10 +268,12 @@ class FormTagLib {
     void outputAttributes(attrs, writer, boolean useNameAsIdIfIdDoesNotExist = false) {
         attrs.remove('tagName') // Just in case one is left
         attrs.each { k, v ->
-            writer << k
-            writer << '="'
-            writer << v.encodeAsHTML()
-            writer << '" '
+            if(v != null) {
+                writer << k
+                writer << '="'
+                writer << v.encodeAsHTML()
+                writer << '" '
+            }
         }
         if (useNameAsIdIfIdDoesNotExist) {
             outputNameAsIdIfIdDoesNotExist(attrs, writer)

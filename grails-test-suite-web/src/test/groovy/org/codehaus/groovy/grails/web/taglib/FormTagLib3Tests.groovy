@@ -327,6 +327,20 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             assertEquals 'Tag [select] is missing required attribute [name]', message
         }
     }
+    
+    void testSelectTagWithNullAttribute() {
+        final StringWriter sw = new StringWriter()
+        final PrintWriter pw = new PrintWriter(sw)
+
+        withTag("select", pw) { tag ->
+            assertNotNull tag
+            tag([name: 'mySelectTag', from: [], errors: null])
+        }
+        
+        println sw.toString()
+
+        assertTrue sw.toString().startsWith('<select name="mySelectTag" id="mySelectTag" >')
+    }
 
     void testDatePickerWithYearsAndRelativeYearsAttribute() {
         final StringWriter sw = new StringWriter()
