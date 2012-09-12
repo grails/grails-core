@@ -47,6 +47,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String PROPERTY_REGISTRY = "org.codehaus.groovy.grails.PROPERTY_REGISTRY";
     String ERRORS =  "org.codehaus.groovy.grails.ERRORS";
     String MODEL_AND_VIEW = "org.codehaus.groovy.grails.MODEL_AND_VIEW";
+    String TEMPLATE_MODEL = "org.codehaus.groovy.grails.TEMPLATE_MODEL";
     String OUT = "org.codehaus.groovy.grails.RESPONSE_OUT";
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";

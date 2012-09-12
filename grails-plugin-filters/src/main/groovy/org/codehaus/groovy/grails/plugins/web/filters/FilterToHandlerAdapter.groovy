@@ -147,7 +147,14 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         if (!accept(controllerName, actionName, uri)) return
 
         def callable = filterConfig.after.clone()
-        def result = callable.call(modelAndView?.model)
+        def currentModel = modelAndView?.model
+        if(currentModel == null) {
+            final templateModel = request.getAttribute(GrailsApplicationAttributes.TEMPLATE_MODEL)
+            if(templateModel != null) {
+                currentModel = templateModel
+            }
+        }
+        def result = callable.call(currentModel)
         if (result instanceof Boolean) {
             // if false is returned don't render a view
             if (!result) {
