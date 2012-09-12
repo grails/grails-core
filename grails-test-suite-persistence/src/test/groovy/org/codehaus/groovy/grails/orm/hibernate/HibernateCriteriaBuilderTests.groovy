@@ -110,6 +110,16 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assert [10, 16] == results[1]
         assert [11, 18] == results[2]
         assert [13, 36] == results[3]
+        
+        results = Box.withCriteria {
+            projections {
+                sqlGroupProjection 'width, sum(height) as combinedHeightsForThisWidth', 'width', ['width', 'combinedHeightsForThisWidth'], [StandardBasicTypes.INTEGER, StandardBasicTypes.INTEGER]
+            }
+        }
+
+        assert 2 == results?.size()
+        assert [2, 24] == results[0]
+        assert [4, 9] == results[1]
     }
 
     void testSqlRestriction() {

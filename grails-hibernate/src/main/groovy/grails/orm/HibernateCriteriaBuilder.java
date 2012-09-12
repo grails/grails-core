@@ -256,6 +256,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
     }
 
     /**
+     * Adds a sql projection to the criteria
+     * 
+     * @param sql SQL projecting
+     * @param groupBy group by clause
+     * @param columnAliases List of column aliases for the projected values
+     * @param type List of types for the projected values
+     */
+    protected void sqlGroupProjection(String sql, String groupBy, List<String> columnAliases, List<Type> types) {
+        projectionList.add(Projections.sqlGroupProjection(sql, groupBy, columnAliases.toArray(new String[columnAliases.size()]), types.toArray(new Type[types.size()])));
+    }
+
+    /**
      * A projection that selects a distince property name
      * @param propertyName The property name
      */
