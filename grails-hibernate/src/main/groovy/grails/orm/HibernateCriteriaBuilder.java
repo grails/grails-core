@@ -67,6 +67,7 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.transform.ResultTransformer;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.EmbeddedComponentType;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.orm.hibernate3.SessionHolder;
@@ -1937,4 +1938,17 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
             c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
         }
     }
+    
+    public static final Type BOOLEAN = StandardBasicTypes.BOOLEAN;
+    public static final Type YES_NO = StandardBasicTypes.YES_NO;
+    public static final Type BYTE = StandardBasicTypes.BYTE;
+    public static final Type CHARACTER = StandardBasicTypes.CHARACTER;
+    public static final Type SHORT = StandardBasicTypes.SHORT;
+    public static final Type INTEGER = StandardBasicTypes.INTEGER;
+    public static final Type LONG = StandardBasicTypes.LONG;
+    public static final Type FLOAT = StandardBasicTypes.FLOAT;
+    public static final Type DOUBLE = StandardBasicTypes.DOUBLE;
+    public static final Type BIG_DECIMAL = StandardBasicTypes.BIG_DECIMAL;
+    public static final Type BIG_INTEGER = StandardBasicTypes.BIG_INTEGER;
+    public static final Type STRING = StandardBasicTypes.STRING;
 }
