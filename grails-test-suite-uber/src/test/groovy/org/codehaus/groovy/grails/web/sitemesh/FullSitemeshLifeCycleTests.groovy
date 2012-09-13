@@ -2,6 +2,12 @@ package org.codehaus.groovy.grails.web.sitemesh
 
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
+import org.springframework.mock.web.MockServletConfig
+
+import com.opensymphony.module.sitemesh.Config
+import com.opensymphony.module.sitemesh.Decorator
+import com.opensymphony.module.sitemesh.DecoratorMapper
+import com.opensymphony.module.sitemesh.factory.BaseFactory
 
 /**
  * Tests the sitemesh capturing and rendering tags end-to-end
@@ -77,6 +83,71 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
 ''', result
     }
 
+    static class DummySiteMeshFactory extends BaseFactory {
+        public DummySiteMeshFactory(Config config) {
+            super(config)
+        }
+        
+        @Override
+        public void refresh() {
+        }
+    }
+    
+    def configureSitemesh() {
+        def mockServletConfig = new MockServletConfig()
+        def siteMeshConfig = new Config(mockServletConfig)
+        def siteMeshFactory = new DummySiteMeshFactory(siteMeshConfig)
+        def decorator = {name -> [getPage: {-> "/layout/${name}.gsp".toString()}] as Decorator }
+        siteMeshFactory.decoratorMapper = [getNamedDecorator: {request, name -> decorator(name)}] as DecoratorMapper
+        FactoryHolder.factory = siteMeshFactory
+    }
+    
+    void testMultipleLevelsOfLayouts() {
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/layout/dialog.gsp', '''<html>
+        <head><g:layoutHead /><title>Dialog - <g:layoutTitle /></title></head>
+        <body onload="${g.pageProperty(name:'body.onload')}"><div id="dialog"><g:layoutBody /></div></body>
+</html>''')
+        resourceLoader.registerMockResource('/layout/base.gsp', '''<html>
+        <head><g:layoutHead /><title>Base - <g:layoutTitle /></title></head>
+        <body onload="${g.pageProperty(name:'body.onload')}"><div id="base"><g:layoutBody /></div></body>
+</html>''')
+        appCtx.groovyPageLocator.addResourceLoader resourceLoader
+        
+        configureSitemesh()
+        
+        def template = '''
+<g:applyLayout name="base"><g:applyLayout name="dialog">
+<html>
+        <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>This is the title</title></head>
+        <body onload="test();">body text</body>
+</html>
+</g:applyLayout></g:applyLayout>
+'''
+        request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage())
+        assertOutputEquals '''
+<html>
+        <head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"><title>Base - Dialog - This is the title</title></head>
+        <body onload="test();"><div id="base"><div id="dialog">body text</div></div></body>
+</html>
+''', template
+
+        def layout = '''
+<html>
+    <head><title>Decorated <g:layoutTitle default="defaultTitle"/></title><g:layoutHead /></head>
+    <body><h1>Hello</h1><g:layoutBody /></body>
+</html>
+'''
+        def result = applyLayout(layout, template)
+
+        assertEquals '''
+<html>
+    <head><title>Decorated Base - Dialog - This is the title</title><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head>
+    <body><h1>Hello</h1><div id="base"><div id="dialog">body text</div></div></body>
+</html>
+''', result
+    }
+    
     void testParameters() {
         def template = '''
 <html>
