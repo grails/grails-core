@@ -101,15 +101,15 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         results = Box.withCriteria {
             projections {
-                sqlProjection '(width + height) as perimeter, (width * height) as area', ['perimeter', 'area'], [StandardBasicTypes.INTEGER, StandardBasicTypes.INTEGER]
+                sqlProjection '(2 * (width + height)) as perimeter, (width * height) as area', ['perimeter', 'area'], [StandardBasicTypes.INTEGER, StandardBasicTypes.INTEGER]
             }
         }
 
         assert 4 == results?.size()
-        assert [9, 14] == results[0]
-        assert [10, 16] == results[1]
-        assert [11, 18] == results[2]
-        assert [13, 36] == results[3]
+        assert [18, 14] == results[0]
+        assert [20, 16] == results[1]
+        assert [22, 18] == results[2]
+        assert [26, 36] == results[3]
         
         results = Box.withCriteria {
             projections {
