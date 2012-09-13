@@ -71,26 +71,6 @@ class GrailsTestTransactionInterceptor {
     }
 
     /**
-     * Calls init() before and destroy() after invoking {@code body}.
-     *
-     * Note: it is the callers responsibility to verify that {@code body} should be run in a transaction.
-     */
-    void doInTransaction(Closure body) {
-        if (transactionManager) {
-            init()
-            try {
-                body()
-            }
-            finally {
-                destroy()
-            }
-        }
-        else {
-            body()
-        }
-    }
-
-    /**
      * A test is non transactional if it defines an instance or static property name 'transactional' with
      * a value of {@code false}.
      */
