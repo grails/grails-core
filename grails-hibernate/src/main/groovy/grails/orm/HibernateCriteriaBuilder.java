@@ -16,6 +16,7 @@
 package grails.orm;
 
 import grails.gorm.DetachedCriteria;
+import grails.util.CollectionUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.GroovySystem;
@@ -42,6 +43,7 @@ import org.grails.datastore.mapping.query.api.QueryableCriteria;
 import org.hibernate.Criteria;
 import org.hibernate.EntityMode;
 import org.hibernate.FetchMode;
+import org.hibernate.HibernateException;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -229,6 +231,40 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         else {
             projectionList.add(propertyProjection);
         }
+    }
+
+    /**
+     * Adds a sql projection to the criteria
+     * 
+     * @param sql SQL projecting a single value
+     * @param columnAlias column alias for the projected value
+     * @param type the type of the projected value
+     */
+    protected void sqlProjection(String sql, String columnAlias, Type type) {
+        sqlProjection(sql, CollectionUtils.newList(columnAlias), CollectionUtils.newList(type));
+    }
+
+    /**
+     * Adds a sql projection to the criteria
+     * 
+     * @param sql SQL projecting
+     * @param columnAliases List of column aliases for the projected values
+     * @param type List of types for the projected values
+     */
+    protected void sqlProjection(String sql, List<String> columnAliases, List<Type> types) {
+        projectionList.add(Projections.sqlProjection(sql, columnAliases.toArray(new String[columnAliases.size()]), types.toArray(new Type[types.size()])));
+    }
+
+    /**
+     * Adds a sql projection to the criteria
+     * 
+     * @param sql SQL projecting
+     * @param groupBy group by clause
+     * @param columnAliases List of column aliases for the projected values
+     * @param type List of types for the projected values
+     */
+    protected void sqlGroupProjection(String sql, String groupBy, List<String> columnAliases, List<Type> types) {
+        projectionList.add(Projections.sqlGroupProjection(sql, groupBy, columnAliases.toArray(new String[columnAliases.size()]), types.toArray(new Type[types.size()])));
     }
 
     /**
