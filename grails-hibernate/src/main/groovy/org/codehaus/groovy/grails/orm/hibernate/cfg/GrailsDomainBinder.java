@@ -1355,6 +1355,20 @@ public final class GrailsDomainBinder {
     public static Mapping getMapping(GrailsDomainClass domainClass) {
         return domainClass == null ? null : MAPPING_CACHE.get(domainClass.getClazz());
     }
+    
+    public static void clearMappingCache() {
+        MAPPING_CACHE.clear();
+    }
+    
+    public static void clearMappingCache(Class<?> theClass) {
+        String className = theClass.getName();
+        for(Iterator<Map.Entry<Class<?>, Mapping>> it = MAPPING_CACHE.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<Class<?>, Mapping> entry = it.next();
+            if(className.equals(entry.getKey().getName())) {
+                it.remove();
+            }
+        }
+    }
 
     /**
      * Binds the specified persistant class to the runtime model based on the
