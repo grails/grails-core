@@ -1939,6 +1939,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         }
     }
     
+    /*
+     * Define constants which may be used inside of criteria queries
+     * to refer to standard Hibernate Type instances.
+     */
     public static final Type BOOLEAN = StandardBasicTypes.BOOLEAN;
     public static final Type YES_NO = StandardBasicTypes.YES_NO;
     public static final Type BYTE = StandardBasicTypes.BYTE;
@@ -1951,4 +1955,32 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
     public static final Type BIG_DECIMAL = StandardBasicTypes.BIG_DECIMAL;
     public static final Type BIG_INTEGER = StandardBasicTypes.BIG_INTEGER;
     public static final Type STRING = StandardBasicTypes.STRING;
+    public static final Type NUMERIC_BOOLEAN = StandardBasicTypes.NUMERIC_BOOLEAN;
+    public static final Type TRUE_FALSE = StandardBasicTypes.TRUE_FALSE;
+    public static final Type URL = StandardBasicTypes.URL;
+    public static final Type TIME = StandardBasicTypes.TIME;
+    public static final Type DATE = StandardBasicTypes.DATE;
+    public static final Type TIMESTAMP = StandardBasicTypes.TIMESTAMP;
+    public static final Type CALENDAR = StandardBasicTypes.CALENDAR;
+    public static final Type CALENDAR_DATE = StandardBasicTypes.CALENDAR_DATE;
+    public static final Type CLASS = StandardBasicTypes.CLASS;
+    public static final Type LOCALE = StandardBasicTypes.LOCALE;
+    public static final Type CURRENCY = StandardBasicTypes.CURRENCY;
+    public static final Type TIMEZONE = StandardBasicTypes.TIMEZONE;
+    public static final Type UUID_BINARY = StandardBasicTypes.UUID_BINARY;
+    public static final Type UUID_CHAR = StandardBasicTypes.UUID_CHAR;
+    public static final Type BINARY = StandardBasicTypes.BINARY;
+    public static final Type WRAPPER_BINARY = StandardBasicTypes.WRAPPER_BINARY;
+    public static final Type IMAGE = StandardBasicTypes.IMAGE;
+    public static final Type BLOB = StandardBasicTypes.BLOB;
+    public static final Type MATERIALIZED_BLOB = StandardBasicTypes.MATERIALIZED_BLOB;
+    public static final Type WRAPPER_MATERIALIZED_BLOB = StandardBasicTypes.WRAPPER_MATERIALIZED_BLOB;
+    public static final Type CHAR_ARRAY = StandardBasicTypes.CHAR_ARRAY;
+    public static final Type CHARACTER_ARRAY = StandardBasicTypes.CHARACTER_ARRAY;
+    public static final Type TEXT = StandardBasicTypes.TEXT;
+    public static final Type CLOB = StandardBasicTypes.CLOB;
+    public static final Type MATERIALIZED_CLOB = StandardBasicTypes.MATERIALIZED_CLOB;
+    public static final Type WRAPPER_CHARACTERS_CLOB = StandardBasicTypes.WRAPPER_CHARACTERS_CLOB;
+    public static final Type CHARACTERS_CLOB = StandardBasicTypes.CHARACTERS_CLOB;
+    public static final Type SERIALIZABLE = StandardBasicTypes.SERIALIZABLE;
 }
