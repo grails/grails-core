@@ -5,10 +5,6 @@ import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.hibernate.Hibernate
-import org.hibernate.criterion.Projections
-import org.hibernate.type.StandardBasicTypes
-import org.hibernate.type.Type
 
 /**
  * @author Graeme Rocher
@@ -92,28 +88,99 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         def results = Box.withCriteria {
             projections {
-                sqlProjection 'sum(width * height) as totalArea', 'totalArea', StandardBasicTypes.INTEGER
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', BYTE
             }
         }
 
         assert 1 == results?.size()
         assert 84 == results[0]
+        assert results[0] instanceof Byte
 
         results = Box.withCriteria {
             projections {
-                sqlProjection '(width + height) as perimeter, (width * height) as area', ['perimeter', 'area'], [StandardBasicTypes.INTEGER, StandardBasicTypes.INTEGER]
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', SHORT
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Short
+
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', INTEGER
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Integer
+
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', LONG
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Long
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', FLOAT
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Float
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', DOUBLE
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Double
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', BIG_INTEGER
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof BigInteger
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', BIG_DECIMAL
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof BigDecimal
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection '(2 * (width + height)) as perimeter, (width * height) as area', ['perimeter', 'area'], [INTEGER, INTEGER]
             }
         }
 
         assert 4 == results?.size()
-        assert [9, 14] == results[0]
-        assert [10, 16] == results[1]
-        assert [11, 18] == results[2]
-        assert [13, 36] == results[3]
+        assert [18, 14] == results[0]
+        assert [20, 16] == results[1]
+        assert [22, 18] == results[2]
+        assert [26, 36] == results[3]
         
         results = Box.withCriteria {
             projections {
-                sqlGroupProjection 'width, sum(height) as combinedHeightsForThisWidth', 'width', ['width', 'combinedHeightsForThisWidth'], [StandardBasicTypes.INTEGER, StandardBasicTypes.INTEGER]
+                sqlGroupProjection 'width, sum(height) as combinedHeightsForThisWidth', 'width', ['width', 'combinedHeightsForThisWidth'], [INTEGER, INTEGER]
             }
         }
 
