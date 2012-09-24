@@ -241,16 +241,19 @@ public class GrailsConsole {
     public static synchronized GrailsConsole getInstance() {
         if (instance == null) {
             try {
-                instance = createInstance();
+            	setInstance(createInstance());
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
             }
         }
-
+        return instance;
+    }
+    
+    public static void setInstance(GrailsConsole newConsole) {
+    	instance = newConsole;
         if (!(System.out instanceof GrailsConsolePrintStream)) {
             System.setOut(new GrailsConsolePrintStream(instance.out));
         }
-        return instance;
     }
 
     public static GrailsConsole createInstance() throws IOException {
