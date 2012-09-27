@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.cli.maven
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import grails.util.BuildSettings
 import grails.util.Metadata
+
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
@@ -77,7 +79,7 @@ class MavenPomGenerator extends BaseSettingsApi{
 
     private String readVersion(BuildSettings buildSettings, metadata) {
         if(buildSettings.isPluginProject()) {
-            def pluginSettings = new PluginBuildSettings(buildSettings)
+            def pluginSettings = GrailsPluginUtils.getPluginBuildSettings(buildSettings)
             final info = pluginSettings.getPluginInfo(buildSettings.getBaseDir().absolutePath)
             return info.version
         }

@@ -19,7 +19,6 @@ import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
-import grails.util.PluginBuildSettings
 
 import java.awt.Desktop
 
@@ -30,6 +29,7 @@ import org.codehaus.groovy.grails.cli.parsing.CommandLine
 import org.codehaus.groovy.grails.cli.parsing.ParseException
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.cli.support.UaaIntegration
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
  * Provides the implementation of interactive mode in Grails.
@@ -91,7 +91,7 @@ class InteractiveMode {
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
 
         if (UaaIntegration.isAvailable() && !UaaIntegration.isEnabled()) {
-            UaaIntegration.enable(settings, new PluginBuildSettings(settings), true)
+            UaaIntegration.enable(settings, GrailsPluginUtils.getPluginBuildSettings(settings), true)
         }
         String originalGrailsEnv = System.getProperty(Environment.KEY)
         String originalGrailsEnvDefault = System.getProperty(Environment.DEFAULT)

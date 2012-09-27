@@ -26,6 +26,7 @@ import groovy.util.ConfigSlurper;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
 import org.codehaus.groovy.grails.cli.support.UaaIntegration;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -78,7 +79,7 @@ public class BaseSettingsApi {
         metadataFile = metadata.getMetadataFile();
         enableProfile = Boolean.valueOf(getPropertyValue("grails.script.profile", false).toString());
         pluginsHome = buildSettings.getProjectPluginsDir().getPath();
-        pluginSettings = new PluginBuildSettings(buildSettings);
+        pluginSettings = GrailsPluginUtils.getPluginBuildSettings(settings);
         grailsAppName = metadata.getApplicationName();
         isInteractive = interactive;
 
