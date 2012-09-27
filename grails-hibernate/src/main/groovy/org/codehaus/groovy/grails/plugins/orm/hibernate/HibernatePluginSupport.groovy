@@ -29,7 +29,6 @@ import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfigurati
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.orm.hibernate.*
-import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.codehaus.groovy.grails.orm.hibernate.events.PatchedDefaultFlushEventListener
@@ -39,35 +38,32 @@ import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateConstraintsE
 import org.codehaus.groovy.grails.orm.hibernate.validation.HibernateDomainClassValidator
 import org.codehaus.groovy.grails.orm.hibernate.validation.PersistentConstraintFactory
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint
+import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
+import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.hibernate.EmptyInterceptor
 import org.hibernate.FlushMode
 import org.hibernate.Session
 import org.hibernate.SessionFactory
-import org.hibernate.cfg.Environment
 import org.hibernate.cfg.ImprovedNamingStrategy
 import org.hibernate.proxy.HibernateProxy
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.TypeMismatchException
-import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.context.ApplicationContext
 import org.springframework.dao.DataAccessException
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.model.PersistentEntity
 import org.springframework.jdbc.support.nativejdbc.CommonsDbcpNativeJdbcExtractor
 import org.springframework.orm.hibernate3.HibernateAccessor
 import org.springframework.orm.hibernate3.HibernateCallback
 import org.springframework.orm.hibernate3.HibernateTemplate
-import org.springframework.orm.hibernate3.HibernateTransactionManager
-import org.springframework.validation.Validator
 import org.springframework.transaction.PlatformTransactionManager
-import org.codehaus.groovy.grails.domain.GrailsDomainClassPersistentEntity
-import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
-import org.grails.datastore.mapping.core.Datastore
+import org.springframework.validation.Validator
 
 /**
  * Used by HibernateGrailsPlugin to implement the core parts of GORM.
@@ -221,6 +217,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 }
 
                 hibProps.putAll(hibConfig.flatten().toProperties('hibernate'))
+                hibProps.remove('hibernate.reload')
 
                 // move net.sf.ehcache.configurationResourceName to "top level"    if it exists
                 if (hibProps.'hibernate.net.sf.ehcache.configurationResourceName') {
@@ -341,33 +338,58 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
     static final onChange = { event ->
         LOG.debug "onChange() started"
 
-        def datasourceNames = [GrailsDomainClassProperty.DEFAULT_DATA_SOURCE]
+        def allDatasourceNames = [GrailsDomainClassProperty.DEFAULT_DATA_SOURCE] as Set
         for (name in application.config.keySet()) {
             if (name.startsWith('dataSource_')) {
-                datasourceNames << name - 'dataSource_'
+                allDatasourceNames << name - 'dataSource_'
             }
         }
-
+        
+        def datasourceNames
+        if(event.source instanceof Class) {
+            GrailsDomainClass dc = application.getDomainClass(event.source.name)
+            if(!dc.getMappingStrategy().equalsIgnoreCase(GrailsDomainClass.GORM)) {
+                return
+            }
+            GrailsDomainBinder.clearMappingCache(event.source)
+            def dcMappingDsNames = GrailsHibernateUtil.getDatasourceNames(dc) as Set
+            datasourceNames = [] as Set
+            for(name in allDatasourceNames) {
+                if(name in dcMappingDsNames || dcMappingDsNames.contains(GrailsDomainClassProperty.ALL_DATA_SOURCES)) {
+                    datasourceNames << name
+                }
+            }
+        } else {
+            GrailsDomainBinder.clearMappingCache()
+            datasourceNames = allDatasourceNames
+        }
+        
         def beans = beans {
             for (String datasourceName in datasourceNames) {
                 LOG.debug "processing DataSource $datasourceName"
                 boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
                 String suffix = isDefault ? '' : '_' + datasourceName
-
-                "${SessionFactoryHolder.BEAN_ID}$suffix"(SessionFactoryHolder) {
-                   sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
-                       bean.parent = ref("abstractSessionFactoryBeanConfig$suffix")
-                       proxyIfReloadEnabled = false
-                   }
-                }
-
-                GrailsDomainClass dc = application.getDomainClass(event.source.name)
-                if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
-                    "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
-                        messageSource = ref("messageSource")
-                        domainClass = ref("${dc.fullName}DomainClass")
-                        sessionFactory = ref("sessionFactory$suffix")
-                        grailsApplication = ref("grailsApplication", true)
+                def hibConfig = application.config["hibernate$suffix"]
+                def sessionFactoryReload = hibConfig?.containsKey('reload') ? hibConfig.reload : true
+                
+                if(sessionFactoryReload) {
+                    "${SessionFactoryHolder.BEAN_ID}$suffix"(SessionFactoryHolder) {
+                       sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
+                           bean.parent = ref("abstractSessionFactoryBeanConfig$suffix")
+                           proxyIfReloadEnabled = false
+                       }
+                    }
+    
+                    if(event.source instanceof Class) {
+                        GrailsDomainClass dc = application.getDomainClass(event.source.name)
+                        if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
+                            "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
+                                messageSource = ref("messageSource")
+                                domainClass = ref("${dc.fullName}DomainClass")
+                                sessionFactory = ref("sessionFactory$suffix")
+                                grailsApplication = ref("grailsApplication", true)
+                            }
+                        }
                     }
                 }
             }

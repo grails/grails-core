@@ -15,6 +15,8 @@
  */
 package grails.util;
 
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+
 /**
  * Static singleton holder for the BuildSettings instance. Should only
  * be initialised once (in {@link org.codehaus.groovy.grails.cli.GrailsScriptRunner}.
@@ -29,6 +31,17 @@ public final class BuildSettingsHolder {
 
     public static void setSettings(BuildSettings newSettings) {
         settings = newSettings;
+        try {
+            // test if classpath has been initialized already
+            Class.forName("org.springframework.core.io.Resource");
+            if(settings != null) {
+                GrailsPluginUtils.getPluginBuildSettings(settings);
+            } else {
+                GrailsPluginUtils.setPluginBuildSettings(null);
+            }
+        } catch (ClassNotFoundException e) {
+            // ignore error that comes in Grails startup before the classpath has been initialized
+        }
     }
 
     private BuildSettingsHolder() {
