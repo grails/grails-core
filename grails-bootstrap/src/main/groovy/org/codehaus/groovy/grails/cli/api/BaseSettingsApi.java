@@ -31,6 +31,7 @@ import org.codehaus.gant.GantBinding;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
 import org.codehaus.groovy.grails.io.support.*;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.beans.IntrospectionException;
@@ -87,7 +88,7 @@ public class BaseSettingsApi {
         metadataFile = metadata.getMetadataFile();
         enableProfile = Boolean.valueOf(getPropertyValue("grails.script.profile", false).toString());
         pluginsHome = buildSettings.getProjectPluginsDir().getPath();
-        pluginSettings = new PluginBuildSettings(buildSettings);
+        pluginSettings = GrailsPluginUtils.getPluginBuildSettings(settings);
         grailsAppName = metadata.getApplicationName();
         isInteractive = interactive;
 
