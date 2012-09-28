@@ -75,7 +75,7 @@ class PluginInstallEngine {
     protected PluginResolveEngine resolveEngine
 
     PluginInstallEngine(BuildSettings settings) {
-        this(settings, new PluginBuildSettings(settings), Metadata.current, new AntBuilder())
+        this(settings, GrailsPluginUtils.getPluginBuildSettings(settings), Metadata.current, new AntBuilder())
     }
 
     PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs) {

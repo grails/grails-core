@@ -17,13 +17,14 @@ package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
-import grails.util.PluginBuildSettings;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -34,7 +35,6 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 /**
  * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/).
  *
@@ -184,8 +184,7 @@ public class GroovyPageParser implements Tokens {
         this.gspEncoding = encoding;
 
         if (filename != null && BuildSettingsHolder.getSettings() != null) {
-            PluginBuildSettings pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
-            GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
+            GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
             if (info != null) {
                 pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
                     info.getVersion() + "')";

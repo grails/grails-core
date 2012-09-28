@@ -20,7 +20,8 @@ import grails.util.PluginBuildSettings
 import jline.SimpleCompletor
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
-import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.springframework.core.io.Resource
 
 /**
  * A completor that completes
@@ -42,7 +43,7 @@ abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettin
     @Override
     int complete(String buffer, int cursor, List clist) {
 
-        PluginBuildSettings pluginSettings = new PluginBuildSettings(buildSettings)
+        PluginBuildSettings pluginSettings = GrailsPluginUtils.getPluginBuildSettings(buildSettings)
 
         final resources = pluginSettings.getArtefactResourcesForOne(buildSettings.baseDir.absolutePath)
         def classNames = []

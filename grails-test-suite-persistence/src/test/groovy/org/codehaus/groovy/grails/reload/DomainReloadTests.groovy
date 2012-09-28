@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.reload;
 
 
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
+import org.hibernate.SessionFactory;
 
 /**
  * Tests for auto-reloading of domain classes
@@ -30,6 +31,9 @@ class DomainReloadEye {
         assert testDomain.respondsTo("getName")
         assert !testDomain.respondsTo("getDescription")
         assert !testDomain.respondsTo("addToEyes")
+        
+        Map<String,Object> sessionFactoryBeans=ga.mainContext.getBeansOfType(SessionFactory.class);
+        assertEquals 1, sessionFactoryBeans.size()
 
         def newGcl = new GroovyClassLoader()
         def event = [source: newGcl.parseClass(domain1), ctx: appCtx, application: ga]
@@ -49,6 +53,9 @@ class DomainReloadEye {
         assert newDomain.respondsTo("getDescription")
         assert newDomain.respondsTo("save")
         assert newDomain.respondsTo("addToEyes")
+        
+        sessionFactoryBeans=ga.mainContext.getBeansOfType(SessionFactory.class);
+        assertEquals 1, sessionFactoryBeans.size()
     }
 
     void onSetUp() {
