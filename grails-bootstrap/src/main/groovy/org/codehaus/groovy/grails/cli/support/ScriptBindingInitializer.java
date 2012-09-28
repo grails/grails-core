@@ -113,7 +113,7 @@ public class ScriptBindingInitializer {
          binding.setVariable(GRAILS_VERSION, settings.getGrailsVersion());
          binding.setVariable(USER_HOME, settings.getUserHome());
          binding.setVariable(GRAILS_ENV, settings.getGrailsEnv());
-         binding.setVariable("defaultEnv", Boolean.valueOf(settings.getDefaultEnv()));
+         binding.setVariable("defaultEnv", settings.getDefaultEnv());
          binding.setVariable("buildConfig", settings.getConfig());
          binding.setVariable("rootLoader", settings.getRootLoader());
          binding.setVariable("configFile", new File(baseDirPath + "/grails-app/conf/Config.groovy"));

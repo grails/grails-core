@@ -148,6 +148,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         // which includes the contextPath
         argMap.put(LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK);
         return redirectResponse(requestLinkGenerator.getServerBaseURL(), requestLinkGenerator.link(argMap), request, response, permanent);
+        
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
@@ -172,9 +173,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Executing redirect with response ["+response+"]");
         }
-
-        String absoluteURL = actualUri.contains("://") ? actualUri : serverBaseURL + actualUri;
-        absoluteURL = processedUrl(absoluteURL, request);
+        String processedActualUri = processedUrl(actualUri, request);
+        String absoluteURL = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri;
         String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL;
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
 
@@ -187,7 +187,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             }
         }
 
-        request.setAttribute(GRAILS_REDIRECT_ISSUED, actualUri);
+        request.setAttribute(GRAILS_REDIRECT_ISSUED, processedActualUri);
         return null;
     }
 

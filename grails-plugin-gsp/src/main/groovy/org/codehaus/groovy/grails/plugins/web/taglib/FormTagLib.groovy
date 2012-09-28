@@ -287,10 +287,12 @@ class FormTagLib {
     void outputAttributes(attrs, writer, boolean useNameAsIdIfIdDoesNotExist = false) {
         attrs.remove('tagName') // Just in case one is left
         attrs.each { k, v ->
-            writer << k
-            writer << '="'
-            writer << v.encodeAsHTML()
-            writer << '" '
+            if(v != null) {
+                writer << k
+                writer << '="'
+                writer << v.encodeAsHTML()
+                writer << '" '
+            }
         }
         if (useNameAsIdIfIdDoesNotExist) {
             outputNameAsIdIfIdDoesNotExist(attrs, writer)
@@ -495,6 +497,7 @@ class FormTagLib {
         // add image src
         def src = attrs.remove('src')
         if (src) {
+            src = processedUrl(src,request)
             out << "src=\"${src}\" "
         }
 
@@ -1107,6 +1110,18 @@ class FormTagLib {
             processedValue = requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type);
         } 
         return processedValue;
+    }
+
+    Closure processedUrl = { link,request ->
+        if(!link) {
+            throwTagError('processedUrl missing required attribute ["link"]')
+        }
+        requestDataValueProcessor = getRequestDataValueProcessor()
+        def currentLink = link;
+        if(requestDataValueProcessor != null) {
+            currentLink = requestDataValueProcessor.processUrl(request,link);
+        }  
+        return currentLink;
     }
 
 }

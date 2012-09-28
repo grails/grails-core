@@ -381,6 +381,7 @@ public abstract class GroovyPage extends Script {
                         if (!(attrs instanceof GroovyPageAttributes)) {
                             attrs = new GroovyPageAttributes(attrs);
                         }
+                        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(true);                        
                         switch (tag.getParameterTypes().length) {
                             case 1:
                                 tagresult = tag.call(new Object[]{attrs});
@@ -473,8 +474,9 @@ public abstract class GroovyPage extends Script {
                                                 String tagName, Map attrs, Object body, GrailsWebRequest webRequest) {
 
         if (!(attrs instanceof GroovyPageAttributes)) {
-            attrs = new GroovyPageAttributes(attrs);
+            attrs = new GroovyPageAttributes(attrs, false);
         }
+        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(false);        
         GroovyObject tagLib = lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
 
         if (tagLib == null) {

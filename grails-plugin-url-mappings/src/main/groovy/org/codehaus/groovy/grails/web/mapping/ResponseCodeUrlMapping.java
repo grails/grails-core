@@ -36,8 +36,8 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
     private Map parameterValues = Collections.EMPTY_MAP;
     private Class<?> exceptionType;
 
-    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        super(controllerName, actionName, viewName, constraints, servletContext);
+    public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        super(controllerName, actionName, pluginName, viewName, constraints, servletContext);
         this.urlData = (ResponseCodeMappingData) urlData;
 
         Assert.isTrue(constraints == null || constraints.length == 0,
@@ -93,21 +93,37 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
+    public String createURL(String controller, String action, String pluginName, Map values, String encoding) {
+        throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
+    }
+    
     public String createRelativeURL(String controller, String action, Map values, String encoding) {
         throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
     }
 
+    public String createRelativeURL(String controller, String action, String pluginName, Map values, String encoding) {
+        throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
+    }
+    
     public String createRelativeURL(String controller, String action, Map values, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
     }
 
+    public String createRelativeURL(String controller, String action, String pluginName, Map values, String encoding, String fragment) {
+        throw new UnsupportedOperationException("Method createRelativeURL not implemented in " + getClass());
+    }
+    
     public String createURL(String controller, String action, Map values, String encoding, String fragment) {
         throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
     }
 
+    public String createURL(String controller, String action, String pluginName, Map values, String encoding, String fragment) {
+        throw new UnsupportedOperationException("Method createURL not implemented in " + getClass());
+    }
+    
     public UrlMappingInfo match(int responseCode) {
         if (responseCode == urlData.getResponseCode()) {
-            return new DefaultUrlMappingInfo(controllerName, actionName, viewName,
+            return new DefaultUrlMappingInfo(controllerName, actionName, pluginName, viewName,
                     parameterValues, urlData, servletContext);
         }
         return null;

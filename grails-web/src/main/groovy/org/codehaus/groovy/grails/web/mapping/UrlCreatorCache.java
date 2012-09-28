@@ -43,8 +43,8 @@ public class UrlCreatorCache {
         cacheMap.clear();
     }
 
-    public ReverseMappingKey createKey(String controller, String action, Map params) {
-        return new ReverseMappingKey(controller, action, params);
+    public ReverseMappingKey createKey(String controller, String action, String pluginName, Map params) {
+        return new ReverseMappingKey(controller, action, pluginName, params);
     }
 
     public UrlCreator lookup(ReverseMappingKey key) {
@@ -76,40 +76,57 @@ public class UrlCreatorCache {
 
         public String createRelativeURL(String controller, String action, Map parameterValues,
                 String encoding, String fragment) {
-            UrlCreatorKey key = new UrlCreatorKey(controller, action, parameterValues, encoding, fragment, 0);
+            return createRelativeURL(controller, action, null, parameterValues, encoding, fragment);
+        }
+
+        public String createRelativeURL(String controller, String action, String pluginName, Map parameterValues,
+                String encoding, String fragment) {
+            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, parameterValues, encoding, fragment, 0);
             String url = cache.get(key);
             if (url == null) {
-                url = delegate.createRelativeURL(controller, action, parameterValues, encoding, fragment);
+                url = delegate.createRelativeURL(controller, action, pluginName, parameterValues, encoding, fragment);
                 cache.put(key, url);
             }
             return url;
         }
 
         public String createRelativeURL(String controller, String action, Map parameterValues, String encoding) {
-            UrlCreatorKey key = new UrlCreatorKey(controller, action, parameterValues, encoding, null, 0);
+            return createRelativeURL(controller, action, null, parameterValues, encoding);
+        }
+
+        public String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding) {
+            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, parameterValues, encoding, null, 0);
             String url = cache.get(key);
             if (url == null) {
-                url = delegate.createRelativeURL(controller, action, parameterValues, encoding);
+                url = delegate.createRelativeURL(controller, action, pluginName, parameterValues, encoding);
                 cache.put(key, url);
             }
             return url;
         }
 
         public String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
-            UrlCreatorKey key = new UrlCreatorKey(controller, action, parameterValues, encoding, fragment, 1);
+            return createURL(controller, action, null, parameterValues, encoding, fragment);
+        }
+
+        public String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding, String fragment) {
+            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, parameterValues, encoding, fragment, 1);
             String url = cache.get(key);
             if (url == null) {
-                url = delegate.createURL(controller, action, parameterValues, encoding, fragment);
+                url = delegate.createURL(controller, action, pluginName, parameterValues, encoding, fragment);
                 cache.put(key, url);
             }
             return url;
         }
 
         public String createURL(String controller, String action, Map parameterValues, String encoding) {
-            UrlCreatorKey key = new UrlCreatorKey(controller, action, parameterValues, encoding, null, 1);
+            return createURL(controller, action, null, parameterValues, encoding);
+        }
+
+        public String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding) {
+            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, parameterValues, encoding, null, 1);
             String url = cache.get(key);
             if (url == null) {
-                url = delegate.createURL(controller, action, parameterValues, encoding);
+                url = delegate.createURL(controller, action, pluginName, parameterValues, encoding);
                 cache.put(key, url);
             }
             return url;
@@ -129,12 +146,14 @@ public class UrlCreatorCache {
     public static class ReverseMappingKey {
         protected final String controller;
         protected final String action;
+        protected final String pluginName;
         protected final String[] paramKeys;
         protected final String[] paramValues;
 
-        public ReverseMappingKey(String controller, String action, Map<Object, Object> params) {
+        public ReverseMappingKey(String controller, String action, String pluginName, Map<Object, Object> params) {
             this.controller = controller;
             this.action = action;
+            this.pluginName = pluginName;
             if (params != null) {
                 paramKeys = new String[params.size()];
                 paramValues = new String[params.size()];
@@ -168,6 +187,7 @@ public class UrlCreatorCache {
             int weight = 0;
             weight += (controller != null) ? controller.length() : 0;
             weight += (action != null) ? action.length() : 0;
+            weight += (pluginName != null) ? pluginName.length() : 0;
             for (int i = 0; i < paramKeys.length; i++) {
                 weight += (paramKeys[i] != null) ? paramKeys[i].length() : 0;
             }
@@ -182,6 +202,7 @@ public class UrlCreatorCache {
             final int prime = 31;
             int result = 1;
             result = prime * result + ((action == null) ? 0 : action.hashCode());
+            result = prime * result + ((pluginName == null) ? 0 : pluginName.hashCode());
             result = prime * result + ((controller == null) ? 0 : controller.hashCode());
             result = prime * result + Arrays.hashCode(paramKeys);
             result = prime * result + Arrays.hashCode(paramValues);
@@ -216,6 +237,14 @@ public class UrlCreatorCache {
             else if (!controller.equals(other.controller)) {
                 return false;
             }
+            if (pluginName == null) {
+                if (other.pluginName != null) {
+                    return false;
+                }
+            }
+            else if (!pluginName.equals(other.pluginName)) {
+                return false;
+            }
             if (!Arrays.equals(paramKeys, other.paramKeys)) {
                 return false;
             }
@@ -227,7 +256,7 @@ public class UrlCreatorCache {
 
         @Override
         public String toString() {
-            return "UrlCreatorCache.ReverseMappingKey [action=" + action + ", controller=" + controller +
+            return "UrlCreatorCache.ReverseMappingKey [action=" + action + ", controller=" + controller + ", plugin=" + pluginName +
                 ", paramKeys=" + Arrays.toString(paramKeys) + ", paramValues=" +
                 Arrays.toString(paramValues) + "]";
         }
@@ -238,9 +267,9 @@ public class UrlCreatorCache {
         protected final String fragment;
         protected final int urlType;
 
-        public UrlCreatorKey(String controller, String action, Map<Object, Object> params, String encoding,
+        public UrlCreatorKey(String controller, String action, String pluginName, Map<Object, Object> params, String encoding,
                 String fragment, int urlType) {
-            super(controller, action, params);
+            super(controller, action, pluginName, params);
             this.encoding = (encoding != null) ? encoding.toLowerCase() : null;
             this.fragment = fragment;
             this.urlType = urlType;
@@ -293,7 +322,7 @@ public class UrlCreatorCache {
         @Override
         public String toString() {
             return "UrlCreatorCache.UrlCreatorKey [encoding=" + encoding + ", fragment=" + fragment +
-                ", urlType=" + urlType + ", action=" + action + ", controller=" + controller +
+                ", urlType=" + urlType + ", action=" + action + ", controller=" + controller + ", plugin=" + pluginName +
                 ", paramKeys=" + Arrays.toString(paramKeys) + ", paramValues=" +
                 Arrays.toString(paramValues) + "]";
         }

@@ -24,6 +24,7 @@ import org.grails.datastore.mapping.model.MappingContext;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.Assert;
 
@@ -33,19 +34,17 @@ import org.springframework.util.Assert;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class HibernateDatastore extends AbstractDatastore {
+public class HibernateDatastore extends AbstractDatastore implements ApplicationContextAware {
 
     private SessionFactory sessionFactory;
     private ConfigObject config;
     private EventTriggeringInterceptor eventTriggeringInterceptor;
 
-    public HibernateDatastore(MappingContext mappingContext, SessionFactory sessionFactory,
-            ApplicationContext applicationContext, ConfigObject config) {
+    public HibernateDatastore(MappingContext mappingContext, SessionFactory sessionFactory, ConfigObject config) {
         super(mappingContext);
         this.sessionFactory = sessionFactory;
         this.config = config;
         super.initializeConverters(mappingContext);
-        setApplicationContext(applicationContext);
     }
 
     /**

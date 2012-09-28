@@ -133,9 +133,9 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     }
 
     public Byte getByte(String name, Integer defaultValue) {
-        Byte value=getByte(name);
+        Byte value = getByte(name);
         if (value == null && defaultValue != null) {
-            value = Byte.valueOf((byte)defaultValue.intValue());
+            value = (byte)defaultValue.intValue();
         }
         return value;
     }
@@ -163,7 +163,7 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     public Character getChar(String name, Integer defaultValue) {
         Character value=getChar(name);
         if (value == null && defaultValue != null) {
-            value = Character.valueOf((char)defaultValue.intValue());
+            value = (char)defaultValue.intValue();
         }
         return value;
     }

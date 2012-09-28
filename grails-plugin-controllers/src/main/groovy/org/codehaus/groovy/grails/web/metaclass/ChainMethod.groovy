@@ -25,6 +25,10 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+
  /**
  * Implementation of the chain() method for controllers.
  *
@@ -33,10 +37,13 @@ import javax.servlet.http.HttpServletRequest;
  */
 class ChainMethod {
 
+    private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
+
     static invoke(target, Map args = [:]) {
         def controller = args.controller ?: GrailsNameUtils.getLogicalPropertyName(
             target.class.name, ControllerArtefactHandler.TYPE)
         def action = args.action
+        def plugin = args.remove('plugin')
         def id = args.id
         def params = args.params ?: [:]
         def model = args.model ?: [:]
@@ -72,10 +79,10 @@ class ChainMethod {
         // the reverse URL mapping.
         if (id) params.id = id
 
-        UrlCreator creator = mappings.getReverseMapping(controller, action, params)
+        UrlCreator creator = mappings.getReverseMapping(controller, action, plugin, params)
         def response = webRequest.getCurrentResponse()
 
-        def url = creator.createURL(controller,action, params, 'utf-8')
+        def url = creator.createURL(controller, action, plugin, params, 'utf-8')
 
         if(appCtx.containsBean("requestDataValueProcessor")) {
             RequestDataValueProcessor valueProcessor = appCtx.getBean("requestDataValueProcessor")

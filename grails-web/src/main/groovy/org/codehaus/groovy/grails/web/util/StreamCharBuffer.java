@@ -601,7 +601,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     public String plus(Object value) {
-        return toString() + String.valueOf(value);
+        return toString() + value;
     }
 
     /**

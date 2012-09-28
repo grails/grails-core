@@ -4,11 +4,27 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.GrailsFlashScope
 import grails.util.MockHttpServletResponse
 
+import grails.util.MockRequestDataValueProcessor
+
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.springframework.web.servlet.support.RequestDataValueProcessor
+
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class ChainMethodTests extends AbstractGrailsControllerTests{
+class ChainMethodTests extends AbstractGrailsControllerTests {
+
+    void registerRequestDataValueProcessor() {
+        RequestDataValueProcessor requestDataValueProcessor = new MockRequestDataValueProcessor();
+        MockApplicationContext applicationContext = (MockApplicationContext)ctx;
+        applicationContext.registerMockBean("requestDataValueProcessor",requestDataValueProcessor);
+    }
+    void unRegisterRequestDataValueProcessor() {
+        MockApplicationContext applicationContext = (MockApplicationContext)ctx;
+        applicationContext.registerMockBean("requestDataValueProcessor",null);
+    }
 
     protected void onSetUp() {
         gcl.parseClass('''
@@ -54,6 +70,28 @@ class TestChainBook {
         org.springframework.mock.web.MockHttpServletResponse response = controller.response
 
         assertEquals '/testChain/create', response.redirectedUrl
+    }
+
+    void testChainMethodWithModelAndRequestDataValueProcessor() {
+        this.registerRequestDataValueProcessor()
+        def domainClass = ga.getDomainClass("TestChainBook").clazz
+        domainClass.metaClass.save = { false }
+        def controller = ga.getControllerClass("TestChainController").newInstance()
+
+        controller.save()
+
+        def flash = controller.flash
+
+        assert flash.chainModel.book
+
+        def id = System.identityHashCode(flash.chainModel.book)
+
+        assert flash.chainModel[GrailsFlashScope.ERRORS_PREFIX+id]
+
+        org.springframework.mock.web.MockHttpServletResponse response = controller.response
+
+        assertEquals '/testChain/create?requestDataValueProcessorParamName=paramValue', response.redirectedUrl
+        this.unRegisterRequestDataValueProcessor()
     }
 
     void testChainMethodWithId() {

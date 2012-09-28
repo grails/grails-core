@@ -5,8 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>@group@</groupId>
     <artifactId>@name@</artifactId>
-    <packaging>grails-app</packaging>
     <version>@version@</version>
+    <packaging>grails-plugin</packaging>
+
+
     <name>@name@</name>
     <description>@name@</description>
 
@@ -15,7 +17,6 @@
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-dependencies</artifactId>
@@ -23,33 +24,18 @@
             <type>pom</type>
         </dependency>
 
-
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-test</artifactId>
             <version>${grails.version}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-testing</artifactId>
             <version>${grails.version}</version>
             <scope>test</scope>
         </dependency>
-
-        @dependencies@
-
-        <dependency>
-            <groupId>org.grails.plugins</groupId>
-            <artifactId>tomcat</artifactId>
-            <version>${grails.version}</version>
-            <scope>provided</scope>
-            <type>zip</type>
-        </dependency>
-        @plugins@
-
-
     </dependencies>
 
     <build>
@@ -60,6 +46,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>

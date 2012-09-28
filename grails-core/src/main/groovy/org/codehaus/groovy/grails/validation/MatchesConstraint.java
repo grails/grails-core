@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.validation;
 import org.springframework.validation.Errors;
 
 /**
- * A constraint that validates the property against a supplied regular expression.
+ * Validates the property against a supplied regular expression.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -47,7 +47,9 @@ public class MatchesConstraint extends AbstractConstraint {
     @Override
     public void setParameter(Object constraintParameter) {
         if (!(constraintParameter instanceof String)) {
-            throw new IllegalArgumentException("Parameter for constraint ["+ConstrainedProperty.MATCHES_CONSTRAINT+"] of property ["+constraintPropertyName+"] of class ["+constraintOwningClass+"] must be of type [java.lang.String]");
+            throw new IllegalArgumentException("Parameter for constraint [" + ConstrainedProperty.MATCHES_CONSTRAINT +
+                    "] of property [" + constraintPropertyName + "] of class [" +
+                    constraintOwningClass + "] must be of type [java.lang.String]");
         }
 
         regex = (String)constraintParameter;
@@ -60,10 +62,12 @@ public class MatchesConstraint extends AbstractConstraint {
 
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
-        if (!propertyValue.toString().matches(regex)) {
-            Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex };
-            rejectValue(target, errors, ConstrainedProperty.DEFAULT_DOESNT_MATCH_MESSAGE_CODE,
-                    ConstrainedProperty.MATCHES_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX, args);
+        if (propertyValue.toString().matches(regex)) {
+            return;
         }
+
+        rejectValue(target, errors, ConstrainedProperty.DEFAULT_DOESNT_MATCH_MESSAGE_CODE,
+                ConstrainedProperty.MATCHES_CONSTRAINT + ConstrainedProperty.INVALID_SUFFIX,
+                new Object[] { constraintPropertyName, constraintOwningClass, propertyValue, regex });
     }
 }

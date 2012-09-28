@@ -221,6 +221,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         return identity;
     }
 
+    public void setIdentity(boolean b) {
+        identity = b;
+    }
+
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isOneToMany()
      */

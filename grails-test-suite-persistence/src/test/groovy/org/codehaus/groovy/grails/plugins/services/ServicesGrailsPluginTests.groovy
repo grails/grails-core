@@ -92,15 +92,19 @@ class PerMethodTransactionalService {
         def corePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
         def corePlugin = new DefaultGrailsPlugin(corePluginClass,ga)
         def dataSourcePluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
+
+        def domainPluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
         def dataSourcePlugin = new DefaultGrailsPlugin(dataSourcePluginClass, ga)
         def hibernatePluginClass = gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.MockHibernateGrailsPlugin")
         def hibernatePlugin = new DefaultGrailsPlugin(hibernatePluginClass, ga)
+        def domainPlugin = new DefaultGrailsPlugin(domainPluginClass, ga)
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
         springConfig.servletContext = createMockServletContext()
 
         corePlugin.doWithRuntimeConfiguration(springConfig)
         dataSourcePlugin.doWithRuntimeConfiguration(springConfig)
+        domainPlugin.doWithRuntimeConfiguration(springConfig)
         hibernatePlugin.doWithRuntimeConfiguration(springConfig)
 
         def pluginClass = gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")

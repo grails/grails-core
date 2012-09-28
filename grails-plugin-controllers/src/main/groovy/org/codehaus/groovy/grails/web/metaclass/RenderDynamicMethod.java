@@ -49,12 +49,14 @@ import org.codehaus.groovy.grails.web.mime.MimeUtility;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -341,7 +343,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 if (argMap.containsKey(ARGUMENT_MODEL)) {
                     Object modelObject = argMap.get(ARGUMENT_MODEL);
                     if (modelObject instanceof Map) {
-                        binding.putAll((Map) modelObject);
+                        setTemplateModel(webRequest, binding, (Map) modelObject);
                     }
                 }
                 renderTemplateForBean(t, binding, bean, var, out);
@@ -351,13 +353,16 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 if (argMap.containsKey(ARGUMENT_MODEL)) {
                     Object modelObject = argMap.get(ARGUMENT_MODEL);
                     if (modelObject instanceof Map) {
-                        binding.putAll((Map) modelObject);
+                        setTemplateModel(webRequest, binding, (Map)modelObject);
                     }
                 }
                 renderTemplateForCollection(t, binding, colObject, var, out);
             }
             else if (argMap.containsKey(ARGUMENT_MODEL)) {
                 Object modelObject = argMap.get(ARGUMENT_MODEL);
+                if(modelObject instanceof Map) {
+                    setTemplateModel(webRequest, binding, (Map)modelObject);
+                }
                 renderTemplateForModel(t, modelObject, target, out);
             }
             else {
@@ -373,6 +378,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             throw new ControllerExecutionException("I/O error executing render method for arguments [" + argMap + "]: " + ioex.getMessage(), ioex);
         }
         return renderView;
+    }
+
+    private void setTemplateModel(GrailsWebRequest webRequest, Map binding, Map modelObject) {
+        Map modelMap = (Map) modelObject;
+        webRequest.setAttribute(GrailsApplicationAttributes.TEMPLATE_MODEL, modelMap, RequestAttributes.SCOPE_REQUEST);
+        binding.putAll(modelMap);
     }
 
     private String getContextPath(GrailsWebRequest webRequest, Map argMap) {

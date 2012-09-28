@@ -135,7 +135,8 @@ class DynamicElementReader extends GroovyObjectSupport {
             }
         }
         else {
-            throw new BeanDefinitionParsingException(new Problem("No namespace handler found for element ${sw}", new Location(parserContext?.readerContext?.resource ?: new ByteArrayResource(new byte[0]))))
+            throw new BeanDefinitionParsingException(new Problem("No namespace handler found for element ${sw}",
+                new Location(parserContext?.readerContext?.resource ?: new ByteArrayResource(new byte[0]))))
         }
 
         if (invokeAfterInterceptor) {

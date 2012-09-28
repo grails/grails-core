@@ -48,6 +48,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     private Object controllerName;
     private Object actionName;
+    private Object pluginName;
     private Object id;
     private static final String ID_PARAM = "id";
     private UrlMappingData urlData;
@@ -70,13 +71,14 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     @SuppressWarnings("rawtypes")
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName, Map params,
+    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object pluginName, Object viewName, Map params,
             UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
         Assert.isTrue(controllerName != null || viewName != null, "URL mapping must either provide a controller or view name to map to!");
         Assert.notNull(params, "Argument [params] cannot be null");
         this.controllerName = controllerName;
         this.actionName = actionName;
+        this.pluginName = pluginName;
         if (actionName == null) {
             this.viewName = viewName;
         }
@@ -111,6 +113,10 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     public void setParsingRequest(boolean parsingRequest) {
         this.parsingRequest = parsingRequest;
+    }
+    
+    public String getPluginName() {
+        return pluginName != null ? pluginName.toString() : null;
     }
 
     public String getControllerName() {
@@ -186,10 +192,10 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         Object disableMultipart = app.getFlatConfig().get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
         boolean disabled = false;
         if (disableMultipart instanceof Boolean) {
-            disabled = ((Boolean) disableMultipart).booleanValue();
+            disabled = (Boolean)disableMultipart;
         }
         else if (disableMultipart instanceof String) {
-            disabled = Boolean.valueOf((String) disableMultipart).booleanValue();
+            disabled = Boolean.valueOf((String)disableMultipart);
         }
         return disabled;
     }

@@ -1043,9 +1043,9 @@ public class GrailsClassUtils {
             Object o = map.get(key);
             if (o == null)return false;
             if (o instanceof Boolean) {
-                return ((Boolean)o).booleanValue();
+                return (Boolean)o;
             }
-            return Boolean.valueOf(o.toString()).booleanValue();
+            return Boolean.valueOf(o.toString());
         }
         return false;
     }
@@ -1069,24 +1069,26 @@ public class GrailsClassUtils {
     }
 
     /**
-     * Checks whether the given class is a JDK 1.5 enum or not
+     * Checks whether the given class is a JDK 1.5 enum.
      *
      * @param type The class to check
      * @return true if it is an enum
      */
     public static boolean isJdk5Enum(Class<?> type) {
-        if (JdkVersion.getMajorJavaVersion() >= JdkVersion.JAVA_15) {
-            Method m = BeanUtils.findMethod(type.getClass(),"isEnum");
-            if (m == null) return false;
-            try {
-                Object result = m.invoke(type);
-                return result instanceof Boolean && ((Boolean) result).booleanValue();
-            }
-            catch (Exception e) {
-                return false;
-            }
+        if (JdkVersion.getMajorJavaVersion() < JdkVersion.JAVA_15) {
+            return false;
         }
-        return false;
+
+        Method m = BeanUtils.findMethod(type.getClass(),"isEnum");
+        if (m == null) return false;
+
+        try {
+            Object result = m.invoke(type);
+            return result instanceof Boolean && (Boolean)result;
+        }
+        catch (Exception e) {
+            return false;
+        }
     }
 
     /**

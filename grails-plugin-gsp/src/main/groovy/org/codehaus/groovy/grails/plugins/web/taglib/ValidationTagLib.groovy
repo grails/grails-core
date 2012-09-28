@@ -23,6 +23,7 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import org.apache.commons.lang.StringEscapeUtils
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
@@ -76,6 +77,9 @@ class ValidationTagLib {
     Closure fieldValue = { attrs, body ->
         def bean = attrs.bean
         def field = attrs.field?.toString()
+        
+        def tagSyntaxCall = (attrs instanceof GroovyPageAttributes) ? attrs.isGspTagSyntaxCall() : false
+        
         if (bean && field) {
             if (bean.metaClass.hasProperty(bean,'errors')) {
                 Errors errors = bean.errors
@@ -87,7 +91,7 @@ class ValidationTagLib {
                     }
                 }
                 if (rejectedValue != null) {
-                    out << formatValue(rejectedValue, field)
+                    out << formatValue(rejectedValue, field, tagSyntaxCall)
                 }
             }
             else {
@@ -96,7 +100,7 @@ class ValidationTagLib {
                     rejectedValue = rejectedValue?."$fieldPart"
                 }
                 if (rejectedValue != null) {
-                    out << formatValue(rejectedValue, field)
+                    out << formatValue(rejectedValue, field, tagSyntaxCall)
                 }
             }
         }
@@ -422,12 +426,12 @@ class ValidationTagLib {
      * formatted according to the current user's locale during the
      * conversion to a string.
      */
-    def formatValue(value, String propertyPath = null) {
+    def formatValue(value, String propertyPath = null, Boolean tagSyntaxCall = false) {
         PropertyEditorRegistry registry = RequestContextHolder.currentRequestAttributes().getPropertyEditorRegistry()
         PropertyEditor editor = registry.findCustomEditor(value.getClass(), propertyPath)
         if (editor) {
             editor.setValue(value)
-            return HTMLCodec.shouldEncode() && !(value instanceof Number) ? editor.asText?.encodeAsHTML() : editor.asText
+            return (tagSyntaxCall || HTMLCodec.shouldEncode()) && !(value instanceof Number) ? editor.asText?.encodeAsHTML() : editor.asText
         }
 
         if (value instanceof Number) {
@@ -445,6 +449,6 @@ class ValidationTagLib {
             value = message(message: value)
         }
 
-        return HTMLCodec.shouldEncode() ? value.toString().encodeAsHTML() : value
+        return (tagSyntaxCall || HTMLCodec.shouldEncode()) ? value.toString().encodeAsHTML() : value
     }
 }

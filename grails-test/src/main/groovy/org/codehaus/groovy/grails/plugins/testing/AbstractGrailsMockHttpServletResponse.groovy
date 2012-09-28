@@ -51,6 +51,27 @@ abstract class AbstractGrailsMockHttpServletResponse extends MockHttpServletResp
         writer << content
     }
 
+
+    /**
+     * Return the primary value for the given header as a String, if any.
+     * Will return the first value in case of multiple values.
+     *
+     * @param name the name of the header
+     * @return the associated header value, or <code>null<code> if none
+     */
+    String header(String name) {
+        super.getHeader(name)
+    }
+
+    /**
+     * Return all values for the given header as a List of Strings.
+     * @param name the name of the header
+     * @return the associated header values, or an empty List if none
+     */
+    List<String> headers(String name) {
+        super.getHeaders(name)
+    }
+
     /**
      * Get the response XML
      *

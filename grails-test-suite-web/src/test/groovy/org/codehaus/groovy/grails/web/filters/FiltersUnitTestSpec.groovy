@@ -32,6 +32,38 @@ class FiltersUnitTestSpec extends Specification{
             e.message == "bad things happened"
     }
 
+    void "Test view model is passed in after filter"() {
+        when:"A filter is used around a controller action that renders a view and model"
+            withFilters(action: "model1") {
+                controller.model1()
+            }
+
+        then:"The model is correctly passed to the after filter"
+            request.testModel == [foo:'bar']
+    }
+
+
+    void "Test returned model is passed in after filter"() {
+        when:"A filter is used around a controller action that returns a model"
+            withFilters(action: "model2") {
+                controller.model2()
+            }
+
+        then:"The model is correctly passed to the after filter"
+            request.testModel == [foo:'bar']
+    }
+
+
+    void "Test template model is passed in after filter"() {
+        when:"A filter is used around a controller action that returns a model"
+            views['/user/_foo.gsp'] = 'blah'
+            withFilters(action: "model3") {
+                controller.model3()
+            }
+
+        then:"The model is correctly passed to the after filter"
+            request.testModel == [foo:'bar']
+    }
 }
 
 @Artefact("Controller")
@@ -39,6 +71,17 @@ class UserController {
 
     def create() {}
     def update() {}
+    def model1() {
+        render view:"test", model:[foo:'bar']
+    }
+
+    def model2() {
+        [foo:'bar']
+    }
+
+    def model3() {
+        render template:"foo", model: [foo:'bar']
+    }
 }
 
 @Artefact("Filters")
@@ -51,13 +94,19 @@ class AuthenticationFilters {
                     return false
                 }
             }
+
         }
-        create(controller: 'user', action: 'update') {
+        update(controller: 'user', action: 'update') {
             before = {
                 if (params.username == '') {
                     throw new RuntimeException("bad things happened")
                     return false
                 }
+            }
+        }
+        model1(controller: 'user', action: 'model*') {
+            after = { model ->
+                request.testModel = model
             }
         }
     }

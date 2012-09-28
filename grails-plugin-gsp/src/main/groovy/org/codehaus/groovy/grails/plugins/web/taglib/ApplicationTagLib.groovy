@@ -161,7 +161,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         // Use resources plugin if present, but only if file is specified - resources require files
         // But users often need to link to a folder just using dir
-        return ((hasResourceProcessor && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs))
+        def url = ((hasResourceProcessor && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs));
+
+        return url?processedUrl("${url}",request):url;
     }
 
     /**
@@ -178,11 +180,12 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (hasResourceProcessor) {
             return r.img(attrs)
         } else {
-            def uri = attrs.uri ?: resource(attrs)
+            def uri = attrs.uri ?processedUrl(attrs.uri,request): resource(attrs)
 
             def excludes = ['dir', 'uri', 'file', 'plugin']
             def attrsAsString = attrsToString(attrs.findAll { !(it.key in excludes) })
-            return "<img src=\"${uri.encodeAsHTML()}\"${attrsAsString} />"
+            def imgSrc = uri.encodeAsHTML()
+            return "<img src=\"${imgSrc}\"${attrsAsString} />"
         }
     }
 
@@ -222,7 +225,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (elementId) {
             writer << " id=\"${elementId}\""
         }
-
+        attrs.remove('plugin')
         def remainingKeys = attrs.keySet() - LinkGenerator.LINK_ATTRIBUTES
         for (key in remainingKeys) {
             writer << " " << key << "=\"" << attrs[key]?.encodeAsHTML() << "\""
@@ -325,7 +328,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         // Allow attrs to overwrite any constants
         attrs.each { typeInfo.remove(it.key) }
 
-        out << writer(uri, typeInfo, attrs)
+        out << writer(processedUrl(uri,request), typeInfo, attrs)
         out << "\r\n"
     }
 

@@ -362,7 +362,7 @@ public class ClosureEventListener implements SaveOrUpdateEventListener,
 
         boolean resolveReturnValue(Object retval) {
             if (retval instanceof Boolean) {
-                return !((Boolean) retval).booleanValue();
+                return !(Boolean)retval;
             }
             return false;
         }

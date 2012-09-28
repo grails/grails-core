@@ -37,7 +37,7 @@ public class BlankConstraint extends AbstractVetoingConstraint {
 
     @Override
     public Object getParameter() {
-        return Boolean.valueOf(blank);
+        return blank;
     }
 
     public boolean isBlank() {
@@ -56,7 +56,7 @@ public class BlankConstraint extends AbstractVetoingConstraint {
                     "] must be a boolean value");
         }
 
-        blank = ((Boolean)constraintParameter).booleanValue();
+        blank = (Boolean)constraintParameter;
         super.setParameter(constraintParameter);
     }
 
