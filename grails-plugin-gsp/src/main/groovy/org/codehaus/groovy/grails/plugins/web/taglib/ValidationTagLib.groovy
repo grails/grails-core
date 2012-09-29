@@ -77,9 +77,9 @@ class ValidationTagLib {
     Closure fieldValue = { attrs, body ->
         def bean = attrs.bean
         def field = attrs.field?.toString()
-        
+
         def tagSyntaxCall = (attrs instanceof GroovyPageAttributes) ? attrs.isGspTagSyntaxCall() : false
-        
+
         if (bean && field) {
             if (bean.metaClass.hasProperty(bean,'errors')) {
                 Errors errors = bean.errors
@@ -232,8 +232,7 @@ class ValidationTagLib {
      * @attr model The model reference to check for errors
      */
     Closure renderErrors = { attrs, body ->
-        def renderAs = attrs.remove('as')
-        if (!renderAs) renderAs = 'list'
+        def renderAs = attrs.remove('as') ?: 'list'
 
         if (renderAs == 'list') {
             def codec = attrs.codec ?: 'HTML'

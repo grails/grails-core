@@ -20,7 +20,6 @@ import groovy.lang.GroovyObject;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 
-import java.lang.reflect.Modifier;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;

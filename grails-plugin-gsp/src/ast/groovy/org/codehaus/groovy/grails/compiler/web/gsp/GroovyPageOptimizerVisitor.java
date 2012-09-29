@@ -64,6 +64,7 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
 //        innerClosures.pop();
 //    }
 
+    @SuppressWarnings("unused")
     private void introduceThisObjectVariable(ClosureExpression closureExpression) {
         if (closureExpression.getCode() instanceof BlockStatement) {
             List<Statement> oldBlock = ((BlockStatement)closureExpression.getCode()).getStatements();
@@ -99,6 +100,7 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
                 && expression.getMethodAsString().equals(PRINT_METHOD);
     }
 
+    @SuppressWarnings("unused")
     private void proceedCallFromGroovyPageClass(MethodCallExpression call) {
         List<MethodNode> methodNodeList = groovyPageClassNode.getMethods(call.getMethodAsString());
 

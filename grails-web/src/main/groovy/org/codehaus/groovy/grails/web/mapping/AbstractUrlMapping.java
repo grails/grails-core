@@ -96,7 +96,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     public Object getPluginName() {
         return pluginName;
     }
-    
+
     /**
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping#getViewName()
      *

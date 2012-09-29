@@ -29,7 +29,6 @@ import org.codehaus.groovy.tools.RootLoader;
  */
 public class GrailsRootLoader extends RootLoader {
 
-
     public GrailsRootLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
     }
@@ -41,12 +40,10 @@ public class GrailsRootLoader extends RootLoader {
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         try {
-            if(name.startsWith("java.") || name.startsWith("javax.xml.") || name.startsWith("org.w3c.dom.")) {
+            if (name.startsWith("java.") || name.startsWith("javax.xml.") || name.startsWith("org.w3c.dom.")) {
                 return getParent().loadClass(name);
             }
-            else {
-                return super.loadClass(name, resolve);
-            }
+            return super.loadClass(name, resolve);
         }
         catch (LinkageError e) {
             return getParent().loadClass(name);

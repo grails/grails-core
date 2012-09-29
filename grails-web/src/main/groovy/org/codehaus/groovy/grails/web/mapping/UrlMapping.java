@@ -83,7 +83,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return The action name as a {@link groovy.lang.Closure} or {@link java.lang.String}
      */
     Object getActionName();
-    
+
     Object getPluginName();
 
     /**

@@ -178,9 +178,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                             final String controllerName = info.getControllerName();
                             String pluginName = info.getPluginName();
                             String featureUri = WebUtils.SLASH + urlConverter.toUrlElement(controllerName) + WebUtils.SLASH + urlConverter.toUrlElement(action);
-                            
+
                             Object featureId = null;
-                            if(pluginName != null) {
+                            if (pluginName != null) {
                             	Map featureIdMap = new HashMap();
                             	featureIdMap.put("uri", featureUri);
                             	featureIdMap.put("pluginName", pluginName);

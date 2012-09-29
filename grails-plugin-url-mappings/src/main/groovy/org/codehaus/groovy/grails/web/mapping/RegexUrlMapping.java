@@ -16,6 +16,23 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import javax.servlet.ServletContext;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,15 +46,6 @@ import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.servlet.ServletContext;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
@@ -296,7 +304,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     public String createURL(String controller, String action, String pluginName, Map paramValues, String encoding) {
         return createURLInternal(controller, action, pluginName, paramValues, encoding, true);
     }
-    
+
     @SuppressWarnings("unchecked")
     private String createURLInternal(String controller, String action, String pluginName, Map paramValues,
             String encoding, boolean includeContextPath) {
@@ -340,9 +348,8 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     public String createRelativeURL(String controller, String action, String pluginName, Map paramValues, String encoding) {
         return createURLInternal(controller, action, pluginName, paramValues, encoding, false);
     }
-    
-    public String createRelativeURL(String controller, String action, Map paramValues,
-            String encoding, String fragment) {
+
+    public String createRelativeURL(String controller, String action, Map paramValues, String encoding, String fragment) {
         return createRelativeURL(controller, action, null, paramValues, encoding, fragment);
     }
 
@@ -351,7 +358,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         final String url = createURLInternal(controller, action, pluginName, paramValues, encoding, false);
         return createUrlWithFragment(url, fragment, encoding);
     }
-    
+
     public String createURL(String controller, String action, Map paramValues,
             String encoding, String fragment) {
         return createURL(controller, action, null, paramValues, encoding, fragment);
@@ -362,7 +369,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         String url = createURL(controller, action, pluginName, paramValues, encoding);
         return createUrlWithFragment(url, fragment, encoding);
     }
-    
+
     private String createUrlWithFragment(String url, String fragment, String encoding) {
         if (fragment != null) {
             // A 'null' encoding will cause an exception, so default to 'UTF-8'.
@@ -451,7 +458,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         Map params = new HashMap();
         Errors errors = new MapBindingResult(params, "urlMapping");
         String lastGroup = null;
-        for (int i = 0; i < m.groupCount(); i++) {
+        for (int i = 0, count = m.groupCount(); i < count; i++) {
             lastGroup = m.group(i + 1);
             int j = lastGroup.indexOf('?');
             if (j > -1) {

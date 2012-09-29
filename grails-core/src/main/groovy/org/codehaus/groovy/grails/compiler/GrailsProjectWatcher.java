@@ -38,7 +38,7 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.ClassUtils;
 
 /**
- * Watches a Grails projects and re-compiles sources when they change or fires events to the pluginManager.
+ * Watches a Grails project and re-compiles sources when they change or fires events to the pluginManager.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -217,13 +217,14 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         // These are expanded for readability
         if (fileIsExcluded == true) {
             return false;
-        } else if (fileIsIncluded == true) {
-            return true;
-        } else if (fileIsExcluded == false && fileIsIncluded == false && reloadIncludes.size() > 0) {
-            return false;
-        } else {
+        }
+        if (fileIsIncluded == true) {
             return true;
         }
+        if (fileIsExcluded == false && fileIsIncluded == false && reloadIncludes.size() > 0) {
+            return false;
+        }
+        return true;
     }
 
     private void reloadPlugin(File file) {
@@ -248,7 +249,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             // add to class change event queue
             String className = GrailsResourceUtils.getClassName(file.getAbsolutePath());
             if (className != null) {
-
                 classChangeEventQueue.put(className, new ClassUpdate() {
                     public void run(Class<?> cls) {
                         try {
@@ -290,7 +290,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         }
     }
 
-
     private void sleep(int time) {
         try {
             Thread.sleep(time);
@@ -306,18 +305,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             }
         }
         return false;
-    }
-
-    private String getDottedClassName(File file) {
-        String absolutePath = file.getName();
-        for (String dir : compiler.getSrcDirectories()) {
-            if (absolutePath.startsWith(dir)) {
-                String srcPath = absolutePath.replaceAll(String.format("^%s", dir), "");
-                String dottedPath = srcPath.replaceAll(file.separator, ".");
-                return dottedPath;
-            }
-        }
-        return null;
     }
 
     private interface ClassUpdate {

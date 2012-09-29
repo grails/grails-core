@@ -70,7 +70,7 @@ public interface UrlCreator {
      * @return The created URL for the given arguments
      */
     String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding);
-    
+
     /**
      * Creates a URL for the given parameters values, controller and action names without the context path information
      *
@@ -81,7 +81,7 @@ public interface UrlCreator {
      * @return The created URL for the given arguments
      */
     String createRelativeURL(String controller, String action, Map parameterValues, String encoding);
-    
+
     /**
      * Creates a URL for the given parameters values, controller and action names without the context path information
      *
@@ -118,7 +118,7 @@ public interface UrlCreator {
      * @return The created URL for the given arguments
      */
     String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding, String fragment);
-    
+
     /**
      * Creates a URL for the given parameters values, controller and action names
      *
@@ -130,7 +130,7 @@ public interface UrlCreator {
      * @return The created URL for the given arguments
      */
     String createURL(String controller, String action, Map parameterValues, String encoding, String fragment);
-    
+
     /**
      * Creates a URL for the given parameters values, controller and action names
      *

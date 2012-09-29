@@ -15,6 +15,15 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsWebUtil;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
@@ -23,10 +32,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrate
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.*;
 
 /**
  * The default implementation of the UrlCreator interface that constructs URLs in Grails
@@ -43,7 +48,6 @@ public class DefaultUrlCreator implements UrlCreator {
     private final String actionName;
     public static final String ARGUMENT_ID = "id";
     private static final String ENTITY_AMPERSAND = "&";
-
 
     public DefaultUrlCreator(String controller, String action) {
         controllerName = controller;
@@ -62,8 +66,7 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     @SuppressWarnings("unchecked")
-    private String createURLWithWebRequest(Map parameterValues, GrailsWebRequest webRequest,
-            boolean includeContextPath) {
+    private String createURLWithWebRequest(Map parameterValues, GrailsWebRequest webRequest, boolean includeContextPath) {
 
         GrailsRequestStateLookupStrategy requestStateLookupStrategy = new DefaultRequestStateLookupStrategy(webRequest);
 
@@ -105,14 +108,13 @@ public class DefaultUrlCreator implements UrlCreator {
     public String createURL(String controller, String action, Map parameterValues, String encoding) {
         return createURL(controller, action, null, parameterValues, encoding);
     }
-    
+
     @SuppressWarnings("unchecked")
     public String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding) {
-        return createURLInternal(controller, action, pluginName, parameterValues, true);
+        return createURLInternal(controller, action, parameterValues, true);
     }
 
-    private String createURLInternal(String controller, String action, String pluginName, 
-            Map<String, String> parameterValues, boolean includeContextPath) {
+    private String createURLInternal(String controller, String action, Map<String, String> parameterValues, boolean includeContextPath) {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
 
         if (parameterValues == null) parameterValues = new HashMap<String, String>();
@@ -139,24 +141,22 @@ public class DefaultUrlCreator implements UrlCreator {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public String createRelativeURL(String controller, String action, Map parameterValues, String encoding) {
         return createRelativeURL(controller, action, null, parameterValues, encoding);
     }
-    
-    @SuppressWarnings("unchecked")
-    public String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding) {
-        return createURLInternal(controller, action, pluginName, parameterValues, false);
-    }
 
     @SuppressWarnings("unchecked")
+    public String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding) {
+        return createURLInternal(controller, action, parameterValues, false);
+    }
+
     public String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) {
         return createRelativeURL(controller, action, null, parameterValues, encoding, fragment);
     }
 
     @SuppressWarnings("unchecked")
     public String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding, String fragment) {
-        final String url = createURLInternal(controller, action, pluginName, parameterValues, false);
+        final String url = createURLInternal(controller, action, parameterValues, false);
         return  createUrlWithFragment(encoding, fragment, url);
     }
 
@@ -186,8 +186,7 @@ public class DefaultUrlCreator implements UrlCreator {
     /*
      * Appends all the request parameters to the URI buffer
      */
-    private void appendRequestParams(FastStringWriter actualUriBuf, Map<Object, Object> params,
-            String encoding) {
+    private void appendRequestParams(FastStringWriter actualUriBuf, Map<Object, Object> params, String encoding) {
 
         boolean querySeparator = false;
 

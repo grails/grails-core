@@ -50,7 +50,7 @@ public interface UrlMappingInfo {
      * @return The name of the action or null if not known
      */
     String getActionName();
-    
+
     String getPluginName();
 
     /**

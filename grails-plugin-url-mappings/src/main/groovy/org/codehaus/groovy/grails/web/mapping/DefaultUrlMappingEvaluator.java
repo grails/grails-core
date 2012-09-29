@@ -293,11 +293,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         public Object getController() {
             return controllerName;
         }
-        
+
         public void setPlugin(Object plugin) {
             pluginName = plugin;
         }
-        
+
         public Object getPlugin() {
             return pluginName;
         }
@@ -496,7 +496,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private boolean isResponseCode(String s) {
-            for (int i = 0; i < s.length(); i++) {
+            for (int count = s.length(), i = 0; i < count; i++) {
                 if (!Character.isDigit(s.charAt(i))) return false;
             }
 

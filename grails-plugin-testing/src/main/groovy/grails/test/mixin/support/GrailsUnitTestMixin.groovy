@@ -120,7 +120,6 @@ class GrailsUnitTestMixin {
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
     }
 
-
     static void cleanupModifiedMetaClasses() {
         metaClassRegistryListener.clean()
     }
@@ -198,11 +197,14 @@ class GrailsUnitTestMixin {
         }
 
         if (th == null) {
-            throw new AssertionFailedError("Closure " + code + " should have failed with an exception of type " + clazz.getName())
-        } else if (!clazz.isInstance(th)) {
-            throw new AssertionFailedError("Closure " + code + " should have failed with an exception of type " + clazz.getName() + ", instead got Exception " + th);
+            throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name")
         }
-        return th.getMessage();
+
+        if (!clazz.isInstance(th)) {
+            throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name, instead got Exception $th")
+        }
+
+        return th.message
     }
     /**
      * Loads the given codec, adding the "encodeAs...()" and "decode...()"
@@ -224,8 +226,6 @@ class GrailsUnitTestMixin {
         Object.metaClass."encodeAs$codecName" = { -> codec.encode(delegate) }
         Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
     }
-
-
 
     @AfterClass
     static void shutdownApplicationContext() {

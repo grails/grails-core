@@ -23,7 +23,6 @@ import groovy.lang.GroovyObjectSupport;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;

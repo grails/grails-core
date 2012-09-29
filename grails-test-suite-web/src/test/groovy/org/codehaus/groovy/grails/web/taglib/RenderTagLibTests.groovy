@@ -97,7 +97,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         template = '<g:paginate  max="2" total="20" offset="14" maxsteps="3" controller="book" action="list" />'
         assertOutputContains '<a href="/book/list?offset=16&amp;max=2" class="step">9</a><a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
     }
-    
+
     protected void onInit() {
         if(name == 'testPaginateMappingAndAction') {
             def mappingClass = gcl.parseClass('''
@@ -110,11 +110,11 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         }
     }
             ''')
-                
+
             grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, mappingClass)
         }
-    }    
-    
+    }
+
     void testPaginateMappingAndAction() {
         def template = '<g:paginate next="Forward" prev="Back" maxsteps="8" max="10" id="1" mapping="claimTab" total="12" action="documents"/>'
         assertOutputEquals '<span class="currentStep">1</span><a href="/claim/1/documents?offset=10&amp;max=10" class="step">2</a><a href="/claim/1/documents?offset=10&amp;max=10" class="nextLink">Forward</a>', template

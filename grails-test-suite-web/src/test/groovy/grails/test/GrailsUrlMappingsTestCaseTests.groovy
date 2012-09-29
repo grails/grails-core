@@ -423,21 +423,21 @@ class MockUrlMapping implements UrlMapping {
     String createURL(Map parameterValues, String encoding, String fragment) { null }
 
     String createURL(String controller, String action, Map parameterValues, String encoding) { null }
-    
+
     String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding) { null }
-    
+
     String createRelativeURL(String controller, String action, Map parameterValues, String encoding) { null }
 
     String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding) { null }
-    
+
     String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) { null }
 
     String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding, String fragment) { null }
-    
+
     String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) { null }
 
     String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding, String fragment) { null }
-    
+
     ConstrainedProperty[] getConstraints() { new ConstrainedProperty[0] }
 
     Object getControllerName() { controller }
@@ -445,7 +445,7 @@ class MockUrlMapping implements UrlMapping {
     Object getActionName() { action }
 
     Object getPluginName() { plugin }
-    
+
     Object getViewName() { null }
 
     void setParameterValues(Map parameterValues) {}

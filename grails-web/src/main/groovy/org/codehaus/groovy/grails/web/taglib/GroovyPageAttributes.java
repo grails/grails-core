@@ -21,8 +21,7 @@ import java.util.Map;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 
 /**
- * Defines attributes passed to a GSP tag. Mixes in
- * TypeConvertingMap for ease of type conversion.
+ * Defines attributes passed to a GSP tag. Mixes in TypeConvertingMap for ease of type conversion.
  *
  * @author Graeme Rocher
  * @author Lari Hotari
@@ -30,12 +29,12 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class GroovyPageAttributes extends TypeConvertingMap {
-    boolean gspTagSyntaxCall=true;
-    
+    boolean gspTagSyntaxCall = true;
+
     public GroovyPageAttributes() {
         super();
     }
-    
+
     public GroovyPageAttributes(Map map) {
         this(map, true);
     }
@@ -44,15 +43,15 @@ public class GroovyPageAttributes extends TypeConvertingMap {
         super(map);
         this.gspTagSyntaxCall=gspTagSyntaxCall;
     }
-    
+
     public boolean isGspTagSyntaxCall() {
         return gspTagSyntaxCall;
     }
-    
+
     public void setGspTagSyntaxCall(boolean gspTagSyntaxCall) {
         this.gspTagSyntaxCall=gspTagSyntaxCall;
     }
-    
+
     @Override
     public Object clone() {
         return new GroovyPageAttributes(new LinkedHashMap(wrappedMap));

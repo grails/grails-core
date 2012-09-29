@@ -114,9 +114,9 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     public void setParsingRequest(boolean parsingRequest) {
         this.parsingRequest = parsingRequest;
     }
-    
+
     public String getPluginName() {
-        return pluginName != null ? pluginName.toString() : null;
+        return pluginName == null ? null : pluginName.toString();
     }
 
     public String getControllerName() {
@@ -131,7 +131,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     public String getActionName() {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
 
-        String name = webRequest != null ? checkDispatchAction(webRequest.getCurrentRequest()) : null;
+        String name = webRequest == null ? null : checkDispatchAction(webRequest.getCurrentRequest());
         if (name == null) {
             name = evaluateNameForValue(actionName, webRequest);
         }
@@ -147,7 +147,8 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     private String checkDispatchAction(HttpServletRequest request) {
-        if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE)!= null) return null;
+        if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return null;
+
         String dispatchActionName = null;
         Enumeration<String> paramNames = tryMultipartParams(request, request.getParameterNames());
 

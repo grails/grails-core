@@ -332,7 +332,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
 
     D first(Map m) {
         def entityMapping = GrailsDomainBinder.getMapping(persistentEntity.javaClass)
-        if(entityMapping?.identity instanceof CompositeIdentity) {
+        if (entityMapping?.identity instanceof CompositeIdentity) {
             throw new UnsupportedOperationException('The first() method is not supported for domain classes that have composite keys.')
         }
         super.first(m)
@@ -340,12 +340,12 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
 
     D last(Map m) {
         def entityMapping = GrailsDomainBinder.getMapping(persistentEntity.javaClass)
-        if(entityMapping?.identity instanceof CompositeIdentity) {
+        if (entityMapping?.identity instanceof CompositeIdentity) {
             throw new UnsupportedOperationException('The last() method is not supported for domain classes that have composite keys.')
         }
         super.last(m)
     }
-    
+
     /**
      * Finds a single result for the given query and arguments and a maximum results to return value
      *

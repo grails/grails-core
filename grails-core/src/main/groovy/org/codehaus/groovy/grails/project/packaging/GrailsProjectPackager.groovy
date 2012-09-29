@@ -121,7 +121,6 @@ class GrailsProjectPackager extends BaseSettingsApi {
         return serverContextPath
     }
 
-
     @CompileStatic
     AntBuilder getAnt() {
        if (ant == null) {
@@ -136,8 +135,8 @@ class GrailsProjectPackager extends BaseSettingsApi {
     void generateWebXml(GrailsPluginManager pluginManager) {
         File projectWorkDir = buildSettings.projectWorkDir
         ConfigObject buildConfig = buildSettings.config
-        def webXml = new FileSystemResource("${basedir}/src/templates/war/web.xml")
-        def tmpWebXml = "${projectWorkDir}/web.xml.tmp"
+        def webXml = new FileSystemResource("$basedir/src/templates/war/web.xml")
+        String tmpWebXml = "$projectWorkDir/web.xml.tmp"
 
         final baseWebXml = getBaseWebXml(buildConfig)
         if (baseWebXml) {
@@ -151,11 +150,11 @@ class GrailsProjectPackager extends BaseSettingsApi {
                 exit(1)
             }
         } else {
-            if (!webXml.exists()) {
-                copyGrailsResource(tmpWebXml, grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"))
+            if (webXml.exists()) {
+                ant.copy(file:webXml.file, tofile:tmpWebXml, overwrite:true)
             }
             else {
-                ant.copy(file:webXml.file, tofile:tmpWebXml, overwrite:true)
+                copyGrailsResource(tmpWebXml, grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"))
             }
         }
         webXml = new FileSystemResource(tmpWebXml)
@@ -173,7 +172,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
             }
         }
         catch (Exception e) {
-            grailsConsole.error("Error generating web.xml file",e)
+            grailsConsole.error("Error generating web.xml file", e)
             exit(1)
         }
     }
@@ -221,7 +220,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
         def resourceList = pluginSettings.getArtefactResourcesForOne(descriptor.parentFile.absolutePath)
         // Work out what the name of the plugin is from the name of the descriptor file.
-        def pluginName = GrailsNameUtils.getPluginName(descriptor.name)
+        String pluginName = GrailsNameUtils.getPluginName(descriptor.name)
 
         // Remove the existing 'plugin.xml' if there is one.
         def pluginXml = new File(pluginBaseDir, "plugin.xml")
@@ -305,10 +304,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         }
 
         try {
-            classLoader
-                .loadClass(LOGGING_INITIALIZER_CLASS)
-                .newInstance()
-                .initialize(config)
+            classLoader.loadClass(LOGGING_INITIALIZER_CLASS).newInstance().initialize(config)
         } catch (e) {
             throw new PackagingException("Error initializing logging: $e.message",e)
         }
@@ -342,11 +338,9 @@ class GrailsProjectPackager extends BaseSettingsApi {
                 }
             }
 
-            def dataSourceFile = new File(basedir, "grails-app/conf/DataSource.groovy")
-            if (dataSourceFile.exists()) {
+            if (new File(basedir, "grails-app/conf/DataSource.groovy").exists()) {
                 try {
-                    def dataSourceConfig = configSlurper.parse(classLoader.loadClass("DataSource"))
-                    config.merge(dataSourceConfig)
+                    config.merge configSlurper.parse(classLoader.loadClass("DataSource"))
                 }
                 catch(ClassNotFoundException e) {
                     grailsConsole.error "Warning", "DataSource.groovy not found, assuming dataSource bean is configured by Spring"
@@ -369,16 +363,14 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
         if (!native2ascii) {
             ant.copy(todir:i18nDir) {
-                fileset(dir:"${basedir}/grails-app/i18n", includes:"**/*.properties")
+                fileset(dir:"$basedir/grails-app/i18n", includes:"**/*.properties")
             }
             return
         }
 
         def ant = new GrailsConsoleAntBuilder(ant.project)
-        ant.native2ascii(src: "${basedir}/grails-app/i18n",
-                dest: i18nDir,
-                includes: "**/*.properties",
-                encoding: "UTF-8")
+        ant.native2ascii(src: "$basedir/grails-app/i18n", dest: i18nDir,
+                         includes: "**/*.properties", encoding: "UTF-8")
 
         PluginBuildSettings settings = pluginSettings
         def i18nPluginDirs = settings.pluginI18nDirectories
@@ -400,19 +392,16 @@ class GrailsProjectPackager extends BaseSettingsApi {
                     return
                 }
 
-                def pluginDirName = pluginDir.name
                 def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
                 try {
                     def localAnt = new GrailsConsoleAntBuilder(ant.project)
                     localAnt.project.defaultInputStream = System.in
                     localAnt.mkdir(dir: destDir)
-                    localAnt.native2ascii(src: file,
-                            dest: destDir,
-                            includes: "**/*.properties",
-                            encoding: "UTF-8")
+                    localAnt.native2ascii(src: file, dest: destDir,
+                                          includes: "**/*.properties", encoding: "UTF-8")
                 }
                 catch (e) {
-                    grailsConsole.error "native2ascii error converting i18n bundles for plugin [${pluginDirName}] ${e.message}"
+                    grailsConsole.error "native2ascii error converting i18n bundles for plugin [$pluginDir.name] $e.message"
                 }
             }.curry(r))
         }
@@ -422,13 +411,13 @@ class GrailsProjectPackager extends BaseSettingsApi {
         def logic = {
             def ant = new GrailsConsoleAntBuilder(ant.project)
             def files = ant.fileScanner {
-                fileset(dir:"${basedir}/grails-app/views", includes:"**/*.jsp")
+                fileset(dir:"$basedir/grails-app/views", includes:"**/*.jsp")
             }
 
             if (files.iterator().hasNext()) {
-                ant.mkdir(dir:"${basedir}/web-app/WEB-INF/grails-app/views")
-                ant.copy(todir:"${basedir}/web-app/WEB-INF/grails-app/views") {
-                    fileset(dir:"${basedir}/grails-app/views", includes:"**/*.jsp")
+                ant.mkdir(dir:"$basedir/web-app/WEB-INF/grails-app/views")
+                ant.copy(todir:"$basedir/web-app/WEB-INF/grails-app/views") {
+                    fileset(dir:"$basedir/grails-app/views", includes:"**/*.jsp")
                 }
             }
         }
@@ -495,17 +484,15 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
     @CompileStatic
     void packageTlds() {
-        // We don't know until runtime what servlet version to use, so
-        // install the relevant TLDs now.
-        copyGrailsResources("${basedir}/web-app/WEB-INF/tld",
-                            "src/war/WEB-INF/tld/${servletVersion}/*", false)
+        // We don't know until runtime what servlet version to use, so install the relevant TLDs now
+        copyGrailsResources("$basedir/web-app/WEB-INF/tld", "src/war/WEB-INF/tld/${servletVersion}/*", false)
     }
 
     void packageTemplates(scaffoldDir) {
         ant.mkdir(dir:scaffoldDir)
         if (new File(basedir, "src/templates/scaffolding").exists()) {
             ant.copy(todir:scaffoldDir, overwrite:true) {
-                fileset(dir:"${basedir}/src/templates/scaffolding", includes:"**")
+                fileset(dir:"$basedir/src/templates/scaffolding", includes:"**")
             }
         }
         else {

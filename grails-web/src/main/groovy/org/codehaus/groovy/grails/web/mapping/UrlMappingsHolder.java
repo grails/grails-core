@@ -66,7 +66,7 @@ public interface UrlMappingsHolder {
      */
     @SuppressWarnings("rawtypes")
     UrlCreator getReverseMapping(String controller, String action, Map params);
-    
+
     /**
      * Retrieves the best guess of a URI for the given controller, action and parameters or null if non could be found.
      *
@@ -89,7 +89,7 @@ public interface UrlMappingsHolder {
      */
     @SuppressWarnings("rawtypes")
     UrlCreator getReverseMappingNoDefault(String controller, String action, String pluginName, Map params);
-    
+
     /**
      * Match and return the first UrlMappingInfo instance possible
      *

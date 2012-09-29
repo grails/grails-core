@@ -1,7 +1,6 @@
-package org.codehaus.groovy.grails.web.taglib;
+package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.runtime.InvokerHelper
-import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 
 class LinkRenderingTagLibTests extends AbstractGrailsTagTests {
 
@@ -55,41 +54,41 @@ class TestUrlMappings {
     void testMappingsWhichSpecifyAPlugin() {
         def template = '<g:link controller="first" action="index" plugin="firstUtil">click</g:link>'
         assertOutputEquals '<a href="/pluginOneFirstController">click</a>', template
-        
+
         template = '<g:link controller="first" action="index" plugin="secondUtil">click</g:link>'
         assertOutputEquals '<a href="/pluginTwoFirstController">click</a>', template
-        
+
         template = '<g:link controller="first" action="index" plugin="thirdUtil">click</g:link>'
         assertOutputEquals '<a href="/pluginThreeFirstController">click</a>', template
-        
+
         template = '<g:link controller="first" action="index" plugin="firstUtil" params="[num: 42]" >click</g:link>'
         assertOutputEquals '<a href="/pluginOneFirstController?num=42">click</a>', template
-        
+
         template = '<g:link controller="first" action="index" plugin="secondUtil" params="[num: 42]" >click</g:link>'
         assertOutputEquals '<a href="/pluginTwoFirstController/42">click</a>', template
-        
+
         template = '<g:link controller="first" action="index" plugin="thirdUtil" params="[num: 42]" >click</g:link>'
         assertOutputEquals '<a href="/pluginThreeFirstController?num=42">click</a>', template
-        
+
         template = '<g:createLink controller="first" action="index" plugin="firstUtil" />'
         assertOutputEquals '/pluginOneFirstController', template
-        
+
         template = '<g:createLink controller="first" action="index" plugin="secondUtil" />'
         assertOutputEquals '/pluginTwoFirstController', template
-        
+
         template = '<g:createLink controller="first" action="index" plugin="thirdUtil" />'
         assertOutputEquals '/pluginThreeFirstController', template
-        
+
         template = '<g:createLink controller="first" action="index" plugin="firstUtil" params="[num: 42]" />'
         assertOutputEquals '/pluginOneFirstController?num=42', template
-        
+
         template = '<g:createLink controller="first" action="index" plugin="secondUtil" params="[num: 42]" />'
         assertOutputEquals '/pluginTwoFirstController/42', template
-        
+
         template = '<g:createLink controller="first" action="index" plugin="thirdUtil" params="[num: 42]" />'
         assertOutputEquals '/pluginThreeFirstController?num=42', template
     }
-    
+
     void testLinkTagWithAttributeValueContainingEqualSignFollowedByQuote() {
         //  Some of these tests look peculiar but they relate to
         //  scenarios that were broken before GRAILS-7229 was addressed
@@ -216,5 +215,4 @@ class TestUrlMappings {
         template = '''<g:createLink controller="test2" action="show" id="jim" params="[age: 31]" />'''
         assertOutputEquals("/test2/show/jim?age=31", template, [:])
     }
-
 }

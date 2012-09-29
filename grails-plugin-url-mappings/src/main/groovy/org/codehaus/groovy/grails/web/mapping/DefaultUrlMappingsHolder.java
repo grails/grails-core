@@ -187,7 +187,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     public UrlCreator getReverseMapping(final String controller, final String action, Map params) {
         return getReverseMapping(controller, action, null, params);
     }
-    
+
     /**
      * @see UrlMappingsHolder#getReverseMapping(String, String, java.util.Map)
      */
@@ -212,7 +212,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     public UrlCreator getReverseMappingNoDefault(String controller, String action, Map params) {
         return getReverseMappingNoDefault(controller, action, null, params);
     }
-    
+
     public UrlCreator getReverseMappingNoDefault(String controller, String action, String pluginName, Map params) {
         if (params == null) params = Collections.EMPTY_MAP;
 
@@ -235,8 +235,8 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     @SuppressWarnings("unchecked")
     private UrlCreator resolveUrlCreator(final String controller,
-                                         final String action, 
-                                         final String pluginName, 
+                                         final String action,
+                                         final String pluginName,
                                          Map params, boolean useDefault) {
         UrlMapping mapping = null;
 
@@ -500,7 +500,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
             comparison = pluginName != null ? pluginName.compareTo(other.pluginName) : EQUAL;
             if (comparison != EQUAL) return comparison;
-            
+
             return EQUAL;
         }
     }

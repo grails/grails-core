@@ -72,16 +72,17 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
         return PLUGIN_NAME;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public GrailsClass getArtefactForFeature(Object featureId) {
         if (artefactInfo == null) {
             return null;
         }
-        
-        String uri = null;
+
+        String uri;
         String pluginName = null;
 
-        if(featureId instanceof Map) {
+        if (featureId instanceof Map) {
         	Map featureIdMap = (Map)featureId;
         	uri = (String)featureIdMap.get("uri");
         	pluginName = (String)featureIdMap.get("pluginName");
@@ -93,9 +94,9 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
         if (controllerClass == null) {
             final ApplicationContext mainContext = grailsApplication.getMainContext();
             GrailsPluginManager grailsPluginManager = null;
-            if(mainContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
+            if (mainContext.containsBean(GrailsPluginManager.BEAN_NAME)) {
                 final Object pluginManagerBean = mainContext.getBean(GrailsPluginManager.BEAN_NAME);
-                if(pluginManagerBean instanceof GrailsPluginManager) {
+                if (pluginManagerBean instanceof GrailsPluginManager) {
                     grailsPluginManager = (GrailsPluginManager) pluginManagerBean;
                 }
             }
@@ -105,15 +106,15 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
                 GrailsClass c = controllerClasses[i];
                 if (((GrailsControllerClass) c).mapsToURI(uri)) {
                     boolean foundController = false;
-                    if(pluginName != null && grailsPluginManager != null) {
+                    if (pluginName != null && grailsPluginManager != null) {
                         final GrailsPlugin pluginForClass = grailsPluginManager.getPluginForClass(c.getClazz());
-                        if(pluginForClass != null && pluginName.equals(pluginForClass.getName())) {
+                        if (pluginForClass != null && pluginName.equals(pluginForClass.getName())) {
                             foundController = true;
                         }
                     } else {
                         foundController = true;
                     }
-                    if(foundController) {
+                    if (foundController) {
                         controllerClass = c;
                         break;
                     }
