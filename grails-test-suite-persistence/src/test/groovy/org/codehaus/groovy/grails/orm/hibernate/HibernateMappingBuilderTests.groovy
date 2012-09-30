@@ -737,4 +737,36 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
          assertTrue mapping.getPropertyConfig('firstName').updateable
          assertFalse mapping.getPropertyConfig('lastName').updateable
     }
+
+    void testDefaultValue() {
+          def builder = new HibernateMappingBuilder("Foo")
+          def mapping = builder.evaluate {
+              comment 'wahoo'
+              name comment: 'bar'
+              foo defaultValue: '5'
+          }
+         assertEquals '5', mapping.getPropertyConfig('foo').columns[0].defaultValue
+         assertNull mapping.getPropertyConfig('name').columns[0].defaultValue
+    }
+
+    void testColumnComment() {
+          def builder = new HibernateMappingBuilder("Foo")
+          def mapping = builder.evaluate {
+              comment 'wahoo'
+              name comment: 'bar'
+              foo defaultValue: '5'
+          }
+         assertEquals 'bar', mapping.getPropertyConfig('name').columns[0].comment
+         assertNull mapping.getPropertyConfig('foo').columns[0].comment
+    }
+
+    void testTableComment() {
+          def builder = new HibernateMappingBuilder("Foo")
+          def mapping = builder.evaluate {
+              comment 'wahoo'
+              name comment: 'bar'
+              foo defaultValue: '5'
+          }
+         assertEquals 'wahoo', mapping.comment
+    }
 }

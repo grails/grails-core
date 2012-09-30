@@ -30,6 +30,8 @@ class ColumnConfig {
     int length = -1
     int precision = -1
     int scale = -1
+    String defaultValue
+    String comment
 
     String toString() {
         "column[name:$name, index:$index, unique:$unique, length:$length, precision:$precision, scale:$scale]"
