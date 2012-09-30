@@ -422,6 +422,8 @@ class HibernateMappingBuilder {
                 if (namedArgs["enumType"]) cc.enumType = namedArgs["enumType"]
                 if (namedArgs["index"]) cc.index = namedArgs["index"]
                 if (namedArgs["unique"]) cc.unique = namedArgs["unique"]
+                if (namedArgs.defaultValue) cc.defaultValue = namedArgs.defaultValue
+                if (namedArgs.comment) cc.comment = namedArgs.comment
                 cc.length = namedArgs["length"] ?: -1
                 cc.precision = namedArgs["precision"] ?: -1
                 cc.scale = namedArgs["scale"] ?: -1
@@ -535,6 +537,10 @@ class HibernateMappingBuilder {
 
     void datasources(List<String> names) {
         mapping.datasources = names
+    }
+
+    void comment(String comment) {
+        mapping.comment = comment
     }
 
     void methodMissing(String name, args) {

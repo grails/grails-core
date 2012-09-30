@@ -1813,6 +1813,10 @@ public final class GrailsDomainBinder {
 
         Mapping gormMapping = getMapping(domainClass.getClazz());
 
+        if (gormMapping != null) {
+            table.setComment(gormMapping.getComment());
+        }
+
         for (GrailsDomainClassProperty currentGrailsProp : persistentProperties) {
 
             // if its inherited skip
@@ -2682,6 +2686,11 @@ public final class GrailsDomainBinder {
      */
     private static void bindColumn(GrailsDomainClassProperty property, GrailsDomainClassProperty parentProperty,
             Column column, ColumnConfig cc, String path, Table table, String sessionFactoryBeanName) {
+
+        if (cc != null) {
+            column.setComment(cc.getComment());
+            column.setDefaultValue(cc.getDefaultValue());
+        }
 
         Class<?> userType = getUserType(property);
         String columnName = getColumnNameForPropertyAndPath(property, path, cc, sessionFactoryBeanName);
