@@ -655,7 +655,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     }
 
     private synchronized GroovyClassLoader findOrInitGroovyClassLoader() {
-        if (!(classLoader instanceof GroovyClassLoader)) {
+        if (!(classLoader instanceof GroovyPageClassLoader)) {
             classLoader = initGroovyClassLoader(classLoader);
         }
         return (GroovyClassLoader)classLoader;
