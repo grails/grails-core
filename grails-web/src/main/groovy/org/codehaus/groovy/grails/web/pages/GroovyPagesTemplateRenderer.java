@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 /**
@@ -52,9 +53,10 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         if (scaffoldingTemplateGenerator != null) {
             // use reflection to locate method (would cause cyclic dependency otherwise)
-            generateViewMethod = ReflectionUtils.findMethod(scaffoldingTemplateGenerator.getClass(), "generateView", new Class<?>[]{GrailsDomainClass.class, String.class, Writer.class});
+            generateViewMethod = ReflectionUtils.findMethod(scaffoldingTemplateGenerator.getClass(), "generateView", new Class<?>[] {
+                GrailsDomainClass.class, String.class, Writer.class});
         }
-        this.reloadEnabled = groovyPagesTemplateEngine.isReloadEnabled();
+        reloadEnabled = groovyPagesTemplateEngine.isReloadEnabled();
     }
 
     public void clearCache() {
@@ -62,11 +64,9 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     }
 
     public void render(GrailsWebRequest webRequest, GroovyPageBinding pageScope, Map<String, Object> attrs, Object body, Writer out) throws IOException {
-        if (groovyPagesTemplateEngine==null) {
-            throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!");
-        }
+        Assert.state(groovyPagesTemplateEngine != null, "Property [groovyPagesTemplateEngine] must be set!");
 
-        String templateName=getStringValue(attrs, "template");
+        String templateName = getStringValue(attrs, "template");
         if (StringUtils.isBlank(templateName)) {
             throw new GrailsTagException("Tag [render] is missing required attribute [template]");
         }
@@ -75,79 +75,76 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         String contextPath = getStringValue(attrs, "contextPath");
         String pluginName = getStringValue(attrs, "plugin");
 
-        Template t = findAndCacheTemplate(webRequest, pageScope, templateName,
-                contextPath, pluginName, uri);
-
-        if (t==null) {
+        Template t = findAndCacheTemplate(webRequest, pageScope, templateName, contextPath, pluginName, uri);
+        if (t == null) {
             throw new GrailsTagException("Template not found for name [" + templateName + "] and path [" + uri + "]");
         }
 
         makeTemplate(t, attrs, body, out);
     }
 
-    private Template findAndCacheTemplate(GrailsWebRequest webRequest,
-            GroovyPageBinding pageScope, String templateName,
-            String contextPath, String pluginName, String uri)
-            throws IOException {
+    private Template findAndCacheTemplate(GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
+            String contextPath, String pluginName, String uri) throws IOException {
+
         String templatePath = StringUtils.isNotEmpty(contextPath) ? GrailsResourceUtils.appendPiecesForUri(contextPath, templateName) : templateName;
-        GroovyPageScriptSource scriptSource = null;
-        if (pluginName != null) {
-            scriptSource = groovyPageLocator.findTemplateInBinding(pluginName, templatePath, pageScope);
-        }  else {
+        GroovyPageScriptSource scriptSource;
+        if (pluginName == null) {
             scriptSource = groovyPageLocator.findTemplateInBinding(templatePath, pageScope);
+        }  else {
+            scriptSource = groovyPageLocator.findTemplateInBinding(pluginName, templatePath, pageScope);
         }
 
-        Template t = null;
         String cacheKey;
-        if (scriptSource != null) {
-            cacheKey = scriptSource.getURI();
-        } else {
+        if (scriptSource == null) {
             cacheKey = contextPath + pluginName + uri;
+        } else {
+            cacheKey = scriptSource.getURI();
         }
 
         TemplateRendererCacheEntry cacheEntry = templateCache.get(cacheKey);
         if (cacheEntry != null && cacheEntry.isValid()) {
-            t = cacheEntry.template;
-        } else {
-            try {
-                if (cacheEntry != null) {
-                    // prevent several competing threads to update the template at the same time
-                    cacheEntry.getLock().lock();
-                    if(cacheEntry.isValid()) {
-                        // another thread already updated the entry
-                        t = cacheEntry.template;
+            return cacheEntry.template;
+        }
+
+        Template t = null;
+        try {
+            if (cacheEntry != null) {
+                // prevent several competing threads to update the template at the same time
+                cacheEntry.getLock().lock();
+                if (cacheEntry.isValid()) {
+                    // another thread already updated the entry
+                    t = cacheEntry.template;
+                }
+            }
+            if (t == null) {
+                if (scriptSource != null) {
+                    t = groovyPagesTemplateEngine.createTemplate(scriptSource);
+                }
+                boolean allowCaching = !disableCache;
+                if (t == null && scaffoldingTemplateGenerator != null) {
+                    t = generateScaffoldedTemplate(webRequest, uri);
+                    // always enable caching for generated scaffolded template
+                    allowCaching = true;
+                }
+                if (t != null && allowCaching) {
+                    if (cacheEntry == null) {
+                        templateCache.put(cacheKey, new TemplateRendererCacheEntry(t, reloadEnabled));
+                    } else {
+                        cacheEntry.setTemplate(t);
                     }
                 }
-                if(t == null) {
-                    if (scriptSource != null) {
-                        t = groovyPagesTemplateEngine.createTemplate(scriptSource);
-                    }
-                    boolean allowCaching = !disableCache;
-                    if (t==null && scaffoldingTemplateGenerator != null) {
-                        t = generateScaffoldedTemplate(webRequest, uri);
-                        // always enable caching for generated scaffolded template
-                        allowCaching = true;
-                    }
-                    if (t != null && allowCaching) {
-                        if (cacheEntry != null) {
-                            cacheEntry.setTemplate(t);
-                        } else {
-                            templateCache.put(cacheKey, new TemplateRendererCacheEntry(t, reloadEnabled));
-                        }
-                    }
-                }
-            } finally {
-                if (cacheEntry != null) {
-                    cacheEntry.getLock().unlock();
-                }
+            }
+        } finally {
+            if (cacheEntry != null) {
+                cacheEntry.getLock().unlock();
             }
         }
         return t;
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void makeTemplate(Template t, Map<String, Object> attrs,
-            Object body, Writer out) throws IOException {
+    private void makeTemplate(Template t, Map<String, Object> attrs, Object body, Writer out) throws IOException {
+
         String var = getStringValue(attrs, "var");
         Map b = new LinkedHashMap<String, Object>();
         b.put("body", body);
@@ -164,10 +161,10 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         }
         if (attrs.containsKey("collection")) {
             String key = null;
-            Iterator<?> iterator=InvokerHelper.asIterator(attrs.get("collection"));
-            while(iterator.hasNext()) {
+            Iterator<?> iterator = InvokerHelper.asIterator(attrs.get("collection"));
+            while (iterator.hasNext()) {
                 Object it = iterator.next();
-                if (key==null && StringUtils.isBlank(var) && it != null) {
+                if (key == null && StringUtils.isBlank(var) && it != null) {
                     key = GrailsNameUtils.getPropertyName(it.getClass());
                 }
                 Map itmap = new LinkedHashMap<String, Object>();
@@ -187,7 +184,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     }
 
     private Template generateScaffoldedTemplate(GrailsWebRequest webRequest, String uri) throws IOException {
-        Template t=null;
+        Template t = null;
         Collection<String> controllerActions = scaffoldedActionMap.get(webRequest.getControllerName());
         if (controllerActions != null && controllerActions.contains(webRequest.getActionName())) {
             GrailsDomainClass domainClass = controllerToScaffoldedDomainClassMap.get(webRequest.getControllerName());
@@ -195,7 +192,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                 int i = uri.lastIndexOf('/');
                 String scaffoldedtemplateName = i > -1 ? uri.substring(i) : uri;
                 if (scaffoldedtemplateName.toLowerCase().endsWith(".gsp")) {
-                    scaffoldedtemplateName = scaffoldedtemplateName.substring(0, scaffoldedtemplateName.length()-4);
+                    scaffoldedtemplateName = scaffoldedtemplateName.substring(0, scaffoldedtemplateName.length() - 4);
                 }
                 FastStringWriter sw = new FastStringWriter();
                 ReflectionUtils.invokeMethod(generateViewMethod, scaffoldingTemplateGenerator, domainClass, scaffoldedtemplateName, sw);
@@ -231,11 +228,8 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     }
 
     private String getStringValue(Map<String, Object> attrs, String key) {
-        Object val=attrs.get(key);
-        if (val==null) return "";
-        if (val instanceof String) {
-            return (String)val;
-        }
+        Object val = attrs.get(key);
+        if (val == null) return "";
         return String.valueOf(val);
     }
 

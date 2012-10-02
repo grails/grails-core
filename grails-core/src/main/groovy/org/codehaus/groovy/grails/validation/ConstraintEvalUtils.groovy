@@ -32,7 +32,7 @@ class ConstraintEvalUtils {
         } as Runnable)
     }
 
-    private static defaultConstraintsMap = null
+    private static defaultConstraintsMap
     private static configId
 
     /**
@@ -40,7 +40,7 @@ class ConstraintEvalUtils {
      */
     public static Map<String, Object> getDefaultConstraints(ConfigObject config) {
         def cid = System.identityHashCode(config)
-        if(defaultConstraintsMap == null || configId != cid) {
+        if (defaultConstraintsMap == null || configId != cid) {
             configId = cid
             def constraints = config?.grails?.gorm?.default?.constraints
             if (constraints instanceof Closure) {
@@ -57,5 +57,4 @@ class ConstraintEvalUtils {
         defaultConstraintsMap =  null
         configId = null
     }
-
 }

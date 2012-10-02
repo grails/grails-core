@@ -36,7 +36,7 @@ public interface GrailsDomainClass extends GrailsClass {
 
     /**
      * @param domainClass
-     * @return True if the specifying domain class is on the owning side of a relationship
+     * @return true if the specifying domain class is on the owning side of a relationship
      */
     @SuppressWarnings("rawtypes")
     boolean isOwningClass(Class domainClass);
@@ -174,7 +174,7 @@ public interface GrailsDomainClass extends GrailsClass {
     /**
      * Whether the class is the root of a heirarchy
      *
-     * @return True if it is the root of the heirarchy
+     * @return true if it is the root of the heirarchy
      */
     boolean isRoot();
 
@@ -192,7 +192,7 @@ public interface GrailsDomainClass extends GrailsClass {
 
     /**
      * Returns true if the domain classes has sub classes
-     * @return True if it does
+     * @return true if it does
      */
     boolean hasSubClasses();
 
@@ -205,7 +205,7 @@ public interface GrailsDomainClass extends GrailsClass {
     /**
      * Returns true if this domain class has a persistent property for the given name
      * @param propertyName The property name
-     * @return True if it does
+     * @return true if it does
      */
     boolean hasPersistentProperty(String propertyName);
 

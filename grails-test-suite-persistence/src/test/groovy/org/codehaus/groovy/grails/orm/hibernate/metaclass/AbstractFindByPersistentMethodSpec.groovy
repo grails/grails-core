@@ -15,16 +15,14 @@ import spock.lang.Issue
 
 /**
  */
-class AbstractFindByPersistentMethodSpec extends GormSpec{
+class AbstractFindByPersistentMethodSpec extends GormSpec {
 
-    
     @Issue('GRAILS-8762')
     void "Test that findBy configures a limit of 1"() {
         given:"A finder method"
-        final datastore = new HibernateDatastore(applicationContext.getBean(MappingContext), sessionFactory, grailsApplication.config)
-        datastore.applicationContext = applicationContext
-        def finder = new TestFindBy(datastore, grailsApplication)
-        
+            final datastore = new HibernateDatastore(applicationContext.getBean(MappingContext), sessionFactory, grailsApplication.config)
+            datastore.applicationContext = applicationContext
+            def finder = new TestFindBy(datastore, grailsApplication)
         when:"The finder is invoked"
             CriteriaImpl c  = finder.invoke(Customer, "findByName", "Bob")
 
@@ -39,17 +37,12 @@ class AbstractFindByPersistentMethodSpec extends GormSpec{
 }
 class TestFindBy extends AbstractFindByPersistentMethod {
 
-
     TestFindBy(HibernateDatastore datastore, GrailsApplication application) {
         super(datastore, application, datastore.getSessionFactory(), Thread.currentThread().contextClassLoader, ~/(findBy)([A-Z]\w*)/, ["Or", "And"] as String[])
     }
 
     @Override
     protected Object getResult(Criteria crit, boolean useLimit) {
-        return crit;    
+        return crit;
     }
-
-
-
-
 }

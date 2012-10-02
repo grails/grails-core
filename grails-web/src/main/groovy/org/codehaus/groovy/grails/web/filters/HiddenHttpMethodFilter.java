@@ -27,8 +27,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Based off the Spring implementation, but this one works with Grails params object
- * and also deals with the X-HTTP-Method-Override HTTP header.
+ * Based off the Spring implementation, but also supports the X-HTTP-Method-Override HTTP header.
  *
  * @see org.springframework.web.filter.HiddenHttpMethodFilter
  *
@@ -60,14 +59,11 @@ public class HiddenHttpMethodFilter extends OncePerRequestFilter {
             String httpMethod = getHttpMethodOverride(request);
             if (StringUtils.hasLength(httpMethod)) {
                 filterChain.doFilter(new HttpMethodRequestWrapper(httpMethod, request), response);
-            }
-            else {
-                filterChain.doFilter(request, response);
+                return;
             }
         }
-        else {
-            filterChain.doFilter(request, response);
-        }
+
+        filterChain.doFilter(request, response);
     }
 
     protected String getHttpMethodOverride(HttpServletRequest request) {
@@ -76,14 +72,14 @@ public class HiddenHttpMethodFilter extends OncePerRequestFilter {
         if (httpMethod == null) {
             httpMethod = request.getHeader(HEADER_X_HTTP_METHOD_OVERRIDE);
         }
-        return httpMethod != null ? httpMethod.toUpperCase() : null;
+        return httpMethod == null ? null : httpMethod.toUpperCase();
     }
 
     /**
      * Simple {@link HttpServletRequest} wrapper that returns the supplied method for
      * {@link HttpServletRequest#getMethod()}.
      */
-    private static class HttpMethodRequestWrapper extends HttpServletRequestWrapper {
+    protected static class HttpMethodRequestWrapper extends HttpServletRequestWrapper {
 
         private final String method;
 

@@ -138,7 +138,7 @@ class GrailsArtefactTransformerSpec extends Specification {
         then:
             version == GrailsUtil.grailsVersion
             enhancedAnnotation.mixins() == [Date] as Class[]
-    }    
+    }
 }
 
 class TestTransformer extends AbstractGrailsArtefactTransformer {

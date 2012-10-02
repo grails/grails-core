@@ -1,11 +1,11 @@
 package grails.test.mixin
 
 import grails.test.mixin.web.UrlMappingsUnitTestMixin
+import grails.web.Action
 import junit.framework.AssertionFailedError
 import junit.framework.ComparisonFailure
 
 import org.junit.Test
-import grails.web.Action
 import org.springframework.web.context.WebApplicationContext
 
 /**
@@ -137,7 +137,7 @@ class UrlMappingsTestMixinTests {
             }
         }
     }
-    
+
     @Test
     void testGrails9110() {
         mockController(UserController)

@@ -195,7 +195,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         GSPResponseWriter out = createResponseWriter(response);
         try {
             Template template = engine.createTemplate(scriptSource);
-            if(template instanceof GroovyPageTemplate) {
+            if (template instanceof GroovyPageTemplate) {
                 ((GroovyPageTemplate)template).setAllowSettingContentType(true);
             }
             template.make().writeTo(out);

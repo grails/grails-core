@@ -114,7 +114,7 @@ class Mapping {
     ColumnConfig discriminatorColumn
 
     /**
-     * Obtains a ColumnConfig object for the given name
+     * Obtains a PropertyConfig object for the given name
      */
     PropertyConfig getPropertyConfig(String name) { columns[name] }
 
@@ -143,4 +143,9 @@ class Mapping {
      * @return the datasource names
      */
     List<String> datasources = [GrailsDomainClassProperty.DEFAULT_DATA_SOURCE]
+
+    /**
+     * DDL comment.
+     */
+    String comment
 }

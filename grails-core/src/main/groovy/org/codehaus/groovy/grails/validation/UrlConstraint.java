@@ -47,7 +47,7 @@ public class UrlConstraint extends AbstractConstraint {
         RegexValidator domainValidator = null;
 
         if (constraintParameter instanceof Boolean) {
-            url = ((Boolean) constraintParameter).booleanValue();
+            url = (Boolean)constraintParameter;
         }
         else if (constraintParameter instanceof String) {
             url = true;

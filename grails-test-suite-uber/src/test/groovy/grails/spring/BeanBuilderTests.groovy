@@ -15,16 +15,14 @@
  */
 package grails.spring
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
+import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.aop.SpringProxy
-import org.springframework.beans.factory.BeanIsAbstractException;
+import org.springframework.beans.factory.BeanIsAbstractException
 import org.springframework.beans.factory.ObjectFactory
 import org.springframework.beans.factory.config.Scope
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.GenericApplicationContext
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.mock.jndi.SimpleNamingContextBuilder
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.stereotype.Component
 
 /**
@@ -562,6 +560,33 @@ class BeanBuilderTests extends GroovyTestCase {
         assertEquals 40, marge.age
     }
 
+    void testBeanWithListAndMapConstructor() {
+        bb.beans {
+            bart(Bean1) {
+                person = "bart"
+                age = 11
+            }
+            lisa(Bean1) {
+                person = "lisa"
+                age = 9
+            }
+
+            beanWithList(Bean5, [bart, lisa])
+
+            // test runtime references both as ref() and as plain name
+            beanWithMap(Bean6, [bart:bart, lisa:ref('lisa')])
+        }
+        def ctx  = bb.createApplicationContext()
+
+        def beanWithList = ctx.getBean("beanWithList")
+        assertEquals 2, beanWithList.people.size()
+        assertEquals "bart", beanWithList.people[0].person
+
+        def beanWithMap = ctx.getBean("beanWithMap")
+        assertEquals 9, beanWithMap.peopleByName.lisa.age
+        assertEquals "bart", beanWithMap.peopleByName.bart.person
+    }
+
     void testBeanWithFactoryMethod() {
         bb.beans {
             homer(Bean1) {
@@ -841,6 +866,22 @@ class Bean4 {
     private Bean4() {}
     static Bean4 getInstance() { new Bean4() }
     String person
+}
+
+// bean with List-valued constructor arg
+class Bean5 {
+    Bean5(List<Bean1> people) {
+        this.people = people
+    }
+    List<Bean1> people
+}
+
+// bean with Map-valued constructor arg
+class Bean6 {
+    Bean6(Map<String, Bean1> peopleByName) {
+        this.peopleByName = peopleByName
+    }
+    Map<String, Bean1> peopleByName
 }
 
 // a factory bean

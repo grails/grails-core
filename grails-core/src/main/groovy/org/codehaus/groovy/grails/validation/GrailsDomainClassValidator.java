@@ -75,7 +75,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
         Map constrainedProperties = domainClass.getConstrainedProperties();
         Set<String> constrainedPropertyNames = new HashSet(constrainedProperties.keySet());
 
-        for(Object key : constrainedProperties.keySet()) {
+        for (Object key : constrainedProperties.keySet()) {
             String propertyName = (String) key;
             validatePropertyWithConstraint(propertyName, obj, errors, bean, constrainedProperties);
         }

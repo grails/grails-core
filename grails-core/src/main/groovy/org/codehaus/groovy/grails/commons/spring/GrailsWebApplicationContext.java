@@ -74,22 +74,16 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     @Override
     public ClassLoader getClassLoader() {
         GrailsApplication application = getGrailsApplication();
-
-        if (application != null) {
-            return application.getClassLoader();
-        }
-
-        return super.getClassLoader();
+        return application == null ? super.getClassLoader() : application.getClassLoader();
     }
-    
+
     private GrailsApplication getGrailsApplication() {
         ApplicationContext parent = getParent();
-        GrailsApplication application = null;
-        if (parent != null && parent.containsBean(GrailsApplication.APPLICATION_ID)) {
-            application = (GrailsApplication) parent.getBean(GrailsApplication.APPLICATION_ID);
-
+        if (parent == null || !parent.containsBean(GrailsApplication.APPLICATION_ID)) {
+            return null;
         }
-        return application;
+
+        return (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
     }
 
     /**
@@ -183,18 +177,14 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     @Override
     protected ConfigurableEnvironment createEnvironment() {
         GrailsApplication grailsApplication = getGrailsApplication();
-        if (grailsApplication != null) {
-            return new GrailsEnvironment(grailsApplication);
-        }
-        return new StandardServletEnvironment();
+        return grailsApplication == null ? new StandardServletEnvironment() : new GrailsEnvironment(grailsApplication);
     }
 
     @Override
     public ConfigurableWebEnvironment getEnvironment() {
         ConfigurableEnvironment env = super.getEnvironment();
         Assert.isInstanceOf(ConfigurableWebEnvironment.class, env,
-                "ConfigurableWebApplication environment must be of type " +
-                "ConfigurableWebEnvironment");
+                "ConfigurableWebApplication environment must be of type ConfigurableWebEnvironment");
         return (ConfigurableWebEnvironment) env;
     }
 }

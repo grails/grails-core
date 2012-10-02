@@ -7,7 +7,6 @@ import grails.test.mixin.TestFor
 import grails.util.Environment;
 import grails.artefact.Artefact
 
-
 @TestFor(CustomTagLib)
 class OptionalTagBodySpec extends AbstractGrailsEnvChangingSpec {
     def "Test that the existence of a body can be tested with groovy truth"(grailsEnv) {
@@ -22,15 +21,17 @@ class OptionalTagBodySpec extends AbstractGrailsEnvChangingSpec {
             grailsEnv << grailsEnvs
     }
 }
+
 @Artefact("TagLibrary")
 class CustomTagLib {
+
     static namespace = "a"
-    
+
     def myBody = { attrs, body ->
-        if(body) {
+        if (body) {
             out << body()
         } else {
-            out << 'nobody'        
+            out << 'nobody'
         }
     }
 }

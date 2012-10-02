@@ -52,11 +52,11 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
         MetaClassRegistryChangeEventListener[] listeners = metaClassRegistry.getMetaClassRegistryChangeEventListeners();
         boolean registered = false;
         for (MetaClassRegistryChangeEventListener listener : listeners) {
-            if(listener == INSTANCE) {
+            if (listener == INSTANCE) {
                 registered = true;break;
             }
         }
-        if(!registered) {
+        if (!registered) {
             GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(INSTANCE);
         }
         return INSTANCE;
@@ -66,8 +66,7 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
         cleaner.clean();
         GroovySystem.getMetaClassRegistry().removeMetaClassRegistryChangeEventListener(cleaner);
     }
-    
-    
+
     public static void addAlteredMetaClass(Class cls, MetaClass altered) {
         INSTANCE.alteredClasses.put(cls, altered);
     }

@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.plugins;
 
 import grails.util.PluginBuildSettings;
-import org.springframework.core.io.Resource;
+import org.codehaus.groovy.grails.io.support.Resource;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -91,13 +91,13 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a><span class="step gap">..</span><a href="/book/list?offset=8&amp;max=2" class="step">5</a>', template
         assertOutputContains '<a href="/book/list?offset=12&amp;max=2" class="step">7</a><span class="step gap">..</span><a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
 
-	template = '<g:paginate  max="2" total="20" offset="4" maxsteps="3" controller="book" action="list" />'
+        template = '<g:paginate  max="2" total="20" offset="4" maxsteps="3" controller="book" action="list" />'
         assertOutputContains '<a href="/book/list?offset=0&amp;max=2" class="step">1</a><a href="/book/list?offset=2&amp;max=2" class="step">2</a>', template
 
-	template = '<g:paginate  max="2" total="20" offset="14" maxsteps="3" controller="book" action="list" />'
+        template = '<g:paginate  max="2" total="20" offset="14" maxsteps="3" controller="book" action="list" />'
         assertOutputContains '<a href="/book/list?offset=16&amp;max=2" class="step">9</a><a href="/book/list?offset=18&amp;max=2" class="step">10</a>', template
     }
-    
+
     protected void onInit() {
         if(name == 'testPaginateMappingAndAction') {
             def mappingClass = gcl.parseClass('''
@@ -110,11 +110,11 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         }
     }
             ''')
-                
+
             grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, mappingClass)
         }
-    }    
-    
+    }
+
     void testPaginateMappingAndAction() {
         def template = '<g:paginate next="Forward" prev="Back" maxsteps="8" max="10" id="1" mapping="claimTab" total="12" action="documents"/>'
         assertOutputEquals '<span class="currentStep">1</span><a href="/claim/1/documents?offset=10&amp;max=10" class="step">2</a><a href="/claim/1/documents?offset=10&amp;max=10" class="nextLink">Forward</a>', template
@@ -135,20 +135,19 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
         template = '<g:pageProperty name="foo.bar" writeEntireProperty="true" />'
         assertOutputEquals " bar=\"good\"", template
     }
-    
-    
+
     void testIfPageProperty() {
         def template = '<g:ifPageProperty name="foo.bar">Hello</g:ifPageProperty>'
-        
+
         TokenizedHTMLPage page = new TokenizedHTMLPage([] as char[], new CharArray(0), new CharArray(0))
         request[RequestConstants.PAGE] = page
 
         page.addProperty("foo.bar", "true")
 
         assertOutputEquals "Hello", template
-        
+
         template = '<g:ifPageProperty name="page.contentbuffer">Hello 2</g:ifPageProperty>'
-        
+
         GSPSitemeshPage smpage = new GSPSitemeshPage()
         request[RequestConstants.PAGE] = smpage
 

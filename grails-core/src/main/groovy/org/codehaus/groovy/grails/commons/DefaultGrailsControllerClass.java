@@ -129,12 +129,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
         while (superClass != null && superClass != Object.class && superClass != GroovyObject.class) {
             for (Method method : superClass.getMethods()) {
-                if (Modifier.isPublic(method.getModifiers())
-                        && method.getAnnotation(Action.class) != null) {
+                if (Modifier.isPublic(method.getModifiers()) && method.getAnnotation(Action.class) != null) {
                     String methodName = method.getName();
 
-                    if(!methodName.endsWith(FLOW_SUFFIX)) {
-
+                    if (!methodName.endsWith(FLOW_SUFFIX)) {
                         methodNames.add(methodName);
                         configureMappingForMethodAction(methodName);
                     }
@@ -156,6 +154,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         if (defaultActionName == null) {
             return;
         }
+
         final String defaultViewPath = SLASH + GrailsNameUtils.getPropertyNameRepresentation(getName()) + SLASH + defaultActionName;
 
         uri2methodMap.put(uri, defaultActionName);
@@ -210,61 +209,71 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     private boolean isIntercepted(Object bip, String action) {
-        if (bip instanceof Map) {
-            Map bipMap = (Map) bip;
-            if (bipMap.containsKey(EXCEPT)) {
-                Object excepts = bipMap.get(EXCEPT);
-                if (excepts instanceof String) {
-                    if (!excepts.equals(action)) {
-                        return true;
-                    }
-                } else if (excepts instanceof List) {
-                    if (!((List) excepts).contains(action)) {
-                        return true;
-                    }
-                }
-            } else if (bipMap.containsKey(ONLY)) {
-                Object onlys = bipMap.get(ONLY);
-                if (onlys instanceof String) {
-                    if (onlys.equals(action)) {
-                        return true;
-                    }
-                } else if (onlys instanceof List) {
-                    if (((List) onlys).contains(action)) {
-                        return true;
-                    }
-                }
-            } else {
-                return true;
-            }
-        } else if (bip instanceof Closure) {
+        if (bip instanceof Closure) {
             return true;
         }
+
+        if (!(bip instanceof Map)) {
+            return false;
+        }
+
+        Map bipMap = (Map) bip;
+        if (bipMap.containsKey(EXCEPT)) {
+            Object excepts = bipMap.get(EXCEPT);
+            if (excepts instanceof String) {
+                if (!excepts.equals(action)) {
+                    return true;
+                }
+            } else if (excepts instanceof List) {
+                if (!((List) excepts).contains(action)) {
+                    return true;
+                }
+            }
+        } else if (bipMap.containsKey(ONLY)) {
+            Object onlys = bipMap.get(ONLY);
+            if (onlys instanceof String) {
+                if (onlys.equals(action)) {
+                    return true;
+                }
+            } else if (onlys instanceof List) {
+                if (((List) onlys).contains(action)) {
+                    return true;
+                }
+            }
+        }
+        else {
+            return true;
+        }
+
         return false;
     }
 
     public boolean isHttpMethodAllowedForAction(GroovyObject controller, final String httpMethod, String actionName) {
-        boolean isAllowed = true;
         Object methodRestrictionsProperty = null;
         MetaProperty metaProp = controller.getMetaClass().getMetaProperty(ALLOWED_HTTP_METHODS_PROPERTY);
         if (metaProp != null) {
             methodRestrictionsProperty = metaProp.getProperty(controller);
         }
-        if (methodRestrictionsProperty instanceof Map) {
-            Map map = (Map) methodRestrictionsProperty;
-            Object value = map.get(actionName);
-            if (value instanceof List) {
-                List listOfMethods = (List) value;
-                isAllowed = CollectionUtils.exists(listOfMethods, new Predicate() {
-                    public boolean evaluate(@SuppressWarnings("hiding") Object value) {
-                        return httpMethod.equalsIgnoreCase(value.toString());
-                    }
-                });
-            } else if (value instanceof String) {
-                isAllowed = ((String) value).equalsIgnoreCase(httpMethod);
-            }
+        if (!(methodRestrictionsProperty instanceof Map)) {
+            return true;
         }
-        return isAllowed;
+
+        Map map = (Map) methodRestrictionsProperty;
+        Object value = map.get(actionName);
+
+        if (value instanceof String) {
+            return ((String) value).equalsIgnoreCase(httpMethod);
+        }
+
+        if (!(value instanceof List)) {
+            return true;
+        }
+
+        return CollectionUtils.exists((List)value, new Predicate() {
+            public boolean evaluate(Object method) {
+                return httpMethod.equalsIgnoreCase(method.toString());
+            }
+        });
     }
 
     public boolean isInterceptedAfter(GroovyObject controller, String action) {
@@ -287,16 +296,16 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     private Closure getInterceptor(GroovyObject controller, Object ip) {
-        Closure interceptor=null;
+        Closure interceptor = null;
         if (ip instanceof Map) {
-            Map ipMap = (Map) ip;
+            Map ipMap = (Map)ip;
             if (ipMap.containsKey(ACTION)) {
-                interceptor=(Closure) ipMap.get(ACTION);
+                interceptor = (Closure)ipMap.get(ACTION);
             }
         } else if (ip instanceof Closure) {
-            interceptor=(Closure) ip;
+            interceptor = (Closure)ip;
         }
-        if(interceptor != null && interceptor.getDelegate() != controller) {
+        if (interceptor != null && interceptor.getDelegate() != controller) {
             interceptor = (Closure)interceptor.clone();
             interceptor.setDelegate(controller);
             interceptor.setResolveStrategy(Closure.DELEGATE_FIRST);

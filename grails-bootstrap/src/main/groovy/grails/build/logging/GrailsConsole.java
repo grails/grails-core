@@ -32,7 +32,6 @@ import org.codehaus.groovy.runtime.typehandling.NumberMath;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
-import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.lang.reflect.Field;
@@ -70,7 +69,7 @@ public class GrailsConsole {
     /**
      * Whether to enable verbose mode
      */
-    private boolean verbose;
+    private boolean verbose = Boolean.getBoolean("grails.verbose");;
 
     /**
      * Whether to show stack traces
@@ -242,16 +241,19 @@ public class GrailsConsole {
     public static synchronized GrailsConsole getInstance() {
         if (instance == null) {
             try {
-                instance = createInstance();
+            	setInstance(createInstance());
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
             }
         }
-
+        return instance;
+    }
+    
+    public static void setInstance(GrailsConsole newConsole) {
+    	instance = newConsole;
         if (!(System.out instanceof GrailsConsolePrintStream)) {
             System.setOut(new GrailsConsolePrintStream(instance.out));
         }
-        return instance;
     }
 
     public static GrailsConsole createInstance() throws IOException {
@@ -296,6 +298,14 @@ public class GrailsConsole {
      */
     public boolean isVerbose() {
         return verbose;
+    }
+
+    /**
+     *
+     * @return Whether to show stack traces
+     */
+    public boolean isStacktrace() {
+        return stacktrace;
     }
 
     /**
@@ -345,7 +355,7 @@ public class GrailsConsole {
     public void indicateProgress() {
         progressIndicatorActive = true;
         if (isAnsiEnabled()) {
-            if (StringUtils.hasText(lastMessage)) {
+            if (lastMessage != null && lastMessage.length() > 0) {
                 if (!lastMessage.contains(maxIndicatorString)) {
                     updateStatus(lastMessage + indicator);
                 }
@@ -463,6 +473,7 @@ public class GrailsConsole {
 
     private void postPrintMessage() {
         progressIndicatorActive = false;
+        appendCalled = false;
         if (userInputActive) {
             showPrompt();
         }
@@ -576,6 +587,9 @@ public class GrailsConsole {
     public void log(String msg) {
         PrintStream printStream = out;
         try {
+            if (userInputActive) {
+                erasePrompt(printStream);
+            }
             if (msg.endsWith(LINE_SEPARATOR)) {
                 printStream.print(msg);
             }
@@ -584,9 +598,41 @@ public class GrailsConsole {
             }
             cursorMove = 0;
         } finally {
+            printStream.flush();
             postPrintMessage();
         }
     }
+
+    private void erasePrompt(PrintStream printStream) {
+        printStream.print(ansi()
+                .eraseLine(Ansi.Erase.BACKWARD).cursorLeft(PROMPT.length()));
+    }
+
+    /**
+     * Logs a message below the current status message
+     *
+     * @param msg The message to log
+     */
+    private boolean appendCalled = false;
+    public void append(String msg) {
+        PrintStream printStream = out;
+        try {
+            if (userInputActive && !appendCalled) {
+                printStream.print(moveDownToSkipPrompt());
+                appendCalled = true;
+            }
+            if (msg.endsWith(LINE_SEPARATOR)) {
+                printStream.print(msg);
+            }
+            else {
+                printStream.println(msg);
+            }
+            cursorMove = 0;
+        } finally {
+            progressIndicatorActive = false;
+        }
+    }
+
 
     /**
      * Synonym for #log
@@ -668,6 +714,7 @@ public class GrailsConsole {
         }
 
         out.print(prompt);
+        out.flush();
         return null;
     }
 

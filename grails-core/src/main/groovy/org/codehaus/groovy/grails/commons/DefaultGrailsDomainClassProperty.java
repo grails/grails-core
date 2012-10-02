@@ -160,10 +160,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         List allTransientProps = new ArrayList();
 
         List<Class<?>> allClasses = getAllDomainClassesInHierarchy();
-        for(Class currentClass : allClasses) {
+        for (Class currentClass : allClasses) {
             ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(currentClass);
             Object transientProperty = propertyFetcher.getPropertyValue(TRANSIENT, false);
-            if(transientProperty instanceof List) {
+            if (transientProperty instanceof List) {
                 List transientList = (List) transientProperty;
                 allTransientProps.addAll(transientList);
             }
@@ -219,6 +219,10 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      */
     public boolean isIdentity() {
         return identity;
+    }
+
+    public void setIdentity(boolean b) {
+        identity = b;
     }
 
     /* (non-Javadoc)
@@ -300,7 +304,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     /**
-     * @return True if the foreign key in a one-to-one is stored in the parent
+     * @return true if the foreign key in a one-to-one is stored in the parent
      */
     public boolean isHasOne() {
         return hasOne;

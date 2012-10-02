@@ -155,7 +155,7 @@ public abstract class GroovyPage extends Script {
         public Object call(Object... args) {
             return retval;
         }
-        
+
         public boolean asBoolean() {
             return DefaultTypeTransformation.castToBoolean(retval);
         }
@@ -328,7 +328,7 @@ public abstract class GroovyPage extends Script {
      * @param name  tag name
      * @return resolved tag if any
      */
-    public JspTag getJspTag(String uri, String name){
+    public JspTag getJspTag(String uri, String name) {
         if (jspTagLibraryResolver == null) {
             return null;
         }
@@ -381,7 +381,7 @@ public abstract class GroovyPage extends Script {
                         if (!(attrs instanceof GroovyPageAttributes)) {
                             attrs = new GroovyPageAttributes(attrs);
                         }
-                        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(true);                        
+                        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(true);
                         switch (tag.getParameterTypes().length) {
                             case 1:
                                 tagresult = tag.call(new Object[]{attrs});
@@ -476,7 +476,7 @@ public abstract class GroovyPage extends Script {
         if (!(attrs instanceof GroovyPageAttributes)) {
             attrs = new GroovyPageAttributes(attrs, false);
         }
-        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(false);        
+        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(false);
         GroovyObject tagLib = lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
 
         if (tagLib == null) {

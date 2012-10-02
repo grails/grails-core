@@ -37,7 +37,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 
 /**
  * Default implementation of the {@link ConstraintsEvaluator} interface.
@@ -81,8 +81,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
      * @return A Map of constraints
      */
     protected Map<String, ConstrainedProperty> evaluateConstraints(
-          final Class<?> theClass,
-          GrailsDomainClassProperty[] properties) {
+          final Class<?> theClass, GrailsDomainClassProperty[] properties) {
 
         boolean javaEntity = theClass.isAnnotationPresent(Entity.class);
         LinkedList<?> classChain = getSuperClassChain(theClass);
@@ -130,20 +129,17 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                         // Make sure all fields are required by default, unless
                         // specified otherwise by the constraints
                         // If the field is a Java entity annotated with @Entity skip this
-                        applyDefaultConstraints(propertyName, p, cp,
-                                defaultConstraints);
-                        }
+                        applyDefaultConstraints(propertyName, p, cp, defaultConstraints);
+                    }
                 }
             }
         }
+
         if (properties == null || properties.length == 0) {
-            final Set<Entry<String, ConstrainedProperty>> entrySet = constrainedProperties
-                    .entrySet();
+            final Set<Entry<String, ConstrainedProperty>> entrySet = constrainedProperties.entrySet();
             for (Entry<String, ConstrainedProperty> entry : entrySet) {
-                final ConstrainedProperty constrainedProperty = entry
-                        .getValue();
-                if (!constrainedProperty
-                        .hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
+                final ConstrainedProperty constrainedProperty = entry.getValue();
+                if (!constrainedProperty.hasAppliedConstraint(ConstrainedProperty.NULLABLE_CONSTRAINT)) {
                     applyDefaultNullableConstraint(constrainedProperty);
                 }
             }
@@ -170,7 +166,10 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
                         constrainedProperty.applyConstraint(e.getKey(), e.getValue());
                     }
                 } else {
-                    throw new GrailsConfigurationException("Property [" + constrainedProperty.owningClass.getName()+'.'+propertyName+ "] references shared constraint [" +sharedConstraintReference+ ":" +o+ "], which doesn't exist!");
+                    throw new GrailsConfigurationException("Property [" +
+                            constrainedProperty.owningClass.getName() + '.' + propertyName +
+                            "] references shared constraint [" + sharedConstraintReference +
+                            ":" + o + "], which doesn't exist!");
                 }
             }
         }
@@ -196,10 +195,10 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         String constraintsScript = className.replaceAll("\\.","/") + CONSTRAINTS_GROOVY_SCRIPT;
         InputStream stream = getClass().getClassLoader().getResourceAsStream(constraintsScript);
 
-        if (stream!=null) {
+        if (stream != null) {
             GroovyClassLoader gcl = new GroovyClassLoader();
             try {
-                Class<?> scriptClass = gcl.parseClass(DefaultGroovyMethods.getText(stream));
+                Class<?> scriptClass = gcl.parseClass(IOGroovyMethods.getText(stream));
                 Script script = (Script)scriptClass.newInstance();
                 script.run();
                 Binding binding = script.getBinding();

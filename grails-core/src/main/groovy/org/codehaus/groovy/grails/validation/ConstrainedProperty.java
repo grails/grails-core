@@ -237,7 +237,7 @@ public class ConstrainedProperty {
         objects.remove(constraintClass);
         List<Object> toRemove = new ArrayList<Object>();
         for (Object object : objects) {
-            if(constraintClass.isInstance(object)) {
+            if (constraintClass.isInstance(object)) {
                 toRemove.add(object);
             }
         }
@@ -264,7 +264,7 @@ public class ConstrainedProperty {
 
     private static List<Object> getOrInitializeConstraint(String name) {
         List<Object> objects = constraints.get(name);
-        if(objects == null) {
+        if (objects == null) {
             objects = new ArrayList<Object>();
             constraints.put(name, objects);
         }
@@ -323,17 +323,17 @@ public class ConstrainedProperty {
         MaxConstraint maxConstraint = (MaxConstraint)appliedConstraints.get(MAX_CONSTRAINT);
         RangeConstraint rangeConstraint = (RangeConstraint)appliedConstraints.get(RANGE_CONSTRAINT);
 
-        if ((maxConstraint != null) || (rangeConstraint != null)) {
-            Comparable maxConstraintValue = maxConstraint != null ? maxConstraint.getMaxValue() : null;
-            Comparable rangeConstraintHighValue = rangeConstraint != null ? rangeConstraint.getRange().getTo() : null;
+        if (maxConstraint != null || rangeConstraint != null) {
+            Comparable maxConstraintValue = maxConstraint == null ? null : maxConstraint.getMaxValue();
+            Comparable rangeConstraintHighValue = rangeConstraint == null ? null : rangeConstraint.getRange().getTo();
 
-            if ((maxConstraintValue != null) && (rangeConstraintHighValue != null)) {
+            if (maxConstraintValue != null && rangeConstraintHighValue != null) {
                 maxValue = (maxConstraintValue.compareTo(rangeConstraintHighValue) < 0) ? maxConstraintValue : rangeConstraintHighValue;
             }
-            else if ((maxConstraintValue == null) && (rangeConstraintHighValue != null)) {
+            else if (maxConstraintValue == null && rangeConstraintHighValue != null) {
                 maxValue = rangeConstraintHighValue;
             }
-            else if ((maxConstraintValue != null) && (rangeConstraintHighValue == null)) {
+            else if (maxConstraintValue != null && rangeConstraintHighValue == null) {
                 maxValue = maxConstraintValue;
             }
         }
@@ -362,16 +362,13 @@ public class ConstrainedProperty {
         }
 
         Constraint c = appliedConstraints.get(MAX_CONSTRAINT);
-        if (c != null) {
-            c.setParameter(max);
-        }
-        else {
+        if (c == null) {
             c = new MaxConstraint();
             c.setOwningClass(owningClass);
             c.setPropertyName(propertyName);
-            c.setParameter(max);
             appliedConstraints.put(MAX_CONSTRAINT, c);
         }
+        c.setParameter(max);
     }
 
     /**
@@ -384,17 +381,17 @@ public class ConstrainedProperty {
         MinConstraint minConstraint = (MinConstraint)appliedConstraints.get(MIN_CONSTRAINT);
         RangeConstraint rangeConstraint = (RangeConstraint)appliedConstraints.get(RANGE_CONSTRAINT);
 
-        if ((minConstraint != null) || (rangeConstraint != null)) {
+        if (minConstraint != null || rangeConstraint != null) {
             Comparable minConstraintValue = minConstraint != null ? minConstraint.getMinValue() : null;
             Comparable rangeConstraintLowValue = rangeConstraint != null ? rangeConstraint.getRange().getFrom() : null;
 
-            if ((minConstraintValue != null) && (rangeConstraintLowValue != null)) {
+            if (minConstraintValue != null && rangeConstraintLowValue != null) {
                 minValue = (minConstraintValue.compareTo(rangeConstraintLowValue) > 0) ? minConstraintValue : rangeConstraintLowValue;
             }
-            else if ((minConstraintValue == null) && (rangeConstraintLowValue != null)) {
+            else if (minConstraintValue == null && rangeConstraintLowValue != null) {
                 minValue = rangeConstraintLowValue;
             }
-            else if ((minConstraintValue != null) && (rangeConstraintLowValue == null)) {
+            else if (minConstraintValue != null && rangeConstraintLowValue == null) {
                 minValue = minConstraintValue;
             }
         }
@@ -423,16 +420,13 @@ public class ConstrainedProperty {
         }
 
         Constraint c = appliedConstraints.get(MIN_CONSTRAINT);
-        if (c != null) {
-            c.setParameter(min);
-        }
-        else {
+        if (c == null) {
             c = new MinConstraint();
             c.setOwningClass(owningClass);
             c.setPropertyName(propertyName);
-            c.setParameter(min);
             appliedConstraints.put(MIN_CONSTRAINT, c);
         }
+        c.setParameter(min);
     }
 
     /**
@@ -454,16 +448,13 @@ public class ConstrainedProperty {
             appliedConstraints.remove(IN_LIST_CONSTRAINT);
         }
         else {
-            if (c != null) {
-                c.setParameter(inList);
-            }
-            else {
+            if (c == null) {
                 c = new InListConstraint();
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
-                c.setParameter(inList);
                 appliedConstraints.put(IN_LIST_CONSTRAINT, c);
             }
+            c.setParameter(inList);
         }
     }
 
@@ -494,17 +485,13 @@ public class ConstrainedProperty {
         }
         else {
             Constraint c = appliedConstraints.get(RANGE_CONSTRAINT);
-            if (c != null) {
-                c.setParameter(range);
-            }
-            else {
+            if (c == null) {
                 c = new RangeConstraint();
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
-                c.setParameter(range);
-
                 appliedConstraints.put(RANGE_CONSTRAINT,c);
             }
+            c.setParameter(range);
         }
     }
 
@@ -513,11 +500,7 @@ public class ConstrainedProperty {
      */
     public Integer getScale() {
         ScaleConstraint scaleConstraint = (ScaleConstraint)appliedConstraints.get(SCALE_CONSTRAINT);
-        if (scaleConstraint != null) {
-            return scaleConstraint.getScale();
-        }
-
-        return null;
+        return scaleConstraint == null ? null : scaleConstraint.getScale();
     }
 
     /**
@@ -539,25 +522,22 @@ public class ConstrainedProperty {
             appliedConstraints.remove(SIZE_CONSTRAINT);
         }
         else {
-            if (c != null) {
-                c.setParameter(size);
-            }
-            else {
+            if (c == null) {
                 c = new SizeConstraint();
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
-                c.setParameter(size);
                 appliedConstraints.put(SIZE_CONSTRAINT, c);
             }
+            c.setParameter(size);
         }
     }
 
     /**
-     * @return Returns the blank.
+     * @return the blank.
      */
     public boolean isBlank() {
         Object cons = appliedConstraints.get(BLANK_CONSTRAINT);
-        return cons == null || ((Boolean) ((BlankConstraint) cons).getParameter()).booleanValue();
+        return cons == null || (Boolean)((BlankConstraint)cons).getParameter();
     }
 
     /**
@@ -569,21 +549,18 @@ public class ConstrainedProperty {
                     BLANK_CONSTRAINT, owningClass);
         }
 
-        if (!blank) {
-            appliedConstraints.remove(BLANK_CONSTRAINT);
-        }
-        else {
+        if (blank) {
             Constraint c = appliedConstraints.get(BLANK_CONSTRAINT);
-            if (c != null) {
-                c.setParameter(Boolean.valueOf(blank));
-            }
-            else {
+            if (c == null) {
                 c = new BlankConstraint();
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
-                c.setParameter(Boolean.valueOf(blank));
-                appliedConstraints.put(BLANK_CONSTRAINT,c);
+                appliedConstraints.put(BLANK_CONSTRAINT, c);
             }
+            c.setParameter(blank);
+        }
+        else {
+            appliedConstraints.remove(BLANK_CONSTRAINT);
         }
     }
 
@@ -610,16 +587,13 @@ public class ConstrainedProperty {
 
         Constraint c = appliedConstraints.get(EMAIL_CONSTRAINT);
         if (email) {
-            if (c != null) {
-                c.setParameter(Boolean.valueOf(email));
-            }
-            else {
+            if (c == null) {
                 c = new EmailConstraint();
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
-                c.setParameter(Boolean.valueOf(email));
                 appliedConstraints.put(EMAIL_CONSTRAINT,c);
             }
+            c.setParameter(true);
         }
         else {
             if (c != null) {
@@ -655,16 +629,13 @@ public class ConstrainedProperty {
 
         Constraint c = appliedConstraints.get(CREDIT_CARD_CONSTRAINT);
         if (creditCard) {
-            if (c != null) {
-                c.setParameter(Boolean.valueOf(creditCard));
-            }
-            else {
+            if (c == null) {
                 c = new CreditCardConstraint();
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
-                c.setParameter(Boolean.valueOf(creditCard));
                 appliedConstraints.put(CREDIT_CARD_CONSTRAINT,c);
             }
+            c.setParameter(true);
         }
         else {
             if (c != null) {
@@ -699,16 +670,13 @@ public class ConstrainedProperty {
             appliedConstraints.remove(MATCHES_CONSTRAINT);
         }
         else {
-            if (c != null) {
-                c.setParameter(regex);
-            }
-            else {
+            if (c == null) {
                 c = new MatchesConstraint();
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
-                c.setParameter(regex);
                 appliedConstraints.put(MATCHES_CONSTRAINT,c);
             }
+            c.setParameter(regex);
         }
     }
 
@@ -729,9 +697,9 @@ public class ConstrainedProperty {
         MaxSizeConstraint maxSizeConstraint = (MaxSizeConstraint)appliedConstraints.get(MAX_SIZE_CONSTRAINT);
         SizeConstraint sizeConstraint = (SizeConstraint)appliedConstraints.get(SIZE_CONSTRAINT);
 
-        if ((maxSizeConstraint != null) || (sizeConstraint != null)) {
-            int maxSizeConstraintValue = maxSizeConstraint != null ? maxSizeConstraint.getMaxSize() : Integer.MAX_VALUE;
-            int sizeConstraintHighValue = sizeConstraint != null ? sizeConstraint.getRange().getToInt() : Integer.MAX_VALUE;
+        if (maxSizeConstraint != null || sizeConstraint != null) {
+            int maxSizeConstraintValue = maxSizeConstraint == null ? Integer.MAX_VALUE : maxSizeConstraint.getMaxSize();
+            int sizeConstraintHighValue = sizeConstraint == null ? Integer.MAX_VALUE : sizeConstraint.getRange().getToInt();
             maxSize = Math.min(maxSizeConstraintValue, sizeConstraintHighValue);
         }
 
@@ -743,16 +711,13 @@ public class ConstrainedProperty {
      */
     public void setMaxSize(Integer maxSize) {
         Constraint c = appliedConstraints.get(MAX_SIZE_CONSTRAINT);
-        if (c != null) {
-            c.setParameter(maxSize);
-        }
-        else {
+        if (c == null) {
             c = new MaxSizeConstraint();
             c.setOwningClass(owningClass);
             c.setPropertyName(propertyName);
-            c.setParameter(maxSize);
             appliedConstraints.put(MAX_SIZE_CONSTRAINT,c);
         }
+        c.setParameter(maxSize);
     }
 
     /**
@@ -764,11 +729,11 @@ public class ConstrainedProperty {
         MinSizeConstraint minSizeConstraint = (MinSizeConstraint)appliedConstraints.get(MIN_SIZE_CONSTRAINT);
         SizeConstraint sizeConstraint = (SizeConstraint)appliedConstraints.get(SIZE_CONSTRAINT);
 
-        if ((minSizeConstraint != null) || (sizeConstraint != null)) {
-            int minSizeConstraintValue = minSizeConstraint != null ? minSizeConstraint.getMinSize() : Integer.MIN_VALUE;
-            int sizeConstraintLowValue = sizeConstraint != null ? sizeConstraint.getRange().getFromInt() : Integer.MIN_VALUE;
+        if (minSizeConstraint != null || sizeConstraint != null) {
+            int minSizeConstraintValue = minSizeConstraint == null ? Integer.MIN_VALUE : minSizeConstraint.getMinSize();
+            int sizeConstraintLowValue = sizeConstraint == null ? Integer.MIN_VALUE : sizeConstraint.getRange().getFromInt();
 
-            minSize = Integer.valueOf(Math.max(minSizeConstraintValue, sizeConstraintLowValue));
+            minSize = Math.max(minSizeConstraintValue, sizeConstraintLowValue);
         }
 
         return minSize;
@@ -779,16 +744,13 @@ public class ConstrainedProperty {
      */
     public void setMinSize(Integer minSize) {
         Constraint c = appliedConstraints.get(MIN_SIZE_CONSTRAINT);
-        if (c != null) {
-            c.setParameter(minSize);
-        }
-        else {
+        if (c == null) {
             c = new MinSizeConstraint();
             c.setOwningClass(owningClass);
             c.setPropertyName(propertyName);
-            c.setParameter(minSize);
             appliedConstraints.put(MIN_SIZE_CONSTRAINT,c);
         }
+        c.setParameter(minSize);
     }
 
     /**
@@ -831,7 +793,7 @@ public class ConstrainedProperty {
             appliedConstraints.put(NULLABLE_CONSTRAINT, nc);
         }
 
-        nc.setParameter(Boolean.valueOf(nullable));
+        nc.setParameter(nullable);
     }
 
     /**
@@ -869,16 +831,13 @@ public class ConstrainedProperty {
 
         Constraint c = appliedConstraints.get(URL_CONSTRAINT);
         if (url) {
-            if (c != null) {
-                c.setParameter(Boolean.valueOf(url));
-            }
-            else {
+            if (c == null) {
                 c = new UrlConstraint();
                 c.setOwningClass(owningClass);
                 c.setPropertyName(propertyName);
-                c.setParameter(Boolean.valueOf(url));
                 appliedConstraints.put(URL_CONSTRAINT, c);
             }
+            c.setParameter(true);
         }
         else {
             if (c != null) {
@@ -1005,7 +964,7 @@ public class ConstrainedProperty {
      * Checks with this ConstraintedProperty instance supports applying the specified constraint.
      *
      * @param constraintName The name of the constraint
-     * @return True if the constraint is supported
+     * @return true if the constraint is supported
      */
     public boolean supportsContraint(String constraintName) {
 
@@ -1042,7 +1001,7 @@ public class ConstrainedProperty {
             else {
                 try {
                     Constraint c = instantiateConstraint(constraintName, true);
-                    if(c != null) {
+                    if (c != null) {
                         c.setParameter(constrainingValue);
                         appliedConstraints.put(constraintName, c);
                     }
@@ -1080,11 +1039,10 @@ public class ConstrainedProperty {
             c.setOwningClass(owningClass);
             c.setPropertyName(propertyName);
 
-            if(validate && c.isValid()) {
-
+            if (validate && c.isValid()) {
                 return c;
             }
-            else if(!validate) {
+            if (!validate) {
                 return c;
             }
 

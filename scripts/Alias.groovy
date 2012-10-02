@@ -19,10 +19,10 @@ aliasFile = new File(grailsSettings.userHome, '.grails/.aliases')
 includeTargets << grailsScript("_GrailsArgParsing")
 target(default: 'Configures aliases for grails commands') {
      def params   = argsMap.params
-     if(!params) {
-         if(argsMap.list) {
+     if (!params) {
+         if (argsMap.list) {
              listAliases()
-         } else if(argsMap.delete) {
+         } else if (argsMap.delete) {
              removeAlias()
          } else {
              println usage()
@@ -30,7 +30,7 @@ target(default: 'Configures aliases for grails commands') {
          }
          exit 0
      }
-     if(params.size() == 1) {
+     if (params.size() == 1) {
          showAlias()
      } else {
          configureAlias()
@@ -42,9 +42,9 @@ def configureAlias() {
     def aliases = loadProperties()
     def numberOfParams = params.size()
     def alias = params[0]
-    if(aliases.containsKey(alias) && isInteractive) {
+    if (aliases.containsKey(alias) && isInteractive) {
         def oldValue = aliases.get(alias)
-        if(!confirmInput("An alias named ${alias} already exists.  The current value is ${oldValue}. Overwrite existing value? ")) {
+        if (!confirmInput("An alias named ${alias} already exists.  The current value is ${oldValue}. Overwrite existing value? ")) {
             exit 0
         }
     }
@@ -55,7 +55,7 @@ def configureAlias() {
 
 def removeAlias() {
     def aliasToDelete = argsMap.delete
-    if(aliasToDelete == Boolean.TRUE) {
+    if (aliasToDelete == Boolean.TRUE) {
         println usage()
         exit 1
     }
@@ -68,7 +68,7 @@ def showAlias() {
     def aliasToShow = argsMap.params[0]
     def aliases = loadProperties()
     def value = aliases.get aliasToShow
-    if(value) {
+    if (value) {
         println "${aliasToShow} = ${value}"
     } else {
         println "No alias configured for ${aliasToShow}"
@@ -84,8 +84,8 @@ def listAliases() {
 
 def loadProperties() {
     def aliases = new Properties()
-    if(aliasFile.exists()) {
-        aliases.load(new FileReader(aliasFile)) 
+    if (aliasFile.exists()) {
+        aliases.load(new FileReader(aliasFile))
     }
     aliases
 }
@@ -101,5 +101,5 @@ Exmaples:
     grails alias --list
     grails alias rft
     grails alias --delete=ra
-'''    
+'''
 }

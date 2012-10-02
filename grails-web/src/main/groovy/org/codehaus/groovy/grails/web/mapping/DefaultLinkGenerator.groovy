@@ -105,7 +105,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                     isDefaultAction = true
                 }
                 def convertedActionName = action
-                if(action) {
+                if (action) {
                     convertedActionName = grailsUrlConverter.toUrlElement(action)
                 }
                 def id = urlAttrs.get(ATTRIBUTE_ID)
@@ -120,29 +120,30 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 if (id != null) {
                     params.put(ATTRIBUTE_ID, id)
                 }
-                UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,params)
-                if(mapping == null && isDefaultAction) {
-                    mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,params)
+                def pluginName = attrs.get('plugin')
+                UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,pluginName,params)
+                if (mapping == null && isDefaultAction) {
+                    mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,pluginName,params)
                 }
-                if(mapping == null) {
-                    mapping = urlMappingsHolder.getReverseMapping(controller,action,params)
+                if (mapping == null) {
+                    mapping = urlMappingsHolder.getReverseMapping(controller,action,pluginName,params)
                 }
 
                 boolean absolute = false
                 def o = attrs.get(ATTRIBUTE_ABSOLUTE)
-                if(o instanceof Boolean) {
+                if (o instanceof Boolean) {
                     absolute = o
                 } else {
-                    if(o != null) {
+                    if (o != null) {
                         try {
                             def str = o.toString()
-                            if(str) {
+                            if (str) {
                                 absolute = Boolean.parseBoolean(str)
                             }
-                        } catch(e){}
+                        } catch(e) {}
                     }
                 }
-                
+
                 if (!absolute) {
                     url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)

@@ -3,8 +3,6 @@ class @plugin.name@GrailsPlugin {
     def version = "@plugin.version@"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "@grails.version@ > *"
-    // the other plugins this plugin depends on
-    def dependsOn = [:]
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
         "grails-app/views/error.gsp"
@@ -50,7 +48,7 @@ Brief summary/description of the plugin.
         // TODO Implement registering dynamic methods to classes (optional)
     }
 
-    def doWithApplicationContext = { applicationContext ->
+    def doWithApplicationContext = { ctx ->
         // TODO Implement post initialization spring config (optional)
     }
 

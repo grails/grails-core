@@ -78,7 +78,7 @@ class I18nGrailsPlugin {
 
 				// If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
 				// generate the path to the resource based on its relativity to the application.
-				if(isInlineResource) {
+				if (isInlineResource) {
 					path = resource.file.path
 				} else {
                     // Extract the file path of the file's parent directory
@@ -133,18 +133,18 @@ class I18nGrailsPlugin {
 
         localeResolver(SessionLocaleResolver)
     }
-    
+
     def isChildOfFile(File child, File parent) {
         def currentFile = child.canonicalFile
         while(currentFile != null) {
-            if(currentFile == parent) {
+            if (currentFile == parent) {
                 return true
             }
             currentFile = currentFile.parentFile
         }
         return false
     }
-    
+
     def relativePath(File relbase, File file) {
         def pathParts = []
         def currentFile = file
@@ -159,7 +159,7 @@ class I18nGrailsPlugin {
         File currentFile = propertiesFile.canonicalFile
         File previousFile = null
         while (currentFile != null) {
-            if(currentFile.name=='grails-app' && previousFile?.name=='i18n') {
+            if (currentFile.name == 'grails-app' && previousFile?.name == 'i18n') {
                 return currentFile.parentFile
             }
             previousFile = currentFile
@@ -167,7 +167,7 @@ class I18nGrailsPlugin {
         }
         null
     }
-        
+
     def onChange = { event ->
         def context = event.ctx
         if (!context) {
@@ -182,11 +182,11 @@ class I18nGrailsPlugin {
             nativeascii = (nativeascii instanceof Boolean) ? nativeascii : true
             def ant = new GrailsConsoleAntBuilder()
             File appI18nDir = new File("./grails-app/i18n").canonicalFile
-            if(isChildOfFile(eventFile, appI18nDir)) {
+            if (isChildOfFile(eventFile, appI18nDir)) {
                 String i18nDir = "${resourcesDir}/grails-app/i18n"
-                    
+
                 def eventFileRelative = relativePath(appI18nDir, eventFile)
-    
+
                 if (nativeascii) {
                     ant.native2ascii(src:"./grails-app/i18n",
                                      dest:i18nDir,
@@ -200,20 +200,20 @@ class I18nGrailsPlugin {
                 }
             } else {
                 def pluginDir = findGrailsPluginDir(eventFile)
-                
-                if(pluginDir) {
+
+                if (pluginDir) {
                     def info = event.manager.userPlugins.find { plugin ->
                         plugin.pluginDir?.file?.canonicalFile == pluginDir
-                    } 
-                    
+                    }
+
                     if (info) {
                         def pluginI18nDir = new File(pluginDir, "grails-app/i18n")
                         def eventFileRelative = relativePath(pluginI18nDir, eventFile)
-                        
+
                         def destDir = "${resourcesDir}/plugins/${info.fileSystemName}/grails-app/i18n"
-    
+
                         ant.mkdir(dir: destDir)
-                        if(nativeascii) {
+                        if (nativeascii) {
                             ant.native2ascii(src: pluginI18nDir.absolutePath,
                                     dest: destDir,
                                     includes: eventFileRelative,

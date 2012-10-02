@@ -46,7 +46,7 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -107,7 +107,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         InputStream inputStream = null;
         try {
             inputStream = resource.getInputStream();
-            return evaluateMappings(classLoader.parseClass(DefaultGroovyMethods.getText(inputStream)));
+            return evaluateMappings(classLoader.parseClass(IOGroovyMethods.getText(inputStream)));
         }
         catch (IOException e) {
             throw new UrlMappingException("Unable to read mapping file [" + resource.getFilename() + "]: " + e.getMessage(), e);
@@ -224,6 +224,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Map<String, Object> parameterValues = new HashMap<String, Object>();
         private Binding binding;
         private Object actionName = null;
+        private Object pluginName = null;
         private Object controllerName = null;
         private Object viewName = null;
         private ServletContext sc;
@@ -293,6 +294,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return controllerName;
         }
 
+        public void setPlugin(Object plugin) {
+            pluginName = plugin;
+        }
+
+        public Object getPlugin() {
+            return pluginName;
+        }
+
         public Object getView() {
             return viewName;
         }
@@ -352,6 +361,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         @SuppressWarnings("hiding")
                         Object actionName;
                         @SuppressWarnings("hiding")
+                        Object pluginName;
+                        @SuppressWarnings("hiding")
                         Object viewName;
                         @SuppressWarnings("hiding")
                         Object uri;
@@ -361,10 +372,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             actionName = binding.getVariables().get(GrailsControllerClass.ACTION);
                             viewName = binding.getVariables().get(GrailsControllerClass.VIEW);
                             uri = binding.getVariables().get("uri");
+                            pluginName = binding.getVariables().get("plugin");
                         }
                         else {
                             controllerName = this.controllerName;
                             actionName = this.actionName;
+                            pluginName = this.pluginName;
                             viewName = this.viewName;
                             uri = this.uri;
                         }
@@ -380,10 +393,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             }
                         }
                         else {
-                            urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
+                            urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, pluginName, viewName, constraints);
                         }
 
-                        if(binding != null) {
+                        if (binding != null) {
                             Map bindingVariables = binding.getVariables();
                             Object parse = getParseRequest(Collections.EMPTY_MAP, bindingVariables);
                             if (parse instanceof Boolean) {
@@ -416,6 +429,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         controllerName = null;
                         actionName = null;
                         viewName = null;
+                        pluginName = null;
                     }
                     previousConstraints.clear();
                     urlDefiningMode = true;
@@ -482,7 +496,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private boolean isResponseCode(String s) {
-            for (int i = 0; i < s.length(); i++) {
+            for (int count = s.length(), i = 0; i < count; i++) {
                 if (!Character.isDigit(s.charAt(i))) return false;
             }
 
@@ -506,6 +520,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 controllerName = getControllerName(namedArguments, bindingVariables);
                 actionName = getActionName(namedArguments, bindingVariables);
             }
+            @SuppressWarnings("hiding")
+            Object pluginName = getPluginName(namedArguments, bindingVariables);
 
             @SuppressWarnings("hiding")
             Object viewName = getViewName(namedArguments, bindingVariables);
@@ -528,7 +544,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 }
             }
             else {
-                urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, viewName, constraints);
+                urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, pluginName, viewName, constraints);
             }
 
             Object exceptionArg = getException(namedArguments, bindingVariables);
@@ -588,6 +604,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,GrailsControllerClass.CONTROLLER, controllerName);
         }
 
+        private Object getPluginName(Map namedArguments, Map bindingVariables) {
+            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, "plugin", pluginName);
+        }
+
         private Object getViewName(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,GrailsControllerClass.VIEW, viewName);
         }
@@ -603,13 +623,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private UrlMapping createURLMapping(UrlMappingData urlData, boolean isResponseCode,
                 @SuppressWarnings("hiding") Object controllerName,
                 @SuppressWarnings("hiding") Object actionName,
+                @SuppressWarnings("hiding") Object pluginName,
                 @SuppressWarnings("hiding") Object viewName, ConstrainedProperty[] constraints) {
             if (!isResponseCode) {
-                return new RegexUrlMapping(urlData, controllerName, actionName, viewName,
+                return new RegexUrlMapping(urlData, controllerName, actionName, pluginName, viewName,
                         constraints, sc);
             }
 
-            return new ResponseCodeUrlMapping(urlData, controllerName, actionName, viewName,
+            return new ResponseCodeUrlMapping(urlData, controllerName, actionName, pluginName, viewName,
                     null, sc);
         }
     }

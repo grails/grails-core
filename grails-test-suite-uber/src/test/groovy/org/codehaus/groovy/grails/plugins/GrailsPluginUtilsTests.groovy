@@ -5,7 +5,7 @@ import grails.util.BuildSettingsHolder
 
 import org.apache.commons.io.FileUtils
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * @author Graeme Rocher
@@ -18,7 +18,6 @@ class GrailsPluginUtilsTests extends GroovyTestCase {
          GrailsPluginUtils.clearCaches()
          System.setProperty("disable.grails.plugin.transform","true")
          settings = new BuildSettings(new File("."))
-         BuildSettingsHolder.settings = settings
          def resourceDir = "test/resources/grails-plugin-utils"
          settings.projectPluginsDir = new File("$resourceDir/plugins")
          settings.globalPluginsDir = new File("$resourceDir/global-plugins")
@@ -32,6 +31,7 @@ grails {
     }
 }
 """)
+         BuildSettingsHolder.settings = settings
     }
 
     void tearDown() {

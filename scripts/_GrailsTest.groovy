@@ -135,7 +135,7 @@ target(allTests: "Runs the project's tests.") {
     if (InteractiveMode.current && GrailsProjectWatcher.isReloadingAgentPresent()) {
         startPluginScanner()
     }
-    
+
     // Handle pre 1.2 style testing configuration
     def convertedPhases = [:]
     phasesToRun.each { phaseName ->
@@ -338,8 +338,8 @@ integrationTestPhasePreparation = {
     if (app.parentContext == null) {
         app.applicationContext = appCtx
     }
-    
-    if(projectWatcher) {
+
+    if (projectWatcher) {
         projectWatcher.pluginManager = pluginManager
     }
 
@@ -370,7 +370,7 @@ boolean notReloadingActive() {
  * Starts up the test server.
  */
 functionalTestPhasePreparation = {
-    GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)    
+    GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
     runningFunctionalTestsAgainstWar = testOptions.war
     runningFunctionalTestsInline = !runningFunctionalTestsAgainstWar && (!testOptions.containsKey('baseUrl') || testOptions.inline)
 
@@ -419,7 +419,6 @@ functionalTestPhaseCleanUp = {
     System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
     registryCleaner.clean()
     GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
-    
 }
 
 otherTestPhasePreparation = {}

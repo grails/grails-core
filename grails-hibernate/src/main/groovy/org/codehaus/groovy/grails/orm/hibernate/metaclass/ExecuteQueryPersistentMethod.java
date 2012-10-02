@@ -91,7 +91,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                     q.setFirstResult(offsetParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_CACHE)) {
-                    q.setCacheable(((Boolean)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_CACHE)).booleanValue());
+                    q.setCacheable((Boolean)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_CACHE));
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE)) {
                     Integer fetchSizeParam = converter.convertIfNecessary(queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_FETCH_SIZE), Integer.class);
@@ -102,10 +102,10 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                     q.setTimeout(timeoutParam.intValue());
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_READ_ONLY)) {
-                    q.setReadOnly(((Boolean) queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_READ_ONLY)).booleanValue());
+                    q.setReadOnly((Boolean)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_READ_ONLY));
                 }
                 if (queryMetaParams.containsKey(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE)) {
-                    q.setFlushMode((FlushMode) queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
+                    q.setFlushMode((FlushMode)queryMetaParams.get(GrailsHibernateUtil.ARGUMENT_FLUSH_MODE));
                 }
                 // process positional HQL params
                 int index = 0;
@@ -120,7 +120,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
                         throw new GrailsQueryException("Named parameter's name must be of type String");
                     }
                     String parameterName = (String) entry.getKey();
-                    if(!QUERY_META_PARAMS.contains(parameterName)) {
+                    if (!QUERY_META_PARAMS.contains(parameterName)) {
                         Object parameterValue = entry.getValue();
                         if (parameterValue == null) {
                             throw new IllegalArgumentException("Named parameter [" + entry.getKey() + "] value may not be null");
@@ -162,7 +162,7 @@ public class ExecuteQueryPersistentMethod extends AbstractStaticPersistentMethod
         else if (arguments.length == 3) metaParamsIndex = 2;
         if (metaParamsIndex > 0) {
             Map sourceMap = (Map) arguments[metaParamsIndex];
-            for(String queryMetaParam : QUERY_META_PARAMS) {
+            for (String queryMetaParam : QUERY_META_PARAMS) {
                 if (sourceMap.containsKey(queryMetaParam)) {
                     result.put(queryMetaParam, sourceMap.get(queryMetaParam));
                 }

@@ -30,7 +30,7 @@ import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.exceptions.CompilationFailedException;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
@@ -90,7 +90,7 @@ public class GrailsClassLoader extends GroovyClassLoader {
             try {
                 inputStream = resourceURL.getInputStream();
                 Class<?> reloadedClass = innerLoader.parseClass(
-                        DefaultGroovyMethods.getText(inputStream), path);
+                        IOGroovyMethods.getText(inputStream), path);
                 compilationErrors.remove(name);
                 innerClassLoaderMap.put(name, innerLoader);
                 return reloadedClass;

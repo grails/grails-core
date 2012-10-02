@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import grails.persistence.Entity
 import grails.orm.HibernateCriteriaBuilder
+import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -13,7 +13,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
-        [CriteriaBuilderTestClass, CriteriaBuilderTestClass2, OneAuthorPublisher, OneBookAuthor, Book]
+        [CriteriaBuilderTestClass, CriteriaBuilderTestClass2, OneAuthorPublisher, OneBookAuthor, Book, Box]
     }
 
     List retrieveListOfNames() { ['bart'] }
@@ -59,6 +59,134 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
             }
             assertEquals "Call to [${methodName}] with propertyName [somePropertyName] and size [0] not allowed here.", errorMessage
         }
+    }
+
+    void testSqlProjection() {
+        def domainClass = ga.getDomainClass(Box.name).clazz
+
+        assertNotNull(domainClass)
+
+        def obj = domainClass.newInstance()
+        obj.setProperty("width", 2)
+        obj.setProperty("height", 7)
+        obj.save()
+
+        obj = domainClass.newInstance()
+        obj.setProperty("width", 2)
+        obj.setProperty("height", 8)
+        obj.save()
+
+        obj = domainClass.newInstance()
+        obj.setProperty("width", 2)
+        obj.setProperty("height", 9)
+        obj.save()
+
+        obj = domainClass.newInstance()
+        obj.setProperty("width", 4)
+        obj.setProperty("height", 9)
+        obj.save()
+
+        def results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', BYTE
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Byte
+
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', SHORT
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Short
+
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', INTEGER
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Integer
+
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', LONG
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Long
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', FLOAT
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Float
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', DOUBLE
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof Double
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', BIG_INTEGER
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof BigInteger
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection 'sum(width * height) as totalArea', 'totalArea', BIG_DECIMAL
+            }
+        }
+
+        assert 1 == results?.size()
+        assert 84 == results[0]
+        assert results[0] instanceof BigDecimal
+        
+        results = Box.withCriteria {
+            projections {
+                sqlProjection '(2 * (width + height)) as perimeter, (width * height) as area', ['perimeter', 'area'], [INTEGER, INTEGER]
+            }
+        }
+
+        assert 4 == results?.size()
+        assert [18, 14] == results[0]
+        assert [20, 16] == results[1]
+        assert [22, 18] == results[2]
+        assert [26, 36] == results[3]
+        
+        results = Box.withCriteria {
+            projections {
+                sqlGroupProjection 'width, sum(height) as combinedHeightsForThisWidth', 'width', ['width', 'combinedHeightsForThisWidth'], [INTEGER, INTEGER]
+            }
+        }
+
+        assert 2 == results?.size()
+        assert [2, 24] == results[0]
+        assert [4, 9] == results[1]
     }
 
     void testSqlRestriction() {
@@ -193,7 +321,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
                 }
         assertEquals 1, results.size()
     }
-
 
     void testWithGString() {
         def domainClass = ga.getDomainClass(CriteriaBuilderTestClass.name).clazz
@@ -495,8 +622,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertEquals 2 , results.size()
     }
 
-
-     void testNestedAssociationIsNullField() {
+    void testNestedAssociationIsNullField() {
         GrailsDomainClass domainClass = grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,
             CriteriaBuilderTestClass.name)
 
@@ -571,7 +697,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.setProperty("parent", obj)
         obj3.invokeMethod("save", null)
 
-
         List results = parse(
             ".list { \n" +
                 "or { \n" +
@@ -616,7 +741,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj4.setProperty("lastName", "rubble")
         obj4.setProperty("age", 45)
         obj4.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                     "or { " +
@@ -796,7 +920,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                     "projections { " +
                         "avg('age',)" +
@@ -826,7 +949,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 35)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                     "projections { " +
@@ -941,7 +1063,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 35)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                     "projections { " +
@@ -1063,7 +1184,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.setProperty("age", 35)
 
         obj3.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                         "eqProperty('firstName','lastName')" +
@@ -1628,8 +1748,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assertEquals 1 , results.size()
         assertTrue 'Result list should contain Strings', results[0] instanceof String
     }
-    
-    
+
     void testCriteriaInvolvingNestedRelationshipsSomeOfWhichAreEmbedded() {
         def newBook = new Book(title: 'First Popular Book')
         newBook.popularity = new Popularity(liked: 42)
@@ -1638,11 +1757,11 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         def newAuthor = new OneBookAuthor()
         newAuthor.book = newBook
         assert newAuthor.save(flush: true)
-        
+
         def newPublisher = new OneAuthorPublisher(name: 'First Good Publisher')
         newPublisher.author = newAuthor
         assert newPublisher.save(flush: true)
-        
+
         newBook = new Book(title: 'Second Popular Book')
         newBook.popularity = new Popularity(liked: 2112)
         assert newBook.save(flush: true)
@@ -1650,11 +1769,11 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         newAuthor = new OneBookAuthor()
         newAuthor.book = newBook
         assert newAuthor.save(flush: true)
-        
+
         newPublisher = new OneAuthorPublisher(name: 'Second Good Publisher')
         newPublisher.author = newAuthor
         assert newPublisher.save(flush: true)
-        
+
         newBook = new Book(title: 'First Unppular Book')
         newBook.popularity = new Popularity(liked: 0)
         assert newBook.save(flush: true)
@@ -1662,7 +1781,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         newAuthor = new OneBookAuthor()
         newAuthor.book = newBook
         assert newAuthor.save(flush: true)
-        
+
         newPublisher = new OneAuthorPublisher(name: 'First Bad Publisher')
         newPublisher.author = newAuthor
         assert newPublisher.save(flush: true)
@@ -1676,9 +1795,9 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
                 }
             }
         }
-        
+
         assertEquals 2, result?.size()
-        
+
         def names = result.name
         assert 'First Good Publisher' in names
         assert 'Second Good Publisher' in names
@@ -1689,7 +1808,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         GroovyClassLoader cl = grailsApplication.getClassLoader()
         String unique =(uniqueResult?",true":"")
         Class clazz =
-         cl.parseClass("package test\n" +
+        cl.parseClass("package test\n" +
                          "import grails.orm.*\n" +
                          "import org.hibernate.*\n" +
                          "class "+testClassName+" {\n" +
@@ -1708,8 +1827,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         Closure closure = (Closure)go.getProperty("test")
         return closure.call()
-
-
     }
 
     private Object parse(String groovy,String testClassName, String criteriaClassName) {
@@ -1738,3 +1855,8 @@ class CriteriaBuilderTestClass2 {
    Date dateCreated
 }
 
+@Entity
+class Box {
+    int width
+    int height
+}

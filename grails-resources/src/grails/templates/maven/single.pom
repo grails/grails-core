@@ -23,6 +23,14 @@
             <type>pom</type>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-test</artifactId>
+            <version>${grails.version}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-testing</artifactId>
@@ -39,7 +47,6 @@
             <scope>provided</scope>
             <type>zip</type>
         </dependency>
-
         @plugins@
 
 

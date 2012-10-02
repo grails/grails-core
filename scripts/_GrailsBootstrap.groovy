@@ -16,7 +16,7 @@
 
 import grails.spring.WebBeanBuilder
 import org.codehaus.groovy.grails.support.CommandLineResourceLoader
-import org.codehaus.groovy.grails.cli.support.JndiBindingSupport
+import org.codehaus.groovy.grails.cli.jndi.JndiBindingSupport
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
@@ -45,13 +45,7 @@ target(loadApp:"Loads the Grails application object") {
     profile("Loading parent ApplicationContext") {
         def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
         beanDefinitions = builder.beans {
-            resourceHolder(GrailsResourceHolder) {
-                resources = pluginSettings.artefactResources
-            }
-            grailsResourceLoader(GrailsResourceLoaderFactoryBean) {
-                grailsResourceHolder = resourceHolder
-            }
-            grailsApplication(DefaultGrailsApplication, ref("grailsResourceLoader"))
+            grailsApplication(DefaultGrailsApplication, pluginSettings.getArtefactResourcesForCurrentEnvironment())
         }
     }
 
@@ -72,14 +66,13 @@ target(loadApp:"Loads the Grails application object") {
     packageApp()
     PluginManagerHolder.pluginManager = null
     loadPlugins()
-    pluginManager = PluginManagerHolder.pluginManager
     pluginManager.application = grailsApp
     pluginManager.doArtefactConfiguration()
 
     def builder = new WebBeanBuilder(ctx)
     newBeans = builder.beans {
         delegate."pluginManager"(MethodInvokingFactoryBean) {
-            targetClass = PluginManagerHolder
+            targetClass = grails.util.Holders
             targetMethod = "getPluginManager"
         }
     }

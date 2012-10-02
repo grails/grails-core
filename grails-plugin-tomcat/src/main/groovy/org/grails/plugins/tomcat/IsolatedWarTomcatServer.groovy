@@ -18,6 +18,7 @@ package org.grails.plugins.tomcat
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
+import groovy.transform.CompileStatic
 
 /**
  * Serves a packaged war, in a forked JVM.
@@ -131,11 +132,12 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
     }
 
-    protected Collection<File> findTomcatJars(BuildSettings buildSettings) {
-        return buildSettings.buildDependencies.findAll { it.name.contains("tomcat") } +
-                buildSettings.compileDependencies.findAll { it.name.contains("tomcat") } +
-                    buildSettings.runtimeDependencies.findAll { it.name.contains("tomcat") } +
-                        buildSettings.providedDependencies.findAll { it.name.contains("tomcat") }
+    @CompileStatic
+    public static Collection<File> findTomcatJars(BuildSettings buildSettings) {
+        return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") } +
+                buildSettings.compileDependencies.findAll { File it -> it.name.contains("tomcat") } +
+                    buildSettings.runtimeDependencies.findAll { File it -> it.name.contains("tomcat") } +
+                        buildSettings.providedDependencies.findAll { File it -> it.name.contains("tomcat") }
     }
 
     void stop() {

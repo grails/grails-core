@@ -80,9 +80,6 @@ class PropertyConfig {
      */
     boolean updateable = true
 
-    /**
-     *
-     */
     List<ColumnConfig> columns = []
 
     boolean lazy = true

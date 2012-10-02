@@ -17,10 +17,12 @@ package grails.util
 
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.build.logging.GrailsConsole
+import groovy.transform.CompileStatic
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
+import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.plugins.repository.TransferEvent
 import org.apache.ivy.plugins.repository.TransferListener
@@ -29,11 +31,10 @@ import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
-import org.apache.ivy.core.module.descriptor.ExcludeRule
 
 /**
  * <p>Represents the project paths and other build settings
@@ -158,6 +159,11 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_WAR_FILE = "grails.project.war.file"
 
     /**
+     * The name of the WAR file of the project
+     */
+    public static final String PROJECT_AUTODEPLOY_DIR = "grails.project.autodeploy.dir"
+
+    /**
      * The name of the system property for enabling osgi headers in the WAR Manifest
      */
     public static final String PROJECT_WAR_OSGI_HEADERS = "grails.project.war.osgi.headers"
@@ -186,8 +192,12 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      *  A property name to enable/disable AST conversion of closures actions&tags to methods
      */
-
     public static final String CONVERT_CLOSURES_KEY = "grails.compile.artefacts.closures.convert"
+
+    /**
+     *  Property name to enable/disable script event time logging.
+     */
+    public static final String LOG_SCRIPT_TIMING_KEY = 'grails.script.logTiming'
 
     /**
      * The base directory for the build, which is normally the root
@@ -264,6 +274,11 @@ class BuildSettings extends AbstractBuildSettings {
     File projectWarFile
 
     /**
+     * Directory where additional war files to be autodeployed are located
+     */
+    File autodeployDir
+
+    /**
      * Setting for whether or not to enable OSGI headers in the WAR Manifest, can be overridden via -verboseCompile(=[true|false])?
      */
     boolean projectWarOsgiHeaders = false
@@ -319,6 +334,11 @@ class BuildSettings extends AbstractBuildSettings {
      * The file containing the proxy settings
      */
     File proxySettingsFile;
+
+    /**
+     * Fork Settings. These are the default settings used to control forked mode, and what
+     */
+    Map<String, Object> forkSettings = [run:false, test:false, console:false, shell:false]
 
     /** Implementation of the "grailsScript()" method used in Grails scripts.  */
     Closure getGrailsScriptClosure() {
@@ -380,6 +400,8 @@ class BuildSettings extends AbstractBuildSettings {
      */
     boolean offline = false
 
+    boolean logScriptTiming = false
+
     GrailsCoreDependencies coreDependencies
 
     private List<File> compileDependencies = []
@@ -392,6 +414,7 @@ class BuildSettings extends AbstractBuildSettings {
     private List<File> internalPluginProvidedDependencies = []
 
     /** List containing the compile-time dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getCompileDependencies() {
         if (!defaultCompileDepsAdded) {
             compileDependencies += defaultCompileDependencies
@@ -403,6 +426,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the compile time dependencies for the project
      */
+    @CompileStatic
     void setCompileDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("compile", deps, internalPluginCompileDependencies)
         compileDependencies = jarFiles
@@ -445,6 +469,7 @@ class BuildSettings extends AbstractBuildSettings {
         return jarFiles
     }()
 
+
     private List<File> findAndRemovePluginDependencies(String scope, List<File> jarFiles, List<File> scopePluginDependencies) {
         jarFiles = jarFiles?.findAll { it != null} ?: []
         def pluginZips = jarFiles.findAll { it.name.endsWith(".zip") }
@@ -463,6 +488,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean defaultTestDepsAdded = false
 
     /** List containing the test-time dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getTestDependencies() {
         if (!defaultTestDepsAdded) {
             testDependencies += defaultTestDependencies
@@ -474,6 +500,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the test time dependencies for the project
      */
+    @CompileStatic
     void setTestDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("test", deps, internalPluginTestDependencies)
 
@@ -506,6 +533,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean defaultRuntimeDepsAdded = false
 
     /** List containing the runtime dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getRuntimeDependencies() {
         if (!defaultRuntimeDepsAdded) {
             runtimeDependencies += defaultRuntimeDependencies
@@ -517,6 +545,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the runtime dependencies for the project
      */
+    @CompileStatic
     void setRuntimeDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("runtime", deps, internalPluginRuntimeDependencies)
         runtimeDependencies = jarFiles
@@ -547,6 +576,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean defaultProvidedDepsAdded = false
 
     /** List containing the runtime dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getProvidedDependencies() {
         if (!defaultProvidedDepsAdded) {
             providedDependencies += defaultProvidedDependencies
@@ -558,6 +588,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the runtime dependencies for the project
      */
+    @CompileStatic
     void setProvidedDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("provided", deps, internalPluginProvidedDependencies)
         providedDependencies = jarFiles
@@ -588,6 +619,7 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean defaultBuildDepsAdded = false
 
     /** List containing the runtime dependencies of the app as File instances.  */
+    @CompileStatic
     List<File> getBuildDependencies() {
         if (!defaultBuildDepsAdded) {
             buildDependencies += defaultBuildDependencies
@@ -601,6 +633,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginCompileDependencies() {
         // ensure initialization
         if (!internalPluginCompileDependencies) {
@@ -615,6 +648,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginProvidedDependencies() {
         // ensure initialization
         if (!internalPluginProvidedDependencies) {
@@ -628,6 +662,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginRuntimeDependencies() {
         // ensure initialization
         if (!internalPluginRuntimeDependencies) {
@@ -642,6 +677,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginTestDependencies() {
         // ensure initialization
         if (!internalPluginTestDependencies) {
@@ -656,6 +692,7 @@ class BuildSettings extends AbstractBuildSettings {
      *
      * @return A list of the source zips
      */
+    @CompileStatic
     List<File> getPluginBuildDependencies() {
         // ensure initialization
         if (!internalPluginBuildDependencies) {
@@ -668,6 +705,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Sets the runtime dependencies for the project
      */
+    @CompileStatic
     void setBuildDependencies(List<File> deps) {
         def jarFiles = findAndRemovePluginDependencies("build", deps, internalPluginBuildDependencies)
         buildDependencies = jarFiles
@@ -733,10 +771,12 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean docsOutputDirSet
     private boolean testSourceDirSet
     private boolean projectWarFileSet
+    private boolean autodeployDirSet
     private boolean projectWarOsgiHeadersSet
     private boolean buildListenersSet
     private boolean verboseCompileSet
     private boolean convertClosuresArtefactsSet
+    private boolean logScriptTimingSet
     private String resolveChecksum
     private Map resolveCache = new ConcurrentHashMap()
     private boolean readFromCache = false
@@ -782,13 +822,14 @@ class BuildSettings extends AbstractBuildSettings {
         // otherwise it loads the script class using the Gant classloader.
     }
 
+    @CompileStatic
     void storeDependencyCache() {
         projectWorkDir.mkdirs()
         if (resolveChecksum) {
             try {
                 if (resolveCache.size() == 5 && !readFromCache) {
                     def cachedResolve = new File(projectWorkDir, "${resolveChecksum}.resolve")
-                    cachedResolve.withOutputStream { output ->
+                    cachedResolve.withOutputStream { OutputStream output ->
                         new ObjectOutputStream(output).writeObject(resolveCache)
                     }
                 }
@@ -799,6 +840,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
+    @CompileStatic
     protected def loadBuildPropertiesFromClasspath(Properties buildProps) {
         InputStream stream = getClass().classLoader.getResourceAsStream("grails.build.properties")
         if (stream == null) {
@@ -823,6 +865,7 @@ class BuildSettings extends AbstractBuildSettings {
      * they have been set manually by the caller, then that information
      * will be lost!</p>
      */
+    @CompileStatic
     void setBaseDir(File newBaseDir) {
         baseDir = newBaseDir ?: establishBaseDir()
         // Initialize Metadata
@@ -885,6 +928,11 @@ class BuildSettings extends AbstractBuildSettings {
     void setConvertClosuresArtefacts(boolean convert) {
         convertClosuresArtefacts = convert
         convertClosuresArtefactsSet = true
+    }
+
+    void setLogScriptTiming(boolean b) {
+        logScriptTiming = b
+        logScriptTimingSet = true
     }
 
     boolean getProjectWarOsgiHeaders() { projectWarOsgiHeaders }
@@ -983,19 +1031,18 @@ class BuildSettings extends AbstractBuildSettings {
      * corresponding config object. If the file does not exist, this
      * returns an empty config.
      */
+    @CompileStatic
     ConfigObject loadConfig(File configFile) {
         try {
             loadSettingsFile()
             if (configFile.exists()) {
-                // To avoid class loader issues, we make sure that the
-                // Groovy class loader used to parse the config file has
-                // the root loader as its parent. Otherwise we get something
-                // like NoClassDefFoundError for Script.
+                // To avoid class loader issues, we make sure that the Groovy class loader used to parse the config file has
+                // the root loader as its parent. Otherwise we get something like NoClassDefFoundError for Script.
                 GroovyClassLoader gcl = obtainGroovyClassLoader()
                 ConfigSlurper slurper = createConfigSlurper()
 
                 URL configUrl = configFile.toURI().toURL()
-                Script script = gcl.parseClass(configFile)?.newInstance()
+                Script script = (Script)gcl.parseClass(configFile)?.newInstance()
 
                 config.setConfigFile(configUrl)
                 loadConfig(slurper.parse(script))
@@ -1009,6 +1056,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
+    @CompileStatic
     ConfigObject loadConfig(ConfigObject config) {
         try {
             this.config.merge(config)
@@ -1052,7 +1100,6 @@ class BuildSettings extends AbstractBuildSettings {
                         return
                     }
 
-
                     if (dependencyMap?.isEmpty()) {
                         modified = true
                     }
@@ -1067,7 +1114,7 @@ class BuildSettings extends AbstractBuildSettings {
                             compileDeps = findAndRemovePluginDependencies("compile", compileDeps, internalPluginCompileDependencies)
                             if (compileDeps.any({ File f -> !f.exists() })) modified = true
                             internalCompileDependencies = compileDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1075,7 +1122,7 @@ class BuildSettings extends AbstractBuildSettings {
                             runtimeDeps = findAndRemovePluginDependencies("runtime", runtimeDeps, internalPluginRuntimeDependencies)
                             if (runtimeDeps.any({ File f -> !f.exists() })) modified = true
                             internalRuntimeDependencies = runtimeDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1083,7 +1130,7 @@ class BuildSettings extends AbstractBuildSettings {
                             testDeps = findAndRemovePluginDependencies("test", testDeps, internalPluginTestDependencies)
                             if (testDeps.any({ File f -> !f.exists() })) modified = true
                             internalTestDependencies = testDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1091,7 +1138,7 @@ class BuildSettings extends AbstractBuildSettings {
                             buildDeps = findAndRemovePluginDependencies("build", buildDeps, internalPluginBuildDependencies)
                             if (buildDeps.any({ File f -> !f.exists() })) modified = true
                             internalBuildDependencies = buildDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1099,7 +1146,7 @@ class BuildSettings extends AbstractBuildSettings {
                             providedDeps = findAndRemovePluginDependencies("provided", providedDeps, internalPluginProvidedDependencies)
                             if (providedDeps.any({ File f -> !f.exists() })) modified = true
                             internalProvidedDependencies = providedDeps
-                        }else {
+                        } else {
                             modified = true
                         }
 
@@ -1123,13 +1170,14 @@ class BuildSettings extends AbstractBuildSettings {
 
     protected boolean settingsFileLoaded = false
 
+    @CompileStatic
     protected ConfigObject loadSettingsFile() {
         if (!settingsFileLoaded) {
             def settingsFile = new File("$userHome/.grails/settings.groovy")
             def gcl = obtainGroovyClassLoader()
             def slurper = createConfigSlurper()
             if (settingsFile.exists()) {
-                Script script = gcl.parseClass(settingsFile)?.newInstance()
+                Script script = (Script)gcl.parseClass(settingsFile)?.newInstance()
                 if (script) {
                     config = slurper.parse(script)
                 }
@@ -1139,18 +1187,18 @@ class BuildSettings extends AbstractBuildSettings {
             if (proxySettingsFile.exists()) {
                 slurper = createConfigSlurper()
                 try {
-                    Script script = gcl.parseClass(proxySettingsFile)?.newInstance()
+                    Script script = (Script)gcl.parseClass(proxySettingsFile)?.newInstance()
                     if (script) {
                         proxySettings = slurper.parse(script)
                         def current = proxySettings.currentProxy
                         if (current) {
-                            proxySettings[current]?.each { key, value ->
+                            proxySettings[current]?.each { String key, String value ->
                                 System.setProperty(key, value)
                             }
                         }
                     }
                 }
-                catch (e) {
+                catch (Throwable e) {
                     CONSOLE.error "WARNING: Error configuring proxy settings: ${e.message}", e
                 }
             }
@@ -1188,7 +1236,7 @@ class BuildSettings extends AbstractBuildSettings {
             switch (e.eventType) {
                 case TransferEvent.TRANSFER_STARTED:
                     def resourceName = e.resource.name
-                    if(!resourceName?.endsWith('plugins-list.xml')) {
+                    if (!resourceName?.endsWith('plugins-list.xml')) {
                         resourceName = resourceName[resourceName.lastIndexOf('/') + 1..-1]
                         console.updateStatus "Downloading: ${resourceName}"
                     }
@@ -1269,14 +1317,14 @@ class BuildSettings extends AbstractBuildSettings {
             // The logic here tries to establish if the plugin has been declared anywhere by the application. Only plugins that have
             // been declared should have their transitive dependencies resolved. Unfortunately it is fairly complicated to establish what plugins are declared since
             // there may be a mixture of plugins defined in BuildConfig, inline plugins and plugins installed via install-plugin
-            if(!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
+            if (!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
                 return
             }
 
             def pdd = dependencyManager.getPluginDependencyDescriptor(pluginName)
-            if(isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
+            if (isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
                 // bail out of the dependencies handled by external tool
-                if(isDependenciesExternallyConfigured()) return
+                if (isDependenciesExternallyConfigured()) return
                 // Try BuildConfig.groovy first, which should work
                 // work for in-place plugins.
                 def path = dir.absolutePath
@@ -1335,13 +1383,19 @@ class BuildSettings extends AbstractBuildSettings {
         return slurper
     }
 
+    @CompileStatic
     private void establishProjectStructure() {
         // The third argument to "getPropertyValue()" is either the
         // existing value of the corresponding field, or if that's
         // null, a default value. This ensures that we don't override
         // settings provided by, for example, the Maven plugin.
         def props = config.toProperties()
-        def metadata = Metadata.current
+
+        final forkConfig = getForkConfig()
+        if ((forkConfig instanceof Map) && forkConfig) {
+            forkSettings = (Map)forkConfig
+        }
+        Metadata metadata = Metadata.getCurrent()
 
         offline = Boolean.valueOf(getPropertyValue(OFFLINE_MODE, props, String.valueOf(offline)))
 
@@ -1359,10 +1413,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!projectTargetDirSet) {
-            projectTargetDir = new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target"))
-            if(!projectTargetDir.absolute) {
-                projectTargetDir = new File(baseDir, projectTargetDir.path)
-            }
+            projectTargetDir = makeAbsolute(new File(getPropertyValue(PROJECT_TARGET_DIR, props, "$baseDir/target")))
         }
 
         if (!projectWarFileSet) {
@@ -1370,10 +1421,11 @@ class BuildSettings extends AbstractBuildSettings {
             def appName = metadata.getApplicationName() ?: baseDir.name
             def warName = version ? "$baseDir/target/${appName}-${version}.war" : "$baseDir/target/${appName}.war"
 
-            projectWarFile = new File(getPropertyValue(PROJECT_WAR_FILE, props, warName))
-            if(!projectWarFile.absolute) {
-                projectWarFile = new File(baseDir, projectWarFile.path)
-            }
+            projectWarFile = makeAbsolute(new File(getPropertyValue(PROJECT_WAR_FILE, props, warName)))
+        }
+
+        if (!autodeployDirSet) {
+            autodeployDir = makeAbsolute(new File(getPropertyValue(PROJECT_AUTODEPLOY_DIR, props, "$baseDir/src/autodeploy")))
         }
 
         if (!projectWarExplodedDirSet) {
@@ -1382,7 +1434,10 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!convertClosuresArtefactsSet) {
             convertClosuresArtefacts = getPropertyValue(CONVERT_CLOSURES_KEY, props, 'false').toBoolean()
-            System.setProperty(CONVERT_CLOSURES_KEY, "$convertClosuresArtefacts")
+        }
+
+        if (!logScriptTimingSet) {
+            logScriptTiming = getPropertyValue(LOG_SCRIPT_TIMING_KEY, props, 'false').toBoolean()
         }
 
         if (!projectWarOsgiHeadersSet) {
@@ -1390,42 +1445,23 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!classesDirSet) {
-            classesDir = new File(getPropertyValue(PROJECT_CLASSES_DIR, props, "$projectWorkDir/classes"))
-            if(!classesDir.absolute) {
-                classesDir = new File(baseDir, classesDir.path)
-            }
+            classesDir = makeAbsolute(new File(getPropertyValue(PROJECT_CLASSES_DIR, props, "$projectWorkDir/classes")))
         }
 
         if (!testClassesDirSet) {
-            testClassesDir = new File(getPropertyValue(PROJECT_TEST_CLASSES_DIR, props, "$projectWorkDir/test-classes"))
-            if(!testClassesDir.absolute) {
-                testClassesDir = new File(baseDir, testClassesDir.path)
-            }
-
+            testClassesDir = makeAbsolute(new File(getPropertyValue(PROJECT_TEST_CLASSES_DIR, props, "$projectWorkDir/test-classes")))
         }
 
         if (!pluginClassesDirSet) {
-            pluginClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes"))
-            if(!pluginClassesDir.absolute) {
-                pluginClassesDir = new File(baseDir, pluginClassesDir.path)
-            }
-
+            pluginClassesDir = makeAbsolute(new File(getPropertyValue(PROJECT_PLUGIN_CLASSES_DIR, props, "$projectWorkDir/plugin-classes")))
         }
 
         if (!pluginBuildClassesDirSet) {
-            pluginBuildClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_BUILD_CLASSES_DIR, props, "$projectWorkDir/plugin-build-classes"))
-            if(!pluginBuildClassesDir.absolute) {
-                pluginBuildClassesDir = new File(baseDir, pluginBuildClassesDir.path)
-            }
-
+            pluginBuildClassesDir = makeAbsolute(new File(getPropertyValue(PROJECT_PLUGIN_BUILD_CLASSES_DIR, props, "$projectWorkDir/plugin-build-classes")))
         }
 
         if (!pluginProvidedClassesDirSet) {
-            pluginProvidedClassesDir = new File(getPropertyValue(PROJECT_PLUGIN_PROVIDED_CLASSES_DIR, props, "$projectWorkDir/plugin-provided-classes"))
-            if(!pluginProvidedClassesDir.absolute) {
-                pluginProvidedClassesDir = new File(baseDir, pluginProvidedClassesDir.path)
-            }
-
+            pluginProvidedClassesDir = makeAbsolute(new File(getPropertyValue(PROJECT_PLUGIN_PROVIDED_CLASSES_DIR, props, "$projectWorkDir/plugin-provided-classes")))
         }
 
         if (!resourcesDirSet) {
@@ -1449,17 +1485,11 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!testReportsDirSet) {
-            testReportsDir = new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports"))
-            if(!testReportsDir.absolute) {
-                testReportsDir = new File(baseDir, testReportsDir.path)
-            } 
+            testReportsDir = makeAbsolute(new File(getPropertyValue(PROJECT_TEST_REPORTS_DIR, props, "${projectTargetDir}/test-reports")))
         }
 
         if (!docsOutputDirSet) {
-            docsOutputDir = new File(getPropertyValue(PROJECT_DOCS_OUTPUT_DIR, props, "${projectTargetDir}/docs"))
-            if(!docsOutputDir.absolute) {
-                docsOutputDir = new File(baseDir, docsOutputDir.path)
-            }            
+            docsOutputDir = makeAbsolute(new File(getPropertyValue(PROJECT_DOCS_OUTPUT_DIR, props, "${projectTargetDir}/docs")))
         }
 
         if (!testSourceDirSet) {
@@ -1469,6 +1499,17 @@ class BuildSettings extends AbstractBuildSettings {
         if (!verboseCompileSet) {
             verboseCompile = getPropertyValue(VERBOSE_COMPILE, props, '').toBoolean()
         }
+    }
+
+    private getForkConfig() {
+        config.grails.project.fork
+    }
+
+    protected File makeAbsolute(File dir) {
+        if (!dir.absolute) {
+            dir = new File(baseDir, dir.path)
+        }
+        dir
     }
 
     protected void parseGrailsBuildListeners() {
@@ -1493,7 +1534,8 @@ class BuildSettings extends AbstractBuildSettings {
         buildListenersSet = true
     }
 
-    private getPropertyValue(String propertyName, Properties props, String defaultValue) {
+    @CompileStatic
+    private String getPropertyValue(String propertyName, Properties props, String defaultValue) {
         // First check whether we have a system property with the given name.
         def value = getValueFromSystemOrBuild(propertyName, props)
 
@@ -1502,6 +1544,7 @@ class BuildSettings extends AbstractBuildSettings {
         return value != null ? value : defaultValue
     }
 
+    @CompileStatic
     private getValueFromSystemOrBuild(String propertyName, Properties props) {
         def value = System.getProperty(propertyName)
         if (value != null) return value
@@ -1511,6 +1554,7 @@ class BuildSettings extends AbstractBuildSettings {
         return value
     }
 
+    @CompileStatic
     private File establishBaseDir() {
         def sysProp = System.getProperty(APP_BASE_DIR)
         def baseDir

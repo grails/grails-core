@@ -45,18 +45,18 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
         });
     }
 
-    private boolean establishWhetherToUseLimit(Class clazz) {
+    private boolean establishWhetherToUseLimit(Class<?> clazz) {
         boolean useLimit = true;
         GrailsDomainClass domainClass = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE, clazz.getName());
-        if(domainClass != null) {
+        if (domainClass != null) {
             Boolean aBoolean = useLimitCache.get(domainClass.getName());
-            if(aBoolean != null) {
+            if (aBoolean != null) {
                 useLimit = aBoolean;
             }
             else {
 
                 for (GrailsDomainClassProperty property : domainClass.getPersistentProperties()) {
-                    if((property.isOneToMany()||property.isManyToMany()) && property.getFetchMode() == GrailsDomainClassProperty.FETCH_EAGER) {
+                    if ((property.isOneToMany()||property.isManyToMany()) && property.getFetchMode() == GrailsDomainClassProperty.FETCH_EAGER) {
                         useLimit = false;
                         useLimitCache.put(domainClass.getName(), useLimit);
                         break;
@@ -77,7 +77,7 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
     }
 
     protected Object getResult(Criteria crit, boolean useLimit) {
-        if(useLimit) {
+        if (useLimit) {
             final List<?> list = crit.list();
             if (!list.isEmpty()) {
                 return GrailsHibernateUtil.unwrapIfProxy(list.get(0));
@@ -105,18 +105,21 @@ public abstract class AbstractFindByPersistentMethod extends AbstractClausedStat
                 Map<?, ?> argMap = (Map<?, ?>)arguments[0];
                 GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit, argMap);
                 if (!argMap.containsKey(GrailsHibernateUtil.ARGUMENT_FETCH)) {
-                    if(useLimit)
+                    if (useLimit) {
                         crit.setMaxResults(1);
+                    }
                 }
             }
             else {
-                if(useLimit)
+                if (useLimit) {
                     crit.setMaxResults(1);
+                }
             }
         }
         else {
-            if(useLimit)
+            if (useLimit) {
                 crit.setMaxResults(1);
+            }
         }
 
         if (operator.equals(OPERATOR_OR)) {

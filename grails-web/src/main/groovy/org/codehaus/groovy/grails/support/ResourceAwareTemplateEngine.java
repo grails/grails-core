@@ -72,6 +72,7 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
         IOUtils.copy(reader, new OutputStreamWriter(buf.getOutputStream(), GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING));
         return createTemplate(buf.getInputStream());
     }
+
     /**
      * Unlike groovy.text.TemplateEngine, implementors need to provide an implementation that operates
      * with an InputStream

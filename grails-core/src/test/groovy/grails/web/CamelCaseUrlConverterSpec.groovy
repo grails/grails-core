@@ -6,7 +6,7 @@ import spock.lang.Unroll
 
 class CamelCaseUrlConverterSpec extends Specification {
 
-    @Unroll({"converting $classOrActionName to url element $expectedUrlElement"})
+    @Unroll("converting #classOrActionName to url element #expectedUrlElement")
     def 'Test converting class and action names to url elements'() {
         given:
             def converter = new CamelCaseUrlConverter()

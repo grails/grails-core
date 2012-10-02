@@ -3,7 +3,7 @@ package grails.build.interactive.completors
 import spock.lang.*
 
 class RegexCompletorSpec extends Specification {
-    @Unroll({ "String '$source' is not matching" })
+    @Unroll("String '#source' is not matching")
     def "Simple pattern matches"() {
         given: "a regex completor and an empty candidate list"
         def completor = new RegexCompletor(/!\w+/)
@@ -21,7 +21,7 @@ class RegexCompletorSpec extends Specification {
         source << [ "!ls", "!test_stuff" ]
     }
 
-    @Unroll({ "String '$source' is incorrectly matching" })
+    @Unroll("String '#source' is incorrectly matching")
     def "Non matching strings"() {
         given: "a regex completor and an empty candidate list"
         def completor = new RegexCompletor(/!\w+/)

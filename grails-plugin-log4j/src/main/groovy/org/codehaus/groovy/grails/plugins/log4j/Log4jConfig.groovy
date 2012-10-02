@@ -35,6 +35,7 @@ import org.apache.log4j.jdbc.JDBCAppender
 import org.apache.log4j.varia.NullAppender
 import org.apache.log4j.xml.XMLLayout
 import org.codehaus.groovy.grails.plugins.log4j.appenders.GrailsConsoleAppender
+import groovy.transform.CompileStatic
 
 /**
  * Encapsulates the configuration of Log4j.
@@ -44,20 +45,21 @@ import org.codehaus.groovy.grails.plugins.log4j.appenders.GrailsConsoleAppender
  */
 class Log4jConfig {
 
-    static final DEFAULT_PATTERN_LAYOUT = new PatternLayout(
+    static final PatternLayout DEFAULT_PATTERN_LAYOUT = new PatternLayout(
         conversionPattern: '%d [%t] %-5p %c{2} %x - %m%n')
 
     static final LAYOUTS = [xml: XMLLayout, html: HTMLLayout, simple: SimpleLayout, pattern: PatternLayout]
     static final APPENDERS = [jdbc: JDBCAppender, "null": NullAppender, console: ConsoleAppender,
                               file: FileAppender, rollingFile: RollingFileAppender]
 
-    private appenders = [:]
-    private config
+    private Map appenders = [:]
+    private ConfigObject config
 
     Log4jConfig(ConfigObject config) {
         this.config = config
     }
 
+    @CompileStatic
     public static void initialize(ConfigObject config) {
         if (config == null) {
             return
@@ -87,7 +89,7 @@ class Log4jConfig {
         }
 
         LogLog.error "Property missing when configuring log4j: $name"
-        
+
         throw new MissingPropertyException("Property missing when configuring log4j: $name")
     }
 
@@ -130,12 +132,14 @@ class Log4jConfig {
         configure {}
     }
 
+    @CompileStatic
     def environments(Closure callable) {
         callable.delegate = new EnvironmentsLog4JConfig(this)
         callable.resolveStrategy = Closure.DELEGATE_FIRST
         callable.call()
     }
 
+    @CompileStatic
     def invokeCallable(Closure callable) {
         callable.delegate = this
         callable.resolveStrategy = Closure.DELEGATE_FIRST
@@ -210,6 +214,7 @@ class Log4jConfig {
         }
     }
 
+    @CompileStatic
     private createConsoleAppender() {
         def consoleAppender = Environment.isWarDeployed() ?
                                 new ConsoleAppender() :
@@ -238,6 +243,7 @@ class Log4jConfig {
         return fileAppender
     }
 
+    @CompileStatic
     Logger root(Closure c) {
         def root = Logger.getRootLogger()
 
@@ -250,6 +256,7 @@ class Log4jConfig {
         return root
     }
 
+    @CompileStatic
     def appenders(Closure callable) {
         callable.delegate = this
         callable.resolveStrategy = Closure.DELEGATE_FIRST
@@ -466,10 +473,10 @@ class EnvironmentsLog4JConfig {
     }
 
     def methodMissing(String name, args) {
-        if(args && args[0] instanceof Closure) {
+        if (args && args[0] instanceof Closure) {
             // treat all method calls that take a closure as custom environment
             // names
-            if(Environment.current == Environment.CUSTOM &&
+            if (Environment.current == Environment.CUSTOM &&
                 Environment.current.name == name) {
                 config.invokeCallable(args[0])
             }

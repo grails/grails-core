@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.errors
 
 import org.codehaus.groovy.grails.core.io.ResourceLocator
-import org.codehaus.groovy.grails.exceptions.DefaultStackTracePrinter
+import org.codehaus.groovy.grails.exceptions.DefaultErrorsPrinter
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.springframework.core.io.Resource
 
@@ -26,7 +26,7 @@ import org.springframework.core.io.Resource
  * @author Graeme Rocher
  * @since 2.0
  */
-class ErrorsViewStackTracePrinter extends DefaultStackTracePrinter{
+class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter{
 
     ErrorsViewStackTracePrinter(ResourceLocator resourceLocator) {
         super(resourceLocator)

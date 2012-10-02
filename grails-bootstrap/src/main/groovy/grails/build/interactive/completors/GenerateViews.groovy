@@ -17,7 +17,7 @@ package grails.build.interactive.completors
 
 import org.codehaus.groovy.grails.cli.interactive.completors.ClassNameCompletor
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Completor for the generate-views command.

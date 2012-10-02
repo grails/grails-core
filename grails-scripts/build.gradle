@@ -34,11 +34,11 @@ eclipse {
             whenMerged { classpath ->
                 // update ../scripts -> scripts
                 def scriptsSrc = classpath.entries.find { entry -> entry?.kind == 'src' && entry?.path == '../scripts' }
-                if(scriptsSrc) scriptsSrc.path='scripts'
+                if (scriptsSrc) scriptsSrc.path='scripts'
             }
         }
-    }    
-    
+    }
+
     project {
         linkedResource name: 'scripts', type: '2', location: new File('../scripts').canonicalPath
     }

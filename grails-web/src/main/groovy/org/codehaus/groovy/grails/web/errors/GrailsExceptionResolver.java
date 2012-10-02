@@ -248,7 +248,6 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             shouldLogRequestParameters = Environment.getCurrent() == Environment.DEVELOPMENT;
         }
         if (shouldLogRequestParameters) {
-            @SuppressWarnings("unchecked")
             Enumeration<String> params = request.getParameterNames();
 
             if (params.hasMoreElements()) {
@@ -284,7 +283,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         }
 
         sb.append(LINE_SEPARATOR);
-        if(message != null) {
+        if (message != null) {
             sb.append(message).append(". ");
         }
         sb.append("Stacktrace follows:");

@@ -32,8 +32,11 @@ import org.springframework.core.io.Resource;
  * Loads groovy files using Spring's IO abstraction.
  *
  * @author Graeme Rocher
+ * @deprecated No longer used, will be removed in a future release
+ *
  * @since 0.1
  */
+@Deprecated
 public class GrailsResourceLoader implements GroovyResourceLoader {
 
     private Resource[] resources;

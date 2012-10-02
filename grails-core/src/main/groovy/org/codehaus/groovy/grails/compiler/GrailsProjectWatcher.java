@@ -34,11 +34,11 @@ import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.util.ClassUtils;
 
 /**
- * Watches a Grails projects and re-compiles sources when they change or fires events to the pluginManager.
+ * Watches a Grails project and re-compiles sources when they change or fires events to the pluginManager.
  *
  * @author Graeme Rocher
  * @since 2.0
@@ -57,14 +57,24 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     private Map<File, GrailsPlugin> descriptorToPluginMap = new ConcurrentHashMap<File, GrailsPlugin>();
     private static MultipleCompilationErrorsException currentCompilationError = null;
     private static Throwable currentReloadError = null;
+    private static List<String> reloadExcludes;
+    private static List<String> reloadIncludes;
 
     public GrailsProjectWatcher(final GrailsProjectCompiler compiler, GrailsPluginManager pluginManager) {
         this.pluginManager = pluginManager;
-        this.compilerExtensions = compiler.getCompilerExtensions();
+        compilerExtensions = compiler.getCompilerExtensions();
         this.compiler = compiler;
         if (isReloadingAgentPresent()) {
             GrailsPluginManagerReloadPlugin.register();
         }
+    }
+
+    public static void setReloadExcludes(List<String> reloadExcludes) {
+        GrailsProjectWatcher.reloadExcludes = reloadExcludes;
+    }
+
+    public static void setReloadIncludes(List<String> reloadIncludes) {
+        GrailsProjectWatcher.reloadIncludes = reloadIncludes;
     }
 
     public void setPluginManager(GrailsPluginManager pluginManager) {
@@ -94,7 +104,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
     /**
      * Whether the watcher is active
-     * @return True if it is
+     * @return true if it is
      */
     public static boolean isActive() {
         return active;
@@ -121,8 +131,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         for (String directory : compiler.getSrcDirectories()) {
             addWatchDirectory(new File(directory), compilerExtensions);
         }
-        Resource[] pluginSourceFiles = compiler.getPluginSettings().getPluginSourceFiles();
-        for (Resource pluginSourceFile : pluginSourceFiles) {
+        org.codehaus.groovy.grails.io.support.Resource[] pluginSourceFiles = compiler.getPluginSettings().getPluginSourceFiles();
+        for (org.codehaus.groovy.grails.io.support.Resource pluginSourceFile : pluginSourceFiles) {
             try {
                 if (pluginSourceFile.getFile().isDirectory()) {
                     addWatchDirectory(pluginSourceFile.getFile(), compilerExtensions);
@@ -134,31 +144,35 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
         addListener(new FileChangeListener() {
             public void onChange(File file) {
-                LOG.info("File [" + file + "] changed. Applying changes to application.");
-                if (descriptorToPluginMap.containsKey(file)) {
-                    reloadPlugin(file);
-                }
-                else {
-                    compileIfSource(file);
-                    informPluginManager(file, false);
+                if (fileIsReloadable(file)) {
+                    LOG.info("File [" + file + "] changed. Applying changes to application.");
+                    if (descriptorToPluginMap.containsKey(file)) {
+                        reloadPlugin(file);
+                    }
+                    else {
+                        compileIfSource(file);
+                        informPluginManager(file, false);
+                    }
                 }
             }
 
             public void onNew(File file) {
-                LOG.info("File [" + file + "] added. Applying changes to application.");
-                if (!file.getName().toLowerCase().endsWith(".properties")) {
-                    // only sleep for source files, not i18n files
-                    sleep(5000);
+                if (fileIsReloadable(file)) {
+                    LOG.info("File [" + file + "] added. Applying changes to application.");
+                    if (!file.getName().toLowerCase().endsWith(".properties")) {
+                        // only sleep for source files, not i18n files
+                        sleep(5000);
+                    }
+
+                    compileIfSource(file);
+                    informPluginManager(file, true);
                 }
-                compileIfSource(file);
-                informPluginManager(file, true);
             }
         });
 
-        if(pluginManager != null) {
+        if (pluginManager != null) {
             initPluginWatchPatterns();
         }
-
 
         super.run();
     }
@@ -172,8 +186,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
             if (info != null && info.getDescriptor() != null) {
                 try {
-                    Resource descriptor = info.getDescriptor();
-                    plugin.setDescriptor(descriptor);
+                    org.codehaus.groovy.grails.io.support.Resource descriptor = info.getDescriptor();
+                    plugin.setDescriptor(new FileSystemResource(descriptor.getFile()));
                     File pluginFile = descriptor.getFile();
                     descriptorToPluginMap.put(pluginFile, plugin);
                     addWatchFile(pluginFile);
@@ -195,6 +209,24 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         }
     }
 
+    protected boolean fileIsReloadable(File file) {
+        String classname = GrailsResourceUtils.getClassName(file.getAbsolutePath());
+        boolean fileIsExcluded = (reloadExcludes != null) ? reloadExcludes.contains(classname) : false;
+        boolean fileIsIncluded = (reloadIncludes != null) ? reloadIncludes.contains(classname) : true;
+
+        // These are expanded for readability
+        if (fileIsExcluded == true) {
+            return false;
+        }
+        if (fileIsIncluded == true) {
+            return true;
+        }
+        if (fileIsExcluded == false && fileIsIncluded == false && reloadIncludes.size() > 0) {
+            return false;
+        }
+        return true;
+    }
+
     private void reloadPlugin(File file) {
         GrailsPlugin grailsPlugin = descriptorToPluginMap.get(file);
         grailsPlugin.refresh();
@@ -204,7 +236,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     }
 
     private void informPluginManager(final File file, boolean isNew) {
-        if(pluginManager == null)  return;
+        if (pluginManager == null)  return;
+
         if (!isSourceFile(file) || isNew) {
             try {
                 pluginManager.informOfFileChange(file);
@@ -216,7 +249,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             // add to class change event queue
             String className = GrailsResourceUtils.getClassName(file.getAbsolutePath());
             if (className != null) {
-
                 classChangeEventQueue.put(className, new ClassUpdate() {
                     public void run(Class<?> cls) {
                         try {
@@ -257,7 +289,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             LOG.error("Compilation Error: " + e.getCause().getMessage());
         }
     }
-
 
     private void sleep(int time) {
         try {

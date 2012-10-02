@@ -12,10 +12,10 @@ class StackTracePrinterSpec extends Specification {
     void "Test pretty print simple stack trace"() {
         given: "a controller that throws an exception"
             final gcl = new GroovyClassLoader()
-            gcl.parseClass(getServiceResource().inputStream)
-            def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
+            gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+            def controller = gcl.parseClass(getControllerResource().inputStream, controllerResource.filename).newInstance()
         when:"An exception is pretty printed"
-            def printer = new DefaultStackTracePrinter()
+            def printer = new DefaultErrorsPrinter()
             def result = null
             try {
                 controller.show()
@@ -32,10 +32,10 @@ class StackTracePrinterSpec extends Specification {
     void "Test pretty print nested stack trace"() {
       given: "a controller that throws an exception"
             final gcl = new GroovyClassLoader()
-            gcl.parseClass(getServiceResource().inputStream)
-            def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
+            gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+            def controller = gcl.parseClass(getControllerResource().inputStream, controllerResource.filename).newInstance()
         when:"An exception is pretty printed"
-            def printer = new DefaultStackTracePrinter()
+            def printer = new DefaultErrorsPrinter()
             def result = null
             try {
                 controller.nesting()
@@ -55,13 +55,13 @@ class StackTracePrinterSpec extends Specification {
     void "Test pretty print code snippet"() {
         given: "a controller that throws an exception"
             final gcl = new GroovyClassLoader()
-            gcl.parseClass(getServiceResource().inputStream)
-            def controller = gcl.parseClass(getControllerResource().inputStream).newInstance()
+            gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+            def controller = gcl.parseClass(getControllerResource().inputStream, getControllerResource().filename).newInstance()
 
         when: "A code snippet is pretty printed"
             final locator = new StaticResourceLocator()
             locator.addClassResource("test.FooController", getControllerResource())
-            def printer = new DefaultStackTracePrinter(locator)
+            def printer = new DefaultErrorsPrinter(locator)
             def result = null
             try {
                 controller.show()
@@ -94,14 +94,14 @@ Around line 5 of FooController.groovy
     void "Test pretty print nested exception code snippet"() {
         given:"a service that throws an exception that is caught and rethrown"
             final gcl = new GroovyClassLoader()
-            gcl.parseClass(getServiceResource().inputStream)
-            def controller = gcl.parseClass(controllerResource.inputStream).newInstance()
+            gcl.parseClass(getServiceResource().inputStream, serviceResource.filename)
+            def controller = gcl.parseClass(controllerResource.inputStream, controllerResource.filename).newInstance()
             final locator = new StaticResourceLocator()
             locator.addClassResource("test.FooController", controllerResource)
             locator.addClassResource("test.FooService", serviceResource)
 
         when:"The code snippet is printed"
-            def printer = new DefaultStackTracePrinter(locator)
+            def printer = new DefaultErrorsPrinter(locator)
             def result = null
             try {
                 controller.nesting()

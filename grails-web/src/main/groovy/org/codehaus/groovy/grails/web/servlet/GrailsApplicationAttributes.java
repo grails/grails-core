@@ -47,6 +47,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String PROPERTY_REGISTRY = "org.codehaus.groovy.grails.PROPERTY_REGISTRY";
     String ERRORS =  "org.codehaus.groovy.grails.ERRORS";
     String MODEL_AND_VIEW = "org.codehaus.groovy.grails.MODEL_AND_VIEW";
+    String TEMPLATE_MODEL = "org.codehaus.groovy.grails.TEMPLATE_MODEL";
     String OUT = "org.codehaus.groovy.grails.RESPONSE_OUT";
     String TAG_CACHE = "org.codehaus.groovy.grails.TAG_CACHE";
     String ID_PARAM = "id";
@@ -58,6 +59,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     String REQUEST_REDIRECTED_ATTRIBUTE = "org.codehaus.groovy.grails.request_redirected";
     String ACTION_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.ACTION_NAME_ATTRIBUTE";
     String CONTROLLER_NAME_ATTRIBUTE = "org.codehaus.groovy.grails.CONTROLLER_NAME_ATTRIBUTE";
+    String GRAILS_CONTROLLER_CLASS = "org.codehaus.groovy.grails.GRAILS_CONTROLLER_CLASS";
     String APP_URI_ATTRIBUTE = "org.codehaus.groovy.grails.APP_URI_ATTRIBUTE";
     String RENDERING_ERROR_ATTRIBUTE = "org.codehaus.groovy.grails.RENDERING_ERROR_ATTRIBUTE";
     String REDIRECT_ISSUED = "org.codehaus.groovy.grails.REDIRECT_ISSUED";

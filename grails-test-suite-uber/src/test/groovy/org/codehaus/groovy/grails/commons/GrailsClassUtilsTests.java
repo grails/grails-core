@@ -128,6 +128,7 @@ public class GrailsClassUtilsTests extends TestCase {
     public void testGetPropertyForGetter() {
         assertEquals("something", GrailsClassUtils.getPropertyForGetter("getSomething"));
         assertEquals("URL", GrailsClassUtils.getPropertyForGetter("getURL"));
+        assertEquals("p", GrailsClassUtils.getPropertyForGetter("getP"));
     }
 
     public void testGetStaticField() {

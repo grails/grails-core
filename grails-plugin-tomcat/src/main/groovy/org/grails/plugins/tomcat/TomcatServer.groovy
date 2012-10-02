@@ -15,13 +15,18 @@
  */
 package org.grails.plugins.tomcat
 
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
 import grails.web.container.EmbeddableServer
+
+import org.apache.tomcat.util.scan.StandardJarScanner
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
- /**
+import org.springframework.util.ReflectionUtils
+
+/**
  * Provides common functionality for the inline and isolated variants of tomcat server.
  *
  * @see IsolatedWarTomcatServer
@@ -44,7 +49,7 @@ abstract class TomcatServer implements EmbeddableServer {
 
     // These are set from the outside in _GrailsRun
     def grailsConfig
-    def eventListener
+    GrailsBuildEventListener eventListener
 
     TomcatServer() {
         buildSettings = BuildSettingsHolder.getSettings()
@@ -73,12 +78,29 @@ abstract class TomcatServer implements EmbeddableServer {
         tomcatDir.deleteDir()
     }
 
+    protected boolean checkAndInitializingClasspathScanning() {
+        def scanConfig = getConfigParam("scan")
+        def shouldScan = (Boolean) (scanConfig.enabled instanceof Boolean ? scanConfig.enabled : false)
+        def extraJarsToSkip = scanConfig.excludes
+        if (extraJarsToSkip instanceof List && shouldScan) {
+
+            try {
+                def jarsToSkipField = ReflectionUtils.findField(StandardJarScanner, "defaultJarsToSkip", Set)
+                ReflectionUtils.makeAccessible(jarsToSkipField)
+                Set jarsToSkip = jarsToSkipField.get(StandardJarScanner)
+                jarsToSkip.addAll(extraJarsToSkip)
+            } catch (e) {
+                // ignore
+            }
+        }
+        shouldScan
+    }
     /**
      * The host and port params will never be null, defaults will be passed if necessary.
      *
      * If httpsPort is > 0, the server should listen for https requests on that port.
      */
-    abstract protected void doStart(String host, int httpPort, int httpsPort)
+    protected abstract void doStart(String host, int httpPort, int httpsPort)
 
     /**
      * Shutdown the server.
@@ -165,4 +187,3 @@ abstract class TomcatServer implements EmbeddableServer {
         }
     }
 }
-

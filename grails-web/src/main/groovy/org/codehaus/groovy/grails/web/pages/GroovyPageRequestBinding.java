@@ -114,7 +114,7 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
             }
         }
     }
-    
+
     public boolean isRequestAttributeVariable(String name) {
         return requestAttributeVariables.contains(name);
     }
@@ -124,18 +124,18 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
         Object val = getVariablesMap().get(name);
         if (val == null && !getVariablesMap().containsKey(name) && webRequest != null) {
             val = webRequest.getCurrentRequest().getAttribute(name);
-            if(val != null) {
+            if (val != null) {
                 requestAttributeVariables.add(name);
             } else {
                 LazyRequestBasedValue lazyValue = lazyRequestBasedValuesMap.get(name);
                 if (lazyValue != null) {
                     val = lazyValue.evaluate(webRequest);
                 }
-    
+
                 if (val == null && cachedDomainsWithoutPackage != null) {
                     val = cachedDomainsWithoutPackage.get(name);
                 }
-    
+
                 // warn about missing variables in development mode
                 if (val == null && developmentMode) {
                     if (log.isDebugEnabled()) {

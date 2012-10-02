@@ -31,8 +31,11 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * A factory bean that constructs the Grails ResourceLoader used to load Grails classes.
  *
  * @author Graeme Rocher
+ * @deprecated No longer used and will be removed from a future release
+ *
  * @since 0.4
  */
+@Deprecated
 public class GrailsResourceLoaderFactoryBean implements FactoryBean<GrailsResourceLoader>, InitializingBean {
 
     private GrailsResourceHolder grailsResourceHolder;

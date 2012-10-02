@@ -15,20 +15,21 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
-import org.springframework.web.servlet.ModelAndView
+import javax.servlet.ServletContext
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpSession
+
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
-import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.FlashScope
-import javax.servlet.http.HttpSession
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.ServletContext
-import javax.servlet.http.HttpServletResponse
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.springframework.context.ApplicationContext
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.context.ApplicationContext
+import org.springframework.validation.Errors
+import org.springframework.web.servlet.ModelAndView
 
 /**
  * @author mike
@@ -43,18 +44,18 @@ class FilterConfig extends ControllersApi {
     // this modelAndView overrides ControllersApi's modelAndView
     ModelAndView modelAndView
     boolean initialised = false
-    
+
     public FilterConfig() {
         initializeMetaClass()
     }
-    
+
     void initializeMetaClass() {
         // use per-instance metaclass
         ExpandoMetaClass emc = new ExpandoMetaClass(getClass(), false, true)
         emc.initialize()
         setMetaClass(emc)
     }
-    
+
     /**
      * Redirects attempt to access an 'errors' property, so we provide
      * one here with a null value.
@@ -67,7 +68,7 @@ class FilterConfig extends ControllersApi {
      * delegate any missing properties or methods to it.
      */
     def filtersDefinition
-    
+
     /**
      * When the filter does not have a particular property, it passes
      * the request on to the filter definition class.
@@ -89,15 +90,15 @@ class FilterConfig extends ControllersApi {
      */
     def methodMissing(String methodName, args) {
         // Delegate to the parent definition if it has this method.
-        List<MetaMethod> respondsTo = filtersDefinition.metaClass.respondsTo(filtersDefinition, methodName, args)         
+        List<MetaMethod> respondsTo = filtersDefinition.metaClass.respondsTo(filtersDefinition, methodName, args)
         if (respondsTo) {
             // Use DelegateMetaMethod to proxy calls to actual MetaMethod for subsequent calls to this method
             DelegateMetaMethod dmm=new DelegateMetaMethod(respondsTo[0], FilterConfigDelegateMetaMethodTargetStrategy.instance)
             // register the metamethod to EMC
             metaClass.registerInstanceMethod(dmm)
-            
+
             // for this invocation we still have to make the call
-            return respondsTo[0].invoke(filtersDefinition, args)            
+            return respondsTo[0].invoke(filtersDefinition, args)
         }
 
         // Ideally, we would throw a MissingMethodException here
@@ -112,7 +113,7 @@ class FilterConfig extends ControllersApi {
         // The required method was not found on the parent filter definition either.
         throw new MissingMethodException(methodName, filtersDefinition.getClass(), args)
     }
-    
+
     String toString() {"FilterConfig[$name, scope=$scope]"}
 
     String getActionUri() {
@@ -127,7 +128,6 @@ class FilterConfig extends ControllersApi {
         return super.getTemplateUri(this, name)
     }
 
-
     String getViewUri(String name) {
         return super.getViewUri(this, name)
     }
@@ -135,7 +135,6 @@ class FilterConfig extends ControllersApi {
     void setErrors(Errors errors) {
         super.setErrors(this, errors)
     }
-
 
     Errors getErrors() {
         return super.getErrors(this)
@@ -184,7 +183,6 @@ class FilterConfig extends ControllersApi {
     Object bindData(Object target, Object args, List disallowed) {
         return super.bindData(this, target, args, disallowed)
     }
-
 
     Object bindData(Object target, Object args, List disallowed, String filter) {
         return super.bindData(this, target, args, disallowed, filter)
@@ -265,6 +263,4 @@ class FilterConfig extends ControllersApi {
     String getPluginContextPath() {
         return super.getPluginContextPath(this)
     }
-
-
 }

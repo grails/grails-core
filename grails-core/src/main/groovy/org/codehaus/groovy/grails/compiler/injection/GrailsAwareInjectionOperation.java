@@ -55,7 +55,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
 
     public GrailsAwareInjectionOperation(ClassInjector[] classInjectors) {
         this();
-        this.localClassInjectors = classInjectors;
+        localClassInjectors = classInjectors;
     }
 
     /**
@@ -64,7 +64,7 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
     @Deprecated
     @SuppressWarnings("unused")
     public GrailsAwareInjectionOperation(GroovyResourceLoader resourceLoader, ClassInjector[] classInjectors) {
-        this.localClassInjectors = classInjectors;
+        localClassInjectors = classInjectors;
     }
 
     public static ClassInjector[] getClassInjectors() {
@@ -135,7 +135,11 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
             }
         }
 
-        for (ClassInjector classInjector : getLocalClassInjectors()) {
+        ClassInjector[] classInjectors1 = getLocalClassInjectors();
+        if (classInjectors1 == null || classInjectors1.length == 0) {
+            classInjectors1 = getClassInjectors();
+        }
+        for (ClassInjector classInjector : classInjectors1) {
             if (classInjector.shouldInject(url)) {
                 classInjector.performInjection(source, context, classNode);
             }

@@ -93,17 +93,17 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         urlHelper.setUrlDecode(false);
         final ServletContext servletContext = getServletContext();
         final WebApplicationContext applicationContext = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        this.handlerInterceptors = WebUtils.lookupHandlerInterceptors(servletContext);
-        this.application = WebUtils.lookupApplication(servletContext);
-        this.viewResolver = WebUtils.lookupViewResolver(servletContext);
+        handlerInterceptors = WebUtils.lookupHandlerInterceptors(servletContext);
+        application = WebUtils.lookupApplication(servletContext);
+        viewResolver = WebUtils.lookupViewResolver(servletContext);
         ApplicationContext mainContext = application.getMainContext();
-        this.urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
+        urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
         if (application != null) {
             grailsConfig = new GrailsConfig(application);
         }
 
         if (applicationContext.containsBean(MimeType.BEAN_NAME)) {
-            this.mimeTypes = applicationContext.getBean(MimeType.BEAN_NAME, MimeType[].class);
+            mimeTypes = applicationContext.getBean(MimeType.BEAN_NAME, MimeType[].class);
         }
         createStackTraceFilterer();
     }
@@ -176,12 +176,25 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         viewName = info.getViewName();
                         if (viewName == null && info.getURI() == null) {
                             final String controllerName = info.getControllerName();
-                            GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, WebUtils.SLASH + urlConverter.toUrlElement(controllerName) + WebUtils.SLASH + urlConverter.toUrlElement(action));
+                            String pluginName = info.getPluginName();
+                            String featureUri = WebUtils.SLASH + urlConverter.toUrlElement(controllerName) + WebUtils.SLASH + urlConverter.toUrlElement(action);
+
+                            Object featureId = null;
+                            if (pluginName != null) {
+                            	Map featureIdMap = new HashMap();
+                            	featureIdMap.put("uri", featureUri);
+                            	featureIdMap.put("pluginName", pluginName);
+                            	featureId = featureIdMap;
+                            } else {
+                            	featureId = featureUri;
+                            }
+                            GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
                             if (controller == null) {
                                 continue;
                             }
 
                             webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
+                            webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
                         }
                     }
                     catch (Exception e) {
@@ -198,7 +211,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     if (!WAR_DEPLOYED) {
                         checkDevelopmentReloadingState(request);
                     }
-
 
                     request = checkMultipart(request);
 
@@ -294,7 +306,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             throw compilationError;
         }
         Throwable currentReloadError = GrailsProjectWatcher.getCurrentReloadError();
-        if(currentReloadError != null) {
+        if (currentReloadError != null) {
             throw new RuntimeException(currentReloadError);
         }
     }

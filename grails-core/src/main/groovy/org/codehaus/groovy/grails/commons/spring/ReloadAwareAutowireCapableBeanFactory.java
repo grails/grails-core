@@ -54,21 +54,22 @@ import org.springframework.core.LocalVariableTableParameterNameDiscoverer;
 import org.springframework.util.ClassUtils;
 
 /**
- * A BeanFactory that can deal with class cast exceptions that may occur due to
- * class reload events and then attempt to reload the bean being instantiated to
- * avoid them.
+ * Deals with class cast exceptions that may occur due to class reload events and attempts
+ * to reload the bean being instantiated to avoid them.
  *
- * Caches autowiring for beans (mainly controllers & domain class instances).
- * Bypasses autowiring if there are no beans for the properties in the class.
- * Caching is only used in environments where reloading is not enabled.
+ * Caches autowiring for beans (mainly controllers & domain class instances). Bypasses
+ * autowiring if there are no beans for the properties in the class. Caching is only used
+ * in environments where reloading is not enabled.
  *
  * @author Graeme Rocher
  * @since 1.1.1
  */
-public class ReloadAwareAutowireCapableBeanFactory extends
-        DefaultListableBeanFactory {
+public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFactory {
+
     public static boolean DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS = Boolean.getBoolean("grails.disable.optimization.autowirebyname");
-    ConcurrentMap<Class<?>, Map<String,PropertyDescriptor>> autowireableBeanPropsCacheForClass = new ConcurrentHashMap<Class<?>, Map<String,PropertyDescriptor>>();
+
+    ConcurrentMap<Class<?>, Map<String,PropertyDescriptor>> autowireableBeanPropsCacheForClass =
+            new ConcurrentHashMap<Class<?>, Map<String,PropertyDescriptor>>();
     private boolean reloadEnabled;
 
     /**
@@ -78,38 +79,30 @@ public class ReloadAwareAutowireCapableBeanFactory extends
         reloadEnabled = GrailsUtil.isDevelopmentEnv() || Environment.getCurrent().isReloadEnabled();
         if (reloadEnabled) {
 
-            // Implementation note: The default Spring InstantiationStrategy
-            // caches constructors.
-            // This is no good at development time because if the class reloads
-            // then Spring
-            // continues to use the old class. We deal with this here by
-            // disabling the caching
+            // Implementation note: The default Spring InstantiationStrategy caches constructors.
+            // This is no good at development time because if the class reloads then Spring
+            // continues to use the old class. We deal with this here by disabling the caching
             // for development time only
             setInstantiationStrategy(new CglibSubclassingInstantiationStrategy() {
                 @Override
-                public Object instantiate(RootBeanDefinition beanDefinition,
-                        String beanName, BeanFactory owner) {
+                public Object instantiate(RootBeanDefinition beanDefinition, String beanName, BeanFactory owner) {
                     // Don't override the class with CGLIB if no overrides.
                     if (beanDefinition.getMethodOverrides().isEmpty()) {
                         Constructor<?> constructorToUse;
                         Class<?> clazz = beanDefinition.getBeanClass();
                         if (clazz.isInterface()) {
-                            throw new BeanInstantiationException(clazz,
-                                    "Specified class is an interface");
+                            throw new BeanInstantiationException(clazz, "Specified class is an interface");
                         }
                         try {
-                            constructorToUse = clazz
-                                    .getDeclaredConstructor((Class[]) null);
+                            constructorToUse = clazz.getDeclaredConstructor((Class[]) null);
                         } catch (Exception ex) {
-                            throw new BeanInstantiationException(clazz,
-                                    "No default constructor found", ex);
+                            throw new BeanInstantiationException(clazz, "No default constructor found", ex);
                         }
 
                         return BeanUtils.instantiateClass(constructorToUse);
                     }
                     // Must generate CGLIB subclass.
-                    return instantiateWithMethodInjection(beanDefinition,
-                            beanName, owner);
+                    return instantiateWithMethodInjection(beanDefinition, beanName, owner);
                 }
             });
         }
@@ -120,8 +113,7 @@ public class ReloadAwareAutowireCapableBeanFactory extends
     }
 
     @Override
-    protected Object doCreateBean(String beanName, RootBeanDefinition mbd,
-            Object[] args) {
+    protected Object doCreateBean(String beanName, RootBeanDefinition mbd, Object[] args) {
         if (!reloadEnabled) {
             return super.doCreateBean(beanName, mbd, args);
         }
@@ -139,8 +131,7 @@ public class ReloadAwareAutowireCapableBeanFactory extends
         }
     }
 
-    private Object handleTypeMismatchException(String beanName,
-            RootBeanDefinition mbd, Object[] args) {
+    private Object handleTypeMismatchException(String beanName, RootBeanDefinition mbd, Object[] args) {
         // type mismatch probably occured because another class was reloaded
         final Class<?> beanClass = mbd.getBeanClass();
         if (!GroovyObject.class.isAssignableFrom(beanClass)) {
@@ -174,26 +165,23 @@ public class ReloadAwareAutowireCapableBeanFactory extends
 
     @Override
     protected boolean isExcludedFromDependencyCheck(PropertyDescriptor pd) {
-        // exclude properties generated by the groovy compiler from autowiring
-        // checks
+        // exclude properties generated by the groovy compiler from autowiring checks
         return pd.getName().indexOf('$') > -1 || super.isExcludedFromDependencyCheck(pd);
     }
 
     @Override
-    public void autowireBeanProperties(Object existingBean, int autowireMode,
-            boolean dependencyCheck) throws BeansException {
-        if(Environment.isInitializing()) {
+    public void autowireBeanProperties(Object existingBean, int autowireMode, boolean dependencyCheck) throws BeansException {
+        if (Environment.isInitializing()) {
             return;
         }
-        if(autowireMode == AUTOWIRE_BY_NAME) {
-            if(DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS || dependencyCheck || existingBean instanceof Aware) {
+        if (autowireMode == AUTOWIRE_BY_NAME) {
+            if (DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS || dependencyCheck || existingBean instanceof Aware) {
                 super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
             } else {
                 populateBeanInAutowireByName(existingBean);
             }
         } else {
-            super.autowireBeanProperties(existingBean, autowireMode,
-                    dependencyCheck);
+            super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
         }
     }
 
@@ -259,8 +247,7 @@ public class ReloadAwareAutowireCapableBeanFactory extends
                 if (containsBean(pd.getName()) && pd.getWriteMethod() != null && !isExcludedFromDependencyCheck(pd)
                         && !BeanUtils.isSimpleProperty(pd.getPropertyType())) {
                     final Method writeMethod = pd.getWriteMethod();
-                    if (!Modifier.isPublic(writeMethod.getDeclaringClass().getModifiers())
-                            && !writeMethod.isAccessible()) {
+                    if (!Modifier.isPublic(writeMethod.getDeclaringClass().getModifiers()) && !writeMethod.isAccessible()) {
                         if (System.getSecurityManager() != null) {
                             AccessController.doPrivileged(new PrivilegedAction<Object>() {
                                 public Object run() {

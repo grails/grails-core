@@ -45,8 +45,14 @@ public class GrailsEclipseConsole extends GrailsConsole {
 
     private Boolean eclipseSupportsAnsi = null; //lazy initialized because implicitly used from super constructor.
 
-    protected GrailsEclipseConsole() throws IOException {
-        super();
+    /**
+     * Create a GrailsConsole that has some customizations to work better with STS. Note that
+     * this console implicitly captures and redirects System.out, System.err and System.in in the
+     * super class. So extreme care must be taken to ensure these streams are setup correctly
+     * before creating an instance.
+     */
+    public GrailsEclipseConsole() throws IOException {
+    	super();
     }
 
     @Override

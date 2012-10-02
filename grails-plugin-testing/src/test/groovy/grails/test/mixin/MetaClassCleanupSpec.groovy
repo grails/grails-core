@@ -1,11 +1,11 @@
 package grails.test.mixin
 
-import spock.lang.Specification
 import grails.test.mixin.support.GrailsUnitTestMixin
-import org.junit.After
+
 import org.junit.AfterClass
 import org.junit.Assert
 
+import spock.lang.Specification
 
 @TestMixin(GrailsUnitTestMixin)
 class MetaClassCleanupSpec extends Specification {
@@ -64,15 +64,15 @@ class MetaClassCleanupSpec extends Specification {
             Assert.fail("Should have cleaned up meta class changes")
         } catch (MissingMethodException) {
         }
-        
+
         try {
             a.testToo()
             Assert.fail("Should have cleaned up meta class changes")
         } catch (MissingMethodException) {
         }
     }
-
 }
+
 class Author {
     String name
 }
@@ -81,8 +81,6 @@ class HelloService {
 
     def greet(message) {
         def xml = "<greeting message='${message}'/>"
-
         new XmlParser().parseText(xml).@message
     }
-
 }

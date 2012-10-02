@@ -186,7 +186,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
 
     public void setParentApplicationContext(ApplicationContext parent) {
         if (parent != null) {
-            this.resolver = new PathMatchingResourcePatternResolver(parent);
+            resolver = new PathMatchingResourcePatternResolver(parent);
         }
     }
 }

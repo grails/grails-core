@@ -15,16 +15,16 @@
 package org.codehaus.groovy.grails.plugins.log4j.web.util;
 
 import grails.util.Environment;
-import grails.util.GrailsWebUtil;
 import groovy.util.ConfigObject;
+
+import java.lang.reflect.Method;
 
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.helpers.LogLog;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig;
 
 /**
@@ -37,19 +37,41 @@ public class Log4jConfigListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent event) {
         try {
-            GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(event.getServletContext());
+//            Object grailsApplication = GrailsWebUtil.lookupApplication(event.getServletContext());
 
-            ConfigObject co = grailsApplication != null ? grailsApplication.getConfig() : null;
-            if (co == null) {
+//            ConfigObject co = grailsApplication != null ? getConfig(grailsApplication) : null;
+//            if (co == null) {
                 // in this case we're running inside a WAR deployed environment
                 // create empty app to provide metadata
-                GrailsApplication application = new DefaultGrailsApplication();
-                co = application.getConfig();
+                Object grailsApplication = createGrailsApplication(Thread.currentThread().getContextClassLoader());
+                ConfigObject co = getConfig(grailsApplication);
                 Log4jConfig.initialize(co);
-            }
+//            }
         }
         catch (Throwable e) {
             LogLog.error("Error initializing log4j: " + e.getMessage(), e);
+        }
+    }
+
+    private Object createGrailsApplication(ClassLoader contextClassLoader) {
+        try {
+            Class<?> applicationClass = contextClassLoader.loadClass("org.codehaus.groovy.grails.commons.DefaultGrailsApplication");
+            return applicationClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            throw new PluginException("Error instantiating GrailsApplication during logging initialization: " + e.getMessage(), e);
+        } catch (InstantiationException e) {
+            throw new PluginException("Error instantiating GrailsApplication during logging initialization: " + e.getMessage(), e);
+        } catch (IllegalAccessException e) {
+            throw new PluginException("Error instantiating GrailsApplication during logging initialization: " + e.getMessage(), e);
+        }
+    }
+
+    private ConfigObject getConfig(Object grailsApplication) {
+        try {
+            Method getConfigMethod = grailsApplication.getClass().getMethod("getConfig", new Class[0]);
+            return (ConfigObject) getConfigMethod.invoke(grailsApplication);
+        } catch (Throwable e) {
+            return null;
         }
     }
 

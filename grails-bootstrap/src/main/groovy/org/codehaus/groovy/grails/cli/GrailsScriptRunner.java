@@ -36,9 +36,9 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -59,11 +59,11 @@ import org.codehaus.groovy.grails.cli.parsing.ParseException;
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer;
 import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport;
 import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer;
+import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver;
+import org.codehaus.groovy.grails.io.support.Resource;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+
 
 /**
  * Handles Grails command line interface for running scripts.
@@ -96,7 +96,7 @@ public class GrailsScriptRunner {
     private GrailsConsole console = GrailsConsole.getInstance();
 
     private File scriptCacheDir;
-    private final List<Resource> scriptsAllowedOutsideOfProject = new ArrayList<Resource>();
+    private final List<File> scriptsAllowedOutsideOfProject = new ArrayList<File>();
 
     public GrailsScriptRunner() {
         this(new BuildSettings());
@@ -112,7 +112,7 @@ public class GrailsScriptRunner {
             originalOut = System.out;
         }
         this.settings = settings;
-        this.pluginPathSupport = new PluginPathDiscoverySupport(settings);
+        pluginPathSupport = new PluginPathDiscoverySupport(settings);
     }
 
     public void setInteractive(boolean interactive) {
@@ -195,11 +195,11 @@ public class GrailsScriptRunner {
         // If there aren't any arguments, then we don't have a command
         // to execute, so enter "interactive mode"
         boolean resolveDeps = commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT);
-        if(resolveDeps) {
-            if(commandLine.hasOption("include-source")) {
+        if (resolveDeps) {
+            if (commandLine.hasOption("include-source")) {
                 build.setIncludeSource(true);
             }
-            if(commandLine.hasOption("include-javadoc")) {
+            if (commandLine.hasOption("include-javadoc")) {
                 build.setIncludeJavadoc(true);
             }
         }
@@ -310,7 +310,7 @@ public class GrailsScriptRunner {
     }
 
     public void setOut(PrintStream outputStream) {
-        this.out = outputStream;
+        out = outputStream;
     }
 
     public int executeCommand(String scriptName, String args) {
@@ -332,7 +332,7 @@ public class GrailsScriptRunner {
 
         CommandLineParser parser = getCommandLineParser();
         DefaultCommandLine commandLine = (DefaultCommandLine) parser.parseString(scriptName,args);
-        if(env != null) {
+        if (env != null) {
             commandLine.setEnvironment(env);
         }
 
@@ -340,7 +340,9 @@ public class GrailsScriptRunner {
     }
 
     private int executeCommand(CommandLine commandLine, String scriptName, String env) {
-        @SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
+        @SuppressWarnings("hiding")
+        GrailsConsole console = getConsole(commandLine);
+
         // Load the BuildSettings file for this project if it exists. Note
         // that this does not load any environment-specific settings.
         try {
@@ -375,11 +377,22 @@ public class GrailsScriptRunner {
         }
     }
 
+    private GrailsConsole getConsole(CommandLine commandLine) {
+        @SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
+
+        // Set the console display properties
+        console.setAnsiEnabled(!commandLine.hasOption(CommandLine.NOANSI_ARGUMENT));
+        console.setStacktrace(commandLine.hasOption(CommandLine.STACKTRACE_ARGUMENT));
+        console.setVerbose(commandLine.hasOption(CommandLine.VERBOSE_ARGUMENT));
+
+        return console;
+    }
+
     private void setRunningEnvironment(CommandLine commandLine, String env) {
         // Get the default environment if one hasn't been set.
         System.setProperty("base.dir", settings.getBaseDir().getPath());
 
-        if(env != null) {
+        if (env != null) {
             // Add some extra binding variables that are now available.
             settings.setGrailsEnv(env);
             settings.setDefaultEnv(false);
@@ -405,8 +418,8 @@ public class GrailsScriptRunner {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private int executeScriptWithCaching(CommandLine commandLine, String scriptName, String env) {
-        List<Resource> potentialScripts;
-        List<Resource> allScripts = getAvailableScripts();
+        List<File> potentialScripts;
+        List<File> allScripts = getAvailableScripts();
         GantBinding binding = new GantBinding();
         binding.setVariable("scriptName", scriptName);
 
@@ -414,21 +427,21 @@ public class GrailsScriptRunner {
 
         // Now find what scripts match the one requested by the user.
         potentialScripts = getPotentialScripts(scriptName, allScripts);
-        
-        if(potentialScripts.size() == 0) {
+
+        if (potentialScripts.size() == 0) {
             try {
                 File aliasFile = new File(settings.getUserHome(), ".grails/.aliases");
-                if(aliasFile.exists()) {
+                if (aliasFile.exists()) {
                     Properties aliasProperties = new Properties();
                     aliasProperties.load(new FileReader(aliasFile));
-                    if(aliasProperties.containsKey(commandLine.getCommandName())) {
+                    if (aliasProperties.containsKey(commandLine.getCommandName())) {
                         String aliasValue = (String) aliasProperties.get(commandLine.getCommandName());
                         String[] aliasPieces = aliasValue.split(" ");
                         String commandName = aliasPieces[0];
                         String correspondingScriptName = GrailsNameUtils.getNameFromScript(commandName);
                         potentialScripts = getPotentialScripts(correspondingScriptName, allScripts);
-                        
-                        if(potentialScripts.size() > 0) {
+
+                        if (potentialScripts.size() > 0) {
                             String[] additionalArgs = new String[aliasPieces.length - 1];
                             System.arraycopy(aliasPieces, 1, additionalArgs, 0, additionalArgs.length);
                             insertArgumentsInFrontOfExistingArguments(commandLine, additionalArgs);
@@ -445,7 +458,7 @@ public class GrailsScriptRunner {
         // that fails, then let the user know and then exit.
         if (potentialScripts.size() > 0) {
             potentialScripts = (List) DefaultGroovyMethods.unique(potentialScripts);
-            final Resource scriptFile = potentialScripts.get(0);
+            final File scriptFile = potentialScripts.get(0);
             if (!isGrailsProject() && !isExternalScript(scriptFile)) {
                 return handleScriptExecutedOutsideProjectError();
             }
@@ -455,13 +468,13 @@ public class GrailsScriptRunner {
         return attemptPrecompiledScriptExecute(commandLine, scriptName, env, binding, allScripts);
     }
 
-    private List<Resource> getPotentialScripts(String scriptName,
-            List<Resource> allScripts) {
-        List<Resource> potentialScripts;
+    private List<File> getPotentialScripts(String scriptName, List<File> allScripts) {
+        List<File> potentialScripts;
         boolean exactMatchFound = false;
-        potentialScripts = new ArrayList<Resource>();
-        for (Resource scriptPath : allScripts) {
-            String scriptFileName = scriptPath.getFilename().substring(0,scriptPath.getFilename().length()-7); // trim .groovy extension
+        potentialScripts = new ArrayList<File>();
+        for (File scriptPath : allScripts) {
+            String fileName = scriptPath.getName();
+            String scriptFileName = fileName.substring(0, fileName.length() - 7); // trim .groovy extension
             if (scriptFileName.endsWith("_")) {
                 scriptsAllowedOutsideOfProject.add(scriptPath);
                 scriptFileName = scriptFileName.substring(0, scriptFileName.length()-1);
@@ -480,15 +493,14 @@ public class GrailsScriptRunner {
         return potentialScripts;
     }
 
-    private void insertArgumentsInFrontOfExistingArguments(CommandLine commandLine,
-            String[] argumentsToInsert) {
+    private void insertArgumentsInFrontOfExistingArguments(CommandLine commandLine, String[] argumentsToInsert) {
         List<String> remainingArgs = commandLine.getRemainingArgs();
-        for(int i = argumentsToInsert.length - 1; i >= 0; i-- ) {
+        for (int i = argumentsToInsert.length - 1; i >= 0; i-- ) {
             remainingArgs.add(0, argumentsToInsert[i]);
         }
     }
 
-    private int attemptPrecompiledScriptExecute(CommandLine commandLine, String scriptName, String env, GantBinding binding, List<Resource> allScripts) {
+    private int attemptPrecompiledScriptExecute(CommandLine commandLine, String scriptName, String env, GantBinding binding, List<File> allScripts) {
         console.updateStatus("Running pre-compiled script");
 
         // Must be called before the binding is initialised.
@@ -503,37 +515,40 @@ public class GrailsScriptRunner {
             loadScriptClass(gant, scriptName);
         }
         catch (ScriptNotFoundException e) {
-            if (isInteractive && !InteractiveMode.isActive()) {
-                scriptName = fixScriptName(scriptName, allScripts);
-                if (scriptName == null) {
-                    throw e;
-                }
-
-                loadScriptClass(gant, scriptName);
-
-                // at this point if they were calling a script that has a non-default
-                // env (e.g. war or test-app) it wouldn't have been correctly set, so
-                // set it now, but only if they didn't specify the env (e.g. "grails test war" -> "grails test war")
-
-                if (Boolean.TRUE.toString().equals(System.getProperty(Environment.DEFAULT))) {
-                    commandLine.setCommand(GrailsNameUtils.getScriptName(scriptName));
-                    env = commandLine.lookupEnvironmentForCommand();
-                    binding.setVariable("grailsEnv", env);
-                    settings.setGrailsEnv(env);
-                    System.setProperty(Environment.KEY, env);
-                    settings.setDefaultEnv(false);
-                    System.setProperty(Environment.DEFAULT, Boolean.FALSE.toString());
-                }
-            } else {
+            if (!isInteractive || InteractiveMode.isActive()) {
                 throw e;
             }
-        }
+            scriptName = fixScriptName(scriptName, allScripts);
+            if (scriptName == null) {
+                throw e;
+            }
 
+            try {
+                loadScriptClass(gant, scriptName);
+            }
+            catch (ScriptNotFoundException ce) {
+                return executeScriptWithCaching(commandLine, scriptName, env);
+            }
+
+            // at this point if they were calling a script that has a non-default
+            // env (e.g. war or test-app) it wouldn't have been correctly set, so
+            // set it now, but only if they didn't specify the env (e.g. "grails test war" -> "grails test war")
+
+            if (Boolean.TRUE.toString().equals(System.getProperty(Environment.DEFAULT))) {
+                commandLine.setCommand(GrailsNameUtils.getScriptName(scriptName));
+                env = commandLine.lookupEnvironmentForCommand();
+                binding.setVariable("grailsEnv", env);
+                settings.setGrailsEnv(env);
+                System.setProperty(Environment.KEY, env);
+                settings.setDefaultEnv(false);
+                System.setProperty(Environment.DEFAULT, Boolean.FALSE.toString());
+            }
+        }
 
         return executeWithGantInstance(gant, DO_NOTHING_CLOSURE, binding).exitCode;
     }
 
-    private int executeScriptFile(CommandLine commandLine, String scriptName, String env, GantBinding binding, Resource scriptFile) {
+    private int executeScriptFile(CommandLine commandLine, String scriptName, String env, GantBinding binding, File scriptFile) {
         // We can now safely set the default environment
         String scriptFileName = getScriptNameFromFile(scriptFile);
         setRunningEnvironment(commandLine, env);
@@ -547,7 +562,7 @@ public class GrailsScriptRunner {
         gant.setCacheDirectory(scriptCacheDir);
         GantResult result = null;
         try {
-            gant.loadScript(scriptFile.getURL());
+            gant.loadScript(scriptFile.toURI().toURL());
             result = executeWithGantInstance(gant, DO_NOTHING_CLOSURE, binding);
             return result.exitCode;
         } catch (IOException e) {
@@ -594,8 +609,8 @@ public class GrailsScriptRunner {
 
     private void initializeState(String scriptName) {
         // The directory where scripts are cached.
-        this.scriptCacheDir = new File(settings.getProjectWorkDir(), "scriptCache");
-        this.console = GrailsConsole.getInstance();
+        scriptCacheDir = new File(settings.getProjectWorkDir(), "scriptCache");
+        console = GrailsConsole.getInstance();
         // Add the remaining JARs (from 'grailsHome', the app, and
         // the plugins) to the root loader.
 
@@ -603,23 +618,23 @@ public class GrailsScriptRunner {
 
         console.updateStatus("Configuring classpath");
         ClasspathConfigurer configurer = new ClasspathConfigurer(pluginPathSupport, settings, skipPlugins);
-        if("DependencyReport".equals(scriptName) || "Upgrade".equals(scriptName)) {
+        if ("DependencyReport".equals(scriptName) || "Upgrade".equals(scriptName)) {
             configurer.setExitOnResolveError(false);
         }
-        this.classLoader = configurer.configuredClassLoader();
+        classLoader = configurer.configuredClassLoader();
         initializeLogging();
     }
 
     private int handleScriptExecutedOutsideProjectError() {
         console.error(settings.getBaseDir().getPath() + " does not appear to be part of a Grails application.");
         console.error("The following commands are supported outside of a project:");
-        Collections.sort(scriptsAllowedOutsideOfProject, new Comparator<Resource>() {
-            public int compare(Resource resource, Resource resource1) {
-                return resource.getFilename().compareTo(resource1.getFilename());
+        Collections.sort(scriptsAllowedOutsideOfProject, new Comparator<File>() {
+            public int compare(File resource, File resource1) {
+                return resource.getName().compareTo(resource1.getName());
             }
         });
-        for (Resource file : scriptsAllowedOutsideOfProject) {
-            console.log("\t" + GrailsNameUtils.getScriptName(file.getFilename()));
+        for (File file : scriptsAllowedOutsideOfProject) {
+            console.log("\t" + GrailsNameUtils.getScriptName(file.getName()));
         }
         console.addStatus("Run 'grails help' for a complete list of available scripts.");
         return -1;
@@ -631,7 +646,11 @@ public class GrailsScriptRunner {
         }
 
         try {
-            org.springframework.util.Log4jConfigurer.initLogging("file:" + settings.getGrailsHome() + "/scripts/log4j.properties");
+            Class<?> cls = Thread.currentThread().getContextClassLoader().loadClass("org.apache.log4j.PropertyConfigurator");
+            Method configure = cls.getMethod("configure", URL.class);
+            configure.setAccessible(true);
+            File f = new File(settings.getGrailsHome() + "/scripts/log4j.properties");
+            configure.invoke(cls, f.toURI().toURL());
         } catch (Throwable e) {
             console.verbose("Log4j was not found on the classpath and will not be used for command line logging. Cause "+e.getClass().getName()+": " + e.getMessage());
         }
@@ -687,11 +706,12 @@ public class GrailsScriptRunner {
         }
     }
 
-    private String fixScriptName(String scriptName, List<Resource> allScripts) {
+    private String fixScriptName(String scriptName, List<File> allScripts) {
         try {
             Set<String> names = new HashSet<String>();
-            for (Resource script : allScripts) {
-                names.add(script.getFilename().substring(0, script.getFilename().length() - 7));
+            for (File script : allScripts) {
+                String fileName = script.getName();
+                names.add(fileName.substring(0, fileName.length() - 7));
             }
             List<String> mostSimilar = CosineSimilarity.mostSimilar(scriptName, names);
             if (mostSimilar.isEmpty()) {
@@ -761,12 +781,13 @@ public class GrailsScriptRunner {
         return new File(settings.getBaseDir(), "grails-app").exists();
     }
 
-    private boolean isExternalScript(Resource scriptFile) {
+    private boolean isExternalScript(File scriptFile) {
         return scriptsAllowedOutsideOfProject.contains(scriptFile);
     }
 
-    private String getScriptNameFromFile(Resource scriptPath) {
-        String scriptFileName = scriptPath.getFilename().substring(0,scriptPath.getFilename().length()-7); // trim .groovy extension
+    private String getScriptNameFromFile(File scriptPath) {
+        String fileName = scriptPath.getName();
+        String scriptFileName = fileName.substring(0, fileName.length() - 7); // trim .groovy extension
         if (scriptFileName.endsWith("_")) {
             scriptFileName = scriptFileName.substring(0, scriptFileName.length()-1);
         }
@@ -776,8 +797,8 @@ public class GrailsScriptRunner {
     /**
      * Returns a list of all the executable Gant scripts available to this application.
      */
-    public List<Resource> getAvailableScripts() {
-        List<Resource> scripts = new ArrayList<Resource>();
+    public List<File> getAvailableScripts() {
+        List<File> scripts = new ArrayList<File>();
         if (settings.getGrailsHome() != null) {
             addCommandScripts(new File(settings.getGrailsHome(), "scripts"), scripts);
         }
@@ -791,7 +812,9 @@ public class GrailsScriptRunner {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(settings.getRootLoader());
         try {
             final Resource[] resources = resolver.getResources("classpath*:META-INF/scripts/*.groovy");
-            scripts.addAll(Arrays.asList(resources));
+            for (Resource resource : resources) {
+                scripts.add(resource.getFile());
+            }
         } catch (IOException e) {
             // ignore
         }
@@ -802,7 +825,7 @@ public class GrailsScriptRunner {
      * Collects all the command scripts provided by the plugin contained
      * in the given directory and adds them to the given list.
      */
-    private static void addPluginScripts(File pluginDir, List<Resource> scripts) {
+    private static void addPluginScripts(File pluginDir, List<File> scripts) {
         if (!pluginDir.exists()) return;
 
         File scriptDir = new File(pluginDir, "scripts");
@@ -813,11 +836,11 @@ public class GrailsScriptRunner {
      * Adds all the command scripts (i.e. those whose name does *not* start with an
      * underscore, '_') found in the given directory to the given list.
      */
-    private static void addCommandScripts(File dir, List<Resource> scripts) {
+    private static void addCommandScripts(File dir, List<File> scripts) {
         if (dir.exists()) {
             for (File file : dir.listFiles()) {
                 if (scriptFilePattern.matcher(file.getName()).matches()) {
-                    scripts.add(new FileSystemResource(file));
+                    scripts.add(file);
                 }
             }
         }

@@ -88,11 +88,11 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
 
     protected GroovyPageScriptSource lookupCache(final GroovyPageLocatorCacheKey cacheKey, PrivilegedAction<GroovyPageScriptSource> updater) {
         GroovyPageScriptSource scriptSource = null;
-        if(cacheTimeout==0) {
+        if (cacheTimeout == 0) {
             scriptSource = updater.run();
         } else {
             CacheEntry<GroovyPageScriptSource> entry = uriResolveCache.get(cacheKey);
-            if(entry==null) {
+            if (entry == null) {
                 scriptSource = updater.run();
                 uriResolveCache.put(cacheKey, new CustomCacheEntry<GroovyPageScriptSource>(scriptSource));
             } else {
@@ -171,9 +171,9 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
     public void removePrecompiledPage(GroovyPageCompiledScriptSource scriptSource) {
         super.removePrecompiledPage(scriptSource);
         // remove the entry from uriResolveCache
-        for(Map.Entry<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> entry : new HashSet<Map.Entry<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>>(uriResolveCache.entrySet())) {
+        for (Map.Entry<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> entry : new HashSet<Map.Entry<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>>(uriResolveCache.entrySet())) {
             GroovyPageScriptSource ss=entry.getValue().getValue();
-            if(ss==scriptSource || (ss instanceof GroovyPageCompiledScriptSource && scriptSource.getURI().equals(((GroovyPageCompiledScriptSource)ss).getURI()))) {
+            if (ss == scriptSource || (ss instanceof GroovyPageCompiledScriptSource && scriptSource.getURI().equals(((GroovyPageCompiledScriptSource)ss).getURI()))) {
                 uriResolveCache.remove(entry.getKey());
             }
         }
@@ -188,11 +188,10 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
         protected boolean shouldUpdate(long beforeLockingCreatedMillis) {
             // Never expire GroovyPageCompiledScriptSource entry in cache
             boolean compiledScriptSourceInstance=getValue() instanceof GroovyPageCompiledScriptSource;
-            if(compiledScriptSourceInstance) {
+            if (compiledScriptSourceInstance) {
                 resetTimestamp();
             }
             return !compiledScriptSourceInstance && super.shouldUpdate(beforeLockingCreatedMillis);
         }
     }
-
 }

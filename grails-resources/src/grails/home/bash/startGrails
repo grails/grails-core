@@ -302,7 +302,7 @@ startGrails() {
      then
  	GRAILS_OPTS="$GRAILS_OPTS"
      else
-	GRAILS_OPTS="-server -Xmx768M -Xms768M -XX:PermSize=256m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8"
+	GRAILS_OPTS="-server -Xmx768M -Xms64M -XX:PermSize=32m -XX:MaxPermSize=256m -Dfile.encoding=UTF-8"
   fi
   JAVA_OPTS="$GRAILS_OPTS $JAVA_OPTS $AGENT"
   # Start the Profiler or the JVM

@@ -233,10 +233,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
         if (info.getViewName() != null) {
             String viewName = info.getViewName();
-            if(viewName.startsWith("/"))
-               forwardUrl.append(viewName);
-            else
+            if (viewName.startsWith("/")) {
+                forwardUrl.append(viewName);
+            }
+            else {
                 forwardUrl.append(SLASH).append(viewName);
+            }
         }
         else {
             forwardUrl.append(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
@@ -342,11 +344,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             currentPageBinding = (Binding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
             webRequest.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
             currentLayoutAttribute = webRequest.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, 0);
-            if(currentLayoutAttribute != null) {
+            if (currentLayoutAttribute != null) {
                 webRequest.removeAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, 0);
             }
             currentRenderingView = webRequest.getAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, 0);
-            if(currentRenderingView != null) {
+            if (currentRenderingView != null) {
                 webRequest.removeAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, 0);
             }
             currentController = webRequest.getControllerName();
@@ -368,10 +370,10 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         finally {
             if (webRequest!=null) {
                 webRequest.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE,currentPageBinding, 0);
-                if(currentLayoutAttribute != null) {
+                if (currentLayoutAttribute != null) {
                     webRequest.setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, currentLayoutAttribute, 0);
                 }
-                if(currentRenderingView != null) {
+                if (currentRenderingView != null) {
                     webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, currentRenderingView, 0);
                 }
                 webRequest.getParameterMap().clear();
@@ -436,7 +438,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             String name = entry.getKey();
             Object current = request.getAttribute(name);
             request.setAttribute(name, entry.getValue());
-            if(current != null) {
+            if (current != null) {
                 originalValues.put(name, current);
             }
         }
@@ -628,16 +630,17 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         }
         return null;
     }
+
     /**
      * Returns the value of the "grails.mime.file.extensions" setting configured in COnfig.groovy
      *
-     * @return True if file extensions are enabled
+     * @return true if file extensions are enabled
      */
     @SuppressWarnings("rawtypes")
     public static boolean areFileExtensionsEnabled() {
         Map config = GrailsWebUtil.currentFlatConfiguration();
         Object o = config.get(ENABLE_FILE_EXTENSIONS);
-        return !(o != null && o instanceof Boolean) || ((Boolean) o).booleanValue();
+        return !(o != null && o instanceof Boolean) || (Boolean)o;
     }
 
     /**

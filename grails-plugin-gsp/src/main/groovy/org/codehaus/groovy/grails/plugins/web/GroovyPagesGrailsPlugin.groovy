@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.taglib.*
@@ -110,7 +111,7 @@ class GroovyPagesGrailsPlugin {
             customResourceLoader=true
             groovyPageResourceLoader(GroovyPageResourceLoader) {
                 baseResource = "file:${viewsDir}"
-                pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
+                pluginSettings = GrailsPluginUtils.getPluginBuildSettings()
             }
         }
         else {
@@ -121,7 +122,7 @@ class GroovyPagesGrailsPlugin {
                     BuildSettings settings = BuildSettingsHolder.settings
                     def location = settings?.baseDir ? GroovyPagesGrailsPlugin.transformToValidLocation(settings.baseDir.absolutePath) : '.'
                     baseResource = "file:$location"
-                    pluginSettings = new PluginBuildSettings(settings)
+                    pluginSettings = GrailsPluginUtils.getPluginBuildSettings()
                 }
             }
             else {
@@ -130,7 +131,7 @@ class GroovyPagesGrailsPlugin {
                     groovyPageResourceLoader(GroovyPageResourceLoader) {
                         def location = GroovyPagesGrailsPlugin.transformToValidLocation(env.reloadLocation)
                         baseResource = "file:${location}"
-                        pluginSettings = new PluginBuildSettings(BuildSettingsHolder.settings)
+                        pluginSettings = GrailsPluginUtils.getPluginBuildSettings()
                     }
                 }
             }
@@ -269,7 +270,7 @@ class GroovyPagesGrailsPlugin {
                 superClass = superClass.superclass
             }
         }
-        if(nonEnhancedClasses) {
+        if (nonEnhancedClasses) {
             def enhancer = new MetaClassEnhancer()
             enhancer.addApi apiObject
             nonEnhancedClasses.each { enhancer.enhance it.getMetaClass() }

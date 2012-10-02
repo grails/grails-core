@@ -48,7 +48,7 @@ public interface ArtefactHandler {
      * <p>Typically you will check the name of the class and some other properties to see
      * if it is of the correct artefact type</p>
      * @param aClass A class to test
-     * @return True if the class looks like one of your artefacts
+     * @return true if the class looks like one of your artefacts
      */
     boolean isArtefact(@SuppressWarnings("rawtypes") Class aClass);
 
@@ -78,7 +78,7 @@ public interface ArtefactHandler {
     /**
      * <p>Called to check if the specified GrailsClass is one managed by this artefact handler</p>
      * @param artefactGrailsClass A GrailsClass instance
-     * @return True if this handler manages the specified GrailsClass
+     * @return true if this handler manages the specified GrailsClass
      */
     boolean isArtefactGrailsClass(GrailsClass artefactGrailsClass);
 }

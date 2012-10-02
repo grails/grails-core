@@ -16,7 +16,7 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
             searchMore {
                 action(searchMoreAction) /*{ ctx ->
                     def results = searchService.deepSearch(ctx.conversation.query)
-                    if(!results)return error
+                    if (!results)return error
                     ctx.conversation.extendedResults = results
                 }*/
                 on("success").to "moreResults"
@@ -101,7 +101,6 @@ class FlowBuilderSubFlowExecutionTests extends AbstractGrailsTagAwareFlowExecuti
         assertFlowExecutionEnded()
         assertFlowExecutionOutcomeEquals "displayMoreResults"
     }
-
 
     void testSubFlowExecution2() {
         searchMoreAction = { error() }

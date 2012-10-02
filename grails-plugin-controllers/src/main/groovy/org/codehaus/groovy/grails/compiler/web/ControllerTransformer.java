@@ -62,7 +62,7 @@ public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
             super.performInjectionInternal(apiInstanceProperty, source, classNode);
 
             List<MethodNode> staticInit = classNode.getDeclaredMethods("<clinit>");
-            if(!staticInit.isEmpty()) {
+            if (!staticInit.isEmpty()) {
                 MethodNode methodNode = staticInit.get(0);
                 GrailsASTUtils.wrapMethodBodyInTryCatchDebugStatements(methodNode);
             }

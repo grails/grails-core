@@ -14,10 +14,11 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Utility class containing methods that aid in loading and evaluating plug-ins.
@@ -109,17 +110,17 @@ class GrailsPluginUtils {
    /**
      * Returns a new PluginBuildSettings instance
      */
-    static PluginBuildSettings newPluginBuildSettings() {
-        new PluginBuildSettings(BuildSettingsHolder.settings)
+    static PluginBuildSettings newPluginBuildSettings(BuildSettings buildSettings = null) {
+        new PluginBuildSettings(buildSettings ?: BuildSettingsHolder.settings)
     }
 
-    private static INSTANCE
+    private static PluginBuildSettings INSTANCE
     /**
      * Returns a cached PluginBuildSettings instance.
      */
-    static synchronized PluginBuildSettings getPluginBuildSettings() {
-        if (INSTANCE == null) {
-            INSTANCE = newPluginBuildSettings()
+    static synchronized PluginBuildSettings getPluginBuildSettings(BuildSettings buildSettings = null) {
+        if (INSTANCE == null || (buildSettings != null && !buildSettings.is(INSTANCE.buildSettings))) {
+            INSTANCE = newPluginBuildSettings(buildSettings)
         }
         return INSTANCE
     }

@@ -35,13 +35,13 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         config.grails.project.dependency.resolution = {
             repositories {
                 grailsCentral()
+                mavenRepo "http://repo.grails.org/grails/core"
             }
             plugins {
                 test ":hibernate:2.0.3"
-            }            
+            }
         }
         settings.loadConfig(config)
-    
 
         assert settings.compileDependencies.size() == 0
         assert settings.testDependencies.size() > 0
@@ -645,7 +645,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 54, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 15, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 24, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
@@ -668,7 +668,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 0, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 24, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 72, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
 
@@ -683,7 +683,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 54, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 15, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
-        assertEquals 24, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
+        assertEquals 19, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 4, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
@@ -824,7 +824,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
     }
 
     void testParseDependencyDefinition() {
-        def manager = new IvyDependencyManager("test", "0.1")
+        def manager = new IvyDependencyManager("test", "0.1", new BuildSettings(new File('.')))
 
         manager.parseDependencies TEST_DATA
 
@@ -840,7 +840,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals "1.8.2", entry.revision
 
         def resolvers = manager.chainResolver.resolvers
-        assertEquals 6, resolvers.size()
+        assertEquals 7, resolvers.size()
 
         assertTrue "should have a file system resolver",resolvers[0] instanceof FileSystemResolver
         assertEquals "mine", resolvers[0].name

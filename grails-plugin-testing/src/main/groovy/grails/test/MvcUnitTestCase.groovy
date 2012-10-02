@@ -62,19 +62,17 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
      */
     MvcUnitTestCase(String suffix) {
         def m = getClass().name =~ /^([\w\.]*?[A-Z]\w*?${suffix})\w+/
-        if (m) {
-            this.testClass = Thread.currentThread().contextClassLoader.loadClass(m[0][1])
-        }
-        else {
+        if (!m) {
             throw new RuntimeException("Cannot find matching class for this test.")
         }
+        testClass = Thread.currentThread().contextClassLoader.loadClass(m[0][1])
     }
 
     /**
      * Creates a new test case for the given class.
      */
     MvcUnitTestCase(Class clazz) {
-        this.testClass = clazz
+        testClass = clazz
     }
 
     protected void tearDown() {
@@ -82,9 +80,7 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
         RequestContextHolder.resetRequestAttributes()
     }
 
-    Class getTestClass() {
-        this.testClass
-    }
+    Class getTestClass() { testClass }
 
     protected void reset() {
         mockRequest?.clearAttributes()
@@ -102,7 +98,7 @@ class MvcUnitTestCase extends GrailsUnitTestCase {
     }
 
     protected newInstance() {
-        def instance = this.testClass.newInstance()
+        def instance = testClass.newInstance()
 
         forwardArgs = instance.forwardArgs
         redirectArgs = instance.redirectArgs

@@ -206,13 +206,14 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
     void assertReverseUrlMapping(assertions, url, paramAssertions) {
         def controller = assertions.controller
         def action = assertions.action
+        def plugin = assertions.plugin
         def params = [:]
         if (paramAssertions) {
             paramAssertions.delegate = params
             paramAssertions.resolveStrategy = Closure.DELEGATE_ONLY
             paramAssertions.call()
         }
-        def urlCreator = mappingsHolder.getReverseMapping(controller, action, params)
+        def urlCreator = mappingsHolder.getReverseMapping(controller, action, plugin, params)
         assertNotNull("could not create reverse mapping of '$url' for {controller = $controller, action = $action, params = $params}", urlCreator)
         def createdUrl = urlCreator.createRelativeURL(controller, action, params, "UTF-8")
         assertEquals("reverse mapping assertion for {controller = $controller, action = $action, params = $params}", url, createdUrl)

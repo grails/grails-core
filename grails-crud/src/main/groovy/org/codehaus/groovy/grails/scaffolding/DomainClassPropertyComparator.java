@@ -37,7 +37,7 @@ public class DomainClassPropertyComparator implements Comparator {
     public DomainClassPropertyComparator(GrailsDomainClass domainClass) {
         Assert.notNull(domainClass, "Argument 'domainClass' is required!");
 
-        this.constrainedProperties = domainClass.getConstrainedProperties();
+        constrainedProperties = domainClass.getConstrainedProperties();
         this.domainClass = domainClass;
     }
 

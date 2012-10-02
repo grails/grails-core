@@ -152,7 +152,7 @@ class UrlMappingsGrailsPlugin {
             ts.swap urlMappingsHolder
 
             LinkGenerator linkGenerator = ctx.getBean("grailsLinkGenerator", LinkGenerator)
-            if(linkGenerator instanceof CachingLinkGenerator) {
+            if (linkGenerator instanceof CachingLinkGenerator) {
                 linkGenerator.clearCache()
             }
         }

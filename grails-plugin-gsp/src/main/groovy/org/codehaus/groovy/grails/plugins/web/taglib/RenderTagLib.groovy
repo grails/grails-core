@@ -251,11 +251,11 @@ class RenderTagLib implements RequestConstants {
                 // check if there is an component content buffer
                 propertyValue = htmlPage.getContentBuffer(names[i])
             }
-    
+
             if (!propertyValue) {
                 propertyValue = htmlPage.getProperty(names[i])
             }
-    
+
             if (propertyValue) {
                 if(attrs.containsKey('equals')) {
                     if (attrs.equals instanceof List) {
@@ -372,8 +372,8 @@ class RenderTagLib implements RequestConstants {
         if(action) {
             linkTagAttrs.action = action
         }
-        if (attrs.controller) {
-            linkTagAttrs.controller = attrs.controller
+            if (attrs.controller) {
+                linkTagAttrs.controller = attrs.controller
         }
         if (attrs.id != null) {
             linkTagAttrs.id = attrs.id
@@ -421,9 +421,9 @@ class RenderTagLib implements RequestConstants {
             // display firststep link when beginstep is not firststep
             if (beginstep > firststep && !attrs.boolean('omitFirst')) {
                 linkParams.offset = 0
-                writer << link(linkTagAttrs.clone()) {firststep.toString()}	
+                writer << link(linkTagAttrs.clone()) {firststep.toString()}
             }
-            //show a gap if beginstep isn't immediately after firststep, and if were not omitting first or rev 
+            //show a gap if beginstep isn't immediately after firststep, and if were not omitting first or rev
             if (beginstep > firststep+1 && (!attrs.boolean('omitFirst') || !attrs.boolean('omitPrev')) ) {
                 writer << '<span class="step gap">..</span>'
             }
@@ -439,7 +439,7 @@ class RenderTagLib implements RequestConstants {
                 }
             }
 
-            //show a gap if beginstep isn't immediately before firststep, and if were not omitting first or rev 
+            //show a gap if beginstep isn't immediately before firststep, and if were not omitting first or rev
             if (endstep+1 < laststep && (!attrs.boolean('omitLast') || !attrs.boolean('omitNext'))) {
                 writer << '<span class="step gap">..</span>'
             }

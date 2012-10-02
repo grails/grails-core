@@ -5,7 +5,6 @@ import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.UrlResource
@@ -174,8 +173,8 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
     }
 
     private GrailsApplication createMockGrailsApplication(ConfigObject config = null) {
-        if(config==null) {
-            config=new ConfigObject()
+        if (config == null) {
+            config = new ConfigObject()
             config.put(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR, System.getProperty("java.io.tmpdir"))
         }
         [getMainContext: { ->  null},  getConfig: { ->  config} , getFlatConfig: { -> config.flatten() } , getArtefacts: { String artefactType -> [] as GrailsClass[] }, getArtefactByLogicalPropertyName: { String type, String logicalName ->  null} ] as GrailsApplication
@@ -183,7 +182,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
     void testParsingNestedCurlyBraces() {
         // GRAILS-7915
-        //if(notYetImplemented()) return
+        //if (notYetImplemented()) return
 
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 

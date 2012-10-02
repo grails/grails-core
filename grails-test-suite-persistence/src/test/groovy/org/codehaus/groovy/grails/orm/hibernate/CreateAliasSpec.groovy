@@ -32,7 +32,7 @@ class CreateAliasSpec extends GormSpec {
         [ship1, ship2, ship3]*.save()
         session.flush()
         session.clear()
-          
+
         when:
         def ships = Ship.withCriteria {
             def propertyName = 'crew'
@@ -40,24 +40,24 @@ class CreateAliasSpec extends GormSpec {
             createAlias "${propertyName}", "${aliasName}"
             eq 'c.name', 'Blackbeard'
         }
-        
+
         then:
         ships?.size() == 1
-        
+
         when:
         def ship = ships[0]
-        
+
         then:
         "Queen Anne's Revenge" == ship.name
         ship.crew?.size() == 2
-        
+
         when:
         def crewNames = ship.crew.name
-        
+
         then:
         'Blackbeard' in crewNames
         'Calico Jack' in crewNames
-          
+
         when:
         ships = Ship.withCriteria {
             def propertyName = 'crew'
@@ -65,20 +65,20 @@ class CreateAliasSpec extends GormSpec {
             createAlias "${propertyName}", "${aliasName}", CriteriaSpecification.LEFT_JOIN
             eq 'c.name', 'Blackbeard'
         }
-        
+
         then:
         ships?.size() == 1
-        
+
         when:
         ship = ships[0]
-        
+
         then:
         "Queen Anne's Revenge" == ship.name
         ship.crew?.size() == 2
-        
+
         when:
         crewNames = ship.crew.name
-        
+
         then:
         'Blackbeard' in crewNames
         'Calico Jack' in crewNames

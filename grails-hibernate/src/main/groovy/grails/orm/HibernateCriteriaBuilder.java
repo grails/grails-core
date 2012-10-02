@@ -16,6 +16,7 @@
 package grails.orm;
 
 import grails.gorm.DetachedCriteria;
+import grails.util.CollectionUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
 import groovy.lang.GroovySystem;
@@ -66,6 +67,7 @@ import org.hibernate.metadata.ClassMetadata;
 import org.hibernate.transform.ResultTransformer;
 import org.hibernate.type.AssociationType;
 import org.hibernate.type.EmbeddedComponentType;
+import org.hibernate.type.StandardBasicTypes;
 import org.hibernate.type.Type;
 import org.springframework.beans.BeanUtils;
 import org.springframework.orm.hibernate3.SessionHolder;
@@ -230,6 +232,40 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         else {
             projectionList.add(propertyProjection);
         }
+    }
+
+    /**
+     * Adds a sql projection to the criteria
+     * 
+     * @param sql SQL projecting a single value
+     * @param columnAlias column alias for the projected value
+     * @param type the type of the projected value
+     */
+    protected void sqlProjection(String sql, String columnAlias, Type type) {
+        sqlProjection(sql, CollectionUtils.newList(columnAlias), CollectionUtils.newList(type));
+    }
+
+    /**
+     * Adds a sql projection to the criteria
+     * 
+     * @param sql SQL projecting
+     * @param columnAliases List of column aliases for the projected values
+     * @param type List of types for the projected values
+     */
+    protected void sqlProjection(String sql, List<String> columnAliases, List<Type> types) {
+        projectionList.add(Projections.sqlProjection(sql, columnAliases.toArray(new String[columnAliases.size()]), types.toArray(new Type[types.size()])));
+    }
+
+    /**
+     * Adds a sql projection to the criteria
+     * 
+     * @param sql SQL projecting
+     * @param groupBy group by clause
+     * @param columnAliases List of column aliases for the projected values
+     * @param type List of types for the projected values
+     */
+    protected void sqlGroupProjection(String sql, String groupBy, List<String> columnAliases, List<Type> types) {
+        projectionList.add(Projections.sqlGroupProjection(sql, groupBy, columnAliases.toArray(new String[columnAliases.size()]), types.toArray(new Type[types.size()])));
     }
 
     /**
@@ -410,7 +446,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         List<Query.Criterion> criteriaList = queryableCriteria.getCriteria();
         for (Query.Criterion criterion : criteriaList) {
             Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion).toHibernateCriterion(null);
-            if(hibernateCriterion != null) {
+            if (hibernateCriterion != null) {
                 detachedCriteria.add(hibernateCriterion);
             }
         }
@@ -419,7 +455,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         ProjectionList projectionList = Projections.projectionList();
         for (Query.Projection projection : projections) {
             Projection hibernateProjection = new HibernateProjectionAdapter(projection).toHibernateProjection();
-            if(hibernateProjection != null) {
+            if (hibernateProjection != null) {
                  projectionList.add(hibernateProjection);
             }
         }
@@ -621,7 +657,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
     public Criteria createAlias(String associationPath, String alias) {
         return criteria.createAlias(associationPath, alias);
     }
-    
+
     /**
      * Join an association using the specified join-type, assigning an alias
      * to the joined association.
@@ -892,13 +928,11 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
 
-
         Criterion gt;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             gt = Property.forName(propertyName).gt((org.hibernate.criterion.DetachedCriteria)propertyValue);
         }
         else {
-
             gt = Restrictions.gt(propertyName, propertyValue);
         }
         addToCriteria(gt);
@@ -920,15 +954,15 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
             throwRuntimeException(new IllegalArgumentException("Call to [ge] with propertyName [" +
                     propertyName + "] and value [" + propertyValue + "] not allowed here."));
         }
+
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
 
         Criterion ge;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             ge = Property.forName(propertyName).ge((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
-
             ge = Restrictions.ge(propertyName, propertyValue);
         }
         addToCriteria(ge);
@@ -950,11 +984,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         Criterion lt;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             lt = Property.forName(propertyName).lt((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
-
             lt = Restrictions.lt(propertyName, propertyValue);
         }
         addToCriteria(lt);
@@ -976,11 +1009,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         Criterion le;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             le = Property.forName(propertyName).le((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
-
             le = Restrictions.le(propertyName, propertyValue);
         }
         addToCriteria(le);
@@ -1001,14 +1033,12 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         String propertyName = calculatePropertyName(property);
         addToCriteria(Restrictions.isNotEmpty(propertyName));
         return this;
-
     }
 
     public org.grails.datastore.mapping.query.api.Criteria isNull(String property) {
         String propertyName = calculatePropertyName(property);
         addToCriteria(Restrictions.isNull(propertyName));
         return this;
-
     }
 
     public org.grails.datastore.mapping.query.api.Criteria isNotNull(String property) {
@@ -1065,11 +1095,10 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         propertyName = calculatePropertyName(propertyName);
         propertyValue = calculatePropertyValue(propertyValue);
         Criterion eq;
-        if(propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
+        if (propertyValue instanceof org.hibernate.criterion.DetachedCriteria) {
             eq = Property.forName(propertyName).eq((org.hibernate.criterion.DetachedCriteria) propertyValue);
         }
         else {
-
             eq =  Restrictions.eq(propertyName, propertyValue);
         }
         if (params != null && (eq instanceof SimpleExpression)) {
@@ -1125,7 +1154,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
 
         if (numberOfParameters > 0) {
             final TypeHelper typeHelper = sessionFactory.getTypeHelper();
-            for(int i = 0; i < typesArray.length; i++) {
+            for (int i = 0; i < typesArray.length; i++) {
                 final Object value = values.get(i);
                 typesArray[i] =  typeHelper.basic(value.getClass());
                 valuesArray[i] = value;
@@ -1676,7 +1705,8 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
                     targetClass = oldTargetClass;
 
                     return name;
-                } else if(type instanceof EmbeddedComponentType) {
+                }
+                if (type instanceof EmbeddedComponentType) {
                     associationStack.add(name);
                     logicalExpressionStack.add(new LogicalExpression(AND));
                     Class oldTargetClass = targetClass;
@@ -1908,4 +1938,49 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
             c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
         }
     }
+    
+    /*
+     * Define constants which may be used inside of criteria queries
+     * to refer to standard Hibernate Type instances.
+     */
+    public static final Type BOOLEAN = StandardBasicTypes.BOOLEAN;
+    public static final Type YES_NO = StandardBasicTypes.YES_NO;
+    public static final Type BYTE = StandardBasicTypes.BYTE;
+    public static final Type CHARACTER = StandardBasicTypes.CHARACTER;
+    public static final Type SHORT = StandardBasicTypes.SHORT;
+    public static final Type INTEGER = StandardBasicTypes.INTEGER;
+    public static final Type LONG = StandardBasicTypes.LONG;
+    public static final Type FLOAT = StandardBasicTypes.FLOAT;
+    public static final Type DOUBLE = StandardBasicTypes.DOUBLE;
+    public static final Type BIG_DECIMAL = StandardBasicTypes.BIG_DECIMAL;
+    public static final Type BIG_INTEGER = StandardBasicTypes.BIG_INTEGER;
+    public static final Type STRING = StandardBasicTypes.STRING;
+    public static final Type NUMERIC_BOOLEAN = StandardBasicTypes.NUMERIC_BOOLEAN;
+    public static final Type TRUE_FALSE = StandardBasicTypes.TRUE_FALSE;
+    public static final Type URL = StandardBasicTypes.URL;
+    public static final Type TIME = StandardBasicTypes.TIME;
+    public static final Type DATE = StandardBasicTypes.DATE;
+    public static final Type TIMESTAMP = StandardBasicTypes.TIMESTAMP;
+    public static final Type CALENDAR = StandardBasicTypes.CALENDAR;
+    public static final Type CALENDAR_DATE = StandardBasicTypes.CALENDAR_DATE;
+    public static final Type CLASS = StandardBasicTypes.CLASS;
+    public static final Type LOCALE = StandardBasicTypes.LOCALE;
+    public static final Type CURRENCY = StandardBasicTypes.CURRENCY;
+    public static final Type TIMEZONE = StandardBasicTypes.TIMEZONE;
+    public static final Type UUID_BINARY = StandardBasicTypes.UUID_BINARY;
+    public static final Type UUID_CHAR = StandardBasicTypes.UUID_CHAR;
+    public static final Type BINARY = StandardBasicTypes.BINARY;
+    public static final Type WRAPPER_BINARY = StandardBasicTypes.WRAPPER_BINARY;
+    public static final Type IMAGE = StandardBasicTypes.IMAGE;
+    public static final Type BLOB = StandardBasicTypes.BLOB;
+    public static final Type MATERIALIZED_BLOB = StandardBasicTypes.MATERIALIZED_BLOB;
+    public static final Type WRAPPER_MATERIALIZED_BLOB = StandardBasicTypes.WRAPPER_MATERIALIZED_BLOB;
+    public static final Type CHAR_ARRAY = StandardBasicTypes.CHAR_ARRAY;
+    public static final Type CHARACTER_ARRAY = StandardBasicTypes.CHARACTER_ARRAY;
+    public static final Type TEXT = StandardBasicTypes.TEXT;
+    public static final Type CLOB = StandardBasicTypes.CLOB;
+    public static final Type MATERIALIZED_CLOB = StandardBasicTypes.MATERIALIZED_CLOB;
+    public static final Type WRAPPER_CHARACTERS_CLOB = StandardBasicTypes.WRAPPER_CHARACTERS_CLOB;
+    public static final Type CHARACTERS_CLOB = StandardBasicTypes.CHARACTERS_CLOB;
+    public static final Type SERIALIZABLE = StandardBasicTypes.SERIALIZABLE;
 }

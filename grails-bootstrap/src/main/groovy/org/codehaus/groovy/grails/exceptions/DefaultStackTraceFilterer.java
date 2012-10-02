@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.exceptions;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,7 +70,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     }
 
     public void addInternalPackage(String name) {
-        Assert.notNull(name, "Package name cannot be null");
+        if (name == null) throw new IllegalArgumentException("Package name cannot be null");
         packagesToFilter.add(name);
     }
 
@@ -135,7 +134,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
     /**
      * Whether the given class name is an internal class and should be filtered
      * @param className The class name
-     * @return True if is internal
+     * @return true if is internal
      */
     protected boolean isApplicationClass(String className) {
         for (String packageName : packagesToFilter) {

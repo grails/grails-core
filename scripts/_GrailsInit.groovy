@@ -37,21 +37,6 @@ Grape.enableAutoDownload = true
 includeTargets << grailsScript("_GrailsArgParsing")
 includeTargets << grailsScript("_PluginDependencies")
 
-// Generates Eclipse .classpath entries for all the Grails dependencies,
-// i.e. a string containing a "<classpath entry ..>" element for each
-// of Grails' library JARs. This only works if $GRAILS_HOME is set.
-eclipseClasspathLibs = {
-    def result = ''
-    if (grailsHome) {
-        (new File("${grailsHome}/lib")).eachFileMatch(~/.*\.jar/) {file ->
-            if (!file.name.startsWith("gant-")) {
-                result += "<classpathentry kind=\"var\" path=\"GRAILS_HOME/lib/${file.name}\" />\n\n"
-            }
-        }
-    }
-    result
-}
-
 target(createStructure: "Creates the application directory structure") {
     ant.sequential {
         mkdir(dir: "${basedir}/src")

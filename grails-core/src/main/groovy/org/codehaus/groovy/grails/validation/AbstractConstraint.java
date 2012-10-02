@@ -248,7 +248,7 @@ public abstract class AbstractConstraint implements Constraint {
     /**
      * Return whether the constraint is valid for the owning class
      *
-     * @return True if it is
+     * @return true if it is
      */
     public boolean isValid() {
         return true;

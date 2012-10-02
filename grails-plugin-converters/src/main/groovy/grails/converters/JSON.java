@@ -338,11 +338,11 @@ public class JSON extends AbstractConverter<JSONWriter> {
                 pushbackInputStream = new PushbackInputStream(request.getInputStream());
                 firstByte = pushbackInputStream.read();
             } catch (IOException ioe) {}
-            
-            if(firstByte == -1) {
+
+            if (firstByte == -1) {
                 return new JSONObject();
             }
-            
+
             pushbackInputStream.unread(firstByte);
             json = parse(pushbackInputStream, encoding);
             request.setAttribute(CACHED_JSON, json);

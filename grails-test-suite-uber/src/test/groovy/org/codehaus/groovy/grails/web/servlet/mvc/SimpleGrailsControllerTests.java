@@ -109,7 +109,7 @@ public class SimpleGrailsControllerTests extends TestCase {
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT,appCtx);
         assertNotNull(appCtx);
         GrailsClass[] controllerArtefacts = grailsApplication.getArtefacts(ControllerArtefactHandler.TYPE);
-        for(GrailsClass grailsClass : controllerArtefacts) {
+        for (GrailsClass grailsClass : controllerArtefacts) {
             ((GrailsControllerClass)grailsClass).initialize();
         }
         super.setUp();

@@ -20,18 +20,18 @@ class DomainClassUnitTestMixinTests {
         assert publication.ghostWriter == null
         assert writer.is(publication.writer)
     }
-    
+
     @Test
     void testWithTransaction() {
         mockDomain Writer
         def bodyInvoked = false
-        
+
         Writer.withTransaction {
             bodyInvoked = true
         }
 
         assert bodyInvoked
-    }    
+    }
 }
 
 @Entity

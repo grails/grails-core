@@ -20,9 +20,9 @@ import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
 import grails.util.BuildSettings
+import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.io.support.FileSystemResource
 import org.springframework.util.AntPathMatcher
 
 /**
@@ -91,7 +91,7 @@ class PluginPackager {
     }
 
     AntBuilder getAnt() {
-        if (this.ant == null) ant = new AntBuilder()
+        if (ant == null) ant = new AntBuilder()
         return ant
     }
 
@@ -110,7 +110,7 @@ class PluginPackager {
      * @return The plugin properties
      */
     def generatePluginXml(File descriptor) {
-        this.pluginInfo = new AstPluginDescriptorReader().readPluginInfo(new FileSystemResource(descriptor));
+        pluginInfo = new AstPluginDescriptorReader().readPluginInfo(new FileSystemResource(descriptor));
         def pluginBaseDir = descriptor.parentFile
         def pluginProps = pluginInfo
         // Work out what the name of the plugin is from the name of the descriptor file.

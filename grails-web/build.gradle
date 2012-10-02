@@ -22,6 +22,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     compile 'opensymphony:sitemesh:2.4'
+    compile "junit:junit:${junitVersion}"
 
     compile "org.springframework:spring-webmvc:${springVersion}"
 
@@ -48,16 +49,16 @@ jar.appendix = 'web'
 
 eclipse {
     classpath {
-       plusConfigurations += configurations.jsp21
-       file {        
-           whenMerged { classpath ->       
+        plusConfigurations += configurations.jsp21
+        file {
+            whenMerged { classpath ->
                 // move jsp-api-2.1 to the last one in entries so that it appears after -2.0
                 def jsp21 = classpath.entries.find { entry -> entry?.path =~ /jsp-api-2.1.jar$/ }
                 if (jsp21) {
                     classpath.entries.remove(jsp21)
                     classpath.entries << jsp21
                 }
-           }
-       }
+            }
+        }
     }
 }

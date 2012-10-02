@@ -13,10 +13,10 @@ class FirstAndLastMethodSpec extends GormSpec {
 
         then:
         result == null
-            
+
         when:
         result = SimpleWidget.last()
-            
+
         then:
         result == null
     }
@@ -33,14 +33,14 @@ class FirstAndLastMethodSpec extends GormSpec {
 
         then:
         result?.name == 'one'
-            
+
         when:
         result = SimpleWidget.last()
-            
+
         then:
         result?.name == 'three'
     }
-    
+
     void "Test first and last method with one entity"() {
         given:
         assert new SimpleWidget(name: 'one', spanishName: 'uno').save()
@@ -51,14 +51,14 @@ class FirstAndLastMethodSpec extends GormSpec {
 
         then:
         result?.name == 'one'
-            
+
         when:
         result = SimpleWidget.last()
-            
+
         then:
         result?.name == 'one'
     }
-    
+
     void "Test first and last method with sort parameter"() {
         given:
         assert new SimpleWidget(name: 'one', spanishName: 'uno').save()
@@ -71,10 +71,10 @@ class FirstAndLastMethodSpec extends GormSpec {
 
         then:
         result?.name == 'one'
-            
+
         when:
         result = SimpleWidget.last(sort: 'name')
-            
+
         then:
         result?.name == 'two'
 
@@ -83,10 +83,10 @@ class FirstAndLastMethodSpec extends GormSpec {
 
         then:
         result?.name == 'one'
-            
+
         when:
         result = SimpleWidget.last('name')
-            
+
         then:
         result?.name == 'two'
 
@@ -95,10 +95,10 @@ class FirstAndLastMethodSpec extends GormSpec {
 
         then:
         result?.spanishName == 'dos'
-            
+
         when:
         result = SimpleWidget.last(sort: 'spanishName')
-            
+
         then:
         result?.spanishName == 'uno'
 
@@ -107,14 +107,14 @@ class FirstAndLastMethodSpec extends GormSpec {
 
         then:
         result?.spanishName == 'dos'
-            
+
         when:
         result = SimpleWidget.last('spanishName')
-            
+
         then:
         result?.spanishName == 'uno'
     }
-    
+
     void "Test first and last method with non standard identifier"() {
         given:
         ['one', 'two', 'three'].each { name ->
@@ -127,14 +127,14 @@ class FirstAndLastMethodSpec extends GormSpec {
 
         then:
         result?.name == 'one'
-            
+
         when:
         result = SimpleWidgetWithNonStandardId.last()
-            
+
         then:
         result?.name == 'three'
     }
-    
+
     void "Test first and last method with composite key"() {
         when:
         PersonWithCompositeKey.first()
@@ -142,35 +142,35 @@ class FirstAndLastMethodSpec extends GormSpec {
         then:
         UnsupportedOperationException ex = thrown()
         'The first() method is not supported for domain classes that have composite keys.' == ex.message
-        
+
         when:
         PersonWithCompositeKey.first(sort: 'firstName')
 
         then:
         ex = thrown()
         'The first() method is not supported for domain classes that have composite keys.' == ex.message
-        
+
         when:
         PersonWithCompositeKey.first('firstName')
 
         then:
         ex = thrown()
         'The first() method is not supported for domain classes that have composite keys.' == ex.message
-        
+
         when:
         PersonWithCompositeKey.last()
 
         then:
         ex = thrown()
         'The last() method is not supported for domain classes that have composite keys.' == ex.message
-        
+
         when:
         PersonWithCompositeKey.last(sort: 'firstName')
 
         then:
         ex = thrown()
         'The last() method is not supported for domain classes that have composite keys.' == ex.message
-        
+
         when:
         PersonWithCompositeKey.last('firstName')
 
@@ -178,7 +178,7 @@ class FirstAndLastMethodSpec extends GormSpec {
         ex = thrown()
         'The last() method is not supported for domain classes that have composite keys.' == ex.message
     }
-    
+
     @Override
     List getDomainClasses() {
         [SimpleWidget, PersonWithCompositeKey, SimpleWidgetWithNonStandardId]

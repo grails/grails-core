@@ -188,19 +188,19 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
     }
-    
+
     void 'Test non validateable command object'() {
         when:
             testController.params.name = 'Beardfish'
             def model = testController.methodActionWithNonValidateableCommandObject()
-            
+
         then:
             model.commandObject.name == 'Beardfish'
-            
+
         when:
             testController.params.name = "Spock's Beard"
             model = testController.closureActionWithNonValidateableCommandObject()
-            
+
         then:
             model.commandObject.name == "Spock's Beard"
     }
@@ -316,7 +316,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         then:
             model.person.theAnswer == 42
     }
-    
+
     void 'Test bindable command object constraint'() {
         when:
             testController.params.name = 'JFK'
@@ -522,20 +522,20 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         then:
             'Subclass Controller' == model.name
     }
-    
+
     void "Test a command object that does not have a validate method at compile time but does at runtime"() {
         when:
             def model = testController.methodActionWithNonValidateableCommandObjectWithAValidateMethod()
 
         then:
             0 == model.co.validationCounter
-            
+
         when:
             model = testController.closureActionWithNonValidateableCommandObjectWithAValidateMethod()
 
         then:
             0 == model.co.validationCounter
-            
+
         when:
             ClassWithNoValidateMethod.metaClass.validate = { ->
                 ++ delegate.validationCounter
@@ -544,15 +544,13 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
         then:
             1 == model.co.validationCounter
-            
+
         when:
             model = testController.closureActionWithNonValidateableCommandObjectWithAValidateMethod()
 
         then:
             1 == model.co.validationCounter
-            
     }
-
 
     def cleanupSpec() {
         RequestContextHolder.setRequestAttributes(null)
@@ -575,5 +573,3 @@ class ClassWithNoValidateMethod {
 class NonValidateableCommand {
     String name
 }
-
-

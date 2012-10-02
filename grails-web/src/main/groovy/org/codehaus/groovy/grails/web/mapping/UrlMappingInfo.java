@@ -51,6 +51,8 @@ public interface UrlMappingInfo {
      */
     String getActionName();
 
+    String getPluginName();
+
     /**
      * The name of the view that the URL mappping maps to
      *
@@ -84,7 +86,7 @@ public interface UrlMappingInfo {
      * Returns true of the request body should be parsed. This typically happens
      * in the case of REST requests that parse JSON or XML packets
      *
-     * @return True if it is
+     * @return true if it is
      */
     boolean isParsingRequest();
 }

@@ -14,9 +14,6 @@
  */
 package org.codehaus.groovy.grails.resolve.config;
 
-import org.apache.ivy.core.module.descriptor.DefaultDependencyArtifactDescriptor;
-import org.apache.ivy.core.module.descriptor.DependencyArtifactDescriptor;
-import org.apache.ivy.core.module.id.ModuleId;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor;
 
 public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
@@ -28,7 +25,7 @@ public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
     @Override
     protected void addDependency(String scope, EnhancedDefaultDependencyDescriptor descriptor) {
         DependencyConfigurationContext ctx = getContext();
-        if(ctx.getParentScope() != null) {
+        if (ctx.getParentScope() != null) {
             scope = ctx.getParentScope();
         }
         getDependencyManager().registerDependency(scope, descriptor);
@@ -36,11 +33,11 @@ public class JarDependenciesConfigurer extends AbstractDependenciesConfigurer {
 
     @Override
     protected void handleExport(EnhancedDefaultDependencyDescriptor descriptor, Boolean export) {
-        if (export != null) {
-            descriptor.setExported(export);
+        if (export == null) {
+            descriptor.setExport(true);
         }
         else {
-            descriptor.setExport(true);
+            descriptor.setExported(export);
         }
     }
 

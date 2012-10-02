@@ -172,11 +172,11 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
         String getHeader(String name) { null }
 
-        Enumeration getHeaders(String name) {
+        Enumeration<?> getHeaders(String name) {
             return new IteratorEnumeration([].iterator())
         }
 
-        Enumeration getHeaderNames() {
+        Enumeration<?> getHeaderNames() {
             return new IteratorEnumeration([].iterator())
         }
 
@@ -244,7 +244,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
             return attributes[name]
         }
 
-        Enumeration getAttributeNames() {
+        Enumeration<?> getAttributeNames() {
             return attributes.keys()
         }
 
@@ -258,7 +258,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
             return params[name]
         }
 
-        Enumeration getParameterNames() {
+        Enumeration<?> getParameterNames() {
             return params.keys()
         }
 
@@ -266,7 +266,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
             return new String[0]
         }
 
-        Map getParameterMap() {
+        Map<?, ?> getParameterMap() {
             return params
         }
 
@@ -314,7 +314,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
             return Locale.getDefault()
         }
 
-        Enumeration getLocales() {
+        Enumeration<?> getLocales() {
             return new IteratorEnumeration(Locale.getAvailableLocales().iterator())
         }
 

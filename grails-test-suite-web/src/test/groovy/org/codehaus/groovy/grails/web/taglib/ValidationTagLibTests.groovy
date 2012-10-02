@@ -124,7 +124,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertOutputEquals(expected, template, [book:b])
         assertOutputEquals(expected, htmlCodecDirective + template, [book:b])
     }
-    
+
     void testFieldValueHtmlEscapingWithFunctionSyntaxCall() {
         def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [title:"<script>alert('escape me')</script>"]
@@ -143,12 +143,12 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         def template = '''${fieldValue(bean:book, field:"title")}'''
         def htmlCodecDirective = '<%@page defaultCodec="HTML" %>'
         def expected = "&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;"
-        
+
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/_sometemplate.gsp', htmlCodecDirective + template)
         resourceLoader.registerMockResource('/_sometemplate_nocodec.gsp', template)
         appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
-        
+
         assertOutputEquals(expected, '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
         assertOutputEquals(expected + expected, template + '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
         assertOutputEquals(expected + expected, htmlCodecDirective + template + '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
@@ -161,7 +161,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertOutputEquals(expected + expected, '<g:render template="/sometemplate_nocodec" model="[book:book]" />' + template, [book:b])
         assertOutputEquals(expected + expected, htmlCodecDirective + '<g:render template="/sometemplate_nocodec" model="[book:book]" />' + template, [book:b])
     }
-    
+
     void testFieldValueTag() {
         def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [publisherURL:"a_bad_url"]
@@ -296,14 +296,13 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertTrue result.contains("releaseDate|")
         assertTrue result.contains("publisherURL|")
     }
-    
-    
+
     void testEachErrorTagInController() {
         def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.validate()
 
         assertTrue b.hasErrors()
-    
+
         def g = appCtx.gspTagLibraryLookup.lookupNamespaceDispatcher("g")
         def errorFields = []
         g.eachError(bean: b) {

@@ -84,6 +84,8 @@ public interface UrlMapping extends Comparable, UrlCreator {
      */
     Object getActionName();
 
+    Object getPluginName();
+
     /**
      * Returns the name of the view to map to
      * @return The view name
@@ -120,7 +122,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
     /**
      * Whether the mapping has a runtime variable with the given name such as "/$foo"
      * @param name The name of the variable
-     * @return True if the mapping has the variable
+     * @return true if the mapping has the variable
      */
     boolean hasRuntimeVariable(String name);
 }

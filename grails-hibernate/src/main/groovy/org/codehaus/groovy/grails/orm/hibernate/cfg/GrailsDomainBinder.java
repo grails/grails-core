@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.cfg;
 
 import grails.util.CollectionUtils;
+import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 
 import java.lang.reflect.Modifier;
@@ -37,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClassProperty;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
@@ -45,6 +47,8 @@ import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareJoinedSubclassEntityPersister;
 import org.codehaus.groovy.grails.orm.hibernate.persister.entity.GroovyAwareSingleTableEntityPersister;
 import org.codehaus.groovy.grails.orm.hibernate.validation.UniqueConstraint;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
@@ -225,7 +229,7 @@ public final class GrailsDomainBinder {
         }
 
         public void doSecondPass(Map<?, ?> persistentClasses, @SuppressWarnings("unused") Map<?, ?> inheritedMetas) throws MappingException {
-            bindCollectionSecondPass(this.property, mappings, persistentClasses, collection, sessionFactoryBeanName);
+            bindCollectionSecondPass(property, mappings, persistentClasses, collection, sessionFactoryBeanName);
             createCollectionKeys();
         }
 
@@ -928,7 +932,7 @@ public final class GrailsDomainBinder {
      * Checks whether a property is a unidirectional non-circular one-to-many
      *
      * @param property The property to check
-     * @return True if it is unidirectional and a one-to-many
+     * @return true if it is unidirectional and a one-to-many
      */
     private static boolean isUnidirectionalOneToMany(GrailsDomainClassProperty property) {
         return property.isOneToMany() && !property.isBidirectional();
@@ -1061,7 +1065,7 @@ public final class GrailsDomainBinder {
      * Establish whether a collection property is sorted
      *
      * @param property The property
-     * @return True if sorted
+     * @return true if sorted
      */
     private static boolean isSorted(GrailsDomainClassProperty property) {
         return SortedSet.class.isAssignableFrom(property.getType());
@@ -1261,7 +1265,32 @@ public final class GrailsDomainBinder {
             tableName = m.getTableName();
         }
         if (tableName == null) {
-            tableName = getNamingStrategy(sessionFactoryBeanName).classToTableName(domainClass.getShortName());
+            String shortName = domainClass.getShortName();
+            final GrailsApplication grailsApplication = domainClass.getGrailsApplication();
+            if (grailsApplication != null) {
+                final ApplicationContext mainContext = grailsApplication.getMainContext();
+                if (mainContext != null && mainContext.containsBean("pluginManager")) {
+                    final GrailsPluginManager pluginManager = (GrailsPluginManager) mainContext.getBean("pluginManager");
+                    final GrailsPlugin pluginForClass = pluginManager.getPluginForClass(domainClass.getClazz());
+                    if (pluginForClass != null) {
+                        final String pluginName = pluginForClass.getName();
+                        boolean shouldApplyPluginPrefix = false;
+                        if (!shortName.toLowerCase().startsWith(pluginName.toLowerCase())) {
+                            final String pluginSpecificConfigProperty = "grails.gorm." + GrailsNameUtils.getPropertyName(pluginName) + ".table.prefix.enabled";
+                            final Map<String, Object> flatConfig = grailsApplication.getFlatConfig();
+                            if (flatConfig.containsKey(pluginSpecificConfigProperty)) {
+                                shouldApplyPluginPrefix = Boolean.TRUE.equals(flatConfig.get(pluginSpecificConfigProperty));
+                            } else {
+                                shouldApplyPluginPrefix = Boolean.TRUE.equals(flatConfig.get("grails.gorm.table.prefix.enabled"));
+                            }
+                        }
+                        if (shouldApplyPluginPrefix) {
+                            shortName = pluginName + shortName;
+                        }
+                    }
+                }
+            }
+            tableName = getNamingStrategy(sessionFactoryBeanName).classToTableName(shortName);
         }
         return tableName;
     }
@@ -1283,7 +1312,7 @@ public final class GrailsDomainBinder {
      */
     public static void bindClass(GrailsDomainClass domainClass, Mappings mappings, String sessionFactoryBeanName)
             throws MappingException {
-        //if (domainClass.getClazz().getSuperclass() == java.lang.Object.class) {
+        //if (domainClass.getClazz().getSuperclass() == Object.class) {
         if (domainClass.isRoot()) {
             bindRoot(domainClass, mappings, sessionFactoryBeanName);
         }
@@ -1324,6 +1353,20 @@ public final class GrailsDomainBinder {
                     m = builder.evaluate((Closure<?>) o,ctx);
                 }
 
+                final Object identity = m.getIdentity();
+                if(identity instanceof Identity) {
+                    final Identity identityObject = (Identity) identity;
+                    final String idName = identityObject.getName();
+                    if(idName != null && !GrailsDomainClassProperty.IDENTITY.equals(idName)) {
+                        GrailsDomainClassProperty persistentProperty = domainClass.getPersistentProperty(idName);
+                        if(!persistentProperty.isIdentity()) {
+                            if(persistentProperty instanceof DefaultGrailsDomainClassProperty) {
+                                ((DefaultGrailsDomainClassProperty)persistentProperty).setIdentity(true);
+                            }
+                        }
+                    }
+                }
+
                 if (cache) {
                     MAPPING_CACHE.put(domainClass.getClazz(), m);
                 }
@@ -1354,6 +1397,20 @@ public final class GrailsDomainBinder {
      */
     public static Mapping getMapping(GrailsDomainClass domainClass) {
         return domainClass == null ? null : MAPPING_CACHE.get(domainClass.getClazz());
+    }
+    
+    public static void clearMappingCache() {
+        MAPPING_CACHE.clear();
+    }
+    
+    public static void clearMappingCache(Class<?> theClass) {
+        String className = theClass.getName();
+        for(Iterator<Map.Entry<Class<?>, Mapping>> it = MAPPING_CACHE.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<Class<?>, Mapping> entry = it.next();
+            if(className.equals(entry.getKey().getName())) {
+                it.remove();
+            }
+        }
     }
 
     /**
@@ -1756,6 +1813,10 @@ public final class GrailsDomainBinder {
 
         Mapping gormMapping = getMapping(domainClass.getClazz());
 
+        if (gormMapping != null) {
+            table.setComment(gormMapping.getComment());
+        }
+
         for (GrailsDomainClassProperty currentGrailsProp : persistentProperties) {
 
             // if its inherited skip
@@ -1854,28 +1915,32 @@ public final class GrailsDomainBinder {
 
     private static void bindNaturalIdentifier(Table table, Mapping mapping, PersistentClass persistentClass) {
         Object o = mapping != null ? mapping.getIdentity() : null;
-        if (o instanceof Identity) {
-            Identity identity = (Identity) o;
-            final NaturalId naturalId = identity.getNatural();
-            if (naturalId != null && !naturalId.getPropertyNames().isEmpty()) {
-                UniqueKey uk = new UniqueKey();
-                uk.setName("_UniqueKey");
-                uk.setTable(table);
-
-                boolean mutable = naturalId.isMutable();
-
-                for (String propertyName : naturalId.getPropertyNames()) {
-                    Property property = persistentClass.getProperty(propertyName);
-
-                    property.setNaturalIdentifier(true);
-                    if (!mutable) property.setUpdateable(false);
-
-                    uk.addColumns(property.getColumnIterator());
-                }
-
-                table.addUniqueKey(uk);
-            }
+        if (!(o instanceof Identity)) {
+            return;
         }
+
+        Identity identity = (Identity) o;
+        final NaturalId naturalId = identity.getNatural();
+        if (naturalId == null || naturalId.getPropertyNames().isEmpty()) {
+            return;
+        }
+
+        UniqueKey uk = new UniqueKey();
+        uk.setName("_UniqueKey");
+        uk.setTable(table);
+
+        boolean mutable = naturalId.isMutable();
+
+        for (String propertyName : naturalId.getPropertyNames()) {
+            Property property = persistentClass.getProperty(propertyName);
+
+            property.setNaturalIdentifier(true);
+            if (!mutable) property.setUpdateable(false);
+
+            uk.addColumns(property.getColumnIterator());
+        }
+
+        table.addUniqueKey(uk);
     }
 
     private static boolean canBindOneToOneWithSingleColumnAndForeignKey(GrailsDomainClassProperty currentGrailsProp) {
@@ -2316,15 +2381,15 @@ public final class GrailsDomainBinder {
         Properties params = new Properties();
         entity.setIdentifier(id);
 
-        if (mappedId != null) {
+        if (mappedId == null) {
+            // configure generator strategy
+            id.setIdentifierGeneratorStrategy("native");
+        } else {
             id.setIdentifierGeneratorStrategy(mappedId.getGenerator());
             params.putAll(mappedId.getParams());
             if ("assigned".equals(mappedId.getGenerator())) {
                 id.setNullValue("undefined");
             }
-        } else {
-            // configure generator strategy
-            id.setIdentifierGeneratorStrategy("native");
         }
 
         params.put(PersistentIdentifierGenerator.IDENTIFIER_NORMALIZER, mappings.getObjectNameNormalizer());
@@ -2622,6 +2687,11 @@ public final class GrailsDomainBinder {
     private static void bindColumn(GrailsDomainClassProperty property, GrailsDomainClassProperty parentProperty,
             Column column, ColumnConfig cc, String path, Table table, String sessionFactoryBeanName) {
 
+        if (cc != null) {
+            column.setComment(cc.getComment());
+            column.setDefaultValue(cc.getDefaultValue());
+        }
+
         Class<?> userType = getUserType(property);
         String columnName = getColumnNameForPropertyAndPath(property, path, cc, sessionFactoryBeanName);
         if ((property.isAssociation() || property.isBasicCollectionType()) && userType == null) {
@@ -2681,7 +2751,7 @@ public final class GrailsDomainBinder {
         } else {
             Object val = cp != null ? cp.getMetaConstraintValue(UniqueConstraint.UNIQUE_CONSTRAINT) : null;
             if (val instanceof Boolean) {
-                column.setUnique(((Boolean) val).booleanValue());
+                column.setUnique((Boolean)val);
             } else if (val instanceof String) {
                 createKeyForProps(property, path, table, columnName, Arrays.asList(new String[]{(String) val}), sessionFactoryBeanName);
             } else if (val instanceof List<?> && ((List<?>)val).size() > 0) {

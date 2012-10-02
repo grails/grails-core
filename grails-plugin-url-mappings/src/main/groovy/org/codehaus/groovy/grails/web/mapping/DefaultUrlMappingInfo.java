@@ -48,6 +48,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     private Object controllerName;
     private Object actionName;
+    private Object pluginName;
     private Object id;
     private static final String ID_PARAM = "id";
     private UrlMappingData urlData;
@@ -61,7 +62,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     @SuppressWarnings({"unchecked","rawtypes"})
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
         this.params = Collections.unmodifiableMap(params);
-        this.id = params.get(ID_PARAM);
+        id = params.get(ID_PARAM);
         this.urlData = urlData;
         this.servletContext = servletContext;
         GrailsApplication grailsApplication = WebUtils.lookupApplication(servletContext);
@@ -70,13 +71,14 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     @SuppressWarnings("rawtypes")
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object viewName, Map params,
+    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object pluginName, Object viewName, Map params,
             UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
         Assert.isTrue(controllerName != null || viewName != null, "URL mapping must either provide a controller or view name to map to!");
         Assert.notNull(params, "Argument [params] cannot be null");
         this.controllerName = controllerName;
         this.actionName = actionName;
+        this.pluginName = pluginName;
         if (actionName == null) {
             this.viewName = viewName;
         }
@@ -113,8 +115,12 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this.parsingRequest = parsingRequest;
     }
 
+    public String getPluginName() {
+        return pluginName == null ? null : pluginName.toString();
+    }
+
     public String getControllerName() {
-        String name = evaluateNameForValue(this.controllerName);
+        String name = evaluateNameForValue(controllerName);
         if (name == null && getViewName() == null) {
             throw new UrlMappingException("Unable to establish controller name to dispatch for [" +
                     controllerName + "]. Dynamic closure invocation returned null. Check your mapping file is correct, when assigning the controller name as a request parameter it cannot be an optional token!");
@@ -125,28 +131,28 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     public String getActionName() {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
 
-        String name = webRequest != null ? checkDispatchAction(webRequest.getCurrentRequest()) : null;
+        String name = webRequest == null ? null : checkDispatchAction(webRequest.getCurrentRequest());
         if (name == null) {
-            name = evaluateNameForValue(this.actionName, webRequest);
+            name = evaluateNameForValue(actionName, webRequest);
         }
         return urlConverter.toUrlElement(name);
     }
 
     public String getViewName() {
-        return evaluateNameForValue(this.viewName);
+        return evaluateNameForValue(viewName);
     }
 
     public String getId() {
-        return evaluateNameForValue(this.id);
+        return evaluateNameForValue(id);
     }
 
-    @SuppressWarnings("unchecked")
     private String checkDispatchAction(HttpServletRequest request) {
-        if(request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE)!= null) return null;
+        if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return null;
+
         String dispatchActionName = null;
         Enumeration<String> paramNames = tryMultipartParams(request, request.getParameterNames());
 
-        for (; paramNames.hasMoreElements();) {
+        while (paramNames.hasMoreElements()) {
             String name = paramNames.nextElement();
             if (name.startsWith(WebUtils.DISPATCH_ACTION_PARAMETER)) {
                 // remove .x suffix in case of submit image
@@ -160,7 +166,6 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         return dispatchActionName;
     }
 
-    @SuppressWarnings("unchecked")
     private Enumeration<String> tryMultipartParams(HttpServletRequest request, Enumeration<String> originalParams) {
         Enumeration<String> paramNames = originalParams;
         boolean disabled = getMultipartDisabled();
@@ -188,10 +193,10 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         Object disableMultipart = app.getFlatConfig().get(SETTING_GRAILS_WEB_DISABLE_MULTIPART);
         boolean disabled = false;
         if (disableMultipart instanceof Boolean) {
-            disabled = ((Boolean) disableMultipart).booleanValue();
+            disabled = (Boolean)disableMultipart;
         }
         else if (disableMultipart instanceof String) {
-            disabled = Boolean.valueOf((String) disableMultipart).booleanValue();
+            disabled = Boolean.valueOf((String)disableMultipart);
         }
         return disabled;
     }
@@ -202,6 +207,6 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     public String getURI() {
-        return evaluateNameForValue(this.uri);
+        return evaluateNameForValue(uri);
     }
 }

@@ -50,7 +50,7 @@ public class NullableConstraint extends AbstractVetoingConstraint {
                     constraintOwningClass + "] must be a boolean value");
         }
 
-        nullable = ((Boolean)constraintParameter).booleanValue();
+        nullable = (Boolean)constraintParameter;
         super.setParameter(constraintParameter);
     }
 

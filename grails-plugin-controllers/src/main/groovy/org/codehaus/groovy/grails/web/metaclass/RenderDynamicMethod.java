@@ -49,12 +49,14 @@ import org.codehaus.groovy.grails.web.mime.MimeUtility;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.ApplicationContext;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -187,20 +189,20 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
                 renderView = renderTemplate(target, controller, webRequest, argMap, out);
             }
-            else if(argMap.containsKey(ARGUMENT_FILE)) {
+            else if (argMap.containsKey(ARGUMENT_FILE)) {
                 renderView = false;
 
                 Object o = argMap.get(ARGUMENT_FILE);
                 Object fnO = argMap.get(ARGUMENT_FILE_NAME);
                 String fileName = fnO != null ? fnO.toString() : ((o instanceof File) ? ((File)o).getName(): null );
-                if(o != null) {
-                    if(fileName != null) {
+                if (o != null) {
+                    if (fileName != null) {
                         detectContentTypeFromFileName(webRequest, response, argMap, fileName, hasContentType);
-                        if(fnO != null) {
+                        if (fnO != null) {
                             response.setHeader(HttpHeaders.CONTENT_DISPOSITION, DISPOSITION_HEADER_PREFIX + fileName);
                         }
                     }
-                    else if(!hasContentType) {
+                    else if (!hasContentType) {
                         throw new ControllerExecutionException(
                                 "Argument [file] of render method specified without valid [contentType] argument");
                     }
@@ -208,14 +210,14 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
                     InputStream input = null;
                     try {
-                        if(o instanceof File) {
+                        if (o instanceof File) {
                             File f = (File) o;
                             input = FileUtils.openInputStream(f);
                         }
-                        else if(o instanceof InputStream) {
+                        else if (o instanceof InputStream) {
                             input = (InputStream) o;
                         }
-                        else if(o instanceof byte[]) {
+                        else if (o instanceof byte[]) {
                             input = new ByteArrayInputStream((byte[])o);
                         }
                         else {
@@ -228,7 +230,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
                     }
                     finally {
-                        if(input != null) {
+                        if (input != null) {
                             try {
                                 input.close();
                             } catch (IOException e) {
@@ -246,7 +248,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             else {
                 Object object = arguments[0];
-                if(object instanceof JSONElement) {
+                if (object instanceof JSONElement) {
                     renderView = renderJSON((JSONElement)object, response);
                 }
                 else{
@@ -276,7 +278,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private void detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName, boolean hasContentType) {
-        if(hasContentType) return;
+        if (hasContentType) return;
         String contentType;
         @SuppressWarnings("hiding") MimeUtility mimeUtility = lookupMimeUtility(webRequest);
         if (mimeUtility != null) {
@@ -294,10 +296,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private MimeUtility lookupMimeUtility(GrailsWebRequest webRequest) {
-        if(this.mimeUtility == null) {
+        if (mimeUtility == null) {
             ApplicationContext applicationContext = webRequest.getApplicationContext();
-            if(applicationContext != null) {
-                this.mimeUtility = applicationContext.getBean("grailsMimeUtility", MimeUtility.class);
+            if (applicationContext != null) {
+                mimeUtility = applicationContext.getBean("grailsMimeUtility", MimeUtility.class);
             }
         }
         return mimeUtility;
@@ -341,7 +343,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 if (argMap.containsKey(ARGUMENT_MODEL)) {
                     Object modelObject = argMap.get(ARGUMENT_MODEL);
                     if (modelObject instanceof Map) {
-                        binding.putAll((Map) modelObject);
+                        setTemplateModel(webRequest, binding, (Map) modelObject);
                     }
                 }
                 renderTemplateForBean(t, binding, bean, var, out);
@@ -351,13 +353,16 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 if (argMap.containsKey(ARGUMENT_MODEL)) {
                     Object modelObject = argMap.get(ARGUMENT_MODEL);
                     if (modelObject instanceof Map) {
-                        binding.putAll((Map) modelObject);
+                        setTemplateModel(webRequest, binding, (Map)modelObject);
                     }
                 }
                 renderTemplateForCollection(t, binding, colObject, var, out);
             }
             else if (argMap.containsKey(ARGUMENT_MODEL)) {
                 Object modelObject = argMap.get(ARGUMENT_MODEL);
+                if(modelObject instanceof Map) {
+                    setTemplateModel(webRequest, binding, (Map)modelObject);
+                }
                 renderTemplateForModel(t, modelObject, target, out);
             }
             else {
@@ -373,6 +378,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             throw new ControllerExecutionException("I/O error executing render method for arguments [" + argMap + "]: " + ioex.getMessage(), ioex);
         }
         return renderView;
+    }
+
+    private void setTemplateModel(GrailsWebRequest webRequest, Map binding, Map modelObject) {
+        Map modelMap = (Map) modelObject;
+        webRequest.setAttribute(GrailsApplicationAttributes.TEMPLATE_MODEL, modelMap, RequestAttributes.SCOPE_REQUEST);
+        binding.putAll(modelMap);
     }
 
     private String getContextPath(GrailsWebRequest webRequest, Map argMap) {
@@ -486,6 +497,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private boolean renderMarkup(Closure closure, HttpServletResponse response) {
         boolean renderView;
         StreamingMarkupBuilder b = new StreamingMarkupBuilder();
+        b.setEncoding(response.getCharacterEncoding());
         Writable markup = (Writable) b.bind(closure);
         try {
             markup.writeTo(response.getWriter());

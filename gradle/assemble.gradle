@@ -7,7 +7,7 @@ subprojects { subproject ->
     configurations {
         libsConfigurations << libs {
             extendsFrom compile, runtime
-            ["jsp21"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
+            ["jsp21", "uaa"].collect { configurations.findByName(it) }.findAll { it != null }.each { extendsFrom it }
         }
     }
 }
@@ -23,7 +23,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
             def value = dependency.moduleVersion
 
             def versions = moduleToVersionsMap[key]
-            if(!versions) {
+            if (!versions) {
                 versions = [] as Set
                 moduleToVersionsMap[key] = versions
             }
@@ -33,7 +33,7 @@ task checkDuplicateDependencies(description: 'Checks the dependency graph for mu
     def dups = moduleToVersionsMap.findAll { k, v ->
         v.size() > 1
     }
-    if(dups) {
+    if (dups) {
         def msg = 'Multiple versions of some dependencies have been identified in the dependency graph'
         println msg
         dups.each { k, v ->
@@ -105,7 +105,8 @@ task pluginsFromRepo {
         ant {
             mkdir(dir: dir)
             plugins.each { name, version ->
-                get(src: "http://repo.grails.org/grails/plugins/org/grails/plugins/${name}/$version/${name}-${version}.zip",
+                def versionTag = version.replaceAll(/\./, '_').toUpperCase()
+                get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.zip",
                     dest: dir, verbose: true, usetimestamp: true)
             }
         }

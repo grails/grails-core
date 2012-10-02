@@ -25,6 +25,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import org.apache.tomcat.util.scan.StandardJarScanner
 import org.springframework.util.ReflectionUtils
+import org.apache.catalina.Loader
+import org.apache.catalina.Context
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
  */
@@ -32,7 +34,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
     final Tomcat tomcat = new Tomcat()
 
-    def context
+    Context context
 
     InlineExplodedTomcatServer(String basedir, String webXml, String contextPath, ClassLoader classLoader) {
 
@@ -40,24 +42,9 @@ class InlineExplodedTomcatServer extends TomcatServer {
             contextPath = ''
         }
 
-        tomcat.basedir = tomcatDir
+        tomcat.setBaseDir( tomcatDir.absolutePath )
         context = tomcat.addWebapp(contextPath, basedir)
-        def scanConfig = getConfigParam("scan")
-        def shouldScan = (Boolean) (scanConfig.enabled instanceof Boolean ? scanConfig.enabled : false)
-        def extraJarsToSkip = scanConfig.excludes
-        if(extraJarsToSkip instanceof List && shouldScan) {
-
-            try {
-                def jarsToSkipField = ReflectionUtils.findField(StandardJarScanner, "defaultJarsToSkip", Set)
-                ReflectionUtils.makeAccessible(jarsToSkipField)
-                Set jarsToSkip = jarsToSkipField.get(StandardJarScanner)
-                jarsToSkip.addAll(extraJarsToSkip)
-            } catch (e) {
-                // ignore
-            }
-        }
-
-        
+        boolean shouldScan = checkAndInitializingClasspathScanning()
 
         def jarScanner = new StandardJarScanner()
         jarScanner.setScanClassPath(shouldScan)
@@ -69,6 +56,19 @@ class InlineExplodedTomcatServer extends TomcatServer {
         context.reloadable = false
         context.setAltDDName(getWorkDirFile("resources/web.xml").absolutePath)
 
+        configureAliases(context)
+
+        def loader = createTomcatLoader(classLoader)
+        loader.container = context
+        context.loader = loader
+        initialize(tomcat)
+    }
+
+    protected void initialize(Tomcat tomcat) {
+        // do nothing, for subclasses to override
+    }
+
+    protected void configureAliases(Context context) {
         def aliases = []
         def pluginManager = PluginManagerHolder.getPluginManager()
 
@@ -85,11 +85,13 @@ class InlineExplodedTomcatServer extends TomcatServer {
         if (aliases) {
             context.setAliases(aliases.join(','))
         }
-
-        def loader = new TomcatLoader(classLoader)
-        loader.container = context
-        context.loader = loader
     }
+
+    protected Loader createTomcatLoader(ClassLoader classLoader) {
+        new TomcatLoader(classLoader)
+    }
+
+
 
     void doStart(String host, int httpPort, int httpsPort) {
         preStart()
@@ -150,7 +152,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
     }
 
     private preStart() {
-        eventListener?.event("ConfigureTomcat", [tomcat])
+        eventListener?.triggerEvent("ConfigureTomcat", tomcat)
         def jndiEntries = grailsConfig?.grails?.naming?.entries
 
         if (!(jndiEntries instanceof Map)) {

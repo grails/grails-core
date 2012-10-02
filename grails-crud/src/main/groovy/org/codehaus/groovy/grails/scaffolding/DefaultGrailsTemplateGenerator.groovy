@@ -66,7 +66,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     DefaultGrailsTemplateGenerator() {}
 
     void setGrailsApplication(GrailsApplication ga) {
-        this.grailsApplication = ga
+        grailsApplication = ga
         if (ga != null) {
             def suffix = ga.config?.grails?.scaffolding?.templates?.domainSuffix
             if (suffix != [:]) {
@@ -77,7 +77,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
 
     void setResourceLoader(ResourceLoader rl) {
         LOG.info "Scaffolding template generator set to use resource loader ${rl}"
-        this.resourceLoader = rl
+        resourceLoader = rl
     }
 
     // uses the type to render the appropriate editor
@@ -212,7 +212,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     void generateView(GrailsDomainClass domainClass, String viewName, Writer out) {
         def templateText = getTemplateText("${viewName}.gsp")
 
-        if(templateText) {
+        if (templateText) {
             def t = engine.createTemplate(templateText)
             def multiPart = domainClass.properties.find {it.type == ([] as Byte[]).class || it.type == ([] as byte[]).class}
 
@@ -280,7 +280,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         }
 
         AbstractResource templateFile = getTemplateResource(template)
-        if(templateFile.exists()) {
+        if (templateFile.exists()) {
             return templateFile.inputStream.getText()
         }
     }
@@ -302,7 +302,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
                 }
             }
             else {
-                if(template.startsWith('/')) {
+                if (template.startsWith('/')) {
                     template = template.substring(1)
                 }
                 templateFile = new ClassPathResource("src/grails/templates/scaffolding/${template}")

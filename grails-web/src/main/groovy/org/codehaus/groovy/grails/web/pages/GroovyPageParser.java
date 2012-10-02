@@ -17,13 +17,14 @@ package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
-import grails.util.PluginBuildSettings;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -34,7 +35,6 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
 /**
  * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/).
  *
@@ -184,8 +184,7 @@ public class GroovyPageParser implements Tokens {
         this.gspEncoding = encoding;
 
         if (filename != null && BuildSettingsHolder.getSettings() != null) {
-            PluginBuildSettings pluginBuildSettings = new PluginBuildSettings(BuildSettingsHolder.getSettings());
-            GrailsPluginInfo info = pluginBuildSettings.getPluginInfoForSource(filename);
+            GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
             if (info != null) {
                 pluginAnnotation = "@GrailsPlugin(name='" + info.getName() + "', version='" +
                     info.getVersion() + "')";
@@ -240,7 +239,7 @@ public class GroovyPageParser implements Tokens {
 
     private boolean isSitemeshPreprocessingEnabled(String gspFilePreprocessDirective) {
         if (gspFilePreprocessDirective != null) {
-            return BooleanUtils.toBoolean(String.valueOf(gspFilePreprocessDirective).trim());
+            return BooleanUtils.toBoolean(gspFilePreprocessDirective.trim());
         }
         return enableSitemeshPreprocessing;
     }
@@ -615,7 +614,7 @@ public class GroovyPageParser implements Tokens {
         // de-dupe constants
         Integer constantNumber = constantsToNumbers.get(text);
         if (constantNumber == null) {
-            constantNumber = Integer.valueOf(constantCount++);
+            constantNumber = constantCount++;
             constantsToNumbers.put(text, constantNumber);
             htmlParts.add(text);
         }
@@ -842,8 +841,7 @@ public class GroovyPageParser implements Tokens {
     private boolean shouldAddLineNumbers() {
         try {
             // for now, we support this through a system property.
-            String prop = System.getenv("GROOVY_PAGE_ADD_LINE_NUMBERS");
-            return Boolean.valueOf(prop).booleanValue();
+            return Boolean.valueOf(System.getenv("GROOVY_PAGE_ADD_LINE_NUMBERS"));
         } catch (Exception e) {
             // something wild happened
             return false;
@@ -1096,6 +1094,7 @@ public class GroovyPageParser implements Tokens {
                     }
                 }
                 attrsVarsMapDefinition.put(tagIndex, buffer.toString());
+                buffer.close();
             }
 
             if (!emptyTag) {
@@ -1168,11 +1167,11 @@ public class GroovyPageParser implements Tokens {
                 }
                 String quoteStr;
                 // use multiline groovy string if the value contains newlines
-                if(val.indexOf('\n')!=-1 || val.indexOf('\r')!=-1) {
-                    if(quoteChar=='"') {
-                        quoteStr=MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
+                if (val.indexOf('\n') != -1 || val.indexOf('\r') != -1) {
+                    if (quoteChar=='"') {
+                        quoteStr = MULTILINE_GROOVY_STRING_DOUBLEQUOTES;
                     } else {
-                        quoteStr=MULTILINE_GROOVY_STRING_SINGLEQUOTES;
+                        quoteStr = MULTILINE_GROOVY_STRING_SINGLEQUOTES;
                     }
                 } else {
                     quoteStr = String.valueOf(quoteChar);

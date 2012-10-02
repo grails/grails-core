@@ -62,6 +62,10 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
     }
 
     public final boolean isArtefact(@SuppressWarnings("rawtypes") Class aClass) {
+        if (aClass == null) {
+            return false;
+        }
+
         if (isArtefactClass(aClass)) {
             if (log.isDebugEnabled()) {
                 log.debug("[" + aClass.getName() + "] is a " + type + " class.");
@@ -79,7 +83,7 @@ public class ArtefactHandlerAdapter implements ArtefactHandler {
      * <p>Checks that class's name ends in the suffix specified for this handler.</p>
      * <p>Override for more complex criteria</p>
      * @param clazz The class to check
-     * @return True if it is an artefact of this type
+     * @return true if it is an artefact of this type
      */
     public boolean isArtefactClass(@SuppressWarnings("rawtypes") Class clazz) {
         if (clazz == null) return false;

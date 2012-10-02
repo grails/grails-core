@@ -47,7 +47,7 @@ import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.documentation.DocumentationContext;
+import org.codehaus.groovy.grails.core.io.SpringResource;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
@@ -336,7 +336,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                 return;
             }
 
-            final Resource[] pluginDirs = pluginBuildSettings.getPluginDirectories();
+            final org.codehaus.groovy.grails.io.support.Resource[] pluginDirs = pluginBuildSettings.getPluginDirectories();
             final Environment env = Environment.getCurrent();
             final String baseLocation = env.getReloadLocation();
 
@@ -346,7 +346,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                     addBaseLocationPattern(resourceListTmp, baseLocation, stringRef);
                 }
                 else {
-                    for (Resource pluginDir : pluginDirs) {
+                    for (org.codehaus.groovy.grails.io.support.Resource pluginDir : pluginDirs) {
                         if (pluginDir == null) continue;
 
                         String pluginResources = getResourcePatternForBaseLocation(pluginDir.getFile().getCanonicalPath(), stringRef);
@@ -387,13 +387,11 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     private String getResourcePatternForBaseLocation(String baseLocation, String resourcePath) {
         String location = baseLocation;
         if (!location.endsWith(File.separator)) location = location + File.separator;
-        if (resourcePath.startsWith(".")) {
-            resourcePath = resourcePath.substring(1);
-        }
+        if (resourcePath.startsWith("./")) {
+            return "file:" + location + resourcePath.substring(2);        }
         else if (resourcePath.startsWith("file:./")) {
-            resourcePath = resourcePath.substring(7);
+            return "file:" + location + resourcePath.substring(7);
         }
-        resourcePath = "file:" + location + resourcePath;
         return resourcePath;
     }
 
@@ -481,29 +479,15 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void doWithApplicationContext(ApplicationContext ctx) {
-        try {
-            if (!pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
-                return;
-            }
-
-            Closure c = (Closure)plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
-            if (enableDocumentationGeneration()) {
-                DocumentationContext.getInstance().setActive(true);
-            }
-
-            c.setDelegate(this);
-            c.call(new Object[]{ctx});
+        if (!pluginBean.isReadableProperty(DO_WITH_APPLICATION_CONTEXT)) {
+            return;
         }
-        finally {
-            if (enableDocumentationGeneration()) {
-                DocumentationContext.getInstance().reset();
-            }
-        }
+
+        Closure c = (Closure)plugin.getProperty(DO_WITH_APPLICATION_CONTEXT);
+        c.setDelegate(this);
+        c.call(new Object[]{ctx});
     }
 
-    private boolean enableDocumentationGeneration() {
-        return !Metadata.getCurrent().isWarDeployed() && isBasePlugin();
-    }
 
     public void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
 
@@ -581,10 +565,13 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return !(excludes != null && excludes.contains(value));
     }
 
+    /**
+     * @deprecated Dynamic document generation no longer supported
+     * @param text
+     */
+    @Deprecated
     public void doc(String text) {
-        if (enableDocumentationGeneration()) {
-            DocumentationContext.getInstance().document(text);
-        }
+        // no-op
     }
 
     @Override
@@ -691,7 +678,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     @Override
     public void refresh() {
         // do nothing
-        Resource descriptor = getDescriptor();
+        org.codehaus.groovy.grails.io.support.Resource descriptor = getDescriptor();
         if (application == null || descriptor == null) {
             return;
         }
@@ -710,21 +697,10 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
     }
 
     public void doWithDynamicMethods(ApplicationContext ctx) {
-        try {
-            if (pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
-                Closure c = (Closure)plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
-                if (enableDocumentationGeneration()) {
-                    DocumentationContext.getInstance().setActive(true);
-                }
-
-                c.setDelegate(this);
-                c.call(new Object[]{ctx});
-            }
-        }
-        finally {
-            if (enableDocumentationGeneration()) {
-                DocumentationContext.getInstance().reset();
-            }
+        if (pluginBean.isReadableProperty(DO_WITH_DYNAMIC_METHODS)) {
+            Closure c = (Closure)plugin.getProperty(DO_WITH_DYNAMIC_METHODS);
+            c.setDelegate(this);
+            c.call(new Object[]{ctx});
         }
     }
 
@@ -857,17 +833,17 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return getName() + '-' + getVersion();
     }
 
-    public Resource getDescriptor() {
-        return pluginDescriptor;
+    public org.codehaus.groovy.grails.io.support.Resource getDescriptor() {
+        return new SpringResource(pluginDescriptor);
     }
 
     public void setDescriptor(Resource descriptor) {
-        this.pluginDescriptor = descriptor;
+        pluginDescriptor = descriptor;
     }
 
-    public Resource getPluginDir() {
+    public org.codehaus.groovy.grails.io.support.Resource getPluginDir() {
         try {
-            return pluginDescriptor.createRelative(".");
+            return new SpringResource(pluginDescriptor.createRelative("."));
         }
         catch (IOException e) {
             return null;

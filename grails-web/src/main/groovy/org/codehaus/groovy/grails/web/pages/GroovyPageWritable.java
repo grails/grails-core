@@ -42,8 +42,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
- * An instance of groovy.lang.Writable that writes itself to the specified
- * writer, typically the response writer.
+ * Writes itself to the specified writer, typically the response writer.
  *
  * @author Graeme Rocher
  * @author Lari Hotari
@@ -151,7 +150,7 @@ class GroovyPageWritable implements Writable {
                 }
             }
 
-            if(allowSettingContentType && response != null) {
+            if (allowSettingContentType && response != null) {
                 // only try to set content type when evaluating top level GSP
                 boolean contentTypeAlreadySet = response.isCommitted() || response.getContentType() != null;
                 if (!contentTypeAlreadySet) {
@@ -166,9 +165,9 @@ class GroovyPageWritable implements Writable {
             String previousGspCode = GSP_NONE_CODEC_NAME;
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, binding);
-                previousGspCode = (String)request.getAttribute(GrailsApplicationAttributes.GSP_CODEC);                
+                previousGspCode = (String)request.getAttribute(GrailsApplicationAttributes.GSP_CODEC);
             }
-            
+
             if (metaInfo.getCodecClass() != null) {
                 if (hasRequest) {
                     request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getCodecName());
@@ -199,10 +198,10 @@ class GroovyPageWritable implements Writable {
             page.setPluginContextPath(metaInfo.getPluginPath());
             page.initRun(out, webRequest, metaInfo.getGrailsApplication(), metaInfo.getCodecClass());
 
-            int debugId=0;
-            long debugStartTimeMs=0;
+            int debugId = 0;
+            long debugStartTimeMs = 0;
             if (debugTemplates) {
-                debugId=debugTemplatesIdCounter.incrementAndGet();
+                debugId = debugTemplatesIdCounter.incrementAndGet();
                 out.write("<!-- GSP #");
                 out.write(String.valueOf(debugId));
                 out.write(" START template: ");

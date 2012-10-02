@@ -14,22 +14,23 @@
  */
 package grails.util
 
+import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
-import org.apache.commons.lang.ArrayUtils
+import org.codehaus.groovy.grails.io.support.AntPathMatcher
+import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.codehaus.groovy.grails.io.support.IOUtils
+import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver
+import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.util.AntPathMatcher
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -41,6 +42,7 @@ import org.springframework.util.AntPathMatcher
 class PluginBuildSettings {
 
     private static final List<String> PLUGIN_EXCLUDE_PATHS = ["views", "i18n"] // conf gets special handling
+
     /**
      * Resources to be excluded from the final packaged plugin. Defined as Ant paths.
      */
@@ -88,19 +90,22 @@ class PluginBuildSettings {
     PluginScopeInfo providedScopePluginInfo = new PluginScopeInfo("provided")
     PluginScopeInfo testScopePluginInfo = new PluginScopeInfo("test")
 
-    private Map<String, PluginScopeInfo> pluginScopeInfoMap = [compile:compileScopePluginInfo, build:buildScopePluginInfo, provided: providedScopePluginInfo, test:testScopePluginInfo]
+    private Map<String, PluginScopeInfo> pluginScopeInfoMap = [
+        compile: compileScopePluginInfo,
+        build: buildScopePluginInfo,
+        provided: providedScopePluginInfo,
+        test: testScopePluginInfo]
 
     PluginBuildSettings(BuildSettings buildSettings) {
         this(buildSettings, null)
     }
 
     PluginBuildSettings(BuildSettings buildSettings, pluginManager) {
-        // We use null-safe navigation on buildSettings because otherwise
-        // lots of unit tests will fail.
+        // We use null-safe navigation on buildSettings because otherwise lots of unit tests will fail
         this.buildSettings = buildSettings
         this.pluginManager = pluginManager
-        this.pluginDirPath = buildSettings?.projectPluginsDir?.absolutePath
-        this.pluginLocations = buildSettings?.config?.grails?.plugin?.location
+        pluginDirPath = buildSettings?.projectPluginsDir?.absolutePath
+        pluginLocations = buildSettings?.config?.grails?.plugin?.location
 
         if (buildSettings == null) {
             return
@@ -122,6 +127,7 @@ class PluginBuildSettings {
         testScopePluginInfo = testScopePluginInfo - compileScopePluginInfo
     }
 
+    @CompileStatic
     void registerNewPluginInstall(File zip) {
          switch(zip) {
              case buildSettings.pluginBuildDependencies:
@@ -139,31 +145,35 @@ class PluginBuildSettings {
              case buildSettings.pluginProvidedDependencies:
                   registerPluginZipWithScope(zip, providedScopePluginInfo)
                   break
-
          }
     }
 
+    @CompileStatic
     private populateSourceDirectories(PluginScopeInfo compileInfo, List<File> pluginDependencies) {
         for (zip in pluginDependencies) {
             registerPluginZipWithScope(zip, compileInfo)
         }
     }
 
-    protected registerPluginZipWithScope(File pluginZip, PluginScopeInfo scopeInfo) {
+    protected void registerPluginZipWithScope(File pluginZip, PluginScopeInfo scopeInfo) {
         def info = readPluginInfoFromZip(pluginZip.absolutePath)
-        if (info != null) {
-            def existingInfo = getPluginInfoForName(info.name)
-            if (existingInfo != null && existingInfo.version == info.version)
-                addPluginScopeInfoForDirAndInfo(scopeInfo, info, existingInfo.pluginDir)
+        if (info == null) {
+            return
+        }
+
+        def existingInfo = getPluginInfoForName(info.name)
+        if (existingInfo != null && existingInfo.version == info.version) {
+            addPluginScopeInfoForDirAndInfo(scopeInfo, info, existingInfo.pluginDir)
         }
     }
 
-    protected def addPluginScopeInfoForDirAndInfo(PluginScopeInfo compileInfo, GrailsPluginInfo info, Resource dir) {
+    @CompileStatic
+    protected void addPluginScopeInfoForDirAndInfo(PluginScopeInfo compileInfo, GrailsPluginInfo info, Resource dir) {
         def excludedPaths = PLUGIN_EXCLUDE_PATHS // conf gets special handling
         compileInfo.pluginInfos << info
         compileInfo.pluginNames << info.name
         compileInfo.sourceDirectories.addAll(
-                getPluginSourceDirectories(dir.file.canonicalFile).findAll {
+                getPluginSourceDirectories(dir.file.canonicalFile).findAll {  Resource it ->
                     !excludedPaths.contains(it.file.name) && it.file.isDirectory()
                 })
         compileInfo.pluginDescriptors << getPluginDescriptor(dir)
@@ -185,10 +195,11 @@ class PluginBuildSettings {
     /**
      * Returns an array of PluginInfo objects
      */
-    GrailsPluginInfo[] getPluginInfos(String pluginDirPath=this.pluginDirPath) {
+    GrailsPluginInfo[] getPluginInfos(String pluginDirPath = this.pluginDirPath) {
         if (pluginInfosMap) {
-            return cache['pluginInfoList']
+            return cache.pluginInfoList
         }
+
         def pluginInfos = []
         Resource[] pluginDescriptors = getPluginDescriptors()
         def pluginDescriptorReader = new CompositePluginDescriptorReader(this)
@@ -205,7 +216,7 @@ class PluginBuildSettings {
                 // ignore, not a valid plugin directory
             }
         }
-        cache['pluginInfoList'] = pluginInfos as GrailsPluginInfo[]
+        cache.pluginInfoList = pluginInfos as GrailsPluginInfo[]
         return pluginInfos as GrailsPluginInfo[]
     }
 
@@ -219,14 +230,17 @@ class PluginBuildSettings {
     /**
      * Returns an array of the inplace plugin locations.
      */
+    @CompileStatic
     Resource[] getInlinePluginDirectories() {
-        def locations = cache['inlinePluginLocations']
+        Resource[] locations = (Resource[])cache['inlinePluginLocations']
         if (locations == null) {
 
-            if (buildSettings)
-                locations = buildSettings.getInlinePluginDirectories().collect { new FileSystemResource(it) }
-            else
+            if (buildSettings) {
+                locations = buildSettings.getInlinePluginDirectories().collect { File it -> new FileSystemResource(it) }
+            }
+            else {
                 locations = [] as Resource[]
+            }
 
             cache['inlinePluginLocations'] = locations
         }
@@ -236,22 +250,25 @@ class PluginBuildSettings {
     /**
      * Obtains a PluginInfo for the installed plugin directory.
      */
+    @CompileStatic
     GrailsPluginInfo getPluginInfo(String pluginBaseDir) {
         if (!pluginInfosMap) getPluginInfos() // initialize the infos
         def dir = new FileSystemResource(pluginBaseDir)
         def descLocation = getDescriptorForPlugin(dir)
         if (descLocation) {
             def pluginName = GrailsNameUtils.getPluginName(descLocation.filename)
-            return pluginInfosMap[pluginName]
+            return (GrailsPluginInfo)pluginInfosMap[pluginName]
         }
+        return null
     }
 
     /**
      * Obtains a PluginInfo for the installed plugin directory.
      */
+    @CompileStatic
     GrailsPluginInfo getPluginInfoForName(String pluginName) {
         if (!pluginInfosMap) getPluginInfos() // initialize the infos
-        return pluginInfosMap[pluginName]
+        return (GrailsPluginInfo)pluginInfosMap[pluginName]
     }
 
     /**
@@ -262,38 +279,32 @@ class PluginBuildSettings {
             return pluginInfoToSourceMap[sourceFile]
         }
 
-        def pluginDirs = getPluginDirectories()
-        if (pluginDirs) {
-            for (Resource pluginDir in pluginDirs) {
-                def pluginPath = pluginDir.file.canonicalPath + File.separator
-                def sourcePath = new File(sourceFile).canonicalPath
-                if (sourcePath.startsWith(pluginPath)) {
-                    // Check the path of the source file relative to the
-                    // plugin directory. If the source file is in the
-                    // plugin's "test" directory, we ignore it. It's a
-                    // bit of a HACK, but not much else we can do without
-                    // a refactor of the plugin management.
-                    sourcePath = sourcePath.substring(pluginPath.length())
-                    if (!sourcePath.startsWith("test" + File.separator)) {
-                        GrailsPluginInfo info = getPluginInfo(pluginPath)
-                        if (info) {
-                            pluginInfoToSourceMap[sourceFile] = info
-                        }
-                        return info
+        for (Resource pluginDir in getPluginDirectories()) {
+            def pluginPath = pluginDir.file.canonicalPath + File.separator
+            def sourcePath = new File(sourceFile).canonicalPath
+            if (sourcePath.startsWith(pluginPath)) {
+                // Check the path of the source file relative to the
+                // plugin directory. If the source file is in the
+                // plugin's "test" directory, we ignore it. It's a
+                // bit of a HACK, but not much else we can do without
+                // a refactor of the plugin management.
+                sourcePath = sourcePath.substring(pluginPath.length())
+                if (!sourcePath.startsWith("test" + File.separator)) {
+                    GrailsPluginInfo info = getPluginInfo(pluginPath)
+                    if (info) {
+                        pluginInfoToSourceMap[sourceFile] = info
                     }
+                    return info
                 }
             }
         }
 
         def baseDir = buildSettings?.getBaseDir()?.getCanonicalPath()
-        if (baseDir != null) {
-
-            if (sourceFile.startsWith(baseDir)) {
-                def basePluginInfo = getPluginInfo(baseDir)
-                if (basePluginInfo != null) {
-                    pluginInfoToSourceMap[sourceFile] = basePluginInfo
-                    return basePluginInfo
-                }
+        if (baseDir != null && sourceFile.startsWith(baseDir)) {
+            GrailsPluginInfo basePluginInfo = getPluginInfo(baseDir)
+            if (basePluginInfo != null) {
+                pluginInfoToSourceMap[sourceFile] = basePluginInfo
+                return basePluginInfo
             }
         }
 
@@ -340,21 +351,21 @@ class PluginBuildSettings {
      */
     Resource[] getAvailableScripts() {
 
-        def availableScripts = cache['availableScripts']
+        def availableScripts = cache.availableScripts
         if (!availableScripts) {
 
             def scripts = []
             def userHome = System.getProperty("user.home")
             def grailsHome = buildSettings.grailsHome?.absolutePath
             def basedir = buildSettings.baseDir.absolutePath
-            if(grailsHome != null) {
+            if (grailsHome != null) {
                 resourceResolver("file:${grailsHome}/scripts/**.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
             }
             resourceResolver("file:${basedir}/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
             pluginScripts.each { if (!it.file.name.startsWith('_')) scripts << it }
             resourceResolver("file:${userHome}/.grails/scripts/*.groovy").each { if (!it.file.name.startsWith('_')) scripts << it }
             availableScripts = scripts as Resource[]
-            cache['availableScripts'] = availableScripts
+            cache.availableScripts = availableScripts
         }
         return availableScripts
     }
@@ -381,7 +392,6 @@ class PluginBuildSettings {
      * Obtains an array of all plugin provided source directories
      *
      * @deprecated Use getPluginSourceDirectories
-     *
      */
     Resource[] getPluginSourceFiles() {
         return getPluginSourceDirectories()
@@ -391,34 +401,36 @@ class PluginBuildSettings {
      * Obtains an array of all plugin provided source directories
      *
      */
+    //@CompileStatic
     Resource[] getPluginSourceDirectories() {
-        def sourceFiles = cache['sourceFiles']
+        def sourceFiles = cache.sourceFiles
         if (!sourceFiles) {
-            cache['sourceFilesPerPlugin'] = [:]
+            cache.sourceFilesPerPlugin = [:]
             sourceFiles = new Resource[0]
             sourceFiles = resolvePluginResourcesAndAdd(sourceFiles, true) { pluginDir ->
                 Resource[] pluginSourceFiles = resourceResolver("file:${pluginDir}/grails-app/*")
-                pluginSourceFiles = ArrayUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/java"))
-                pluginSourceFiles = ArrayUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/groovy"))
-                cache['sourceFilesPerPlugin'][pluginDir] = pluginSourceFiles
+                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/java"))
+                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/groovy"))
+                cache.sourceFilesPerPlugin[pluginDir] = pluginSourceFiles
                 return pluginSourceFiles
             }
-            cache['sourceFiles'] = sourceFiles
+            cache.sourceFiles = sourceFiles
         }
-        return sourceFiles
+        return (Resource[])sourceFiles
     }
 
+
     /**
-    * Gets all the plugin source directories for the given plugin directory
-    */
+     * Gets all the plugin source directories for the given plugin directory
+     */
     Resource[] getPluginSourceDirectories(File pluginDir) {
         getPluginSourceDirectories() // initialize cache
 
-        cache['sourceFilesPerPlugin'][pluginDir.absolutePath]
+        cache.sourceFilesPerPlugin[pluginDir.absolutePath]
     }
 
     /**
-    * @deprecated Use getPluginSourceDirectories
+     * @deprecated Use getPluginSourceDirectories
      */
     Resource[] getPluginSourceFiles(File pluginDir) {
         return getPluginSourceDirectories(pluginDir)
@@ -449,13 +461,15 @@ class PluginBuildSettings {
      * Obtains a list of plugin directories for the application
      */
     Resource[] getPluginDirectories() {
-        def pluginDirectoryResources = cache['pluginDirectoryResources']
+        def pluginDirectoryResources = cache.pluginDirectoryResources
         if (!pluginDirectoryResources) {
-            if (buildSettings)
+            if (buildSettings) {
                 pluginDirectoryResources = buildSettings.getPluginDirectories().collect { new FileSystemResource(it) } as Resource[]
-            else
+            }
+            else {
                 pluginDirectoryResources = [] as Resource[]
-            cache['pluginDirectoryResources'] = pluginDirectoryResources
+            }
+            cache.pluginDirectoryResources = pluginDirectoryResources
         }
         return pluginDirectoryResources
     }
@@ -481,13 +495,15 @@ class PluginBuildSettings {
      * and the global "plugins" directory together.
      */
     List<Resource> getImplicitPluginDirectories() {
-        def implicitPluginDirectories = cache['implicitPluginDirectories']
+        def implicitPluginDirectories = cache.implicitPluginDirectories
         if (implicitPluginDirectories == null) {
-            if (buildSettings)
+            if (buildSettings) {
                 implicitPluginDirectories = buildSettings.getImplicitPluginDirectories().collect { new FileSystemResource(it) }
-            else
+            }
+            else {
                 implicitPluginDirectories = [] as Resource[]
-            cache['implicitPluginDirectories'] = implicitPluginDirectories
+            }
+            cache.implicitPluginDirectories = implicitPluginDirectories
         }
         return implicitPluginDirectories
     }
@@ -517,7 +533,7 @@ class PluginBuildSettings {
      */
     Resource[] getArtefactResources() {
         def basedir = buildSettings.baseDir.absolutePath
-        def allArtefactResources = cache['allArtefactResources']
+        def allArtefactResources = cache.allArtefactResources
         if (!allArtefactResources) {
             def resources = [] as Resource[]
 
@@ -527,21 +543,21 @@ class PluginBuildSettings {
             }
 
             // now build of application resources so that these can override plugin resources
-            resources = ArrayUtils.addAll(resources, getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath))
+            resources = IOUtils.addAll(resources, getArtefactResourcesForOne(new File(basedir).canonicalFile.absolutePath))
 
             allArtefactResources = resources
-            cache['allArtefactResources'] = resources
+            cache.allArtefactResources = resources
         }
         return allArtefactResources
     }
 
 
     /**
-     *
      * @return A list of plugin infos that are supported and scoped for compile or runtime
      */
+    @CompileStatic
     List<Resource> getCompileScopedArtefactResources() {
-        List<Resource> artefactResources = cache['compileScopedArtefactResources']
+        List<Resource> artefactResources = (List<Resource>)cache['compileScopedArtefactResources']
         if (artefactResources == null) {
             artefactResources = []
             artefactResources.addAll compileScopePluginInfo.artefactResources
@@ -550,18 +566,20 @@ class PluginBuildSettings {
         }
         return artefactResources
     }
+
     /**
      *
      * @return A list of plugin infos that are supported and scoped for compile or runtime
      */
+//    @CompileStatic
     List<GrailsPluginInfo> getCompileScopedSupportedPluginInfos() {
-        List<GrailsPluginInfo> compileScopePluginInfos = cache['compileScopePluginInfos']
+        Collection<GrailsPluginInfo> compileScopePluginInfos = (Collection<GrailsPluginInfo>)cache.compileScopePluginInfos
         if (compileScopePluginInfos == null) {
             def pluginInfos = supportedPluginInfos
             compileScopePluginInfos = []
             compileScopePluginInfos.addAll compileScopePluginInfo.pluginInfos
-            compileScopePluginInfos = compileScopePluginInfos.findAll { info -> pluginInfos.any { it.name == info.name } }
-            cache['compileScopePluginInfos'] = compileScopePluginInfos
+            compileScopePluginInfos = compileScopePluginInfos.findAll { GrailsPluginInfo info -> pluginInfos.any { GrailsPluginInfo it -> it.name == info.name } }
+            cache.compileScopePluginInfos = compileScopePluginInfos
         }
         return compileScopePluginInfos
     }
@@ -571,23 +589,24 @@ class PluginBuildSettings {
      *
      * @return An array of all artefact resources
      */
+    @CompileStatic
     Resource[] getArtefactResourcesForCurrentEnvironment() {
-        def artefactResources = cache['allArtefactResourcesForEnvironment']
+        Resource[] artefactResources = (Resource[])cache['allArtefactResourcesForEnvironment']
         if (artefactResources == null) {
 
-            artefactResources = []
-            artefactResources.addAll compileScopePluginInfo.getArtefactResources()
-            artefactResources.addAll providedScopePluginInfo.getArtefactResources()
-            artefactResources.addAll getArtefactResourcesForOne(buildSettings.baseDir.path)
+            List<Resource> artefactResourcesList = []
+            artefactResourcesList.addAll compileScopePluginInfo.getArtefactResources()
+            artefactResourcesList.addAll providedScopePluginInfo.getArtefactResources()
+            artefactResourcesList.addAll getArtefactResourcesForOne(buildSettings.baseDir.path)
             if (Environment.getCurrent() == Environment.TEST) {
-                artefactResources.addAll testScopePluginInfo.getArtefactResources()
+                artefactResourcesList.addAll testScopePluginInfo.getArtefactResources()
             }
             def inlineDirectories = getInlinePluginDirectories()
-            for (dir in inlineDirectories) {
-                artefactResources.addAll getArtefactResourcesForOne(dir.file.absolutePath)
+            for (Resource dir in inlineDirectories) {
+                artefactResourcesList.addAll getArtefactResourcesForOne(dir.file.absolutePath)
             }
 
-            artefactResources = artefactResources as Resource[];
+            artefactResources = artefactResourcesList as Resource[];
             cache['allArtefactResourcesForEnvironment'] = artefactResources
         }
         return artefactResources
@@ -603,9 +622,8 @@ class PluginBuildSettings {
 
 
     Resource[] getPluginDescriptorsForCurrentEnvironment() {
-        def descriptorList  = cache['pluginDescriptorsForCurrentEnvironment']
+        def descriptorList  = cache.pluginDescriptorsForCurrentEnvironment
         if (descriptorList  == null) {
-
             if (Environment.current == Environment.TEST) {
                 descriptorList = pluginScopeInfoMap.values()*.pluginDescriptors.flatten()
             }
@@ -623,7 +641,7 @@ class PluginBuildSettings {
 
             descriptorList = descriptorList.unique()
 
-            cache['pluginDescriptorsForCurrentEnvironment'] = descriptorList
+            cache.pluginDescriptorsForCurrentEnvironment = descriptorList
         }
         return descriptorList as Resource[]
     }
@@ -631,7 +649,7 @@ class PluginBuildSettings {
      * Obtains an array of all plugin descriptors (the root classes that end with *GrailsPlugin.groovy).
      */
     Resource[] getPluginDescriptors() {
-        def pluginDescriptors = cache['pluginDescriptors']
+        def pluginDescriptors = cache.pluginDescriptors
         if (!pluginDescriptors) {
             def pluginDirs = getPluginDirectories().toList()
             if (buildSettings?.baseDir) {
@@ -646,7 +664,7 @@ class PluginBuildSettings {
             }
 
             pluginDescriptors = descriptors as Resource[]
-            cache['pluginDescriptors'] = pluginDescriptors
+            cache.pluginDescriptors = pluginDescriptors
         }
         return pluginDescriptors
     }
@@ -689,7 +707,7 @@ class PluginBuildSettings {
      * Obtains a plugin directory for the given name.
      */
     Resource getPluginDirForName(String pluginName) {
-        Resource pluginResource = pluginToDirNameMap[pluginName]
+        Resource pluginResource = (Resource)pluginToDirNameMap[pluginName]
         if (!pluginResource) {
             try {
                 GrailsPluginInfo pluginInfo = getPluginInfoForName(pluginName)
@@ -699,15 +717,17 @@ class PluginBuildSettings {
                 // locations, check whether it's an in-place plugin.
 
                 if (!pluginFile && pluginLocations) {
-                    def pluginLoc = pluginLocations.find { key, value -> pluginName == key }
+                    Map.Entry pluginLoc = (Map.Entry)pluginLocations.find { String key, value -> pluginName == key }
                     // maybe the plugin name includes a version suffix so attempt startsWith
                     if (!pluginLoc) {
-                        pluginLoc = pluginLocations.find { key, value -> pluginName.startsWith(key) }
+                        pluginLoc = (Map.Entry)pluginLocations.find { String key, value -> pluginName.startsWith(key) }
                     }
                     if (pluginLoc?.value) pluginFile = new File(pluginLoc.value.toString())
                 }
 
-                pluginResource = pluginFile ? new FileSystemResource(pluginFile) : null
+                if (pluginFile != null) {
+                    pluginResource =  new FileSystemResource(pluginFile)
+                }
                 if (pluginResource) {
                     pluginToDirNameMap[pluginName] = pluginResource
                 }
@@ -750,7 +770,7 @@ class PluginBuildSettings {
      * @return
      */
     GrailsPluginInfo readPluginInfoFromZip(String zipLocation) {
-        def key = "pluginInfo:$zipLocation".toString()
+        String key = 'pluginInfo:' + zipLocation
         GrailsPluginInfo info = cache[key]
         if (info == null) {
 
@@ -775,8 +795,9 @@ class PluginBuildSettings {
     /**
      * Obtains the 'base' plugin descriptor, which is the plugin descriptor of the current plugin project.
      */
+    @CompileStatic
     Resource getBasePluginDescriptor() {
-        def basePluginDescriptor = cache['basePluginDescriptor']
+        Resource basePluginDescriptor = (Resource)cache['basePluginDescriptor']
         if (!basePluginDescriptor) {
             basePluginDescriptor = getDescriptorForPlugin(
                     new FileSystemResource(buildSettings.baseDir.absolutePath))
@@ -791,10 +812,11 @@ class PluginBuildSettings {
      * Returns the descriptor location for the given plugin directory. The descriptor is the Groovy
      * file that ends with *GrailsPlugin.groovy
      */
+//    @CompileStatic
     Resource getDescriptorForPlugin(Resource pluginDir) {
         FileSystemResource descriptor = null
         File baseFile = pluginDir.file.canonicalFile
-        File basePluginFile = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy")}
+        File basePluginFile = (File)baseFile.listFiles().find {  File it -> it.name.endsWith("GrailsPlugin.groovy")}
 
         if (basePluginFile?.exists()) {
             descriptor = new FileSystemResource(basePluginFile)
@@ -802,8 +824,9 @@ class PluginBuildSettings {
         return descriptor
     }
 
+    @CompileStatic
     private Resource[] resolveResources(String key, boolean processExcludes, Closure c) {
-        def resources = cache[key]
+        Resource[] resources = (Resource[])cache[key]
         if (!resources) {
             resources = new Resource[0]
             resources = resolvePluginResourcesAndAdd(resources, processExcludes, c)
@@ -820,6 +843,7 @@ class PluginBuildSettings {
      * A new array is then returned that contains any additiona plugin resources that were
      * resolved by the expression passed in the closure.
      */
+    @CompileStatic
     private resolvePluginResourcesAndAdd(Resource[] originalResources, boolean processExcludes, Closure resolver) {
 
         Resource[] pluginDirs = getPluginDirectories()
@@ -831,17 +855,18 @@ class PluginBuildSettings {
                     AntPathMatcher pathMatcher=new AntPathMatcher()
                     newResources = newResources.findAll { Resource r ->
                         def relPath = relativePath(dir.file, r.file)
-                        !excludes.any {
+                        !excludes.any { String it ->
                             pathMatcher.match(it, relPath)
                         }
                     }
                 }
-                originalResources = ArrayUtils.addAll(originalResources, newResources as Resource[])
+                originalResources = (Resource[])IOUtils.addAll(originalResources, newResources as Resource[])
             }
         }
         return originalResources
     }
 
+    @CompileStatic
     private String relativePath(File relbase, File file) {
         def pathParts = []
         def currentFile = file
