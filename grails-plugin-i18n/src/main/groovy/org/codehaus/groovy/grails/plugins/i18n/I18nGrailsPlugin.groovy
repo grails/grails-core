@@ -67,13 +67,13 @@ class I18nGrailsPlugin {
             for (resource in messageResources) {
 				// Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
 				// Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
-                def isInlineResource = false
-                try {
-				    isInlineResource = (resource instanceof ClassPathResource) ? false :
-					   BuildSettingsHolder?.settings?.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
-                } catch(e) {
-                    // Ignore the failed getFile/getRealPath on a non exploded resource. 
-                }
+				def isInlineResource = false
+				try {
+					isInlineResource = (resource instanceof ClassPathResource) ? false :
+						BuildSettingsHolder?.settings?.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
+				} catch(e) {
+					// Ignore the failed getFile/getRealPath on a non exploded resource. 
+				}
 				String path
 
 				// If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
