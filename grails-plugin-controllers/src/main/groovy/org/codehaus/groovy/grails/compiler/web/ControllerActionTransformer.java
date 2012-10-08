@@ -241,13 +241,25 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     EMPTY_CLASS_ARRAY,
                     addOriginalMethodCall(methodNode, initializeActionParameters(
                             classNode, methodNode, methodNode.getName(), parameters, source, context)));
-            method.addAnnotations(methodNode.getAnnotations());
+            copyAnnotations(methodNode, method);
             annotateActionMethod(parameters, method);
         } else {
             annotateActionMethod(parameters, methodNode);
         }
 
         return method;
+    }
+
+    protected void copyAnnotations(final MethodNode from, final MethodNode to) {
+        final List<AnnotationNode> annotationsToCopy = from.getAnnotations();
+        for(final AnnotationNode node : annotationsToCopy) {
+            final AnnotationNode copyOfAnnotationNode = new AnnotationNode(node.getClassNode());
+            final Map<String, Expression> members = node.getMembers();
+            for(final Map.Entry<String, Expression> entry : members.entrySet()) {
+                copyOfAnnotationNode.addMember(entry.getKey(), entry.getValue());
+            }
+            to.addAnnotation(copyOfAnnotationNode);
+        }
     }
 
     private Statement addOriginalMethodCall(MethodNode methodNode, BlockStatement blockStatement) {
