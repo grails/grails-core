@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.compiler.web
 
 import grails.util.BuildSettings
 import grails.util.GrailsWebUtil
+import grails.web.Action
 
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
@@ -55,6 +56,39 @@ class ControllerActionTransformerSpec extends Specification {
         then:
           controller
           controller.getClass().getMethod("action", [] as Class[]) != null
+    }
+
+    void 'Test that user applied annotations are applied to generated action methods'() {
+        given:
+        def cls = gcl.parseClass('''
+        class SomeController {
+            @Deprecated
+            def action1(){}
+            @Deprecated
+            def action2(String paramName){}
+}
+''')
+
+        when:
+        def action1NoArgMethod = cls.getMethod('action1')
+
+        then:
+        action1NoArgMethod.getAnnotation(Action)
+        action1NoArgMethod.getAnnotation(Deprecated)
+
+        when:
+        def action2MethodWithStringArg = cls.getMethod('action2', [String] as Class[])
+
+        then:
+        !action2MethodWithStringArg.getAnnotation(Action)
+        action2MethodWithStringArg.getAnnotation(Deprecated)
+
+        when:
+        def action2NoArgMethod = cls.getMethod('action2')
+
+        then:
+        action2NoArgMethod.getAnnotation(Action)
+        action2NoArgMethod.getAnnotation(Deprecated)
     }
 
     void 'Test action overiding'() {
