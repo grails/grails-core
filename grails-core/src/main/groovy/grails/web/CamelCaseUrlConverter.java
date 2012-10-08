@@ -19,6 +19,12 @@ import java.util.Locale;
 
 import org.apache.commons.lang.StringUtils;
 
+/**
+ * URL converter that allows for camel case URLs
+ *
+ * @author Jeff Brown
+ * @since 2.0
+ */
 public class CamelCaseUrlConverter implements UrlConverter {
 
     public String toUrlElement(String propertyOrClassName) {
