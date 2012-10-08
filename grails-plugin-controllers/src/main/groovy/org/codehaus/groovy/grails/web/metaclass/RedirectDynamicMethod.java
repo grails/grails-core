@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectExcep
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.support.RequestDataValueProcessor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -65,6 +66,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     private boolean useJessionId = false;
     private Collection<RedirectEventListener> redirectListeners;
     private LinkGenerator linkGenerator;
+    private RequestDataValueProcessor requestDataValueProcessor = null;
 
     /**
      */
@@ -146,6 +148,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         // which includes the contextPath
         argMap.put(LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK);
         return redirectResponse(requestLinkGenerator.getServerBaseURL(), requestLinkGenerator.link(argMap), request, response, permanent);
+        
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
@@ -170,8 +173,8 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Executing redirect with response ["+response+"]");
         }
-
-        String absoluteURL = actualUri.contains("://") ? actualUri : serverBaseURL + actualUri;
+        String processedActualUri = processedUrl(actualUri, request);
+        String absoluteURL = processedActualUri.contains("://") ? processedActualUri : serverBaseURL + processedActualUri;
         String redirectUrl = useJessionId ? response.encodeRedirectURL(absoluteURL) : absoluteURL;
         int status = permanent ? HttpServletResponse.SC_MOVED_PERMANENTLY : HttpServletResponse.SC_MOVED_TEMPORARILY;
 
@@ -184,7 +187,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             }
         }
 
-        request.setAttribute(GRAILS_REDIRECT_ISSUED, actualUri);
+        request.setAttribute(GRAILS_REDIRECT_ISSUED, processedActualUri);
         return null;
     }
 
@@ -203,5 +206,25 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             actionName = GrailsClassUtils.findPropertyNameForValue(target, actionRef);
         }
         return actionName;
+    }
+
+
+    /**
+     * getter to obtain RequestDataValueProcessor from 
+     */
+    private void initRequestDataValueProcessor() {
+        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
+        ApplicationContext applicationContext = webRequest.getApplicationContext();
+        if (requestDataValueProcessor == null && applicationContext.containsBean("requestDataValueProcessor")){
+            requestDataValueProcessor = applicationContext.getBean("requestDataValueProcessor",RequestDataValueProcessor.class);
+        }
+    }
+    private String processedUrl(String link, HttpServletRequest request) {
+        initRequestDataValueProcessor();
+        String currentLink = link;
+        if(requestDataValueProcessor != null) {
+             currentLink = requestDataValueProcessor.processUrl(request,link);
+        }
+        return currentLink;
     }
 }

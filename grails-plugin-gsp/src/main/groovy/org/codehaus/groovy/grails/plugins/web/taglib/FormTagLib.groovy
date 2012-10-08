@@ -27,6 +27,7 @@ import org.springframework.beans.SimpleTypeConverter
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
+import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 /**
  * Tags for working with form controls.
@@ -39,6 +40,8 @@ class FormTagLib {
     private static final DEFAULT_CURRENCY_CODES = ['EUR', 'XCD', 'USD', 'XOF', 'NOK', 'AUD',
                                                    'XAF', 'NZD', 'MAD', 'DKK', 'GBP', 'CHF',
                                                    'XPF', 'ILS', 'ROL', 'TRL']
+
+    def requestDataValueProcessor = null;
 
     /**
      * Creates a new text field.
@@ -117,6 +120,9 @@ class FormTagLib {
 
     def fieldImpl(out, attrs) {
         resolveAttributes(attrs)
+        
+        attrs.value = processFormFieldValueIfNecessary(attrs.name, attrs.value, attrs.type);
+        
         out << "<input type=\"${attrs.remove('type')}\" "
         outputAttributes(attrs, out, true)
         out << "/>"
@@ -161,14 +167,22 @@ class FormTagLib {
         if (checked instanceof String) checked = Boolean.valueOf(checked)
 
         if (value == null) value = false
-
-        out << "<input type=\"hidden\" name=\"_${name}\" /><input type=\"checkbox\" name=\"${name}\" "
+        def hiddenValue = "";
+        
+        value = processFormFieldValueIfNecessary(name, value,"checkbox")
+        hiddenValue = processFormFieldValueIfNecessary("_${name}", hiddenValue, "hidden")
+        
+        out << "<input type=\"hidden\" name=\"_${name}\"";
+        if(hiddenValue != "") {
+            out << " value=\"${hiddenValue}\"";
+        }
+        out << " /><input type=\"checkbox\" name=\"${name}\" "
         if (checkedAttributeWasSpecified) {
             if (checked) {
                 out << 'checked="checked" '
             }
         }
-        else if (value) {
+        else if (value && value != "") {
             out << 'checked="checked" '
         }
 
@@ -209,9 +223,14 @@ class FormTagLib {
             attrs.remove 'escapeHtml'
         }
 
+        // Add textarea field to requestDataValueProcessor
+        def content = (escapeHtml ? value.encodeAsHTML() : value)
+        if(attrs.name) {
+            content = processFormFieldValueIfNecessary(attrs.name,content,"textarea" )
+        }
         out << "<textarea "
         outputAttributes(attrs, out, true)
-        out << ">" << (escapeHtml ? value.encodeAsHTML() : value) << "</textarea>"
+        out << ">" << content << "</textarea>"
     }
 
     /**
@@ -323,7 +342,15 @@ class FormTagLib {
         def linkAttrs = attrs.subMap(LinkGenerator.LINK_ATTRIBUTES)
 
         writer << "<form action=\""
-        writer << createLink(linkAttrs)
+
+        // Call RequestDataValueProcessor to modify url if necessary
+        def link = createLink(linkAttrs)
+        def requestDataValueProcessor = getRequestDataValueProcessor()
+        if (requestDataValueProcessor != null) {
+            link= requestDataValueProcessor.processAction(request,link)
+        }
+
+        writer << link
         writer << "\" "
 
         // if URL is not nul remove attributes
@@ -372,10 +399,26 @@ class FormTagLib {
         // output the body
         writer << body()
 
+        //Write RequestDataValueProcessor hidden fields if necessary
+        if (requestDataValueProcessor != null){
+            def hiddenFields = requestDataValueProcessor.getExtraHiddenFields(request)
+            writeHiddenFields(hiddenFields) 
+        }
         // close tag
         writer << "</form>"
     }
 
+    /**
+    * Method to generate hidden inputs
+    */
+    private writeHiddenFields(hiddenFields) {
+        def writer = getOut()
+        if(hiddenFields != null) {
+            hiddenFields.each() { key, value -> writer << "<input type=\"hidden\" name=\"${key}\" value=\"${value}\" />\n"
+            }
+        }
+    }
+    
     /**
      * Creates a submit button that submits to an action in the controller specified by the form action.<br/>
      * The name of the action attribute is translated into the action name, for example "Edit" becomes
@@ -407,6 +450,8 @@ class FormTagLib {
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
+        // Change value if necessary in requestDataValueProcessor
+        value = processFormFieldValueIfNecessary("_action_${action}",value,"submit")
         booleanToAttribute(attrs, 'disabled')
 
         out << "<input type=\"submit\" name=\"_action_${action}\" value=\"${value}\" "
@@ -443,6 +488,8 @@ class FormTagLib {
         // add action and value
         def value = attrs.remove('value')
         def action = attrs.remove('action') ?: value
+        //Change this button to use requestDataValueProcessor
+        value = processFormFieldValueIfNecessary("_action_${action}","${value}","image")
         booleanToAttribute(attrs, 'disabled')
 
         out << "<input type=\"image\" name=\"_action_${action}\" value=\"${value}\" "
@@ -450,6 +497,7 @@ class FormTagLib {
         // add image src
         def src = attrs.remove('src')
         if (src) {
+            src = processedUrl(src,request)
             out << "src=\"${src}\" "
         }
 
@@ -578,7 +626,9 @@ class FormTagLib {
         booleanToAttribute(attrs, 'disabled')
         booleanToAttribute(attrs, 'readonly')
 
-        out.println "<input type=\"hidden\" name=\"${name}\" value=\"date.struct\" />"
+        // Change this hidden to use requestDataValueProcessor
+        def dateStructValue = processFormFieldValueIfNecessary("${name}","date.struct","hidden")
+        out.println "<input type=\"hidden\" name=\"${name}\" value=\"${dateStructValue}\" />"
 
         // create day select
         if (precision >= PRECISION_RANKINGS["day"]) {
@@ -597,7 +647,9 @@ class FormTagLib {
             }
 
             for (i in 1..31) {
-                out.println "<option value=\"${i}\"${i == day ? ' selected="selected"' : ''}>${i}</option>"
+                // Change this option to use requestDataValueProcessor
+                def dayIndex = processFormFieldValueIfNecessary("${name}_day","${i}","option")
+                out.println "<option value=\"${dayIndex}\"${i == day ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
         }
@@ -621,6 +673,7 @@ class FormTagLib {
             dfs.months.eachWithIndex {m, i ->
                 if (m) {
                     def monthIndex = i + 1
+                    monthIndex = processFormFieldValueIfNecessary("${name}_month","${monthIndex}","option")
                     out.println "<option value=\"${monthIndex}\"${i == month ? ' selected="selected"' : ''}>$m</option>"
                 }
             }
@@ -644,7 +697,9 @@ class FormTagLib {
             }
 
             for (i in years) {
-                out.println "<option value=\"${i}\"${i == year ? ' selected="selected"' : ''}>${i}</option>"
+                // Change this year option to use requestDataValueProcessor
+                def yearIndex  = processFormFieldValueIfNecessary("${name}_year","${i}","option")
+                out.println "<option value=\"${yearIndex}\"${i == year ? ' selected="selected"' : ''}>${i}</option>"
             }
             out.println '</select>'
         }
@@ -668,6 +723,8 @@ class FormTagLib {
             for (i in 0..23) {
                 def h = '' + i
                 if (i < 10) h = '0' + h
+                // This option add hour to requestDataValueProcessor
+                h  = processFormFieldValueIfNecessary("${name}_hour","${h}","option")
                 out.println "<option value=\"${h}\"${i == hour ? ' selected="selected"' : ''}>$h</option>"
             }
             out.println '</select> :'
@@ -697,6 +754,7 @@ class FormTagLib {
             for (i in 0..59) {
                 def m = '' + i
                 if (i < 10) m = '0' + m
+                m  = processFormFieldValueIfNecessary("${name}_minute","${m}","option")
                 out.println "<option value=\"${m}\"${i == minute ? ' selected="selected"' : ''}>$m</option>"
             }
             out.println '</select>'
@@ -853,14 +911,17 @@ class FormTagLib {
             writer.println()
         }
 
+
+        def requestDataValueProcessor = getRequestDataValueProcessor()
         // create options from list
         if (from) {
             from.eachWithIndex {el, i ->
                 def keyValue = null
                 writer << '<option '
                 if (keys) {
-                    keyValue = keys[i]
-                    writeValueAndCheckIfSelected(keyValue, value, writer)
+                    keyValue = keys[i];
+                    
+                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
                 }
                 else if (optionKey) {
                     def keyValueObject = null
@@ -875,11 +936,11 @@ class FormTagLib {
                         keyValue = el[optionKey]
                         keyValueObject = el
                     }
-                    writeValueAndCheckIfSelected(keyValue, value, writer, keyValueObject)
+                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, keyValueObject)
                 }
                 else {
                     keyValue = el
-                    writeValueAndCheckIfSelected(keyValue, value, writer)
+                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
                 }
                 writer << '>'
                 if (optionValue) {
@@ -922,11 +983,11 @@ class FormTagLib {
         writer << '</select>'
     }
 
-    private writeValueAndCheckIfSelected(keyValue, value, writer) {
-        writeValueAndCheckIfSelected(keyValue, value, writer, null)
+    private writeValueAndCheckIfSelected(selectName, keyValue, value, writer) {
+        writeValueAndCheckIfSelected(selectName, keyValue, value, writer, null)
     }
 
-    private writeValueAndCheckIfSelected(keyValue, value, writer, el) {
+    private writeValueAndCheckIfSelected(selectName, keyValue, value, writer, el) {
 
         boolean selected = false
         def keyClass = keyValue?.getClass()
@@ -955,6 +1016,7 @@ class FormTagLib {
                 // ignore
             }
         }
+        keyValue = processFormFieldValueIfNecessary(selectName, "${keyValue}","option")
         writer << "value=\"${keyValue}\" "
         if (selected) {
             writer << 'selected="selected" '
@@ -980,6 +1042,7 @@ class FormTagLib {
         booleanToAttribute(attrs, 'readonly')
 
         def checked = attrs.remove('checked') ? true : false
+        value = processFormFieldValueIfNecessary(name, "${value?.toString()?.encodeAsHTML()}","radio")
         out << "<input type=\"radio\" name=\"${name}\"${ checked ? ' checked="checked" ' : ' '}value=\"${value?.toString()?.encodeAsHTML()}\" "
         if (!attrs.containsKey('id')) {
             out << """id="${name}" """
@@ -1015,7 +1078,9 @@ class FormTagLib {
             if (value?.toString().equals(val.toString())) {
                 it.radio << 'checked="checked" '
             }
-            it.radio << "value=\"${val.toString().encodeAsHTML()}\" "
+            // Generate 
+            def processedVal = processFormFieldValueIfNecessary(name, val.toString().encodeAsHTML(), "radio");
+            it.radio << "value=\"${processedVal}\" "
 
             // process remaining attributes
             outputAttributes(attrs, it.radio)
@@ -1027,4 +1092,36 @@ class FormTagLib {
             out.println()
         }
     }
+
+    /**
+     * getter to obtain RequestDataValueProcessor from 
+     */
+    private getRequestDataValueProcessor() {
+        if (requestDataValueProcessor == null && grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
+            requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+        }
+        return requestDataValueProcessor;
+    }
+
+    private processFormFieldValueIfNecessary(name, value, type) {
+        def requestDataValueProcessor = getRequestDataValueProcessor();  
+        def processedValue = value;
+        if(requestDataValueProcessor != null) {
+            processedValue = requestDataValueProcessor.processFormFieldValue(request, name, "${value}", type);
+        } 
+        return processedValue;
+    }
+
+    Closure processedUrl = { link,request ->
+        if(!link) {
+            throwTagError('processedUrl missing required attribute ["link"]')
+        }
+        requestDataValueProcessor = getRequestDataValueProcessor()
+        def currentLink = link;
+        if(requestDataValueProcessor != null) {
+            currentLink = requestDataValueProcessor.processUrl(request,link);
+        }  
+        return currentLink;
+    }
+
 }
