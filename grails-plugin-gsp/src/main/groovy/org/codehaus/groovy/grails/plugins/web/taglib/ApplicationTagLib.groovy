@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 /**
  * The base application tag library for Grails many of which take inspiration from Rails helpers (thanks guys! :)
@@ -57,6 +58,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
 
     boolean useJsessionId = false
     boolean hasResourceProcessor = false
+
+    def requestDataValueProcessor = null
 
     void afterPropertiesSet() {
         def config = applicationContext.getBean(GrailsApplication.APPLICATION_ID).config
@@ -158,7 +161,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         // Use resources plugin if present, but only if file is specified - resources require files
         // But users often need to link to a folder just using dir
-        return ((hasResourceProcessor && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs))
+        def url = ((hasResourceProcessor && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs));
+
+        return url?processedUrl("${url}",request):url;
     }
 
     /**
@@ -175,11 +180,12 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (hasResourceProcessor) {
             return r.img(attrs)
         } else {
-            def uri = attrs.uri ?: resource(attrs)
+            def uri = attrs.uri ?processedUrl(attrs.uri,request): resource(attrs)
 
             def excludes = ['dir', 'uri', 'file', 'plugin']
             def attrsAsString = attrsToString(attrs.findAll { !(it.key in excludes) })
-            return "<img src=\"${uri.encodeAsHTML()}\"${attrsAsString} />"
+            def imgSrc = uri.encodeAsHTML()
+            return "<img src=\"${imgSrc}\"${attrsAsString} />"
         }
     }
 
@@ -322,7 +328,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         // Allow attrs to overwrite any constants
         attrs.each { typeInfo.remove(it.key) }
 
-        out << writer(uri, typeInfo, attrs)
+        out << writer(processedUrl(uri,request), typeInfo, attrs)
         out << "\r\n"
     }
 
@@ -365,6 +371,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             urlAttrs.params = params
         }
         def generatedLink = linkGenerator.link(attrs, request.characterEncoding)
+        generatedLink = processedUrl(generatedLink,request);
 
         if (useJsessionId) {
             return response.encodeURL(generatedLink)
@@ -434,5 +441,25 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             throwTagError('Tag ["meta"] missing required attribute ["name"]')
         }
         return Metadata.current[attrs.name]
+    }
+
+    /**
+     * getter to obtain RequestDataValueProcessor from 
+     */
+    private initRequestDataValueProcessor() {
+        if (requestDataValueProcessor == null && grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
+            requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+        }
+    }
+    Closure processedUrl = { link,request ->
+        if(!link) {
+            throwTagError('processedUrl missing required attribute ["link"]')
+        }
+        initRequestDataValueProcessor();
+        def currentLink = link;
+        if(requestDataValueProcessor != null) {
+            currentLink = requestDataValueProcessor.processUrl(request,link);
+        }   
+        return currentLink;
     }
 }
