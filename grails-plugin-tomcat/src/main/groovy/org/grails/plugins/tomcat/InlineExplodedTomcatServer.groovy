@@ -27,6 +27,7 @@ import org.apache.tomcat.util.scan.StandardJarScanner
 import org.springframework.util.ReflectionUtils
 import org.apache.catalina.Loader
 import org.apache.catalina.Context
+import grails.util.Environment
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
  */
@@ -137,7 +138,9 @@ class InlineExplodedTomcatServer extends TomcatServer {
         }
 
         tomcat.start()
-        IsolatedTomcat.startKillSwitch(tomcat, httpPort)
+        if(Environment.isFork()) {
+            IsolatedTomcat.startKillSwitch(tomcat, httpPort)
+        }
     }
 
     void stop() {
