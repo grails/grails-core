@@ -15,6 +15,12 @@
  */
 package grails.web;
 
+/**
+ * URL converter interface for conversion strategies to implement
+ *
+ * @author Jeff Brown
+ * @since 2.0
+ */
 public interface UrlConverter {
     String BEAN_NAME = "grailsUrlConverter";
 
