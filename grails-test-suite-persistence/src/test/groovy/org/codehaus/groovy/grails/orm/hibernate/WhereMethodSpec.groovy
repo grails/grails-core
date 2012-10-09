@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 import grails.gorm.DetachedCriteria
 import spock.lang.Ignore
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import spock.lang.Issue
 
 /**
  * Tests the where method in Grails
@@ -11,6 +12,19 @@ class WhereMethodSpec extends GormSpec{
     @Override
     List getDomainClasses() {
         [Person, Pet]
+    }
+    @Issue('GRAILS-9447')
+    def "Test where query integer type conversion"() {
+        given:"some people"
+            createPeopleWithPets()
+
+        when:"A where query is used with an integer value and a long property type"
+            def results = Pet.where { owner.id == 2 }.list()
+
+        then:"The correct results are returned and type conversion happens as expected"
+            results.size() == 3
+            results[0].id == 3
+
     }
 
 
