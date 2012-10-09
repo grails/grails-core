@@ -130,7 +130,12 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
     }
 
     public PersistentProperty getPropertyByName(String name) {
-        return propertiesByName.get(name);
+        if(getIdentity().getName().equals(name)) {
+            return getIdentity();
+        }
+        else {
+            return propertiesByName.get(name);
+        }
     }
 
     public Class getJavaClass() {

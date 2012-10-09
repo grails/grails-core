@@ -40,11 +40,14 @@ import org.hibernate.criterion.Restrictions;
 public class HibernateCriterionAdapter {
     private static final Map<Class<?>, CriterionAdaptor> criterionAdaptors = new HashMap<Class<?>, CriterionAdaptor>();
     private String alias;
+    private PersistentEntity entity;
 
-    public HibernateCriterionAdapter(Query.Criterion criterion, String alias) {
+    public HibernateCriterionAdapter(PersistentEntity entity, Query.Criterion criterion, String alias) {
         this.criterion = criterion;
         this.alias = alias;
+        this.entity = entity;
     }
+
 
     static {
         criterionAdaptors.put(DetachedAssociationCriteria.class, new CriterionAdaptor() {
@@ -325,6 +328,9 @@ public class HibernateCriterionAdapter {
                     pc.setValue(
                         HibernateCriteriaBuilder.getHibernateDetachedCriteria((QueryableCriteria<?>) pc.getValue())
                     );
+                }
+                else {
+                    HibernateQuery.doTypeConversionIfNeccessary(entity, pc);
                 }
             }
             CriterionAdaptor criterionAdaptor = criterionAdaptors.get(subCriterion.getClass());
