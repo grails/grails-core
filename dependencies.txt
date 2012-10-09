@@ -22,8 +22,8 @@ The following libraries are included in Grails because they are required either 
 - required for building Grails core
 - required for running Grails applications
 
-* commons-beanutils-1.8.0.jar
-- Commons BeanUtils 1.8.0 (http://commons.apache.org/beanutils/) Apache 2.0 License
+* commons-beanutils-1.8.3.jar
+- Commons BeanUtils 1.8.3 (http://commons.apache.org/beanutils/) Apache 2.0 License
 - required for running Grails applications 
 
 * commons-codec-1.4.jar
