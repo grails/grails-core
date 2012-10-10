@@ -30,6 +30,7 @@ import org.grails.datastore.mapping.query.Query;
 import org.grails.datastore.mapping.query.api.QueryableCriteria;
 import org.grails.datastore.mapping.query.criteria.FunctionCallingCriterion;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.*;
 import org.hibernate.dialect.Dialect;
@@ -46,6 +47,8 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.ReflectionUtils;
+
+import javax.persistence.FetchType;
 
 /**
  * Bridges the Query API with the Hibernate Criteria API
@@ -386,7 +389,21 @@ public class HibernateQuery extends Query {
 
         if(projectionLength<2)
             criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+
+        applyFetchStrategies();
         return criteria.list();
+    }
+
+    private void applyFetchStrategies() {
+        for (Map.Entry<String, FetchType> entry : fetchStrategies.entrySet()) {
+            switch(entry.getValue()) {
+                case EAGER:
+                    criteria.setFetchMode(entry.getKey(), FetchMode.JOIN); break;
+                case LAZY:
+                    criteria.setFetchMode(entry.getKey(), FetchMode.SELECT); break;
+
+            }
+        }
     }
 
     @Override
@@ -400,6 +417,7 @@ public class HibernateQuery extends Query {
             criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
         }
         criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+        applyFetchStrategies();
         return criteria.uniqueResult();
     }
 
