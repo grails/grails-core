@@ -59,6 +59,7 @@ import javax.persistence.FetchType;
 @SuppressWarnings("rawtypes")
 public class HibernateQuery extends Query {
 
+    public static final String SIZE_CONSTRAINT_PREFIX = "Size";
     private Criteria criteria;
     private HibernateQuery.HibernateProjectionList hibernateProjectionList = null;
     private String alias;
@@ -119,6 +120,7 @@ public class HibernateQuery extends Query {
                 DetachedCriteria hibernateDetachedCriteria = HibernateCriteriaBuilder.getHibernateDetachedCriteria((QueryableCriteria) value);
                 pc.setValue(hibernateDetachedCriteria);
             }
+            // ignore Size related constraints
             else {
                 doTypeConversionIfNeccessary(getEntity(), pc);
             }
@@ -130,11 +132,14 @@ public class HibernateQuery extends Query {
     }
 
     static void doTypeConversionIfNeccessary(PersistentEntity entity, PropertyCriterion pc) {
-        String property = pc.getProperty();
-        Object value = pc.getValue();
-        PersistentProperty p = entity.getPropertyByName(property);
-        if(p != null && !p.getType().isInstance(value)) {
-           pc.setValue( conversionService.convert(value, p.getType()));
+        if(!pc.getClass().getSimpleName().startsWith(SIZE_CONSTRAINT_PREFIX)) {
+
+            String property = pc.getProperty();
+            Object value = pc.getValue();
+            PersistentProperty p = entity.getPropertyByName(property);
+            if(p != null && !p.getType().isInstance(value)) {
+                pc.setValue( conversionService.convert(value, p.getType()));
+            }
         }
     }
 
