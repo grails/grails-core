@@ -30,6 +30,7 @@ import org.grails.datastore.mapping.query.Query;
 import org.grails.datastore.mapping.query.api.QueryableCriteria;
 import org.grails.datastore.mapping.query.criteria.FunctionCallingCriterion;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.*;
 import org.hibernate.dialect.Dialect;
@@ -47,6 +48,8 @@ import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.ReflectionUtils;
 
+import javax.persistence.FetchType;
+
 /**
  * Bridges the Query API with the Hibernate Criteria API
  *
@@ -56,6 +59,7 @@ import org.springframework.util.ReflectionUtils;
 @SuppressWarnings("rawtypes")
 public class HibernateQuery extends Query {
 
+    public static final String SIZE_CONSTRAINT_PREFIX = "Size";
     private Criteria criteria;
     private HibernateQuery.HibernateProjectionList hibernateProjectionList = null;
     private String alias;
@@ -116,6 +120,7 @@ public class HibernateQuery extends Query {
                 DetachedCriteria hibernateDetachedCriteria = HibernateCriteriaBuilder.getHibernateDetachedCriteria((QueryableCriteria) value);
                 pc.setValue(hibernateDetachedCriteria);
             }
+            // ignore Size related constraints
             else {
                 doTypeConversionIfNeccessary(getEntity(), pc);
             }
@@ -127,11 +132,14 @@ public class HibernateQuery extends Query {
     }
 
     static void doTypeConversionIfNeccessary(PersistentEntity entity, PropertyCriterion pc) {
-        String property = pc.getProperty();
-        Object value = pc.getValue();
-        PersistentProperty p = entity.getPropertyByName(property);
-        if(p != null && !p.getType().isInstance(value)) {
-           pc.setValue( conversionService.convert(value, p.getType()));
+        if(!pc.getClass().getSimpleName().startsWith(SIZE_CONSTRAINT_PREFIX)) {
+
+            String property = pc.getProperty();
+            Object value = pc.getValue();
+            PersistentProperty p = entity.getPropertyByName(property);
+            if(p != null && !p.getType().isInstance(value)) {
+                pc.setValue( conversionService.convert(value, p.getType()));
+            }
         }
     }
 
@@ -388,7 +396,21 @@ public class HibernateQuery extends Query {
             criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         }
 
+
+        applyFetchStrategies();
         return criteria.list();
+    }
+
+    private void applyFetchStrategies() {
+        for (Map.Entry<String, FetchType> entry : fetchStrategies.entrySet()) {
+            switch(entry.getValue()) {
+                case EAGER:
+                    criteria.setFetchMode(entry.getKey(), FetchMode.JOIN); break;
+                case LAZY:
+                    criteria.setFetchMode(entry.getKey(), FetchMode.SELECT); break;
+
+            }
+        }
     }
 
     @Override
@@ -402,6 +424,7 @@ public class HibernateQuery extends Query {
             criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
         }
         criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+        applyFetchStrategies();
         return criteria.uniqueResult();
     }
 
