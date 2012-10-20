@@ -1005,6 +1005,30 @@ class TestManySide {
         assertEquals("EXPECTED_COLUMN_NAME", column.name)
     }
 
+    void testCustomNamingStrategyWithCollection() {
+
+        GrailsDomainBinder.configureNamingStrategy(CustomNamingStrategy)
+
+        GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
+            cl.parseClass('''
+class TestOneSide2 {
+    Long id
+    Long version
+    String fooName
+    Set others
+    static hasMany = [others: TestOneSide2]
+}'''))
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+            cl.parseClass('''
+class TestManySide2 {
+    Long id
+    Long version
+}'''))
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, [oneClass.clazz, domainClass.clazz])
+        assertEquals '2EDIS_ENO_TSET_ELBAT_2EDIS_ENO_TSET_ELBAT', config.getCollectionMapping('TestOneSide2.others').collectionTable.name
+    }
+
     void testCustomNamingStrategyAsInstance() {
 
         // somewhat artificial in that it doesn't test that setting the property
@@ -1098,7 +1122,7 @@ class Alert {
     private DefaultGrailsDomainConfiguration getDomainConfig(grailsApplication, pluginManager) {
         def mainContext = new MockApplicationContext()
         mainContext.registerMockBean 'pluginManager', pluginManager
-        grailsApplication.setMainContext(mainContext);
+        grailsApplication.setMainContext(mainContext)
         grailsApplication.initialise()
         DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration(
             grailsApplication: grailsApplication)
@@ -1168,16 +1192,21 @@ class Alert {
     }
 
     static class CustomNamingStrategy extends ImprovedNamingStrategy {
-       private static final long serialVersionUID = 1
+        private static final long serialVersionUID = 1
 
-       @Override
-       String classToTableName(String className) {
-           "table_" + StringHelper.unqualify(className)
-       }
+        @Override
+        String classToTableName(String className) {
+            "table_" + StringHelper.unqualify(className)
+        }
 
-       @Override
-       String propertyToColumnName(String propertyName) {
-           "col_" + StringHelper.unqualify(propertyName)
-       }
-   }
+        @Override
+        String tableName(String tableName) {
+            super.tableName(tableName).toUpperCase().reverse()
+        }
+
+        @Override
+        String propertyToColumnName(String propertyName) {
+            "col_" + StringHelper.unqualify(propertyName)
+        }
+    }
 }
