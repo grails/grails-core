@@ -36,7 +36,6 @@ import java.net.URL;
 public class FileSystemResource implements Resource {
 
     private final File file;
-
     private final String path;
 
     /**
@@ -45,25 +44,9 @@ public class FileSystemResource implements Resource {
      * @param file a File handle
      */
     public FileSystemResource(File file) {
+        assertNotNull(file, "File must not be null");
         this.file = file;
-        if (file.exists()) {
-
-            String canonicalPath = null;
-            try {
-                canonicalPath = file.getCanonicalPath();
-            } catch (IOException e) {
-                // ignore
-            }
-            if (canonicalPath != null) {
-                path = canonicalPath;
-            }
-            else {
-                path = file.getPath();
-            }
-        }
-        else {
-            path = file.getPath();
-        }
+        path = GrailsResourceUtils.cleanPath(file.getPath());
     }
 
     /**
@@ -72,7 +55,9 @@ public class FileSystemResource implements Resource {
      * @param path a file path
      */
     public FileSystemResource(String path) {
-        this(new File(path));
+        assertNotNull(path, "Path must not be null");
+        file = new File(path);
+        this.path = GrailsResourceUtils.cleanPath(path);
     }
 
     /**
@@ -203,5 +188,11 @@ public class FileSystemResource implements Resource {
     @Override
     public int hashCode() {
         return path.hashCode();
+    }
+
+    protected void assertNotNull(Object object, String message) {
+        if (object == null) {
+            throw new IllegalArgumentException(message);
+        }
     }
 }
