@@ -1201,7 +1201,8 @@ class Alert {
 
         @Override
         String tableName(String tableName) {
-            super.tableName(tableName).toUpperCase().reverse()
+            String name = super.tableName(tableName)
+            tableName.contains('TestOneSide2') ? name.toUpperCase().reverse() : name
         }
 
         @Override
