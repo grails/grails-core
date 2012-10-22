@@ -173,7 +173,7 @@ class PluginBuildSettings {
         compileInfo.pluginInfos << info
         compileInfo.pluginNames << info.name
         compileInfo.sourceDirectories.addAll(
-                getPluginSourceDirectories(dir.file.canonicalFile).findAll {  Resource it ->
+                getPluginSourceDirectories(dir.file.canonicalFile).findAll { Resource it ->
                     !excludedPaths.contains(it.file.name) && it.file.isDirectory()
                 })
         compileInfo.pluginDescriptors << getPluginDescriptor(dir)
@@ -606,7 +606,7 @@ class PluginBuildSettings {
                 artefactResourcesList.addAll getArtefactResourcesForOne(dir.file.absolutePath)
             }
 
-            artefactResources = artefactResourcesList as Resource[];
+            artefactResources = artefactResourcesList as Resource[]
             cache['allArtefactResourcesForEnvironment'] = artefactResources
         }
         return artefactResources
@@ -779,7 +779,7 @@ class PluginBuildSettings {
 
                 def (name, version, xml) = result
 
-                if (name == null || version == null) return null;
+                if (name == null || version == null) return null
 
                 def pluginInfo = getPluginInfoForName(name)
                 if (pluginInfo != null) {

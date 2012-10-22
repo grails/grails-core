@@ -77,7 +77,7 @@ public class GrailsFlashScope implements FlashScope {
             Object errors = scope.get(errorsKey);
             if (value!=null && errors != null) {
                 MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
-                if (mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
+                if (mc.hasProperty(value, ERRORS_PROPERTY) != null) {
                     mc.setProperty(value, ERRORS_PROPERTY, errors);
                 }
             }
@@ -119,10 +119,10 @@ public class GrailsFlashScope implements FlashScope {
     }
 
     public Set entrySet() {
-        Set keySet = new HashSet();
-        keySet.addAll(current.entrySet());
-        keySet.addAll(next.entrySet());
-        return keySet;
+        Set entrySet = new HashSet();
+        entrySet.addAll(current.entrySet());
+        entrySet.addAll(next.entrySet());
+        return entrySet;
     }
 
     public Set keySet() {
@@ -186,7 +186,7 @@ public class GrailsFlashScope implements FlashScope {
         }
         else {
             MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(value.getClass());
-            if (mc.hasProperty(value, ERRORS_PROPERTY)!=null) {
+            if (mc.hasProperty(value, ERRORS_PROPERTY) != null) {
                 Object errors = mc.getProperty(value, ERRORS_PROPERTY);
                 if (errors != null) {
                     scope.put(ERRORS_PREFIX + System.identityHashCode(value), errors);
@@ -196,7 +196,7 @@ public class GrailsFlashScope implements FlashScope {
     }
 
     private void registerWithSessionIfNecessary() {
-        GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
         HttpSession session = webRequest.getCurrentRequest().getSession(true);
         if (session.getAttribute(GrailsApplicationAttributes.FLASH_SCOPE) == null) {
             session.setAttribute(GrailsApplicationAttributes.FLASH_SCOPE, this);

@@ -291,7 +291,6 @@ class GrailsProjectCompiler {
         def classesDirPath = targetDir
         getAnt().mkdir(dir:classesDirPath)
 
-
         final pluginClassesDir = buildSettings.pluginClassesDir
         final pluginProvidedClassesDir = buildSettings.pluginProvidedClassesDir
         final pluginBuildClassesDir = buildSettings.pluginBuildClassesDir
@@ -313,8 +312,6 @@ class GrailsProjectCompiler {
         compilePluginSources(pluginSettings.providedScopePluginInfo, pluginProvidedClassesDir)
         compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
         compilePluginSources(pluginSettings.testScopePluginInfo, buildSettings.testClassesDir)
-
-
     }
 
     private  compilePluginSources(PluginScopeInfo pluginCompileInfo, classesDirPath) {

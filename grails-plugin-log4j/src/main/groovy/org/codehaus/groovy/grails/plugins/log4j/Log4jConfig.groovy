@@ -450,7 +450,7 @@ class RootLog4jConfig {
 class EnvironmentsLog4JConfig {
     Log4jConfig config
 
-    def EnvironmentsLog4JConfig(Log4jConfig config) {
+    EnvironmentsLog4JConfig(Log4jConfig config) {
         this.config = config
     }
 

@@ -4,7 +4,6 @@ import grails.util.MockRequestDataValueProcessor
 
 import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 /**
  * Tests for the FormTagLib.groovy file which contains tags to help with the                                         l
@@ -14,54 +13,47 @@ import org.springframework.web.servlet.support.RequestDataValueProcessor
  */
 class FormTagLibTests extends AbstractGrailsTagTests {
 
-    void registerRequestDataValueProcessor() {
-        RequestDataValueProcessor requestDataValueProcessor = new MockRequestDataValueProcessor();
-        MockApplicationContext applicationContext = (MockApplicationContext)ctx;
-        applicationContext.registerMockBean("requestDataValueProcessor",requestDataValueProcessor);
-    }
-    void unRegisterRequestDataValueProcessor() {
-        MockApplicationContext applicationContext = (MockApplicationContext)ctx;
-        applicationContext.registerMockBean("requestDataValueProcessor",null);
+    @Override
+    protected void setUp() {
+        super.setUp()
+        appCtx.getBean(FormTagLib.name).requestDataValueProcessor = new MockRequestDataValueProcessor()
     }
 
     void testFormTagWithAlternativeMethod() {
+        unRegisterRequestDataValueProcessor()
         def template = '<g:form url="/foo/bar" method="delete"></g:form>'
         assertOutputEquals('<form action="/foo/bar" method="post" ><input type="hidden" name="_method" value="DELETE" id="_method" /></form>', template)
     }
 
     void testFormTagWithAlternativeMethodAndRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
         def template = '<g:form url="/foo/bar" method="delete"></g:form>'
         assertOutputEquals('<form action="/foo/bar" method="post" ><input type="hidden" name="_method" value="DELETE_PROCESSED_" id="_method" /><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', template)
-        this.unRegisterRequestDataValueProcessor()
     }
 
     // test for GRAILS-3865
     void testHiddenFieldWithZeroValue() {
+        unRegisterRequestDataValueProcessor()
         def template = '<g:hiddenField name="index" value="${0}" />'
         assertOutputContains 'value="0"', template
     }
     void testHiddenFieldWithZeroValueAndRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor();
         def template = '<g:hiddenField name="index" value="${0}" />'
         assertOutputContains 'value="0_PROCESSED_"', template
-        this.unRegisterRequestDataValueProcessor();
     }
 
     void testFormTagWithStringURL() {
+        unRegisterRequestDataValueProcessor()
         def template = '<g:form url="/foo/bar"></g:form>'
         assertOutputEquals('<form action="/foo/bar" method="post" ></form>', template)
     }
 
     void testFormTagWithStringURLAndRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor();
-        
         def template = '<g:form url="/foo/bar"></g:form>'
         assertOutputEquals('<form action="/foo/bar" method="post" ><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', template)
-        this.unRegisterRequestDataValueProcessor();
     }
 
     void testFormTagWithTrueUseToken() {
+        unRegisterRequestDataValueProcessor()
         def template = '<g:form url="/foo/bar" useToken="true"></g:form>'
         assertOutputContains('<form action="/foo/bar" method="post" >', template)
         assertOutputContains('<input type="hidden" name="org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN" value="', template)
@@ -74,8 +66,6 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testFormTagWithTrueUseTokenAndRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor();
-
         def template = '<g:form url="/foo/bar" useToken="true"></g:form>'
         assertOutputContains('<form action="/foo/bar" method="post" >', template)
         assertOutputContains('<input type="hidden" name="org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN" value="', template)
@@ -90,7 +80,6 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         assertOutputContains('<input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />',template)
         assertOutputContains('<input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />',template)
         assertOutputContains('_PROCESSED_',template)
-        this.unRegisterRequestDataValueProcessor();
     }
 
     void testFormTagWithNonTrueUseToken() {
@@ -111,6 +100,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testTextFieldTag() {
+        unRegisterRequestDataValueProcessor()
         def template = '<g:textField name="testField" value="1" />'
         assertOutputEquals('<input type="text" name="testField" value="1" id="testField" />', template)
 
@@ -119,37 +109,33 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testTextFieldTagWithRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
         def template = '<g:textField name="testField" value="1" />'
         assertOutputEquals('<input type="text" name="testField" value="1_PROCESSED_" id="testField" />', template)
 
         template = '<g:textField name="testField" value="${value}" />'
         assertOutputEquals('<input type="text" name="testField" value="foo &gt; &quot; &amp; &lt; &#39;_PROCESSED_" id="testField" />', template, [value:/foo > " & < '/])
-        this.unRegisterRequestDataValueProcessor()
     }
 
     void testTextAreaWithBody() {
+        unRegisterRequestDataValueProcessor()
         def template = '<g:textArea name="test">This is content</g:textArea>'
-        assertOutputEquals '<textarea name="test" id="test" >This is content</textarea>', template        
+        assertOutputEquals '<textarea name="test" id="test" >This is content</textarea>', template
     }
 
     void testTextAreaWithBodyAndRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
         def template = '<g:textArea name="test">This is content</g:textArea>'
         assertOutputEquals '<textarea name="test" id="test" >This is content_PROCESSED_</textarea>', template
-        this.unRegisterRequestDataValueProcessor()
     }
 
     void testPasswordTag() {
+        unRegisterRequestDataValueProcessor()
         def template = '<g:passwordField name="myPassword" value="foo"/>'
         assertOutputEquals('<input type="password" name="myPassword" value="foo" id="myPassword" />', template)
     }
 
     void testPasswordTagWithRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
         def template = '<g:passwordField name="myPassword" value="foo"/>'
         assertOutputEquals('<input type="password" name="myPassword" value="foo_PROCESSED_" id="myPassword" />', template)
-        this.unRegisterRequestDataValueProcessor()
     }
 
     void testFormWithURL() {
@@ -164,7 +150,9 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testFormWithURLAndRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
+
+        ctx.registerMockBean('requestDataValueProcessor', new MockRequestDataValueProcessor())
+
         final StringWriter sw = new StringWriter()
 
         withTag("form", new PrintWriter(sw)) { tag ->
@@ -173,7 +161,6 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             tag.call(attributes, { "" })
             assertEquals '<form action="/con/action" method="post" id="formElementId" ><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', sw.toString().trim()
         }
-        this.unRegisterRequestDataValueProcessor()
     }
 
     void testActionSubmitWithoutAction() {
@@ -188,7 +175,9 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testActionSubmitWithoutActionAndWithRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
+
+        ctx.registerMockBean('requestDataValueProcessor', new MockRequestDataValueProcessor())
+
         final StringWriter sw = new StringWriter()
 
         withTag("actionSubmit", new PrintWriter(sw)) { tag ->
@@ -197,7 +186,6 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             tag.call(attributes)
             assertEquals '<input type="submit" name="_action_Edit" value="Edit_PROCESSED_" />', sw.toString() // NO TRIM, TEST WS!
         }
-        this.unRegisterRequestDataValueProcessor()
     }
 
     void testActionSubmitWithAction() {
@@ -212,7 +200,9 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testActionSubmitWithActionAndRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
+
+        ctx.registerMockBean('requestDataValueProcessor', new MockRequestDataValueProcessor())
+
         final StringWriter sw = new StringWriter()
 
         withTag("actionSubmit", new PrintWriter(sw)) { tag ->
@@ -221,7 +211,6 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             tag.call(attributes)
             assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing_PROCESSED_" />', sw.toString() // NO TRIM, TEST WS!
         }
-        this.unRegisterRequestDataValueProcessor()
     }
 
     /**
@@ -250,6 +239,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testActionSubmitImageWithoutAction() {
+        unRegisterRequestDataValueProcessor()
         final StringWriter sw = new StringWriter()
 
         withTag("actionSubmitImage", new PrintWriter(sw)) { tag ->
@@ -261,7 +251,9 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testActionSubmitImageWithoutActionAndWithRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
+
+        ctx.registerMockBean('requestDataValueProcessor', new MockRequestDataValueProcessor())
+
         final StringWriter sw = new StringWriter()
 
         withTag("actionSubmitImage", new PrintWriter(sw)) { tag ->
@@ -270,7 +262,6 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             tag.call(attributes)
             assertEquals '<input type="image" name="_action_Edit" value="Edit_PROCESSED_" src="edit.gif?requestDataValueProcessorParamName=paramValue" />', sw.toString() // NO TRIM, TEST WS!
         }
-        this.unRegisterRequestDataValueProcessor()
     }
 
     void testActionSubmitImageWithAction() {
@@ -314,6 +305,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             assertEquals '<textarea name="testField" id="testField" >1</textarea>', sw.toString()
         }
     }
+
     void testPassingTheSameMapToTextField() {
         // GRAILS-8250
         StringWriter sw = new StringWriter()
@@ -419,5 +411,9 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         // Test disabled for null value
         attributes = [name: 'myfield', value: '1', disabled: null]
         doTestBoolean(attributes, '<input type="text" name="myfield" value="1" id="myfield" />')
+    }
+
+    private void unRegisterRequestDataValueProcessor() {
+        appCtx.getBean(FormTagLib.name).requestDataValueProcessor = null
     }
 }

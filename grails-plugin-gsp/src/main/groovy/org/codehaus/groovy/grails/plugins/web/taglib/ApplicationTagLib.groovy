@@ -17,19 +17,19 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import grails.util.GrailsUtil
 import grails.util.Metadata
+
 import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.servlet.support.RequestDataValueProcessor
 
 /**
@@ -50,6 +50,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     @Autowired
     LinkGenerator linkGenerator
 
+    RequestDataValueProcessor requestDataValueProcessor
+
     static final SCOPES = [page: 'pageScope',
                            application: 'servletContext',
                            request:'request',
@@ -59,14 +61,17 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     boolean useJsessionId = false
     boolean hasResourceProcessor = false
 
-    def requestDataValueProcessor = null
-
     void afterPropertiesSet() {
-        def config = applicationContext.getBean(GrailsApplication.APPLICATION_ID).config
+        def config = grailsApplication.config
         if (config.grails.views.enable.jsessionid instanceof Boolean) {
             useJsessionId = config.grails.views.enable.jsessionid
         }
+
         hasResourceProcessor = applicationContext.containsBean('grailsResourceProcessor')
+
+        if (applicationContext.containsBean('requestDataValueProcessor')) {
+            requestDataValueProcessor = applicationContext.getBean('requestDataValueProcessor', RequestDataValueProcessor)
+        }
     }
 
     /**
@@ -77,12 +82,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr name REQUIRED the cookie name
      */
     Closure cookie = { attrs ->
-        def cke = request.cookies.find { it.name == attrs.name }
-        if (cke) {
-            return cke.value
-        } else {
-            return null
-        }
+        request.cookies.find { it.name == attrs.name }?.value
     }
 
     /**
@@ -93,11 +93,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      * @attr name REQUIRED the header name
      */
     Closure header = { attrs ->
-        if (attrs.name) {
-            def hdr = request.getHeader(attrs.name)
-            return hdr
-        }
-        return null
+        attrs.name ? request.getHeader(attrs.name) : null
     }
 
     /**
@@ -161,9 +157,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         // Use resources plugin if present, but only if file is specified - resources require files
         // But users often need to link to a folder just using dir
-        def url = ((hasResourceProcessor && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs));
+        def url = (hasResourceProcessor && attrs.file) ? r.resource(attrs) : linkGenerator.resource(attrs)
 
-        return url?processedUrl("${url}",request):url;
+        return url ? processedUrl("$url", request) : url
     }
 
     /**
@@ -179,14 +175,14 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
         if (hasResourceProcessor) {
             return r.img(attrs)
-        } else {
-            def uri = attrs.uri ?processedUrl(attrs.uri,request): resource(attrs)
-
-            def excludes = ['dir', 'uri', 'file', 'plugin']
-            def attrsAsString = attrsToString(attrs.findAll { !(it.key in excludes) })
-            def imgSrc = uri.encodeAsHTML()
-            return "<img src=\"${imgSrc}\"${attrsAsString} />"
         }
+
+        def uri = attrs.uri ? processedUrl(attrs.uri, request) : resource(attrs)
+
+        def excludes = ['dir', 'uri', 'file', 'plugin']
+        def attrsAsString = attrsToString(attrs.findAll { !(it.key in excludes) })
+        def imgSrc = uri.encodeAsHTML()
+        return "<img src=\"${imgSrc}\"${attrsAsString} />"
     }
 
     /**
@@ -266,7 +262,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     ]
 
     static getAttributesToRender(constants, attrs) {
-        StringBuilder sb=new StringBuilder()
+        StringBuilder sb = new StringBuilder()
         if (constants) {
             sb.append(attrsToString(constants))
         }
@@ -300,7 +296,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
      */
     Closure external = { attrs ->
         if (!attrs.uri) {
-            attrs.uri = g.resource(attrs).toString()
+            attrs.uri = resource(attrs).toString()
         }
         renderResourceLink(attrs)
     }
@@ -328,7 +324,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         // Allow attrs to overwrite any constants
         attrs.each { typeInfo.remove(it.key) }
 
-        out << writer(processedUrl(uri,request), typeInfo, attrs)
+        out << writer(processedUrl(uri, request), typeInfo, attrs)
         out << "\r\n"
     }
 
@@ -359,8 +355,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
            urlAttrs = attrs.url
         }
         def params = urlAttrs.params && urlAttrs.params instanceof Map ? urlAttrs.params : [:]
-        if (request['flowExecutionKey']) {
-            params."execution" = request['flowExecutionKey']
+        if (request.flowExecutionKey) {
+            params.execution = request.flowExecutionKey
             urlAttrs.params = params
             if (attrs.controller == null && attrs.action == null && attrs.url == null && attrs.uri == null) {
                 urlAttrs[LinkGenerator.ATTRIBUTE_ACTION] = GrailsWebRequest.lookup().actionName
@@ -370,15 +366,11 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             params."_eventId" = urlAttrs.remove('event')
             urlAttrs.params = params
         }
-        def generatedLink = linkGenerator.link(attrs, request.characterEncoding)
-        generatedLink = processedUrl(generatedLink,request);
 
-        if (useJsessionId) {
-            return response.encodeURL(generatedLink)
-        }
-        else {
-            return generatedLink
-        }
+        String generatedLink = linkGenerator.link(attrs, request.characterEncoding)
+        generatedLink = processedUrl(generatedLink, request)
+
+        return useJsessionId ? response.encodeURL(generatedLink) : generatedLink
     }
 
     /**
@@ -444,22 +436,13 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     }
 
     /**
-     * getter to obtain RequestDataValueProcessor from 
+     * Filters the url through the RequestDataValueProcessor bean if it is registered.
      */
-    private initRequestDataValueProcessor() {
-        if (requestDataValueProcessor == null && grailsAttributes.getApplicationContext().containsBean("requestDataValueProcessor")){
-            requestDataValueProcessor = grailsAttributes.getApplicationContext().getBean("requestDataValueProcessor")
+    String processedUrl(String link, request) {
+        if (requestDataValueProcessor == null) {
+            return link
         }
-    }
-    Closure processedUrl = { link,request ->
-        if(!link) {
-            throwTagError('processedUrl missing required attribute ["link"]')
-        }
-        initRequestDataValueProcessor();
-        def currentLink = link;
-        if(requestDataValueProcessor != null) {
-            currentLink = requestDataValueProcessor.processUrl(request,link);
-        }   
-        return currentLink;
+
+        return requestDataValueProcessor.processUrl(request, link)
     }
 }

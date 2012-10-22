@@ -15,14 +15,14 @@ public class CodecPrintWriter extends GrailsPrintWriter {
 
     public CodecPrintWriter(GrailsApplication grailsApplication, Writer out, Class<?> codecClass) {
         super(out);
-        allowUnwrappingOut=false;
+        allowUnwrappingOut = false;
 
-        initEncode(grailsApplication,codecClass);
+        initEncode(grailsApplication, codecClass);
     }
 
     @Override
     public void setOut(Writer newOut) {
-        this.out = newOut;
+        out = newOut;
     }
 
     @Override
@@ -47,8 +47,7 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         try {
             return encodeClosure.call(o);
         } catch (Exception e) {
-            throw new RuntimeException("Problem calling encode method "
-                    + encodeClosure, e);
+            throw new RuntimeException("Problem calling encode method " + encodeClosure, e);
         }
     }
 
@@ -72,9 +71,9 @@ public class CodecPrintWriter extends GrailsPrintWriter {
             usageFlag = true;
             return;
         }
-        Object encoded=encodeObject(obj);
-        if (encoded==null) return;
-        Class<?> clazz=encoded.getClass();
+        Object encoded = encodeObject(obj);
+        if (encoded == null) return;
+        Class<?> clazz = encoded.getClass();
         if (clazz == String.class) {
             super.write((String)encoded);
         } else if (clazz == StreamCharBuffer.class) {

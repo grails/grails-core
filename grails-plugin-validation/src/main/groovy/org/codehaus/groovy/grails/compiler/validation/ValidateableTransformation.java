@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.compiler.validation;
 
-import grails.validation.ASTValidateableHelper;
 import grails.validation.DefaultASTValidateableHelper;
 
 import org.codehaus.groovy.ast.ASTNode;
@@ -17,7 +16,6 @@ public class ValidateableTransformation implements ASTTransformation{
 
     private static final ClassNode ORIGINAL_VALIDATEABLE_CLASS_NODE = new ClassNode(org.codehaus.groovy.grails.validation.Validateable.class);
     private static final ClassNode NEW_VALIDATEABLE_CLASS_NODE = new ClassNode(grails.validation.Validateable.class);
-
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -39,8 +37,6 @@ public class ValidateableTransformation implements ASTTransformation{
             throw new RuntimeException("Error processing interface '" + cName + "'.  @Validateable not allowed for interfaces.");
         }
 
-        ASTValidateableHelper helper = new DefaultASTValidateableHelper();
-        helper.injectValidateableCode(cNode);
+        new DefaultASTValidateableHelper().injectValidateableCode(cNode);
     }
-
 }

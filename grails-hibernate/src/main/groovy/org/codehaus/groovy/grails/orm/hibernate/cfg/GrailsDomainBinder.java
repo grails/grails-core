@@ -332,7 +332,7 @@ public final class GrailsDomainBinder {
      * @throws InstantiationException
      * @throws IllegalAccessException
      */
-   public static void configureNamingStrategy(final String datasourceName, final Object strategy) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+    public static void configureNamingStrategy(final String datasourceName, final Object strategy) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         Class<?> namingStrategyClass = null;
         NamingStrategy namingStrategy;
         if (strategy instanceof Class<?>) {
@@ -2831,7 +2831,7 @@ public final class GrailsDomainBinder {
     private static String getColumnNameForPropertyAndPath(GrailsDomainClassProperty grailsProp,
             String path, ColumnConfig cc, String sessionFactoryBeanName) {
 
-      NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
+        NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
 
         // First try the column config.
         String columnName = null;
@@ -2886,7 +2886,7 @@ public final class GrailsDomainBinder {
 
     private static String getDefaultColumnName(GrailsDomainClassProperty property, String sessionFactoryBeanName) {
 
-      NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
+        NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
 
         String columnName = namingStrategy.propertyToColumnName(property.getName());
         if (property.isAssociation() && property.getReferencedDomainClass() != null) {
@@ -2917,7 +2917,7 @@ public final class GrailsDomainBinder {
     private static String getForeignKeyForPropertyDomainClass(GrailsDomainClassProperty property,
             String sessionFactoryBeanName) {
         final String propertyName = property.getDomainClass().getPropertyName();
-      NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
+        NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
         return namingStrategy.propertyToColumnName(propertyName) + FOREIGN_KEY_SUFFIX;
     }
 
@@ -2926,7 +2926,7 @@ public final class GrailsDomainBinder {
         if (pc != null && pc.getIndexColumn() != null && pc.getIndexColumn().getColumn() != null) {
             return pc.getIndexColumn().getColumn();
         }
-      NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
+        NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
         return namingStrategy.propertyToColumnName(property.getName()) + UNDERSCORE + IndexedCollection.DEFAULT_INDEX_COLUMN_NAME;
     }
 
@@ -2945,7 +2945,7 @@ public final class GrailsDomainBinder {
             return pc.getJoinTable().getColumn().getName();
         }
 
-      NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
+        NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
         return namingStrategy.propertyToColumnName(property.getName()) + UNDERSCORE + IndexedCollection.DEFAULT_ELEMENT_COLUMN_NAME;
     }
 

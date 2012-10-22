@@ -73,7 +73,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         }
         finally {
             RequestContextHolder.setRequestAttributes(null)
-
         }
     }
 
@@ -114,6 +113,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
             def go = tagLibrary.newInstance()
             if (go.properties.containsKey("grailsUrlMappingsHolder")) {
                 go.grailsUrlMappingsHolder = appCtx.grailsUrlMappingsHolder
+            }
+            if (go.properties.containsKey("requestDataValueProcessor")) {
+                go.requestDataValueProcessor = appCtx.requestDataValueProcessor
             }
             if (go instanceof ApplicationContextAware) {
                 go.applicationContext = appCtx

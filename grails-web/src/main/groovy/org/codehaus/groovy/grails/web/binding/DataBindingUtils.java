@@ -266,11 +266,11 @@ public class DataBindingUtils {
 
     private static GrailsDataBinder createDataBinder(Object object, List include, List exclude, HttpServletRequest request) {
         GrailsDataBinder binder;
-        if (request != null) {
-            binder = GrailsDataBinder.createBinder(object, object.getClass().getName(), request);
+        if (request == null) {
+            binder = GrailsDataBinder.createBinder(object, object.getClass().getName());
         }
         else {
-            binder = GrailsDataBinder.createBinder(object, object.getClass().getName());
+            binder = GrailsDataBinder.createBinder(object, object.getClass().getName(), request);
         }
         includeExcludeFields(binder, include, exclude);
         return binder;

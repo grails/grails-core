@@ -5,8 +5,6 @@ import grails.util.ClosureToMapPopulator
 import grails.util.GrailsWebUtil
 import grails.validation.Validateable
 
-import java.util.Calendar
-
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
@@ -27,18 +25,14 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
     void setupSpec() {
         def gcl = new GrailsAwareClassLoader()
         def transformer = new ControllerActionTransformer() {
-                    @Override
-                    boolean shouldInject(URL url) {
-                        return true;
-                    }
-                }
+            @Override
+            boolean shouldInject(URL url) { true }
+        }
         def transformer2 = new ControllerTransformer() {
-                    @Override
-                    boolean shouldInject(URL url) {
-                        return true;
-                    }
-                }
-        gcl.classInjectors = [transformer, transformer2]as ClassInjector[]
+            @Override
+            boolean shouldInject(URL url) { true }
+        }
+        gcl.classInjectors = [transformer, transformer2] as ClassInjector[]
         testControllerClass = gcl.parseClass('''
         class TestController {
 
@@ -182,7 +176,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         }
         beans.registerBeans(appCtx)
 
-        def request = new MockHttpServletRequest();
+        def request = new MockHttpServletRequest()
         def webRequest = GrailsWebUtil.bindMockWebRequest()
 
         def servletContext = webRequest.servletContext

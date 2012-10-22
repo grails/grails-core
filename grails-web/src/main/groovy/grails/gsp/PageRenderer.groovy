@@ -111,11 +111,9 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
      *
      * @return The resulting string contents
      */
-
     void renderTo(Map args, OutputStream stream) {
         renderTo(args, new OutputStreamWriter(stream))
     }
-
 
     private void renderViewToWriter(Map args, Writer writer) {
         def source = null

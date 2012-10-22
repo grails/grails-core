@@ -203,7 +203,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * @return A GrailsDataBinder instance
      */
     public static GrailsDataBinder createBinder(Object target, String objectName, HttpServletRequest request) {
-        GrailsDataBinder binder = createBinder(target,objectName);
+        GrailsDataBinder binder = createBinder(target, objectName);
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
         initializeFromWebRequest(binder, webRequest);
 
@@ -217,8 +217,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             return;
         }
 
-        final GrailsApplication grailsApplication = webRequest.getAttributes().getGrailsApplication();
-        binder.setGrailsApplication(grailsApplication);
+        binder.setGrailsApplication(webRequest.getAttributes().getGrailsApplication());
     }
 
     private void setGrailsApplication(GrailsApplication grailsApplication) {
@@ -284,7 +283,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * @return A GrailsDataBinder instance
      */
     public static GrailsDataBinder createBinder(Object target, String objectName) {
-        GrailsDataBinder binder = new GrailsDataBinder(target,objectName);
+        GrailsDataBinder binder = new GrailsDataBinder(target, objectName);
         binder.registerCustomEditor(byte[].class, new ByteArrayMultipartFileEditor());
         binder.registerCustomEditor(String.class, new StringMultipartFileEditor());
         binder.registerCustomEditor(Currency.class, new CurrencyEditor());
@@ -332,7 +331,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * @param params The GrailsParameterMap object
      */
     public void bind(GrailsParameterMap params) {
-        bind(params,null);
+        bind(params, null);
     }
 
     public void bind(GrailsParameterMap params, String prefix) {

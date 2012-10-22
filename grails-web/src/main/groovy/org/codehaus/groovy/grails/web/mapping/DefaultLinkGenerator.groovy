@@ -28,12 +28,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 
 /**
- * A link generating service for applications to use when generating links
+ * A link generating service for applications to use when generating links.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
-class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
+class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
     String configuredServerBaseURL
     String contextPath
@@ -47,19 +47,19 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
     UrlMappingsHolder urlMappingsHolder
 
     @Autowired
-    UrlConverter grailsUrlConverter;
+    UrlConverter grailsUrlConverter
 
     DefaultLinkGenerator(String serverBaseURL, String contextPath) {
-        this.configuredServerBaseURL = serverBaseURL
+        configuredServerBaseURL = serverBaseURL
         this.contextPath = contextPath
     }
 
     DefaultLinkGenerator(String serverBaseURL) {
-        this.configuredServerBaseURL = serverBaseURL
+        configuredServerBaseURL = serverBaseURL
     }
 
     /**
-     * {@inheritDoc }
+     * {@inheritDoc}
      */
     String link(Map attrs, String encoding = 'UTF-8') {
         def writer = new StringBuilder()
@@ -70,13 +70,13 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 writer << base
             }
             else {
-                final cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
+                def cp = attrs.get(ATTRIBUTE_CONTEXT_PATH)
                 if (cp == null) cp = getContextPath()
-                if (cp != null)
+                if (cp != null) {
                     writer << cp
+                }
             }
-            final uriPath = attrs.get(ATTRIBUTE_URI).toString()
-            writer << uriPath
+            writer << attrs.get(ATTRIBUTE_URI).toString()
         }
         else {
             // prefer a URL attribute
@@ -94,24 +94,24 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             }
             else {
                 final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
-                def controller = controllerAttribute != null ? controllerAttribute.toString() : requestStateLookupStrategy.getControllerName()
-                def action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
+                String controller = controllerAttribute == null ? requestStateLookupStrategy.getControllerName() : controllerAttribute.toString()
+                String action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
 
-                def convertedControllerName = grailsUrlConverter.toUrlElement(controller)
+                String convertedControllerName = grailsUrlConverter.toUrlElement(controller)
 
                 boolean isDefaultAction = false
                 if (controller && !action) {
                     action = requestStateLookupStrategy.getActionName(convertedControllerName)
                     isDefaultAction = true
                 }
-                def convertedActionName = action
+                String convertedActionName = action
                 if (action) {
                     convertedActionName = grailsUrlConverter.toUrlElement(action)
                 }
                 def id = urlAttrs.get(ATTRIBUTE_ID)
-                def frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
+                String frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
                 final paramsAttribute = urlAttrs.get(ATTRIBUTE_PARAMS)
-                def params = paramsAttribute && paramsAttribute instanceof Map ? paramsAttribute : [:]
+                def params = paramsAttribute && (paramsAttribute instanceof Map) ? paramsAttribute : [:]
                 def mappingName = urlAttrs.get(ATTRIBUTE_MAPPING)
                 if (mappingName != null) {
                     params.mappingName = mappingName
@@ -147,7 +147,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 if (!absolute) {
                     url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
-                    final cp = contextPathAttribute != null ? contextPathAttribute : getContextPath()
+                    final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
                     if (attrs.get(ATTRIBUTE_BASE) || cp == null) {
                         attrs.put(ATTRIBUTE_ABSOLUTE, true)
                         writer << handleAbsolute(attrs)
@@ -183,6 +183,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 absolutePath = cp
             }
         }
+
         StringBuilder url = new StringBuilder(absolutePath ?: '')
         def dir = attrs.dir
         if (attrs.plugin) {
@@ -196,12 +197,14 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                 }
             }
         }
+
         if (dir) {
             if (!dir.startsWith('/')) {
                 url << '/'
             }
             url << dir
         }
+
         def file = attrs.file
         if (file) {
             if (!(file.startsWith('/') || dir?.endsWith('/'))) {
@@ -209,6 +212,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             }
             url << file
         }
+
         return url.toString()
     }
 
@@ -249,17 +253,15 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             final webRequest = GrailsWebRequest.lookup()
             final request = webRequest?.currentRequest
             if (request != null) {
-                def port = request.serverPort
-                def scheme = request.scheme
-                def contextPath = request.contextPath
+                int port = request.serverPort
+                String scheme = request.scheme
+                String contextPath = request.contextPath
 
-                def url = "${scheme}://${request.serverName}"
+                String url = "${scheme}://${request.serverName}"
                 if ((scheme == "http" && port != 80) || (scheme == "https" && port != 443)) {
                     return contextPath ? "$url:$port$contextPath" : "$url:$port"
                 }
-                else {
-                    return contextPath ? "$url$contextPath" : url
-                }
+                return contextPath ? "$url$contextPath" : url
             }
             else {
                 if (!Environment.isWarDeployed()) {

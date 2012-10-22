@@ -76,32 +76,34 @@ class ValidationTagLib {
      */
     Closure fieldValue = { attrs, body ->
         def bean = attrs.bean
-        def field = attrs.field?.toString()
+        String field = attrs.field?.toString()
+
+        if (!bean || !field) {
+            return
+        }
 
         def tagSyntaxCall = (attrs instanceof GroovyPageAttributes) ? attrs.isGspTagSyntaxCall() : false
 
-        if (bean && field) {
-            if (bean.metaClass.hasProperty(bean,'errors')) {
-                Errors errors = bean.errors
-                def rejectedValue = errors?.getFieldError(field)?.rejectedValue
-                if (rejectedValue == null) {
-                    rejectedValue = bean
-                    for (String fieldPart in field.split("\\.")) {
-                        rejectedValue = rejectedValue?."$fieldPart"
-                    }
-                }
-                if (rejectedValue != null) {
-                    out << formatValue(rejectedValue, field, tagSyntaxCall)
-                }
-            }
-            else {
-                def rejectedValue = bean
+        if (bean.metaClass.hasProperty(bean, 'errors')) {
+            Errors errors = bean.errors
+            def rejectedValue = errors?.getFieldError(field)?.rejectedValue
+            if (rejectedValue == null) {
+                rejectedValue = bean
                 for (String fieldPart in field.split("\\.")) {
                     rejectedValue = rejectedValue?."$fieldPart"
                 }
-                if (rejectedValue != null) {
-                    out << formatValue(rejectedValue, field, tagSyntaxCall)
-                }
+            }
+            if (rejectedValue != null) {
+                out << formatValue(rejectedValue, field, tagSyntaxCall)
+            }
+        }
+        else {
+            def rejectedValue = bean
+            for (String fieldPart in field.split("\\.")) {
+                rejectedValue = rejectedValue?."$fieldPart"
+            }
+            if (rejectedValue != null) {
+                out << formatValue(rejectedValue, field, tagSyntaxCall)
             }
         }
     }

@@ -1,19 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import grails.util.GrailsUtil
-
-import javax.servlet.http.Cookie
-
-import groovy.mock.interceptor.StubFor
-
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
-import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib;
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.springframework.mock.web.MockHttpServletResponse
 
 class ApplicationTagLibResourcesTests extends AbstractGrailsTagTests {
@@ -37,7 +24,7 @@ class ApplicationTagLibResourcesTests extends AbstractGrailsTagTests {
         request.contextPath = '/test'
         def template = '${resource(dir:"jquery")}'
 
-        def taglib = appCtx.getBean(ApplicationTagLib.class.name)
+        def taglib = appCtx.getBean(ApplicationTagLib.name)
         taglib.hasResourceProcessor = true
         def oldMC = replaceMetaClass(taglib)
 

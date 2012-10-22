@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.web.mapping;
+package org.codehaus.groovy.grails.plugins.web.mapping
 
 import grails.util.GrailsUtil
 import grails.web.CamelCaseUrlConverter
@@ -48,7 +48,7 @@ class UrlMappingsGrailsPlugin {
     def dependsOn = [core:version]
 
     def doWithSpring = {
-        def serverURL = null
+        String serverURL
         final configuredServerURL = application.config?.grails?.serverURL
         if (configuredServerURL) {
             serverURL = configuredServerURL
@@ -56,17 +56,21 @@ class UrlMappingsGrailsPlugin {
 
         def urlConverterType = application.config?.grails?.web?.url?.converter
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
+
         grailsLinkGenerator(CachingLinkGenerator, serverURL)
+
         "org.grails.internal.URL_MAPPINGS_HOLDER"(UrlMappingsHolderFactoryBean) { bean ->
             bean.lazyInit = true
         }
-        urlMappingsTargetSource(org.springframework.aop.target.HotSwappableTargetSource, ref("org.grails.internal.URL_MAPPINGS_HOLDER")) { bean ->
+
+        urlMappingsTargetSource(HotSwappableTargetSource, ref("org.grails.internal.URL_MAPPINGS_HOLDER")) { bean ->
             bean.lazyInit = true
         }
+
         grailsUrlMappingsHolder(ProxyFactoryBean) { bean ->
             bean.lazyInit = true
             targetSource = urlMappingsTargetSource
-            proxyInterfaces = [org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder]
+            proxyInterfaces = [UrlMappingsHolder]
         }
     }
 
@@ -162,8 +166,6 @@ class UrlMappingsGrailsPlugin {
         def factory = new UrlMappingsHolderFactoryBean()
         factory.applicationContext = applicationContext
         factory.afterPropertiesSet()
-
-        final urlMappingsHolder = factory.getObject()
-        return urlMappingsHolder
+        return factory.getObject()
     }
 }

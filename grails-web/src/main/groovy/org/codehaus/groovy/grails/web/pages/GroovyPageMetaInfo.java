@@ -127,7 +127,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         }
 
         GrailsClass codecGrailsClass = null;
-        if (codecName != null&& grailsApplication != null) {
+        if (codecName != null && grailsApplication != null) {
             codecGrailsClass = grailsApplication.getArtefactByLogicalPropertyName(
                     CodecArtefactHandler.TYPE, codecName);
             if (codecGrailsClass == null) {
@@ -139,7 +139,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         if (codecGrailsClass == null && StringUtils.isNotBlank(codecName) && !"none".equalsIgnoreCase(codecName)) {
             LOG.warn("Couldn't initialize Codec by name '" + codecName + "' , pageClass=" + ((pageClass!=null)?pageClass.getName():null));
         }
-        if (codecGrailsClass!=null) {
+        if (codecGrailsClass != null) {
             codecClass = codecGrailsClass.getClazz();
         }
 

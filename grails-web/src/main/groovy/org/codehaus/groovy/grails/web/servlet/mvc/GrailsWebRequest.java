@@ -57,12 +57,12 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 
     private GrailsApplicationAttributes attributes;
     private GrailsParameterMap params;
-    private HttpServletResponse response;
+    private final HttpServletResponse response;
     private GrailsHttpSession session;
     private boolean renderView = true;
     public static final String ID_PARAMETER = "id";
-    private List<ParameterCreationListener> parameterCreationListeners = new ArrayList<ParameterCreationListener>();
-    private UrlPathHelper urlHelper = new UrlPathHelper();
+    private final List<ParameterCreationListener> parameterCreationListeners = new ArrayList<ParameterCreationListener>();
+    private final UrlPathHelper urlHelper = new UrlPathHelper();
     private ApplicationContext applicationContext;
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
@@ -72,11 +72,10 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext, ApplicationContext applicationContext) {
-        super(request);
+        this(request, response, servletContext);
         this.applicationContext = applicationContext;
-        attributes = new DefaultGrailsApplicationAttributes(servletContext);
-        this.response = response;
     }
+
     /**
      * Overriden to return the GrailsParameterMap instance,
      *
@@ -102,15 +101,15 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public Writer getOut() {
         Writer out = attributes.getOut(getCurrentRequest());
-        if (out ==null)
+        if (out == null) {
             try {
                 return getCurrentResponse().getWriter();
             } catch (IOException e) {
                 throw new ControllerExecutionException("Error retrieving response writer: " + e.getMessage(), e);
             }
+        }
         return out;
     }
-
 
     /**
      * Whether the web request is still active
@@ -124,7 +123,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * @param out the out to set
      */
     public void setOut(Writer out) {
-        attributes.setOut(getCurrentRequest(),out);
+        attributes.setOut(getCurrentRequest(), out);
     }
 
     /**
@@ -238,7 +237,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 
     public String getId() {
         Object id = getParams().get(ID_PARAMETER);
-        return id != null ? id.toString() : null;
+        return id == null ? null : id.toString();
     }
 
     /**
@@ -248,7 +247,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public boolean isFlowRequest() {
         GrailsApplication application = getAttributes().getGrailsApplication();
-        GrailsControllerClass controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(ControllerArtefactHandler.TYPE,getControllerName());
+        GrailsControllerClass controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(
+                ControllerArtefactHandler.TYPE, getControllerName());
 
         if (controllerClass == null) return false;
 
@@ -270,10 +270,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * @return The ApplicationContext
      */
     public ApplicationContext getApplicationContext() {
-        if (applicationContext == null) {
-            return getAttributes().getApplicationContext();
-        }
-        return applicationContext;
+        return applicationContext == null ? getAttributes().getApplicationContext() : applicationContext;
     }
 
     /**
@@ -298,10 +295,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public static GrailsWebRequest lookup(HttpServletRequest request) {
         GrailsWebRequest webRequest = (GrailsWebRequest) request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
-        if (webRequest == null) {
-            return lookup();
-        }
-        return webRequest;
+        return webRequest == null ? lookup() : webRequest;
     }
 
     /**

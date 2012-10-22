@@ -56,12 +56,12 @@ public class ControllersDomainBindingApi {
      */
     public static void initialize(Object instance, Map namedArgs) {
         GrailsDomainClass dc = getDomainClass(instance);
-        if (dc != null) {
-            DataBindingUtils.bindObjectToDomainInstance(dc, instance, namedArgs);
-            DataBindingUtils.assignBidirectionalAssociations(instance, namedArgs, dc);
+        if (dc == null) {
+            DataBindingUtils.bindObjectToInstance(instance, namedArgs);
         }
         else {
-            DataBindingUtils.bindObjectToInstance(instance, namedArgs);
+            DataBindingUtils.bindObjectToDomainInstance(dc, instance, namedArgs);
+            DataBindingUtils.assignBidirectionalAssociations(instance, namedArgs, dc);
         }
         autowire(instance);
     }
@@ -75,10 +75,10 @@ public class ControllersDomainBindingApi {
      */
     public BindingResult setProperties(Object instance, Object bindingSource) {
         GrailsDomainClass dc = getDomainClass(instance);
-        if (dc != null) {
-            return DataBindingUtils.bindObjectToDomainInstance(dc, instance, bindingSource);
+        if (dc == null) {
+            return DataBindingUtils.bindObjectToInstance(instance, bindingSource);
         }
-        return DataBindingUtils.bindObjectToInstance(instance, bindingSource);
+        return DataBindingUtils.bindObjectToDomainInstance(dc, instance, bindingSource);
     }
 
     /**
@@ -99,18 +99,17 @@ public class ControllersDomainBindingApi {
                 ApplicationContext applicationContext = webRequest.getApplicationContext();
 
                 GrailsApplication grailsApplication = applicationContext.containsBean(GrailsApplication.APPLICATION_ID) ?
-                                                        applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) :
-                                                            null;
+                        applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) : null;
                 if (grailsApplication != null) {
                     domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
                 }
             }
-
         }
+
         return domainClass;
     }
 
     private static void autowire(Object instance) {
-        GrailsMetaClassUtils.invokeMethodIfExists(instance, AUTOWIRE_DOMAIN_METHOD, new Object[]{instance});
+        GrailsMetaClassUtils.invokeMethodIfExists(instance, AUTOWIRE_DOMAIN_METHOD, new Object[] { instance });
     }
 }

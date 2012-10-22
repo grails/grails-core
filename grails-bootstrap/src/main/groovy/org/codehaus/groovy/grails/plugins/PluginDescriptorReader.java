@@ -15,11 +15,10 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-
 import org.codehaus.groovy.grails.io.support.Resource;
 
 /**
- * Reads information about a plugin
+ * Reads information about a plugin.
  *
  * @author Graeme Rocher
  * @since 1.3

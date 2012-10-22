@@ -66,7 +66,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     private boolean useJessionId = false;
     private Collection<RedirectEventListener> redirectListeners;
     private LinkGenerator linkGenerator;
-    private RequestDataValueProcessor requestDataValueProcessor = null;
+    private RequestDataValueProcessor requestDataValueProcessor;
 
     /**
      */
@@ -80,7 +80,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
      * @deprecated Here fore compatibility, will be removed in a future version of Grails
      */
     @Deprecated
-    public RedirectDynamicMethod(@SuppressWarnings("unused") ApplicationContext applicationContext) {
+    public RedirectDynamicMethod(ApplicationContext applicationContext) {
         super(METHOD_PATTERN);
     }
 
@@ -148,7 +148,6 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         // which includes the contextPath
         argMap.put(LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK);
         return redirectResponse(requestLinkGenerator.getServerBaseURL(), requestLinkGenerator.link(argMap), request, response, permanent);
-        
     }
 
     private LinkGenerator getLinkGenerator(GrailsWebRequest webRequest) {
@@ -208,23 +207,22 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         return actionName;
     }
 
-
     /**
      * getter to obtain RequestDataValueProcessor from 
      */
     private void initRequestDataValueProcessor() {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();
         ApplicationContext applicationContext = webRequest.getApplicationContext();
-        if (requestDataValueProcessor == null && applicationContext.containsBean("requestDataValueProcessor")){
-            requestDataValueProcessor = applicationContext.getBean("requestDataValueProcessor",RequestDataValueProcessor.class);
+        if (requestDataValueProcessor == null && applicationContext.containsBean("requestDataValueProcessor")) {
+            requestDataValueProcessor = applicationContext.getBean("requestDataValueProcessor", RequestDataValueProcessor.class);
         }
     }
+
     private String processedUrl(String link, HttpServletRequest request) {
         initRequestDataValueProcessor();
-        String currentLink = link;
-        if(requestDataValueProcessor != null) {
-             currentLink = requestDataValueProcessor.processUrl(request,link);
+        if (requestDataValueProcessor != null) {
+            link = requestDataValueProcessor.processUrl(request, link);
         }
-        return currentLink;
+        return link;
     }
 }

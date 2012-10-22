@@ -69,7 +69,7 @@ public class GrailsConsole {
     /**
      * Whether to enable verbose mode
      */
-    private boolean verbose = Boolean.getBoolean("grails.verbose");;
+    private boolean verbose = Boolean.getBoolean("grails.verbose");
 
     /**
      * Whether to show stack traces

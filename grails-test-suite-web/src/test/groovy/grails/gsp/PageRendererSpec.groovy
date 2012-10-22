@@ -114,7 +114,9 @@ class PageRendererSpec extends Specification {
 
         def bb = new BeanBuilder().beans {
             grailsApplication(DefaultGrailsApplication)
-            "${ApplicationTagLib.name}"(ApplicationTagLib)
+            "${ApplicationTagLib.name}"(ApplicationTagLib) {
+                grailsApplication = ref('grailsApplication')
+            }
         }
         def ctx = bb.createApplicationContext()
         def ga = ctx.getBean(DefaultGrailsApplication)

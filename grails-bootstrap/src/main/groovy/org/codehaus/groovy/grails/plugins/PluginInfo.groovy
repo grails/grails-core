@@ -35,7 +35,7 @@ class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
     String name
     String version
 
-    PluginInfo(Resource pluginXml, grails.util.PluginBuildSettings pluginBuildSettings) {
+    PluginInfo(Resource pluginXml, PluginBuildSettings pluginBuildSettings) {
         if (pluginXml) {
             try {
                 pluginDir = pluginXml.createRelative(".")
@@ -104,18 +104,15 @@ class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
         additionalMetadata[name] = val
     }
 
-
     void propertyMissing(String property, Object newValue) {
         putAt(property, newValue)
     }
-
-
 
     def getAt(String name) {
         return  lookupFromMetadata(name)
     }
 
-    private def lookupFromMetadata(String name) {
+    private lookupFromMetadata(String name) {
         additionalMetadata.containsKey(name) ? additionalMetadata[name] : metadata[name].text()
     }
 

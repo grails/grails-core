@@ -1,9 +1,9 @@
 package org.codehaus.groovy.grails.validation
 
-import spock.lang.Specification
 import grails.persistence.Entity
-import grails.test.mixin.TestFor
 import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
+import spock.lang.Specification
 
 /**
  */
@@ -20,8 +20,6 @@ class CascadingErrorCountSpec extends Specification {
         then:"The error count is correct"
             person.hasErrors() == true
             person.errors.allErrors.size() == 1
-
-
     }
 }
 
@@ -29,20 +27,18 @@ class CascadingErrorCountSpec extends Specification {
 class CascadingPerson {
     String placeholder
 
-    static hasMany = [ names: Name ]
-
     SortedSet<Name> names
-
-    static constraints = {
-    }
+    static hasMany = [ names: Name ]
 }
 
 @Entity
-class Name {
+class Name implements Comparable<Name> {
     String name
     static belongsTo = [ person: CascadingPerson ]
 
     static constraints = {
         name(blank: false, nullable: false)
     }
+
+    int compareTo(Name other) { other.name <=> name }
 }

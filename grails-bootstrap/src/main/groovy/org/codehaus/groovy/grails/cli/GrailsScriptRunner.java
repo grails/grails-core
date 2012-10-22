@@ -192,8 +192,6 @@ public class GrailsScriptRunner {
             System.exit(0);
         }
 
-        // If there aren't any arguments, then we don't have a command
-        // to execute, so enter "interactive mode"
         boolean resolveDeps = commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT);
         if (resolveDeps) {
             if (commandLine.hasOption("include-source")) {
@@ -209,6 +207,7 @@ public class GrailsScriptRunner {
             console.error("The 'interactive' script is deprecated; to run in interactive mode just omit the script name");
             script.name = null;
         }
+
         if (script.name == null) {
             String version = System.getProperty("grails.version");
             console.updateStatus("Loading Grails " + (version == null ? build.getGrailsVersion() : version));
@@ -229,8 +228,7 @@ public class GrailsScriptRunner {
             console.verbose("Base Directory: " + build.getBaseDir().getPath());
 
             try {
-                int exitCode = scriptRunner.executeCommand(commandLine,
-                        script.name, script.env);
+                int exitCode = scriptRunner.executeCommand(commandLine, script.name, script.env);
                 GrailsConsole.getInstance().flush();
                 System.exit(exitCode);
             }
@@ -259,11 +257,11 @@ public class GrailsScriptRunner {
 
     private static void exitWithError(String error, Throwable t) {
         GrailsConsole grailsConsole = GrailsConsole.getInstance();
-        if (t != null) {
-            grailsConsole.error(error, t);
+        if (t == null) {
+            grailsConsole.error(error);
         }
         else {
-            grailsConsole.error(error);
+            grailsConsole.error(error, t);
         }
         grailsConsole.flush();
         System.exit(1);
