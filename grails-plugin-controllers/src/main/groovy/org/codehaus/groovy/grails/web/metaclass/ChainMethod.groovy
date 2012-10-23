@@ -22,6 +22,12 @@ import org.codehaus.groovy.grails.web.mapping.UrlCreator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.support.RequestDataValueProcessor
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 
  /**
  * Implementation of the chain() method for controllers.
@@ -30,6 +36,8 @@ import org.springframework.web.context.request.RequestContextHolder
  * @since 1.0
  */
 class ChainMethod {
+
+    private static final Log LOG = LogFactory.getLog(RedirectDynamicMethod.class);
 
     static invoke(target, Map args = [:]) {
         def controller = args.controller ?: GrailsNameUtils.getLogicalPropertyName(
@@ -74,7 +82,17 @@ class ChainMethod {
         UrlCreator creator = mappings.getReverseMapping(controller, action, plugin, params)
         def response = webRequest.getCurrentResponse()
 
-        def url = response.encodeRedirectURL(creator.createURL(controller, action, plugin, params, 'utf-8'))
+        def url = creator.createURL(controller, action, plugin, params, 'utf-8')
+
+        if(appCtx.containsBean("requestDataValueProcessor")) {
+            RequestDataValueProcessor valueProcessor = appCtx.getBean("requestDataValueProcessor")
+            if(valueProcessor != null) {
+                HttpServletRequest request = webRequest.getCurrentRequest()
+                url = response.encodeRedirectURL(valueProcessor.processUrl(request,url))
+            }
+        } else {
+            url = response.encodeRedirectURL(url)
+        }
         response.sendRedirect url
     }
 }

@@ -30,6 +30,7 @@ import org.grails.datastore.mapping.query.Query;
 import org.grails.datastore.mapping.query.api.QueryableCriteria;
 import org.grails.datastore.mapping.query.criteria.FunctionCallingCriterion;
 import org.hibernate.Criteria;
+import org.hibernate.FetchMode;
 import org.hibernate.SessionFactory;
 import org.hibernate.criterion.*;
 import org.hibernate.dialect.Dialect;
@@ -38,10 +39,16 @@ import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.persister.entity.PropertyMapping;
 import org.hibernate.type.BasicType;
 import org.hibernate.type.TypeResolver;
+import org.springframework.core.convert.ConversionException;
+import org.springframework.core.convert.ConversionService;
+import org.springframework.core.convert.support.DefaultConversionService;
+import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.ReflectionUtils;
+
+import javax.persistence.FetchType;
 
 /**
  * Bridges the Query API with the Hibernate Criteria API
@@ -52,6 +59,7 @@ import org.springframework.util.ReflectionUtils;
 @SuppressWarnings("rawtypes")
 public class HibernateQuery extends Query {
 
+    public static final String SIZE_CONSTRAINT_PREFIX = "Size";
     private Criteria criteria;
     private HibernateQuery.HibernateProjectionList hibernateProjectionList = null;
     private String alias;
@@ -59,6 +67,7 @@ public class HibernateQuery extends Query {
     private Map<String, CriteriaAndAlias> createdAssociationPaths = new HashMap<String, CriteriaAndAlias> ();
     private static final String ALIAS = "_alias";
     private static Field opField = ReflectionUtils.findField(SimpleExpression.class, "op");
+    private static ConversionService conversionService = new DefaultConversionService();
 
     public HibernateQuery(Criteria criteria, HibernateSession session, PersistentEntity entity) {
         super(session, entity);
@@ -106,14 +115,31 @@ public class HibernateQuery extends Query {
         }
         else if (criterion instanceof PropertyCriterion) {
             PropertyCriterion pc = (PropertyCriterion) criterion;
-            if (pc.getValue() instanceof QueryableCriteria) {
-                DetachedCriteria hibernateDetachedCriteria = HibernateCriteriaBuilder.getHibernateDetachedCriteria((QueryableCriteria) pc.getValue());
+            Object value = pc.getValue();
+            if (value instanceof QueryableCriteria) {
+                DetachedCriteria hibernateDetachedCriteria = HibernateCriteriaBuilder.getHibernateDetachedCriteria((QueryableCriteria) value);
                 pc.setValue(hibernateDetachedCriteria);
             }
+            // ignore Size related constraints
+            else {
+                doTypeConversionIfNeccessary(getEntity(), pc);
+            }
         }
-        final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion, alias).toHibernateCriterion(this);
+        final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(getEntity(), criterion, alias).toHibernateCriterion(this);
         if (hibernateCriterion != null) {
             addToCriteria(hibernateCriterion);
+        }
+    }
+
+    static void doTypeConversionIfNeccessary(PersistentEntity entity, PropertyCriterion pc) {
+        if(!pc.getClass().getSimpleName().startsWith(SIZE_CONSTRAINT_PREFIX)) {
+
+            String property = pc.getProperty();
+            Object value = pc.getValue();
+            PersistentProperty p = entity.getPropertyByName(property);
+            if(p != null && !p.getType().isInstance(value)) {
+                pc.setValue( conversionService.convert(value, p.getType()));
+            }
         }
     }
 
@@ -141,7 +167,7 @@ public class HibernateQuery extends Query {
             if (basic != null && datastoreCriterion instanceof PropertyCriterion) {
 
                 PropertyCriterion pc = (PropertyCriterion) datastoreCriterion;
-                final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(datastoreCriterion, alias).toHibernateCriterion(this);
+                final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(getEntity(),datastoreCriterion, alias).toHibernateCriterion(this);
                 if (hibernateCriterion instanceof SimpleExpression) {
                     SimpleExpression expr = (SimpleExpression) hibernateCriterion;
                     Object op = ReflectionUtils.getField(opField, expr);
@@ -209,16 +235,16 @@ public class HibernateQuery extends Query {
 
     @Override
     public Query and(Criterion a, Criterion b) {
-        HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
-        HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
+        HibernateCriterionAdapter aa = new HibernateCriterionAdapter(getEntity(),a, alias);
+        HibernateCriterionAdapter ab = new HibernateCriterionAdapter(getEntity(),a, alias);
         addToCriteria(Restrictions.and(aa.toHibernateCriterion(this), ab.toHibernateCriterion(this)));
         return this;
     }
 
     @Override
     public Query or(Criterion a, Criterion b) {
-        HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
-        HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
+        HibernateCriterionAdapter aa = new HibernateCriterionAdapter(getEntity(),a, alias);
+        HibernateCriterionAdapter ab = new HibernateCriterionAdapter(getEntity(),a, alias);
         addToCriteria(Restrictions.or(aa.toHibernateCriterion(this), ab.toHibernateCriterion(this)));
         return this;
 
@@ -370,7 +396,21 @@ public class HibernateQuery extends Query {
             criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         }
 
+
+        applyFetchStrategies();
         return criteria.list();
+    }
+
+    private void applyFetchStrategies() {
+        for (Map.Entry<String, FetchType> entry : fetchStrategies.entrySet()) {
+            switch(entry.getValue()) {
+                case EAGER:
+                    criteria.setFetchMode(entry.getKey(), FetchMode.JOIN); break;
+                case LAZY:
+                    criteria.setFetchMode(entry.getKey(), FetchMode.SELECT); break;
+
+            }
+        }
     }
 
     @Override
@@ -384,6 +424,7 @@ public class HibernateQuery extends Query {
             criteria.setProjection(hibernateProjectionList.getHibernateProjectionList());
         }
         criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
+        applyFetchStrategies();
         return criteria.uniqueResult();
     }
 
@@ -438,7 +479,7 @@ public class HibernateQuery extends Query {
                     }
                 }
                 else {
-                    HibernateCriterionAdapter adapter = new HibernateCriterionAdapter(c, alias);
+                    HibernateCriterionAdapter adapter = new HibernateCriterionAdapter(getEntity(),c, alias);
                     org.hibernate.criterion.Criterion criterion = adapter.toHibernateCriterion(HibernateQuery.this);
                     if (criterion != null) {
                         hibernateJunction.add(criterion);
@@ -578,7 +619,7 @@ public class HibernateQuery extends Query {
 
         @Override
         public void add(Criterion criterion) {
-            final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(criterion, alias).toHibernateCriterion(HibernateQuery.this);
+            final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(getEntity(),criterion, alias).toHibernateCriterion(HibernateQuery.this);
             if (hibernateCriterion != null) {
                 addToCriteria(hibernateCriterion);
             }
@@ -618,16 +659,16 @@ public class HibernateQuery extends Query {
 
         @Override
         public Query and(Criterion a, Criterion b) {
-            HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
-            HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
+            HibernateCriterionAdapter aa = new HibernateCriterionAdapter(getEntity(),a, alias);
+            HibernateCriterionAdapter ab = new HibernateCriterionAdapter(getEntity(),a, alias);
             addToCriteria(Restrictions.and(aa.toHibernateCriterion(HibernateQuery.this), ab.toHibernateCriterion(HibernateQuery.this)));
             return this;
         }
 
         @Override
         public Query or(Criterion a, Criterion b) {
-            HibernateCriterionAdapter aa = new HibernateCriterionAdapter(a, alias);
-            HibernateCriterionAdapter ab = new HibernateCriterionAdapter(a, alias);
+            HibernateCriterionAdapter aa = new HibernateCriterionAdapter(getEntity(),a, alias);
+            HibernateCriterionAdapter ab = new HibernateCriterionAdapter(getEntity(),a, alias);
             addToCriteria(Restrictions.or(aa.toHibernateCriterion(HibernateQuery.this), ab.toHibernateCriterion(HibernateQuery.this)));
             return this;
         }

@@ -133,7 +133,7 @@ target(keepServerAlive: "Idles the script, ensuring that the server stays runnin
         killFile.delete()
     }
 
-    while (keepRunning && Boolean.getBoolean("TomcatKillSwitch.active")) {
+    while (keepRunning || Boolean.getBoolean("TomcatKillSwitch.active")) {
         sleep(recompileFrequency * 1000)
 
         // Check whether the kill file exists. This is a hack for the functional

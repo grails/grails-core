@@ -27,7 +27,7 @@ ext {
     datastoreVersion = "1.1.0.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = "2.0.4"
+    groovyVersion = "2.0.5"
     gradleGroovyVersion = groovyVersion
     gradleGroovyVersion = "1.8.2"
     ivyVersion = "2.2.0"
@@ -35,6 +35,7 @@ ext {
     jlineVersion = "1.0"
     jnaVersion = "3.2.3"
     slf4jVersion = "1.6.2"
+    spockVersion = '0.7-groovy-2.0'
     springLoadedVersion = "1.0.6"
     springVersion = "3.1.2.RELEASE"
     springWebflowVersion= "2.0.8.RELEASE"
@@ -168,7 +169,7 @@ subprojects { project ->
 
             // Testing
             testCompile "junit:junit:${junitVersion}"
-            testCompile('org.spockframework:spock-core:0.7-groovy-2.0-SNAPSHOT') {
+            testCompile("org.spockframework:spock-core:${spockVersion}") {
                 transitive = false
             }
         }
