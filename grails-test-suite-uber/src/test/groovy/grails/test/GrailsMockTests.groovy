@@ -52,6 +52,18 @@ class GrailsMockTests extends GroovyTestCase {
         mockControl.verify()
     }
 
+    void testMethodWithDemandExplicit() {
+        def mockControl = new GrailsMock(GrailsMockCollaborator)
+        mockControl.demandExplicit.save(1..1) { -> false }
+
+        def testClass = new GrailsMockTestClass()
+        testClass.collaborator = mockControl.createMock()
+
+        assertFalse testClass.testMethod()
+
+        mockControl.verify()
+    }
+
     void testVerifyFails() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
         mockControl.demand.save(2..2) { -> false }
@@ -63,6 +75,28 @@ class GrailsMockTests extends GroovyTestCase {
 
         shouldFail(AssertionFailedError) {
             mockControl.verify()
+        }
+    }
+
+    void testExplicitVerifyFails() {
+        def mockControl = new GrailsMock(GrailsMockCollaborator)
+        mockControl.demandExplicit.save(2..2) { -> false }
+
+        def testClass = new GrailsMockTestClass()
+        testClass.collaborator = mockControl.createMock()
+
+        assertFalse testClass.testMethod()
+
+        shouldFail(AssertionFailedError) {
+            mockControl.verify()
+        }
+    }
+
+    void testExplicitVerifyFailsOnMissingMethod() {
+        def mockControl = new GrailsMock(GrailsMockCollaborator)
+
+        shouldFail(ExplicitDemandException) {
+            mockControl.demandExplicit.invalidMethod(1..1) { -> false }
         }
     }
 
