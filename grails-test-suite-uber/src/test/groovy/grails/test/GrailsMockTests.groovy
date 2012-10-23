@@ -95,7 +95,7 @@ class GrailsMockTests extends GroovyTestCase {
     void testExplicitVerifyFailsOnMissingMethod() {
         def mockControl = new GrailsMock(GrailsMockCollaborator)
 
-        shouldFail(StrictDemandException) {
+        shouldFail(ExplicitDemandException) {
             mockControl.demandExplicit.invalidMethod(1..1) { -> false }
         }
     }

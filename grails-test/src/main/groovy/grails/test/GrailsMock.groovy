@@ -79,7 +79,7 @@ class GrailsMock {
     /**
     * Returns a "demandExplicit" object that supports the "control.demandExplicit.myMethod {}" syntax and checks that myMethod exists on the class
     */
-    ExplicitDemandProxy getdemandExplicit() {
+    ExplicitDemandProxy getDemandExplicit() {
         return demandExplicit
     }
 
@@ -233,12 +233,12 @@ class ExplicitDemandProxy {
 
     void assertHasMethod(Object obj, String name, Class[] types) {
         def methods = obj.metaClass.respondsTo(obj, name, types)
-        if (methods.isEmpty()) throw new StrictDemandException(obj, name, types)
+        if (methods.isEmpty()) throw new ExplicitDemandException(obj, name, types)
     }
 }
 
-class StrictDemandException extends RuntimeException {
-    public StrictDemandException(Class obj, String methodName, Class[] types) {
+class ExplicitDemandException extends RuntimeException {
+    public ExplicitDemandException(Class obj, String methodName, Class[] types) {
         super("Could not find method $methodName(${types.collect { it.name }.join(',')}) on $obj")
     }
 }
