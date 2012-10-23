@@ -47,6 +47,7 @@ class GrailsMock {
 
     Class mockedClass
     DemandProxy demand
+    ExplicitDemandProxy demandExplicit
 
     /**
      * Creates a new strict mock for the given class.
@@ -65,6 +66,7 @@ class GrailsMock {
     GrailsMock(Class clazz, boolean loose) {
         mockedClass = clazz
         demand = new DemandProxy(clazz, loose)
+        demandExplicit = new ExplicitDemandProxy(demand)
     }
 
     /**
@@ -72,6 +74,13 @@ class GrailsMock {
      */
     DemandProxy getDemand() {
         return demand
+    }
+
+    /**
+    * Returns a "demandExplicit" object that supports the "control.demandExplicit.myMethod {}" syntax and checks that myMethod exists on the class
+    */
+    ExplicitDemandProxy getDemandExplicit() {
+        return demandExplicit
     }
 
     /**
@@ -207,5 +216,29 @@ class DemandProxy {
     def getStatic() {
         isStatic = true
         return this
+    }
+}
+
+class ExplicitDemandProxy {
+    DemandProxy demandProxy
+    ExplicitDemandProxy(DemandProxy demandProxy) {
+        this.demandProxy = demandProxy
+    }
+
+    def invokeMethod(String methodName, Object args) {
+        def closure = args[-1] //The mocked method
+        assertHasMethod(demandProxy.mockedClass, methodName, closure.parameterTypes)
+        demandProxy.invokeMethod(methodName, args)
+    }
+
+    void assertHasMethod(Object obj, String name, Class[] types) {
+        def methods = obj.metaClass.respondsTo(obj, name, types)
+        if (methods.isEmpty()) throw new ExplicitDemandException(obj, name, types)
+    }
+}
+
+class ExplicitDemandException extends RuntimeException {
+    public ExplicitDemandException(Class obj, String methodName, Class[] types) {
+        super("Could not find method $methodName(${types.collect { it.name }.join(',')}) on $obj")
     }
 }
