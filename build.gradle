@@ -96,18 +96,8 @@ allprojects {
     }
 }
 
+apply from: "gradle/idea.gradle"
 
-idea {
-    project {
-        jdkName "1.6"
-        ipr {
-            withXml { provider ->
-                def node = provider.asNode()
-                node.component.find { it.'@name' == 'VcsDirectoryMappings' }?.mapping[0].'@vcs' = 'Git'
-            }
-        }
-    }
-}
 subprojects { project ->
     apply plugin: 'groovy'
     apply plugin: 'maven'
