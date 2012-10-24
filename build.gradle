@@ -298,6 +298,14 @@ subprojects { project ->
         poms*.whenConfigured {
             pomModifications*.call(it)
         }
+
+        // Map the groovy gradle configuration to the “compile” scope in our published POMs
+        def groovyConfiguration = project.configurations.findByName("groovy")
+        if (groovyConfiguration) {
+            poms.each {
+                it.scopeMappings.addMapping(1, groovyConfiguration, "compile")
+            }
+        }
     }
 
     // Remove any dependencies that shouldn't be included in the POM
