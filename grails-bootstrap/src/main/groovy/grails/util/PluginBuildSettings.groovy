@@ -202,7 +202,7 @@ class PluginBuildSettings {
 
         def pluginInfos = []
         Resource[] pluginDescriptors = getPluginDescriptors()
-        def pluginDescriptorReader = new CompositePluginDescriptorReader(this)
+        CompositePluginDescriptorReader pluginDescriptorReader = new CompositePluginDescriptorReader(this)
         for (desc in pluginDescriptors) {
             try {
                 GrailsPluginInfo info = pluginDescriptorReader.readPluginInfo(desc)
@@ -409,9 +409,9 @@ class PluginBuildSettings {
             sourceFiles = new Resource[0]
             sourceFiles = resolvePluginResourcesAndAdd(sourceFiles, true) { pluginDir ->
                 Resource[] pluginSourceFiles = resourceResolver("file:${pluginDir}/grails-app/*")
-                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/java"))
-                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles,resourceResolver("file:${pluginDir}/src/groovy"))
-                cache.sourceFilesPerPlugin[pluginDir] = pluginSourceFiles
+                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles, resourceResolver("file:${pluginDir}/src/java"))
+                pluginSourceFiles = (Resource[])IOUtils.addAll(pluginSourceFiles, resourceResolver("file:${pluginDir}/src/groovy"))
+                cache['sourceFilesPerPlugin'][pluginDir] = pluginSourceFiles
                 return pluginSourceFiles
             }
             cache.sourceFiles = sourceFiles
@@ -426,7 +426,7 @@ class PluginBuildSettings {
     Resource[] getPluginSourceDirectories(File pluginDir) {
         getPluginSourceDirectories() // initialize cache
 
-        cache.sourceFilesPerPlugin[pluginDir.absolutePath]
+        cache['sourceFilesPerPlugin'][pluginDir.absolutePath]
     }
 
     /**
@@ -847,12 +847,12 @@ class PluginBuildSettings {
     private resolvePluginResourcesAndAdd(Resource[] originalResources, boolean processExcludes, Closure resolver) {
 
         Resource[] pluginDirs = getPluginDirectories()
-        for (dir in pluginDirs) {
+        AntPathMatcher pathMatcher = new AntPathMatcher()
+        for (Resource dir in pluginDirs) {
             def newResources = dir ? resolver(dir.file.absolutePath) : null
             if (newResources) {
                 if (processExcludes) {
                     def excludes = EXCLUDED_RESOURCES
-                    AntPathMatcher pathMatcher=new AntPathMatcher()
                     newResources = newResources.findAll { Resource r ->
                         def relPath = relativePath(dir.file, r.file)
                         !excludes.any { String it ->

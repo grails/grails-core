@@ -66,7 +66,7 @@ class NamingTests6 {
 
         assertTrue tableNames.contains('naming_tests2_naming_tests1')
         assertTrue tableNames.contains('naming_tests3_foos')
-        assertTrue tableNames.contains('NamingTest5_foos')
+        assertTrue tableNames.contains('naming_test5_foos')
     }
 
     private List findTableNames(sql) {

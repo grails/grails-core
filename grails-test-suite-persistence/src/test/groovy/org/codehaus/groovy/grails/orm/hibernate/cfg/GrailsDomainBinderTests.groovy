@@ -236,12 +236,15 @@ class TablePerSubclassSubclass extends TablePerSubclassSuperclass {
 
     private GroovyClassLoader cl = new GroovyClassLoader()
 
+    private Class previousNamingStrategyClass
+
     @Override
     protected void setUp() {
         super.setUp()
         ExpandoMetaClass.enableGlobally()
         MockGrailsPluginManager pluginManager = new MockGrailsPluginManager()
         PluginManagerHolder.setPluginManager(pluginManager)
+        previousNamingStrategyClass = GrailsDomainBinder.NAMING_STRATEGIES[GrailsDomainClassProperty.DEFAULT_DATA_SOURCE].getClass()
     }
 
     @Override
@@ -251,6 +254,7 @@ class TablePerSubclassSubclass extends TablePerSubclassSuperclass {
         GrailsDomainBinder.NAMING_STRATEGIES.put(
               GrailsDomainClassProperty.DEFAULT_DATA_SOURCE, ImprovedNamingStrategy.INSTANCE)
         PluginManagerHolder.setPluginManager(null)
+        GrailsDomainBinder.configureNamingStrategy previousNamingStrategyClass
     }
 
     /**
@@ -1005,6 +1009,30 @@ class TestManySide {
         assertEquals("EXPECTED_COLUMN_NAME", column.name)
     }
 
+    void testCustomNamingStrategyWithCollection() {
+
+        GrailsDomainBinder.configureNamingStrategy(CustomNamingStrategy)
+
+        GrailsDomainClass oneClass = new DefaultGrailsDomainClass(
+            cl.parseClass('''
+class TestOneSide2 {
+    Long id
+    Long version
+    String fooName
+    Set others
+    static hasMany = [others: TestOneSide2]
+}'''))
+        GrailsDomainClass domainClass = new DefaultGrailsDomainClass(
+            cl.parseClass('''
+class TestManySide2 {
+    Long id
+    Long version
+}'''))
+
+        DefaultGrailsDomainConfiguration config = getDomainConfig(cl, [oneClass.clazz, domainClass.clazz])
+        assertEquals '2EDIS_ENO_TSET_ELBAT_2EDIS_ENO_TSET_ELBAT', config.getCollectionMapping('TestOneSide2.others').collectionTable.name
+    }
+
     void testCustomNamingStrategyAsInstance() {
 
         // somewhat artificial in that it doesn't test that setting the property
@@ -1098,7 +1126,7 @@ class Alert {
     private DefaultGrailsDomainConfiguration getDomainConfig(grailsApplication, pluginManager) {
         def mainContext = new MockApplicationContext()
         mainContext.registerMockBean 'pluginManager', pluginManager
-        grailsApplication.setMainContext(mainContext);
+        grailsApplication.setMainContext(mainContext)
         grailsApplication.initialise()
         DefaultGrailsDomainConfiguration config = new DefaultGrailsDomainConfiguration(
             grailsApplication: grailsApplication)
@@ -1168,16 +1196,22 @@ class Alert {
     }
 
     static class CustomNamingStrategy extends ImprovedNamingStrategy {
-       private static final long serialVersionUID = 1
+        private static final long serialVersionUID = 1
 
-       @Override
-       String classToTableName(String className) {
-           "table_" + StringHelper.unqualify(className)
-       }
+        @Override
+        String classToTableName(String className) {
+            "table_" + StringHelper.unqualify(className)
+        }
 
-       @Override
-       String propertyToColumnName(String propertyName) {
-           "col_" + StringHelper.unqualify(propertyName)
-       }
-   }
+        @Override
+        String tableName(String tableName) {
+            String name = super.tableName(tableName)
+            tableName.contains('TestOneSide2') ? name.toUpperCase().reverse() : name
+        }
+
+        @Override
+        String propertyToColumnName(String propertyName) {
+            "col_" + StringHelper.unqualify(propertyName)
+        }
+    }
 }

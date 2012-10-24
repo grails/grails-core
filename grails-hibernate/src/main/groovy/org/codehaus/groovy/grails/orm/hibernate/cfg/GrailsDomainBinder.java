@@ -1183,7 +1183,9 @@ public final class GrailsDomainBinder {
             Collection collection, Table ownerTable, String sessionFactoryBeanName) {
 
         String prefix = ownerTable.getSchema();
-        String tableName = (prefix == null ? "" : prefix + '.') + calculateTableForMany(property, sessionFactoryBeanName);
+        NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
+        String tableName = (prefix == null ? "" : prefix + '.') + namingStrategy.tableName(calculateTableForMany(property, sessionFactoryBeanName));
+
         collection.setCollectionTable(mappings.addTable(
               mappings.getSchemaName(), mappings.getCatalogName(),
               tableName, null, false));
@@ -1398,11 +1400,11 @@ public final class GrailsDomainBinder {
     public static Mapping getMapping(GrailsDomainClass domainClass) {
         return domainClass == null ? null : MAPPING_CACHE.get(domainClass.getClazz());
     }
-    
+
     public static void clearMappingCache() {
         MAPPING_CACHE.clear();
     }
-    
+
     public static void clearMappingCache(Class<?> theClass) {
         String className = theClass.getName();
         for(Iterator<Map.Entry<Class<?>, Mapping>> it = MAPPING_CACHE.entrySet().iterator(); it.hasNext();) {
