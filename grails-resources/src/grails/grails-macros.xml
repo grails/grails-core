@@ -68,7 +68,7 @@
 
         <classpath>
           <pathelement location="@{cwd}"/>
-          <pathelement location="${grails.home}/lib/org.codehaus.groovy/groovy-all/@groovy.version@/jar/groovy-all-@groovy.version@.jar"/>
+          <pathelement location="${grails.home}/lib/org.codehaus.groovy/groovy-all/jars/groovy-all-@groovy.version@.jar"/>
           <pathelement location="${grails.home}/dist/grails-bootstrap-@grails.version@.jar"/>
           <extend-classpath/>
         </classpath>
