@@ -87,13 +87,13 @@ public class DefaultUrlCreator implements UrlCreator {
             }
             else {
                 if (controllerName != null) {
-                    appendUrlToken(actualUriBuf, controllerName, encoding);
+                    appendUrlToken(actualUriBuf, controllerName, encoding, false);
                 }
                 else {
-                    appendUrlToken(actualUriBuf, requestStateLookupStrategy.getControllerName(), encoding);
+                    appendUrlToken(actualUriBuf, requestStateLookupStrategy.getControllerName(), encoding, false);
                 }
             }
-            appendUrlToken(actualUriBuf, actionName, encoding);
+            appendUrlToken(actualUriBuf, actionName, encoding, false);
         }
         if (id != null) {
             appendUrlToken(actualUriBuf, id, encoding);
@@ -240,9 +240,18 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     /*
-     * Appends a URL token to the buffer
+     * Appends a URL token to the buffer. Always url encodes the token before append.
      */
-    private void appendUrlToken(FastStringWriter actualUriBuf, Object token, String charset) {
+    protected void appendUrlToken(FastStringWriter actualUriBuf, Object token, String charset) {
+        appendUrlToken(actualUriBuf, token, charset, true);
+    }
+
+    /*
+     * Appends a URL token to the buffer
+     *
+     * @param urlEncode If true, url encodes the token before append
+     */
+    protected void appendUrlToken(FastStringWriter actualUriBuf, Object token, String charset, boolean urlEncode) {
         actualUriBuf.append(SLASH).append(urlEncode(token, charset));
     }
 }
