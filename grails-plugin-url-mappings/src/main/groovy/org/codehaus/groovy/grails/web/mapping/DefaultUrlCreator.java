@@ -249,9 +249,9 @@ public class DefaultUrlCreator implements UrlCreator {
     /*
      * Appends a URL token to the buffer
      *
-     * @param urlEncode If true, url encodes the token before append
+     * @param needsUrlEncode If true, url encodes the token before append
      */
-    protected void appendUrlToken(FastStringWriter actualUriBuf, Object token, String charset, boolean urlEncode) {
-        actualUriBuf.append(SLASH).append(urlEncode(token, charset));
+    protected void appendUrlToken(FastStringWriter actualUriBuf, Object token, String charset, boolean needsUrlEncode) {
+        actualUriBuf.append(SLASH).append(needsUrlEncode ? urlEncode(token, charset) : token);
     }
 }
