@@ -22,6 +22,7 @@
  * @since 0.4
  */
 
+import java.awt.Window
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
 
@@ -44,7 +45,7 @@ target(console:"The console implementation target") {
         def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
         watcher.start()
         // keep the console running
-        while (!InteractiveMode.isActive()) {
+        while (!InteractiveMode.isActive() && Window.windows) {
             sleep(Integer.MAX_VALUE)
         }
     } catch (Exception e) {
