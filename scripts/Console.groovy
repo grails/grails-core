@@ -44,9 +44,16 @@ target(console:"The console implementation target") {
         console.run()
         def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
         watcher.start()
-        // keep the console running
-        while (!InteractiveMode.isActive() && Window.windows) {
-            sleep(Integer.MAX_VALUE)
+
+        while (console.frame.visible) {
+            sleep 500
+        }
+
+        // Keep the console running until all windows are closed unless the
+        // interactive console is in use. The interactive console keeps the
+        // VM alive so we don't need to keep this thread running.
+        while (!InteractiveMode.isActive() && Window.windows.any { it.visible }) {
+            sleep 3000
         }
     } catch (Exception e) {
         event("StatusFinal", ["Error starting console: ${e.message}"])
