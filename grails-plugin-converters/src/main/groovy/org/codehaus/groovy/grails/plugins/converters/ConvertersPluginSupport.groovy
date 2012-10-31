@@ -28,6 +28,9 @@ import org.springframework.validation.Errors
 import org.springframework.validation.BeanPropertyBindingResult
 import grails.validation.ValidationErrors
 import org.grails.datastore.mapping.validation.ValidationErrors
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import grails.artefact.Enhanced
 
 /**
  * @author Graeme Rocher
@@ -41,18 +44,34 @@ class ConvertersPluginSupport {
      * @param application
      * @param applicationContext
      */
+    @CompileStatic
     static void enhanceApplication(GrailsApplication application, ApplicationContext applicationContext) {
         MetaClassEnhancer enhancer = new MetaClassEnhancer()
         enhancer.addApi(new ConvertersApi(applicationContext:applicationContext))
 
         // Override GDK asType for some common Interfaces and Classes
-        enhancer.enhanceAll([Errors,BeanPropertyBindingResult, ValidationErrors, ValidationErrors, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum].collect {
-            GrailsMetaClassUtils.getExpandoMetaClass(it)
+        enhancer.enhanceAll([Errors,BeanPropertyBindingResult, ValidationErrors, ValidationErrors, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum].collect {  Class c ->
+            GrailsMetaClassUtils.getExpandoMetaClass(c)
         })
 
+
+        enhanceRequest()
+        enhanceDomainClasses(application, enhancer)
+    }
+
+    static void enhanceDomainClasses(GrailsApplication grailsApplication, MetaClassEnhancer metaClassEnhancer) {
+        for(GrailsDomainClass dc in grailsApplication.domainClasses) {
+            if(!dc.getClazz().getAnnotation(Enhanced)) {
+                metaClassEnhancer.enhance(dc.metaClass)
+            }
+        }
+    }
+
+    private static void enhanceRequest() {
         // Methods for Reading JSON/XML from Requests
         def getXMLMethod = { -> XML.parse((HttpServletRequest) delegate) }
         def getJSONMethod = { -> JSON.parse((HttpServletRequest) delegate) }
+
         def requestMc = GroovySystem.metaClassRegistry.getMetaClass(HttpServletRequest)
         requestMc.getXML = getXMLMethod
         requestMc.getJSON = getJSONMethod
