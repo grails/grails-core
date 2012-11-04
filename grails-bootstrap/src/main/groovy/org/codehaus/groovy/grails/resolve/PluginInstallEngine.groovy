@@ -221,7 +221,7 @@ class PluginInstallEngine {
          *        avoid errors about not being able to find the src folders AFTER
          *        the plugin has been uninstalled.
          */
-        if (!inlinePlugins.find { it.key.endsWith(name) } ) {
+        if (!inlinePlugins[name]) {
             installPluginZipInternal name, version, zipFile, false, false, true
         } else {
             // Remove the plugin to prevent duplicate class compile errors with inline version.
