@@ -19,6 +19,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
+import org.codehaus.groovy.grails.orm.hibernate.GrailsHibernateDomainClass;
 import org.codehaus.groovy.grails.validation.AbstractConstraint;
 import org.hibernate.SessionFactory;
 import org.hibernate.metadata.ClassMetadata;
@@ -80,7 +81,8 @@ public abstract class AbstractPersistentConstraint extends AbstractConstraint im
             GrailsDomainClass domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, constraintOwningClass.getName());
             if(domainClass != null ) {
                 String mappingStrategy = domainClass.getMappingStrategy();
-                return mappingStrategy.equals(GrailsDomainClass.GORM);
+                return mappingStrategy.equals(GrailsDomainClass.GORM) 
+                    || mappingStrategy.equals(GrailsHibernateDomainClass.HIBERNATE);
             }
         }
         return false;
