@@ -250,6 +250,9 @@ abstract class ForkedGrailsProcess {
 
 @CompileStatic
 class ExecutionContext implements Serializable {
+
+    private static final long serialVersionUID = 1
+
     List<File> runtimeDependencies
     List<File> buildDependencies
     List<File> providedDependencies
