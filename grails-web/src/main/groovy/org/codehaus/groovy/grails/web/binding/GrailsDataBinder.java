@@ -89,6 +89,7 @@ import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.Validator;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
 import org.springframework.web.context.WebApplicationContext;
@@ -137,6 +138,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final String IDENTIFIER_SUFFIX = ".id";
     private List<String> transients = Collections.emptyList();
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
+    private static final Object[] NO_HINTS = {};
 
     private GrailsDomainClass domainClass;
     private GrailsApplication grailsApplication;
@@ -218,6 +220,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
 
         binder.setGrailsApplication(webRequest.getAttributes().getGrailsApplication());
+
+        if (webRequest.getApplicationContext() != null && webRequest.getApplicationContext().containsBean("dataBindingValidator")) {
+            Validator validator = webRequest.getApplicationContext().getBean("dataBindingValidator", Validator.class);
+            if (binder.getTarget() != null && validator.supports(binder.getTarget().getClass())) {
+                binder.setValidator(validator);
+            }
+        }
     }
 
     private void setGrailsApplication(GrailsApplication grailsApplication) {
@@ -408,6 +417,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         filterNestedParameterMaps(mpvs);
         filterBlankValuesWhenTargetIsNullable(mpvs);
         super.doBind(mpvs);
+        validate(NO_HINTS);
     }
 
     private void filterBlankValuesWhenTargetIsNullable(MutablePropertyValues mpvs) {
