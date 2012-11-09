@@ -38,6 +38,7 @@ abstract class ForkedGrailsProcess {
     int minMemory = 64
     int maxPerm = 256
     boolean debug = false
+    boolean reloading = true
     File reloadingAgent
     List<String> jvmArgs
 
@@ -74,7 +75,9 @@ abstract class ForkedGrailsProcess {
     Process fork() {
         ExecutionContext executionContext = createExecutionContext()
 
-        discoverAndSetAgent(executionContext)
+        if (reloading) {
+            discoverAndSetAgent(executionContext)
+        }
         def processBuilder = new ProcessBuilder()
         def cp = new StringBuilder()
         for (File file : executionContext.getBuildDependencies()) {
@@ -155,7 +158,6 @@ abstract class ForkedGrailsProcess {
         return null
     }
 
-    @CompileStatic
     public static List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         List<File> buildDependencies = []
 
@@ -182,7 +184,7 @@ abstract class ForkedGrailsProcess {
             }
         }
 
-        buildDependencies.addAll  bootstrapJars
+        buildDependencies.addAll bootstrapJars
         buildDependencies
     }
 
@@ -220,7 +222,7 @@ abstract class ForkedGrailsProcess {
     protected void initializeLogging(File grailsHome, ClassLoader classLoader) {
         try {
             Class<?> cls = classLoader.loadClass("org.apache.log4j.PropertyConfigurator")
-            Method configure = cls.getMethod("configure", URL.class)
+            Method configure = cls.getMethod("configure", URL)
             configure.setAccessible(true)
             File f = new File(grailsHome.absolutePath + "/scripts/log4j.properties")
             configure.invoke(cls, f.toURI().toURL())
