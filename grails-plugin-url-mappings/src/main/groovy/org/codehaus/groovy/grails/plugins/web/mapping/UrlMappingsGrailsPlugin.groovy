@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.CachingLinkGenerator
+import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
@@ -57,7 +58,11 @@ class UrlMappingsGrailsPlugin {
         def urlConverterType = application.config?.grails?.web?.url?.converter
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
 
-        grailsLinkGenerator(CachingLinkGenerator, serverURL)
+        def cacheUrls = application.config?.grails?.web?.linkGenerator?.useCache
+        if (!(cacheUrls instanceof Boolean)) {
+            cacheUrls = true
+        }
+        grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)
 
         "org.grails.internal.URL_MAPPINGS_HOLDER"(UrlMappingsHolderFactoryBean) { bean ->
             bean.lazyInit = true
