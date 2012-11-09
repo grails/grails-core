@@ -51,7 +51,7 @@ import org.springframework.validation.Validator;
 @SuppressWarnings("rawtypes")
 public class GrailsHibernateDomainClass extends AbstractGrailsClass implements ExternalGrailsDomainClass {
 
-    private static final String HIBERNATE = "hibernate";
+    public static final String HIBERNATE = "hibernate";
 
     private GrailsHibernateDomainClassProperty identifier;
     private GrailsHibernateDomainClassProperty version;
