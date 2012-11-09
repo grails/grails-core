@@ -47,6 +47,7 @@ public interface LinkGenerator {
        ATTRIBUTE_CONTROLLER,
        ATTRIBUTE_ACTION,
        ATTRIBUTE_URI,
+       ATTRIBUTE_CONTEXT_PATH,
        ATTRIBUTE_URL,
        ATTRIBUTE_BASE,
        ATTRIBUTE_ABSOLUTE,
