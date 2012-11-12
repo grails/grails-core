@@ -33,7 +33,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
 
     public static final String DEFAULT_DATABINDING_WHITELIST = "$defaultDatabindingWhiteList";
 
-    private static Map<ClassNode, Set<String>> CLASS_NAME_TO_WHITE_LIST_PROPERTY_NAMES = new HashMap<ClassNode, Set<String>>();
+    private static Map<ClassNode, Set<String>> CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES = new HashMap<ClassNode, Set<String>>();
 
     @SuppressWarnings("serial")
     private static final List<ClassNode> SIMPLE_TYPES = new ArrayList<ClassNode>() {{
@@ -113,16 +113,23 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         }
         return fieldNode;
     }
+    
+    private Set<String> getPropertyNamesToIncludeInWhiteListForParentClass(final SourceUnit sourceUnit, final ClassNode parentClassNode) {
+    	final Set<String> propertyNames;
+        if (CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.containsKey(parentClassNode)) {
+            propertyNames = CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.get(parentClassNode);
+        } else {
+            propertyNames = getPropertyNamesToIncludeInWhiteList(sourceUnit, parentClassNode);
+        }
+        return propertyNames;
+    }
 
     private Set<String> getPropertyNamesToIncludeInWhiteList(final SourceUnit sourceUnit, final ClassNode classNode) {
-        if (CLASS_NAME_TO_WHITE_LIST_PROPERTY_NAMES.containsKey(classNode)) {
-            return CLASS_NAME_TO_WHITE_LIST_PROPERTY_NAMES.get(classNode);
-        }
         final Set<String> propertyNamesToIncludeInWhiteList = new HashSet<String>();
         final Set<String> unbindablePropertyNames = new HashSet<String>();
         final Set<String> bindablePropertyNames = new HashSet<String>();
         if (!classNode.getSuperClass().equals(new ClassNode(Object.class))) {
-            final Set<String> parentClassPropertyNames = getPropertyNamesToIncludeInWhiteList(sourceUnit, classNode.getSuperClass());
+            final Set<String> parentClassPropertyNames = getPropertyNamesToIncludeInWhiteListForParentClass(sourceUnit, classNode.getSuperClass());
             bindablePropertyNames.addAll(parentClassPropertyNames);
         }
 
@@ -200,7 +207,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                 }
             }
         }
-        CLASS_NAME_TO_WHITE_LIST_PROPERTY_NAMES.put(classNode, propertyNamesToIncludeInWhiteList);
+        CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.put(classNode, propertyNamesToIncludeInWhiteList);
         Map<String, ClassNode> allAssociationMap = GrailsASTUtils.getAllAssociationMap(classNode);
         for (String associationName : allAssociationMap.keySet()) {
             if (!propertyNamesToIncludeInWhiteList.contains(associationName)) {
