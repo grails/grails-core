@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.plugins.support
 import grails.validation.ValidationErrors
 
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.springframework.validation.FieldError
 import org.springframework.web.context.support.WebApplicationContextUtils
 
 
@@ -42,8 +43,12 @@ class ValidationSupport {
             def localErrors = new ValidationErrors(object, object.class.name)
             def originalErrors = object.errors
             for (originalError in originalErrors.allErrors) {
-                if (originalErrors.getFieldError(originalError.field)?.bindingFailure) {
-                    localErrors.rejectValue originalError.field, originalError.code, originalError.arguments, originalError.defaultMessage
+                if(originalError instanceof FieldError) {
+                    if (originalErrors.getFieldError(originalError.field)?.bindingFailure) {
+                        localErrors.rejectValue originalError.field, originalError.code, originalError.arguments, originalError.defaultMessage
+                    }
+                } else {
+                    localErrors.addError originalError
                 }
             }
             for (prop in constraints.values()) {
