@@ -55,3 +55,10 @@ jar.appendix = 'bootstrap'
 jar {
     from compileUaaGroovy.outputs.files
 }
+
+
+eclipse {
+	classpath {
+		plusConfigurations += configurations.uaa
+	}
+}
