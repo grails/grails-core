@@ -1,3 +1,5 @@
+rootProject.name = "grails.core.ROOT"
+
 include 'grails-bootstrap',
         'grails-core',
         'grails-spring',
