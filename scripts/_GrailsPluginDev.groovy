@@ -102,9 +102,8 @@ target(packagePlugin: "Implementation target") {
     event("PackagePluginStart", [pluginInfo.name])
 
     // Package plugin's zip or jar distribution
-    String packagedFileName
     try {
-        packagedFileName = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
+        pluginZip = packager.packagePlugin(pluginInfo.name, classesDir, grailsSettings.projectTargetDir)
     }
     catch (e) {
         if (e.cause instanceof GrailsTagException) {
@@ -116,7 +115,7 @@ target(packagePlugin: "Implementation target") {
         exit 1
     }
 
-    grailsConsole.addStatus "Plugin packaged ${new File(packagedFileName).name}"
+    grailsConsole.addStatus "Plugin packaged ${new File(pluginZip).name}"
 
     event("PackagePluginEnd", [pluginInfo.name])
 }
