@@ -115,7 +115,7 @@ class InteractiveMode {
                     else if ("quit".equals(trimmed)) {
                         goodbye()
                     }
-                    else if ("exit".equals(trimmed)) {
+                    else if (("exit".equals(trimmed)) || ("stop-app".equals(trimmed))) {
                         exit()
                     }
                     else if (scriptName.startsWith("open ")) {
