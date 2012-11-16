@@ -113,8 +113,8 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed by the Grails build system
 
-                        String antVersion = "1.8.2";
-                        String slf4jVersion = "1.6.2";
+                        String antVersion = "1.8.4";
+                        String slf4jVersion = "1.7.2";
                         String junitVersion = "4.10";
                         ModuleRevisionId[] buildDependencies = {
                             ModuleRevisionId.newInstance("org.springframework.uaa", "org.springframework.uaa.client", "1.0.1.RELEASE"),

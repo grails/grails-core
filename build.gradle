@@ -17,7 +17,7 @@ ext {
     grailsVersion = '2.3.0.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     antTraxVersion = "1.7.1"
-    antVersion = "1.8.2"
+    antVersion = "1.8.4"
     aspectjVersion = "1.6.10"
     commonsBeanUtilsVersion = "1.8.3"
     commonsCliVersion = "1.2"
@@ -34,7 +34,7 @@ ext {
     jansiVersion = "1.2.1"
     jlineVersion = "1.0"
     jnaVersion = "3.2.3"
-    slf4jVersion = "1.6.2"
+    slf4jVersion = "1.7.2"
 
     spockVersion = '0.7-groovy-2.0'
     springLoadedVersion = "1.1.0"
