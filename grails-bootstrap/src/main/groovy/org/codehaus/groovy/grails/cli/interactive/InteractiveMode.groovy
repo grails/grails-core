@@ -114,8 +114,13 @@ class InteractiveMode {
                     }
                     else if ("quit".equals(trimmed)) {
                         goodbye()
-                    }
-                    else if (("exit".equals(trimmed)) || ("stop-app".equals(trimmed))) {
+                    } else if('stop-app'.equals(trimmed)) {
+                        if(settings.forkSettings?.get('run')) {
+                            parseAndExecute 'stop-app'
+                        } else {
+                            stopApp()
+                        }
+                    } else if ("exit".equals(trimmed)) {
                         exit()
                     }
                     else if (scriptName.startsWith("open ")) {
@@ -175,7 +180,7 @@ class InteractiveMode {
         System.exit(0)
     }
 
-    protected void exit() {
+    protected void stopApp() {
         if (grailsServer) {
            try {
                updateStatus "Stopping Grails server"
@@ -186,6 +191,12 @@ class InteractiveMode {
            finally {
                grailsServer = null
            }
+        }
+    }
+
+    protected void exit() {
+        if (grailsServer) {
+            stopApp()
         }
         else {
             goodbye()
