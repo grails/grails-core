@@ -32,9 +32,14 @@ import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi
 class ServletsGrailsPluginSupport {
 
 
-    static enhanceServletApi() {
+    static enhanceServletApi(ConfigObject config = new ConfigObject()) {
         def requestEnhancer = new MetaClassEnhancer()
-        requestEnhancer.addApi new ServletRequestApi()
+        final servletRequestApi = new ServletRequestApi()
+        final xhrIdentifier = grails?.web?.xhr?.identifier
+        if(xhrIdentifier instanceof Closure) {
+            servletRequestApi.xhrRequestIdentifier = xhrIdentifier
+        }
+        requestEnhancer.addApi servletRequestApi
 
         def getAttributeClosure = { String name ->
             def mp = delegate.class.metaClass.getMetaProperty(name)
