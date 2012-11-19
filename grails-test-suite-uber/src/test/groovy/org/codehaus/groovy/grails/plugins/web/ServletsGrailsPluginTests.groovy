@@ -35,9 +35,6 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
         request.addHeader "X-Requested-With", "XMLHttpRequest"
         assert request.xhr : "This should be an XHR request"
 
-        request = new MockHttpServletRequest()
-        request.addHeader "X-Requested-With", "Ext.basex"
-        assert request.xhr : "This should be an XHR request"
     }
 
     void testServletContextObject() {
