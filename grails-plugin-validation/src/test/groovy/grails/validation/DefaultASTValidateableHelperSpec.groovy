@@ -252,4 +252,21 @@ class DefaultASTValidateableHelperSpec extends Specification {
             isValid
             0 == errorCount
     }
+
+    void 'Test validate method on an object that has had values rejected with an ObjectError'() {
+        given:
+            def widget = widgetClass.newInstance()
+            widget.name = 'Joe'
+            widget.count = 2
+            widget.category = 'some category'
+
+        when:
+            widget.errors.reject 'count'
+            def isValid = widget.validate()
+            def errorCount = widget.errors.errorCount
+
+        then:
+            !isValid
+            1 == errorCount
+    }
 }
