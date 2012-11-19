@@ -80,11 +80,11 @@ createArtifact = { Map args = [:] ->
     templateFile = new FileSystemResource("${basedir}/src/${templatePath}/${type ?: lastType}.groovy")
     if (!templateFile.exists()) {
         // now check for template provided by plugins
-        def pluginTemplateFiles = resolveResources("file:${pluginsHome}/*/src/${templatePath}/${type ?: lastType}.groovy")
-        if (pluginTemplateFiles) {
-            templateFile = pluginTemplateFiles[0]
-        }
-        else {
+        def possibleResources = pluginSettings.pluginDirectories.collect { dir ->
+            new FileSystemResource("${dir.path}/src/templates/artifacts/${type ?: lastType}.groovy")
+        }   
+        templateFile = possibleResources.find { it.exists() }
+        if (!templateFile) {
             // template not found in application, use default template
             templateFile = grailsResource("src/grails/${templatePath}/${type ?: lastType}.groovy")
         }
