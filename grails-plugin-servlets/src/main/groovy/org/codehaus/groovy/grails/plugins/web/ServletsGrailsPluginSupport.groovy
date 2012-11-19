@@ -35,7 +35,7 @@ class ServletsGrailsPluginSupport {
     static enhanceServletApi(ConfigObject config = new ConfigObject()) {
         def requestEnhancer = new MetaClassEnhancer()
         final servletRequestApi = new ServletRequestApi()
-        final xhrIdentifier = grails?.web?.xhr?.identifier
+        final xhrIdentifier = config?.grails?.web?.xhr?.identifier
         if(xhrIdentifier instanceof Closure) {
             servletRequestApi.xhrRequestIdentifier = xhrIdentifier
         }
