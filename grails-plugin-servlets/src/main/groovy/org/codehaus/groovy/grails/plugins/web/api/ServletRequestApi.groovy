@@ -28,6 +28,8 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
  */
 class ServletRequestApi {
 
+    Closure xhrRequestIdentifier = { false }
+
     /**
      * Whether the request has been redirected
      *
@@ -49,7 +51,7 @@ class ServletRequestApi {
      * @return test whether the current request is an XHR request
      */
     boolean isXhr(HttpServletRequest instance) {
-        instance.getHeader('X-Requested-With') != null
+        instance.getHeader('X-Requested-With') == "XMLHttpRequest" || xhrRequestIdentifier(instance)
     }
 
     /**
