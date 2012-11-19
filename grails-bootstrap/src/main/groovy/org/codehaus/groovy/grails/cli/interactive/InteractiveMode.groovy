@@ -113,13 +113,9 @@ class InteractiveMode {
                         error "You cannot uninstall a plugin in interactive mode."
                     }
                     else if ("quit".equals(trimmed)) {
-                        goodbye()
+                        quit()
                     } else if('stop-app'.equals(trimmed)) {
-                        if(settings.forkSettings?.get('run')) {
-                            parseAndExecute 'stop-app'
-                        } else {
-                            stopApp()
-                        }
+                        stopApp()
                     } else if ("exit".equals(trimmed)) {
                         exit()
                     }
@@ -175,32 +171,36 @@ class InteractiveMode {
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
     }
 
+    protected void quit() {
+        exit true
+    }
+
     protected void goodbye() {
         updateStatus "Goodbye"
         System.exit(0)
     }
 
     protected void stopApp() {
-        if (grailsServer) {
-           try {
-               updateStatus "Stopping Grails server"
-               grailsServer.stop()
-           } catch (e) {
-               error "Error stopping server: $e.message", e
-           }
-           finally {
-               grailsServer = null
-           }
+        if(settings.forkSettings?.get('run')) {
+            parseAndExecute 'stop-app'
+        } else if (grailsServer) {
+            try {
+                updateStatus "Stopping Grails server"
+                grailsServer.stop()
+            } catch (e) {
+                error "Error stopping server: $e.message", e
+            }
+            finally {
+                grailsServer = null
+            }
         }
     }
 
-    protected void exit() {
-        if (grailsServer) {
+    protected void exit(boolean shouldStopApp = false) {
+        if(shouldStopApp) {
             stopApp()
         }
-        else {
-            goodbye()
-        }
+        goodbye()
     }
 
     protected void open(String scriptName) {
