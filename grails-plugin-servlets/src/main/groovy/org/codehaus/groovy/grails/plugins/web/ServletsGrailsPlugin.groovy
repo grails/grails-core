@@ -31,6 +31,6 @@ class ServletsGrailsPlugin {
     def dependsOn = [core:version]
 
     def doWithDynamicMethods = { ctx ->
-        ServletsGrailsPluginSupport.enhanceServletApi()
+        ServletsGrailsPluginSupport.enhanceServletApi(application.config)
     }
 }

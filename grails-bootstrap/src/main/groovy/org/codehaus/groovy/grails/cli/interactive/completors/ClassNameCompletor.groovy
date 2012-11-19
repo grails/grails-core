@@ -21,7 +21,7 @@ import jline.SimpleCompletor
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * A completor that completes
