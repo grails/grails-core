@@ -328,4 +328,10 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
     void informOfFileChange(File file);
 
     void informOfClassChange(File file, @SuppressWarnings("rawtypes") Class cls);
+
+    /**
+     * Indicates whether the manager has been shutdown or not
+     * @return True if it was shutdown
+     */
+    boolean isShutdown();
 }

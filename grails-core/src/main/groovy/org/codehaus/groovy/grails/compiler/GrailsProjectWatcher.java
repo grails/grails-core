@@ -204,7 +204,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     }
 
     private void informPluginManager(final File file, boolean isNew) {
-        if(pluginManager == null)  return;
+        if (pluginManager == null || pluginManager.isShutdown())  return;
+
         if (!isSourceFile(file) || isNew) {
             try {
                 pluginManager.informOfFileChange(file);
