@@ -40,8 +40,12 @@ public class GrailsRootLoader extends RootLoader {
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         try {
-            if (name.startsWith("java.") || name.startsWith("javax.xml.") || name.startsWith("org.w3c.dom.")) {
-                return getParent().loadClass(name);
+            if(name.startsWith("java.") || name.startsWith("javax.xml.") || name.startsWith("org.w3c.dom.")) {
+                try {
+                    return getParent().loadClass(name);
+                } catch (ClassNotFoundException e) {
+                    return super.loadClass(name, resolve);
+                }
             }
             return super.loadClass(name, resolve);
         }
