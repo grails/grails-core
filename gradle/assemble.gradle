@@ -56,6 +56,7 @@ task configurePopulateDependencies << {
     def seen = []
     libsConfigurations.each { configuration ->
         def sourceArtifacts = sourcesFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy { it.moduleVersion.id }
+        def javadocArtifacts = javadocFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy { it.moduleVersion.id }
         for (artifact in configuration.resolvedConfiguration.resolvedArtifacts) {
             if (artifact in seen) continue
             seen << artifact
@@ -66,6 +67,10 @@ task configurePopulateDependencies << {
                     def sourceJar = sourceArtifacts[dependency]
                     if (sourceJar) {
                         from sourceJar.file
+                    }
+                    def javadocJar = javadocArtifacts[dependency]
+                    if (javadocJar) {
+                        from javadocJar.file
                     }
                 }
 
