@@ -17,45 +17,49 @@ class GrailsBuildPlugin implements Plugin<Project> {
 
         // Add utility for getting sources, returns a configuration containing the source jar versions
         // of the dependencies in the given configuration(s)
-        project.ext.sourcesFor = { configurations ->
-            
-            // We can't use varargs for the closure signature due to an issue in the mixin mechanism in this
-            // version of Gradle.
-            if (configurations instanceof Configuration) {
-                configurations = [configurations]
-            }
-            
-            def addChildren
-            addChildren = { Collection deps, Set allDeps = new LinkedHashSet() ->
-                deps.each { ResolvedDependency resolvedDependency ->
-                    def notSeenBefore = allDeps.add(resolvedDependency)
-                    if (notSeenBefore) { // defend against circular dependencies
-                        addChildren(resolvedDependency.children, allDeps)
-                    }
-                }
-                allDeps
-            }
-
-            def dependencies = new LinkedHashSet()
-            for (configuration in configurations) {
-                addChildren(configuration.resolvedConfiguration.getFirstLevelModuleDependencies({ it instanceof ExternalDependency } as Spec), dependencies)
-            }
-
-            def sourceDependencies = dependencies.collect { ResolvedDependency resolvedDependency ->
-                def dependency = new DefaultExternalModuleDependency(resolvedDependency.moduleGroup, resolvedDependency.moduleName, resolvedDependency.moduleVersion,
-                        resolvedDependency.configuration)
-                dependency.transitive = false
-                dependency.artifact { artifact ->
-                    artifact.name = dependency.name
-                    artifact.type = 'source'
-                    artifact.extension = 'jar'
-                    artifact.classifier = 'sources'
-                }
-                dependency
-            }
-
-            project.configurations.detachedConfiguration(sourceDependencies as Dependency[])
+        project.ext {
+            sourcesFor = { configurations -> classifiedDependencies(project, configurations, "sources") }
+            javadocFor = { configurations -> classifiedDependencies(project, configurations, "javadoc") }
         }
+    }
+
+    private Configuration classifiedDependencies(project, configurations, String targetClassifier) {
+        // We can't use varargs for the closure signature due to an issue in the mixin mechanism in this
+        // version of Gradle.
+        if (configurations instanceof Configuration) {
+            configurations = [configurations]
+        }
+
+        def addChildren
+        addChildren = { Collection deps, Set allDeps = new LinkedHashSet() ->
+            deps.each { ResolvedDependency resolvedDependency ->
+                def notSeenBefore = allDeps.add(resolvedDependency)
+                if (notSeenBefore) { // defend against circular dependencies
+                    addChildren(resolvedDependency.children, allDeps)
+                }
+            }
+            allDeps
+        }
+
+        def dependencies = new LinkedHashSet()
+        for (configuration in configurations) {
+            addChildren(configuration.resolvedConfiguration.getFirstLevelModuleDependencies({ it instanceof ExternalDependency } as Spec), dependencies)
+        }
+
+        def sourceDependencies = dependencies.collect { ResolvedDependency resolvedDependency ->
+            def dependency = new DefaultExternalModuleDependency(resolvedDependency.moduleGroup, resolvedDependency.moduleName, resolvedDependency.moduleVersion,
+                resolvedDependency.configuration)
+            dependency.transitive = false
+            dependency.artifact { artifact ->
+                artifact.name = dependency.name
+                artifact.type = targetClassifier
+                artifact.extension = 'jar'
+                artifact.classifier = targetClassifier
+            }
+            dependency
+        }
+
+        project.configurations.detachedConfiguration(sourceDependencies as Dependency[])
     }
 
 }
