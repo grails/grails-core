@@ -48,13 +48,14 @@ task configurePopulateDependencies << {
 
     ext {
         baseCachesDir = "$gradle.gradleUserHomeDir/caches"
-        cacheDir = "$baseCachesDir/artifacts-8"
+        cacheDir = "$baseCachesDir/artifacts-14"
         metadata = "$cacheDir/module-metadata"
         filestore = "$cacheDir/filestore"
     }
 
     def seen = []
     libsConfigurations.each { configuration ->
+        def sourceArtifacts = sourcesFor(configuration).resolvedConfiguration.lenientConfiguration.getArtifacts(Specs.satisfyAll()).groupBy { it.moduleVersion.id }
         for (artifact in configuration.resolvedConfiguration.resolvedArtifacts) {
             if (artifact in seen) continue
             seen << artifact
@@ -62,6 +63,10 @@ task configurePopulateDependencies << {
             if (!projectNames.contains(dependency.name)) {
                 populateDependencies.into("$dependency.group/$dependency.name/jars") {
                     from artifact.file // this will trigger the actual download if necessary
+                    def sourceJar = sourceArtifacts[dependency]
+                    if (sourceJar) {
+                        from sourceJar.file
+                    }
                 }
 
                 populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
