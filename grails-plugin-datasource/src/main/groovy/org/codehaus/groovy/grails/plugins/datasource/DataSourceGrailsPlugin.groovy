@@ -18,16 +18,20 @@ package org.codehaus.groovy.grails.plugins.datasource
 import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
+
 import java.sql.Connection
 import java.sql.Driver
 import java.sql.DriverManager
+
 import javax.sql.DataSource
+
 import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
+import org.springframework.beans.factory.BeanIsNotAFactoryException
 import org.springframework.context.ApplicationContext
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
@@ -148,8 +152,7 @@ class DataSourceGrailsPlugin {
         String desc = isDefault ? 'data source' : "data source '$datasourceName'"
         log.info "[RuntimeConfiguration] Configuring $desc for environment: $Environment.current"
 
-        Class dsClass = pooled ? BasicDataSource :
-                readOnly ? ReadOnlyDriverManagerDataSource : DriverManagerDataSource
+        Class dsClass = pooled ? BasicDataSource : readOnly ? ReadOnlyDriverManagerDataSource : DriverManagerDataSource
 
         def bean = "$unproxiedName"(dsClass, parentConfig)
         if (pooled) {
@@ -254,8 +257,8 @@ class DataSourceGrailsPlugin {
 
         ApplicationContext appCtx = event.ctx
 
-        for (bean in appCtx.getBeansOfType(DataSource).values()) {
-            shutdownDatasource bean
+        appCtx.getBeansOfType(DataSource).each { String name, DataSource dataSource ->
+            shutdownDatasource dataSource, name, appCtx
         }
 
         if (Metadata.current.isWarDeployed()) {
@@ -263,7 +266,7 @@ class DataSourceGrailsPlugin {
         }
     }
 
-    void shutdownDatasource(DataSource dataSource) {
+    void shutdownDatasource(DataSource dataSource, String name, ctx) {
         Connection connection
         try {
             connection = dataSource.getConnection()
@@ -283,7 +286,20 @@ class DataSourceGrailsPlugin {
             try { connection?.close() } catch (ignored) {}
             try {
                 if (dataSource.respondsTo('close')) {
-                    dataSource.close()
+                    boolean shouldClose = true
+                    try {
+                        def factory = ctx.getBean('&' + name)
+                        if (factory instanceof JndiObjectFactoryBean) {
+                            shouldClose = false
+                        }
+                    }
+                    catch (BeanIsNotAFactoryException e) {
+                        // not using JNDI
+                    }
+
+                    if (shouldClose) {
+                        dataSource.close()
+                    }
                 }
             }
             catch (ignored) {}
