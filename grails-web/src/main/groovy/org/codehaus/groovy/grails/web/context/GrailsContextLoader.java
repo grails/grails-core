@@ -137,9 +137,9 @@ public class GrailsContextLoader extends ContextLoader {
         ConfigurableApplicationContext parent = ctx != null ? (ConfigurableApplicationContext) ctx.getParent() : null;
 
         try {
-            ShutdownOperations.runOperations();
-        } finally {
             super.closeWebApplicationContext(servletContext);
+        } finally {
+            ShutdownOperations.runOperations();
         }
 
         if (parent != null) {

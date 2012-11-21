@@ -69,6 +69,7 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
     protected Map<String, GrailsPlugin> classNameToPluginMap = new HashMap<String, GrailsPlugin>();
     protected Class<?>[] pluginClasses = new Class[0];
     protected boolean initialised = false;
+    protected boolean shutdown = false;
     protected ApplicationContext applicationContext;
     protected Map<String, GrailsPlugin> failedPlugins = new HashMap<String, GrailsPlugin>();
     protected boolean loadCorePlugins = true;
@@ -270,11 +271,21 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     public void shutdown() {
         checkInitialised();
-        for (GrailsPlugin plugin : pluginList) {
-            if (plugin.supportsCurrentScopeAndEnvironment()) {
-                plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_SHUTDOWN, plugin);
+        try {
+            for (GrailsPlugin plugin : pluginList) {
+                if (plugin.supportsCurrentScopeAndEnvironment()) {
+                    plugin.notifyOfEvent(GrailsPlugin.EVENT_ON_SHUTDOWN, plugin);
+                }
             }
+        } finally {
+            shutdown = true;
         }
+
+    }
+
+    @Override
+    public boolean isShutdown() {
+        return shutdown;
     }
 
     public boolean supportsCurrentBuildScope(String pluginName) {

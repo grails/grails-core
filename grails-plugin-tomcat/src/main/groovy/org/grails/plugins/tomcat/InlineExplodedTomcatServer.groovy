@@ -144,7 +144,6 @@ class InlineExplodedTomcatServer extends TomcatServer {
     }
 
     void stop() {
-        ShutdownOperations.runOperations()
         tomcat.stop()
         tomcat.destroy()
         GrailsPluginUtils.clearCaches()
