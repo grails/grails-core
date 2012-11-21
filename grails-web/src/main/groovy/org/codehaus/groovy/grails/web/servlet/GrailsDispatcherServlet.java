@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -223,7 +224,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         for (GrailsClass bootstrap : bootstraps) {
             ((GrailsBootstrapClass) bootstrap).callDestroy();
         }
-        super.destroy();
+        try {
+            super.destroy();
+        } finally {
+            ShutdownOperations.runOperations();
+        }
     }
 
     /**
