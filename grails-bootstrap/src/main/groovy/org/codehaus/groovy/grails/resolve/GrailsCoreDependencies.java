@@ -87,6 +87,18 @@ public class GrailsCoreDependencies {
                 DependencyConfigurationConfigurer rootDelegate = (DependencyConfigurationConfigurer)getDelegate();
 
                 rootDelegate.log("warn");
+
+                // Repositories
+                rootDelegate.repositories(new Closure(this, GrailsCoreDependencies.this) {
+                    public Object doCall() {
+                        RepositoriesConfigurer repositoriesDelegate = (RepositoriesConfigurer)getDelegate();
+
+                        repositoriesDelegate.grailsPlugins();
+                        repositoriesDelegate.grailsHome();
+
+                        return null;
+                    }
+                });
                 // Dependencies
 
                 rootDelegate.dependencies(new Closure(this, GrailsCoreDependencies.this) {
