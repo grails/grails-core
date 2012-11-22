@@ -124,8 +124,8 @@ mappings {
         assertEquals "/blog/foo/2007", m.createURL(entry: "foo", year: 2007, null)
         assertEquals "/blog/foo", m.createURL(entry: "foo", "utf-8")
         assertEquals "/blog/foo", m.createURL(entry: "foo", null)
-        assertEquals '/blog/My+%2410', m.createURL(entry: 'My $10', "utf-8")
-        assertEquals '/blog/My+%24temp', m.createURL(entry: 'My $temp', "utf-8")
+        assertEquals '/blog/My%20$10', m.createURL(entry: 'My $10', "utf-8")
+        assertEquals '/blog/My%20$temp', m.createURL(entry: 'My $temp', "utf-8")
         assertEquals "/blog/foo?day=24", m.createURL(entry: "foo", day: 24, "utf-8")
         shouldFail { m.createURL([:], "utf-8") }
 
