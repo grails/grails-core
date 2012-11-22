@@ -33,6 +33,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import javax.servlet.ServletContext;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -253,21 +254,18 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                             // get rid of leading slash
                             v = v.substring(SLASH.length());
                         }
-                        String[] segs = v.split(SLASH);
-                        for (String segment : segs) {
-                            uri.append(SLASH).append(URLEncoder.encode(segment, encoding));
-                        }
+                        uri.append(SLASH).append(new URI(null, null, v, null).toString());
                     }
                     else if (v.length() > 0) {
                         // original behavior
-                        uri.append(SLASH).append(URLEncoder.encode(v, encoding));
+                        uri.append(SLASH).append(new URI(null, null, v, null).toString());
                     }
                     else {
                         // Stop processing tokens once we hit an empty one.
                         break;
                     }
                 }
-                catch (UnsupportedEncodingException e) {
+                catch (URISyntaxException e) {
                     throw new ControllerExecutionException("Error creating URL for parameters [" +
                             paramValues + "], problem encoding URL part [" + buf + "]: " + e.getMessage(), e);
                 }
