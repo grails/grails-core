@@ -680,7 +680,8 @@ public abstract class AbstractIvyDependencyManager {
             return;
         }
 
-        if (!pluginDep && !"org.grails".equals(descriptor.getDependencyId().getOrganisation())) {
+        String org = descriptor.getDependencyId().getOrganisation();
+        if(!pluginDep && !"org.grails".equals(org) && !"org.springframework.uaa".equals(org)) {
             mappings = new ArrayList<String>(mappings);
 
             if (includeJavadoc) {

@@ -16,23 +16,6 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
-import javax.servlet.ServletContext;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +29,16 @@ import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import javax.servlet.ServletContext;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
@@ -261,21 +254,18 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                             // get rid of leading slash
                             v = v.substring(SLASH.length());
                         }
-                        String[] segs = v.split(SLASH);
-                        for (String segment : segs) {
-                            uri.append(SLASH).append(URLEncoder.encode(segment, encoding));
-                        }
+                        uri.append(SLASH).append(new URI(null, null, v, null).toString());
                     }
                     else if (v.length() > 0) {
                         // original behavior
-                        uri.append(SLASH).append(URLEncoder.encode(v, encoding));
+                        uri.append(SLASH).append(new URI(null, null, v, null).toString());
                     }
                     else {
                         // Stop processing tokens once we hit an empty one.
                         break;
                     }
                 }
-                catch (UnsupportedEncodingException e) {
+                catch (URISyntaxException e) {
                     throw new ControllerExecutionException("Error creating URL for parameters [" +
                             paramValues + "], problem encoding URL part [" + buf + "]: " + e.getMessage(), e);
                 }

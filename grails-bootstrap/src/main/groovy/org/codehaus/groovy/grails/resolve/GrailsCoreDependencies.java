@@ -88,7 +88,6 @@ public class GrailsCoreDependencies {
                 rootDelegate.log("warn");
 
                 // Repositories
-
                 rootDelegate.repositories(new Closure(this, GrailsCoreDependencies.this) {
                     public Object doCall() {
                         RepositoriesConfigurer repositoriesDelegate = (RepositoriesConfigurer)getDelegate();
@@ -99,7 +98,6 @@ public class GrailsCoreDependencies {
                         return null;
                     }
                 });
-
                 // Dependencies
 
                 rootDelegate.dependencies(new Closure(this, GrailsCoreDependencies.this) {
