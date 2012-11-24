@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import java.util.Map;
 
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
@@ -72,7 +73,7 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
             return super.link(attrs, encoding);
         }
 
-        final String key = LINK_PREFIX + createKey(attrs);
+        final String key = makeKey(LINK_PREFIX, attrs);
         Object resourceLink = linkCache.get(key);
         if (resourceLink == null) {
             resourceLink = super.link(attrs, encoding);
@@ -94,12 +95,11 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     }
 
     // Based on DGM toMapString, but with StringBuilder instead of StringBuffer
-    private String createKey(Map map) {
-        if (map.isEmpty()) {
-            return EMPTY_MAP_STRING;
+    private void appendMapKey(StringBuilder buffer, Map map) {
+        if (map==null || map.isEmpty()) {
+            buffer.append(EMPTY_MAP_STRING);
         }
-
-        StringBuilder buffer = new StringBuilder(OPENING_BRACKET);
+        buffer.append(OPENING_BRACKET);
         boolean first = true;
         for (Object o : map.entrySet()) {
             Map.Entry entry = (Map.Entry) o;
@@ -114,7 +114,6 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
             appendKeyValue(buffer, map, key, value);
         }
         buffer.append(CLOSING_BRACKET);
-        return buffer.toString();
     }
 
     private boolean appendCommaIfNotFirst(StringBuilder buffer, boolean first) {
@@ -138,13 +137,24 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
 
     @Override
     public String resource(Map attrs) {
-        final String key = RESOURCE_PREFIX + attrs;
+        final String key = makeKey(RESOURCE_PREFIX, attrs);
         Object resourceLink = linkCache.get(key);
         if (resourceLink == null) {
             resourceLink = super.resource(attrs);
             linkCache.put(key, resourceLink);
         }
         return resourceLink.toString();
+    }
+
+    protected String makeKey(String prefix, Map attrs) {
+        StringBuilder sb=new StringBuilder();
+        sb.append(prefix);
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+        if(webRequest != null) {
+            sb.append(webRequest.getBaseUrl());
+        }
+        appendMapKey(sb, attrs);
+        return sb.toString();
     }
 
     private ConcurrentLinkedHashMap<String, Object> createDefaultCache() {

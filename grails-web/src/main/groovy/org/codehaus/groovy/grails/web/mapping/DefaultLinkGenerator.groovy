@@ -246,24 +246,9 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         if (!u) {
             // Leave it null if we're in production so we can throw
             final webRequest = GrailsWebRequest.lookup()
-            final request = webRequest?.currentRequest
-            if (request != null) {
-                def port = request.serverPort
-                def scheme = request.scheme
-                def contextPath = request.contextPath
-
-                def url = "${scheme}://${request.serverName}"
-                if ((scheme == "http" && port != 80) || (scheme == "https" && port != 443)) {
-                    return contextPath ? "$url:$port$contextPath" : "$url:$port"
-                }
-                else {
-                    return contextPath ? "$url$contextPath" : url
-                }
-            }
-            else {
-                if (!Environment.isWarDeployed()) {
-                    u = "http://localhost:${System.getProperty('server.port') ?: '8080'}${contextPath ?: '' }"
-                }
+            u = webRequest?.baseUrl
+            if (!u && !Environment.isWarDeployed()) {
+                u = "http://localhost:${System.getProperty('server.port') ?: '8080'}${contextPath ?: '' }"
             }
         }
         return u
