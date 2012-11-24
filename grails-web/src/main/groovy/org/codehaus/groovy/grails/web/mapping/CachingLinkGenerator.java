@@ -149,9 +149,11 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     protected String makeKey(String prefix, Map attrs) {
         StringBuilder sb=new StringBuilder();
         sb.append(prefix);
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if(webRequest != null) {
-            sb.append(webRequest.getBaseUrl());
+        if(isAbsolute(attrs)) {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if(webRequest != null) {
+                sb.append(webRequest.getBaseUrl());
+            }
         }
         appendMapKey(sb, attrs);
         return sb.toString();
