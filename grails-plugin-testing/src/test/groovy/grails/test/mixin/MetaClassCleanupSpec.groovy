@@ -4,6 +4,7 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 
 import org.junit.AfterClass
 import org.junit.Assert
+import grails.util.Mixin
 
 import spock.lang.Specification
 
@@ -55,6 +56,27 @@ class MetaClassCleanupSpec extends Specification {
         greeting == 'goodbye'
     }
 
+
+    def "Test that mixins are re-applied after cleanup - step 1"() {
+        given:"A mixin class"
+            def a = new A()
+
+        when:"A method is called that uses a mixin"
+            def rs = a.doStuff()
+
+        then:"The the mixin method works"
+            rs == "A with mixin: mixMe from AMixin mix static"
+    }
+
+    def "Test that mixins are re-applied after cleanup - step 2"() {
+        given:"A mixin class"
+            def a = new A()
+        when:"A method is called that uses a mixin"
+            def rs = a.doStuff()
+
+        then:"The the mixin method works"
+            rs == "A with mixin: mixMe from AMixin mix static"
+    }
     @AfterClass
     static void checkCleanup() {
         def a = new Author()
@@ -82,5 +104,18 @@ class HelloService {
     def greet(message) {
         def xml = "<greeting message='${message}'/>"
         new XmlParser().parseText(xml).@message
+    }
+}
+
+class AMixin {
+    String prop = "foo"
+    String mixMe() {"mixMe from AMixin"}
+    static mixStatic() { "mix static"}
+}
+
+@Mixin(AMixin)
+class A {
+    String doStuff() {
+        "A with mixin: ${mixMe()} ${mixStatic()}"
     }
 }

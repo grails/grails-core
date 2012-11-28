@@ -129,21 +129,9 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
                     mapping = urlMappingsHolder.getReverseMapping(controller,action,pluginName,params)
                 }
 
-                boolean absolute = false
-                def o = attrs.get(ATTRIBUTE_ABSOLUTE)
-                if (o instanceof Boolean) {
-                    absolute = o
-                } else {
-                    if (o != null) {
-                        try {
-                            def str = o.toString()
-                            if (str) {
-                                absolute = Boolean.parseBoolean(str)
-                            }
-                        } catch(e) {}
-                    }
-                }
 
+                boolean absolute = isAbsolute(attrs)
+                
                 if (!absolute) {
                     url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
@@ -166,6 +154,24 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         }
         return writer.toString()
     }
+
+	protected boolean isAbsolute(Map attrs) {
+		boolean absolute = false
+		def o = attrs.get(ATTRIBUTE_ABSOLUTE)
+		if(o instanceof Boolean) {
+			absolute = o
+		} else {
+			if(o != null) {
+				try {
+					def str = o.toString()
+					if(str) {
+						absolute = Boolean.parseBoolean(str)
+					}
+				} catch(e){}
+			}
+		}
+        return absolute
+	}
 
     /**
      * {@inheritDoc }
@@ -228,8 +234,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
             return base
         }
 
-        def abs = attrs.absolute
-        if (Boolean.valueOf(abs)) {
+        if (isAbsolute(attrs)) {
             def u = makeServerURL()
             if (u) {
                 return u
@@ -247,24 +252,9 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware{
         if (!u) {
             // Leave it null if we're in production so we can throw
             final webRequest = GrailsWebRequest.lookup()
-            final request = webRequest?.currentRequest
-            if (request != null) {
-                def port = request.serverPort
-                def scheme = request.scheme
-                def contextPath = request.contextPath
-
-                def url = "${scheme}://${request.serverName}"
-                if ((scheme == "http" && port != 80) || (scheme == "https" && port != 443)) {
-                    return contextPath ? "$url:$port$contextPath" : "$url:$port"
-                }
-                else {
-                    return contextPath ? "$url$contextPath" : url
-                }
-            }
-            else {
-                if (!Environment.isWarDeployed()) {
-                    u = "http://localhost:${System.getProperty('server.port') ?: '8080'}${contextPath ?: '' }"
-                }
+            u = webRequest?.baseUrl
+            if (!u && !Environment.isWarDeployed()) {
+                u = "http://localhost:${System.getProperty('server.port') ?: '8080'}${contextPath ?: '' }"
             }
         }
         return u
