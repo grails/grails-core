@@ -46,6 +46,7 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandler;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.core.io.FileSystemResource;
@@ -85,6 +86,10 @@ public class TestForTransformation extends TestMixinTransformation {
     public static final String DOMAIN_TYPE = "Domain";
     public static final ClassNode BEFORE_CLASS_NODE = new ClassNode(Before.class);
     public static final AnnotationNode BEFORE_ANNOTATION = new AnnotationNode(BEFORE_CLASS_NODE);
+
+    public static final ClassNode AFTER_CLASS_NODE = new ClassNode(After.class);
+    public static final AnnotationNode AFTER_ANNOTATION = new AnnotationNode(AFTER_CLASS_NODE);
+
 
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
@@ -187,6 +192,8 @@ public class TestForTransformation extends TestMixinTransformation {
      * @param ce The class expression that represents the class to test
      */
     public void testFor(ClassNode classNode, ClassExpression ce) {
+
+        autoAnnotateSetupTeardown(classNode);
         boolean junit3Test = isJunit3Test(classNode);
 
         // make sure the 'log' property is not the one from GroovyTestCase
@@ -213,6 +220,19 @@ public class TestForTransformation extends TestMixinTransformation {
         if (methodToAdd != null && junit3Test) {
             addMethodCallsToMethod(classNode,SET_UP_METHOD, Arrays.asList(methodToAdd));
         }
+    }
+
+    private void autoAnnotateSetupTeardown(ClassNode classNode) {
+        MethodNode setupMethod = classNode.getMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        if ( setupMethod != null && setupMethod.getAnnotations(BEFORE_CLASS_NODE).size() == 0) {
+            setupMethod.addAnnotation(BEFORE_ANNOTATION);
+        }
+
+        MethodNode tearDown = classNode.getMethod(TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        if ( tearDown != null && tearDown.getAnnotations(AFTER_CLASS_NODE).size() == 0) {
+            tearDown.addAnnotation(AFTER_ANNOTATION);
+        }
+
     }
 
     private Map<ClassNode, List<Class>> wovenMixins = new HashMap<ClassNode, List<Class>>();
