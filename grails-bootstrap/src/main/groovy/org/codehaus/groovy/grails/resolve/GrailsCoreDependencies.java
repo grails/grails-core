@@ -282,8 +282,8 @@ public class GrailsCoreDependencies {
 
                         // dependencies needed at runtime only
                         ModuleRevisionId[] runtimeDependencies = {
-                            ModuleRevisionId.newInstance("org.aspectj", "aspectjweaver", "1.6.10"),
-                            ModuleRevisionId.newInstance("org.aspectj", "aspectjrt", "1.6.10"),
+                            ModuleRevisionId.newInstance("org.aspectj", "aspectjweaver", "1.7.1"),
+                            ModuleRevisionId.newInstance("org.aspectj", "aspectjrt", "1.7.1"),
                             ModuleRevisionId.newInstance("cglib", "cglib", "2.2"),
                             ModuleRevisionId.newInstance("asm", "asm", "3.1"),
                             ModuleRevisionId.newInstance("commons-fileupload", "commons-fileupload", "1.2.2"),
