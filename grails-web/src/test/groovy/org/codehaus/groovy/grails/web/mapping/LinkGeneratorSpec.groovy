@@ -147,26 +147,71 @@ class LinkGeneratorSpec extends Specification {
         when:
             baseUrl = null
             resource = mainCssResource + [absolute:true]
-
+            webRequest.baseUrl = null
         then:
             link == "http://localhost/$resource.dir/$resource.file"
 
         when:
             request.serverPort = 8081
-
+            webRequest.baseUrl = null
         then:
             link == "http://localhost:8081/$resource.dir/$resource.file"
 
         when:
             request.contextPath = "/blah"
             request.serverPort = 8081
-
+            webRequest.baseUrl = null
         then:
             link == "http://localhost:8081/blah/$resource.dir/$resource.file"
 
 
     }
 
+    def "caching should take request Host header, scheme and port in to account"() {
+        
+        given:
+            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            baseUrl = null
+            def cachingGenerator = getGenerator(true)
+
+        when:
+            resource = mainCssResource + [absolute:true]
+            def cachedlink = cachingGenerator.resource(resource)
+
+        then:
+            cachedlink == "http://localhost/$resource.dir/$resource.file"
+
+        when:
+            request.serverName = "some.other.host"
+            request.scheme = "https"
+            request.serverPort = 443
+            webRequest.baseUrl = null
+            cachedlink = cachingGenerator.resource(resource)
+        then:
+            cachedlink == "https://some.other.host/$resource.dir/$resource.file"
+
+        when:
+            request.serverName = "localhost"
+            request.scheme = "http"
+            request.serverPort = 8081
+            webRequest.baseUrl = null
+            cachedlink = cachingGenerator.resource(resource)
+        then:
+            cachedlink == "http://localhost:8081/$resource.dir/$resource.file"
+
+        when:
+            request.contextPath = "/blah"
+            request.serverPort = 8081
+            webRequest.baseUrl = null
+            cachedlink = cachingGenerator.resource(resource)
+        then:
+            cachedlink == "http://localhost:8081/blah/$resource.dir/$resource.file"
+
+
+    }
+        
+    
     void cleanup() {
         RequestContextHolder.setRequestAttributes(null)
     }

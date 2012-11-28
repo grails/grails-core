@@ -64,6 +64,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private final List<ParameterCreationListener> parameterCreationListeners = new ArrayList<ParameterCreationListener>();
     private final UrlPathHelper urlHelper = new UrlPathHelper();
     private ApplicationContext applicationContext;
+    private String baseUrl;
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request);
@@ -330,5 +331,24 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public void setId(Object id) {
         getParams().put(GrailsWebRequest.ID_PARAMETER, id);
+    }
+    
+    public String getBaseUrl() {
+        if(baseUrl == null) {
+            HttpServletRequest request=getCurrentRequest();
+            String scheme =request.getScheme();
+            StringBuilder sb=new StringBuilder();
+            sb.append(scheme).append("://").append(request.getServerName());
+            int port = request.getServerPort();
+            if(("http".equals(scheme) && port != 80) || ("https".equals(scheme) && port != 443)) {
+                sb.append(":").append(port);
+            }
+            String contextPath = request.getContextPath();
+            if(contextPath != null) {
+                sb.append(contextPath);
+            } 
+            baseUrl=sb.toString();
+        }
+        return baseUrl;
     }
 }
