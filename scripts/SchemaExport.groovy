@@ -45,9 +45,10 @@ target(schemaExport: 'Run Hibernate SchemaExport') {
     def file = new File(filename)
     ant.mkdir dir: file.parentFile
 
-    def configuration = appCtx.getBean('&sessionFactory' + datasourceSuffix).configuration
+    def sessionFactory = appCtx.getBean('&sessionFactory' + datasourceSuffix)
+    def configuration = sessionFactory.configuration
 
-    def schemaExport = new HibernateSchemaExport(configuration)
+    def schemaExport = new HibernateSchemaExport(configuration, sessionFactory.dataSource.connection)
         .setHaltOnError(true)
         .setOutputFile(file.path)
         .setDelimiter(';')
@@ -56,17 +57,7 @@ target(schemaExport: 'Run Hibernate SchemaExport') {
     String ds = argsMap.datasource ? "for DataSource '$argsMap.datasource'" : "for the default DataSource"
     println "$action in environment '$grailsEnv' $ds"
 
-    if (export) {
-        // 1st drop, warning exceptions
-        schemaExport.execute stdout, true, true, false
-        schemaExport.exceptions.clear()
-        // then create
-        schemaExport.execute stdout, true, false, true
-    }
-    else {
-        // generate
-        schemaExport.execute stdout, false, false, false
-    }
+    schemaExport.execute stdout, export, false, false
 
     if (schemaExport.exceptions) {
         def e = schemaExport.exceptions[0]
