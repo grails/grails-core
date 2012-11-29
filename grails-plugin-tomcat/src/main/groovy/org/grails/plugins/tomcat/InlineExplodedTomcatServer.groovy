@@ -28,6 +28,7 @@ import org.springframework.util.ReflectionUtils
 import org.apache.catalina.Loader
 import org.apache.catalina.Context
 import grails.util.Environment
+
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
  */
@@ -43,7 +44,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
             contextPath = ''
         }
 
-        tomcat.setBaseDir( tomcatDir.absolutePath )
+        tomcat.setBaseDir(tomcatDir.absolutePath)
         context = tomcat.addWebapp(contextPath, basedir)
         boolean shouldScan = checkAndInitializingClasspathScanning()
 
@@ -118,7 +119,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
             sslConnector.scheme = "https"
             sslConnector.secure = true
             sslConnector.port = httpsPort
-            sslConnector.setProperty("SSLEnabled","true")
+            sslConnector.setProperty("SSLEnabled", "true")
             sslConnector.setAttribute("keystoreFile", keystoreFile.absolutePath)
             sslConnector.setAttribute("keystorePass", keyPassword)
             sslConnector.URIEncoding = 'UTF-8'
@@ -131,14 +132,14 @@ class InlineExplodedTomcatServer extends TomcatServer {
                 CONSOLE.addStatus "Using truststore $truststore"
                 sslConnector.setAttribute("truststoreFile", truststore)
                 sslConnector.setAttribute("truststorePass", trustPassword)
-                sslConnector.setAttribute("clientAuth", "want")
+                sslConnector.setAttribute("clientAuth", getConfigParam("clientAuth") ?: "want")
             }
 
             tomcat.service.addConnector(sslConnector)
         }
 
         tomcat.start()
-        if(Environment.isFork()) {
+        if (Environment.isFork()) {
             IsolatedTomcat.startKillSwitch(tomcat, httpPort)
         }
     }
@@ -161,7 +162,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
             return
         }
 
-        System.setProperty("javax.sql.DataSource.Factory","org.apache.commons.dbcp.BasicDataSourceFactory");
+        System.setProperty("javax.sql.DataSource.Factory", "org.apache.commons.dbcp.BasicDataSourceFactory");
 
 
         jndiEntries.each { name, resCfg ->
@@ -176,8 +177,8 @@ class InlineExplodedTomcatServer extends TomcatServer {
                 res.description = resCfg.remove("description")
                 res.scope = resCfg.remove("scope")
                 // now it's only the custom properties left in the Map...
-                resCfg.each {key, value ->
-                    res.setProperty (key, value)
+                resCfg.each { key, value ->
+                    res.setProperty(key, value)
                 }
 
                 context.namingResources.addResource res
