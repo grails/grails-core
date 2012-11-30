@@ -280,7 +280,6 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     }
 
-    @Override
     public boolean isShutdown() {
         return shutdown;
     }
