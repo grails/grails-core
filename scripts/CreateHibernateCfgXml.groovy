@@ -20,7 +20,7 @@
  * @author Burt Beckwith
  */
 
-import org.springframework.core.io.FileSystemResource
+import org.codehaus.groovy.grails.io.support.FileSystemResource
 
 includeTargets << grailsScript('_GrailsInit')
 

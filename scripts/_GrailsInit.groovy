@@ -22,10 +22,7 @@
  * @since 0.4
  */
 
-import org.springframework.core.io.FileSystemResource
-import grails.util.GrailsNameUtils
 import groovy.grape.Grape
-import grails.util.Metadata
 
 // No point doing this stuff more than once.
 if (getBinding().variables.containsKey("_init_called")) return
