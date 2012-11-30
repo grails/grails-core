@@ -15,7 +15,7 @@
  */
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.springframework.core.io.Resource
+import org.codehaus.groovy.grails.io.support.Resource
 
 /**
  * Gant script that handles general initialization of a Grails applications

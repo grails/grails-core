@@ -16,17 +16,8 @@
 
 import grails.util.BuildScope
 import grails.util.Environment
-import grails.util.GrailsNameUtils
-import grails.util.GrailsUtil
-import grails.util.Metadata
-import grails.util.PluginBuildSettings
-import org.codehaus.groovy.grails.cli.ScriptExitException
+
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.springframework.core.io.ClassPathResource
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.util.FileCopyUtils
 
 /**
  * Gant script containing build variables.
