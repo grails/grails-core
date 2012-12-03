@@ -21,7 +21,7 @@ import org.junit.Before
 
 /**
  */
-@TestFor(FirstController)
+@TestFor(SetupTeardownController)
 class SetupTeardownInvokeTests {
 
     void setUp() {
@@ -42,7 +42,7 @@ class SetupTeardownInvokeTests {
         assert controller.counter == 1
     }
 }
-class FirstController {
+class SetupTeardownController {
     String value
     static int counter = 0
 }
