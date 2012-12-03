@@ -48,7 +48,7 @@ public class Grailsc extends Groovyc {
            File df = null;
            if (f.endsWith(".groovy")) {
                df = new File(destPath, f.substring(0, f.length()-7) + ".class");
-               int i = f.lastIndexOf('/');
+               int i = f.lastIndexOf(File.separator);
                if (!df.exists() && i > -1) {
                    // check root package
                    File tmp = new File(destPath, f.substring(i, f.length()-7) + ".class");
