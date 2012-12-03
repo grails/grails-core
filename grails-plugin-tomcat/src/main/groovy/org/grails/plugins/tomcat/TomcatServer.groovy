@@ -69,9 +69,16 @@ abstract class TomcatServer implements EmbeddableServer {
             keyPassword = "123456"
         }
 
-        truststore = "${buildSettings.grailsWorkDir}/ssl/truststore"
+        def userTruststore = getConfigParam("truststorePath")
+        if (userKeystore) {
+            truststore = userTruststore
+            trustPassword = getConfigParam("truststorePassword") ?: "changeit"
+        } else {
+            truststore = "${buildSettings.grailsWorkDir}/ssl/truststore"
+            trustPassword = "123456"
+        }
+
         truststoreFile = new File(truststore)
-        trustPassword = "123456"
 
         System.setProperty('org.mortbay.xml.XmlParser.NotValidating', 'true')
 
@@ -165,15 +172,15 @@ abstract class TomcatServer implements EmbeddableServer {
         }
 
         getKeyToolClass().main(
-            "-genkey",
-            "-alias", "localhost",
-            "-dname", "CN=localhost,OU=Test,O=Test,C=US",
-            "-keyalg", "RSA",
-            "-validity", "365",
-            "-storepass", "key",
-            "-keystore", keystoreFile.absolutePath,
-            "-storepass", keyPassword,
-            "-keypass", keyPassword)
+                "-genkey",
+                "-alias", "localhost",
+                "-dname", "CN=localhost,OU=Test,O=Test,C=US",
+                "-keyalg", "RSA",
+                "-validity", "365",
+                "-storepass", "key",
+                "-keystore", keystoreFile.absolutePath,
+                "-storepass", keyPassword,
+                "-keypass", keyPassword)
 
         println 'Created SSL Certificate.'
     }
