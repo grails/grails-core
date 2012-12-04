@@ -105,8 +105,8 @@ task pluginsFromRepo {
         resources: "1.1.6",
         webxml: "1.4.1",
         jquery: "1.8.0",
-        'database-migration': "1.1",
-        cache: "1.0.0"
+        'database-migration': "1.2.1",
+        cache: "1.0.1"
     ]
 
     ext.dir = file("$buildDir/pluginsFromRepo")
