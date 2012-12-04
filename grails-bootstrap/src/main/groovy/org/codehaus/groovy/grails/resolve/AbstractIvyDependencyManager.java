@@ -142,9 +142,10 @@ public abstract class AbstractIvyDependencyManager {
     protected boolean hasApplicationDependencies = false;
     protected boolean readPom = false;
 
-    final protected IvySettings ivySettings;
-    final protected BuildSettings buildSettings;
-    final protected Metadata metadata;
+    protected final IvySettings ivySettings;
+    protected final BuildSettings buildSettings;
+    protected final Metadata metadata;
+    protected boolean legacyResolve = true;
     private boolean offline;
 
     private ChainResolver chainResolver;
@@ -169,6 +170,18 @@ public abstract class AbstractIvyDependencyManager {
         updateChangingPattern();
     }
 
+    /**
+     * Whether the legacy approach of parsing dependencies.groovy in addition to pom.xml should be used during dependency resolution
+     *
+     * @return True if it should
+     */
+    public boolean isLegacyResolve() {
+        return legacyResolve;
+    }
+
+    public void setLegacyResolve(boolean legacyResolve) {
+        this.legacyResolve = legacyResolve;
+    }
 
     public ResolveEngine getResolveEngine() {
         return resolveEngine;
