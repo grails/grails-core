@@ -26,6 +26,11 @@ includeTargets << grailsScript("_GrailsPlugins")
 
 target(installPlugin:"Installs a plug-in for the given URL or name and version") {
     depends(checkVersion, parseArguments, configureProxy)
+    grailsConsole.warn 'The install-plugin command is deprecated and \
+may be removed from a future version of Grails.  Plugin dependencies should \
+be expressed in grails-app/conf/BuildConfig.groovy.  \
+See http://grails.org/doc/2.2.x/guide/conf.html#pluginDependencies.'
+
     try {
         def pluginArgs = argsMap['params']
 
