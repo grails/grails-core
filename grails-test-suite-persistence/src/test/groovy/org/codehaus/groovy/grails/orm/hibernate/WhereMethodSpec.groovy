@@ -13,6 +13,30 @@ class WhereMethodSpec extends GormSpec {
     List getDomainClasses() {
         [Person, Pet]
     }
+
+    def "Test where query with join"() {
+        given:"some people"
+            createPeopleWithPets()
+
+        when:"A where query is used with an integer value and a long property type"
+            def results = Person.where { lastName =~ '%oggs'}.join('pets').list()
+
+        then:"The correct results are returned and type conversion happens as expected"
+            results.size() == 3
+    }
+
+    def "Test where query with select"() {
+        given:"some people"
+        createPeopleWithPets()
+
+        when:"A where query is used with an integer value and a long property type"
+        def results = Person.where { lastName =~ '%oggs'}.select('pets').list()
+
+        then:"The correct results are returned and type conversion happens as expected"
+        results.size() == 3
+    }
+
+
     @Issue('GRAILS-9447')
     def "Test where query integer type conversion"() {
         given:"some people"
