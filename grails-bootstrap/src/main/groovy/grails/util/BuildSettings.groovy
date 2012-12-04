@@ -1192,8 +1192,9 @@ class BuildSettings extends AbstractBuildSettings {
                         proxySettings = slurper.parse(script)
                         def current = proxySettings.currentProxy
                         if (current) {
-                            proxySettings[current]?.each { String key, String value ->
-                                System.setProperty(key, value)
+                            proxySettings[current]?.each { it ->
+                                def entry = it as Map.Entry
+                                System.setProperty(entry.key as String, entry.value as String)
                             }
                         }
                     }
