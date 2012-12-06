@@ -111,7 +111,7 @@ public class GrailsWrapper {
                 return findGroovyAllJar(file);
             }
             final String fileName = file.getName();
-            if(fileName.startsWith("groovy-all-") && fileName.endsWith(".jar")) {
+            if(fileName.matches("groovy-all-(\\d+)(\\.\\d+)*\\.jar")) {
                 return file;
             }
         }
