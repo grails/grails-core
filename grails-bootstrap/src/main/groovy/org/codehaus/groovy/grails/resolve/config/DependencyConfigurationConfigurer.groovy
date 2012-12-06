@@ -31,7 +31,6 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
 
     boolean pluginMode = false
     boolean repositoryMode = false
-    boolean legacyResolve = true
 
     DependencyConfigurationConfigurer(DependencyConfigurationContext context) {
         super(context)
@@ -39,10 +38,6 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
 
     void checksums(String checksumConfig) {
         dependencyManager.ivySettings.setVariable("ivy.checksums", checksumConfig)
-    }
-
-    void legacyResolve(boolean lr) {
-        dependencyManager.setLegacyResolve(lr)
     }
 
     void checksums(boolean enable) {

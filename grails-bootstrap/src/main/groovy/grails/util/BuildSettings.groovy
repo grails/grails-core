@@ -1342,14 +1342,11 @@ class BuildSettings extends AbstractBuildSettings {
                     try {
                         Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
                         def pluginConfig = pluginSlurper.parse(script)
+                        def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
+                        if (pluginDependencyConfig instanceof Closure) {
+                            def excludeRules = pdd ? pdd.getExcludeRules(dependencyManager.configurationNames) : [] as ExcludeRule[]
 
-                        if(dependencyManager.isLegacyResolve()) {
-                            def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
-                            if (pluginDependencyConfig instanceof Closure) {
-                                def excludeRules = pdd ? pdd.getExcludeRules(dependencyManager.configurationNames) : [] as ExcludeRule[]
-
-                                dependencyManager.parseDependencies(pluginName, pluginDependencyConfig, excludeRules)
-                            }
+                            dependencyManager.parseDependencies(pluginName, pluginDependencyConfig, excludeRules)
                         }
 
                         def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
