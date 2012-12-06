@@ -174,20 +174,12 @@ public class GrailsConsole {
      * is controlled by the jline.terminal system property.
      */
     protected Terminal createTerminal() {
-        @SuppressWarnings("hiding") Terminal terminal;
         if (isWindows()) {
-            terminal = new WindowsTerminal() {
-                @Override
-                public boolean isANSISupported() {
-                    return true;
-                }
-            };
             try {
-                terminal.initializeTerminal();
-                terminal.enableEcho();
-                fixCtrlC();
-            } catch (Exception e) {
-                terminal = new UnsupportedTerminal();
+                return PatchedJLineWindowsTerminal.setupTerminal(reader);
+            }
+            catch (Exception ex) {
+                error(ex);
             }
         }
         else {
