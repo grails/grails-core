@@ -27,13 +27,21 @@
 						allowedNames = domainClass.persistentProperties*.name << 'dateCreated' << 'lastUpdated'
 						props = domainClass.properties.findAll { allowedNames.contains(it.name) && !excludedProps.contains(it.name) && it.type != null && !Collection.isAssignableFrom(it.type) }
 						Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-						props.eachWithIndex { p, i ->
-							if (i < 6) {
-								if (p.isAssociation()) { %>
+
+						props.retainAll {
+							def cp = domainClass.constrainedProperties[it.name]
+							(cp ? cp.display : true)
+						}
+						if (props.size() > 6) {
+							props = props[0..<6]
+						}
+
+						props.each { p ->
+							if (p.isAssociation()) { %>
 						<th><g:message code="${domainClass.propertyName}.${p.name}.label" default="${p.naturalName}" /></th>
-					<%      } else { %>
+						<%  } else { %>
 						<g:sortableColumn property="${p.name}" title="\${message(code: '${domainClass.propertyName}.${p.name}.label', default: '${p.naturalName}')}" />
-					<%  }   }   } %>
+					<%  }   } %>
 					</tr>
 				</thead>
 				<tbody>
@@ -42,12 +50,12 @@
 					<%  props.eachWithIndex { p, i ->
 							if (i == 0) { %>
 						<td><g:link action="show" id="\${${propertyName}.id}">\${fieldValue(bean: ${propertyName}, field: "${p.name}")}</g:link></td>
-					<%      } else if (i < 6) {
+                        <%  } else {
 								if (p.type == Boolean || p.type == boolean) { %>
 						<td><g:formatBoolean boolean="\${${propertyName}.${p.name}}" /></td>
-					<%          } else if (p.type == Date || p.type == java.sql.Date || p.type == java.sql.Time || p.type == Calendar) { %>
+						<%      } else if (p.type == Date || p.type == java.sql.Date || p.type == java.sql.Time || p.type == Calendar) { %>
 						<td><g:formatDate date="\${${propertyName}.${p.name}}" /></td>
-					<%          } else { %>
+                        <%      } else { %>
 						<td>\${fieldValue(bean: ${propertyName}, field: "${p.name}")}</td>
 					<%  }   }   } %>
 					</tr>

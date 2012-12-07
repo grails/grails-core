@@ -26,7 +26,9 @@
 				allowedNames = domainClass.persistentProperties*.name << 'dateCreated' << 'lastUpdated'
 				props = domainClass.properties.findAll { allowedNames.contains(it.name) && !excludedProps.contains(it.name) }
 				Collections.sort(props, comparator.constructors[0].newInstance([domainClass] as Object[]))
-				props.each { p -> %>
+				props.each { p ->
+					def cp = domainClass.constrainedProperties[p.name]
+					if (cp ? cp.display : true) { %>
 				<g:if test="\${${propertyName}?.${p.name}}">
 				<li class="fieldcontain">
 					<span id="${p.name}-label" class="property-label"><g:message code="${domainClass.propertyName}.${p.name}.label" default="${p.naturalName}" /></span>
@@ -47,7 +49,7 @@
 					<%  } %>
 				</li>
 				</g:if>
-			<%  } %>
+			<%  }   } %>
 			</ol>
 			<g:form>
 				<fieldset class="buttons">

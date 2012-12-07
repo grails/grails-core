@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.scaffolding
 
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+
 import static org.junit.Assert.assertThat
 import static org.junit.matchers.JUnitMatchers.containsString
 
@@ -11,7 +13,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 
 /**
@@ -44,9 +45,11 @@ class ScaffoldingTest {
    Integer status
    Date regularDate
    java.sql.Date sqlDate
+   String secret
 
    static constraints = {
       status inList:[1,2,3,4]
+      secret display: false
    }
 }
 '''
@@ -54,13 +57,8 @@ class ScaffoldingTest {
     void testGenerateDateSelect() {
         def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
         templateGenerator.pluginManager = pluginManager
-        gcl.parseClass(testDomain)
-        def testClass = gcl.loadClass("ScaffoldingTest")
 
-        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
-        testClass.metaClass.getConstraints = {-> constrainedProperties }
-
-        def domainClass = new DefaultGrailsDomainClass(testClass)
+        def domainClass = loadDomainClass(testDomain)
 
         StringWriter sw = new StringWriter()
         templateGenerator.generateView domainClass, "_form", sw
@@ -72,13 +70,8 @@ class ScaffoldingTest {
     void testGenerateNumberSelect() {
         def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
         templateGenerator.pluginManager = pluginManager
-        gcl.parseClass(testDomain)
-        def testClass = gcl.loadClass("ScaffoldingTest")
 
-        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
-        testClass.metaClass.getConstraints = {-> constrainedProperties }
-
-        def domainClass = new DefaultGrailsDomainClass(testClass)
+        def domainClass = loadDomainClass(testDomain)
 
         StringWriter sw = new StringWriter()
         templateGenerator.generateView domainClass, "_form", sw
@@ -91,11 +84,8 @@ class ScaffoldingTest {
     void testDoesNotGenerateInputForId() {
         def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
         templateGenerator.pluginManager = pluginManager
-        gcl.parseClass(testDomain)
-        def testClass = gcl.loadClass("ScaffoldingTest")
-        def domainClass = new DefaultGrailsDomainClass(testClass)
-        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
-        testClass.metaClass.getConstraints = {-> constrainedProperties }
+
+        def domainClass = loadDomainClass(testDomain)
 
         def sw = new StringWriter()
         templateGenerator.generateView domainClass, "_form", sw
@@ -106,7 +96,8 @@ class ScaffoldingTest {
     void testGeneratesInputForAssignedId() {
         def templateGenerator = new DefaultGrailsTemplateGenerator(basedir:"../grails-resources")
         templateGenerator.pluginManager = pluginManager
-        gcl.parseClass('''
+
+        def domainClass = loadDomainClass '''
 import grails.persistence.*
 
 @Entity
@@ -116,13 +107,9 @@ class ScaffoldingTest {
         id generator: "assigned"
     }
 }
-        ''')
-        def testClass = gcl.loadClass("ScaffoldingTest")
-        def domainClass = new DefaultGrailsDomainClass(testClass)
-        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
-        testClass.metaClass.getConstraints = {-> constrainedProperties }
-        GrailsDomainBinder.evaluateMapping(domainClass)
+        '''
 
+        GrailsDomainBinder.evaluateMapping(domainClass)
         assert GrailsDomainBinder.getMapping(domainClass)?.identity?.generator == 'assigned'
 
         def sw = new StringWriter()
@@ -131,5 +118,50 @@ class ScaffoldingTest {
         assertThat "Should have rendered an input for the id",
                 sw.toString(),
                 containsString('g:textField name="id" value="${scaffoldingTestInstance?.id}"')
+    }
+
+    void testDisplayFalsePropertyIsNotRenderedInForm() {
+        def templateGenerator = new DefaultGrailsTemplateGenerator(basedir: "../grails-resources")
+        templateGenerator.pluginManager = pluginManager
+
+        def domainClass = loadDomainClass(testDomain)
+
+        def sw = new StringWriter()
+        templateGenerator.generateView domainClass, "_form", sw
+
+        assert !sw.toString().contains('name="secret"'), "Should not have rendered an input for the field with display:false constraint"
+    }
+
+    void testDisplayFalsePropertyIsNotRenderedInListPage() {
+        def templateGenerator = new DefaultGrailsTemplateGenerator(basedir: "../grails-resources")
+        templateGenerator.pluginManager = pluginManager
+
+        def domainClass = loadDomainClass(testDomain)
+
+        def sw = new StringWriter()
+        templateGenerator.generateView domainClass, "list", sw
+
+        assert !sw.toString().contains('Secret'), "Should not have rendered a column for the field with display:false constraint"
+    }
+
+    void testDisplayFalsePropertyIsNotRenderedInShowPage() {
+        def templateGenerator = new DefaultGrailsTemplateGenerator(basedir: "../grails-resources")
+        templateGenerator.pluginManager = pluginManager
+
+        def domainClass = loadDomainClass(testDomain)
+
+        def sw = new StringWriter()
+        templateGenerator.generateView domainClass, "show", sw
+
+        assert !sw.toString().contains('Secret'), "Should not have rendered the field with display:false constraint"
+    }
+
+    private GrailsDomainClass loadDomainClass(String testDomain) {
+        gcl.parseClass(testDomain)
+        def testClass = gcl.loadClass("ScaffoldingTest")
+        def domainClass = new DefaultGrailsDomainClass(testClass)
+        def constrainedProperties = GrailsDomainConfigurationUtil.evaluateConstraints(testClass)
+        testClass.metaClass.getConstraints = {-> constrainedProperties }
+        domainClass
     }
 }
