@@ -21,6 +21,7 @@ import grails.util.PluginBuildSettings;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.LogFactory;
@@ -45,6 +46,7 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
     private GrailsApplication application;
     private static final String PLUGINS_PREFIX = "plugins/";
     private static final String SLASH = "/";
+    private static final Pattern HAS_SCHEME_PATTERN = Pattern.compile("[^:/?#]+:.*")
 	private static final String GRAILS_APP_DIR_PATTERN = "/grails-app/.*";
 
     public DevelopmentResourceLoader(GrailsApplication application) {
@@ -76,6 +78,9 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
      * @return The location of the GSP at development time
      */
     protected String getRealLocationInProject(String location) {
+
+        // don't mess with locations that are URLs (in other words, locations that have schemes)
+        if(HAS_SCHEME_PATTERN.matcher(location).matches()) return location;
 
         if (!location.startsWith(SLASH)) location = SLASH + location;
 
