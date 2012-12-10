@@ -268,6 +268,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
         def pluginResolver = new FileSystemResolver()
         pluginResolver.name = name
         pluginResolver.addArtifactPattern("${location}/plugins/[artifact]-[revision].[ext]")
+        pluginResolver.addIvyPattern("${location}/plugins/[module]-[revision].pom")
         pluginResolver.settings = dependencyManager.ivySettings
         pluginResolver.latestStrategy = new LatestTimeStrategy()
         pluginResolver.changingPattern = ".*SNAPSHOT"
