@@ -73,7 +73,7 @@ class InteractiveMode {
     }
 
     void setGrailsServer(grailsServer) {
-        addStatus "Application loaded in interactive mode. Type 'exit' to shutdown."
+        addStatus "Application loaded in interactive mode. Type 'stop-app' to shutdown."
         this.grailsServer = grailsServer
     }
 
