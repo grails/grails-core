@@ -110,12 +110,14 @@ task pluginsFromRepo {
     ]
 
     ext.dir = file("$buildDir/pluginsFromRepo")
-    outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") } }
+    outputs.files { dir.listFiles().findAll { it.name.endsWith(".zip") || it.name.endsWith(".pom") } }
     doFirst {
         ant {
             mkdir(dir: dir)
             plugins.each { name, version ->
                 get(src: "http://repo.grails.org/grails/plugins/org/grails/plugins/${name}/$version/${name}-${version}.zip",
+                    dest: dir, verbose: true, usetimestamp: true)
+                get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.pom",
                     dest: dir, verbose: true, usetimestamp: true)
             }
         }
