@@ -414,7 +414,7 @@ public enum Environment {
      */
     public static boolean isReloadingAgentEnabled() {
         try {
-            Class.forName("com.springsource.loaded.TypeRegistry");
+            Class.forName("org.springsource.loaded.TypeRegistry");
             return true;
         }
         catch (ClassNotFoundException e) {

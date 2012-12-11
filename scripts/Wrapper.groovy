@@ -54,7 +54,7 @@ target ('default': "Installs the Grails wrapper") {
     ant.chmod(file: 'grailsw', perm: 'u+x')
     
     springloadedFiles = []
-    new File("${grailsHome}/lib/com.springsource.springloaded/springloaded-core/jars/").eachFileMatch( groovy.io.FileType.FILES, { it ==~ /springloaded-core-.*/ }) {
+    new File("${grailsHome}/lib/org.springsource.springloaded/springloaded-core/jars/").eachFileMatch( groovy.io.FileType.FILES, { it ==~ /springloaded-core-.*/ }) {
         springloadedFiles << it
     }
     if(springloadedFiles.size() != 1) {
