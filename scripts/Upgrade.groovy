@@ -202,25 +202,16 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
     }
     updateMetadata(metadata, newMetadata)
 
-    // proceed plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under plugin's root
-    def plugins = pluginSettings.pluginBaseDirectories
-    if (plugins) {
-        for (pluginDir in plugins) {
-            def f = new File(pluginDir)
-            if (f.isDirectory() && f.name != 'core') {
-                // fix for Windows-style path with backslashes
-
-                def pluginBase = "${basedir}/plugins/${f.name}".toString().replaceAll("\\\\", "/")
-                // proceed _Upgrade.groovy plugin script if exists
-                def upgradeScript = new File("${pluginBase}/scripts/_Upgrade.groovy")
-                if (upgradeScript.exists()) {
-                    event("StatusUpdate", ["Executing ${f.name} plugin upgrade script"])
-                    // instrumenting plugin scripts adding 'pluginBasedir' variable
-                    def instrumentedUpgradeScript = "def pluginBasedir = '${pluginBase}'\n" + upgradeScript.text
-                    // we are using text form of script here to prevent Gant caching
-                    includeTargets << instrumentedUpgradeScript
-                }
-            }
+    // proceed with plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under every plugin's root
+    def pluginDirs = pluginSettings.getPluginDirectories()
+    for (pluginDir in pluginDirs) {
+        def upgradeScript = new File(pluginDir.getFile(), "scripts/_Upgrade.groovy")
+        if (upgradeScript.exists()) {
+            event("StatusUpdate", ["Executing ${pluginDir.getFilename()} plugin upgrade script"])
+            // instrumenting plugin scripts adding 'pluginBasedir' variable
+            def instrumentedUpgradeScript = "def pluginDir = '${pluginDir}'\n" + upgradeScript.text
+            // we are using text form of script here to prevent Gant caching
+            includeTargets << instrumentedUpgradeScript
         }
     }
 
