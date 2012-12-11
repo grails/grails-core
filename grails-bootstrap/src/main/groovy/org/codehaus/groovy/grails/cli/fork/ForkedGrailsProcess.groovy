@@ -56,12 +56,12 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     protected void discoverAndSetAgent(ExecutionContext executionContext) {
         try {
-            final agentClass = Thread.currentThread().contextClassLoader.loadClass('com.springsource.loaded.ReloadEventProcessorPlugin')
+            final agentClass = Thread.currentThread().contextClassLoader.loadClass('org.springsource.loaded.ReloadEventProcessorPlugin')
             setReloadingAgent(findJarFile(agentClass))
         } catch (e) {
             final grailsHome = executionContext.grailsHome
             if (grailsHome && grailsHome.exists()) {
-                def agentHome = new File(grailsHome, "lib/com.springsource.springloaded/springloaded-core/jars")
+                def agentHome = new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars")
                 final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar")}
                 if (agentJar) {
                     setReloadingAgent(agentJar)
