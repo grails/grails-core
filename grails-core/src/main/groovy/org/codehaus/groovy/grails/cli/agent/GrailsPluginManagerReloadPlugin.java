@@ -15,8 +15,8 @@
 
 package org.codehaus.groovy.grails.cli.agent;
 
-import com.springsource.loaded.Plugins;
-import com.springsource.loaded.ReloadEventProcessorPlugin;
+import org.springsource.loaded.Plugins;
+import org.springsource.loaded.ReloadEventProcessorPlugin;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher;
 import org.springframework.beans.CachedIntrospectionResults;

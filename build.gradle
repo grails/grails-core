@@ -24,7 +24,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.1"
     commonsLangVersion = "2.6"
-    datastoreVersion = "1.1.1.RELEASE"
+    datastoreVersion = "1.1.2.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "2.0.5"
@@ -37,7 +37,7 @@ ext {
     slf4jVersion = "1.7.2"
 
     spockVersion = '0.7-groovy-2.0'
-    springLoadedVersion = "1.1.0"
+    springLoadedVersion = "1.1.1"
     springVersion = "3.1.2.RELEASE"
     springWebflowVersion= "2.0.8.RELEASE"
     hibernateVersion = "3.6.10.Final"

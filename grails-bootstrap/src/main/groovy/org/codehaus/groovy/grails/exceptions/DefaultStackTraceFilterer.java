@@ -50,7 +50,7 @@ public class DefaultStackTraceFilterer implements StackTraceFilterer {
         "sun.",
         "java.lang.reflect.",
         "org.springframework.",
-        "com.springsource.loaded.",
+        "org.springsource.loaded.",
         "com.opensymphony.",
         "org.hibernate.",
         "javax.servlet."

@@ -49,7 +49,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     private static final Map<String, ClassUpdate> classChangeEventQueue = new ConcurrentHashMap<String, ClassUpdate>();
     private static boolean active = false;
     private static boolean reloadInProgress = false;
-    public static final String SPRING_LOADED_PLUGIN_CLASS = "com.springsource.loaded.Plugins";
+    public static final String SPRING_LOADED_PLUGIN_CLASS = "org.springsource.loaded.Plugins";
 
     private List<String> compilerExtensions;
     private GrailsPluginManager pluginManager;
