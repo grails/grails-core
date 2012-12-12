@@ -34,11 +34,11 @@ target(runScript: 'Main implementation that executes the specified script(s) aft
     def persistenceInterceptor = appCtx.containsBean('persistenceInterceptor') ? appCtx.persistenceInterceptor : null
     persistenceInterceptor?.init()
     try {
-        for (scriptFile in argsMap.params) {
-            event('StatusUpdate', ["Running script $scriptFile ..."])
-            executeScript scriptFile, classLoader
-            event('StatusUpdate', ["Script $scriptFile complete!"])
-        }
+        String scriptFile = argsMap.params[0]
+        String[] args = argsMap.params.tail()
+        event('StatusUpdate', ["Running script $scriptFile ..."])
+        executeScript scriptFile, args, classLoader
+        event('StatusUpdate', ["Script $scriptFile complete!"])
     } finally {
         persistenceInterceptor?.flush()
         persistenceInterceptor?.destroy()
@@ -46,7 +46,7 @@ target(runScript: 'Main implementation that executes the specified script(s) aft
 }
 
 
-def executeScript(scriptFile, classLoader) {
+def executeScript(scriptFile, args, classLoader) {
     File script = new File(scriptFile)
     if (!script.exists()) {
         event('StatusError', ["Designated script doesn't exist: $scriptFile"])
@@ -54,7 +54,7 @@ def executeScript(scriptFile, classLoader) {
     }
 
     def shell = new GroovyShell(classLoader, new Binding(ctx: appCtx, grailsApplication: grailsApp))
-    shell.evaluate script.text
+    shell.run(script, args)
 }
 
 setDefaultTarget main
