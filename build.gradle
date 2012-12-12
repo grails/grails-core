@@ -24,7 +24,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.1"
     commonsLangVersion = "2.6"
-    datastoreVersion = "1.1.1.RELEASE"
+    datastoreVersion = "1.1.2.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "1.8.8"
