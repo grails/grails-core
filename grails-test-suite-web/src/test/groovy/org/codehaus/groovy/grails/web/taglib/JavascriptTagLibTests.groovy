@@ -20,6 +20,7 @@ class JavascriptTagLibTests extends AbstractGrailsTagTests {
         gcl.parseClass('''
 class TestController {}
 ''')
+        JavascriptTagLib.PROVIDER_MAPPINGS["test"] = TestProvider
     }
 
     protected void onInit() {
@@ -35,7 +36,6 @@ class TestUrlMappings {
     }
 
     void testJavascriptLibraryWithNestedTemplates() {
-        JavascriptTagLib.PROVIDER_MAPPINGS["test"] = TestProvider
 
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource("/foo/_part.gsp", '<g:remoteLink controller="foo" action="list" />')
