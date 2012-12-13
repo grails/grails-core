@@ -17,12 +17,12 @@
 package org.codehaus.groovy.grails.commons.env;
 
 import grails.util.Environment;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.springframework.core.env.MutablePropertySources;
-import org.springframework.core.env.PropertySource;
-import org.springframework.web.context.support.StandardServletEnvironment;
 
 import java.util.Set;
+
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.springframework.core.env.PropertySource;
+import org.springframework.web.context.support.StandardServletEnvironment;
 
 /**
  * Bridges Grails' existing environment API with the new Spring 3.1 environment profiles API.
@@ -36,13 +36,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
 
     public GrailsEnvironment(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
-
-    }
-
-    @Override
-    protected void customizePropertySources(MutablePropertySources propertySources) {
-        super.customizePropertySources(propertySources);
-        getPropertySources().addFirst(new GrailsConfigPropertySource(grailsApplication));
+        getPropertySources().addFirst(new GrailsConfigPropertySource());
     }
 
     @Override
@@ -55,7 +49,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
 
     private class GrailsConfigPropertySource extends PropertySource<GrailsApplication> {
 
-        public GrailsConfigPropertySource(GrailsApplication grailsApplication) {
+        public GrailsConfigPropertySource() {
             super(grailsApplication.getMetadata().getApplicationName(), grailsApplication);
         }
 
