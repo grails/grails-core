@@ -24,6 +24,7 @@ import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.core.type.ClassMetadata
 import org.hibernate.EntityMode
 import org.springframework.orm.hibernate3.SessionHolder
+import grails.util.Metadata
 
 
 abstract class GormSpec extends Specification {
@@ -53,6 +54,7 @@ abstract class GormSpec extends Specification {
         parentCtx = new MockApplicationContext()
 
         grailsApplication = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
+		grailsApplication.metadata[Metadata.APPLICATION_NAME] = getClass().name
 
         def dependentPlugins = configurePlugins()
 

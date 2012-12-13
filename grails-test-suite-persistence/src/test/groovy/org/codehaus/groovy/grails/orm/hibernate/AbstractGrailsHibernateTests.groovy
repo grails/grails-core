@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
 import grails.util.GrailsWebUtil
+import grails.util.Metadata
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
@@ -70,6 +71,7 @@ abstract class AbstractGrailsHibernateTests extends GroovyTestCase {
         onSetUp()
 
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
+		ga.metadata[Metadata.APPLICATION_NAME] = getClass().name
         grailsApplication = ga
 
         def dependentPlugins = configurePlugins()

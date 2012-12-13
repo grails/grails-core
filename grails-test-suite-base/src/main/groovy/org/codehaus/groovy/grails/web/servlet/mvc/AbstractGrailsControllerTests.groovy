@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
+import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 
@@ -74,6 +75,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ctx = new MockApplicationContext()
         onSetUp()
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
+		ga.metadata[Metadata.APPLICATION_NAME] = getClass().name
         mockManager = new MockGrailsPluginManager(ga)
         ctx.registerMockBean("manager", mockManager)
         def dependantPluginClasses = []

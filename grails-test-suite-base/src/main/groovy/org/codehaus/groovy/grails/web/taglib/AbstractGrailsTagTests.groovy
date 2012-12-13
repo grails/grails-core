@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsWebUtil
+import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 
@@ -157,6 +158,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
         onSetUp()
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
+		grailsApplication.metadata[Metadata.APPLICATION_NAME] = getClass().name
         ga = grailsApplication
         def mainContext = new MockApplicationContext()
         mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()

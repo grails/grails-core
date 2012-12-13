@@ -11,7 +11,7 @@ class I18nGrailsPluginTests extends AbstractGrailsMockTests {
 
     void testI18nPlugin() {
 
-        ga.@applicationMeta = ['grails.war.deployed':'true'] as Metadata
+        ga.@applicationMeta = ['grails.war.deployed':'true', (Metadata.APPLICATION_NAME): getClass().name ] as Metadata
         ctx.registerMockResource("WEB-INF/grails-app/i18n/messages.properties")
         ctx.registerMockResource("WEB-INF/grails-app/i18n/messages-site_en.properties")
         ctx.registerMockResource("WEB-INF/grails-app/i18n/foo-site_en.properties")
