@@ -32,7 +32,7 @@ public class GrailsCoreDependencies {
     public final String servletVersion;
     public boolean java5compatible;
 
-    private final String springVersion = "3.1.2.RELEASE";
+    private final String springVersion = "3.2.0.RELEASE";
 
     public GrailsCoreDependencies(String grailsVersion) {
         this(grailsVersion, "2.5");
@@ -211,7 +211,6 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.springframework", "spring-core", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-aop", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-aspects", springVersion),
-                            ModuleRevisionId.newInstance("org.springframework", "spring-asm", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-beans", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-context", springVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-context-support", springVersion),
