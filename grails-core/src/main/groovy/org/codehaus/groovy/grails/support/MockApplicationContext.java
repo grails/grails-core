@@ -364,8 +364,4 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
             return new ByteArrayInputStream(contents.getBytes("UTF-8"));
         }
     }
-
-	public String getApplicationName() {
-		return "";
-	}
 }

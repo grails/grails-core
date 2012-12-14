@@ -17,6 +17,9 @@ dependencies {
     compile("org.springframework:spring-aspects:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
+    compile("org.springframework:spring-asm:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
     compile("org.springframework:spring-core:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }

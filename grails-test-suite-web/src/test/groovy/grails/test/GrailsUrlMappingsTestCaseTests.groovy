@@ -1,7 +1,6 @@
 package grails.test
 
 import grails.util.GrailsWebUtil
-import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import junit.framework.ComparisonFailure
@@ -38,7 +37,6 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
              GrailsUrlMappingTestCaseTestsBaseController, GrailsUrlMappingTestCaseTestsSubclassController
             ] as Class[],
             new GroovyClassLoader(getClass().classLoader))
-		mockApplication.metadata[Metadata.APPLICATION_NAME] = getClass().name
         def mainContext = new MockApplicationContext()
         mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
 
