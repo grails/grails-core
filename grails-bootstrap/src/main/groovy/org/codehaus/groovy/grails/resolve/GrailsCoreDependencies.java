@@ -113,7 +113,7 @@ public class GrailsCoreDependencies {
 
                         String antVersion = "1.8.4";
                         String slf4jVersion = "1.7.2";
-                        String junitVersion = "4.11";
+                        String junitVersion = "4.10";
                         ModuleRevisionId[] buildDependencies = {
                             ModuleRevisionId.newInstance("org.springframework.uaa", "org.springframework.uaa.client", "1.0.1.RELEASE"),
                             ModuleRevisionId.newInstance("com.google.protobuf", "protobuf-java", "2.4.1"),
