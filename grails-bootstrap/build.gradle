@@ -17,7 +17,7 @@ dependencies {
 
     // These 3 are required by UAA but not Grails (non OSGI version of excludes above)
     uaa 'com.google.protobuf:protobuf-java:2.4.1',
-             'com.googlecode.json-simple:json-simple:1.1',
+             'com.googlecode.json-simple:json-simple:1.1.1',
              "org.bouncycastle:bcpg-jdk15:1.45"
 
     compile "org.fusesource.jansi:jansi:$jansiVersion",
