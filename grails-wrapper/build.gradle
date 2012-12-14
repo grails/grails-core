@@ -10,6 +10,7 @@ task copyScript(type: Copy) {
         from("../grails-resources/src/grails/home/bash/startGrails.bat") {
             rename 'startGrails.bat', 'grailsw.bat'
         }
+        filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['starter.main.class': 'org.grails.wrapper.GrailsWrapper'])
         filter(ReplaceTokens, tokens: ['starter.classpath': '@wrapperDir@/grails-wrapper-runtime-@grailsVersion@.jar:@wrapperDir@:.'])
         filter(ReplaceTokens, tokens: ['agent.string': '-javaagent:@wrapperDir@/springloaded-core-@springLoadedVersion@.jar -noverify  -Dspringloaded=$SPRINGLOADED_PARAMS'])

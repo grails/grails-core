@@ -250,7 +250,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * 
      * @param sql SQL projecting
      * @param columnAliases List of column aliases for the projected values
-     * @param type List of types for the projected values
+     * @param types List of types for the projected values
      */
     protected void sqlProjection(String sql, List<String> columnAliases, List<Type> types) {
         projectionList.add(Projections.sqlProjection(sql, columnAliases.toArray(new String[columnAliases.size()]), types.toArray(new Type[types.size()])));
@@ -262,7 +262,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
      * @param sql SQL projecting
      * @param groupBy group by clause
      * @param columnAliases List of column aliases for the projected values
-     * @param type List of types for the projected values
+     * @param types List of types for the projected values
      */
     protected void sqlGroupProjection(String sql, String groupBy, List<String> columnAliases, List<Type> types) {
         projectionList.add(Projections.sqlGroupProjection(sql, groupBy, columnAliases.toArray(new String[columnAliases.size()]), types.toArray(new Type[types.size()])));
