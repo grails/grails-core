@@ -120,8 +120,6 @@ task pluginsFromRepo {
                     dest: dir, verbose: true, usetimestamp: true)
                 get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.pom",
                     dest: dir, verbose: true, usetimestamp: true)
-                get(src: "http://grails.org/plugins/grails-${name}/tags/RELEASE_${versionTag}/grails-${name}-${version}.pom",
-                    dest: dir, verbose: true, usetimestamp: true)
             }
         }
     }
