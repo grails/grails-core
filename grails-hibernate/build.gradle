@@ -78,6 +78,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     runtime 'javax.validation:validation-api:1.0.0.GA'
+    runtime 'org.liquibase:liquibase-core:2.0.5'
 }
 
 test {
