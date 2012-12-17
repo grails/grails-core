@@ -56,8 +56,6 @@ dependencies {
         exclude group: 'xml-apis', module:'xml-apis'
     }
 
-    runtime 'org.liquibase:liquibase-core:2.0.5'
-
     compile ("com.springsource.springloaded:springloaded-core:$springLoadedVersion") {
         ext.notInPom = true
     }
