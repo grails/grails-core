@@ -56,7 +56,7 @@ dependencies {
         exclude group: 'xml-apis', module:'xml-apis'
     }
 
-    compile ("com.springsource.springloaded:springloaded-core:$springLoadedVersion") {
+    compile ("org.springsource.springloaded:springloaded-core:$springLoadedVersion") {
         ext.notInPom = true
     }
 
