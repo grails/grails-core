@@ -5,7 +5,7 @@ import grails.persistence.Entity
 class FindOrSaveWherePersistenceMethodTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
-        [Person, Pet]
+        [Person, Pet, Face, Nose]
     }
 
     void testFindOrSaveWhereForNonExistingRecord() {

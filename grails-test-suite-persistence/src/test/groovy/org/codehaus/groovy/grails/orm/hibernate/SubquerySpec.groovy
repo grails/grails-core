@@ -6,7 +6,7 @@ import grails.gorm.DetachedCriteria
 class SubquerySpec extends GormSpec {
     @Override
     List getDomainClasses() {
-        return [Person, Pet]
+        return [Person, Pet, Face, Nose]
     }
 
     def "Test subquery with projection and criteria via closure"() {
