@@ -7,11 +7,16 @@ class Person {
     String firstName
     String lastName
     Integer age = 0
+    Face face
 
     Set<Pet> pets
     static hasMany = [pets:Pet]
     static simpsons = where {
          lastName == "Simpson"
+    }
+
+    static constraints = {
+        face nullable:true
     }
 
 }
