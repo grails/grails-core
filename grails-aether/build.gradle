@@ -1,0 +1,24 @@
+ext {
+    aetherVersion = "1.13.1"
+    mavenVersion = "3.0.4"
+} 
+dependencies {
+    compile("org.sonatype.aether:aether-api:${aetherVersion}") 
+    compile("org.sonatype.aether:aether-util:${aetherVersion}") 
+    compile("org.sonatype.aether:aether-impl:${aetherVersion}") 
+    compile("org.sonatype.aether:aether-connector-file:${aetherVersion}")
+    compile("org.sonatype.aether:aether-connector-wagon:${aetherVersion}") {
+//        exclude module:'plexus-component-annotations'
+//        exclude module:'plexus-classworlds'
+//        exclude module:'plexus-utils'
+//        exclude module:'sisu-inject-plexus'
+    }
+    compile("org.sonatype.aether:aether-connector-asynchttpclient:${aetherVersion}") 
+    compile("org.apache.maven:maven-aether-provider:$mavenVersion")
+    compile "org.apache.maven:maven-settings-builder:$mavenVersion"
+
+    compile project(":grails-bootstrap")
+}
+
+
+jar.appendix = 'aether'
