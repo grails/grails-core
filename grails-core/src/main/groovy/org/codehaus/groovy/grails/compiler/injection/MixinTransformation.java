@@ -96,12 +96,6 @@ public class MixinTransformation implements ASTTransformation {
                             }
                         }
 
-                        List<PropertyNode> properties = mixinClassNode.getProperties();
-                        System.out.println("properties = " + properties);
-                        for (PropertyNode property : properties) {
-                            System.out.println("property = " + property);
-                        }
-
                         mixinClassNode = mixinClassNode.getSuperClass();
                     }
                 }
