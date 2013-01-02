@@ -15,6 +15,9 @@
  */
 package grails.util
 
+import org.codehaus.groovy.grails.io.support.IOUtils
+import org.codehaus.groovy.grails.resolve.GrailsIvyDependencies
+
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
@@ -22,11 +25,9 @@ import groovy.transform.CompileStatic
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
-import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.plugins.repository.TransferEvent
 import org.apache.ivy.plugins.repository.TransferListener
-import org.apache.ivy.util.ChecksumHelper
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
@@ -470,9 +471,10 @@ class BuildSettings extends AbstractBuildSettings {
     }()
 
 
-    private List<File> findAndRemovePluginDependencies(String scope, List<File> jarFiles, List<File> scopePluginDependencies) {
-        jarFiles = jarFiles?.findAll { it != null} ?: []
-        def pluginZips = jarFiles.findAll { it.name.endsWith(".zip") }
+    @CompileStatic
+    private List<File> findAndRemovePluginDependencies(String scope, Collection<File> jarFiles, List<File> scopePluginDependencies) {
+        jarFiles = jarFiles?.findAll { File it -> it != null} ?: new ArrayList<File>()
+        def pluginZips = jarFiles.findAll { File it -> it.name.endsWith(".zip") }
         for (z in pluginZips) {
             if (!pluginDependencies.contains(z)) {
                 pluginDependencies.add(z)
@@ -480,7 +482,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
         scopePluginDependencies.addAll(pluginZips)
         resolveCache[scope] = jarFiles
-        jarFiles = jarFiles.findAll { it.name.endsWith(".jar") }
+        jarFiles = jarFiles.findAll { File it -> it.name.endsWith(".jar") }
         return jarFiles
     }
 
@@ -1083,8 +1085,8 @@ class BuildSettings extends AbstractBuildSettings {
         if (!modified) {
 
             if (configFile?.exists() && metadataFile?.exists()) {
-                resolveChecksum = ChecksumHelper.computeAsString(configFile, "md5") +
-                        ChecksumHelper.computeAsString(metadataFile, "md5")
+                resolveChecksum = IOUtils.computeChecksum(configFile, "md5") +
+                    IOUtils.computeChecksum(metadataFile, "md5")
             }
 
             def cachedResolve = new File("${projectWorkDir}/${resolveChecksum}.resolve")
@@ -1253,7 +1255,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         if (!dependenciesExternallyConfigured) {
-            coreDependencies = new GrailsCoreDependencies(grailsVersion, servletVersion)
+            coreDependencies = new GrailsIvyDependencies(grailsVersion, servletVersion)
             coreDependencies.java5compatible = !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", compilerTargetLevel)
             grailsConfig.global.dependency.resolution = coreDependencies.createDeclaration()
             def credentials = grailsConfig.project.ivy.authentication
@@ -1279,18 +1281,9 @@ class BuildSettings extends AbstractBuildSettings {
         if (dependencyConfig) {
             dependencyManager.parseDependencies dependencyConfig
         }
-
-        // All projects need the plugins to be resolved.
-        def handlePluginDirectory = pluginDependencyHandler()
-        def pluginDirs = getPluginDirectories()
-        for (dir in pluginDirs) {
-            handlePluginDirectory(dir)
-        }
     }
 
-    Closure pluginDependencyHandler() {
-        return pluginDependencyHandler(dependencyManager)
-    }
+
 
     public boolean isRegisteredInMetadata(String pluginName) {
         return dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)
@@ -1304,72 +1297,6 @@ class BuildSettings extends AbstractBuildSettings {
         }
         def defined = descriptors*.dependencyId*.name.contains(pluginName)
         return !defined
-    }
-
-    Closure pluginDependencyHandler(IvyDependencyManager dependencyManager) {
-        def pluginSlurper = createConfigSlurper()
-
-        def handlePluginDirectory = {File dir ->
-            def pluginName = dir.name
-            def matcher = pluginName =~ /(\S+?)-(\d\S+)/
-            pluginName = matcher ? matcher[0][1] : pluginName
-
-
-            // The logic here tries to establish if the plugin has been declared anywhere by the application. Only plugins that have
-            // been declared should have their transitive dependencies resolved. Unfortunately it is fairly complicated to establish what plugins are declared since
-            // there may be a mixture of plugins defined in BuildConfig, inline plugins and plugins installed via install-plugin
-            if (!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
-                return
-            }
-
-            def pdd = dependencyManager.getPluginDependencyDescriptor(pluginName)
-            if (isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
-                // bail out of the dependencies handled by external tool
-                if (isDependenciesExternallyConfigured()) return
-                // Try BuildConfig.groovy first, which should work
-                // work for in-place plugins.
-                def path = dir.absolutePath
-                def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
-
-                if (!pluginDependencyDescriptor.exists()) {
-                    // OK, that doesn't exist, so try dependencies.groovy.
-                    pluginDependencyDescriptor = new File("$path/dependencies.groovy")
-                }
-
-                if (pluginDependencyDescriptor.exists()) {
-                    def gcl = obtainGroovyClassLoader()
-
-                    try {
-                        Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
-                        def pluginConfig = pluginSlurper.parse(script)
-
-                        if(dependencyManager.isLegacyResolve()) {
-                            def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
-                            if (pluginDependencyConfig instanceof Closure) {
-                                def excludeRules = pdd ? pdd.getExcludeRules(dependencyManager.configurationNames) : [] as ExcludeRule[]
-
-                                dependencyManager.parseDependencies(pluginName, pluginDependencyConfig, excludeRules)
-                            }
-                        }
-
-                        def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
-                        if (inlinePlugins) {
-                            for (File inlinePlugin in inlinePlugins) {
-                                addPluginDirectory inlinePlugin, true
-                                // recurse
-                                def handleInlinePlugin = pluginDependencyHandler()
-                                handleInlinePlugin(inlinePlugin)
-                            }
-                        }
-                    }
-                    catch (e) {
-                        CONSOLE.error "WARNING: Dependencies cannot be resolved for plugin [$pluginName] due to error: ${e.message}", e
-                    }
-                }
-            }
-
-        }
-        return handlePluginDirectory
     }
 
     ConfigSlurper createConfigSlurper() {

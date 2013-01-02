@@ -18,14 +18,17 @@ package org.codehaus.groovy.grails.cli;
 import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.PluginBuildSettings;
+import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.Exception;
+import java.net.URL;
 import java.util.List;
 
-import org.apache.ivy.plugins.resolver.ChainResolver;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.codehaus.groovy.grails.resolve.GrailsRepoResolver;
 import org.springframework.uaa.client.UaaService;
 import org.springframework.uaa.client.UaaServiceFactory;
 import org.springframework.uaa.client.VersionHelper;
@@ -102,23 +105,37 @@ public class UaaIntegration {
                         GrailsRepoResolver centralRepo = findCentralRepoResolver(chainResolver);
                         if (centralRepo != null) {
 
-                            final GPathResult pluginList = centralRepo.getPluginList(new File(settings.getGrailsWorkDir() + "/plugin-list-" + centralRepo.getName() + ".xml"));
+                            URL centralURL = new URL("http://grails.org/plugins/.plugin-meta/plugins-list.xml");
 
-                            final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos(pluginSettings.getPluginDirPath());
-                            for (GrailsPluginInfo pluginInfo : pluginInfos) {
-                                boolean registerUsage = false;
+                            InputStream input = null;
 
-                                if (settings.getDefaultPluginSet().contains(pluginInfo.getName())) {
-                                    registerUsage = true;
-                                }
-                                else {
-                                    final Object plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName());
-                                    if (plugin != null) {
+
+                            try {
+                                input = centralURL.openStream();
+                                final GPathResult pluginList = new XmlSlurper().parse(input);
+
+                                final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos(pluginSettings.getPluginDirPath());
+                                for (GrailsPluginInfo pluginInfo : pluginInfos) {
+                                    boolean registerUsage = false;
+
+                                    if (settings.getDefaultPluginSet().contains(pluginInfo.getName())) {
                                         registerUsage = true;
                                     }
+                                    else {
+                                        final Object plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName());
+                                        if (plugin != null) {
+                                            registerUsage = true;
+                                        }
+                                    }
+                                    if (registerUsage) {
+                                        uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()));
+                                    }
                                 }
-                                if (registerUsage) {
-                                    uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()));
+                            } finally {
+                                try {
+                                    if(input != null) input.close();
+                                } catch (IOException e) {
+                                    // ignore
                                 }
                             }
                         }
@@ -131,21 +148,6 @@ public class UaaIntegration {
             new Thread(r).start();
             enabled = true;
         }
-    }
-
-    private static GrailsRepoResolver findCentralRepoResolver(ChainResolver chainResolver) {
-        @SuppressWarnings("unchecked")
-        final List<Object> resolvers = chainResolver.getResolvers();
-        for (Object resolver : resolvers) {
-            if (resolver instanceof GrailsRepoResolver) {
-                final GrailsRepoResolver grailsRepoResolver = (GrailsRepoResolver) resolver;
-                final String resolverName = grailsRepoResolver.getName();
-                if (resolverName != null && resolverName.equals("grailsCentral")) {
-                    return grailsRepoResolver;
-                }
-            }
-        }
-        return null;
     }
 
     private static boolean isUaaAccepted(UaaClient.Privacy.PrivacyLevel privacyLevel) {

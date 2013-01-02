@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.resolve.maven
+package org.codehaus.groovy.grails.resolve.maven.aether
 
 import groovy.transform.CompileStatic
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator
