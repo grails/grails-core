@@ -107,7 +107,28 @@ class AetherDependencyManagerSpec extends Specification {
             def report = dependencyManager.resolveDependencies()
         then:"The resolve is successful"
             report != null
-            report.files.find { it.name.contains 'javax.servlet-api-3.0.1' }
+            report.files.find { it.name.contains 'ehcache' }
+
+    }
+
+    void "Test dependencies inherited from framework can be excluded"() {
+        given: "A dependency manager instance"
+        def dependencyManager = new AetherDependencyManager()
+        dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
+        dependencyManager.parseDependencies {
+            inherits("global") {
+                excludes 'ehcache'
+            }
+            repositories {
+                mavenRepo "http://repo.grails.org/grails/core"
+            }
+        }
+
+        when:"The dependencies are resolved"
+        def report = dependencyManager.resolveDependencies()
+        then:"The resolve is successful"
+            report != null
+            !report.files.find { it.name.contains 'ehcache' }
 
     }
 }
