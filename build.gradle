@@ -203,13 +203,19 @@ subprojects { project ->
         required { !isBuildSnapshot && gradle.taskGraph.hasTask(uploadPublished) }
     }
 
+    ext {
+        poms = [project.install.repositories.mavenInstaller.pom]
+        pomModifications = []
+        modifyPom = { Closure modification -> project.pomModifications << modification }
+    }
+
     uploadPublished {
       repositories {
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
                                                            "http://repo.grails.org/grails/libs-releases-local"
 
         repositories {
-            mavenDeployer {
+            project.poms << mavenDeployer {
                 repository(url: url) {
                     final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
                     final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
@@ -220,8 +226,8 @@ subprojects { project ->
 
                     authentication(userName: username, password: password)
                 }
-            }
-            project.ext.deployer = mavenDeployer {
+            }.pom
+            project.poms << mavenDeployer {
                 beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
 
                 repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
@@ -233,68 +239,51 @@ subprojects { project ->
                                     password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
                 }
 
-                pom.project {
-                    name 'Grails'
-                    packaging 'jar'
-                    description 'Grails Web Application Framework'
-                    delegate.url 'http://grails.org/'
-
-                    scm {
-                        delegate.url 'scm:git@github.com:grails/grails-core.git'
-                        connection 'scm:git@github.com:grails/grails-core.git'
-                        developerConnection 'scm:git@github.com:grails/grails-core.git'
-                    }
-
-                    licenses {
-                        license {
-                            name 'The Apache Software License, Version 2.0'
-                            delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                            distribution 'repo'
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id 'graemerocher'
-                            name 'Graeme Rocher'
-                        }
-                        developer {
-                            id 'jeffscottbrown'
-                            name 'Jeff Brown'
-                        }
-                    }
-                }
-            }
+                
+            }.pom
         }
       }
     }
 
-    /*
-        Install a method that can be used to fine tune the poms, e.g…
-        
-        modifyPom { pom ->
-            pom.dependencies.removeAll(pom.dependencies.findAll { it.scope == "test" })
-        }
-        
-        Mods are run in order they are encountered in the build script.
-        
-        The pom argument is of the following type:
-        http://maven.apache.org/ref/2.2.1/maven-model/apidocs/org/apache/maven/model/Model.html
-    */
-    ext {
-        poms = [project.install.repositories.mavenInstaller.pom, project.deployer.pom]
-        pomModifications = []
-        modifyPom = { Closure modification -> project.pomModifications << modification }
-        poms*.whenConfigured {
-            pomModifications*.call(it)
-        }
+    modifyPom { pom ->
+        pom.project {
+            name 'Grails'
+            packaging 'jar'
+            description 'Grails Web Application Framework'
+            delegate.url 'http://grails.org/'
 
-        // Map the groovy gradle configuration to the “compile” scope in our published POMs
-        def groovyConfiguration = project.configurations.findByName("groovy")
-        if (groovyConfiguration) {
-            poms.each {
-                it.scopeMappings.addMapping(1, groovyConfiguration, "compile")
+            scm {
+                delegate.url 'scm:git@github.com:grails/grails-core.git'
+                connection 'scm:git@github.com:grails/grails-core.git'
+                developerConnection 'scm:git@github.com:grails/grails-core.git'
             }
+
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    delegate.url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+
+            developers {
+                developer {
+                    id 'graemerocher'
+                    name 'Graeme Rocher'
+                }
+                developer {
+                    id 'jeffscottbrown'
+                    name 'Jeff Brown'
+                }
+            }
+        }
+    }
+
+    // Map the groovy gradle configuration to the “compile” scope in our published POMs
+    def groovyConfiguration = project.configurations.findByName("groovy")
+    if (groovyConfiguration) {
+        modifyPom {
+            it.scopeMappings.addMapping(1, groovyConfiguration, "compile")
         }
     }
 
@@ -306,6 +295,8 @@ subprojects { project ->
             }
         }
     }
+    
+    poms*.whenConfigured { pomModifications*.call(it) }
 }
 
 task clean(type: Delete) {
