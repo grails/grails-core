@@ -17,12 +17,11 @@ import org.apache.ivy.util.Message
  * @author Graeme Rocher
  * @since 2.3
  */
-@CompileStatic
+// @CompileStatic TODO: Report Groovy issue, uncommenting causes VerifierError
 class DependencyManagerConfigurer {
 
 
-
-    IvyDependencyManager configureIvy(BuildSettings buildSettings) {
+    DependencyManager configureIvy(BuildSettings buildSettings) {
         ConfigObject config = buildSettings.config
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN)
 

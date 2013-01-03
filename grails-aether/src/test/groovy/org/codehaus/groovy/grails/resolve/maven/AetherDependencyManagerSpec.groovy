@@ -24,7 +24,7 @@ class AetherDependencyManagerSpec extends Specification {
         }
 
         when: "A dependency is resolved"
-            def report = dependencyManager.resolveDependencies()
+            def report = dependencyManager.resolve()
 
         then: "The dependencies are resolved"
             report.files.find { it.name.contains('grails-bootstrap')}
@@ -44,7 +44,7 @@ class AetherDependencyManagerSpec extends Specification {
             }
 
         when: "A dependency is resolved"
-            def report = dependencyManager.resolveDependencies()
+            def report = dependencyManager.resolve()
 
         then: "The transitive dependencies are resolved"
             report.files.find { it.name.contains('spring-core')}
@@ -63,7 +63,7 @@ class AetherDependencyManagerSpec extends Specification {
                 }
             }
 
-            report = dependencyManager.resolveDependencies()
+            report = dependencyManager.resolve()
 
         then: "The transitive dependencies are excluded"
             !report.files.find { it.name.contains('spring-core')}
@@ -87,7 +87,7 @@ class AetherDependencyManagerSpec extends Specification {
         }
 
         when: "A dependency is resolved"
-        def report = dependencyManager.resolveDependencies()
+        def report = dependencyManager.resolve()
 
         then: "The dependencies are resolved"
         report.files.find { it.name.contains('feeds')}
@@ -105,7 +105,7 @@ class AetherDependencyManagerSpec extends Specification {
         }
 
         when:"The dependencies are resolved"
-            def report = dependencyManager.resolveDependencies()
+            def report = dependencyManager.resolve()
         then:"The resolve is successful"
             report != null
             report.files.find { it.name.contains 'ehcache' }
@@ -126,7 +126,7 @@ class AetherDependencyManagerSpec extends Specification {
         }
 
         when:"The dependencies are resolved"
-            def report = dependencyManager.resolveDependencies()
+            def report = dependencyManager.resolve()
         then:"The resolve is successful"
             report != null
             !dependencyManager.allDependencies.find { Dependency d -> d.name == 'grails-docs'}

@@ -106,7 +106,7 @@ class AetherDependencyManager implements DependencyManager{
      * @param scope The scope (defaults to 'runtime')
      * @return A DependencyReport instance
      */
-    AetherDependencyReport resolveDependencies(String scope = "runtime") {
+    AetherDependencyReport resolve(String scope = "runtime") {
 
         final container = new DefaultPlexusContainer()
         final system = container.lookup( RepositorySystem.class );

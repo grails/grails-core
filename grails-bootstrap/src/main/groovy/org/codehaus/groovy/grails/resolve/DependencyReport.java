@@ -31,6 +31,12 @@ public interface DependencyReport {
     String getClasspath();
 
     /**
+     *
+     * @return All the artifacts
+     */
+    List<File> getAllArtifacts();
+
+    /**
      * @return The JAR files
      */
     List<File> getJarFiles();

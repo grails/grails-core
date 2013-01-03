@@ -50,7 +50,7 @@ class GrailsIvyDependencies extends GrailsCoreDependencies {
         }
     }
 
-    private void registerDependencies(IvyDependencyManager dependencyManager, String scope, Collection<Dependency> dependencies) {
+    private static void registerDependencies(IvyDependencyManager dependencyManager, String scope, Collection<Dependency> dependencies) {
         for (Dependency d : dependencies) {
             registerDependency(dependencyManager, scope, ModuleRevisionId.newInstance(d.getGroup(), d.getName(), d.getVersion()), d.getExcludeArray())
         }
@@ -63,7 +63,7 @@ class GrailsIvyDependencies extends GrailsCoreDependencies {
         }
     }
 
-    private EnhancedDefaultDependencyDescriptor registerDependency(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId mrid, String... excludes) {
+    private static EnhancedDefaultDependencyDescriptor registerDependency(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId mrid, String... excludes) {
         EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false, scope);
         descriptor.setInherited(true);
         if (excludes != null) {
@@ -106,23 +106,22 @@ class GrailsIvyDependencies extends GrailsCoreDependencies {
                         String runtimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "runtime";
 
                         // dependencies needed by the Grails build system
-                        registerDependencies(dependencyManager, "build", buildDependencies)
+                        GrailsIvyDependencies.registerDependencies(dependencyManager, "build", buildDependencies)
 
                         // dependencies needed when creating docs
-                        registerDependencies(dependencyManager, "docs", docDependencies)
+                        GrailsIvyDependencies.registerDependencies(dependencyManager, "docs", docDependencies)
 
                         // dependencies needed during development, but not for deployment
-                        registerDependencies(dependencyManager, "provided", providedDependencies)
+                        GrailsIvyDependencies.registerDependencies(dependencyManager, "provided", providedDependencies)
 
                         // dependencies needed at compile time
-                        registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies)
+                        GrailsIvyDependencies.registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies)
 
                         // dependencies needed for running tests
-                        registerDependencies(dependencyManager, "test", testDependencies)
+                        GrailsIvyDependencies.registerDependencies(dependencyManager, "test", testDependencies)
 
                         // dependencies needed at runtime only
-
-                        registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies)
+                        GrailsIvyDependencies.registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies)
                 }
 
         }

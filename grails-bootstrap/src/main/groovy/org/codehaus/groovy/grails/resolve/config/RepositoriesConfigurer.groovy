@@ -103,7 +103,6 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
         addToChainResolver(fileSystemResolver)
 
-        flatDir(name:"grailsHome", dirs:"${grailsHome}/src/libs")
         flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
         final workDir = dependencyManager.buildSettings?.grailsWorkDir
         if (workDir) {

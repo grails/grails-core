@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.ivy.core.report.ResolveReport;
+import org.codehaus.groovy.grails.resolve.DependencyReport;
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
 import org.codehaus.groovy.grails.resolve.ResolveException;
 
@@ -136,23 +137,23 @@ public class ClasspathConfigurer {
             }
         }
 
-        ResolveReport buildResolveReport = settings.getBuildResolveReport();
+        DependencyReport buildResolveReport = settings.getBuildResolveReport();
         if (buildResolveReport != null && buildResolveReport.hasError()) {
             handleResolveError(settings, buildResolveReport);
         }
-        ResolveReport compileResolveReport = settings.getCompileResolveReport();
+        DependencyReport compileResolveReport = settings.getCompileResolveReport();
         if (compileResolveReport != null && compileResolveReport.hasError()) {
             handleResolveError(settings, compileResolveReport);
         }
-        ResolveReport runtimeResolveReport = settings.getRuntimeResolveReport();
+        DependencyReport runtimeResolveReport = settings.getRuntimeResolveReport();
         if (runtimeResolveReport != null && runtimeResolveReport.hasError()) {
             handleResolveError(settings, runtimeResolveReport);
         }
-        ResolveReport testResolveReport = settings.getTestResolveReport();
+        DependencyReport testResolveReport = settings.getTestResolveReport();
         if (testResolveReport != null && testResolveReport.hasError()) {
             handleResolveError(settings, testResolveReport);
         }
-        ResolveReport providedResolveReport = settings.getProvidedResolveReport();
+        DependencyReport providedResolveReport = settings.getProvidedResolveReport();
         if (providedResolveReport != null && providedResolveReport.hasError()) {
             handleResolveError(settings, providedResolveReport);
         }
@@ -160,9 +161,9 @@ public class ClasspathConfigurer {
         return urls.toArray(new URL[urls.size()]);
     }
 
-    private void handleResolveError(@SuppressWarnings("hiding") BuildSettings settings, ResolveReport buildResolveReport) {
+    private void handleResolveError(@SuppressWarnings("hiding") BuildSettings settings, DependencyReport buildResolveReport) {
         cleanResolveCache(settings);
-        GrailsConsole.getInstance().error(new ResolveException(buildResolveReport).getMessage());
+        GrailsConsole.getInstance().error(buildResolveReport.getResolveError().getMessage());
         if (exitOnResolveError) {
             System.exit(1);
         }
@@ -216,10 +217,7 @@ public class ClasspathConfigurer {
         // otherwise just add them
         File libDir = new File(pluginDir, "lib");
         if (libDir.exists()) {
-            final IvyDependencyManager dependencyManager = settings.getDependencyManager();
-            String pluginName = pluginPathSupport.getPluginName(pluginDir);
-            Collection<?> excludes = dependencyManager.getPluginExcludes(pluginName);
-            addLibs(libDir, urls, excludes != null ? excludes : Collections.emptyList());
+            addLibs(libDir, urls, Collections.emptyList());
         }
     }
 

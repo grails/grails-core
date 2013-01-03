@@ -41,13 +41,13 @@ public interface DependencyManager {
      * @param scope The scope
      * @return The {@link DependencyReport} instance
      */
-    DependencyReport resolveDependencies(String scope);
+    DependencyReport resolve(String scope);
 
     /**
      * Resolve dependencies for the default scope
      * @return The {@link DependencyReport} instance
      */
-    DependencyReport resolveDependencies();
+    DependencyReport resolve();
 
     /**
      * The direct dependencies of the application, not including framework or dependencies inherited from plugins

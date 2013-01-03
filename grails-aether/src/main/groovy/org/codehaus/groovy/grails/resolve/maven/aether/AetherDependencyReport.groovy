@@ -28,6 +28,11 @@ class AetherDependencyReport implements DependencyReport{
     }
 
     @Override
+    List<File> getAllArtifacts() {
+        getFiles().toList()
+    }
+
+    @Override
     List<File> getJarFiles() {
         return getFiles().toList()
     }

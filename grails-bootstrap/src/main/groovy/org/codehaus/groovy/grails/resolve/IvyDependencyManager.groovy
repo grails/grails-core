@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.resolve
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
+import groovy.transform.CompileStatic
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Artifact
 import org.apache.ivy.core.module.descriptor.Configuration
@@ -41,7 +42,7 @@ import org.apache.ivy.core.report.*
  * @author Graeme Rocher
  * @since 1.2
  */
-class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser{
+class IvyDependencyManager extends AbstractIvyDependencyManager implements DependencyResolver, DependencyDefinitionParser, DependencyManager{
 
     Collection repositoryData = new ConcurrentLinkedQueue()
     Collection moduleExcludes = new ConcurrentLinkedQueue()
@@ -393,5 +394,52 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 versionComparison ?: (rhs.plugin <=> lhs.plugin)
             }
         }
+    }
+
+    @Override
+    DependencyReport resolve(String scope) {
+        final resolveReport = resolveDependencies(scope)
+        return new IvyDependencyReport(scope, resolveReport)
+    }
+
+    @Override
+    DependencyReport resolve() {
+        final resolveReport = resolveDependencies()
+        return new IvyDependencyReport("compile", resolveReport)
+
+    }
+
+    @Override
+    Collection<Dependency> getApplicationDependencies() {
+        Set<DependencyDescriptor> descriptors = this.getApplicationDependencyDescriptors()
+        return convertToGrailsDependencies(descriptors)
+    }
+
+    @CompileStatic
+    public Set<Dependency> convertToGrailsDependencies(Set<DependencyDescriptor> descriptors) {
+        Set<Dependency> dependencies = []
+        for (DependencyDescriptor dd in descriptors) {
+            final drid = dd.dependencyRevisionId
+            def d = new Dependency(drid.organisation, drid.name, drid.revision)
+            d.transitive = dd.transitive
+
+            dependencies << d
+        }
+        dependencies
+    }
+
+    @Override
+    Collection<Dependency> getAllDependencies() {
+        return convertToGrailsDependencies(dependencyDescriptors)
+    }
+
+    @Override
+    Collection<Dependency> getApplicationDependencies(String scope) {
+        convertToGrailsDependencies(getApplicationDependencyDescriptors().findAll { it.scope == scope })
+    }
+
+    @Override
+    Collection<Dependency> getAllDependencies(String scope) {
+        convertToGrailsDependencies(dependencyDescriptors.findAll { it.scope == scope })
     }
 }
