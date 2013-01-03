@@ -519,7 +519,8 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
      * @emptyTag
      *
      * @attr name REQUIRED The name of the date picker field set
-     * @attr value The current value of the date picker; defaults to now if not specified
+     * @attr value The current value of the date picker; defaults to either the value specified by the default attribute or now if no default is set
+     * @attr default A Date or parsable date string that will be used if there is no value
      * @attr precision The desired granularity of the date to be rendered
      * @attr noSelection A single-entry map detailing the key and value to use for the "no selection made" choice in the select box. If there is no current selection this will be shown as it is first in the list, and if submitted with this selected, the key that you provide will be submitted. Typically this will be blank.
      * @attr years A list or range of years to display, in the order specified. i.e. specify 2007..1900 for a reverse order list going back to 1900. If this attribute is not specified, a range of years from the current year - 100 to current year + 100 will be shown.
