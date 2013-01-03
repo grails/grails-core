@@ -17,11 +17,22 @@ class Dependency {
     String name
     String version
     boolean transitive = true
+    boolean inherited = false
 
     Dependency(String group, String name, String version, String...exc) {
         this.group = group
         this.name = name
         this.version = version
+        for(e in exc) {
+            exclude(e)
+        }
+    }
+
+    Dependency(String group, String name, String version, boolean inherited, String...exc) {
+        this.group = group
+        this.name = name
+        this.version = version
+        this.inherited = inherited
         for(e in exc) {
             exclude(e)
         }

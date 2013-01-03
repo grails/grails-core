@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.resolve.maven
 
+import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
 import spock.lang.Specification
@@ -117,7 +118,7 @@ class AetherDependencyManagerSpec extends Specification {
         dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
         dependencyManager.parseDependencies {
             inherits("global") {
-                excludes 'ehcache'
+                excludes 'grails-docs', 'grails-gdoc-engine'
             }
             repositories {
                 mavenRepo "http://repo.grails.org/grails/core"
@@ -125,10 +126,37 @@ class AetherDependencyManagerSpec extends Specification {
         }
 
         when:"The dependencies are resolved"
-        def report = dependencyManager.resolveDependencies()
+            def report = dependencyManager.resolveDependencies()
         then:"The resolve is successful"
             report != null
-            !report.files.find { it.name.contains 'ehcache' }
+            !dependencyManager.allDependencies.find { Dependency d -> d.name == 'grails-docs'}
+            !report.files.find { it.name.contains 'grails-docs' }
+
+    }
+
+
+    void "Test dependencies inherited vs dependencies not inherited"() {
+        given: "A dependency manager instance"
+        def dependencyManager = new AetherDependencyManager()
+        dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
+        dependencyManager.parseDependencies {
+            inherits("global") {
+                excludes 'ehcache-core'
+            }
+            repositories {
+                mavenRepo "http://repo.grails.org/grails/core"
+            }
+            dependencies {
+                runtime 'mysql:mysql-connector-java:5.1.20'
+            }
+        }
+
+        when:"The dependencies are resolved"
+            def applicationDependencies = dependencyManager.applicationDependencies
+            def allDependenices = dependencyManager.allDependencies
+        then:"The resolve is successful"
+            applicationDependencies.size() == 1
+            allDependenices.size() > 1
 
     }
 }

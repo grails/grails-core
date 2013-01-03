@@ -15,27 +15,22 @@
  */
 package grails.util
 
-import org.codehaus.groovy.grails.io.support.IOUtils
-import org.codehaus.groovy.grails.resolve.GrailsIvyDependencies
-
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
-import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
-
-import java.util.concurrent.ConcurrentHashMap
-import java.util.regex.Pattern
-
 import org.apache.ivy.core.report.ResolveReport
-import org.apache.ivy.plugins.repository.TransferEvent
-import org.apache.ivy.plugins.repository.TransferListener
-import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
+import org.codehaus.groovy.grails.io.support.IOUtils
+import org.codehaus.groovy.grails.resolve.DependencyManagerConfigurer
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
+
+import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
+
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
 
 /**
  * <p>Represents the project paths and other build settings
@@ -1221,66 +1216,7 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     def configureDependencyManager(ConfigObject config) {
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN)
-
-        Metadata metadata = Metadata.current
-        def appName = metadata.getApplicationName() ?: "grails"
-        def appVersion = metadata.getApplicationVersion() ?: grailsVersion
-
-        dependencyManager = new IvyDependencyManager(appName,
-                appVersion, this, metadata)
-
-        dependencyManager.offline = offline
-        dependencyManager.includeJavadoc = includeJavadoc
-        dependencyManager.includeSource = includeSource
-
-        def console = GrailsConsole.instance
-        dependencyManager.transferListener = { TransferEvent e ->
-            switch (e.eventType) {
-                case TransferEvent.TRANSFER_STARTED:
-                    def resourceName = e.resource.name
-                    if (!resourceName?.endsWith('plugins-list.xml')) {
-                        resourceName = resourceName[resourceName.lastIndexOf('/') + 1..-1]
-                        console.updateStatus "Downloading: ${resourceName}"
-                    }
-                    break
-            }
-        } as TransferListener
-
-        def grailsConfig = config.grails
-
-        // If grails.dependency.cache.dir is set, use it for Ivy.
-        if (grailsConfig.dependency.cache.dir) {
-            dependencyManager.ivySettings.defaultCache = grailsConfig.dependency.cache.dir as File
-        }
-
-        if (!dependenciesExternallyConfigured) {
-            coreDependencies = new GrailsIvyDependencies(grailsVersion, servletVersion)
-            coreDependencies.java5compatible = !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", compilerTargetLevel)
-            grailsConfig.global.dependency.resolution = coreDependencies.createDeclaration()
-            def credentials = grailsConfig.project.ivy.authentication
-            if (credentials instanceof Closure) {
-                dependencyManager.parseDependencies credentials
-            }
-        }
-        else {
-            // Even if the dependencies are handled externally, we still
-            // to handle plugin dependencies.
-            grailsConfig.global.dependency.resolution = {
-                repositories {
-                    grailsPlugins()
-                }
-            }
-        }
-
-        def dependencyConfig = grailsConfig.project.dependency.resolution
-        if (!dependencyConfig) {
-            dependencyConfig = grailsConfig.global.dependency.resolution
-            dependencyManager.inheritsAll = true
-        }
-        if (dependencyConfig) {
-            dependencyManager.parseDependencies dependencyConfig
-        }
+        dependencyManager = new DependencyManagerConfigurer().configureIvy(this)
     }
 
 

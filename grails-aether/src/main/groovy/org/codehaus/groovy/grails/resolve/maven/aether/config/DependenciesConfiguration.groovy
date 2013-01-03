@@ -42,12 +42,15 @@ class DependenciesConfiguration {
     }
 
     void addDependency(Dependency dependency, Closure customizer = null) {
-        if (exclusionDependencySelector == null || !exclusionDependencySelector.selectDependency(dependency)) {
+        if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(dependency)) {
             dependency = customizeDependency(customizer, dependency)
-            dependencyManager.dependencies << dependency
+            dependencyManager.addDependency dependency
         }
     }
 
+    void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope) {
+        dependencyManager.addDependency dependency, scope, exclusionDependencySelector
+    }
 
     void compile(String pattern, Closure customizer = null) {
         addDependency new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE), customizer

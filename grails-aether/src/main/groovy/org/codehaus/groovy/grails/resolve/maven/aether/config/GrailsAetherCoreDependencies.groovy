@@ -73,17 +73,7 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies{
 
     void registerDependencies(DependenciesConfiguration configuration, String scope, Collection<Dependency> dependencies) {
         for(org.codehaus.groovy.grails.resolve.Dependency d in dependencies) {
-            Collection<Exclusion> exclusions = new ArrayList<>()
-            for( exc in d.excludes) {
-                exclusions << new Exclusion(exc.group, exc.name, "*", "*")
-            }
-            final mavenDependency = new org.sonatype.aether.graph.Dependency(new DefaultArtifact(d.pattern), scope, false, exclusions)
-
-
-            boolean isExcluded = exclusionDependencySelector && !exclusionDependencySelector.selectDependency(mavenDependency)
-            if (!isExcluded) {
-                configuration.addDependency mavenDependency
-            }
+            configuration.addDependency(d, scope)
         }
     }
 }
