@@ -335,10 +335,10 @@ class CallMe {
           new Pet(owner:p, birthDate: Date.parse('yyyy-MM-dd','2009-06-01'), name:"Old Dog").save()
 
 
-
+      def currentYear = new Date()[Calendar.YEAR]
       when:"A function is used on the property"
         def query = Pet.where {
-              year(birthDate) == 2012
+              year(birthDate) == currentYear
         }
         def results = query.list()
 
