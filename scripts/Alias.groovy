@@ -18,20 +18,22 @@ aliasFile = new File(grailsSettings.userHome, '.grails/.aliases')
 
 includeTargets << grailsScript("_GrailsArgParsing")
 target(default: 'Configures aliases for grails commands') {
-     def params   = argsMap.params
-     if(!params) {
-         if(argsMap.list) {
+     def params = argsMap.params
+     if (!params) {
+         if (argsMap.list) {
              listAliases()
-         } else if(argsMap.delete) {
-             removeAlias()
          } else {
              println usage()
              exit 1
          }
          exit 0
      }
-     if(params.size() == 1) {
-         showAlias()
+     if (params.size() == 1) {
+         if (argsMap.delete) {
+             removeAlias()
+         } else {
+             showAlias()
+         }
      } else {
          configureAlias()
      }
@@ -51,17 +53,19 @@ def configureAlias() {
     def value = params[1..-1].join(' ')
     aliases.put alias, value
     aliases.store(new FileWriter(aliasFile), null)
+    println "Alias ${alias} with value ${value} configured"
 }
 
 def removeAlias() {
-    def aliasToDelete = argsMap.delete
-    if(aliasToDelete == Boolean.TRUE) {
+    def aliasToDelete = argsMap.params[0]
+    if (aliasToDelete == Boolean.TRUE) {
         println usage()
         exit 1
     }
     def aliases = loadProperties()
     aliases.remove aliasToDelete
     aliases.store(new FileWriter(aliasFile), null)
+    println "Alias ${aliasToDelete} removed"
 }
 
 def showAlias() {
@@ -77,8 +81,12 @@ def showAlias() {
 
 def listAliases() {
     def aliases = loadProperties()
-    aliases.each { k, v ->
-        println "${k} = ${v}"
+    if (aliases) {
+        aliases.each { k, v ->
+            println "${k} = ${v}"
+        }
+    } else {
+        println "No aliases configured"
     }
 }
 
@@ -95,11 +103,12 @@ def usage() {
 Usage:
     grails alias [--delete=alias] [--list] [alias [command]]
 
-Exmaples:
+Examples:
     grails alias ra run-app
     grails alias rft test-app functional:
     grails alias --list
     grails alias rft
     grails alias --delete=ra
-'''    
+'''
 }
+
