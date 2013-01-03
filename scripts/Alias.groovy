@@ -22,6 +22,8 @@ target(default: 'Configures aliases for grails commands') {
      if (!params) {
          if (argsMap.list) {
              listAliases()
+         } else if(argsMap.delete) {
+             removeAlias()
          } else {
              println usage()
              exit 1
@@ -29,11 +31,7 @@ target(default: 'Configures aliases for grails commands') {
          exit 0
      }
      if (params.size() == 1) {
-         if (argsMap.delete) {
-             removeAlias()
-         } else {
-             showAlias()
-         }
+         showAlias()
      } else {
          configureAlias()
      }
