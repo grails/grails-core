@@ -208,7 +208,18 @@ subprojects { project ->
         pomModifications = []
         modifyPom = { Closure modification -> project.pomModifications << modification }
     }
+    
+    task installToHomeDist(type: Upload) {
+        configuration = configurations.archives
+        repositories {
+            project.poms << mavenDeployer {
+                repository(url: homeDistDir.toURL())
+            }.pom
+        }
+    }
 
+    install.dependsOn installToHomeDist
+    
     uploadPublished {
       repositories {
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
