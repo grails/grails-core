@@ -9,7 +9,7 @@ import grails.persistence.Entity
 class FindByMethodTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
-        [FindByMethodBook, FindByMethodUser, FindByBooleanPropertyBook, Highway, Person, Pet]
+        [FindByMethodBook, FindByMethodUser, FindByBooleanPropertyBook, Highway, Person, Pet, Face, Nose]
     }
 
     void testNullParameters() {

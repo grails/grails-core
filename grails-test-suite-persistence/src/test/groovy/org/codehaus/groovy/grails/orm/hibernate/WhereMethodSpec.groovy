@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.gorm.DetachedCriteria
+import grails.persistence.Entity
 import spock.lang.Ignore
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import spock.lang.Issue
@@ -11,8 +12,132 @@ import spock.lang.Issue
 class WhereMethodSpec extends GormSpec {
     @Override
     List getDomainClasses() {
-        [Person, Pet]
+        [Face, Nose,Person, Pet]
     }
+
+    @Issue('GRAILS-8526')
+    def "Test association query with referenced arguments"() {
+        given:"some people and pets"
+        createPeopleWithPets()
+
+        when:"A query is built from arguments to a method"
+        def q = getSomePets(name: "Ed")
+        def results = q.list()
+
+        then:"The results are correct"
+        results.size() == 3
+
+    }
+
+    private getSomePets(args) {
+        Pet.where {
+            owner.firstName == args.name
+        }
+    }
+
+
+    @Issue('GRAILS-8366')
+    def "Test calling method on RHS of collection size() query"() {
+        given:"some people and pets"
+        createPeopleWithPets()
+
+        when:"A query that inspects the size() of a collection and calls a method on the RHS is called"
+        def query = Person.where {
+            pets.size() == processPetSize(3)
+        }
+
+        then:"The query returns the correct results"
+        query.count() == 1
+    }
+    private processPetSize(int size) { size }
+
+    @Issue('GRAILS-9695')
+    @Ignore // FIXME:  http://jira.grails.org/browse/GRAILS-9695
+    def "Test query with 3 level deep domain association"() {
+        given:"create people and faces"
+        createPeopleWithFaces()
+
+        when:"A query that uses criteria 2 levels deep is executed"
+        def results = Nose.withCriteria {
+            face { person { eq 'lastName', 'Simpson' } }
+        }
+
+        then:"The results are correct"
+        results.size() == 4
+
+        when:"A query that queries an association 2 levels deep is executed"
+        def query = Nose.where {
+            face.person.lastName == "Simpson"
+        }
+
+        then:"The correct results are returned"
+        query.count() == 4
+
+        when:"A query that queries an association 2 levels deep is executed via nesting"
+        query = Nose.where {
+            face { person { lastName == "Simpson" } }
+        }
+
+        then:"The correct results are returned"
+        query.count() == 4
+    }
+
+    private createPeopleWithFaces() {
+        final h = new Person(firstName: "Homer", lastName: "Simpson", age: 45)
+        h.face = new Face(name: "Homer", nose: new Nose(), person: h )
+        h.save()
+        final m = new Person(firstName: "Marge", lastName: "Simpson", age: 40)
+        m.face = new Face(name: "Marge", nose: new Nose(), person: m)
+        m.save()
+
+        final b = new Person(firstName: "Bart", lastName: "Simpson", age: 9)
+        b.face = new Face(name: "Bart", nose: new Nose(hasFreckles: true), person: b)
+        b.save()
+
+        final l = new Person(firstName: "Lisa", lastName: "Simpson", age: 7)
+        l.face = new Face(name: "Lisa", nose: new Nose(hasFreckles: true), person: l)
+        l.save()
+
+        final ba = new Person(firstName: "Barney", lastName: "Rubble", age: 35)
+        ba.face = new Face(name: "Barney", nose: new Nose())
+        ba.save()
+
+        assert Person.count() == 5
+        assert Face.count() == 5
+
+    }
+
+    @Issue('GRAILS-9471')
+    def "Test chaining where queries directly"() {
+        given:"Some people"
+        createPeople()
+
+        when:"2 where queries are combined in a sequence"
+        def results = Person.where { lastName == 'Simpson' }.where { firstName == 'Bart'}.list()
+
+        then:"The correct results are returned"
+        results.size() == 1
+        results[0].firstName == 'Bart'
+    }
+
+    def "Test captured detached criteria instance" () {
+        given:"people and pets"
+        createPeopleWithPets()
+
+        when:"Another detached criteria variable is captured"
+        def pets = Pet.where {
+            name ==~ "J%"
+        }
+
+        def owners = Person.where {
+            pets.size() == 2
+        }
+
+
+        then:"The results are valid"
+        owners.count() == 2
+    }
+
 
     def "Test where query with join"() {
         given:"some people"
@@ -1078,3 +1203,31 @@ class CallMe {
 
 }
 
+
+@Entity
+class Face implements Serializable {
+    Long id
+    Long version
+    String name
+    Nose nose
+    Person person
+    static hasOne = [nose: Nose]
+    static belongsTo = [person:Person]
+
+    static constraints = {
+        person nullable:true
+    }
+}
+
+@Entity
+class Nose implements Serializable {
+    Long id
+    Long version
+    boolean hasFreckles
+    Face face
+    static belongsTo = [face: Face]
+
+    static mapping = {
+        face index:true
+    }
+}
