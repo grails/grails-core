@@ -39,3 +39,11 @@ target ('default': "Creates a new service class") {
         createUnitTest(name: name, suffix: type)
     }
 }
+
+USAGE = """
+    create-service [NAME]
+
+where
+    NAME       = The name of the service. If not provided, this
+                 command will ask you for the name.
+"""

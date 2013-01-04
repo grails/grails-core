@@ -83,3 +83,10 @@ target ('default': "Sets the current application version") {
         event("StatusFinal", [ "Application version updated to $newVersion"])
     }
 }
+
+USAGE = """
+    set-version [NUMBER]
+
+where
+    NUMBER     = The number to set the current application version to.
+"""
