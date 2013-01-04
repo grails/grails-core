@@ -4,9 +4,6 @@ configurations {
     uaa.extendsFrom compile
 }
 dependencies {
-    compile("org.springframework:spring-core:${springVersion}") {
-        exclude module:"commons-logging"
-    }
 
     // UAA client dependency, optional
     uaa("org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE") {

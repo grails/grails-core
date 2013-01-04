@@ -19,13 +19,9 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
 import org.codehaus.groovy.grails.io.support.IOUtils
-import org.codehaus.groovy.grails.resolve.DependencyManager
-import org.codehaus.groovy.grails.resolve.DependencyManagerConfigurer
-import org.codehaus.groovy.grails.resolve.DependencyReport
-import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
-import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.resolve.*
 import org.codehaus.groovy.runtime.StackTraceUtils
+import org.codehaus.groovy.tools.LoaderConfiguration
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
@@ -1158,40 +1154,7 @@ class BuildSettings extends AbstractBuildSettings {
         DependencyManagerConfigurer configurer = new DependencyManagerConfigurer();
 
         if(dependencyResolver?.equalsIgnoreCase("aether") || dependencyResolver?.equalsIgnoreCase("maven")) {
-            Metadata metadata = Metadata.getCurrent()
-            def appName = metadata.getApplicationName() ?: "grails"
-            def appVersion = metadata.getApplicationVersion() ?: grailsVersion
-
-            def dependencyManager = new IvyDependencyManager(appName,
-                appVersion, buildSettings, metadata)
-
-            dependencyManager.offline = buildSettings.isOffline()
-
-            dependencyManager.parseDependencies {
-                repositories {
-                    grailsHome()
-                }
-                dependencies {
-                    compile "org.grails:grails-aether:$grailsVersion"
-                }
-            }
-            GroovyClassLoader classLoader = new GroovyClassLoader()
-            for(jar in dependencyManager.resolve("runtime").jarFiles) {
-                classLoader.addURL(jar.toURI().toURL())
-            }
-            def aetherDependencyManager = classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager").newInstance()
-
-            final coreDeps = classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies")
-                                            .newInstance(grailsVersion, servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel))
-            aetherDependencyManager.inheritedDependencies.global = coreDeps.createDeclaration()
-
-            def dependencyConfig = config.grails.project.dependency.resolution
-
-            if(dependencyConfig instanceof Closure) {
-                aetherDependencyManager.parseDependencies(dependencyConfig)
-            }
-
-            return aetherDependencyManager
+            return configurer.configureAether(buildSettings)
         }
         else {
 
