@@ -106,7 +106,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
         def grailsHomeDistResolver = new FileSystemResolver()
         grailsHomeDistResolver.local = true
         grailsHomeDistResolver.name = "grailsHome"
-        def grailsHomeDistPattern = "${grailsHome}/dist/[artifact]-[revision](-[classifier])."
+        def grailsHomeDistPattern = "${grailsHome}/dist/[module]-[revision](-[classifier])"
         grailsHomeDistResolver.addIvyPattern("${grailsHomeDistPattern}.pom")
         grailsHomeDistResolver.addArtifactPattern "${grailsHomeDistPattern}.[ext]"
         grailsHomeDistResolver.settings = dependencyManager.ivySettings
