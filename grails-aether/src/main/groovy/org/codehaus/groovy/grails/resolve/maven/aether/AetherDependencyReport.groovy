@@ -12,17 +12,33 @@ class AetherDependencyReport implements DependencyReport{
     private PreorderNodeListGenerator resolveResult
     private String scope
     private Throwable error
+    List<File> pluginZips = []
+    List<File> jarFiles = []
 
     AetherDependencyReport(PreorderNodeListGenerator resolveResult, String scope) {
         this.resolveResult = resolveResult
         this.scope = scope
+        this.jarFiles = findAndRemovePluginDependencies(resolveResult.files)
     }
     AetherDependencyReport(PreorderNodeListGenerator resolveResult, String scope, Throwable error) {
         this.resolveResult = resolveResult
         this.scope = scope
         this.error = error
+        this.jarFiles = findAndRemovePluginDependencies(resolveResult.files)
     }
 
+
+    private List<File> findAndRemovePluginDependencies(Collection<File> jarFiles) {
+        jarFiles = jarFiles?.findAll { File it -> it != null} ?: new ArrayList<File>()
+        def zips = jarFiles.findAll { File it -> it.name.endsWith(".zip") }
+        for (z in zips) {
+            if (!pluginZips.contains(z)) {
+                pluginZips.add(z)
+            }
+        }
+        jarFiles = jarFiles.findAll { File it -> !it.name.endsWith(".zip") }
+        return jarFiles
+    }
     String getClasspath() {
         resolveResult.getClassPath()
     }
@@ -32,15 +48,6 @@ class AetherDependencyReport implements DependencyReport{
         getFiles().toList()
     }
 
-    @Override
-    List<File> getJarFiles() {
-        return getFiles().toList()
-    }
-
-    @Override
-    List<File> getPluginZips() {
-        return null  //To change body of implemented methods use File | Settings | File Templates.
-    }
 
     @Override
     String getScope() {
