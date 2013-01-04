@@ -37,3 +37,11 @@ target ('default': "Creates a new tag library") {
         createUnitTest(name: name, suffix: type, superClass: "TagLibUnitTestCase")
     }
 }
+
+USAGE = """
+    create-tab-lib [NAME]
+
+where
+    NAME       = The name of the tag library. If not provided, this
+                 command will ask you for the name.
+"""

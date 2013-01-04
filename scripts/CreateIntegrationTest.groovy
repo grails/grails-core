@@ -35,3 +35,11 @@ target ('default': "Creates a new Grails integration test which loads the whole 
         createIntegrationTest(name: name, suffix: "", testType:"Generic")
     }
 }
+
+USAGE = """
+    create-integration-test [NAME]
+
+where
+    NAME       = The name of the controller. If not provided, this
+                 command will ask you for the name.
+"""

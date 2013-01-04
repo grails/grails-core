@@ -39,3 +39,11 @@ target ('default': "Creates a new filters class") {
         createUnitTest(name: name, suffix: type)
     }
 }
+
+USAGE = """
+    create-filters [NAME]
+
+where
+    NAME       = The name of the filters class. If not provided, this
+                 command will ask you for the name.
+"""

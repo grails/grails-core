@@ -26,14 +26,6 @@
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("_GrailsCreateArtifacts")
 
-USAGE = """
-    create-scaffold-controller [DOMAIN ...]
-
-where
-    DOMAIN   = The name, including package, of a domain class to create
-               a scaffolding controller for. (default: prompts for a name)
-"""
-
 target (default: "Creates a new scaffolding controller for a domain class") {
     depends(checkVersion, parseArguments)
 
@@ -65,3 +57,12 @@ target (default: "Creates a new scaffolding controller for a domain class") {
     }
 
 }
+
+USAGE = """
+    create-scaffold-controller [NAME]
+
+where
+    NAME       = The name, including package, of the domain class to create
+				 a scaffolded controller for. If not provided, this
+                 command will ask you for the name.
+"""
