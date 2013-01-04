@@ -49,7 +49,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
         installEngine.installResolvedPlugin(zip)
     }
 
-    installEngine.checkPluginsToUninstall()
+    installEngine.checkPluginsToUninstall(pluginZips)
 }
 
 target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plugins.") {
