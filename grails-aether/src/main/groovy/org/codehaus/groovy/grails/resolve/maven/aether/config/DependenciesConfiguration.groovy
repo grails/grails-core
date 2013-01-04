@@ -80,6 +80,10 @@ class DependenciesConfiguration {
         dependencyManager.addDependency dependency, scope, exclusionDependencySelector
     }
 
+    void addBuildDependency(org.codehaus.groovy.grails.resolve.Dependency dependency) {
+        dependencyManager.addBuildDependency dependency
+    }
+
     void build(String pattern, Closure customizer = null) {
         addBuildDependency new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE), customizer
     }

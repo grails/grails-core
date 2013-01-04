@@ -214,12 +214,26 @@ class AetherDependencyManager implements DependencyManager{
         }
     }
 
+    public void addBuildDependency(org.codehaus.groovy.grails.resolve.Dependency dependency) {
+        Collection<Exclusion> exclusions = new ArrayList<>()
+        for( exc in dependency.excludes) {
+            exclusions << new Exclusion(exc.group, exc.name, "*", "*")
+        }
+        final mavenDependency = new org.sonatype.aether.graph.Dependency(new DefaultArtifact(dependency.pattern), "compile", false, exclusions)
+        grailsDependencies << dependency
+        grailsDependenciesByScope["build"] << dependency
+        dependencies << mavenDependency
+        if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
+            grailsPluginDependencies << dependency
+        }
+    }
+
     public void addBuildDependency(Dependency dependency) {
         Artifact artifact = dependency.artifact
         final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
         grailsDependencies << grailsDependency
         grailsDependenciesByScope["build"] << grailsDependency
-        dependencies << dependency
+        buildDependencies << dependency
         if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
             grailsPluginDependencies << grailsDependency
         }
@@ -235,9 +249,9 @@ class AetherDependencyManager implements DependencyManager{
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(mavenDependency)) {
             grailsDependencies << dependency
             grailsDependenciesByScope[scope] << dependency
-            buildDependencies << mavenDependency
+            dependencies << mavenDependency
             if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
-                grailsPluginDependencies << dependency
+                grailsPluginDependencies.add dependency
             }
         }
     }

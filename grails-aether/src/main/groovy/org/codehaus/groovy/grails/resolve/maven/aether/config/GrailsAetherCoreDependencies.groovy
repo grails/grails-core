@@ -73,7 +73,13 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies{
 
     void registerDependencies(DependenciesConfiguration configuration, String scope, Collection<Dependency> dependencies) {
         for(org.codehaus.groovy.grails.resolve.Dependency d in dependencies) {
-            configuration.addDependency(d, scope)
+            if (scope == 'build') {
+                configuration.addBuildDependency(d)
+            }
+            else {
+
+                configuration.addDependency(d, scope)
+            }
         }
     }
 }

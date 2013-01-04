@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.resolve
 
+import groovy.transform.CompileStatic
+
 import java.util.regex.Pattern
 
 import grails.build.logging.GrailsConsole
@@ -101,46 +103,30 @@ class PluginInstallEngine {
         resolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
     }
 
-    /**
-     * This method will resolve the current dependencies and install any missing plugins or upgrades
-     * and remove any plugins that aren't present in the metadata but are installed
-     */
-    void resolvePluginDependencies() {
 
-        IvyDependencyManager dependencyManager = settings.dependencyManager
 
-        // Get the plugin dependency descriptors for the max version of each applicable dependency
-        def pluginDescriptors = dependencyManager.effectivePluginDependencyDescriptors
+    @CompileStatic
+    void checkPluginsToUninstall(List<File> pluginZips) {
 
-        def newPlugins = findMissingOrUpgradePlugins(pluginDescriptors)
-        if (newPlugins) {
-            eventHandler "StatusUpdate", "Installing ${newPlugins.size()} plugins, please wait"
-            installPlugins(newPlugins)
+        List<GrailsPluginInfo> resolvedPluginInfos = pluginZips.collect { File f -> readPluginInfoFromZip(f.absolutePath) }
+
+        GrailsPluginInfo[] installedPluginInfos = pluginSettings.getPluginInfos()
+
+        def pluginsToUninstall = installedPluginInfos.findAll { GrailsPluginInfo info -> !resolvedPluginInfos.any { GrailsPluginInfo resolvedInfo -> info.fullName == resolvedInfo.fullName}}
+
+
+        for (GrailsPluginInfo pluginInfo in pluginsToUninstall) {
+            Resource pluginDir = pluginInfo.pluginDir
+            final pluginDirFile = pluginDir.file.canonicalFile
+            if ((pluginDirFile == settings.baseDir) || settings.isInlinePluginLocation(pluginDirFile)) continue
+
+            if (pluginSettings.isGlobalPluginLocation(pluginDir)) {
+                uninstallPlugin(pluginInfo.name, pluginInfo.version)
+            }
+            else {
+                uninstallPlugin(pluginInfo.name, pluginInfo.version)
+            }
         }
-
-        def existingPlugins = pluginDescriptors.findAll { !newPlugins.contains(it) }
-        def rootChangingPattern = dependencyManager.chainResolver.changingPattern
-        def rootChangingPatternCompiled = rootChangingPattern ? Pattern.compile(rootChangingPattern) : null
-        def changingPlugins = existingPlugins.findAll {
-            it.changing || rootChangingPatternCompiled?.matcher(it.dependencyRevisionId.revision)?.matches()
-        }
-        if (changingPlugins) {
-            def numChangingPlugins = changingPlugins.size()
-            eventHandler "StatusUpdate", "Checking ${numChangingPlugins} changing plugin${numChangingPlugins > 1 ? 's' : ''} for updates"
-            installPlugins(changingPlugins)
-            eventHandler "StatusUpdate", "Changing plugin checking complete"
-        }
-
-        checkPluginsToUninstall(pluginDescriptors)
-    }
-
-    void checkPluginsToUninstall() {
-        DependencyManager dependencyManager = settings.dependencyManager
-
-        // Get the plugin dependency descriptors for the max version of each applicable dependency
-        def pluginDescriptors = dependencyManager.pluginDependencies
-
-        checkPluginsToUninstall(pluginDescriptors)
     }
 
 
@@ -591,46 +577,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         GrailsConsole.getInstance().userInput(msg, ['y','n'] as String[]) == 'y'
     }
 
-    protected void checkPluginsToUninstall(Collection<Dependency> pluginDeps) {
-        // Find out which plugins are in the search path but not in the
-        // metadata. We only check on the plugins in the project's "plugins"
-        // directory and the global "plugins" dir. Plugins loaded via an
-        // explicit path should be left alone.
-        def pluginInfos = pluginSettings.getPluginInfos()
-        def dependencyManager = settings.dependencyManager
-        def pluginsToUninstall = pluginInfos.findAll { GrailsPluginInfo pluginInfo ->
-            !pluginDeps.find {  Dependency dd ->
-                pluginInfo.pluginDir.file.canonicalFile.name ==~ "${dd.name}-.+"
-            }
-        }
-
-        def resolvePlugins = settings.pluginDependencies.collect { File f ->  f.name }
-        pluginsToUninstall = pluginsToUninstall.findAll { GrailsPluginInfo pluginInfo ->
-            !resolvePlugins.find { String name -> name.contains(pluginInfo.fullName)}
-        }
-
-        pluginsToUninstall = pluginsToUninstall.findAll { GrailsPluginInfo pluginInfo ->
-            def pluginFullName = "${pluginInfo.name}-${pluginInfo.version}.zip".toString()
-            !settings.pluginDependencies.any {
-                it.name == pluginFullName
-            } &&
-            !((dependencyManager instanceof IvyDependencyManager) && dependencyManager.isPluginTransitivelyIncluded(pluginInfo.name)) &&
-            pluginInfo.pluginDir.file != settings.baseDir
-        }
-
-        for (GrailsPluginInfo pluginInfo in pluginsToUninstall) {
-            Resource pluginDir = pluginInfo.pluginDir
-            final pluginDirFile = pluginDir.file.canonicalFile
-            if ((pluginDirFile == settings.baseDir) || settings.isInlinePluginLocation(pluginDirFile)) continue
-
-            if (pluginSettings.isGlobalPluginLocation(pluginDir)) {
-                uninstallPlugin(pluginInfo.name, pluginInfo.version)
-            }
-            else {
-                uninstallPlugin(pluginInfo.name, pluginInfo.version)
-            }
-        }
-    }
 
     protected Collection<EnhancedDefaultDependencyDescriptor> findMissingOrUpgradePlugins(Collection<EnhancedDefaultDependencyDescriptor> descriptors) {
         def pluginsToInstall = []

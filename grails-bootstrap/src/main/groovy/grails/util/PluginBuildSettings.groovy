@@ -83,6 +83,7 @@ class PluginBuildSettings {
     private Map pluginMetaDataMap = new ConcurrentHashMap()
     private Map<String, PluginInfo> pluginInfosMap = new ConcurrentHashMap<String, PluginInfo>()
     private Map<String, PluginInfo> pluginInfoToSourceMap = new ConcurrentHashMap<String, PluginInfo>()
+
     private pluginLocations
 
     PluginScopeInfo compileScopePluginInfo = new PluginScopeInfo("compile")
@@ -195,7 +196,10 @@ class PluginBuildSettings {
     /**
      * Returns an array of PluginInfo objects
      */
-    GrailsPluginInfo[] getPluginInfos(String pluginDirPath = this.pluginDirPath) {
+    GrailsPluginInfo[] getPluginInfos() {
+        getPluginInfos(this.pluginDirPath)
+    }
+    GrailsPluginInfo[] getPluginInfos(String pluginDirPath) {
         if (pluginInfosMap) {
             return cache.pluginInfoList
         }
