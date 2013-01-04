@@ -35,3 +35,11 @@ target ('default': "Creates a new domain class") {
         createUnitTest(name: name, suffix: "")
     }
 }
+
+USAGE = """
+    create-domain-class [NAME]
+
+where
+    NAME       = The name of the domain class. If not provided, this
+                 command will ask you for the name.
+"""

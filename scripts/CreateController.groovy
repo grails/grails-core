@@ -43,3 +43,11 @@ target ('default': "Creates a new controller") {
     }
 
 }
+
+USAGE = """
+    create-controller [NAME]
+
+where
+    NAME       = The name of the controller. If not provided, this
+                 command will ask you for the name.
+"""

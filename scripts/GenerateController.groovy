@@ -32,3 +32,12 @@ target ('default': "Generates the CRUD controller for a specified domain class")
     generateForName = argsMap["params"][0]
     generateForOne()
 }
+
+USAGE = """
+    generate-controller [NAME]
+
+where
+    NAME       = Either a domain class name (case-sensitive) or a
+				 wildcard (*). If you specify the wildcard then
+				 controllers will be generated for all domain classes.
+"""

@@ -36,3 +36,11 @@ target ('default': "Creates a new Grails unit test. A unit test requires that yo
         createUnitTest(name: name, suffix: "", testType:"UnitTest")
     }
 }
+
+USAGE = """
+    create-unit-test [NAME]
+
+where
+    NAME       = The name of the controller. If not provided, this
+                 command will ask you for the name.
+"""

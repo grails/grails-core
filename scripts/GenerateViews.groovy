@@ -32,3 +32,12 @@ target ('default': "Generates the CRUD views for a specified domain class") {
     generateForName = argsMap["params"][0]
     generateForOne()
 }
+
+USAGE = """
+    generate-views [NAME]
+
+where
+    NAME       = Either a domain class name (case-sensitive) or a
+				 wildcard (*). If you specify the wildcard then
+				 views will be generated for all domain classes.
+"""
