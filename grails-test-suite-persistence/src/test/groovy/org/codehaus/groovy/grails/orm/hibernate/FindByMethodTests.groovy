@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
-import groovy.transform.NotYetImplemented
 
 /**
  * @author Graeme Rocher
@@ -13,7 +12,6 @@ class FindByMethodTests extends AbstractGrailsHibernateTests {
         [FindByMethodBook, FindByMethodUser, FindByBooleanPropertyBook, Highway, Person, Pet]
     }
 	
-	@NotYetImplemented
 	void testNullAsSoleParameter() {
 		def bookClass = ga.getDomainClass(FindByMethodBook.name).clazz
 		assertNotNull bookClass.findAllByReleaseDate(null)
