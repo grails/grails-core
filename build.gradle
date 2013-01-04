@@ -51,6 +51,7 @@ version = grailsVersion
 // directories created during the build which are related 
 // to turning the workspace root into a GRAILS_HOME
 ext {
+    distInstallDir = file("$buildDir/dist-tmp")
     homeDistDir = file("dist")
     homeBinDir = file("bin")
     homeConfDir = file("conf")
@@ -213,13 +214,19 @@ subprojects { project ->
         configuration = configurations.archives
         repositories {
             project.poms << mavenDeployer {
-                repository(url: homeDistDir.toURL())
+                repository(url: distInstallDir.toURL())
+                uniqueVersion = false
             }.pom
         }
     }
 
     install.dependsOn installToHomeDist
-    
+    install.doLast {
+        ant.copy(todir:homeDistDir, flatten:true, includeEmptyDirs:false) {
+            fileset dir:distInstallDir
+        }
+    }
+
     uploadPublished {
       repositories {
         final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
