@@ -34,10 +34,13 @@ import org.sonatype.aether.collection.CollectRequest
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.DependencyNode
 import org.sonatype.aether.graph.Exclusion
+import org.sonatype.aether.impl.internal.DefaultRepositorySystem
 import org.sonatype.aether.repository.LocalRepository
 import org.sonatype.aether.repository.RemoteRepository
+import org.sonatype.aether.repository.RepositoryPolicy
 import org.sonatype.aether.resolution.DependencyRequest
 import org.sonatype.aether.resolution.DependencyResult
+import org.sonatype.aether.spi.log.NullLogger
 import org.sonatype.aether.transfer.AbstractTransferListener
 import org.sonatype.aether.transfer.TransferCancelledException
 import org.sonatype.aether.transfer.TransferEvent
@@ -62,12 +65,15 @@ class AetherDependencyManager implements DependencyManager{
                                                              test:['compile', 'runtime', 'optional','test'],
                                                              provided:['provided']];
     private List<Dependency> dependencies = []
+    private Set <org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []
+    private List<Dependency> buildDependencies = []
     private Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsDependenciesByScope = [:].withDefault { [] }
     private List<org.codehaus.groovy.grails.resolve.Dependency> grailsDependencies = []
     private List<RemoteRepository> repositories = []
     String cacheDir
     String basedir = new File('.')
     Settings settings
+    String checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE
     boolean readPom
     boolean defaultDependenciesProvided
     boolean java5compatible
@@ -76,6 +82,36 @@ class AetherDependencyManager implements DependencyManager{
 
     private MavenRepositorySystemSession session  = new MavenRepositorySystemSession()
 
+    private RepositorySystem repositorySystem
+
+    private SettingsBuilder settingsBuilder
+
+    private ModelBuilder modelBuilder
+
+    AetherDependencyManager() {
+
+        final currentThread = Thread.currentThread()
+        final contextLoader = currentThread.getContextClassLoader()
+
+        try {
+            currentThread.setContextClassLoader(getClass().getClassLoader());
+            final container = new DefaultPlexusContainer()
+
+            repositorySystem = container.lookup(RepositorySystem.class)
+            settingsBuilder = container.lookup(SettingsBuilder.class)
+            modelBuilder = container.lookup(ModelBuilder.class)
+
+        }
+        finally {
+
+            currentThread.setContextClassLoader(contextLoader)
+        }
+    }
+
+    @Override
+    Collection<org.codehaus.groovy.grails.resolve.Dependency> getPluginDependencies() {
+        return grailsPluginDependencies
+    }
 
     ExclusionDependencySelector exclusionDependencySelector
     /**
@@ -108,15 +144,10 @@ class AetherDependencyManager implements DependencyManager{
      */
     AetherDependencyReport resolve(String scope = "runtime") {
 
-        final container = new DefaultPlexusContainer()
-        final system = container.lookup( RepositorySystem.class );
-        final settingsBuilder = container.lookup( SettingsBuilder.class )
+
 
         SettingsBuildingResult result = settingsBuilder.build(new DefaultSettingsBuildingRequest())
         settings = result.getEffectiveSettings()
-
-
-
 
         session.setOffline(settings.offline)
         session.setTransferListener(new AbstractTransferListener() {
@@ -125,13 +156,14 @@ class AetherDependencyManager implements DependencyManager{
                 GrailsConsole.instance.updateStatus("Downloading: $event.resource.resourceName")
             }
         })
+        session.setChecksumPolicy(checksumPolicy)
 
         LocalRepository localRepo = new LocalRepository(cacheDir ?: settings.localRepository ?: DEFAULT_CACHE)
-        session.setLocalRepositoryManager( system.newLocalRepositoryManager( localRepo ) );
+        session.setLocalRepositoryManager( repositorySystem.newLocalRepositoryManager( localRepo ) );
 
         if (readPom) {
             def pomFile = new File(basedir, "pom.xml")
-            final modelBuilder = container.lookup( ModelBuilder.class )
+
             final modelRequest = new DefaultModelBuildingRequest()
             modelRequest.setPomFile(pomFile)
             ModelBuildingResult modelBuildingResult = modelBuilder.build(modelRequest)
@@ -144,14 +176,17 @@ class AetherDependencyManager implements DependencyManager{
 
 
         def collectRequest = new CollectRequest();
-        collectRequest.setDependencies(dependencies)
+        if (scope == 'build')
+            collectRequest.setDependencies(buildDependencies)
+        else
+            collectRequest.setDependencies(dependencies)
         collectRequest.setRepositories(repositories)
 
-        DependencyNode node = system.collectDependencies( session, collectRequest ).getRoot()
+        DependencyNode node = repositorySystem.collectDependencies( session, collectRequest ).getRoot()
 
         def dependencyRequest = new DependencyRequest( node, null )
 
-        if (scope) {
+        if (scope && scope != 'build') {
             final includedScopes = SCOPE_MAPPINGS[scope]
             if (includedScopes) {
                 final filter = new ScopeDependencyFilter(includedScopes, [])
@@ -159,7 +194,7 @@ class AetherDependencyManager implements DependencyManager{
             }
 
         }
-        DependencyResult resolveResult = system.resolveDependencies(session, dependencyRequest)
+        DependencyResult resolveResult = repositorySystem.resolveDependencies(session, dependencyRequest)
 
         def nlg = new PreorderNodeListGenerator()
         node.accept nlg
@@ -174,6 +209,20 @@ class AetherDependencyManager implements DependencyManager{
         grailsDependencies << grailsDependency
         grailsDependenciesByScope[dependency.scope] << grailsDependency
         dependencies << dependency
+        if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
+            grailsPluginDependencies << grailsDependency
+        }
+    }
+
+    public void addBuildDependency(Dependency dependency) {
+        Artifact artifact = dependency.artifact
+        final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
+        grailsDependencies << grailsDependency
+        grailsDependenciesByScope["build"] << grailsDependency
+        dependencies << dependency
+        if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
+            grailsPluginDependencies << grailsDependency
+        }
     }
 
     public void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope, ExclusionDependencySelector exclusionDependencySelector = null) {
@@ -186,7 +235,10 @@ class AetherDependencyManager implements DependencyManager{
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(mavenDependency)) {
             grailsDependencies << dependency
             grailsDependenciesByScope[scope] << dependency
-            dependencies << mavenDependency
+            buildDependencies << mavenDependency
+            if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
+                grailsPluginDependencies << dependency
+            }
         }
     }
 

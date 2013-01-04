@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.Exclusion
 
@@ -68,6 +69,10 @@ class DependencyConfiguration {
         dependency = dependency.setOptional(b)
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
+    void setProperty(String name, value) {
+        dependency."$name" = value
+    }
     void setChanging(boolean b) {
         GrailsConsole.getInstance().warn("Option [changing] on dependency [$dependency] not supported by Aether dependency manager")
     }

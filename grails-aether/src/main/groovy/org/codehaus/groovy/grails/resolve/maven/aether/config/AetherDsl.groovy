@@ -20,6 +20,7 @@ import org.apache.maven.repository.internal.MavenRepositorySystemSession
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.Exclusion
+import org.sonatype.aether.repository.RepositoryPolicy
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 
@@ -55,13 +56,18 @@ class AetherDsl {
     }
 
     void useOrigin(boolean b) {
-        GrailsConsole.getInstance().warn("BuildConifg: Method [useOrigin] not supported by Aether dependency manager")
+        GrailsConsole.getInstance().warn("BuildConfig: Method [useOrigin] not supported by Aether dependency manager")
     }
     void checksums(boolean enable) {
-        GrailsConsole.getInstance().warn("BuildConifg: Method [checksums] not supported by Aether dependency manager")
+        if (enable) {
+            dependencyManager.checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_FAIL
+        }
+        else {
+            dependencyManager.checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE
+        }
     }
     void checksums(String checksumConfig) {
-        GrailsConsole.getInstance().warn("BuildConifg: Method [checksums] not supported by Aether dependency manager")
+        dependencyManager.checksumPolicy = checksumConfig
     }
 
     void log(String level) {

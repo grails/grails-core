@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
+import org.sonatype.aether.graph.Dependency
 
 /**
  * @author Graeme Rocher
@@ -28,28 +29,43 @@ class PluginConfiguration extends DependenciesConfiguration {
     }
 
     @Override
-    void compile(String pattern) {
-        super.compile(extractDependencyProperties(pattern))
+    void addDependency(Dependency dependency, Closure customizer) {
+        super.addDependency(dependency, customizer)
     }
 
     @Override
-    void runtime(String pattern) {
-        super.compile(extractDependencyProperties(pattern))
+    void addBuildDependency(Dependency dependency, Closure customizer) {
+        super.addBuildDependency(dependency, customizer)
     }
 
     @Override
-    void provided(String pattern) {
-        super.compile(extractDependencyProperties(pattern))
+    void build(String pattern, Closure customizer) {
+        super.build(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
-    void optional(String pattern) {
-        super.compile(extractDependencyProperties(pattern))
+    void compile(String pattern, Closure customizer) {
+        super.compile(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
-    void test(String pattern) {
-        super.compile(extractDependencyProperties(pattern))
+    void runtime(String pattern, Closure customizer) {
+        super.compile(extractDependencyProperties(pattern), customizer)
+    }
+
+    @Override
+    void provided(String pattern, Closure customizer) {
+        super.compile(extractDependencyProperties(pattern), customizer)
+    }
+
+    @Override
+    void optional(String pattern, Closure customizer) {
+        super.compile(extractDependencyProperties(pattern), customizer)
+    }
+
+    @Override
+    void test(String pattern, Closure customizer) {
+        super.compile(extractDependencyProperties(pattern), customizer)
     }
 
     @Override

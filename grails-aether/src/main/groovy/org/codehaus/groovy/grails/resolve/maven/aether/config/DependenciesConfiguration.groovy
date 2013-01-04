@@ -48,8 +48,44 @@ class DependenciesConfiguration {
         }
     }
 
+    void addBuildDependency(Dependency dependency, Closure customizer = null) {
+        if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(dependency)) {
+            dependency = customizeDependency(customizer, dependency)
+            dependencyManager.addBuildDependency dependency
+        }
+    }
+
+
+    protected void addDependency(Map<String, String> properties, String scope, Closure customizer = null) {
+        Dependency d = createDependencyForProperties(properties, scope)
+        addDependency(d, customizer)
+    }
+
+    protected void addBuildDependency(Map<String, String> properties, String scope, Closure customizer = null) {
+        Dependency d = createDependencyForProperties(properties, scope)
+        addBuildDependency(d, customizer)
+    }
+
+    public Dependency createDependencyForProperties(Map<String, String> properties, String scope) {
+        if (!properties.group) {
+            properties.group = defaultGroup
+        }
+        if (!properties.extension) {
+            properties.extension = defaultExtension
+        }
+        return new Dependency(new DefaultArtifact(properties.groupId, properties.artifactId, properties.classifier, properties.extension, properties.version), scope)
+    }
+
     void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope) {
         dependencyManager.addDependency dependency, scope, exclusionDependencySelector
+    }
+
+    void build(String pattern, Closure customizer = null) {
+        addBuildDependency new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE), customizer
+    }
+
+    void build(Map<String, String> properties, Closure customizer = null) {
+        addBuildDependency(properties, SCOPE_COMPILE, customizer)
     }
 
     void compile(String pattern, Closure customizer = null) {
@@ -111,17 +147,6 @@ class DependenciesConfiguration {
 
     protected String getDefaultGroup() { "" }
     protected String getDefaultExtension() { null }
-
-    protected void addDependency(Map<String, String> properties, String scope, Closure customizer = null) {
-        if (!properties.group) {
-            properties.group = defaultGroup
-        }
-        if (!properties.extension) {
-            properties.extension = defaultExtension
-        }
-        def d = new Dependency(new DefaultArtifact(properties.groupId, properties.artifactId, properties.classifier, properties.extension, properties.version), scope)
-        addDependency(d, customizer)
-    }
 
     protected Dependency customizeDependency(Closure customizer, Dependency dependency) {
         if (customizer) {
