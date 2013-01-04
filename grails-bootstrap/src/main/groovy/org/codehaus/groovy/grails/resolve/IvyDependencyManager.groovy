@@ -397,6 +397,13 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     @Override
+    @CompileStatic
+    Collection<Dependency> getPluginDependencies() {
+        final descriptors = getEffectivePluginDependencyDescriptors()
+        convertToGrailsDependencies(descriptors)
+    }
+
+    @Override
     DependencyReport resolve(String scope) {
         final resolveReport = resolveDependencies(scope)
         return new IvyDependencyReport(scope, resolveReport)

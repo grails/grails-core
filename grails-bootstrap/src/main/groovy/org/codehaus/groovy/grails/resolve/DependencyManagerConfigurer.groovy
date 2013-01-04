@@ -9,6 +9,7 @@ import org.apache.ivy.plugins.repository.TransferEvent
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
+import org.codehaus.groovy.tools.LoaderConfiguration
 
 /**
  *
@@ -20,6 +21,39 @@ import org.apache.ivy.util.Message
 // @CompileStatic TODO: Report Groovy issue, uncommenting causes VerifierError
 class DependencyManagerConfigurer {
 
+    @CompileStatic
+    DependencyManager configureAether(BuildSettings buildSettings) {
+        final grailsHome = buildSettings.grailsHome
+        final grailsVersion = buildSettings.grailsVersion
+        def lc = new LoaderConfiguration()
+        lc.setRequireMain(false)
+        new File(grailsHome, "conf/aether-starter.conf").withInputStream { InputStream it ->
+            lc.configure(it)
+        }
+
+        GroovyClassLoader classLoader = new GroovyClassLoader()
+        final jarFiles = lc.getClassPathUrls()
+        for(jar in jarFiles) {
+            classLoader.addURL(jar)
+        }
+        DependencyManager aetherDependencyManager = (DependencyManager)classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager").newInstance()
+
+        final coreDeps = classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies")
+            .newInstance(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel))
+        prepareAetherDependencies(aetherDependencyManager, buildSettings, coreDeps)
+
+        return aetherDependencyManager
+    }
+
+    public void prepareAetherDependencies(aetherDependencyManager, BuildSettings buildSettings, coreDeps) {
+        aetherDependencyManager.inheritedDependencies.global = coreDeps.createDeclaration()
+
+        def dependencyConfig = buildSettings.config.grails.project.dependency.resolution
+
+        if (dependencyConfig instanceof Closure) {
+            aetherDependencyManager.parseDependencies(dependencyConfig)
+        }
+    }
 
     DependencyManager configureIvy(BuildSettings buildSettings) {
         ConfigObject config = buildSettings.config

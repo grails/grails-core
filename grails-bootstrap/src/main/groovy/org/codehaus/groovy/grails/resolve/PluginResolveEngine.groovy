@@ -34,16 +34,16 @@ import org.apache.ivy.plugins.resolver.RepositoryResolver
  */
 final class PluginResolveEngine {
 
-    IvyDependencyManager dependencyManager
+    DependencyManager dependencyManager
     BuildSettings settings
     Closure messageReporter = { if (it) GrailsConsole.instance.updateStatus(it)  }
 
-    PluginResolveEngine(IvyDependencyManager dependencyManager, BuildSettings settings) {
+    PluginResolveEngine(DependencyManager dependencyManager, BuildSettings settings) {
         this.dependencyManager = dependencyManager
         this.settings = settings
     }
 
-    IvyDependencyManager createFreshDependencyManager() {
+    DependencyManager createFreshDependencyManager() {
         dependencyManager.createCopy(settings)
     }
 
@@ -174,17 +174,6 @@ For further info visit http://grails.org/Plugins
 '''
     }
 
-    /**
-     * Resolves a list of plugins and produces a ResolveReport
-     *
-     * @param pluginsToInstall The list of plugins
-     * @param scope The scope (defaults to runtime)
-     */
-    ResolveReport resolvePlugins(Collection<EnhancedDefaultDependencyDescriptor> pluginsToInstall, String scope = '') {
-        IvyDependencyManager newManager = createFreshDependencyManager()
-        pluginsToInstall.each { newManager.registerPluginDependency("runtime", it) }
-        return newManager.resolvePluginDependencies(scope)
-    }
 
     /**
      * Resolve a Plugin zip for for the given name and plugin version
@@ -193,7 +182,7 @@ For further info visit http://grails.org/Plugins
      * @return The location of the local file or null if an error occured
      */
     File resolvePluginZip(String pluginName, String pluginVersion, String scope = "", Map args = [:]) {
-        IvyDependencyManager dependencyManager = createFreshDependencyManager()
+        DependencyManager dependencyManager = createFreshDependencyManager()
         def resolveArgs = createResolveArguments(pluginName, pluginVersion)
 
         dependencyManager.parseDependencies {
@@ -204,16 +193,12 @@ For further info visit http://grails.org/Plugins
 
         messageReporter "Resolving plugin ${pluginName}. Please wait..."
         messageReporter()
-        def report = dependencyManager.resolvePluginDependencies(scope,args)
+        def report = dependencyManager.resolve(scope)
 
         try {
-            def reports = report.getArtifactsReports(null, false)
-            def artifactReport = reports.find { it.artifact.attributes.organisation == resolveArgs.group && it.artifact.name == resolveArgs.name && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
-            if (artifactReport == null) {
-                artifactReport = reports.find { it.artifact.name == pluginName && (pluginVersion == null || it.artifact.moduleRevisionId.revision == pluginVersion) }
-            }
-            if (artifactReport) {
-                return artifactReport.localFile
+            def reports = report
+            if (report.pluginZips) {
+                return report.pluginZips[0]
             }
             messageReporter "Error resolving plugin ${resolveArgs}. Plugin not found."
 

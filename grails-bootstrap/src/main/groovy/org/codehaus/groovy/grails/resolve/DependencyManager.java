@@ -57,6 +57,12 @@ public interface DependencyManager {
     Collection<Dependency> getApplicationDependencies();
 
     /**
+     *
+     * @return The plugin dependencies of the application
+     */
+    Collection<Dependency> getPluginDependencies();
+
+    /**
      * All dependencies of the current application
      *
      * @return All application dependencies
