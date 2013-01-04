@@ -36,3 +36,11 @@ target ('default': "Creates a Grails Gant Script") {
                        path: "scripts", skipPackagePrompt: true)
     }
 }
+
+USAGE = """
+    create-script [NAME]
+
+where
+    NAME       = The name of the script. If not provided, this
+                 command will ask you for the name.
+"""
