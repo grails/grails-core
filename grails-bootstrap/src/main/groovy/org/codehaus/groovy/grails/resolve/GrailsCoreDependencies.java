@@ -85,17 +85,7 @@ public class GrailsCoreDependencies {
         this.servletVersion = servletVersion == null ? "2.5" : servletVersion;
         this.java5compatible = java5compatible;
 
-        String[] uaaExcludes = {"org.springframework.roo.wrapping:org.springframework.roo.wrapping.protobuf-java-lite",
-                                "org.springframework.roo.wrapping:org.springframework.roo.wrapping.json-simple",
-                                "org.springframework.roo.wrapping:org.springframework.roo.wrapping.bcpg-jdk15",
-                                "org.springframework.roo.wrapping:org.springframework.roo.wrapping.bcprov-jdk15"};
-
         buildDependencies = Arrays.asList(
-            new Dependency( "org.springframework.uaa", "org.springframework.uaa.client", uaaVersion, true, uaaExcludes),
-            new Dependency( "com.google.protobuf", "protobuf-java", "2.4.1", true ),
-            new Dependency( "com.googlecode.json-simple", "json-simple", "1.1", true),
-            new Dependency( "org.bouncycastle", "bcpg-jdk15", "1.45", true ),
-            new Dependency( "org.bouncycastle", "bcprov-jdk15", "1.45", true ),
             new Dependency( "jline", "jline", "1.0", true ),
             new Dependency( "org.apache.ivy", "ivy", "2.2.0", true),
             new Dependency( "org.fusesource.jansi", "jansi", "1.2.1", true),

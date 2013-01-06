@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.cli;
+package org.codehaus.groovy.grails.cli.support;
 
 import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
-import grails.util.PluginBuildSettings;
+import grails.util.PluginBuildSettings
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode;
 import groovy.util.XmlSlurper;
-import groovy.util.slurpersupport.GPathResult;
+import groovy.util.slurpersupport.GPathResult
+import org.codehaus.groovy.tools.LoaderConfiguration;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,10 +32,6 @@ import java.net.URL;
 import java.util.List;
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
-import org.springframework.uaa.client.UaaService;
-import org.springframework.uaa.client.UaaServiceFactory;
-import org.springframework.uaa.client.VersionHelper;
-import org.springframework.uaa.client.protobuf.UaaClient;
 
 /**
  * Integrates UAA usage tracking with Grails.
@@ -40,27 +39,49 @@ import org.springframework.uaa.client.protobuf.UaaClient;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class UaaIntegration {
+public class UaaEnabler {
 
-    private static final String MESSAGE = "##########################################################.\n"
-           + "Grails would like to send information to VMware domains to improve your experience. We include anonymous usage information as part of these downloads.\n"
-           + "\n"
-           + "The Grails team gathers anonymous usage information to improve your Grails experience, not for marketing purposes. The information is used to discover which Grails plugins are most popular and is published on the plugin portal.\n"
-           + "\n"
-           + "We also use this information to help guide our roadmap, prioritizing the features and Grails plugins most valued by the community and enabling us to optimize the compatibility of technologies frequently used together.\n"
-           + "\n"
-           + "Please see the Grails User Agent Analysis (UAA) Terms of Use at http://www.springsource.org/uaa/terms_of_use for more information on what information is collected and how such information is used. There is also an FAQ at http://www.springsource.org/uaa/faq for your convenience.\n"
-           + "\n"
-           + "To consent to the Terms of Use, please enter 'Y'. Enter 'N' to indicate your do not consent and anonymous data collection will remain disabled.\n"
-           + "##########################################################.\n"
-           + "Enter Y or N:";
+    private static final String MESSAGE = """##########################################################.
+Grails would like to send information to VMware domains to improve your experience. We include anonymous usage information as part of these downloads.
+
+The Grails team gathers anonymous usage information to improve your Grails experience, not for marketing purposes. The information is used to discover which Grails plugins are most popular and is published on the plugin portal.
+
+We also use this information to help guide our roadmap, prioritizing the features and Grails plugins most valued by the community and enabling us to optimize the compatibility of technologies frequently used together.
+
+Please see the Grails User Agent Analysis (UAA) Terms of Use at http://www.springsource.org/uaa/terms_of_use for more information on what information is collected and how such information is used. There is also an FAQ at http://www.springsource.org/uaa/faq for your convenience.
+
+To consent to the Terms of Use, please enter 'Y'. Enter 'N' to indicate your do not consent and anonymous data collection will remain disabled.
+##########################################################.
+Enter Y or N:"""
 
     private static boolean enabled = false;
     public static final int ONE_MINUTE = 1800;
+    GroovyClassLoader classLoader
+    BuildSettings buildSettings
+    PluginBuildSettings pluginBuildSettings
 
-    public static boolean isAvailable() {
+    UaaEnabler(BuildSettings buildSettings, PluginBuildSettings pluginBuildSettings) {
+
+        this.buildSettings = buildSettings
+        this.pluginBuildSettings = pluginBuildSettings
+        final grailsHome = buildSettings.grailsHome
+        final grailsVersion = buildSettings.grailsVersion
+        def lc = new LoaderConfiguration()
+        lc.setRequireMain(false)
+        new File(grailsHome, "conf/uaa-starter.conf").withInputStream { InputStream it ->
+            lc.configure(it)
+        }
+
+        this.classLoader = new GroovyClassLoader()
+        final jarFiles = lc.getClassPathUrls()
+        for(jar in jarFiles) {
+            classLoader.addURL(jar)
+        }
+    }
+
+    public boolean isAvailable() {
         try {
-            return  UaaIntegration.class.getClassLoader().loadClass("org.springframework.uaa.client.UaaServiceFactory") != null;
+            return  classLoader.loadClass("org.springframework.uaa.client.UaaServiceFactory") != null;
         } catch (Throwable e) {
             return false;
         }
@@ -70,16 +91,19 @@ public class UaaIntegration {
         return enabled;
     }
 
-    public static void enable(final BuildSettings settings, final PluginBuildSettings pluginSettings, boolean interactive) {
-        final UaaService uaaService = UaaServiceFactory.getUaaService();
+    @CompileStatic(TypeCheckingMode.SKIP)
+    public void enable(boolean interactive) {
+        def VersionHelper = classLoader.loadClass("org.springframework.uaa.client.VersionHelper")
+        def UaaClient = classLoader.loadClass("org.springframework.uaa.client.protobuf.UaaClient")
+        final uaaService = classLoader.loadClass("org.springframework.uaa.client.UaaServiceFactory").getUaaService()
 
-        final UaaClient.Privacy.PrivacyLevel privacyLevel = uaaService.getPrivacyLevel();
+        final privacyLevel = uaaService.getPrivacyLevel()
         if (!uaaService.isUaaTermsOfUseAccepted() && interactive) {
             // prompt for UAA choice
             if (privacyLevel.equals(UaaClient.Privacy.PrivacyLevel.UNDECIDED_TOU)) {
                 while (true) {
                     GrailsConsole console = GrailsConsole.getInstance();
-                    String selection = console.userInput(MESSAGE, new String[]{"y", "n"});
+                    String selection = console.userInput(MESSAGE, ["y", "n"] as String[]);
                     if ("y".equalsIgnoreCase(selection)) {
                         uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.ENABLE_UAA);
                         break;
@@ -98,8 +122,8 @@ public class UaaIntegration {
                 public void run() {
                     try {
                         Thread.sleep(ONE_MINUTE);
-                        final UaaClient.Product product = VersionHelper.getProduct("Grails", settings.getGrailsVersion());
-                        uaaService.registerProductUsage(product);
+                        final product = VersionHelper.getProduct("Grails", buildSettings.getGrailsVersion());
+                        uaaService.registerProductUsage(product)
 
 
                         URL centralURL = new URL("http://grails.org/plugins/.plugin-meta/plugins-list.xml");
@@ -111,11 +135,11 @@ public class UaaIntegration {
                             input = centralURL.openStream();
                             final GPathResult pluginList = new XmlSlurper().parse(input);
 
-                            final GrailsPluginInfo[] pluginInfos = pluginSettings.getPluginInfos(pluginSettings.getPluginDirPath());
+                            final GrailsPluginInfo[] pluginInfos = pluginBuildSettings.getPluginInfos(pluginBuildSettings.getPluginDirPath());
                             for (GrailsPluginInfo pluginInfo : pluginInfos) {
                                 boolean registerUsage = false;
 
-                                if (settings.getDefaultPluginSet().contains(pluginInfo.getName())) {
+                                if (buildSettings.getDefaultPluginSet().contains(pluginInfo.getName())) {
                                     registerUsage = true;
                                 }
                                 else {
@@ -146,8 +170,9 @@ public class UaaIntegration {
         }
     }
 
-    private static boolean isUaaAccepted(UaaClient.Privacy.PrivacyLevel privacyLevel) {
-        return privacyLevel.equals(UaaClient.Privacy.PrivacyLevel.ENABLE_UAA) ||
-               privacyLevel.equals(UaaClient.Privacy.PrivacyLevel.LIMITED_DATA);
+    @CompileStatic(TypeCheckingMode.SKIP)
+    private static boolean isUaaAccepted(privacyLevel) {
+        return privacyLevel.equals(privacyLevel.ENABLE_UAA) ||
+            privacyLevel.equals(privacyLevel.LIMITED_DATA);
     }
 }
