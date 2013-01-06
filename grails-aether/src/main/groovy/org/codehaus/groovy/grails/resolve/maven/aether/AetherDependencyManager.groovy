@@ -61,8 +61,10 @@ class AetherDependencyManager implements DependencyManager{
 
     static final String DEFAULT_CACHE = "${System.getProperty('user.home')}/.m2/repository"
 
-    static final Map<String, List<String>> SCOPE_MAPPINGS = [runtime:['compile', 'optional','runtime'],
-                                                             test:['compile', 'runtime', 'optional','test'],
+    static final Map<String, List<String>> SCOPE_MAPPINGS = [compile:['compile'],
+                                                             optional:['optional'],
+                                                             runtime:['compile', 'optional','runtime'],
+                                                             test:['compile','provided', 'runtime', 'optional','test'],
                                                              provided:['provided']];
     private List<Dependency> dependencies = []
     private Set <org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []

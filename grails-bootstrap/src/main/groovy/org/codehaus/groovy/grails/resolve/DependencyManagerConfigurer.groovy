@@ -46,7 +46,7 @@ class DependencyManagerConfigurer {
         return aetherDependencyManager
     }
 
-    public void prepareAetherDependencies(aetherDependencyManager, BuildSettings buildSettings, coreDeps) {
+    private static void prepareAetherDependencies(aetherDependencyManager, BuildSettings buildSettings, coreDeps) {
         aetherDependencyManager.inheritedDependencies.global = coreDeps.createDeclaration()
 
         def dependencyConfig = buildSettings.config.grails.project.dependency.resolution
