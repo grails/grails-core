@@ -112,7 +112,6 @@ class PluginBuildSettings {
             return
         }
 
-        populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginCompileDependencies)
         populateSourceDirectories(compileScopePluginInfo,  buildSettings.pluginRuntimeDependencies)
 
         for (pluginDir in getInlinePluginDirectories()) {

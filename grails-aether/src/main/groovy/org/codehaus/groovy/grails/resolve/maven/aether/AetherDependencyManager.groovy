@@ -266,22 +266,22 @@ class AetherDependencyManager implements DependencyManager{
 
     @Override
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getApplicationDependencies() {
-        return grailsDependencies.findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }
+        return grailsDependencies.findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }.asImmutable()
     }
 
     @Override
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getAllDependencies() {
-        return grailsDependencies
+        return grailsDependencies.asImmutable()
     }
 
     @Override
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getApplicationDependencies(String scope) {
-        return grailsDependenciesByScope[scope].findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }
+        return grailsDependenciesByScope[scope].findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }.asImmutable()
     }
 
     @Override
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getAllDependencies(String scope) {
-        return grailsDependencies[scope]
+        return grailsDependencies[scope].asImmutable()
     }
 }
 

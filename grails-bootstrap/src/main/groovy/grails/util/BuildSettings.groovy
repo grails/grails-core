@@ -461,17 +461,20 @@ class BuildSettings extends AbstractBuildSettings {
 
     @CompileStatic
     public List<File> doResolve(String scope, List<File> pluginZips, boolean includeAppJars = true) {
-        compileResolveReport = dependencyManager.resolve(scope)
+        final resolveReport = dependencyManager.resolve(scope)
+        setProperty("${scope}ResolveReport", resolveReport )
         List<File> jarFiles
         if (includeAppJars) {
             jarFiles = []
-            jarFiles.addAll(compileResolveReport.jarFiles)
+            jarFiles.addAll(resolveReport.jarFiles)
             jarFiles.addAll(applicationJars)
         } else {
-            jarFiles = compileResolveReport.jarFiles
+            jarFiles = resolveReport.jarFiles
         }
-        pluginZips.addAll(compileResolveReport.pluginZips)
-        resolveCache[scope] = compileResolveReport.allArtifacts
+        pluginZips.addAll(resolveReport.pluginZips)
+        this.pluginDependencies.addAll(resolveReport.pluginZips)
+        pluginDependencies.unique(true)
+        resolveCache[scope] = resolveReport.allArtifacts
         jarFiles
     }
 
