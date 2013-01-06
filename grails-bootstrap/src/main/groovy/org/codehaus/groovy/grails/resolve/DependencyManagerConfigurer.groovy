@@ -27,6 +27,7 @@ class DependencyManagerConfigurer {
         final grailsVersion = buildSettings.grailsVersion
         def lc = new LoaderConfiguration()
         lc.setRequireMain(false)
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
         new File(grailsHome, "conf/aether-starter.conf").withInputStream { InputStream it ->
             lc.configure(it)
         }
