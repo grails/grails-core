@@ -42,7 +42,9 @@ pluginsBase = "${grailsWorkDir}/plugins".toString().replaceAll('\\\\','/')
 // Targets
 target(resolveDependencies:"Resolve plugin dependencies") {
     depends(parseArguments, initInplacePlugins)
-    def pluginZips = grailsSettings.pluginDependencies
+    // we get the 'build' and 'test' dependencies because that is the scope that
+    // includes all possible plugins in all scopes
+    def pluginZips = grailsSettings.pluginTestDependencies + grailsSettings.pluginBuildDependencies
 
     def installEngine = createPluginInstallEngine()
     for (zip in pluginZips) {
