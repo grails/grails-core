@@ -1,13 +1,6 @@
 dependencies {
     // Testing
     compile "junit:junit:${junitVersion}"
-    // Ant
-    compile "org.apache.ant:ant:${antVersion}",
-            "org.apache.ant:ant-launcher:${antVersion}",
-            "org.apache.ant:ant-junit:${antVersion}",
-            "org.apache.ant:ant-trax:${antTraxVersion}",
-            "org.apache.ivy:ivy:${ivyVersion}",
-            "org.codehaus.gant:gant_groovy1.8:${gantVersion}"
 
     compile project(":grails-web"),
             project(':grails-hibernate'),

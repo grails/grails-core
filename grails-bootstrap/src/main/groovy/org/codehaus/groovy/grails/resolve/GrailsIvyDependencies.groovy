@@ -64,7 +64,7 @@ class GrailsIvyDependencies extends GrailsCoreDependencies {
     }
 
     private static EnhancedDefaultDependencyDescriptor registerDependency(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId mrid, String... excludes) {
-        EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, false, scope);
+        EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, true, scope);
         descriptor.setInherited(true);
         if (excludes != null) {
             for (String exclude : excludes) {

@@ -6,6 +6,7 @@ dependencies {
     }
     compile ('commons-dbcp:commons-dbcp:1.4') {
         exclude group: 'commons-logging', module:'commons-logging'
+        exclude group: 'commons-pool', module:'commons-pool'
     }
 
     runtime 'hsqldb:hsqldb:1.8.0.10',

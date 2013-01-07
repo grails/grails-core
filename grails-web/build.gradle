@@ -27,7 +27,9 @@ dependencies {
     compile "org.springframework:spring-webmvc:${springVersion}"
 
     // Required for JSP support
-    compile 'javax.servlet:jsp-api:2.0'
+    compile 'javax.servlet:jsp-api:2.0', {
+        ext.notInPom = true
+    }
     compile 'xpp3:xpp3_min:1.1.4c'
     runtime 'taglibs:standard:1.1.2'
     runtime "javax.servlet:jstl:1.1.2"
