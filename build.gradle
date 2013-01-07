@@ -111,7 +111,7 @@ subprojects { project ->
 
     sourceCompatibility = "1.5"
     targetCompatibility = "1.5"
-    archivesBaseName = 'grails'
+//    archivesBaseName = 'grails'
     version = grailsVersion
     group = "org.grails"
 
@@ -155,8 +155,8 @@ subprojects { project ->
             compile "org.slf4j:jcl-over-slf4j:$slf4jVersion"
 
             // Specs
-            compile 'javax.servlet:javax.servlet-api:3.0.1'
-            compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
+//            compile 'javax.servlet:javax.servlet-api:3.0.1'
+//            compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
 
 
             // Testing
@@ -216,6 +216,7 @@ subprojects { project ->
             project.poms << mavenDeployer {
                 repository(url: distInstallDir.toURL())
                 uniqueVersion = false
+                pom.artifactId = project.name
             }.pom
         }
     }

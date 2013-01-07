@@ -712,7 +712,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (internalBuildDependencies) return internalBuildDependencies
 
         if (shouldResolve()) {
-            return doResolve("build", internalPluginProvidedDependencies)
+            return doResolve("build", internalPluginBuildDependencies)
         }
         return []
     }()

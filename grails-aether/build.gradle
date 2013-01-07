@@ -1,7 +1,8 @@
 ext {
     aetherVersion = "1.13.1"
     mavenVersion = "3.0.4"
-} 
+}
+
 dependencies {
     compile("org.sonatype.aether:aether-api:${aetherVersion}") 
     compile("org.sonatype.aether:aether-util:${aetherVersion}") 
