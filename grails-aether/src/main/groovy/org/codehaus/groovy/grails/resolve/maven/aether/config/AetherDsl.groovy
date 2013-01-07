@@ -28,6 +28,7 @@ import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
  * Core of the DSL for configuring Aether dependency resolution
  *
  * @author Graeme Rocher
+ * @since 2.3
  */
 @CompileStatic
 class AetherDsl {

@@ -24,6 +24,7 @@ import java.util.regex.Pattern
 
 /**
  * @author Graeme Rocher
+ * @since 2.3
  */
 @CompileStatic
 class DependenciesConfiguration {

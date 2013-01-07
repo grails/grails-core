@@ -20,6 +20,7 @@ import org.sonatype.aether.repository.RemoteRepository
 
 /**
  * @author Graeme Rocher
+ * @since 2.3
  */
 @CompileStatic
 class RepositoryConfiguration {

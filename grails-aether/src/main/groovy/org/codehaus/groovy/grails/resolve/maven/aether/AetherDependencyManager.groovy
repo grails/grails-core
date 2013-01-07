@@ -34,13 +34,11 @@ import org.sonatype.aether.collection.CollectRequest
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.DependencyNode
 import org.sonatype.aether.graph.Exclusion
-import org.sonatype.aether.impl.internal.DefaultRepositorySystem
 import org.sonatype.aether.repository.LocalRepository
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.repository.RepositoryPolicy
 import org.sonatype.aether.resolution.DependencyRequest
 import org.sonatype.aether.resolution.DependencyResult
-import org.sonatype.aether.spi.log.NullLogger
 import org.sonatype.aether.transfer.AbstractTransferListener
 import org.sonatype.aether.transfer.TransferCancelledException
 import org.sonatype.aether.transfer.TransferEvent
