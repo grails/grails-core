@@ -66,6 +66,7 @@ dependencies {
     }
     runtime ("net.sf.ehcache:ehcache-core:$ehcacheVersion") {
         exclude group: 'commons-logging', module:'commons-logging'
+        ext.notInPom = true
     }
     runtime ('org.hibernate:hibernate-validator:4.1.0.Final') {
         exclude group: 'commons-logging', module:'commons-logging'
@@ -78,7 +79,9 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     runtime 'javax.validation:validation-api:1.0.0.GA'
-    runtime 'org.liquibase:liquibase-core:2.0.5'
+    runtime 'org.liquibase:liquibase-core:2.0.5', {
+        ext.notInPom = true
+    }
 }
 
 test {

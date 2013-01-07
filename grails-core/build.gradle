@@ -54,7 +54,9 @@ dependencies {
             "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
-    runtime "org.springframework:spring-jms:${springVersion}"
+    runtime "org.springframework:spring-jms:${springVersion}", {
+        ext.notInPom = true
+    }
     runtime ( 'xalan:serializer:2.7.1' ) {
         exclude group: 'xml-apis', module:'xml-apis'
     }
