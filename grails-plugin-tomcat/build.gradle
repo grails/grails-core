@@ -1,5 +1,12 @@
 def tomcatVersion = "7.0.30"
 dependencies {
+
+    // Ant
+    compile "org.apache.ant:ant:${antVersion}"
+    compile  "jline:jline:$jlineVersion"
+    compile  "org.fusesource.jansi:jansi:$jansiVersion"
+
+
     compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
     compile "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
     runtime "org.apache.tomcat.embed:tomcat-embed-logging-juli:$tomcatVersion"
@@ -8,7 +15,6 @@ dependencies {
     runtime "org.apache.tomcat.embed:tomcat-embed-jasper:$tomcatVersion"
     runtime "org.eclipse.jdt.core.compiler:ecj:3.7.2"
     compile project(":grails-core"),
-            project(":grails-web"),
-            project(':grails-bootstrap')
+            project(":grails-web")
 }
 jar.appendix = 'plugin-tomcat'

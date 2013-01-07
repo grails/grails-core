@@ -1,6 +1,19 @@
 dependencies {
     compile "org.springframework:spring-tx:${springVersion}"
     compile "org.springframework:spring-web:${springVersion}"
-    compile project(":grails-bootstrap")
+    compile project(":grails-bootstrap"), {
+        exclude group:"org.fusesource.jansi", module:"jansi"
+        exclude group:"jline", module:"jline"
+        exclude group:"net.java.dev.jna", module:"jna"
+
+        // Ant
+        exclude group:"org.apache.ant", module:"ant"
+        exclude group:"org.apache.ant", module:"ant-launcher"
+        exclude group:"org.apache.ivy", module:"ivy"
+        exclude group:"org.apache.ant", module:"ant-trax"
+        exclude group:"org.apache.ant", module:"ant-junit"
+
+        exclude group:"org.codehaus.gant", module:"gant_groovy1.8"
+    }
 }
 jar.appendix = 'spring'

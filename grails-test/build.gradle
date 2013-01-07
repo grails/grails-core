@@ -2,6 +2,9 @@ dependencies {
 
     compile "org.springframework:spring-tx:${springVersion}"
 
+    // Ant
+    compile "org.apache.ant:ant:${antVersion}"
+    compile "org.apache.ant:ant-junit:${antVersion}"
 
     // Testing
     compile "junit:junit:${junitVersion}", project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")

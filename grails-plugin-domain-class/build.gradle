@@ -1,6 +1,6 @@
 dependencies {
 
-    compile project(":grails-bootstrap"), project(":grails-core"), project(":grails-spring")
+    compile project(":grails-core"), project(":grails-spring")
 
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {

@@ -12,8 +12,7 @@ dependencies {
     runtime 'hsqldb:hsqldb:1.8.0.10',
             'com.h2database:h2:1.3.164'
 
-    compile project(":grails-core"),
-            project(':grails-bootstrap')
+    compile project(":grails-core")
 }
 
 jar.appendix = 'plugin-datasource'

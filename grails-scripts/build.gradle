@@ -11,6 +11,27 @@ dependencies {
             project(":grails-test"),
             project(":grails-plugin-testing")
             project(":grails-resources")
+
+    compile "org.fusesource.jansi:jansi:$jansiVersion",
+        "jline:jline:$jlineVersion",
+        "net.java.dev.jna:jna:$jnaVersion"
+
+    // Ant
+    compile "org.apache.ant:ant:${antVersion}",
+        "org.apache.ant:ant-launcher:${antVersion}",
+        "org.apache.ivy:ivy:${ivyVersion}"
+
+    compile "org.apache.ant:ant-trax:${antTraxVersion}", {
+        exclude group:"org.apache.ant", module:"ant"
+    }
+
+    compile("org.apache.ant:ant-junit:${antVersion}") {
+        exclude group:'junit',module:'junit'
+    }
+
+    compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
+        exclude group:'commons-cli', module:'commons-cli'
+    }
 }
 
 sourceSets {
