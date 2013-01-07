@@ -344,6 +344,8 @@ class BuildSettings extends AbstractBuildSettings {
     Map<String, Object> forkSettings = [run:false, test:false, console:false, shell:false]
 
     /** Implementation of the "grailsScript()" method used in Grails scripts.  */
+    private boolean useMavenDependencyResolver
+
     Closure getGrailsScriptClosure() {
         return new OwnerlessClosure() {
             Object doCall(String name) {
@@ -802,6 +804,7 @@ class BuildSettings extends AbstractBuildSettings {
         // The "grailsScript" closure definition. Returns the location
         // of the corresponding script file if GRAILS_HOME is set,
         // otherwise it loads the script class using the Gant classloader.
+
     }
 
     @CompileStatic
@@ -1050,6 +1053,7 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     protected void postLoadConfig() {
+        useMavenDependencyResolver = dependencyResolver?.equalsIgnoreCase("aether") || dependencyResolver?.equalsIgnoreCase("maven")
         establishProjectStructure()
         parseGrailsBuildListeners()
         if (config.grails.default.plugin.set instanceof List) {
@@ -1062,7 +1066,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         def metadataFile = Metadata.current.getMetadataFile()
 
-        if (!modified) {
+        if (!modified && !useMavenDependencyResolver) {
 
             if (configFile?.exists() && metadataFile?.exists()) {
                 resolveChecksum = IOUtils.computeChecksum(configFile, "md5") +
@@ -1156,7 +1160,7 @@ class BuildSettings extends AbstractBuildSettings {
     DependencyManager configureDependencyManager(BuildSettings buildSettings) {
         DependencyManagerConfigurer configurer = new DependencyManagerConfigurer();
 
-        if(dependencyResolver?.equalsIgnoreCase("aether") || dependencyResolver?.equalsIgnoreCase("maven")) {
+        if(useMavenDependencyResolver) {
             return configurer.configureAether(buildSettings)
         }
         else {
