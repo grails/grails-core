@@ -557,6 +557,9 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
         }
         finally {
             if(newSession) {
+                if (!FlushMode.isManualFlushMode(newSession.flushMode)) {
+                    newSession.flush()
+                }
                 SessionFactoryUtils.closeSession(newSession)
                 sessionHolder?.removeSession(newSession)
             }
