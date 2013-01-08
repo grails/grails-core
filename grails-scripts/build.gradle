@@ -1,8 +1,12 @@
+configurations {
+    scripts
+}
+
 dependencies {
     // Testing
     compile "junit:junit:${junitVersion}"
 
-    compile project(":grails-web"),
+    scripts project(":grails-web"),
             project(':grails-hibernate'),
             project(':grails-docs'),
             project(':grails-crud'),
@@ -36,6 +40,7 @@ dependencies {
 
 sourceSets {
     main {
+        compileClasspath += files(configurations.scripts)
         groovy.srcDirs = ['../scripts']
     }
 }
