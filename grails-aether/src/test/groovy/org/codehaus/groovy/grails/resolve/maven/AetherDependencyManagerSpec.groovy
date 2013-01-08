@@ -118,7 +118,7 @@ class AetherDependencyManagerSpec extends Specification {
         dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
         dependencyManager.parseDependencies {
             inherits("global") {
-                excludes 'grails-docs', 'grails-gdoc-engine'
+                excludes 'grails-plugin-servlets'
             }
             repositories {
                 mavenRepo "http://repo.grails.org/grails/core"
@@ -129,8 +129,8 @@ class AetherDependencyManagerSpec extends Specification {
             def report = dependencyManager.resolve()
         then:"The resolve is successful"
             report != null
-            !dependencyManager.allDependencies.find { Dependency d -> d.name == 'grails-docs'}
-            !report.files.find { it.name.contains 'grails-docs' }
+            !dependencyManager.allDependencies.find { Dependency d -> d.name == 'grails-plugin-servlets'}
+            !report.files.find { it.name.contains 'grails-plugin-servlets' }
 
     }
 

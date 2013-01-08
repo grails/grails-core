@@ -129,9 +129,11 @@ class AetherDependencyManager implements DependencyManager{
         DependencyNode dependencyNode = collectDependencies(scope)
         DependencyResult result = resolveToResult(dependencyNode, scope)
 
+        def nlg = new PreorderNodeListGenerator()
+        dependencyNode.accept nlg
         AetherGraphNode node = new AetherGraphNode(result)
 
-        def renderer = new SimpleGraphRenderer(scope, desc)
+        def renderer = new SimpleGraphRenderer(scope, "$desc (total: ${nlg.files.size()})")
         renderer.render(node)
     }
 

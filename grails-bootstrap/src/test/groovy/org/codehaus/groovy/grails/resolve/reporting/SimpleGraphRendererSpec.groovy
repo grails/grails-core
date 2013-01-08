@@ -18,10 +18,12 @@ class SimpleGraphRendererSpec extends Specification {
 
         then:"The output is correct"
             writer.toString() ==
-        '''compile - Classpath for compiling sources
+        '''
+compile - Classpath for compiling sources
 +--- org.grails:grails-core:2.3.0
 |    \\--- org.grails:grails-bootstrap:2.3.0
 |         \\--- org.apache.ant:ant:1.8.2
+
 '''
 
     }

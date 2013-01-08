@@ -37,10 +37,15 @@ class AetherGraphNode extends GraphNode{
     void createGraph(GraphNode current, List<DependencyNode> nodes) {
             for(DependencyNode node in nodes) {
                 def dependency = node.dependency
-                def artifact = dependency.artifact
-                def graphNode = new GraphNode(new Dependency(artifact.groupId, artifact.artifactId, artifact.version))
-                current.children << graphNode
-                createGraph(graphNode, node.children)
+                if (dependency) {
+
+                    def artifact = dependency.artifact
+                    if (artifact.file) {
+                        def graphNode = new GraphNode(new Dependency(artifact.groupId, artifact.artifactId, artifact.version))
+                        current.children << graphNode
+                        createGraph(graphNode, node.children)
+                    }
+                }
             }
     }
 

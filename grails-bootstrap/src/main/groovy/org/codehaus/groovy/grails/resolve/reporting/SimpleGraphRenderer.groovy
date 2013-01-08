@@ -57,8 +57,10 @@ class SimpleGraphRenderer implements DependencyGraphRenderer{
             renderGraph(child,pw, 0)
         }
         if (ansiEnabled) {
-            pw.print(new Ansi().a(Ansi.Attribute.INTENSITY_BOLD_OFF).fg(DEFAULT));
+            pw.print(new Ansi().a(Ansi.Attribute.INTENSITY_BOLD_OFF).fg(DEFAULT))
         }
+        pw.println()
+        pw.flush()
     }
 
     private renderGraph(GraphNode current, PrintWriter writer, int depth) {
