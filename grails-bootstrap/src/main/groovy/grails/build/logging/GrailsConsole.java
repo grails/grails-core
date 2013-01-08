@@ -19,8 +19,6 @@ package grails.build.logging;
 import jline.ConsoleReader;
 import jline.History;
 import jline.Terminal;
-import jline.UnsupportedTerminal;
-import jline.WindowsTerminal;
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;

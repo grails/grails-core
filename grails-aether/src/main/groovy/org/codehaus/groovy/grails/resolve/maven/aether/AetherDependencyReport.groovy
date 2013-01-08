@@ -25,9 +25,9 @@ import org.sonatype.aether.util.graph.PreorderNodeListGenerator
  */
 @CompileStatic
 class AetherDependencyReport implements DependencyReport{
-    private PreorderNodeListGenerator resolveResult
-    private String scope
-    private Throwable error
+    PreorderNodeListGenerator resolveResult
+    String scope
+    Throwable error
     List<File> pluginZips = []
     List<File> jarFiles = []
 

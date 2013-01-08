@@ -3,8 +3,12 @@ dependencies {
 
     // Ant
     compile "org.apache.ant:ant:${antVersion}"
-    compile  "jline:jline:$jlineVersion"
-    compile  "org.fusesource.jansi:jansi:$jansiVersion"
+    compile  "jline:jline:$jlineVersion", {
+        ext.notInPom = true
+    }
+    compile  "org.fusesource.jansi:jansi:$jansiVersion", {
+        ext.notInPom = true
+    }
 
 
     compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"

@@ -27,6 +27,7 @@ import org.apache.maven.settings.building.SettingsBuilder
 import org.apache.maven.settings.building.SettingsBuildingResult
 import org.codehaus.groovy.grails.resolve.DependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
+import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
 import org.codehaus.plexus.DefaultPlexusContainer
 import org.sonatype.aether.RepositorySystem
 import org.sonatype.aether.artifact.Artifact
@@ -108,6 +109,32 @@ class AetherDependencyManager implements DependencyManager{
         }
     }
 
+    /**
+     * Produces a report printed to System.out of the dependency graph
+     */
+    void produceReport() {
+        // build scope
+        reportOnScope(BuildSettings.BUILD_SCOPE, BuildSettings.BUILD_SCOPE_DESC)
+        // provided scope
+        reportOnScope(BuildSettings.PROVIDED_SCOPE, BuildSettings.PROVIDED_SCOPE_DESC)
+        // compile scope
+        reportOnScope(BuildSettings.COMPILE_SCOPE, BuildSettings.COMPILE_SCOPE_DESC)
+        // runtime scope
+        reportOnScope(BuildSettings.RUNTIME_SCOPE, BuildSettings.RUNTIME_SCOPE_DESC)
+        // test scope
+        reportOnScope(BuildSettings.TEST_SCOPE, BuildSettings.TEST_SCOPE_DESC)
+    }
+
+    private void reportOnScope(String scope, String desc) {
+        DependencyNode dependencyNode = collectDependencies(scope)
+        DependencyResult result = resolveToResult(dependencyNode, scope)
+
+        AetherGraphNode node = new AetherGraphNode(result)
+
+        def renderer = new SimpleGraphRenderer(scope, desc)
+        renderer.render(node)
+    }
+
     @Override
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getPluginDependencies() {
         return grailsPluginDependencies
@@ -145,7 +172,34 @@ class AetherDependencyManager implements DependencyManager{
     AetherDependencyReport resolve(String scope = "runtime") {
 
 
+        DependencyNode node = collectDependencies(scope)
 
+        resolveToResult(node, scope)
+
+
+        def nlg = new PreorderNodeListGenerator()
+        node.accept nlg
+
+
+        return new AetherDependencyReport(nlg, scope);
+    }
+
+    private DependencyResult resolveToResult(DependencyNode node, String scope) {
+        def dependencyRequest = new DependencyRequest(node, null)
+
+        if (scope && scope != 'build') {
+            final includedScopes = SCOPE_MAPPINGS[scope]
+            if (includedScopes) {
+                final filter = new ScopeDependencyFilter(includedScopes, [])
+                dependencyRequest.setFilter(filter)
+            }
+
+        }
+        DependencyResult resolveResult = repositorySystem.resolveDependencies(session, dependencyRequest)
+        resolveResult
+    }
+
+    private DependencyNode collectDependencies(String scope) {
         SettingsBuildingResult result = settingsBuilder.build(new DefaultSettingsBuildingRequest())
         settings = result.getEffectiveSettings()
 
@@ -159,7 +213,7 @@ class AetherDependencyManager implements DependencyManager{
         session.setChecksumPolicy(checksumPolicy)
 
         LocalRepository localRepo = new LocalRepository(cacheDir ?: settings.localRepository ?: DEFAULT_CACHE)
-        session.setLocalRepositoryManager( repositorySystem.newLocalRepositoryManager( localRepo ) );
+        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
 
         if (readPom) {
             def pomFile = new File(basedir, "pom.xml")
@@ -168,7 +222,7 @@ class AetherDependencyManager implements DependencyManager{
             modelRequest.setPomFile(pomFile)
             ModelBuildingResult modelBuildingResult = modelBuilder.build(modelRequest)
             final mavenDependencies = modelBuildingResult.getRawModel().getDependencies()
-            for(org.apache.maven.model.Dependency md in mavenDependencies) {
+            for (org.apache.maven.model.Dependency md in mavenDependencies) {
                 final dependency = new Dependency(new DefaultArtifact(md.groupId, md.artifactId, md.classifier, md.type, md.version), md.scope)
                 addDependency(dependency)
             }
@@ -182,25 +236,8 @@ class AetherDependencyManager implements DependencyManager{
             collectRequest.setDependencies(dependencies)
         collectRequest.setRepositories(repositories)
 
-        DependencyNode node = repositorySystem.collectDependencies( session, collectRequest ).getRoot()
-
-        def dependencyRequest = new DependencyRequest( node, null )
-
-        if (scope && scope != 'build') {
-            final includedScopes = SCOPE_MAPPINGS[scope]
-            if (includedScopes) {
-                final filter = new ScopeDependencyFilter(includedScopes, [])
-                dependencyRequest.setFilter(filter)
-            }
-
-        }
-        DependencyResult resolveResult = repositorySystem.resolveDependencies(session, dependencyRequest)
-
-        def nlg = new PreorderNodeListGenerator()
-        node.accept nlg
-
-
-        return new AetherDependencyReport(nlg, scope);
+        DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot()
+        node
     }
 
     public void addDependency(Dependency dependency) {

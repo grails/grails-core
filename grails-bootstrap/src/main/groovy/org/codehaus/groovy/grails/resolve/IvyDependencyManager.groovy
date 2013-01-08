@@ -31,6 +31,7 @@ import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
 import org.apache.ivy.plugins.repository.TransferListener
 import org.codehaus.groovy.grails.plugins.VersionComparator
+import org.codehaus.groovy.grails.resolve.reporting.DependencyGraphRenderer
 
 import java.util.concurrent.ConcurrentLinkedQueue
 

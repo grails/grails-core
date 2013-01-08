@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.resolve;
 
 import grails.util.BuildSettings;
+import org.codehaus.groovy.grails.resolve.reporting.DependencyGraphRenderer;
 
 import java.util.Collection;
 

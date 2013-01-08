@@ -41,6 +41,19 @@ import static grails.build.logging.GrailsConsole.instance as CONSOLE
  */
 class BuildSettings extends AbstractBuildSettings {
 
+    static final String BUILD_SCOPE = "build"
+    static final String COMPILE_SCOPE = "compile"
+    static final String RUNTIME_SCOPE = "runtime"
+    static final String TEST_SCOPE = "test"
+    static final String PROVIDED_SCOPE = "provided"
+
+    static final String BUILD_SCOPE_DESC = "Dependencies for the build system only"
+    static final String COMPILE_SCOPE_DESC = "Dependencies placed on the classpath for compilation"
+    static final String RUNTIME_SCOPE_DESC = "Dependencies needed at runtime but not for compilation"
+    static final String TEST_SCOPE_DESC = "Dependencies needed for test compilation and execution but not at runtime"
+    static final String PROVIDED_SCOPE_DESC = "Dependencies needed at development time, but not during deployment"
+
+
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
 
     /**
@@ -464,7 +477,7 @@ class BuildSettings extends AbstractBuildSettings {
     @CompileStatic
     public List<File> doResolve(String scope, List<File> pluginZips, boolean includeAppJars = true) {
         final resolveReport = dependencyManager.resolve(scope)
-        setProperty("${scope}ResolveReport", resolveReport )
+        ((GroovyObject)this).setProperty("${scope}ResolveReport".toString(), resolveReport )
         List<File> jarFiles
         if (includeAppJars) {
             jarFiles = []
@@ -1053,8 +1066,9 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     protected void postLoadConfig() {
-        useMavenDependencyResolver = dependencyResolver?.equalsIgnoreCase("aether") || dependencyResolver?.equalsIgnoreCase("maven")
         establishProjectStructure()
+        useMavenDependencyResolver = dependencyResolver?.equalsIgnoreCase("aether") || dependencyResolver?.equalsIgnoreCase("maven")
+
         parseGrailsBuildListeners()
         if (config.grails.default.plugin.set instanceof List) {
             defaultPluginSet = config.grails.default.plugin.set
