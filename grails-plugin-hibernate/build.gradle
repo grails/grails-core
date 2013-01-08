@@ -1,0 +1,4 @@
+dependencies {
+    compile project(":grails-hibernate"), project(":grails-plugin-datasource")
+}
+jar.appendix = 'plugin-hibernate'

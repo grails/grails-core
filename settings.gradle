@@ -17,6 +17,7 @@ include 'grails-bootstrap',
         
         // Plugins
         'grails-plugin-domain-class',
+        'grails-plugin-hibernate',
         'grails-plugin-url-mappings',
         'grails-plugin-controllers',
         'grails-plugin-log4j',        

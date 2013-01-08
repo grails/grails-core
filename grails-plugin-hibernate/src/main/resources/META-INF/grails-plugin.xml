@@ -1,0 +1,3 @@
+<plugin name='hibernate'>
+    <type>org.grails.plugins.hibernate.HibernateGrailsPlugin</type>
+</plugin>

@@ -58,6 +58,11 @@ class Dependency {
         "${group}:${name}:${version}"
     }
 
+    @Override
+    String toString() {
+        return getPattern()
+    }
+
     void exclude(String name) {
         if (name.contains(":")) {
             def result = name.split(":")

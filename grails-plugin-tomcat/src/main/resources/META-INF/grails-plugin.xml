@@ -1,0 +1,3 @@
+<plugin name='tomcat'>
+    <type>org.grails.plugins.tomcat.TomcatGrailsPlugin</type>
+</plugin>

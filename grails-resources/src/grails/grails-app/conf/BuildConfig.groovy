@@ -43,10 +43,11 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
 
         // runtime 'mysql:mysql-connector-java:5.1.20'
+        build "org.grails:grails-plugin-tomcat:$grailsVersion"
+        runtime "org.grails:grails-plugin-hibernate:$grailsVersion"
     }
 
     plugins {
-        runtime ":hibernate:$grailsVersion"
         runtime ":jquery:1.8.3"
         runtime ":resources:1.1.6"
 
@@ -55,9 +56,7 @@ grails.project.dependency.resolution = {
         //runtime ":cached-resources:1.0"
         //runtime ":yui-minify-resources:0.1.4"
 
-        build ":tomcat:$grailsVersion"
-
-        runtime ":database-migration:1.2.1"
+        runtime ":database-migration:1.3.2"
 
         compile ':cache:1.0.1'
     }
