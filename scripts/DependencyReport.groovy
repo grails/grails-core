@@ -54,9 +54,7 @@ target(dependencyReport:"Produces a dependency report for the current Grails app
         grailsConsole.addStatus "Dependency report output to [${targetDir}/index.html]"
 
     }
-    else {
-        grailsSettings.dependencyManager.produceReport()
-    }
+    grailsSettings.dependencyManager.produceReport()
 }
 
 setDefaultTarget(dependencyReport)

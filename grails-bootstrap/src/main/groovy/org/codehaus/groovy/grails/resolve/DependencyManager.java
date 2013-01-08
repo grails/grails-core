@@ -29,6 +29,11 @@ import java.util.Collection;
 public interface DependencyManager {
 
     /**
+     * Outputs the dependency graph to System.out
+     */
+    void produceReport();
+
+    /**
      * Creates a copy of this dependency manager with repository configuration retained but dependencies omitted.
      *
      * @param buildSettings The BuildSettings

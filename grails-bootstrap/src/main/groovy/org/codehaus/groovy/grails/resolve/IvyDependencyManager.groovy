@@ -31,7 +31,9 @@ import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
 import org.apache.ivy.plugins.repository.TransferListener
 import org.codehaus.groovy.grails.plugins.VersionComparator
+import org.codehaus.groovy.grails.resolve.ivy.IvyGraphNode
 import org.codehaus.groovy.grails.resolve.reporting.DependencyGraphRenderer
+import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -449,5 +451,28 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     @Override
     Collection<Dependency> getAllDependencies(String scope) {
         convertToGrailsDependencies(dependencyDescriptors.findAll { it.scope == scope })
+    }
+
+    @Override
+    @CompileStatic
+    void produceReport() {
+        // build scope
+        reportOnScope(BuildSettings.BUILD_SCOPE, BuildSettings.BUILD_SCOPE_DESC)
+        // provided scope
+        reportOnScope(BuildSettings.PROVIDED_SCOPE, BuildSettings.PROVIDED_SCOPE_DESC)
+        // compile scope
+        reportOnScope(BuildSettings.COMPILE_SCOPE, BuildSettings.COMPILE_SCOPE_DESC)
+        // runtime scope
+        reportOnScope(BuildSettings.RUNTIME_SCOPE, BuildSettings.RUNTIME_SCOPE_DESC)
+        // test scope
+        reportOnScope(BuildSettings.TEST_SCOPE, BuildSettings.TEST_SCOPE_DESC)
+    }
+
+    void reportOnScope(String scope, String desc) {
+        ResolveReport resolveReport = resolveDependencies(scope)
+
+        IvyGraphNode node = new IvyGraphNode(resolveReport)
+        def renderer = new SimpleGraphRenderer(scope, "$desc (total: ${resolveReport.artifacts.size()})")
+        renderer.render(node)
     }
 }
