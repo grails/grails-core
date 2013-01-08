@@ -289,9 +289,13 @@ runTests = { GrailsTestType type, File compiledClassesDir ->
             def start = new Date()
             def result = type.run(testEventPublisher)
             def end = new Date()
+            
+            def delta = (end.time - start.time) / 1000
+            def minutes = (delta / 60).toInteger()
+            def seconds = (delta - minutes * 60).toInteger()
 
             testCount = result.passCount + result.failCount
-            grailsConsole.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${end.time - start.time}ms"
+            grailsConsole.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${minutes}m ${seconds}s"
             grailsConsole.lastMessage = ""
 
             if (result.failCount > 0) testsFailed = true
