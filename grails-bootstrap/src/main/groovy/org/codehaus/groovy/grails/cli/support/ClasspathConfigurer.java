@@ -163,7 +163,9 @@ public class ClasspathConfigurer {
 
     private void handleResolveError(@SuppressWarnings("hiding") BuildSettings settings, DependencyReport buildResolveReport) {
         cleanResolveCache(settings);
-        GrailsConsole.getInstance().error(buildResolveReport.getResolveError().getMessage());
+        GrailsConsole grailsConsole = GrailsConsole.getInstance();
+        grailsConsole.error(buildResolveReport.getResolveError().getMessage());
+        grailsConsole.addStatus("Run 'grails dependency-report' for further information.");
         if (exitOnResolveError) {
             System.exit(1);
         }
