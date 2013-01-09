@@ -28,28 +28,37 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 includeTargets << grailsScript("_GrailsSettings")
 
 target(dependencyReport:"Produces a dependency report for the current Grails application") {
-    // create ivy namespace
-    ivy = NamespaceBuilder.newInstance(ant, 'antlib:org.apache.ivy.ant')
 
-    String targetDir = "$projectTargetDir/dependency-report"
-    ant.delete(dir:targetDir, failonerror:false)
-    ant.mkdir(dir:targetDir)
+    if(grailsSettings.dependencyManager instanceof IvyDependencyManager) {
+        // create ivy namespace
+        ivy = NamespaceBuilder.newInstance(ant, 'antlib:org.apache.ivy.ant')
 
-    def ivySettings = ant.project.setProperty("ivy.cache.dir",grailsSettings.dependencyManager.ivySettings.defaultCache.absolutePath)
-    grailsConsole.updateStatus "Obtaining dependency data..."
-    IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
-    for (conf in IvyDependencyManager.ALL_CONFIGURATIONS) {
-        dependencyManager.resolveDependencies(conf)
+        String targetDir = "$projectTargetDir/dependency-report"
+        ant.delete(dir:targetDir, failonerror:false)
+        ant.mkdir(dir:targetDir)
+
+        def ivySettings = ant.project.setProperty("ivy.cache.dir",grailsSettings.dependencyManager.ivySettings.defaultCache.absolutePath)
+        grailsConsole.updateStatus "Obtaining dependency data..."
+        IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
+        for (conf in IvyDependencyManager.ALL_CONFIGURATIONS) {
+            dependencyManager.resolveDependencies(conf)
+        }
+
+        def conf = args.trim() ?: 'build, compile, provided, runtime, test'
+        ivy.report(organisation: 'org.grails.internal', module: grailsAppName, todir: targetDir, conf: conf)
+
+        // Copy the runtime dependency report to 'index.html' for easy opening.
+        ant.copy file: "${targetDir}/org.grails.internal-${grailsAppName}-runtime.html",
+                 tofile: "${targetDir}/index.html"
+
+        grailsSettings.dependencyManager.produceReport()
+        grailsConsole.addStatus "Dependency report output to [${targetDir}/index.html]"
+
     }
-
-    def conf = args.trim() ?: 'build, compile, provided, runtime, test'
-    ivy.report(organisation: 'org.grails.internal', module: grailsAppName, todir: targetDir, conf: conf)
-
-    // Copy the runtime dependency report to 'index.html' for easy opening.
-    ant.copy file: "${targetDir}/org.grails.internal-${grailsAppName}-runtime.html",
-             tofile: "${targetDir}/index.html"
-
-    grailsConsole.addStatus "Dependency report output to [${targetDir}/index.html]"
+    else {
+        grailsSettings.dependencyManager.produceReport()
+    }
+    
 }
 
 setDefaultTarget(dependencyReport)

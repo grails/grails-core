@@ -30,6 +30,10 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Array;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Simple utility methods for file and stream copying.
@@ -44,7 +48,80 @@ import java.lang.reflect.Array;
  */
 public class IOUtils {
 
+    private static Map algorithms = new HashMap();
+    static {
+        algorithms.put("md5", "MD5");
+        algorithms.put("sha1", "SHA-1");
+    }
+    // byte to hex string converter
+    private static final char[] CHARS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'a', 'b', 'c', 'd', 'e', 'f'};
     public static final int BUFFER_SIZE = 4096;
+
+    /**
+     * Convert a byte[] array to readable string format. This makes the "hex" readable!
+     *
+     * @return result String buffer in String format
+     * @param in
+     *            byte[] buffer to convert to string format
+     */
+    public static String byteArrayToHexString(byte[] in) {
+        byte ch = 0x00;
+
+        if (in == null || in.length <= 0) {
+            return null;
+        }
+
+        StringBuffer out = new StringBuffer(in.length * 2);
+
+        //CheckStyle:MagicNumber OFF
+        for (int i = 0; i < in.length; i++) {
+            ch = (byte) (in[i] & 0xF0); // Strip off high nibble
+            ch = (byte) (ch >>> 4); // shift the bits down
+            ch = (byte) (ch & 0x0F); // must do this is high order bit is on!
+
+            out.append(CHARS[(int) ch]); // convert the nibble to a String Character
+            ch = (byte) (in[i] & 0x0F); // Strip off low nibble
+            out.append(CHARS[(int) ch]); // convert the nibble to a String Character
+        }
+        //CheckStyle:MagicNumber ON
+
+        return out.toString();
+    }
+
+    public static String computeChecksum(File f, String algorithm) throws IOException {
+        return byteArrayToHexString(compute(f, algorithm));
+    }
+
+    private static byte[] compute(File f, String algorithm) throws IOException {
+        InputStream is = new FileInputStream(f);
+
+        try {
+            MessageDigest md = getMessageDigest(algorithm);
+            md.reset();
+
+            byte[] buf = new byte[BUFFER_SIZE];
+            int len = 0;
+            while ((len = is.read(buf)) != -1) {
+                md.update(buf, 0, len);
+            }
+            return md.digest();
+        } finally {
+            is.close();
+        }
+    }
+
+    private static MessageDigest getMessageDigest(String algorithm) {
+        String mdAlgorithm = (String) algorithms.get(algorithm);
+        if (mdAlgorithm == null) {
+            throw new IllegalArgumentException("unknown algorithm " + algorithm);
+        }
+        try {
+            return MessageDigest.getInstance(mdAlgorithm);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalArgumentException("unknown algorithm " + algorithm);
+        }
+    }
 
     /**
      * Adds the contents of 1 array to another

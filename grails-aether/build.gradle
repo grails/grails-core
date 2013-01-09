@@ -1,7 +1,8 @@
 ext {
     aetherVersion = "1.13.1"
     mavenVersion = "3.0.4"
-} 
+}
+
 dependencies {
     compile("org.sonatype.aether:aether-api:${aetherVersion}") 
     compile("org.sonatype.aether:aether-util:${aetherVersion}") 
@@ -18,7 +19,28 @@ dependencies {
     compile "org.apache.maven:maven-settings-builder:$mavenVersion"
 
     compile project(":grails-bootstrap")
+
+    runtime "org.slf4j:slf4j-simple:$slf4jVersion"
 }
 
 
 jar.appendix = 'aether'
+
+install.doLast {
+    final aetherConf = new File("$rootProject.projectDir/conf/aether-starter.conf")
+    aetherConf.parentFile.mkdirs()
+
+    aetherConf.withPrintWriter { writer ->
+        writer.println "load \${grails.home}/dist/grails-aether-${grailsVersion}.jar"
+        def appendDependencies = {
+            def fileName = it.file.name
+            if(! ['jline', 'jansi','jna','hibernate', 'asm', 'cglib', 'groovy-all', 'ant', 'servlet-api'].any { fileName.contains(it) }) {
+
+                def mid = it.moduleVersion.id
+
+                writer.println "load \${grails.home}/lib/${mid.group}/${mid.name}/jars/$fileName"
+            }
+        }
+        configurations.runtime.resolvedConfiguration.resolvedArtifacts.each appendDependencies
+    }
+}

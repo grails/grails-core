@@ -1,14 +1,15 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 configurations {
-    uaa.extendsFrom compile
+    uaa
 }
 dependencies {
-    compile("org.springframework:spring-core:${springVersion}") {
-        exclude module:"commons-logging"
-    }
 
     // UAA client dependency, optional
+    uaa "org.codehaus.groovy:groovy-all:${groovyVersion}", {
+        exclude module:"commons-cli"
+        exclude module:"ant"
+    }
     uaa("org.springframework.uaa:org.springframework.uaa.client:1.0.1.RELEASE") {
         ["protobuf-java-lite", "json-simple", "bcpg-jdk15", "bcprov-jdk15"].each { dep ->
             exclude group: "org.springframework.roo.wrapping", module: "org.springframework.roo.wrapping." + dep
@@ -27,15 +28,18 @@ dependencies {
     // Ant
     compile "org.apache.ant:ant:${antVersion}",
             "org.apache.ant:ant-launcher:${antVersion}",
-            "org.apache.ant:ant-trax:${antTraxVersion}",
             "org.apache.ivy:ivy:${ivyVersion}"
 
+    compile "org.apache.ant:ant-trax:${antTraxVersion}", {
+        exclude group:"org.apache.ant", module:"ant"
+    }
+
     compile("org.apache.ant:ant-junit:${antVersion}") {
-        exclude module:'junit'
+        exclude group:'junit',module:'junit'
     }
 
     compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
-        exclude module:'commons-cli'
+        exclude group:'commons-cli', module:'commons-cli'
     }
 }
 
@@ -61,4 +65,21 @@ eclipse {
 	classpath {
 		plusConfigurations += configurations.uaa
 	}
+}
+install.doLast {
+    final aetherConf = new File("$rootProject.projectDir/conf/uaa-starter.conf")
+    aetherConf.parentFile.mkdirs()
+
+    aetherConf.withPrintWriter { writer ->
+        def appendDependencies = {
+            def fileName = it.file.name
+            if(! ['jline', 'jansi','jna','hibernate', 'asm', 'cglib', 'groovy-all', 'ant', 'servlet-api'].any { fileName.contains(it) }) {
+
+                def mid = it.moduleVersion.id
+
+                writer.println "load \${grails.home}/lib/${mid.group}/${mid.name}/jars/$fileName"
+            }
+        }
+        configurations.uaa.resolvedConfiguration.resolvedArtifacts.each appendDependencies
+    }
 }

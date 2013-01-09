@@ -110,10 +110,11 @@ public class BaseSettingsApi {
 
     public void enableUaa() {
         try {
-            Class<?> uaaClass = BaseSettingsApi.class.getClassLoader().loadClass("org.codehaus.groovy.grails.cli.support.UaaIntegration");
+            Class<?> uaaClass = BaseSettingsApi.class.getClassLoader().loadClass("org.codehaus.groovy.grails.cli.support.UaaEnabler");
+            Object instance = uaaClass.getConstructor(new Class[]{BuildSettings.class, PluginBuildSettings.class}).newInstance(buildSettings, pluginSettings);
             MetaClass metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(uaaClass);
-            metaClass.invokeMethod(uaaClass, "enable", new Object[]{buildSettings, pluginSettings, isInteractive});
-        } catch (ClassNotFoundException e) {
+            metaClass.invokeMethod(instance, "enable", new Object[]{isInteractive});
+        } catch (Exception e) {
             // UAA not present, ignore
         }
     }

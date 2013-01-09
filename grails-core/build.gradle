@@ -1,4 +1,10 @@
+configurations {
+    optional
+}
 dependencies {
+
+    compile 'javax.servlet:javax.servlet-api:3.0.1'
+    compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile "commons-io:commons-io:${commonsIOVersion}"
     compile "commons-lang:commons-lang:$commonsLangVersion"
@@ -51,7 +57,9 @@ dependencies {
             "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
-    runtime "org.springframework:spring-jms:${springVersion}"
+    runtime "org.springframework:spring-jms:${springVersion}", {
+        ext.notInPom = true
+    }
     runtime ( 'xalan:serializer:2.7.1' ) {
         exclude group: 'xml-apis', module:'xml-apis'
     }
@@ -61,9 +69,41 @@ dependencies {
     }
 
     compile "org.springframework:spring-tx:${springVersion}"
-    compile project(":grails-bootstrap"), project(":grails-spring")
+    compile project(":grails-bootstrap"), {
+        exclude group:"org.fusesource.jansi", module:"jansi"
+        exclude group:"jline", module:"jline"
+        exclude group:"net.java.dev.jna", module:"jna"
+
+        // Ant
+        exclude group:"org.apache.ant", module:"ant"
+        exclude group:"org.apache.ant", module:"ant-launcher"
+        exclude group:"org.apache.ivy", module:"ivy"
+        exclude group:"org.apache.ant", module:"ant-trax"
+        exclude group:"org.apache.ant", module:"ant-junit"
+
+        exclude group:"org.codehaus.gant", module:"gant_groovy1.8"
+    }
+
+    optional "org.apache.ant:ant:${antVersion}"
+    optional "jline:jline:$jlineVersion"
+    optional "org.fusesource.jansi:jansi:$jansiVersion"
+
+    optional("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
+        exclude group:'commons-cli', module:'commons-cli'
+    }
+    compile project(":grails-spring")
 }
 
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+    test {
+        compileClasspath += files(configurations.optional)
+        runtimeClasspath += files(configurations.optional)
+    }
+}
+javadoc.classpath += files(configurations.optional)
 compileGroovy.doFirst {
     delete("${buildDir}/classes/main/META-INF")
     ant.mkdir(dir:sourceSets.main.output.classesDir)

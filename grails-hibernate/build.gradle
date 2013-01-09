@@ -5,8 +5,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    compile project(":grails-bootstrap"),
-            project(":grails-core"),
+    compile project(":grails-core"),
             project(":grails-spring"),
             project(":grails-web"),
             project(":grails-plugin-domain-class")
@@ -17,6 +16,7 @@ dependencies {
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
         transitive = false
+        exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.grails', module:'grails-bootstrap'
         exclude group: 'org.grails', module:'grails-core'
         exclude group: 'org.grails', module:'grails-test'
@@ -41,6 +41,8 @@ dependencies {
         exclude group: 'commons-collections', module:'commons-collections'
         exclude group: 'commons-lang', module:'commons-lang'
         exclude group: 'javassist', module:'javassist'
+        exclude group: 'org.javassist', module: 'javassist'
+
         exclude group: 'java-persistence', module:'persistence-api'
         exclude group: 'javax.persistence', module:'persistence-api'
     }
@@ -66,11 +68,14 @@ dependencies {
     }
     runtime ("net.sf.ehcache:ehcache-core:$ehcacheVersion") {
         exclude group: 'commons-logging', module:'commons-logging'
+        ext.notInPom = true
     }
     runtime ('org.hibernate:hibernate-validator:4.1.0.Final') {
+        exclude group: 'org.slf4j', module:'slf4j-api'
         exclude group: 'commons-logging', module:'commons-logging'
     }
     runtime ("org.hibernate:hibernate-ehcache:$hibernateVersion") {
+        exclude group: 'net.sf.ehcache', module:'ehcache-core'
         exclude group: 'commons-logging', module:'commons-logging'
         exclude group: 'commons-collections', module:'commons-collections'
     }
@@ -78,7 +83,9 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     runtime 'javax.validation:validation-api:1.0.0.GA'
-    runtime 'org.liquibase:liquibase-core:2.0.5'
+    runtime 'org.liquibase:liquibase-core:2.0.5', {
+        ext.notInPom = true
+    }
 }
 
 test {

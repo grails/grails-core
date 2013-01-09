@@ -9,5 +9,8 @@ dependencies {
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-domain-class'),
             project(':grails-plugin-validation')
+
+    testRuntime "jline:jline:$jlineVersion"
+    testRuntime "org.fusesource.jansi:jansi:$jansiVersion"
 }
 jar.appendix = 'plugin-controllers'

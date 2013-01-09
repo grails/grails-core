@@ -2,6 +2,7 @@ grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
 
+grails.project.dependency.resolver = "maven" // or ivy
 grails.project.dependency.resolution = {
     // inherit Grails' default dependencies
     inherits("global") {
@@ -25,11 +26,11 @@ grails.project.dependency.resolution = {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes eg.
 
         // runtime 'mysql:mysql-connector-java:5.1.21'
+        build "org.grails:grails-plugin-tomcat:$grailsVersion"
     }
 
     plugins {
-        build(":tomcat:$grailsVersion",
-              ":release:2.2.0",
+        build(":release:2.2.0",
               ":rest-client-builder:1.0.3") {
             export = false
         }

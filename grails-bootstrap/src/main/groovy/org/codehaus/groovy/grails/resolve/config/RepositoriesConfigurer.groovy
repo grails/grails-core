@@ -103,8 +103,16 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
         addToChainResolver(fileSystemResolver)
 
-        flatDir(name:"grailsHome", dirs:"${grailsHome}/src/libs")
-        flatDir(name:"grailsHome", dirs:"${grailsHome}/dist")
+        def grailsHomeDistResolver = new FileSystemResolver()
+        grailsHomeDistResolver.local = true
+        grailsHomeDistResolver.name = "grailsHome"
+        def grailsHomeDistPattern = "${grailsHome}/dist/[module]-[revision](-[classifier])"
+        grailsHomeDistResolver.addIvyPattern("${grailsHomeDistPattern}.pom")
+        grailsHomeDistResolver.addArtifactPattern "${grailsHomeDistPattern}.[ext]"
+        grailsHomeDistResolver.settings = dependencyManager.ivySettings
+
+        addToChainResolver(grailsHomeDistResolver)
+
         final workDir = dependencyManager.buildSettings?.grailsWorkDir
         if (workDir) {
             flatDir(name:"grailsHome", dirs:"${workDir}/cached-installed-plugins")
