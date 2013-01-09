@@ -80,7 +80,7 @@ class LinkTestFilter extends RegexTokenFilter {
             name = name.substring(0, hashIndex)
         }
 
-        if (name.indexOf("http://")>-1) {
+        if (name.indexOf("http://")>-1 || name.indexOf("https://")>-1) {
             buffer << "<a href=\"${name}${hash ? '#'+hash:''}\" target=\"blank\">${Encoder.escape(alias)}</a>"
             return
         }
