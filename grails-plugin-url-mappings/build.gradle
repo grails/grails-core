@@ -1,3 +1,6 @@
+configurations {
+    optional
+}
 dependencies {
     compile "commons-lang:commons-lang:$commonsLangVersion"
     compile "commons-io:commons-io:${commonsIOVersion}"
@@ -7,6 +10,11 @@ dependencies {
     }
 
     compile project(":grails-web"), project(":grails-plugin-controllers")
-    compile "junit:junit:${junitVersion}"
+    optional "junit:junit:${junitVersion}"
+}
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
 }
 jar.appendix = 'plugin-url-mappings'

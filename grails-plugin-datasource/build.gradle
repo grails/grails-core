@@ -9,8 +9,13 @@ dependencies {
         exclude group: 'commons-pool', module:'commons-pool'
     }
 
-    runtime 'hsqldb:hsqldb:1.8.0.10',
-            'com.h2database:h2:1.3.164'
+    runtime 'hsqldb:hsqldb:1.8.0.10', {
+        ext.notInPom = true
+    }
+
+    runtime 'com.h2database:h2:1.3.164', {
+        ext.notInPom = true
+    }
 
     compile project(":grails-core")
 }
