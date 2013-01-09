@@ -19,6 +19,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
 import org.codehaus.groovy.grails.io.support.IOUtils
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.resolve.*
 import org.codehaus.groovy.runtime.StackTraceUtils
 import org.codehaus.groovy.tools.LoaderConfiguration
@@ -1166,11 +1167,59 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         dependencyManager = configureDependencyManager(this)
+        def pluginDirs = getPluginDirectories()
+        for (dir in pluginDirs) {
+            handleInlinePlugin(dir.name, dir)
+        }
+
     }
+
+    @CompileStatic
+    void handleInlinePlugin(String pluginName, File dir) {
+
+            if (isInlinePluginLocation(dir) ) {
+                // Try BuildConfig.groovy first, which should work
+                // work for in-place plugins.
+                def path = dir.absolutePath
+                def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
+
+                if (!pluginDependencyDescriptor.exists()) {
+                    // OK, that doesn't exist, so try dependencies.groovy.
+                    pluginDependencyDescriptor = new File("$path/dependencies.groovy")
+                }
+
+                if (pluginDependencyDescriptor.exists()) {
+                    def gcl = obtainGroovyClassLoader()
+
+                    try {
+                        Script script = (Script)gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
+                        def pluginSlurper = createConfigSlurper()
+                        def pluginConfig = pluginSlurper.parse(script)
+
+
+
+                        def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
+                        if (inlinePlugins) {
+                            for (File inlinePlugin in inlinePlugins) {
+                                addPluginDirectory inlinePlugin, true
+                                // recurse
+                                handleInlinePlugin(inlinePlugin.name, inlinePlugin)
+                            }
+                        }
+                    }
+                    catch (Throwable e) {
+                        CONSOLE.error "WARNING: Inline plugins for [$pluginName] cannot be read due to error: ${e.message}", e
+                    }
+                }
+            }
+
+    }
+
 
     protected boolean settingsFileLoaded = false
 
 
+    @CompileStatic
     DependencyManager configureDependencyManager(BuildSettings buildSettings) {
         DependencyManagerConfigurer configurer = new DependencyManagerConfigurer();
 
