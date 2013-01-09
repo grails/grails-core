@@ -41,8 +41,10 @@ class AetherGraphNode extends GraphNode{
                 if (dependency) {
 
                     def artifact = dependency.artifact
-                    if (artifact.file || unresolved.contains(artifact)) {
+                    final notResolved = unresolved.contains(artifact)
+                    if (artifact.file || notResolved) {
                         def graphNode = new GraphNode(new Dependency(artifact.groupId, artifact.artifactId, artifact.version))
+                        graphNode.resolved = !notResolved
                         current.children << graphNode
                         createGraph(graphNode, node.children, unresolved)
                     }

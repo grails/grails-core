@@ -29,6 +29,7 @@ class GraphNode {
 
     Dependency dependency
     Collection<GraphNode> children = []
+    Boolean resolved = true
 
     @Override
     String toString() {

@@ -30,6 +30,7 @@ import static org.fusesource.jansi.Ansi.Color.*
 class SimpleGraphRenderer implements DependencyGraphRenderer{
     private static final GrailsConsole CONSOLE = GrailsConsole.getInstance()
     private static final String TOP_LEVEL_PREFIX = "+--- "
+    private static final String UNRESOLVED_PREFIX = ">>>> "
     private static final String INITIAL_TRANSITIVE_PREFIX = '|    '
     private static final String PADDING = "     "
     private static final String TRANSITIVE_PREFIX = '\\--- '
@@ -65,9 +66,8 @@ class SimpleGraphRenderer implements DependencyGraphRenderer{
 
     private renderGraph(GraphNode current, PrintWriter writer, int depth) {
         if (depth == 0) {
-            def dependency = current.dependency
             def prefix = TOP_LEVEL_PREFIX
-            writeDependency(writer, prefix, dependency)
+            writeDependency(writer, prefix, current)
         }
         else {
             if (ansiEnabled && CONSOLE.isAnsiEnabled()) {
@@ -83,18 +83,19 @@ class SimpleGraphRenderer implements DependencyGraphRenderer{
                 }
             }
 
-            writeDependency(writer, TRANSITIVE_PREFIX, current.dependency)
+            writeDependency(writer, TRANSITIVE_PREFIX, current)
         }
         for(child in current.children) {
             renderGraph(child, writer,depth + 1)
         }
     }
 
-    private void writeDependency(PrintWriter writer, String prefix, Dependency dependency) {
+    private void writeDependency(PrintWriter writer, String prefix, GraphNode node) {
         if (ansiEnabled && CONSOLE.isAnsiEnabled()) {
-            writer.println(new Ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(YELLOW).a(prefix).fg(DEFAULT).a(dependency.toString()).a(Ansi.Attribute.INTENSITY_BOLD_OFF))
+            final resolved = node.resolved
+            writer.println(new Ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(resolved ? YELLOW : RED).a(resolved ? prefix : UNRESOLVED_PREFIX).fg(resolved ? DEFAULT : RED).a(node.dependency.toString()).fg(DEFAULT).a(Ansi.Attribute.INTENSITY_BOLD_OFF))
         } else {
-            writer.println("$prefix$dependency")
+            writer.println("$prefix$node.dependency")
         }
     }
 
