@@ -98,6 +98,10 @@ sourceSets {
     main {
         compileClasspath += files(configurations.optional)
     }
+    test {
+        compileClasspath += files(configurations.optional)
+        runtimeClasspath += files(configurations.optional)
+    }
 }
 javadoc.classpath += files(configurations.optional)
 compileGroovy.doFirst {
