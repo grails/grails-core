@@ -15,40 +15,26 @@
  */
 package grails.gsp
 
-import java.security.Principal
+import java.lang.reflect.InvocationHandler
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 
-import javax.servlet.AsyncContext
-import javax.servlet.DispatcherType
-import javax.servlet.RequestDispatcher
 import javax.servlet.ServletContext
-import javax.servlet.ServletInputStream
-import javax.servlet.ServletOutputStream
-import javax.servlet.ServletRequest
-import javax.servlet.ServletResponse
 import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
-import javax.servlet.http.HttpSession
-import javax.servlet.http.Part
+
 import org.apache.commons.collections.iterators.IteratorEnumeration
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriSupport
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
-import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.support.ServletContextResourceLoader
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageResourceScriptSource
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 
 /**
  * Simplified API for rendering GSP pages from services, jobs and other non-request classes.
@@ -99,6 +85,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
     void renderTo(Map args, Writer writer) {
         renderViewToWriter(args, writer)
     }
+
     /**
      * Renders a page and returns the contents
      *
@@ -116,9 +103,8 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         renderTo(args, new OutputStreamWriter(stream))
     }
 
-
     private void renderViewToWriter(Map args, Writer writer) {
-        def source = null
+        def source
         if (args.view) {
            source = groovyPageLocator.findViewByPath(args.view.toString())
         }
@@ -131,8 +117,8 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
 
         def oldRequestAttributes = RequestContextHolder.getRequestAttributes()
         try {
-            def webRequest = new GrailsWebRequest(new PageRenderRequest(source.URI),
-                  new PageRenderResponse(writer instanceof PrintWriter ? writer : new PrintWriter(writer)),
+            def webRequest = new GrailsWebRequest(PageRenderRequestCreator.createInstance(source.URI),
+                  PageRenderResponseCreator.createInstance(writer instanceof PrintWriter ? writer : new PrintWriter(writer)),
                   servletContext, applicationContext)
             RequestContextHolder.setRequestAttributes(webRequest)
             def template = templateEngine.createTemplate(source)
@@ -149,336 +135,151 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
     }
 
     /*
-     * A request object used during the GSP rendering pipeline for render operations outside a web request
+     * Creates the request object used during the GSP rendering pipeline for render operations outside a web request.
+     * Created dynamically to avoid issues with different servlet API spec versions.
      */
-    class PageRenderRequest implements HttpServletRequest {
-
-        PageRenderRequest(String requestURI) {
-            this.requestURI = requestURI
-        }
-
-        def params = new ConcurrentHashMap()
-        def attributes = new ConcurrentHashMap()
-
-        String contentType
-        String requestURI
-        String characterEncoding = "UTF-8"
-
-        String getAuthType() { null }
-
-        Cookie[] getCookies() { return new Cookie[0] }
-
-        long getDateHeader(String name) { -1L }
-
-        String getHeader(String name) { null }
-
-        Enumeration getHeaders(String name) {
-            return new IteratorEnumeration([].iterator())
-        }
-
-        Enumeration getHeaderNames() {
-            return new IteratorEnumeration([].iterator())
-        }
-
-        int getIntHeader(String name) { -1 }
-
-        String getMethod() {"GET"}
-
-        String getPathInfo() {""}
-
-        String getPathTranslated() {""}
-
-        String getContextPath() {"/"}
-
-        String getQueryString() { ""}
-
-        String getRemoteUser() { null }
-
-        boolean isUserInRole(String role) { false }
-
-        Principal getUserPrincipal() { null }
-
-        String getRequestedSessionId() { null }
-
-        StringBuffer getRequestURL() {
-            return new StringBuffer(getRequestURI())
-        }
-
-        String getServletPath() {
-            return "/"
-        }
-
-        HttpSession getSession(boolean create) { throw new UnsupportedOperationException("You cannot use the session in non-request rendering operations") }
-
-        HttpSession getSession() { throw new UnsupportedOperationException("You cannot use the session in non-request rendering operations") }
-
-        boolean isRequestedSessionIdValid() { true }
-
-        boolean isRequestedSessionIdFromCookie() { false }
-
-        boolean isRequestedSessionIdFromURL() { false }
-
-        boolean isRequestedSessionIdFromUrl() { false }
-
-        boolean authenticate(HttpServletResponse response) {
-            return false
-        }
-
-        void login(String username, String password) {
-            // no op
-        }
-
-        void logout() {
-            // no op
-        }
-
-        Collection<Part> getParts() {
-            return Collections.emptyList()
-        }
-
-        Part getPart(String name) {
-            return null
-        }
-
-        Object getAttribute(String name) {
-            return attributes[name]
-        }
-
-        Enumeration getAttributeNames() {
-            return attributes.keys()
-        }
-
-        int getContentLength() { 0 }
-
-        ServletInputStream getInputStream() {
-            throw new UnsupportedOperationException("You cannot read the input stream in non-request rendering operations")
-        }
-
-        String getParameter(String name) {
-            return params[name]
-        }
-
-        Enumeration getParameterNames() {
-            return params.keys()
-        }
-
-        String[] getParameterValues(String name) {
-            return new String[0]
-        }
-
-        Map getParameterMap() {
-            return params
-        }
-
-        String getProtocol() {
-            throw new UnsupportedOperationException("You cannot read the protocol in non-request rendering operations")
-        }
-
-        String getScheme() {
-            throw new UnsupportedOperationException("You cannot read the scheme in non-request rendering operations")
-        }
-
-        String getServerName() {
-            throw new UnsupportedOperationException("You cannot read server name in non-request rendering operations")
-        }
-
-        int getServerPort() {
-            throw new UnsupportedOperationException("You cannot read the server port in non-request rendering operations")
-        }
-
-        BufferedReader getReader() {
-            throw new UnsupportedOperationException("You cannot read input in non-request rendering operations")
-        }
-
-        String getRemoteAddr() {
-            throw new UnsupportedOperationException("You cannot read the remote address in non-request rendering operations")
-        }
-
-        String getRemoteHost() {
-            throw new UnsupportedOperationException("You cannot read the remote host in non-request rendering operations")
-        }
-
-        void setAttribute(String name, Object o) {
-            if(o != null) {
-                attributes[name] = o
-            } else {
-                attributes.remove name
-            }
-        }
-
-        void removeAttribute(String name) {
-            attributes.remove name
-        }
-
-        Locale getLocale() {
-            return Locale.getDefault()
-        }
-
-        Enumeration getLocales() {
-            return new IteratorEnumeration(Locale.getAvailableLocales().iterator())
-        }
-
-        boolean isSecure() { false }
-
-        RequestDispatcher getRequestDispatcher(String path) {
-            throw new UnsupportedOperationException("You cannot use the request dispatcher in non-request rendering operations")
-        }
-
-        String getRealPath(String path) {
-            return requestURI
-        }
-
-        int getRemotePort() {
-            throw new UnsupportedOperationException("You cannot read the remote port in non-request rendering operations")
-        }
-
-        String getLocalName() {
-            return "localhost"
-        }
-
-        String getLocalAddr() {
-            return "127.0.0.1"
-        }
-
-        int getLocalPort() {
-            return 80
-        }
-
-        ServletContext getServletContext() {
-            return null  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        AsyncContext startAsync() {
-            return null  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse) {
-            return null  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        boolean isAsyncStarted() {
-            return false  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        boolean isAsyncSupported() {
-            return false  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        AsyncContext getAsyncContext() {
-            return null  //To change body of implemented methods use File | Settings | File Templates.
-        }
-
-        DispatcherType getDispatcherType() {
-            return null  //To change body of implemented methods use File | Settings | File Templates.
+    static class PageRenderRequestCreator {
+
+        static HttpServletRequest createInstance(final String requestURI) {
+
+            def params = new ConcurrentHashMap()
+            def attributes = new ConcurrentHashMap()
+
+            String contentType
+            String characterEncoding = "UTF-8"
+
+            Proxy.newProxyInstance(HttpServletRequest.classLoader, [HttpServletRequest] as Class[], new InvocationHandler() {
+                Object invoke(proxy, Method method, Object[] args) {
+
+                    String methodName = method.name
+
+                    if (methodName == 'getContentType') return contentType
+                    if (methodName == 'setContentType') {
+                        contentType = args[0]
+                        return null
+                    }
+                    if (methodName == 'getCharacterEncoding') return characterEncoding
+                    if (methodName == 'setCharacterEncoding') {
+                        characterEncoding = args[0]
+                        return null
+                    }
+
+                    if (methodName == 'getRealPath') return requestURI
+                    if (methodName == 'getLocalName') return "localhost"
+                    if (methodName == 'getLocalAddr') return "127.0.0.1"
+                    if (methodName == 'getLocalPort') return 80
+
+                    if (methodName == 'getCookies') return ([] as Cookie[])
+                    if (methodName == 'getDateHeader' || methodName == 'getIntHeader') return -1
+                    if (methodName == 'getMethod') return 'GET'
+                    if (methodName == 'getContextPath' || methodName == 'getServletPath') return '/'
+
+                    if (methodName in ['getPathInfo', 'getPathTranslated', 'getQueryString']) return ''
+
+                    if (methodName == 'getRequestURL') return new StringBuffer(requestURI)
+                    if (methodName == 'getRequestURI') return requestURI
+
+                    if (methodName == 'isRequestedSessionIdValid') return true
+                    if (methodName in [
+                        'isRequestedSessionIdFromCookie', 'isRequestedSessionIdFromURL', 'isRequestedSessionIdFromUrl',
+                        'authenticate', 'isUserInRole', 'isSecure', 'isAsyncStarted', 'isAsyncSupported']) return false
+
+                    if (methodName == 'getSession') throw new UnsupportedOperationException("You cannot use the session in non-request rendering operations")
+                    if (methodName == 'getInputStream') throw new UnsupportedOperationException("You cannot read the input stream in non-request rendering operations")
+                    if (methodName == 'getProtocol') throw new UnsupportedOperationException("You cannot read the protocol in non-request rendering operations")
+                    if (methodName == 'getScheme') throw new UnsupportedOperationException("You cannot read the scheme in non-request rendering operations")
+                    if (methodName == 'getServerName') throw new UnsupportedOperationException("You cannot read server name in non-request rendering operations")
+                    if (methodName == 'getServerPort') throw new UnsupportedOperationException("You cannot read the server port in non-request rendering operations")
+                    if (methodName == 'getReader') throw new UnsupportedOperationException("You cannot read input in non-request rendering operations")
+                    if (methodName == 'getRemoteAddr') throw new UnsupportedOperationException("You cannot read the remote address in non-request rendering operations")
+                    if (methodName == 'getRemoteHost') throw new UnsupportedOperationException("You cannot read the remote host in non-request rendering operations")
+                    if (methodName == 'getRequestDispatcher') throw new UnsupportedOperationException("You cannot use the request dispatcher in non-request rendering operations")
+                    if (methodName == 'getRemotePort') throw new UnsupportedOperationException("You cannot read the remote port in non-request rendering operations")
+
+                    if (methodName == 'getParts') return []
+
+                    if (methodName == 'getAttribute') return attributes[args[0]]
+                    if (methodName == 'getAttributeNames') return attributes.keys()
+                    if (methodName == 'setAttribute') {
+                        String name = args[0]
+                        Object o = args[1]
+                        if (o == null) {
+                            attributes.remove name
+                        }
+                        else {
+                            attributes[name] = o
+                        }
+                        return null
+                    }
+                    if (methodName == 'removeAttribute') {
+                        attributes.remove args[0]
+                        return null
+                    }
+
+                    if (methodName == 'getLocale') return Locale.getDefault()
+                    if (methodName == 'getLocales') return new IteratorEnumeration(Locale.getAvailableLocales().iterator())
+
+                    if (methodName == 'getParameter') return params[args[0]]
+                    if (methodName == 'getParameterNames') return params.keys()
+                    if (methodName == 'getParameterValues') return [] as String[]
+                    if (methodName == 'getParameterMap') return params
+
+                    if (methodName == 'getContentLength') return 0
+
+                    if ('getHeaderNames'.equals(methodName) || 'getHeaders'.equals(methodName)) {
+                        return Collections.enumeration(Collections.emptySet())
+                    }
+
+                    return null
+                }
+            })
         }
     }
 
-    class PageRenderResponse implements HttpServletResponse {
+    static class PageRenderResponseCreator {
 
-        String characterEncoding = "UTF-8"
-        String contentType
-        Locale locale = Locale.getDefault()
-        PrintWriter writer
-        int bufferSize = 0
+        static HttpServletResponse createInstance(final PrintWriter writer) {
 
-        PageRenderResponse(PrintWriter writer) {
-            this.writer = writer
-        }
+            String characterEncoding = "UTF-8"
+            String contentType
+            int bufferSize = 0
 
-        void addCookie(Cookie cookie) {
-            // no-op
-        }
+            Proxy.newProxyInstance(HttpServletResponse.classLoader, [HttpServletResponse] as Class[], new InvocationHandler() {
+                Object invoke(proxy, Method method, Object[] args) {
 
-        boolean containsHeader(String name) { false }
+                    String methodName = method.name
 
-        String encodeURL(String url) { url }
+                    if (methodName == 'getContentType') return contentType
+                    if (methodName == 'setContentType') {
+                        contentType = args[0]
+                        return null
+                    }
+                    if (methodName == 'getCharacterEncoding') return characterEncoding
+                    if (methodName == 'setCharacterEncoding') {
+                        characterEncoding = args[0]
+                        return null
+                    }
+                    if (methodName == 'getBufferSize') return bufferSize
+                    if (methodName == 'setBufferSize') {
+                        bufferSize = args[0]
+                        return null
+                    }
 
-        String encodeRedirectURL(String url) { url }
+                    if (methodName == 'containsHeader' || methodName == 'isCommitted') return false
 
-        String encodeUrl(String url) { url }
+                    if (methodName in ['encodeURL', 'encodeRedirectURL', 'encodeUrl', 'encodeRedirectUrl']) return args[0]
 
-        String encodeRedirectUrl(String url) { url }
+                    if (methodName == 'getOutputStream') throw new UnsupportedOperationException("You cannot use the OutputStream in non-request rendering operations. Use getWriter() instead")
 
-        void sendError(int sc, String msg) {
-            // no-op
-        }
+                    if (methodName == 'getHeaderNames') return []
 
-        void sendError(int sc) {
-            // no-op
-        }
+                    if (methodName == 'getLocale') return Locale.getDefault()
 
-        void sendRedirect(String location) {
-            // no-op
-        }
+                    if (methodName == 'getStatus') return 0
 
-        void setDateHeader(String name, long date) {
-            // no-op
-        }
-
-        void addDateHeader(String name, long date) {
-            // no-op
-        }
-
-        void setHeader(String name, String value) {
-            // no-op
-        }
-
-        void addHeader(String name, String value) {
-            // no-op
-        }
-
-        void setIntHeader(String name, int value) {
-            // no-op
-        }
-
-        void addIntHeader(String name, int value) {
-            // no-op
-        }
-
-        void setStatus(int sc) {
-            // no-op
-        }
-
-        void setStatus(int sc, String sm) {
-            // no-op
-        }
-
-        int getStatus() {
-            return 0
-        }
-
-        String getHeader(String name) {
-            return null
-        }
-
-        Collection<String> getHeaders(String name) {
-            return null
-        }
-
-        Collection<String> getHeaderNames() {
-            return Collections.emptyList()
-        }
-
-        ServletOutputStream getOutputStream() {
-            throw new UnsupportedOperationException("You cannot use the OutputStream in non-request rendering operations. Use getWriter() instead")
-        }
-
-        void setContentLength(int len) {
-            // no-op
-        }
-
-        void flushBuffer() {
-           // no-op
-        }
-
-        void resetBuffer() {
-           // no-op
-        }
-
-        boolean isCommitted() { false }
-
-        void reset() {
-            // no-op
+                    return null
+                }
+            })
         }
     }
 }
