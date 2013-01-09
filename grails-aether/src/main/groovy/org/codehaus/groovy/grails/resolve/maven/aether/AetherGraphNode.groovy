@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.resolve.maven.aether
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.reporting.GraphNode
+import org.sonatype.aether.artifact.Artifact
 import org.sonatype.aether.graph.DependencyNode
 import org.sonatype.aether.resolution.DependencyResult
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator
@@ -29,21 +30,21 @@ import org.sonatype.aether.util.graph.PreorderNodeListGenerator
  */
 @CompileStatic
 class AetherGraphNode extends GraphNode{
-    AetherGraphNode(DependencyResult dependencyResult) {
+    AetherGraphNode(DependencyResult dependencyResult, List<Artifact> unresolved) {
         super(new Dependency("org.grails.internal", "root", "1.0")) // version numbers not relevant for root node / dummy object
-        createGraph(this, dependencyResult.root.children)
+        createGraph(this, dependencyResult.root.children, unresolved)
     }
 
-    void createGraph(GraphNode current, List<DependencyNode> nodes) {
+    void createGraph(GraphNode current, List<DependencyNode> nodes, List<Artifact> unresolved) {
             for(DependencyNode node in nodes) {
                 def dependency = node.dependency
                 if (dependency) {
 
                     def artifact = dependency.artifact
-                    if (artifact.file) {
+                    if (artifact.file || unresolved.contains(artifact)) {
                         def graphNode = new GraphNode(new Dependency(artifact.groupId, artifact.artifactId, artifact.version))
                         current.children << graphNode
-                        createGraph(graphNode, node.children)
+                        createGraph(graphNode, node.children, unresolved)
                     }
                 }
             }

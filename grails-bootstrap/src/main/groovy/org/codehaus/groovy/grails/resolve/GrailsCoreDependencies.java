@@ -60,7 +60,7 @@ public class GrailsCoreDependencies {
         this.java5compatible = java5compatible;
 
         buildDependencies = Arrays.asList(
-            new Dependency("xalan","serializer", "2.7.1", true),
+            new Dependency("xalan","serializer", "2.7.1", true, "xml-apis:xml-apis"),
             new Dependency("org.grails", "grails-bootstrap", grailsVersion, true ),
             new Dependency("org.grails", "grails-scripts", grailsVersion, true )
         );

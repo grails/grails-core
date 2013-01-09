@@ -38,9 +38,14 @@ import org.sonatype.aether.graph.Exclusion
 import org.sonatype.aether.repository.LocalRepository
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.repository.RepositoryPolicy
+import org.sonatype.aether.resolution.ArtifactResolutionException
+import org.sonatype.aether.resolution.ArtifactResult
 import org.sonatype.aether.resolution.DependencyRequest
+import org.sonatype.aether.resolution.DependencyResolutionException
 import org.sonatype.aether.resolution.DependencyResult
 import org.sonatype.aether.transfer.AbstractTransferListener
+import org.sonatype.aether.transfer.ArtifactNotFoundException
+import org.sonatype.aether.transfer.ArtifactTransferException
 import org.sonatype.aether.transfer.TransferCancelledException
 import org.sonatype.aether.transfer.TransferEvent
 import org.sonatype.aether.util.artifact.DefaultArtifact
@@ -126,12 +131,40 @@ class AetherDependencyManager implements DependencyManager{
     }
 
     private void reportOnScope(String scope, String desc) {
-        DependencyNode dependencyNode = collectDependencies(scope)
-        DependencyResult result = resolveToResult(dependencyNode, scope)
+        DependencyNode root = collectDependencies(scope)
+        DependencyResult result
+
+        List<Artifact> unresolved = []
+        try {
+            result = resolveToResult(root, scope)
+        } catch (DependencyResolutionException e) {
+            result = e.result
+            final cause = e.cause
+            if (cause instanceof ArtifactResolutionException) {
+                List<ArtifactResult> results = cause.getResults()
+                for(ArtifactResult r in results) {
+                    if (!r.isResolved()) {
+                        if (r.artifact)
+                            unresolved << r.artifact
+                        else {
+                            if (r.exceptions) {
+                                def ex = r.exceptions[0]
+                                if (ex instanceof ArtifactTransferException) {
+                                    if (ex.getArtifact()) {
+                                        unresolved << ex.getArtifact()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            GrailsConsole.instance.error("${e.message} (scope: $scope)", e)
+        }
 
         def nlg = new PreorderNodeListGenerator()
-        dependencyNode.accept nlg
-        AetherGraphNode node = new AetherGraphNode(result)
+        root.accept nlg
+        AetherGraphNode node = new AetherGraphNode(result, unresolved)
 
         def renderer = new SimpleGraphRenderer(scope, "$desc (total: ${nlg.files.size()})")
         renderer.render(node)
@@ -176,7 +209,14 @@ class AetherDependencyManager implements DependencyManager{
 
         DependencyNode node = collectDependencies(scope)
 
-        resolveToResult(node, scope)
+        try {
+            resolveToResult(node, scope)
+        } catch (org.sonatype.aether.resolution.DependencyResolutionException e) {
+            def nlg = new PreorderNodeListGenerator()
+            node.accept nlg
+
+            return new AetherDependencyReport(nlg, scope, e)
+        }
 
 
         def nlg = new PreorderNodeListGenerator()
@@ -236,6 +276,7 @@ class AetherDependencyManager implements DependencyManager{
             collectRequest.setDependencies(buildDependencies)
         else
             collectRequest.setDependencies(dependencies)
+
         collectRequest.setRepositories(repositories)
 
         DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot()
@@ -261,7 +302,7 @@ class AetherDependencyManager implements DependencyManager{
         final mavenDependency = new org.sonatype.aether.graph.Dependency(new DefaultArtifact(dependency.pattern), "compile", false, exclusions)
         grailsDependencies << dependency
         grailsDependenciesByScope["build"] << dependency
-        dependencies << mavenDependency
+        buildDependencies << mavenDependency
         if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
             grailsPluginDependencies << dependency
         }

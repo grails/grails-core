@@ -29,4 +29,9 @@ class GraphNode {
 
     Dependency dependency
     Collection<GraphNode> children = []
+
+    @Override
+    String toString() {
+        dependency.toString()
+    }
 }
