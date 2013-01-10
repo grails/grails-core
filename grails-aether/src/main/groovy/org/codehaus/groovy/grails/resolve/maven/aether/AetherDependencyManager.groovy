@@ -68,7 +68,6 @@ import org.sonatype.aether.util.repository.DefaultProxySelector
 class AetherDependencyManager implements DependencyManager{
 
     static final String DEFAULT_CACHE = "${System.getProperty('user.home')}/.m2/repository"
-
     static final Map<String, List<String>> SCOPE_MAPPINGS = [compile:['compile'],
                                                              optional:['optional'],
                                                              runtime:['compile', 'optional','runtime'],
@@ -125,7 +124,15 @@ class AetherDependencyManager implements DependencyManager{
     MavenRepositorySystemSession getSession() {
         return session
     }
-/**
+
+
+
+    void produceReport(String scope) {
+        final desc = BuildSettings.SCOPE_TO_DESC[scope]
+        if (desc)
+            reportOnScope(scope, desc)
+    }
+    /**
      * Produces a report printed to System.out of the dependency graph
      */
     void produceReport() {

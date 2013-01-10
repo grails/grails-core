@@ -34,6 +34,13 @@ public interface DependencyManager {
     void produceReport();
 
     /**
+     * Outputs the dependency graph to System.out
+     *
+     * @param scope The scope of the report
+     */
+    void produceReport(String scope);
+
+    /**
      * Creates a copy of this dependency manager with repository configuration retained but dependencies omitted.
      *
      * @param buildSettings The BuildSettings

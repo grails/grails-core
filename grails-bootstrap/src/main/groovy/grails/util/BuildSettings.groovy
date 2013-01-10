@@ -42,6 +42,7 @@ import static grails.build.logging.GrailsConsole.instance as CONSOLE
  */
 class BuildSettings extends AbstractBuildSettings {
 
+
     static final String BUILD_SCOPE = "build"
     static final String COMPILE_SCOPE = "compile"
     static final String RUNTIME_SCOPE = "runtime"
@@ -54,6 +55,14 @@ class BuildSettings extends AbstractBuildSettings {
     static final String TEST_SCOPE_DESC = "Dependencies needed for test compilation and execution but not at runtime"
     static final String PROVIDED_SCOPE_DESC = "Dependencies needed at development time, but not during deployment"
 
+
+    static final Map<String, String> SCOPE_TO_DESC = [
+        (BuildSettings.BUILD_SCOPE): BuildSettings.BUILD_SCOPE_DESC,
+        (BuildSettings.PROVIDED_SCOPE): BuildSettings.PROVIDED_SCOPE_DESC,
+        (BuildSettings.COMPILE_SCOPE): BuildSettings.COMPILE_SCOPE_DESC,
+        (BuildSettings.RUNTIME_SCOPE): BuildSettings.RUNTIME_SCOPE_DESC,
+        (BuildSettings.TEST_SCOPE): BuildSettings.TEST_SCOPE_DESC
+    ]
 
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
 

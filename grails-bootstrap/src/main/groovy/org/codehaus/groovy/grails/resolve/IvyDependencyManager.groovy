@@ -453,6 +453,13 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         convertToGrailsDependencies(dependencyDescriptors.findAll { it.scope == scope })
     }
 
+    void produceReport(String scope) {
+        final desc = BuildSettings.SCOPE_TO_DESC[scope]
+        if (desc) {
+            reportOnScope(scope, desc)
+        }
+    }
+
     @Override
     @CompileStatic
     void produceReport() {
