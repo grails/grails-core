@@ -114,7 +114,10 @@ class AetherDependencyManager implements DependencyManager{
         }
     }
 
-    /**
+    MavenRepositorySystemSession getSession() {
+        return session
+    }
+/**
      * Produces a report printed to System.out of the dependency graph
      */
     void produceReport() {

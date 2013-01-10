@@ -38,18 +38,41 @@ class RepositoryConfiguration {
     void mavenLocal() {
         // noop.. enabled by default
     }
-    void mavenCentral() {
-        if (! repositories.find{ ArtifactRepository ar -> ar.id == "mavenCentral"} )
-            repositories << new RemoteRepository( "mavenCentral", "default", "http://repo1.maven.org/maven2/" );
+    RemoteRepository mavenCentral() {
+        if (! repositories.find{ ArtifactRepository ar -> ar.id == "mavenCentral"} ) {
+            final repository = new RemoteRepository("mavenCentral", "default", "http://repo1.maven.org/maven2/")
+            repositories << repository
+            return repository
+        };
     }
 
-    void grailsCentral() {
-        if (! repositories.find{ ArtifactRepository ar -> ar.id == "grailsCentral"} )
-            repositories << new RemoteRepository( "grailsCentral", "default", "http://repo.grails.org/grails/plugins" );
+    RemoteRepository grailsCentral() {
+        if (! repositories.find{ ArtifactRepository ar -> ar.id == "grailsCentral"} ) {
+            final repository = new RemoteRepository("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
+            repositories << repository
+            return repository
+        };
     }
 
-    void mavenRepo(String url) {
-        if (! repositories.find{ ArtifactRepository ar -> ar.id == url} )
-            repositories << new RemoteRepository( url, "default", url);
+    RemoteRepository mavenRepo(String url) {
+        if (! repositories.find{ ArtifactRepository ar -> ar.id == url} ) {
+            final repository = new RemoteRepository(url, "default", url)
+            repositories << repository
+            return repository
+        };
+    }
+
+    RemoteRepository mavenRepo(Map<String, String> properties) {
+        final url = properties.url
+        def id = properties.id ?: properties.name ?: url
+
+        if (id && properties.url) {
+            if (! repositories.find{ ArtifactRepository ar -> ar.id == url} ) {
+                final repository = new RemoteRepository(id, "default", url)
+                repositories << repository
+                return repository
+            };
+
+        }
     }
 }

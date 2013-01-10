@@ -3,6 +3,8 @@ package org.codehaus.groovy.grails.resolve.maven
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
+import org.sonatype.aether.repository.Authentication
+import org.sonatype.aether.repository.RemoteRepository
 import spock.lang.Specification
 
 /**
@@ -158,5 +160,32 @@ class AetherDependencyManagerSpec extends Specification {
             applicationDependencies.size() == 1
             allDependenices.size() > 1
 
+    }
+
+    void "Test configure authentication" () {
+        given: "A dependency manager instance"
+        def dependencyManager = new AetherDependencyManager()
+        dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
+
+
+        when:"Credentials are specified"
+            Authentication authentication
+            RemoteRepository repository
+            dependencyManager.parseDependencies {
+                authentication = credentials {
+                    username = "foo"
+                    password = "bar"
+                    id = "grailsCentral"
+                }
+                repositories {
+                    repository  = mavenRepo( id:'grailsCentral', url:"http://repo.grails.org/grails/core" )
+                }
+            }
+        then:"The credentials are correctly populated"
+            authentication.username == "foo"
+            authentication.password == "bar"
+            repository.id == 'grailsCentral'
+            repository.url == "http://repo.grails.org/grails/core"
+            dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }
 }

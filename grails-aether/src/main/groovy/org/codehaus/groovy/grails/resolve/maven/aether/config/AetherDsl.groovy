@@ -20,9 +20,11 @@ import org.apache.maven.repository.internal.MavenRepositorySystemSession
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.Exclusion
+import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.RepositoryPolicy
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
+import org.sonatype.aether.util.repository.DefaultAuthenticationSelector
 
 /**
  * Core of the DSL for configuring Aether dependency resolution
@@ -40,6 +42,38 @@ class AetherDsl {
 
     AetherDsl(AetherDependencyManager dependencyManager) {
         this.dependencyManager = dependencyManager
+    }
+
+    /**
+     * Sets up authentication for a repository
+     *
+     * @param c The credentials
+     * @return The Authentication instance
+     */
+    Authentication credentials(Closure c) {
+        def map = [:]
+        c.setDelegate(map)
+
+        c.call()
+
+        def id = map.id ?: map.host
+        if (map.username && map.password && id) {
+            def a = new Authentication(map.username.toString(), map.password.toString())
+
+            if (map.privateKeyFile) {
+                a = a.setPrivateKeyFile(map.privateKeyFile.toString())
+            }
+            if (map.passphrase) {
+                a = a.setPassphrase(map.passphrase.toString())
+            }
+
+            final selector = session.authenticationSelector
+            if (selector instanceof DefaultAuthenticationSelector) {
+                selector.add(id.toString(), a)
+            }
+            return a
+        }
+        return null
     }
 
     @Deprecated
