@@ -13,4 +13,3 @@ dependencies {
     testRuntime "jline:jline:$jlineVersion"
     testRuntime "org.fusesource.jansi:jansi:$jansiVersion"
 }
-jar.appendix = 'plugin-controllers'

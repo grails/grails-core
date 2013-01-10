@@ -24,8 +24,6 @@ dependencies {
 }
 
 
-jar.appendix = 'aether'
-
 install.doLast {
     final aetherConf = new File("$rootProject.projectDir/conf/aether-starter.conf")
     aetherConf.parentFile.mkdirs()

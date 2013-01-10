@@ -7,4 +7,3 @@ dependencies {
 
     compile project(':grails-logging')
 }
-jar.appendix = 'plugin-log4j'

@@ -25,7 +25,6 @@ dependencies {
     optional project(":grails-core"),
             project(":grails-web")
 }
-jar.appendix = 'plugin-tomcat'
 sourceSets {
     main {
         compileClasspath += files(configurations.optional)

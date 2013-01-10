@@ -1,4 +1,3 @@
 dependencies {
     compile project(':grails-hibernate')
 }
-jar.appendix = 'crud'

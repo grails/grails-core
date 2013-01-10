@@ -93,5 +93,3 @@ test {
     forkEvery = 100
     maxHeapSize = '1024m'
 }
-
-jar.appendix = 'hibernate'

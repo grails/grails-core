@@ -16,4 +16,3 @@ dependencies {
         exclude group:"org.codehaus.gant", module:"gant_groovy1.8"
     }
 }
-jar.appendix = 'spring'

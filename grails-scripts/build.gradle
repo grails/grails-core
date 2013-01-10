@@ -45,7 +45,6 @@ sourceSets {
     }
 }
 
-jar.appendix = 'scripts'
 
 eclipse {
     classpath {

@@ -17,4 +17,3 @@ sourceSets {
         compileClasspath += files(configurations.optional)
     }
 }
-jar.appendix = 'plugin-url-mappings'

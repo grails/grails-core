@@ -61,7 +61,6 @@ jar {
     from compileJsp21Groovy.outputs.files
 }
 
-jar.appendix = 'web'
 
 eclipse {
     classpath {

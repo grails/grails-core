@@ -11,4 +11,3 @@ dependencies {
 
     compile project(":grails-web")
 }
-jar.appendix = 'test'

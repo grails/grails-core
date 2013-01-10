@@ -55,7 +55,7 @@ processResources {
     filter(ReplaceTokens, tokens:[version:version])
 }
 
-jar.appendix = 'bootstrap'
+//jar.appendix = 'bootstrap'
 jar {
     from compileUaaGroovy.outputs.files
 }

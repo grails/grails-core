@@ -53,5 +53,3 @@ dependencies {
     }
 
 }
-
-jar.appendix = 'plugin-testing'

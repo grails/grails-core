@@ -39,7 +39,6 @@ task docFilesJar(type: Jar, description: 'Package up files used for generating d
 }
 
 jar.dependsOn docFilesJar
-jar.appendix = 'docs'
 
 eclipse {
     classpath {

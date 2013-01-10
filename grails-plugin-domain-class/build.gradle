@@ -39,5 +39,3 @@ dependencies {
     }
     runtime project(":grails-plugin-i18n") // for messageSource
 }
-
-jar.appendix = 'plugin-domain-class'
