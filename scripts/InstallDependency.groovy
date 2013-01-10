@@ -40,7 +40,7 @@ target(main:"Install a JAR dependency into a project") {
     }
 
     if (dep) {
-        def manager = new IvyDependencyManager(grailsAppName, grailsAppVersion, grailsSettings)
+        def manager = grailsSettings.createNewDependencyManager() 
         manager.parseDependencies {
             repositories {
                 grailsPlugins()
@@ -51,9 +51,6 @@ target(main:"Install a JAR dependency into a project") {
                 mavenRepo "http://repository.codehaus.org"
                 mavenRepo "http://download.java.net/maven/2/"
                 mavenRepo "http://repository.jboss.com/maven2/"
-                mavenRepo "http://repository.springsource.com/maven/bundles/release"
-                mavenRepo "http://repository.springsource.com/maven/bundles/external"
-                mavenRepo "http://repository.springsource.com/maven/bundles/milestone"
                 if (argsMap.repository) {
                     mavenRepo argsMap.repository.toString()
                 }
@@ -65,7 +62,7 @@ target(main:"Install a JAR dependency into a project") {
         }
 
         grailsConsole.updateStatus "Installing dependency '${dep}'. Please wait.."
-        def report = manager.resolveDependencies()
+        def report = manager.resolve()
         if (report.hasError()) {
             grailsConsole.error """
 There was an error resolving the dependency '${dep}'.
@@ -74,7 +71,7 @@ Try passing a valid Maven repository with the --repository argument."""
             exit 1
         }
 
-        for (File file in report.allArtifactsReports.localFile) {
+        for (File file in report.allArtifacts) {
             if (argsMap.dir) {
                 ant.copy(file:file, todir:argsMap.dir)
                 grailsConsole.updateStatus "Installed dependency '${dep}' to location '${argsMap.dir}'"

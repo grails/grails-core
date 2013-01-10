@@ -1166,7 +1166,7 @@ class BuildSettings extends AbstractBuildSettings {
             }
         }
 
-        dependencyManager = configureDependencyManager(this)
+        dependencyManager = configureDependencyManager()
         def pluginDirs = getPluginDirectories()
         for (dir in pluginDirs) {
             handleInlinePlugin(dir.name, dir)
@@ -1220,17 +1220,29 @@ class BuildSettings extends AbstractBuildSettings {
 
 
     @CompileStatic
-    DependencyManager configureDependencyManager(BuildSettings buildSettings) {
+    DependencyManager configureDependencyManager() {
         DependencyManagerConfigurer configurer = new DependencyManagerConfigurer();
 
         if(useMavenDependencyResolver) {
-            return configurer.configureAether(buildSettings)
+            return configurer.configureAether(this)
         }
         else {
 
-            return configurer.configureIvy(buildSettings);
+            return configurer.configureIvy(this);
         }
     }
+
+    @CompileStatic
+    DependencyManager createNewDependencyManager() {
+
+        if(useMavenDependencyResolver) {
+            return DependencyManagerConfigurer.createAetherDependencyManager(this)
+        }
+        else {
+            return DependencyManagerConfigurer.createIvyDependencyManager(this);
+        }
+    }
+
 
     @CompileStatic
     protected ConfigObject loadSettingsFile() {

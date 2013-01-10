@@ -25,19 +25,8 @@ class DependencyManagerConfigurer {
     DependencyManager configureAether(BuildSettings buildSettings) {
         final grailsHome = buildSettings.grailsHome
         final grailsVersion = buildSettings.grailsVersion
-        def lc = new LoaderConfiguration()
-        lc.setRequireMain(false)
-        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
-        new File(grailsHome, "conf/aether-starter.conf").withInputStream { InputStream it ->
-            lc.configure(it)
-        }
-
-        GroovyClassLoader classLoader = new GroovyClassLoader()
-        final jarFiles = lc.getClassPathUrls()
-        for(jar in jarFiles) {
-            classLoader.addURL(jar)
-        }
-        DependencyManager aetherDependencyManager = (DependencyManager)classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager").newInstance()
+        GroovyClassLoader classLoader = configureAetherClassLoader(grailsHome)
+        DependencyManager aetherDependencyManager = loadAetherDependencyManager(classLoader)
 
         final coreDeps = classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies")
             .newInstance(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel))
@@ -47,6 +36,33 @@ class DependencyManagerConfigurer {
             setProxy(aetherDependencyManager, buildSettings.proxySettings)
         }
         return aetherDependencyManager
+    }
+
+//    @CompileStatic
+    static DependencyManager createAetherDependencyManager(BuildSettings buildSettings) {
+        loadAetherDependencyManager( configureAetherClassLoader(buildSettings.grailsHome) )
+    }
+
+    @CompileStatic
+    private static DependencyManager loadAetherDependencyManager(GroovyClassLoader classLoader) {
+        (DependencyManager) classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager").newInstance()
+    }
+
+    @CompileStatic
+    private static GroovyClassLoader configureAetherClassLoader(File grailsHome) {
+        def lc = new LoaderConfiguration()
+        lc.setRequireMain(false)
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
+        new File(grailsHome, "conf/aether-starter.conf").withInputStream { InputStream it ->
+            lc.configure(it)
+        }
+
+        GroovyClassLoader classLoader = new GroovyClassLoader()
+        final jarFiles = lc.getClassPathUrls()
+        for (jar in jarFiles) {
+            classLoader.addURL(jar)
+        }
+        classLoader
     }
 
     void setProxy(DependencyManager dependencyManager, ConfigObject config) {
@@ -69,15 +85,8 @@ class DependencyManagerConfigurer {
 
     DependencyManager configureIvy(BuildSettings buildSettings) {
         ConfigObject config = buildSettings.config
-        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN)
-
-        Metadata metadata = Metadata.getCurrent()
-        def appName = metadata.getApplicationName() ?: "grails"
         final grailsVersion = buildSettings.grailsVersion
-        def appVersion = metadata.getApplicationVersion() ?: grailsVersion
-
-        def dependencyManager = new IvyDependencyManager(appName,
-            appVersion, buildSettings, metadata)
+        IvyDependencyManager dependencyManager = createIvyDependencyManager( buildSettings)
 
         dependencyManager.offline = buildSettings.isOffline()
         dependencyManager.includeJavadoc = buildSettings.isIncludeJavadoc()
@@ -119,6 +128,19 @@ class DependencyManagerConfigurer {
         }
 
         return dependencyManager
+    }
+
+//    @CompileStatic
+    public static IvyDependencyManager createIvyDependencyManager(BuildSettings buildSettings) {
+        Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN)
+
+        Metadata metadata = Metadata.getCurrent()
+        def appName = metadata.getApplicationName() ?: "grails"
+        def appVersion = metadata.getApplicationVersion() ?: buildSettings.grailsVersion
+
+        def dependencyManager = new IvyDependencyManager(appName,
+            appVersion, buildSettings, metadata)
+        dependencyManager
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
