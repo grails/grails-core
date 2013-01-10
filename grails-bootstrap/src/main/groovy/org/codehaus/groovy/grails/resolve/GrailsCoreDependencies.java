@@ -30,6 +30,7 @@ public class GrailsCoreDependencies {
 
     public final String grailsVersion;
     public final String servletVersion;
+    protected final String groovyVersion = "2.0.6";
     protected final String log4jVersion = "1.2.16";
     protected final String h2Version = "1.3.164";
     protected final String ehcacheVersion = "2.4.6";
@@ -79,6 +80,7 @@ public class GrailsCoreDependencies {
 
 
         compileDependencies = Arrays.asList(
+            new Dependency("org.codehaus.groovy", "groovy-all", groovyVersion, true),
             new Dependency("org.grails", "grails-plugin-codecs", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-controllers", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-domain-class", grailsVersion, true),
