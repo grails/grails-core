@@ -18,6 +18,7 @@ import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
 import org.apache.maven.repository.internal.MavenRepositorySystemSession
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
+import org.codehaus.plexus.logging.Logger
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.Exclusion
 import org.sonatype.aether.repository.Authentication
@@ -106,15 +107,18 @@ class AetherDsl {
     }
 
     void log(String level) {
-        // TODO: Handle logging activation
-//        switch(level) {
-//            case "warn":
-//            case "error":
-//            case "info":
-//            case "debug":
-//            case "verbose":
-//            default:
-//        }
+        switch(level) {
+            case "warn":
+                dependencyManager.loggerManager.threshold = Logger.LEVEL_WARN; break
+            case "error":
+                dependencyManager.loggerManager.threshold = Logger.LEVEL_ERROR; break
+            case "info":
+                dependencyManager.loggerManager.threshold = Logger.LEVEL_INFO; break
+            case "debug":
+                dependencyManager.loggerManager.threshold = Logger.LEVEL_DEBUG; break
+            case "verbose":
+                dependencyManager.loggerManager.threshold = Logger.LEVEL_DEBUG; break
+        }
     }
 
     void inherits(String name, Closure customizer = null) {

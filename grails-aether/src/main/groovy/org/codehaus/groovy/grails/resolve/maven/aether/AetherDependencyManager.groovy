@@ -27,6 +27,7 @@ import org.apache.maven.settings.building.SettingsBuilder
 import org.apache.maven.settings.building.SettingsBuildingResult
 import org.codehaus.groovy.grails.resolve.DependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
+import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
 import org.codehaus.plexus.DefaultPlexusContainer
 import org.sonatype.aether.RepositorySystem
@@ -97,6 +98,8 @@ class AetherDependencyManager implements DependencyManager{
 
     private ModelBuilder modelBuilder
 
+    GrailsConsoleLoggerManager loggerManager
+
     AetherDependencyManager() {
 
         final currentThread = Thread.currentThread()
@@ -105,6 +108,8 @@ class AetherDependencyManager implements DependencyManager{
         try {
             currentThread.setContextClassLoader(getClass().getClassLoader());
             final container = new DefaultPlexusContainer()
+            loggerManager = new GrailsConsoleLoggerManager()
+            container.setLoggerManager(loggerManager)
 
             repositorySystem = container.lookup(RepositorySystem.class)
             settingsBuilder = container.lookup(SettingsBuilder.class)
