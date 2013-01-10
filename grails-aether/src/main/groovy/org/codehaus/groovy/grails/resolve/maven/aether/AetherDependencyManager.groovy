@@ -35,7 +35,9 @@ import org.sonatype.aether.collection.CollectRequest
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.DependencyNode
 import org.sonatype.aether.graph.Exclusion
+import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.LocalRepository
+import org.sonatype.aether.repository.Proxy
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.repository.RepositoryPolicy
 import org.sonatype.aether.resolution.ArtifactResolutionException
@@ -44,7 +46,6 @@ import org.sonatype.aether.resolution.DependencyRequest
 import org.sonatype.aether.resolution.DependencyResolutionException
 import org.sonatype.aether.resolution.DependencyResult
 import org.sonatype.aether.transfer.AbstractTransferListener
-import org.sonatype.aether.transfer.ArtifactNotFoundException
 import org.sonatype.aether.transfer.ArtifactTransferException
 import org.sonatype.aether.transfer.TransferCancelledException
 import org.sonatype.aether.transfer.TransferEvent
@@ -52,6 +53,8 @@ import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.filter.ScopeDependencyFilter
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
+import org.sonatype.aether.util.repository.DefaultProxySelector
+
 
 /**
  * An implementation of the {@link DependencyManager} interface that uses Aether, the dependency resolution
@@ -247,6 +250,13 @@ class AetherDependencyManager implements DependencyManager{
     private DependencyNode collectDependencies(String scope) {
         SettingsBuildingResult result = settingsBuilder.build(new DefaultSettingsBuildingRequest())
         settings = result.getEffectiveSettings()
+        final proxyHost = System.getProperty("http.proxyHost")
+        final proxyPort = System.getProperty("http.proxyPort")
+        if(proxyHost && proxyPort) {
+            final proxyUser = System.getProperty("http.proxyUserName")
+            final proxyPass = System.getProperty("http.proxyPassword")
+            addProxy(proxyHost, proxyPort, proxyUser, proxyPass, System.getProperty('http.nonProxyHosts'))
+        }
 
         session.setOffline(settings.offline)
         session.setTransferListener(new AbstractTransferListener() {
@@ -284,6 +294,26 @@ class AetherDependencyManager implements DependencyManager{
 
         DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot()
         node
+    }
+
+    public org.sonatype.aether.repository.Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {
+        Proxy proxy
+        if (proxyHost && proxyPort ) {
+            if (proxyUser && proxyPass) {
+                proxy = new Proxy("http", proxyHost, proxyPort.toInteger(), new Authentication(proxyUser, proxyPass))
+            } else {
+
+                proxy = new Proxy("http", proxyHost, proxyPort.toInteger(), null)
+            }
+        }
+        if (proxy) {
+            final selector = session.getProxySelector()
+            if (selector instanceof DefaultProxySelector) {
+                selector.add(proxy, nonProxyHosts)
+            }
+        }
+
+        return proxy
     }
 
     public void addDependency(Dependency dependency) {

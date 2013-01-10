@@ -43,7 +43,18 @@ class DependencyManagerConfigurer {
             .newInstance(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel))
         prepareAetherDependencies(aetherDependencyManager, buildSettings, coreDeps)
 
+        if (buildSettings.proxySettings) {
+            setProxy(aetherDependencyManager, buildSettings.proxySettings)
+        }
         return aetherDependencyManager
+    }
+
+    void setProxy(DependencyManager dependencyManager, ConfigObject config) {
+        final host = config.proxyHost ?: null
+        final port = config.proxyPort ?: null
+        if (host && port) {
+            dependencyManager.addProxy(host, port, config.proxyUser ?: null, config.proxyPassword ?: null, config.nonProxyHosts ?: null)
+        }
     }
 
     private static void prepareAetherDependencies(aetherDependencyManager, BuildSettings buildSettings, coreDeps) {
