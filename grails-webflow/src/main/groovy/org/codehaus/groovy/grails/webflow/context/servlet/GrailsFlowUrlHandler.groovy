@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlCreator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.webflow.execution.GrailsFlowExecutorImpl
 
 /**
@@ -54,7 +55,17 @@ class GrailsFlowUrlHandler extends DefaultFlowUrlHandler implements ApplicationC
         def newParams = [execution:flowExecutionKey]
         for (entry in params) {
             def key = entry.key
-            if (key instanceof String) {
+            if (entry.value instanceof GrailsParameterMap) {
+                // GrailsParameterMap objects in the GrailsWebRequest parameters are synthetically created
+                // and added when the "params" attribute (of a redirect call in a controller, for instance)
+                // contains structured keys, e.g., "params: ['customer.id': 123]". In this case a new
+                // GrailsParameterMap object will be created and added to the controller's params map
+                // with the key/value, customer: [id:123]. These synthetic GrailsParameterMap parameters
+                // should not be included in the resulting flow execution URL as they can interfere
+                // with the original parameters, 'customer.id' in this case, when the flow execution URL
+                // is parsed by the flow execution engine.
+                continue
+            } else if (key instanceof String) {
                 if (key.startsWith("_event") || key == 'execution') continue
 
                 newParams[key] = entry.value
