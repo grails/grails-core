@@ -51,12 +51,12 @@ target(dependencyReport:"Produces a dependency report for the current Grails app
         ant.copy file: "${targetDir}/org.grails.internal-${grailsAppName}-runtime.html",
                  tofile: "${targetDir}/index.html"
 
-        grailsSettings.dependencyManager.produceReport()
+        grailsSettings.dependencyManager.produceReport( args.trim() ?: null )
         grailsConsole.addStatus "Dependency report output to [${targetDir}/index.html]"
 
     }
     else {
-        grailsSettings.dependencyManager.produceReport()
+        grailsSettings.dependencyManager.produceReport( args.trim() ?: null )
     }
     
 }
