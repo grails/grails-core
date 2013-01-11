@@ -449,7 +449,7 @@ public class AntPathMatcher {
      * @author Rossen Stoyanchev
      * @since 3.0
      */
-    class AntPathStringMatcher {
+     static class AntPathStringMatcher {
 
         private static final Pattern GLOB_PATTERN = Pattern.compile("\\?|\\*|\\{((?:\\{[^/]+?\\}|[^/{}]|\\\\[{}])+?)\\}");
 
