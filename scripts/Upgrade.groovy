@@ -215,8 +215,6 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         }
     }
 
-    installDefaultPluginSet()
-
     event("StatusUpdate", ["Please make sure you view the README for important information about changes to your source code."])
 
     event("StatusFinal", ["Project upgraded"])
