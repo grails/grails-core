@@ -137,6 +137,12 @@ subprojects { project ->
         options.debug = true
     }
 
+    configure([javadoc]) {
+        options.encoding "UTF-8"
+        options.docEncoding "UTF-8"
+        options.charSet "UTF-8"
+    }
+
     idea {
         module.iml.whenMerged { module ->
             // adding slf4j-simple with scope TEST to .iml
