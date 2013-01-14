@@ -25,6 +25,7 @@ task copyScript(type: Copy) {
 task runtimeJar(type: Jar) {
     // TODO
     from('build/classes/main')
+    appendix = 'runtime'
 }
 
 jar {
@@ -34,10 +35,11 @@ jar {
   }
   // TODO
   exclude 'org/**'
+  appendix = 'support'
 }
 
 artifacts {
-  runtime /*supportJar,*/ runtimeJar
+  runtime runtimeJar
 }
 
 jar.dependsOn copyScript
