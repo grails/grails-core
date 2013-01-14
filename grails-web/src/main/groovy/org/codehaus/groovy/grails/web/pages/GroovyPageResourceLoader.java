@@ -107,14 +107,12 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
         for(GrailsPluginInfo pluginInfo: pluginSettings.getSupportedPluginInfos()) {
             if (pluginInfo.getFullName().equals(pluginFullName)) {
                 try {
-                    File pluginDir = pluginInfo.getPluginDir().getFile();
                     // find out whether plugin is inline one
-                    // unfortunately pluginSettings.isInlinePluginLocation() does not work, paths are compare incorrectly
-                    for (org.codehaus.groovy.grails.io.support.Resource pluginDirResource: pluginSettings.getInlinePluginDirectories()) {
-                        if (!compareFilePaths(pluginDirResource.getFile(), pluginDir)) {
-                            continue;
-                        }
+                    if (!isInlinePlugin(pluginInfo)) {
+                        // plugin is not inline one, return null
+                        return null;
                     }
+                    File pluginDir = pluginInfo.getPluginDir().getFile();
                     File pageFile = new File(pluginDir, pathRelativeToPlugin);
                     if (pageFile.exists()) {
                         return new FileSystemResource(pageFile);
@@ -131,6 +129,16 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
             }
         }
         return null;
+    }
+
+    protected boolean isInlinePlugin(GrailsPluginInfo pluginInfo) throws IOException {
+        // unfortunately pluginSettings.isInlinePluginLocation() does not work, paths are compare incorrectly
+        for (org.codehaus.groovy.grails.io.support.Resource pluginDirResource: pluginSettings.getInlinePluginDirectories()) {
+            if (compareFilePaths(pluginDirResource.getFile(), pluginInfo.getPluginDir().getFile())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     protected boolean compareFilePaths(File f1, File f2) {
