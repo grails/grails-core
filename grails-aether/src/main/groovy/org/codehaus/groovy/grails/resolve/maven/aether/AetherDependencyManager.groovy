@@ -131,6 +131,9 @@ class AetherDependencyManager implements DependencyManager{
         final desc = BuildSettings.SCOPE_TO_DESC[scope]
         if (desc)
             reportOnScope(scope, desc)
+        else {
+            produceReport()
+        }
     }
     /**
      * Produces a report printed to System.out of the dependency graph
