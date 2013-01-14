@@ -17,9 +17,11 @@ To install Grails, visit http://grails.org/Download and download the version you
 	cd sampleapp
 	grails run-app
 	
-To build Grails, clone this GitHub repository and then in a shell, type the following:
-	
-	./gradlew install
+To build Grails, clone this GitHub repository and execute the install Gradle target:
+
+    git clone https://github.com/grails/grails-core.git
+    cd grails-core
+    ./gradlew install
 	
 License
 ---
