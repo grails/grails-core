@@ -36,12 +36,9 @@ jar {
   exclude 'org/**'
 }
 
-//supportJar.appendix = 'wrapper-support'
-jar.appendix = 'wrapper-support'
-runtimeJar.appendix = 'wrapper-runtime'
-
 artifacts {
   runtime /*supportJar,*/ runtimeJar
 }
 
 jar.dependsOn copyScript
+
