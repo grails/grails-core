@@ -13,6 +13,10 @@ buildscript {
 
 apply plugin: 'idea'
 
+ext.optionalDeps = []
+ext.providedDeps = []
+
+ext.provided = { providedDeps << it }
 ext {
     grailsVersion = '2.3.0.BUILD-SNAPSHOT'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
@@ -308,6 +312,14 @@ subprojects { project ->
 
     // Remove any dependencies that shouldn't be included in the POM
     modifyPom { pom ->
+        // respect 'optional' and 'provided' dependencies
+        optionalDeps.each { dep ->
+            pom.dependencies.find { it.artifactId == dep.name }?.optional = true
+        }
+        providedDeps.each { dep ->
+            pom.dependencies.find { it.artifactId == dep.name }?.scope = 'provided'
+        }
+
         configurations.runtime.allDependencies.each { dependency ->
             if (dependency.hasProperty("notInPom") && dependency.notInPom) {
                 pom.dependencies.removeAll { it.groupId == dependency.group && it.artifactId == dependency.name }

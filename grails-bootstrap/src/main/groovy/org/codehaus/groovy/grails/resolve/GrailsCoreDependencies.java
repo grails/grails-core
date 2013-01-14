@@ -36,14 +36,15 @@ public class GrailsCoreDependencies {
     protected final String ehcacheVersion = "2.4.6";
     protected final String jaxbVersion = "2.0";
     protected final String tomcatVersion = "7.0.30";
+    private String servletApiVersion = "3.0.1";
 
     public boolean java5compatible;
     protected Collection<Dependency> buildDependencies;
     protected Collection<Dependency> docDependencies;
     protected Collection<Dependency> providedDependencies;
     protected Collection<Dependency> compileDependencies;
-    protected Collection<Dependency> runtimeDependencies;
 
+    protected Collection<Dependency> runtimeDependencies;
     protected Collection<Dependency> testDependencies;
 
 
@@ -73,6 +74,7 @@ public class GrailsCoreDependencies {
         );
 
         providedDependencies = Arrays.asList(
+            new Dependency("javax.servlet","javax.servlet-api", servletApiVersion, true),
             new Dependency("org.apache.tomcat.embed", "tomcat-embed-core", tomcatVersion, true),
             new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", tomcatVersion, true),
             new Dependency("org.apache.tomcat.embed", "tomcat-embed-logging-log4j", tomcatVersion, true)

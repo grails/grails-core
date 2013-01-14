@@ -3,7 +3,7 @@ configurations {
 }
 dependencies {
 
-    compile 'javax.servlet:javax.servlet-api:3.0.1'
+    compile 'javax.servlet:javax.servlet-api:3.0.1', provided
     compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile "commons-io:commons-io:${commonsIOVersion}"
