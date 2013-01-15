@@ -20,8 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.support.StaticResourceLoader;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
 import org.springframework.core.io.FileSystemResource;
@@ -85,23 +87,9 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
                 if (r.exists()) return r;
             }
 
-            org.codehaus.groovy.grails.io.support.Resource[] inlinePluginDirectories = pluginSettings.getInlinePluginDirectories();
-            for (org.codehaus.groovy.grails.io.support.Resource inlinePluginDirectory : inlinePluginDirectories) {
-                try {
-                    File dirFile = inlinePluginDirectory.getFile();
-                    File pageFile = new File(dirFile, pathRelativeToPlugin);
-                    if (pageFile.exists()) {
-                        return new FileSystemResource(pageFile);
-                    }
-
-                    String pathToInlinePluginView = buildPluginViewPathFromBase(dirFile.getAbsolutePath(), pathRelativeToPlugin, new StringBuilder("file:"));
-                    Resource resource = super.getResource(pathToInlinePluginView);
-                    if (resource.exists()) {
-                        return resource;
-                    }
-                } catch (IOException e) {
-                    // ignore
-                }
+            Resource r = findInInlinePlugin(pluginName, pathRelativeToPlugin);
+            if (r != null && r.exists()) {
+                return r;
             }
         }
 
@@ -112,6 +100,49 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
                     "] (exists? [" + resource.exists() + "]) using base resource [" + localBaseResource + "]");
         }
         return resource;
+    }
+
+    protected Resource findInInlinePlugin(String pluginFullName, String pathRelativeToPlugin) {
+        // find plugins between all available
+        for(GrailsPluginInfo pluginInfo: pluginSettings.getSupportedPluginInfos()) {
+            if (pluginInfo.getFullName().equals(pluginFullName)) {
+                try {
+                    // find out whether plugin is inline one
+                    if (!isInlinePlugin(pluginInfo)) {
+                        // plugin is not inline one, return null
+                        return null;
+                    }
+                    File pluginDir = pluginInfo.getPluginDir().getFile();
+                    File pageFile = new File(pluginDir, pathRelativeToPlugin);
+                    if (pageFile.exists()) {
+                        return new FileSystemResource(pageFile);
+                    }
+
+                    String pathToInlinePluginView = buildPluginViewPathFromBase(pluginDir.getAbsolutePath(), pathRelativeToPlugin, new StringBuilder("file:"));
+                    Resource resource = super.getResource(pathToInlinePluginView);
+                    if (resource.exists()) {
+                        return resource;
+                    }
+                } catch (IOException e) {
+                    // ignore
+                }
+            }
+        }
+        return null;
+    }
+
+    protected boolean isInlinePlugin(GrailsPluginInfo pluginInfo) throws IOException {
+        // unfortunately pluginSettings.isInlinePluginLocation() does not work, paths are compare incorrectly
+        for (org.codehaus.groovy.grails.io.support.Resource pluginDirResource: pluginSettings.getInlinePluginDirectories()) {
+            if (compareFilePaths(pluginDirResource.getFile(), pluginInfo.getPluginDir().getFile())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected boolean compareFilePaths(File f1, File f2) {
+        return FilenameUtils.normalizeNoEndSeparator(f1.getAbsolutePath()).equals(FilenameUtils.normalizeNoEndSeparator(f2.getAbsolutePath()));
     }
 
     protected String buildPluginViewPath(String pluginBaseDirectory, String pluginName, String pathRelativeToPlugin) {
