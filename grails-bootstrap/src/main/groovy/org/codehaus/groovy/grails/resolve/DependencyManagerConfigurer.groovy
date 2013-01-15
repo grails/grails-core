@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.resolve
 
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
+import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
@@ -26,6 +27,14 @@ class DependencyManagerConfigurer {
         final grailsHome = buildSettings.grailsHome
         final grailsVersion = buildSettings.grailsVersion
         GroovyClassLoader classLoader = configureAetherClassLoader(grailsHome)
+        if (Environment.isFork()) {
+            def defaultLog4j = new Properties()
+            defaultLog4j."log4j.rootLogger"="error, stdout"
+            defaultLog4j."log4j.appender.stdout"="org.apache.log4j.ConsoleAppender"
+            defaultLog4j."log4j.appender.stdout.layout"="org.apache.log4j.PatternLayout"
+
+            configureDefaultLog4j(classLoader, defaultLog4j)
+        }
         DependencyManager aetherDependencyManager = loadAetherDependencyManager(classLoader)
 
         final coreDeps = classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies")
@@ -36,6 +45,14 @@ class DependencyManagerConfigurer {
             setProxy(aetherDependencyManager, buildSettings.proxySettings)
         }
         return aetherDependencyManager
+    }
+
+    public void configureDefaultLog4j(GroovyClassLoader classLoader, Properties defaultLog4j) {
+        try {
+            classLoader.loadClass("org.apache.log4j.PropertyConfigurator").configure(defaultLog4j)
+        } catch (e) {
+            // ignore
+        }
     }
 
 //    @CompileStatic
