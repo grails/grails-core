@@ -1,5 +1,8 @@
 
 dependencies {
 
-    compile project(":grails-tomcat"),project(":grails-core")
+    compile project(":grails-tomcat")
+    compile project(":grails-core"), {
+        ext.notInPom = true
+    }
 }
