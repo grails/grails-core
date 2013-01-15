@@ -1064,6 +1064,26 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
+
+    @CompileStatic
+    static void initialiseDefaultLog4j(ClassLoader classLoader) {
+        def defaultLog4j = new Properties()
+        defaultLog4j."log4j.rootLogger"="error, stdout"
+        defaultLog4j."log4j.appender.stdout"="org.apache.log4j.ConsoleAppender"
+        defaultLog4j."log4j.appender.stdout.layout"="org.apache.log4j.PatternLayout"
+
+        configureDefaultLog4j(classLoader, defaultLog4j)
+    }
+
+    private static void configureDefaultLog4j(ClassLoader classLoader, Properties defaultLog4j) {
+        try {
+            classLoader.loadClass("org.apache.log4j.PropertyConfigurator").configure(defaultLog4j)
+        } catch (e) {
+            // ignore
+        }
+    }
+
+
     @CompileStatic
     ConfigObject loadConfig(ConfigObject config) {
         try {

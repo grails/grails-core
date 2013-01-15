@@ -29,8 +29,11 @@ import org.springframework.util.ReflectionUtils
 /**
  * Provides common functionality for the inline and isolated variants of tomcat server.
  *
- * @see IsolatedWarTomcatServer
- * @see InlineExplodedTomcatServer
+ *
+ * @author Graeme Rocher
+ * @see org.grails.plugins.tomcat.fork.TomcatWarRunner
+ * @see org.grails.plugins.tomcat.fork.TomcatDevelopmentRunner
+ *
  */
 abstract class TomcatServer implements EmbeddableServer {
 

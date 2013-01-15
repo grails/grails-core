@@ -22,6 +22,9 @@ import groovy.transform.CompileStatic
 
 /**
  * Serves a packaged war, in a forked JVM.
+ *
+ * @author Graeme Rocher
+ * @deprecated No longer used, Replaced by {@link org.grails.plugins.tomcat.fork.TomcatWarRunner} and {@link org.grails.plugins.tomcat.fork.ForkedTomcatServer}
  */
 class IsolatedWarTomcatServer extends TomcatServer {
 

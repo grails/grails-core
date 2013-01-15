@@ -22,6 +22,8 @@ import org.apache.coyote.http11.Http11NioProtocol
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.grails.plugins.tomcat.fork.ForkedTomcatServer
+
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import org.apache.tomcat.util.scan.StandardJarScanner
 import org.springframework.util.ReflectionUtils
@@ -140,7 +142,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
         tomcat.start()
         if (Environment.isFork()) {
-            IsolatedTomcat.startKillSwitch(tomcat, httpPort)
+            ForkedTomcatServer.startKillSwitch(tomcat, httpPort)
         }
     }
 

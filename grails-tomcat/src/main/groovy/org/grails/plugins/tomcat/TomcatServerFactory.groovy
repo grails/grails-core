@@ -41,7 +41,7 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
     }
 
     @CompileStatic
-    private ForkedTomcatServer createForked(String contextPath, forkConfig) {
+    private ForkedTomcatServer createForked(String contextPath, forkConfig, boolean warMode = false) {
         TomcatExecutionContext ec = new TomcatExecutionContext()
         List<File> buildDependencies = buildMinimalIsolatedClasspath()
 
@@ -58,6 +58,10 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
         ec.projectPluginsDir = buildSettings.projectPluginsDir
         ec.testClassesDir = buildSettings.testClassesDir
         ec.resourcesDir = buildSettings.resourcesDir
+        if (warMode) {
+
+            ec.warPath = buildSettings.projectWarFile.canonicalPath
+        }
 
         final forkedTomcat = new ForkedTomcatServer(ec)
         if (forkConfig instanceof Map) {
@@ -85,6 +89,7 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
     }
 
     EmbeddableServer createForWAR(String warPath, String contextPath) {
-        return new IsolatedWarTomcatServer(warPath, contextPath)
+        buildSettings.projectWarFile = new File(warPath)
+        return createForked(contextPath, buildSettings?.forkSettings?.get("run") ?: [:], true)
     }
 }

@@ -47,7 +47,9 @@ abstract class ForkedGrailsProcess {
         final Map<String, Object> runSettings = (Map<String, Object>) forkConfig
         runSettings.each { Map.Entry<String, Object> entry ->
             try {
-                ((GroovyObject)this).setProperty(entry.getKey(),entry.getValue())
+                GroovyObject go = (GroovyObject) this
+                if (go.hasProperty(entry.key))
+                    go.setProperty(entry.getKey(),entry.getValue())
             } catch (MissingPropertyException e) {
                 // ignore
             }

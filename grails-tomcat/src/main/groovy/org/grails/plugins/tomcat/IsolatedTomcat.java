@@ -26,6 +26,7 @@ import org.apache.coyote.http11.Http11NioProtocol;
  * An isolated version of Tomcat used to run Grails applications with run-war.
  *
  * @author Graeme Rocher
+ * @deprecated No longer used, Replaced by {@link org.grails.plugins.tomcat.fork.TomcatWarRunner} and {@link org.grails.plugins.tomcat.fork.ForkedTomcatServer}
  * @since 2.0
  */
 public class IsolatedTomcat {
