@@ -13,6 +13,7 @@ include 'grails-bootstrap',
         'grails-resources',
         'grails-scripts',
         'grails-logging',
+        'grails-tomcat',
         'grails-wrapper',
         
         // Plugins

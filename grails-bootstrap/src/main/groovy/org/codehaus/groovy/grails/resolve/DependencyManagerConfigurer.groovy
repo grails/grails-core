@@ -52,6 +52,7 @@ class DependencyManagerConfigurer {
     private static GroovyClassLoader configureAetherClassLoader(File grailsHome) {
         def lc = new LoaderConfiguration()
         lc.setRequireMain(false)
+        System.setProperty("grails.home", grailsHome.canonicalPath)
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
         new File(grailsHome, "conf/aether-starter.conf").withInputStream { InputStream it ->
             lc.configure(it)

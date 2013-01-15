@@ -79,7 +79,7 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
     @CompileStatic
     private List<File> buildMinimalIsolatedClasspath() {
         List<File> buildDependencies = ForkedGrailsProcess.buildMinimalIsolatedClasspath(buildSettings)
-        final tomcatJars = IsolatedWarTomcatServer.findTomcatJars(buildSettings)
+        final tomcatJars = ForkedTomcatServer.findTomcatJars(buildSettings)
         buildDependencies.addAll(tomcatJars.findAll { File f -> !f.name.contains('juli')})
         return buildDependencies
     }

@@ -158,6 +158,7 @@ abstract class ForkedGrailsProcess {
         return null
     }
 
+    @CompileStatic
     public static List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         List<File> buildDependencies = []
 
