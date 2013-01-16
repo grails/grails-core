@@ -29,6 +29,7 @@ import org.springframework.context.ApplicationContext;
  * to allow interaction with the Grails domain model.
  *
  * @author Graeme Rocher
+ * @deprecated
  * @since 0.2
  */
 public class Console extends groovy.ui.Console {

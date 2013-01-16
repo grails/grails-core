@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.project.ui
 
 import grails.util.BuildSettings
+import grails.util.Environment
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.ui.Console
@@ -89,7 +90,15 @@ class GrailsProjectConsole extends BaseSettingsApi{
         def b = new Binding()
         b.setVariable("ctx",applicationContext)
         b.setVariable("grailsApplication", grailsApplication)
-        def groovyConsole = new Console(grailsApplication.classLoader, b)
+        def groovyConsole = new Console(grailsApplication.classLoader, b)  {
+            @Override
+            void exit(EventObject evt) {
+                super.exit(evt)
+                if (Environment.isFork()) {
+                    System.exit(0)
+                }
+            }
+        }
         groovyConsole.beforeExecution = {
             applicationContext.getBeansOfType(PersistenceContextInterceptor).each { String k,  PersistenceContextInterceptor v ->
                 v.init()

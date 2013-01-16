@@ -22,12 +22,6 @@
  * @since 0.4
  */
 
-import java.awt.Window
-import java.awt.event.FocusEvent
-import java.awt.event.FocusListener
-
-import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
-import org.codehaus.groovy.grails.support.*
 import org.codehaus.groovy.grails.cli.interactive.*
 
 includeTargets << grailsScript("_GrailsBootstrap")
@@ -39,11 +33,33 @@ target ('default': "Load the Grails interactive Swing console") {
 projectConsole = new org.codehaus.groovy.grails.project.ui.GrailsProjectConsole(projectLoader)
 target(console:"The console implementation target") {
 
-    try {
-        projectConsole.run()
-    } catch (Exception e) {
-        grailsConsole.error "Error starting console: ${e.message}", e
+    def forkSettings = grailsSettings.forkSettings
+    def forkConfig = forkSettings?.console
+    if(forkConfig == false) {
+        try {
+            projectConsole.run()
+        } catch (Exception e) {
+            grailsConsole.error "Error starting console: ${e.message}", e
+        }        
     }
+    else {
+        def forkedConsole = new grails.ui.console.GrailsSwingConsole(grailsSettings)
+        if(forkConfig instanceof Map) {
+            forkedConsole.configure(forkConfig)
+        }
+        if(InteractiveMode.active) {
+            grailsConsole.addStatus "Running Grails Console..."
+            Thread.start {
+
+                forkedConsole.fork()        
+            }
+        }
+        else {
+            forkedConsole.fork()
+        }
+        
+    }
+
 }
 
 createConsole = {

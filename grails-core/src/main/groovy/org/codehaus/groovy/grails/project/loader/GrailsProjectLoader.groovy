@@ -63,7 +63,10 @@ class GrailsProjectLoader extends BaseSettingsApi{
 
     GrailsProjectLoader(BuildSettings buildSettings) {
         super(buildSettings, new GrailsBuildEventListener( new GroovyClassLoader(Thread.currentThread().contextClassLoader), new Binding(),buildSettings), false)
-        this.projectPackager = new GrailsProjectPackager(new GrailsProjectCompiler(new PluginBuildSettings(buildSettings)))
+        final projectCompiler = new GrailsProjectCompiler(new PluginBuildSettings(buildSettings))
+        projectCompiler.configureClasspath()
+        this.projectPackager = new GrailsProjectPackager(projectCompiler)
+
     }
 
     GrailsProjectLoader(GrailsProjectPackager projectPackager) {

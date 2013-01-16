@@ -204,6 +204,7 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     protected URLClassLoader createClassLoader(BuildSettings buildSettings) {
         def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURI().toURL() }
+        urls.addAll(buildSettings.providedDependencies.collect { File f -> f.toURI().toURL() })
         urls.add(buildSettings.classesDir.toURI().toURL())
         urls.add(buildSettings.pluginClassesDir.toURI().toURL())
         urls.add(buildSettings.pluginBuildClassesDir.toURI().toURL())
