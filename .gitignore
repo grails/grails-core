@@ -53,6 +53,7 @@ target
 /grails-plugin-services/bin/
 /grails-plugin-servlets/bin/
 /grails-plugin-testing/bin/
+/grails-plugin-tomcat/bin/
 /grails-plugin-url-mappings/bin/
 /grails-plugin-validation/bin/
 /grails-scripts/bin/
