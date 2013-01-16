@@ -72,6 +72,7 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
 
     EmbeddableServer createForWAR(String warPath, String contextPath) {
         buildSettings.projectWarFile = new File(warPath)
-        return createForked(contextPath, buildSettings?.forkSettings?.get("run") ?: [:], true)
+        final forkConfig = buildSettings?.forkSettings?.get("war") ?: buildSettings?.forkSettings?.get("run") ?: [:]
+        return createForked(contextPath, forkConfig, true)
     }
 }
