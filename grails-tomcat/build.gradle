@@ -1,0 +1,8 @@
+def tomcatVersion = '7.0.30'
+
+dependencies {
+    compile project(':grails-bootstrap'), project(':grails-core')
+    compile "org.apache.tomcat.embed:tomcat-embed-core:$tomcatVersion"
+    compile "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
+}
+
