@@ -1590,4 +1590,15 @@ class BuildSettings extends AbstractBuildSettings {
     boolean isPluginProject() {
         getBasePluginDescriptor() != null
     }
+
+    /**
+     * @return The path to the Config.groovy file (not to be confused with BuildConfig.groovy)
+     */
+    String getConfigFilePath() {
+        configFile.absolutePath
+    }
+
+    File getConfigFile() {
+        new File(baseDir, "grails-app/conf/Config.groovy")
+    }
 }

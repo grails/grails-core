@@ -68,6 +68,10 @@ class GrailsProjectPackager extends BaseSettingsApi {
     private boolean doCompile
     private File webXmlFile
 
+    GrailsProjectPackager(GrailsProjectCompiler compiler, boolean doCompile = true) {
+        this(compiler, new File(compiler.buildSettings.configFilePath), doCompile)
+    }
+
     GrailsProjectPackager(GrailsProjectCompiler compiler, File configFile, boolean doCompile = true) {
         super(compiler.buildSettings, false)
         projectCompiler = compiler

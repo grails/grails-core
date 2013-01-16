@@ -33,7 +33,7 @@ public class PluginPathAwareFileSystemResourceLoader extends FileSystemResourceL
     public static final String WEB_APP_DIRECTORY = "web-app";
     ResourceLocator resourceLocator = new DefaultResourceLocator();
 
-    void setSearchLocations(Collection<String> searchLocations) {
+    public void setSearchLocations(Collection<String> searchLocations) {
         resourceLocator.setSearchLocations(searchLocations);
     }
 

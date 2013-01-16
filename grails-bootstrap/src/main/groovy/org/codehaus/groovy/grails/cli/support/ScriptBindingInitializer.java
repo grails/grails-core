@@ -116,7 +116,7 @@ public class ScriptBindingInitializer {
          binding.setVariable("defaultEnv", settings.getDefaultEnv());
          binding.setVariable("buildConfig", settings.getConfig());
          binding.setVariable("rootLoader", settings.getRootLoader());
-         binding.setVariable("configFile", new File(baseDirPath + "/grails-app/conf/Config.groovy"));
+         binding.setVariable("configFile", settings.getConfigFile());
 
          // Add the project paths too!
          String grailsWork = settings.getGrailsWorkDir().getPath();

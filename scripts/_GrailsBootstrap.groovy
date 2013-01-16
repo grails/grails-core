@@ -14,20 +14,7 @@
  * limitations under the License.
  */
 
-import grails.spring.WebBeanBuilder
-import org.codehaus.groovy.grails.support.CommandLineResourceLoader
-import org.codehaus.groovy.grails.cli.jndi.JndiBindingSupport
-import org.codehaus.groovy.grails.commons.ApplicationAttributes
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsResourceLoaderFactoryBean
-import org.codehaus.groovy.grails.commons.spring.GrailsResourceHolder
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.codehaus.groovy.grails.core.io.PluginPathAwareFileSystemResourceLoader
-import org.springframework.mock.web.MockServletContext
-import org.springframework.web.context.WebApplicationContext
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+
 
 /**
  * Gant script that bootstraps a running Grails instance without a
@@ -41,64 +28,22 @@ includeTargets << grailsScript("_GrailsPackage")
 parentContext = null // default parent context is null
 
 target(loadApp:"Loads the Grails application object") {
-    event("AppLoadStart", ["Loading Grails Application"])
-    profile("Loading parent ApplicationContext") {
-        def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
-        beanDefinitions = builder.beans {
-            grailsApplication(DefaultGrailsApplication, pluginSettings.getArtefactResourcesForCurrentEnvironment())
-        }
-    }
+    def projectLoader = new org.codehaus.groovy.grails.project.loader.GrailsProjectLoader(projectPackager)
 
-    appCtx = beanDefinitions.createApplicationContext()
-    def ctx = appCtx
+    grailsApp = projectLoader.loadApplication()
+    pluginManager = projectLoader.pluginManager
+    servletContext = projectLoader.servletContext
+    appCtx = projectLoader.applicationContext
 
-    // The mock servlet context needs to resolve resources relative to the 'web-app'
-    // directory. We also need to use a FileSystemResourceLoader, otherwise paths are
-    // evaluated against the classpath - not what we want!
-    def resourceLoader = new PluginPathAwareFileSystemResourceLoader()
-    def locations = new ArrayList(grailsSettings.pluginDirectories.collect { it.absolutePath })
-    locations << grailsSettings.baseDir.absolutePath
-    resourceLoader.searchLocations = locations
-    servletContext = new MockServletContext('web-app', resourceLoader)
-    ctx.servletContext = servletContext
-    grailsApp = ctx.grailsApplication
-    ApplicationHolder.application = grailsApp
-    packageApp()
-    PluginManagerHolder.pluginManager = null
-    loadPlugins()
-    pluginManager.application = grailsApp
-    pluginManager.doArtefactConfiguration()
-
-    def builder = new WebBeanBuilder(ctx)
-    newBeans = builder.beans {
-        delegate."pluginManager"(MethodInvokingFactoryBean) {
-            targetClass = grails.util.Holders
-            targetMethod = "getPluginManager"
-        }
-    }
-    newBeans.beanDefinitions.each { name, definition ->
-        ctx.registerBeanDefinition(name, definition)
-    }
-
-    grailsApp.initialise()
     event("AppLoadEnd", ["Loading Grails Application"])
 }
 
 target(configureApp:"Configures the Grails application and builds an ApplicationContext") {
-    event("AppCfgStart", ["Configuring Grails Application"])
-    appCtx.resourceLoader = new  CommandLineResourceLoader()
-    profile("Performing runtime Spring configuration") {
-        def configurer = new GrailsRuntimeConfigurator(grailsApp, appCtx)
-        def jndiEntries = config?.grails?.naming?.entries
-
-        if ((jndiEntries instanceof Map) && jndiEntries) {
-            def jndiBindingSupport = new JndiBindingSupport(jndiEntries)
-            jndiBindingSupport.bind()
-        }
-        appCtx = configurer.configure(servletContext)
-        servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT,appCtx)
-        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
-    }
+    def projectLoader = new org.codehaus.groovy.grails.project.loader.GrailsProjectLoader(projectPackager)
+    appCtx = projectLoader.configureApplication()
+    pluginManager = projectLoader.pluginManager
+    servletContext = projectLoader.servletContext
+    appCtx = projectLoader.applicationContext
     applicationLoaded = true
     event("AppCfgEnd", ["Configuring Grails Application"])
 }
@@ -119,8 +64,6 @@ target(monitorApp:"Monitors an application for changes using the PluginManager a
 }
 
 target(bootstrap: "Loads and configures a Grails instance") {
-    packageApp()
-    loadApp()
     configureApp()
 }
 
