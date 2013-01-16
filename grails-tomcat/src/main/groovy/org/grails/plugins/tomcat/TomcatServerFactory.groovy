@@ -42,25 +42,14 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
 
     @CompileStatic
     private ForkedTomcatServer createForked(String contextPath, forkConfig, boolean warMode = false) {
+        final settings = buildSettings
         TomcatExecutionContext ec = new TomcatExecutionContext()
-        List<File> buildDependencies = buildMinimalIsolatedClasspath()
-
-        ec.buildDependencies = buildDependencies
-        ec.runtimeDependencies = buildSettings.runtimeDependencies
-        ec.providedDependencies = buildSettings.providedDependencies
+        ec.initialize(settings)
         ec.contextPath = contextPath
-        ec.baseDir = buildSettings.baseDir
-        ec.env = Environment.current.name
-        ec.grailsHome = buildSettings.grailsHome
-        ec.classesDir = buildSettings.classesDir
-        ec.grailsWorkDir = buildSettings.grailsWorkDir
-        ec.projectWorkDir = buildSettings.projectWorkDir
-        ec.projectPluginsDir = buildSettings.projectPluginsDir
-        ec.testClassesDir = buildSettings.testClassesDir
-        ec.resourcesDir = buildSettings.resourcesDir
+        ec.resourcesDir = settings.resourcesDir
         if (warMode) {
 
-            ec.warPath = buildSettings.projectWarFile.canonicalPath
+            ec.warPath = settings.projectWarFile.canonicalPath
         }
 
         final forkedTomcat = new ForkedTomcatServer(ec)
@@ -76,16 +65,9 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
         return forkedTomcat
     }
 
+
     private getTomcatJvmArgs() {
         buildSettings.config?.grails?.tomcat?.jvmArgs
-    }
-
-    @CompileStatic
-    private List<File> buildMinimalIsolatedClasspath() {
-        List<File> buildDependencies = ForkedGrailsProcess.buildMinimalIsolatedClasspath(buildSettings)
-        final tomcatJars = ForkedTomcatServer.findTomcatJars(buildSettings)
-        buildDependencies.addAll(tomcatJars.findAll { File f -> !f.name.contains('juli')})
-        return buildDependencies
     }
 
     EmbeddableServer createForWAR(String warPath, String contextPath) {

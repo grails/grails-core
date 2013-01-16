@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.tomcat.fork
 
+import grails.util.BuildSettings
 import grails.web.container.EmbeddableServer
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
@@ -32,4 +33,13 @@ class TomcatExecutionContext extends ExecutionContext {
     int port = EmbeddableServer.DEFAULT_PORT
     int securePort
     String warPath
+
+    @Override
+    protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
+        final buildDependencies = super.buildMinimalIsolatedClasspath(buildSettings)
+        final tomcatJars = ForkedTomcatServer.findTomcatJars(buildSettings)
+        buildDependencies.addAll(tomcatJars.findAll { File f -> !f.name.contains('juli')})
+
+        return buildDependencies
+    }
 }

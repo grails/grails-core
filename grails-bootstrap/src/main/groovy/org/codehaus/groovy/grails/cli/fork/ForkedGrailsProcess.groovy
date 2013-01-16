@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.cli.fork
 import gant.Gant
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
+import grails.util.Environment
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 
@@ -41,6 +43,7 @@ abstract class ForkedGrailsProcess {
     boolean reloading = true
     File reloadingAgent
     List<String> jvmArgs
+    ClassLoader forkedClassLoader
 
     @CompileStatic
     void configure(Map forkConfig) {
@@ -222,6 +225,22 @@ abstract class ForkedGrailsProcess {
         }
     }
 
+    @CompileStatic
+    protected URLClassLoader initializeClassLoader(BuildSettings buildSettings) {
+        URLClassLoader classLoader = createClassLoader(buildSettings)
+        forkedClassLoader = classLoader
+        classLoader
+    }
+
+    @CompileStatic
+    protected BuildSettings initializeBuildSettings(ExecutionContext ec) {
+        def buildSettings = new BuildSettings(ec.grailsHome, ec.baseDir)
+        buildSettings.loadConfig()
+
+        BuildSettingsHolder.settings = buildSettings
+        buildSettings
+    }
+
     protected void initializeLogging(File grailsHome, ClassLoader classLoader) {
         try {
             Class<?> cls = classLoader.loadClass("org.apache.log4j.PropertyConfigurator")
@@ -272,4 +291,25 @@ class ExecutionContext implements Serializable {
 
     String env
     File grailsHome
+
+    void initialize(BuildSettings settings) {
+        List<File> isolatedBuildDependencies = buildMinimalIsolatedClasspath(settings)
+
+        buildDependencies = isolatedBuildDependencies
+        runtimeDependencies = settings.runtimeDependencies
+        providedDependencies = settings.providedDependencies
+        baseDir = settings.baseDir
+        env = Environment.current.name
+        grailsHome = settings.grailsHome
+        classesDir = settings.classesDir
+        grailsWorkDir = settings.grailsWorkDir
+        projectWorkDir = settings.projectWorkDir
+        projectPluginsDir = settings.projectPluginsDir
+        testClassesDir = settings.testClassesDir
+    }
+
+    @CompileStatic
+    protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
+        return ForkedGrailsProcess.buildMinimalIsolatedClasspath(buildSettings)
+    }
 }

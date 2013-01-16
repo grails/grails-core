@@ -35,7 +35,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @Delegate EmbeddableServer tomcatRunner
     TomcatExecutionContext executionContext
-    ClassLoader forkedClassLoader
+
 
     ForkedTomcatServer(TomcatExecutionContext executionContext) {
         this.executionContext = executionContext
@@ -61,14 +61,8 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     @CompileStatic
     def run() {
         TomcatExecutionContext ec = executionContext
-        def buildSettings = new BuildSettings(ec.grailsHome, ec.baseDir)
-        buildSettings.loadConfig()
-
-        BuildSettingsHolder.settings = buildSettings
-
-        URLClassLoader classLoader = createClassLoader(buildSettings)
-        forkedClassLoader = classLoader
-
+        BuildSettings buildSettings = initializeBuildSettings(ec)
+        URLClassLoader classLoader = initializeClassLoader(buildSettings)
         initializeLogging(ec.grailsHome,classLoader)
 
         tomcatRunner = createTomcatRunner(buildSettings, ec, classLoader)
@@ -81,6 +75,8 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
         setupReloading(classLoader, buildSettings)
     }
+
+
 
     @Override
     protected void discoverAndSetAgent(ExecutionContext executionContext) {
