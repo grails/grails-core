@@ -17,17 +17,21 @@ package org.codehaus.groovy.grails.project.loader
 
 import grails.spring.BeanBuilder
 import grails.spring.WebBeanBuilder
+import grails.util.BuildSettings
 import grails.util.Holders
+import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.jndi.JndiBindingSupport
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.core.io.PluginPathAwareFileSystemResourceLoader
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
@@ -46,7 +50,7 @@ import javax.servlet.ServletContext
  * @author Graeme Rocher
  * @since 2.3
  */
-@CompileStatic
+//@CompileStatic  // TODO: report Groovy bug, produces VerifierError with constructors
 class GrailsProjectLoader extends BaseSettingsApi{
 
     ApplicationContext parentContext
@@ -55,7 +59,12 @@ class GrailsProjectLoader extends BaseSettingsApi{
     GrailsPluginManager pluginManager
     boolean applicationLoaded
 
-    private GrailsProjectPackager projectPackager
+    GrailsProjectPackager projectPackager
+
+    GrailsProjectLoader(BuildSettings buildSettings) {
+        super(buildSettings, new GrailsBuildEventListener( new GroovyClassLoader(Thread.currentThread().contextClassLoader), new Binding(),buildSettings), false)
+        this.projectPackager = new GrailsProjectPackager(new GrailsProjectCompiler(new PluginBuildSettings(buildSettings)))
+    }
 
     GrailsProjectLoader(GrailsProjectPackager projectPackager) {
         super(projectPackager.buildSettings, projectPackager.buildEventListener, projectPackager.isInteractive)
@@ -66,12 +75,13 @@ class GrailsProjectLoader extends BaseSettingsApi{
      * Loads the Grails application object
      * @return
      */
+    @CompileStatic
     GrailsApplication loadApplication() {
         buildEventListener.triggerEvent("AppLoadStart", ["Loading Grails Application"])
         BeanBuilder beanDefinitions
         profile("Loading parent ApplicationContext") {
             def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
-            defineParentBeans(builder)
+            beanDefinitions = defineParentBeans(builder)
         }
 
         applicationContext = beanDefinitions.createApplicationContext()
@@ -81,7 +91,7 @@ class GrailsProjectLoader extends BaseSettingsApi{
         // directory. We also need to use a FileSystemResourceLoader, otherwise paths are
         // evaluated against the classpath - not what we want!
         def resourceLoader = new PluginPathAwareFileSystemResourceLoader()
-        def locations = new ArrayList(buildSettings.pluginDirectories.collect { it.absolutePath })
+        def locations = new ArrayList(buildSettings.pluginDirectories.collect { File it -> it.absolutePath })
         locations << buildSettings.baseDir.absolutePath
         resourceLoader.searchLocations = locations
         servletContext = new MockServletContext('web-app', resourceLoader)
@@ -93,7 +103,7 @@ class GrailsProjectLoader extends BaseSettingsApi{
         projectPackager.packageApplication()
         Holders.setPluginManager(null)
         GrailsProjectPluginLoader pluginLoader = new GrailsProjectPluginLoader(grailsApp, grailsApp.classLoader, buildSettings, buildEventListener)
-        pluginLoader.loadPlugins()
+        pluginManager = pluginLoader.loadPlugins()
         pluginManager.application = grailsApp
         pluginManager.doArtefactConfiguration()
 
@@ -101,12 +111,14 @@ class GrailsProjectLoader extends BaseSettingsApi{
 
         grailsApp.initialise()
         buildEventListener.triggerEvent("AppLoadEnd", ["Loading Grails Application"])
+        return grailsApp
     }
 
     /**
      * Configures the Grails application and builds an ApplicationContext
      * @return The ApplicationContext
      */
+    @CompileStatic
     ApplicationContext configureApplication() {
         buildEventListener.triggerEvent("AppCfgStart", ["Configuring Grails Application"])
         GrailsApplication grailsApplication = loadApplication()
@@ -124,6 +136,7 @@ class GrailsProjectLoader extends BaseSettingsApi{
         return applicationContext
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
     protected void configureJndi(GrailsApplication grailsApplication) {
         def jndiEntries = grailsApplication.config?.grails?.naming?.entries
 
@@ -136,7 +149,7 @@ class GrailsProjectLoader extends BaseSettingsApi{
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void registerPluginManagerWithContext(ApplicationContext ctx) {
         def builder = new WebBeanBuilder(ctx)
-        newBeans = builder.beans {
+        def newBeans = builder.beans {
             delegate."pluginManager"(MethodInvokingFactoryBean) {
                 targetClass = Holders
                 targetMethod = "getPluginManager"
@@ -148,7 +161,7 @@ class GrailsProjectLoader extends BaseSettingsApi{
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected void defineParentBeans(WebBeanBuilder builder) {
+    protected BeanBuilder defineParentBeans(WebBeanBuilder builder) {
         builder.beans {
             grailsApplication(DefaultGrailsApplication, pluginSettings.getArtefactResourcesForCurrentEnvironment())
         }

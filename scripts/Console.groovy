@@ -33,57 +33,20 @@ import org.codehaus.groovy.grails.cli.interactive.*
 includeTargets << grailsScript("_GrailsBootstrap")
 
 target ('default': "Load the Grails interactive Swing console") {
-    depends(checkVersion, configureProxy, enableExpandoMetaClass, packageApp, classpath, console)
+    depends(checkVersion, configureProxy, enableExpandoMetaClass, classpath, console)
 }
 
+projectConsole = new org.codehaus.groovy.grails.project.ui.GrailsProjectConsole(projectLoader)
 target(console:"The console implementation target") {
-    depends(loadApp, configureApp)
 
     try {
-        def console = createConsole()
-        console.run()
-        def watcher = new GrailsProjectWatcher(projectCompiler, pluginManager)
-        watcher.start()
-
-        while (console.frame.visible) {
-            sleep 500
-        }
-
-        // Keep the console running until all windows are closed unless the
-        // interactive console is in use. The interactive console keeps the
-        // VM alive so we don't need to keep this thread running.
-        while (!InteractiveMode.isActive() && Window.windows.any { it.visible }) {
-            sleep 3000
-        }
+        projectConsole.run()
     } catch (Exception e) {
-        event("StatusFinal", ["Error starting console: ${e.message}"])
+        grailsConsole.error "Error starting console: ${e.message}", e
     }
 }
 
 createConsole = {
-    def b = new Binding(ctx: appCtx, grailsApplication: grailsApp)
-
-    def groovyConsole = new groovy.ui.Console(grailsApp.classLoader, b)
-    groovyConsole.beforeExecution = {
-        appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
-            v.init()
-        }
-    }
-    groovyConsole.afterExecution = {
-        appCtx.getBeansOfType(PersistenceContextInterceptor).each { k,v ->
-            v.flush()
-            v.destroy()
-        }
-    }
-
-    return groovyConsole
+    projectConsole.createConsole()
 }
 
-class ConsoleFocusListener implements FocusListener {
-    String text
-    void focusGained(FocusEvent e) {
-        e.source.text = text
-        e.source.removeFocusListener(this)
-    }
-    void focusLost(FocusEvent e) {}
-}

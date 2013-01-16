@@ -27,9 +27,9 @@ includeTargets << grailsScript("_GrailsPackage")
 
 parentContext = null // default parent context is null
 
-target(loadApp:"Loads the Grails application object") {
-    def projectLoader = new org.codehaus.groovy.grails.project.loader.GrailsProjectLoader(projectPackager)
+projectLoader = new org.codehaus.groovy.grails.project.loader.GrailsProjectLoader(projectPackager)
 
+target(loadApp:"Loads the Grails application object") {
     grailsApp = projectLoader.loadApplication()
     pluginManager = projectLoader.pluginManager
     servletContext = projectLoader.servletContext
@@ -39,7 +39,6 @@ target(loadApp:"Loads the Grails application object") {
 }
 
 target(configureApp:"Configures the Grails application and builds an ApplicationContext") {
-    def projectLoader = new org.codehaus.groovy.grails.project.loader.GrailsProjectLoader(projectPackager)
     appCtx = projectLoader.configureApplication()
     pluginManager = projectLoader.pluginManager
     servletContext = projectLoader.servletContext
