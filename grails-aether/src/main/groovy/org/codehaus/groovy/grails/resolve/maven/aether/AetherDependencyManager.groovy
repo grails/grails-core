@@ -101,6 +101,15 @@ class AetherDependencyManager implements DependencyManager{
 
     GrailsConsoleLoggerManager loggerManager
 
+    /**
+     * Whether to include the javadoc
+     */
+    boolean includeJavadoc
+    /**
+     * Whether to include the source
+     */
+    boolean includeSource
+
     AetherDependencyManager() {
 
         final currentThread = Thread.currentThread()
@@ -239,10 +248,23 @@ class AetherDependencyManager implements DependencyManager{
         try {
             resolveToResult(node, scope)
         } catch (org.sonatype.aether.resolution.DependencyResolutionException e) {
+            boolean failWithException = true
+            if (e.cause instanceof ArtifactResolutionException) {
+                ArtifactResolutionException are = (ArtifactResolutionException) e.cause
+                final unresolved = are.results.findAll { ArtifactResult ar -> !ar.resolved }
+                failWithException = !unresolved.every { ArtifactResult ar ->
+                    ar.request.artifact.classifier == 'javadoc' || ar.request.artifact.classifier == 'sources'
+                }
+            }
             def nlg = new PreorderNodeListGenerator()
             node.accept nlg
 
-            return new AetherDependencyReport(nlg, scope, e)
+            if (failWithException) {
+                return new AetherDependencyReport(nlg, scope, e)
+            }
+            else {
+                return new AetherDependencyReport(nlg, scope)
+            }
         }
 
 
@@ -342,9 +364,25 @@ class AetherDependencyManager implements DependencyManager{
         final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
         grailsDependencies << grailsDependency
         grailsDependenciesByScope[dependency.scope] << grailsDependency
-        dependencies << dependency
+        final aetherDependencies = dependencies
+        aetherDependencies << dependency
         if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
             grailsPluginDependencies << grailsDependency
+        }
+        else {
+            includeJavadocAndSourceIfNecessary(aetherDependencies, dependency)
+        }
+    }
+
+    protected void includeJavadocAndSourceIfNecessary(List<Dependency> aetherDependencies, Dependency dependency) {
+        final artifact = dependency.artifact
+        if (includeJavadoc) {
+            def javadocArtifact = new DefaultArtifact(artifact.groupId, artifact.artifactId, "javadoc", artifact.extension, artifact.version)
+            aetherDependencies << dependency.setArtifact(javadocArtifact)
+        }
+        if (includeSource) {
+            def javadocArtifact = new DefaultArtifact(artifact.groupId, artifact.artifactId, "sources", artifact.extension, artifact.version)
+            aetherDependencies << dependency.setArtifact(javadocArtifact)
         }
     }
 
@@ -360,6 +398,9 @@ class AetherDependencyManager implements DependencyManager{
         if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
             grailsPluginDependencies << dependency
         }
+        else {
+            includeJavadocAndSourceIfNecessary(buildDependencies, mavenDependency)
+        }
     }
 
     public void addBuildDependency(Dependency dependency) {
@@ -370,6 +411,9 @@ class AetherDependencyManager implements DependencyManager{
         buildDependencies << dependency
         if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
             grailsPluginDependencies << grailsDependency
+        }
+        else {
+            includeJavadocAndSourceIfNecessary(buildDependencies, dependency)
         }
     }
 
@@ -386,6 +430,9 @@ class AetherDependencyManager implements DependencyManager{
             dependencies << mavenDependency
             if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
                 grailsPluginDependencies.add dependency
+            }
+            else {
+                includeJavadocAndSourceIfNecessary(buildDependencies, mavenDependency)
             }
         }
     }

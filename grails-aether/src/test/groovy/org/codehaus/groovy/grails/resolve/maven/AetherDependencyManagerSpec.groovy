@@ -11,6 +11,30 @@ import spock.lang.Specification
  */
 class AetherDependencyManagerSpec extends Specification {
 
+    void "Test resolve with source and javadocs"() {
+        given: "A dependency manager instance"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.includeJavadoc = true
+            dependencyManager.includeSource = true
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral()
+                    grailsCentral()
+                }
+                dependencies {
+                    compile "org.grails:grails-bootstrap:2.2.0"
+                }
+            }
+
+        when: "A dependency is resolved"
+            def report = dependencyManager.resolve()
+            println report.files
+        then: "The dependencies are resolved"
+
+            report.files.find { it.name.contains('grails-bootstrap-2.2.0')}
+            report.files.find { it.name.contains('grails-bootstrap-2.2.0-javadoc')}
+            report.files.find { it.name.contains('grails-bootstrap-2.2.0-sources')}
+    }
 
     void "Test simple dependency resolve"() {
         given: "A dependency manager instance"

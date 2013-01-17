@@ -80,6 +80,9 @@ class DependencyManagerConfigurer {
     }
 
     private static void prepareAetherDependencies(aetherDependencyManager, BuildSettings buildSettings, coreDeps) {
+        aetherDependencyManager.includeJavadoc = buildSettings.includeJavadoc
+        aetherDependencyManager.includeSource = buildSettings.includeSource
+
         aetherDependencyManager.inheritedDependencies.global = coreDeps.createDeclaration()
 
         def dependencyConfig = buildSettings.config.grails.project.dependency.resolution
@@ -87,6 +90,7 @@ class DependencyManagerConfigurer {
         if (dependencyConfig instanceof Closure) {
             aetherDependencyManager.parseDependencies(dependencyConfig)
         }
+
     }
 
     DependencyManager configureIvy(BuildSettings buildSettings) {

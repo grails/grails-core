@@ -31,6 +31,11 @@ public interface DependencyReport {
     String getClasspath();
 
     /**
+     * @return The ResolvedArtifactReport instances for all resolved artifacts
+     */
+    List<ResolvedArtifactReport> getResolvedArtifacts();
+
+    /**
      *
      * @return All the artifacts
      */

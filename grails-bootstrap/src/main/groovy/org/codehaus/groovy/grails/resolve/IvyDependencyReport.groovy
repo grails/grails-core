@@ -34,10 +34,13 @@ class IvyDependencyReport implements DependencyReport{
     List<File> allArtifacts = []
     String scope
 
+    private Collection<ArtifactDownloadReport> artifactDownloadReports
+
     IvyDependencyReport(String scope, ResolveReport resolveReport) {
         this.resolveReport = resolveReport
         this.scope = scope
-        this.allArtifacts = resolveReport.getArtifactsReports(null, false).findAll{ ArtifactDownloadReport it -> it.downloadStatus.toString()!= 'failed'}.collect { ArtifactDownloadReport it -> it.localFile }
+        this.artifactDownloadReports = resolveReport.getArtifactsReports(null, false).findAll { ArtifactDownloadReport it -> it.downloadStatus.toString() != 'failed' }
+        this.allArtifacts = artifactDownloadReports.collect { ArtifactDownloadReport it -> it.localFile }
         this.jarFiles = findAndRemovePluginDependencies(this.allArtifacts)
     }
 
@@ -51,6 +54,19 @@ class IvyDependencyReport implements DependencyReport{
         }
         jarFiles = jarFiles.findAll { File it -> it.name.endsWith(".jar") }
         return jarFiles
+    }
+
+    List<ResolvedArtifactReport> getResolvedArtifacts() {
+        List<ResolvedArtifactReport> reports = []
+        for(ArtifactDownloadReport adr in artifactDownloadReports) {
+            final id = adr.artifact.id.moduleRevisionId
+            final file = adr.localFile
+
+            final grailsDependency = new Dependency(id.organisation, id.name, id.revision)
+            grailsDependency.classifier = id.getAttribute("m:classifier")
+            reports << new ResolvedArtifactReport(grailsDependency, file)
+        }
+        return reports
     }
 
     @Override

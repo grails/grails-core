@@ -16,6 +16,7 @@ class Dependency {
     String group
     String name
     String version
+    String classifier
     boolean transitive = true
     boolean inherited = false
 

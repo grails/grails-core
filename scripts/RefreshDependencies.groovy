@@ -38,19 +38,19 @@ target(refreshDependencies:"Refreshes application dependencies, installing any n
             def xml = new MarkupBuilder(writer)
             xml.dependencies {
                 xml.build {
-                   handleArtifactReport(grailsSettings.buildResolveReport.allArtifactsReports, xml)
+                   handleArtifactReport(grailsSettings.buildResolveReport.resolvedArtifacts, xml)
                 }
                 xml.compile {
-                   handleArtifactReport(grailsSettings.compileResolveReport.allArtifactsReports, xml)
+                   handleArtifactReport(grailsSettings.compileResolveReport.resolvedArtifacts, xml)
                 }
                 xml.test {
-                   handleArtifactReport(grailsSettings.testResolveReport.allArtifactsReports, xml)
+                   handleArtifactReport(grailsSettings.testResolveReport.resolvedArtifacts, xml)
                 }
                 xml.runtime {
-                   handleArtifactReport(grailsSettings.runtimeResolveReport.allArtifactsReports, xml)
+                   handleArtifactReport(grailsSettings.runtimeResolveReport.resolvedArtifacts, xml)
                 }
                 xml.provided {
-                   handleArtifactReport(grailsSettings.providedResolveReport.allArtifactsReports, xml)
+                   handleArtifactReport(grailsSettings.providedResolveReport.resolvedArtifacts, xml)
                 }
             }
         }
@@ -60,19 +60,19 @@ target(refreshDependencies:"Refreshes application dependencies, installing any n
 
 private handleArtifactReport(allReports, xml) {
     allReports.findAll { downloadReport ->
-        !downloadReport.localFile.name.endsWith("-sources.jar") && !downloadReport.localFile.name.endsWith("-javadoc.jar")
+        !downloadReport.file.name.endsWith("-sources.jar") && !downloadReport.file.name.endsWith("-javadoc.jar")
     }.each { downloadReport ->
-        def mrid = downloadReport.artifact.moduleRevisionId
-        xml.dependency(group:mrid.organisation, name:mrid.name, version:mrid.revision) {
-            xml.jar downloadReport.localFile
-            def baseName = FilenameUtils.getBaseName(downloadReport.localFile.name)
-            def sourceJar = allReports.find { "$baseName-sources.jar" == it.localFile?.name}
+        def mrid = downloadReport.dependency
+        xml.dependency(group:mrid.group, name:mrid.name, version:mrid.version) {
+            xml.jar downloadReport.file
+            def baseName = FilenameUtils.getBaseName(downloadReport.file.name)
+            def sourceJar = allReports.find { "$baseName-sources.jar" == it.file?.name}
             if (sourceJar) {
-                xml.source sourceJar.localFile
+                xml.source sourceJar.file
             }
-            def javadocJar = allReports.find { "$baseName-javadoc.jar" == it.localFile?.name}
+            def javadocJar = allReports.find { "$baseName-javadoc.jar" == it.file?.name}
             if (javadocJar) {
-                xml.javadoc javadocJar.localFile
+                xml.javadoc javadocJar.file
             }
         }
     }

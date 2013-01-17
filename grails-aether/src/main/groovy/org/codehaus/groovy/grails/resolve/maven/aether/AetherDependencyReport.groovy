@@ -15,7 +15,10 @@
 package org.codehaus.groovy.grails.resolve.maven.aether
 
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyReport
+import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
+import org.sonatype.aether.graph.DependencyNode
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator
 
 /**
@@ -57,6 +60,21 @@ class AetherDependencyReport implements DependencyReport{
     }
     String getClasspath() {
         resolveResult.getClassPath()
+    }
+
+    List<ResolvedArtifactReport> getResolvedArtifacts() {
+        List<ResolvedArtifactReport> reports = []
+        for(DependencyNode node in resolveResult.nodes) {
+            final dependency = node.dependency
+            def f = dependency?.artifact?.file
+            if (f) {
+                final artifact = dependency.artifact
+                final grailsDependency = new Dependency(artifact.groupId, artifact.artifactId, artifact.version)
+                grailsDependency.classifier = artifact.classifier
+                reports << new ResolvedArtifactReport(grailsDependency, f)
+            }
+        }
+        return reports
     }
 
     @Override
