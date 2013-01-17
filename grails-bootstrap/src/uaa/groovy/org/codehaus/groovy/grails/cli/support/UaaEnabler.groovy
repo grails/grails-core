@@ -22,6 +22,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult
+import org.codehaus.groovy.grails.resolve.DependencyManager
 import org.codehaus.groovy.tools.LoaderConfiguration;
 
 import java.io.File;
@@ -126,7 +127,7 @@ Enter Y or N:"""
                         uaaService.registerProductUsage(product)
 
 
-                        URL centralURL = new URL("http://grails.org/plugins/.plugin-meta/plugins-list.xml");
+                        URL centralURL = new URL(DependencyManager.GRAILS_CENTRAL_PLUGIN_LIST);
 
                         InputStream input = null;
 

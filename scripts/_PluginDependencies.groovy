@@ -184,17 +184,25 @@ doInstallPlugin = { pluginName, pluginVersion = null ->
 }
 
 eachRepository = { Closure callable ->
-    IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
-    for (resolver in dependencyManager.chainResolver.resolvers) {
-        if (resolver instanceof GrailsRepoResolver) {
-            pluginsList = resolver.getPluginList(new File("${grailsWorkDir}/plugins-list-${resolver.name}.xml"))
-            if (pluginsList != null) {
-                callable(resolver.name, resolver.repositoryRoot)
-            } else {
-                grailsConsole.error "An error occurred resolving plugin list from resolver [${resolver.name} - ${resolver.repositoryRoot}]."
+    def dependencyManager = grailsSettings.dependencyManager
+    if(dependencyManager instanceof IvyDependencyManager) {
+        for (resolver in dependencyManager.chainResolver.resolvers) {
+            if (resolver instanceof GrailsRepoResolver) {
+                pluginsList = resolver.getPluginList(new File("${grailsWorkDir}/plugins-list-${resolver.name}.xml"))
+                if (pluginsList != null) {
+                    callable(resolver.name, resolver.repositoryRoot)
+                } else {
+                    grailsConsole.error "An error occurred resolving plugin list from resolver [${resolver.name} - ${resolver.repositoryRoot}]."
+                }
             }
+        }        
+    }
+    else {
+        dependencyManager.repositories.each { r ->
+            callable.call(r.id, r.url)
         }
     }
+
 }
 
 private withPluginInstall(Closure callable) {

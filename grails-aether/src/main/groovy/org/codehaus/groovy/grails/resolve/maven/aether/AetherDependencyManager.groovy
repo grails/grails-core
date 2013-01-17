@@ -25,6 +25,7 @@ import org.apache.maven.settings.Settings
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest
 import org.apache.maven.settings.building.SettingsBuilder
 import org.apache.maven.settings.building.SettingsBuildingResult
+import org.codehaus.groovy.grails.resolve.AbstractDependencyManager
 import org.codehaus.groovy.grails.resolve.DependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
@@ -65,7 +66,7 @@ import org.sonatype.aether.util.repository.DefaultProxySelector
  * @since 2.3
  */
 @CompileStatic
-class AetherDependencyManager implements DependencyManager{
+class AetherDependencyManager extends AbstractDependencyManager{
 
     static final String DEFAULT_CACHE = "${System.getProperty('user.home')}/.m2/repository"
     static final Map<String, List<String>> SCOPE_MAPPINGS = [compile:['compile'],

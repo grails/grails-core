@@ -15,8 +15,11 @@
 package org.codehaus.groovy.grails.resolve;
 
 import grails.util.BuildSettings;
+import groovy.util.slurpersupport.GPathResult;
 import org.codehaus.groovy.grails.resolve.reporting.DependencyGraphRenderer;
 
+import java.io.File;
+import java.net.URL;
 import java.util.Collection;
 
 /**
@@ -28,6 +31,19 @@ import java.util.Collection;
  */
 public interface DependencyManager {
 
+    /**
+     * URL to the central Grails plugin repository's global plugin list
+     */
+    String GRAILS_CENTRAL_PLUGIN_LIST = "http://grails.org/plugins/.plugin-meta/plugins-list.xml";
+
+
+    /**
+     * Downloads the Grails central plugin list and saves it to the given file. The file is then parsed and the resulting XML returned
+     *
+     * @param localFile The local file
+     * @return The parsed XML
+     */
+    public GPathResult downloadPluginList(File localFile);
     /**
      * Outputs the dependency graph to System.out
      */

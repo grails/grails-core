@@ -31,23 +31,11 @@ includeTargets << grailsScript("_GrailsPlugins")
 target(listPlugins: "Implementation target") {
     depends(parseArguments,configureProxy)
 
-    def repository = argsMap.repository
-    if (repository) {
-        eachRepository { name, url ->
-            if (name == repository) {
-                printRemotePluginList(repository)
-                printInstalledPlugins()
-            }
-        }
-    }
-    else if (argsMap.installed) {
+    if (argsMap.installed) {
         printInstalledPlugins()
     }
     else {
-        eachRepository { name, url ->
-            printRemotePluginList(name)
-            return true
-        }
+        pluginsList = grailsSettings.dependencyManager.downloadPluginList(new File("$grailsWorkDir/plugins-list-grailsCentral.xml"))
         printInstalledPlugins()
     }
 
