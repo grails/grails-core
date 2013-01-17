@@ -48,7 +48,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author Graeme Rocher
  * @since 1.3
  */
-public abstract class AbstractIvyDependencyManager extends AbstractDependencyManager{
+public abstract class AbstractIvyDependencyManager {
 
     public static final String SNAPSHOT_CHANGING_PATTERN = ".*SNAPSHOT";
 

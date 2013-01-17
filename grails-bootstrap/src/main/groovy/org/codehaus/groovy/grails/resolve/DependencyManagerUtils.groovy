@@ -29,16 +29,16 @@ import java.util.concurrent.ConcurrentHashMap
  * @author Graeme Rocher
  * @since 2.3
  */
-//@CompileStatic
-abstract class AbstractDependencyManager implements DependencyManager{
+@CompileStatic
+abstract class DependencyManagerUtils {
 
-    private Map<File,GPathResult> parsedXmlCache = new ConcurrentHashMap<File, GPathResult>();
+    private static Map<File,GPathResult> parsedXmlCache = new ConcurrentHashMap<File, GPathResult>();
 
-    GPathResult downloadPluginList(File localFile) {
+    static GPathResult downloadPluginList(File localFile) {
         GPathResult parsedXml = parsedXmlCache[localFile]
         if (!parsedXml) {
             try {
-                URL url = new URL(GRAILS_CENTRAL_PLUGIN_LIST)
+                URL url = new URL(DependencyManager.GRAILS_CENTRAL_PLUGIN_LIST)
 
                 if (localFile.lastModified() < url.openConnection().lastModified ) {
                     localFile.withOutputStream { OutputStream os ->

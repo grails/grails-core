@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.resolve.maven.aether
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+import groovy.util.slurpersupport.GPathResult
 import org.apache.maven.model.building.DefaultModelBuildingRequest
 import org.apache.maven.model.building.ModelBuilder
 import org.apache.maven.model.building.ModelBuildingResult
@@ -25,8 +26,8 @@ import org.apache.maven.settings.Settings
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest
 import org.apache.maven.settings.building.SettingsBuilder
 import org.apache.maven.settings.building.SettingsBuildingResult
-import org.codehaus.groovy.grails.resolve.AbstractDependencyManager
 import org.codehaus.groovy.grails.resolve.DependencyManager
+import org.codehaus.groovy.grails.resolve.DependencyManagerUtils
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
@@ -66,7 +67,7 @@ import org.sonatype.aether.util.repository.DefaultProxySelector
  * @since 2.3
  */
 @CompileStatic
-class AetherDependencyManager extends AbstractDependencyManager{
+class AetherDependencyManager implements DependencyManager{
 
     static final String DEFAULT_CACHE = "${System.getProperty('user.home')}/.m2/repository"
     static final Map<String, List<String>> SCOPE_MAPPINGS = [compile:['compile'],
@@ -139,6 +140,10 @@ class AetherDependencyManager extends AbstractDependencyManager{
     /**
      * Produces a report printed to System.out of the dependency graph
      */
+    GPathResult downloadPluginList(File localFile) {
+        return DependencyManagerUtils.downloadPluginList(localFile)
+    }
+
     void produceReport() {
         // build scope
         reportOnScope(BuildSettings.BUILD_SCOPE, BuildSettings.BUILD_SCOPE_DESC)

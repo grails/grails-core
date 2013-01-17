@@ -36,6 +36,7 @@ target(listPlugins: "Implementation target") {
     }
     else {
         pluginsList = grailsSettings.dependencyManager.downloadPluginList(new File("$grailsWorkDir/plugins-list-grailsCentral.xml"))
+        printRemotePluginList("grailsCentral")
         printInstalledPlugins()
     }
 
@@ -75,6 +76,7 @@ private printRemotePluginList(name) {
     def plugins = []
     use(DOMCategory) {
         pluginsList?.'plugin'.each {plugin ->
+
             def version
             def pluginLine = plugin.'@name'
             def versionLine = "<no releases>"

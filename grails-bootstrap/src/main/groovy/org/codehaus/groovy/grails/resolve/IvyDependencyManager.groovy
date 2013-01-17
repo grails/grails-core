@@ -18,6 +18,7 @@ import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
+import groovy.util.slurpersupport.GPathResult
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Artifact
 import org.apache.ivy.core.module.descriptor.Configuration
@@ -81,7 +82,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         this.applicationVersion = applicationVersion
     }
 
-    /**
+    GPathResult downloadPluginList(File localFile) {
+        DependencyManagerUtils.downloadPluginList(localFile)
+    }
+/**
      * Resets the Grails plugin resolver if it is used
      */
     void resetGrailsPluginsResolver() {
