@@ -27,13 +27,17 @@ class AetherDependencyManagerSpec extends Specification {
             }
 
         when: "A dependency is resolved"
-            def report = dependencyManager.resolve()
+            def report = dependencyManager.resolve("compile")
+            println report.files.size()
             println report.files
         then: "The dependencies are resolved"
 
             report.files.find { it.name.contains('grails-bootstrap-2.2.0')}
-            report.files.find { it.name.contains('grails-bootstrap-2.2.0-javadoc')}
             report.files.find { it.name.contains('grails-bootstrap-2.2.0-sources')}
+            report.files.find { it.name.contains('grails-bootstrap-2.2.0-javadoc')}
+//            report.files.find { it.name.contains('jline-1.0')}
+//            report.files.find { it.name.contains('jline-1.0-sources')}
+//            report.files.find { it.name.contains('jline-1.0-javadoc')}
     }
 
     void "Test simple dependency resolve"() {

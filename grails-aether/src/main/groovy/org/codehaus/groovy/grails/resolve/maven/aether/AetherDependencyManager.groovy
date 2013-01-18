@@ -54,6 +54,7 @@ import org.sonatype.aether.transfer.TransferCancelledException
 import org.sonatype.aether.transfer.TransferEvent
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.filter.ScopeDependencyFilter
+import org.sonatype.aether.util.graph.DefaultDependencyNode
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 import org.sonatype.aether.util.repository.DefaultProxySelector
@@ -243,10 +244,17 @@ class AetherDependencyManager implements DependencyManager{
     AetherDependencyReport resolve(String scope = "runtime") {
 
 
-        DependencyNode node = collectDependencies(scope)
+        DependencyNode root = collectDependencies(scope)
+
+        if (includeSource) {
+            addAttachments(root, "sources")
+        }
+        if (includeJavadoc) {
+            addAttachments(root, "javadoc")
+        }
 
         try {
-            resolveToResult(node, scope)
+            resolveToResult(root, scope)
         } catch (org.sonatype.aether.resolution.DependencyResolutionException e) {
             boolean failWithException = true
             if (e.cause instanceof ArtifactResolutionException) {
@@ -257,7 +265,7 @@ class AetherDependencyManager implements DependencyManager{
                 }
             }
             def nlg = new PreorderNodeListGenerator()
-            node.accept nlg
+            root.accept nlg
 
             if (failWithException) {
                 return new AetherDependencyReport(nlg, scope, e)
@@ -269,10 +277,21 @@ class AetherDependencyManager implements DependencyManager{
 
 
         def nlg = new PreorderNodeListGenerator()
-        node.accept nlg
+        root.accept nlg
 
 
         return new AetherDependencyReport(nlg, scope);
+    }
+
+    protected void addAttachments(DependencyNode root, String classifier) {
+        def children = new ArrayList<DependencyNode>(root.children)
+
+        for (DependencyNode child in children) {
+            final artifact = child.dependency.artifact
+            def sourceArtifact = new DefaultArtifact(artifact.groupId, artifact.artifactId, classifier, artifact.extension, artifact.version)
+            root.children << new DefaultDependencyNode(child.dependency.setArtifact(sourceArtifact))
+            addAttachments(child, classifier)
+        }
     }
 
     private DependencyResult resolveToResult(DependencyNode node, String scope) {
@@ -335,8 +354,7 @@ class AetherDependencyManager implements DependencyManager{
 
         collectRequest.setRepositories(repositories)
 
-        DependencyNode node = repositorySystem.collectDependencies(session, collectRequest).getRoot()
-        node
+        return repositorySystem.collectDependencies(session, collectRequest).getRoot()
     }
 
     public org.sonatype.aether.repository.Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {
@@ -369,9 +387,7 @@ class AetherDependencyManager implements DependencyManager{
         if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
             grailsPluginDependencies << grailsDependency
         }
-        else {
-            includeJavadocAndSourceIfNecessary(aetherDependencies, dependency)
-        }
+
     }
 
     protected void includeJavadocAndSourceIfNecessary(List<Dependency> aetherDependencies, Dependency dependency) {
@@ -398,9 +414,7 @@ class AetherDependencyManager implements DependencyManager{
         if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
             grailsPluginDependencies << dependency
         }
-        else {
-            includeJavadocAndSourceIfNecessary(buildDependencies, mavenDependency)
-        }
+
     }
 
     public void addBuildDependency(Dependency dependency) {
@@ -412,9 +426,7 @@ class AetherDependencyManager implements DependencyManager{
         if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
             grailsPluginDependencies << grailsDependency
         }
-        else {
-            includeJavadocAndSourceIfNecessary(buildDependencies, dependency)
-        }
+
     }
 
     public void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope, ExclusionDependencySelector exclusionDependencySelector = null) {
@@ -431,9 +443,7 @@ class AetherDependencyManager implements DependencyManager{
             if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
                 grailsPluginDependencies.add dependency
             }
-            else {
-                includeJavadocAndSourceIfNecessary(buildDependencies, mavenDependency)
-            }
+
         }
     }
 
