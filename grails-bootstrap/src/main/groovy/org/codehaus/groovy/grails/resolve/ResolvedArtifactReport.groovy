@@ -14,22 +14,32 @@
  */
 package org.codehaus.groovy.grails.resolve
 
+import groovy.transform.Canonical
+import groovy.transform.ToString
+
 /**
- * Used
+ * Used to represent a resolved artifact (downloaded and cached) in the dependency resolution system
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface ResolvedArtifactReport {
+@Canonical
+@ToString
+public class ResolvedArtifactReport {
+
+    ResolvedArtifactReport(Dependency dependency, File file) {
+        this.dependency = dependency
+        this.file = file
+    }
 
     /**
      * @return The dependency
      */
-    Dependency getDependency()
+    Dependency dependency
 
     /**
      * @return The file for this dependency
      */
-    File getFile()
+    File file
 
 }
