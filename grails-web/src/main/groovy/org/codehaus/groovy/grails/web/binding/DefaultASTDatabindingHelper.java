@@ -219,7 +219,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         CLASS_NAME_TO_WHITE_LIST_PROPERTY_NAMES.put(classNode, propertyNamesToIncludeInWhiteList);
         Map<String, ClassNode> allAssociationMap = GrailsASTUtils.getAllAssociationMap(classNode);
         for (String associationName : allAssociationMap.keySet()) {
-            if(!propertyNamesToIncludeInWhiteList.contains(associationName)) {
+            if(!propertyNamesToIncludeInWhiteList.contains(associationName) && !unbindablePropertyNames.contains(associationName)) {
                 propertyNamesToIncludeInWhiteList.add(associationName);
             }
         }
