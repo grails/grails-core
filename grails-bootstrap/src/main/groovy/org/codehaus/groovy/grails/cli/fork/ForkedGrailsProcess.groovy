@@ -210,7 +210,7 @@ abstract class ForkedGrailsProcess {
         urls.add(buildSettings.pluginBuildClassesDir.toURI().toURL())
         urls.add(buildSettings.pluginProvidedClassesDir.toURI().toURL())
 
-        return new URLClassLoader(urls as URL[])
+        return new URLClassLoader(urls.toArray(new URL[urls.size()]))
     }
 
     protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
