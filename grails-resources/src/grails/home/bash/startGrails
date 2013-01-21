@@ -263,7 +263,9 @@ if $cygwin; then
     GRAILS_HOME=`cygpath --path --mixed "$GRAILS_HOME"`
     JAVA_HOME=`cygpath --path --mixed "$JAVA_HOME"`
     STARTER_CONF=`cygpath --path --mixed "$STARTER_CONF"`
-    CP=`cygpath --path --mixed "$CP"`
+    if [ "x$CP" != "x" ] ; then
+        CP=`cygpath --path --mixed "$CP"`
+    fi
     TOOLS_JAR=`cygpath --path --mixed "$TOOLS_JAR"`
     STARTER_CLASSPATH=`cygpath --path --mixed "$STARTER_CLASSPATH"`
 	# We build the pattern for arguments to be converted via cygpath
