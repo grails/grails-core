@@ -18,23 +18,11 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     static widgetSubclass
     static setterGetterClass
     static dateBindingClass
-
+    static classWithHasMany
+    
     def setupSpec() {
         final gcl = new GrailsAwareClassLoader()
-        final transformer = new ClassInjector() {
-                    @Override
-                    void performInjection(SourceUnit source, ClassNode classNode) {
-                        performInject(source, null, classNode)
-                    }
-                    @Override
-                    void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-                        new DefaultASTDatabindingHelper().injectDatabindingCode(source, context, classNode)
-                    }
-                    @Override
-                    boolean shouldInject(URL url) {
-                        return true;
-                    }
-                }
+        final transformer = new AstDatabindingInjector()
         gcl.classInjectors = [transformer]as ClassInjector[]
         widgetClass = gcl.parseClass('''
             class Widget {
@@ -114,9 +102,37 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                     }
                 }
             ''')
-
+            classWithHasMany = gcl.parseClass('''
+                class ClassWithHasMany {
+                    String name
+                    static hasMany = [people: Person, widgets: Widget]
+                    static constraints = {
+                        widgets bindable: false
+                    }
+                }
+            ''')
+            
             // there must be a request bound in order for the structured date editor to be registered
             GrailsWebUtil.bindMockWebRequest()
+    }
+
+    void 'Test class with hasMany'() {
+        when:
+        final whiteListField = classWithHasMany.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
+
+        then:
+            whiteListField?.modifiers & Modifier.STATIC
+            whiteListField.type == List
+
+        when:
+            final whiteList = whiteListField.get(null)
+
+        then:
+            whiteList?.size() == 4
+            'name' in whiteList
+            'people' in whiteList
+            'people_*' in whiteList
+            'people.*' in whiteList
     }
 
     void 'Test class with getters and setters that do not directly map to fields'() {
@@ -354,5 +370,17 @@ class DefaultASTDatabindingHelperSpec extends Specification {
             Calendar.APRIL == exitDate.get(Calendar.MONTH)
             21 == exitDate.get(Calendar.DATE)
             2049 == exitDate.get(Calendar.YEAR)
+    }
+}
+
+class AstDatabindingInjector implements ClassInjector {
+    void performInjection(SourceUnit source, ClassNode classNode) {
+        performInject(source, null, classNode)
+    }
+    void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        new DefaultASTDatabindingHelper().injectDatabindingCode(source, context, classNode)
+    }
+    boolean shouldInject(URL url) {
+        return true;
     }
 }
