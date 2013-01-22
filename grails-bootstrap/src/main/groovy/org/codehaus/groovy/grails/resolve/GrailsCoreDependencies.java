@@ -32,7 +32,7 @@ public class GrailsCoreDependencies {
     public final String servletVersion;
     public boolean java5compatible;
 
-    private final String springVersion = "3.1.2.RELEASE";
+    private final String springVersion = "3.1.4.BUILD-SNAPSHOT";
 
     public GrailsCoreDependencies(String grailsVersion) {
         this.grailsVersion = grailsVersion;
