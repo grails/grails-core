@@ -133,6 +133,7 @@ subprojects { project ->
         groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
         groovyOptions.encoding = "UTF-8"
         groovyOptions.useAnt = true
+        groovyOptions.stacktrace = true
         options.useAnt = true
     }
 

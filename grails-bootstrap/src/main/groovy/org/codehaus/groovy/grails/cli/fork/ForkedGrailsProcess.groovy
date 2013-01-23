@@ -203,14 +203,20 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected URLClassLoader createClassLoader(BuildSettings buildSettings) {
-        def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURI().toURL() }
-        urls.addAll(buildSettings.providedDependencies.collect { File f -> f.toURI().toURL() })
-        urls.add(buildSettings.classesDir.toURI().toURL())
-        urls.add(buildSettings.pluginClassesDir.toURI().toURL())
-        urls.add(buildSettings.pluginBuildClassesDir.toURI().toURL())
-        urls.add(buildSettings.pluginProvidedClassesDir.toURI().toURL())
+        def classLoader = new GroovyClassLoader()
+        for(File f in buildSettings.runtimeDependencies) {
+            classLoader.addURL(f.toURI().toURL())
+        }
+        for(File f in buildSettings.providedDependencies) {
+            classLoader.addURL(f.toURI().toURL())
+        }
+        classLoader.addURL(buildSettings.classesDir.toURI().toURL())
+        classLoader.addURL(buildSettings.pluginClassesDir.toURI().toURL())
+        classLoader.addURL(buildSettings.pluginBuildClassesDir.toURI().toURL())
+        classLoader.addURL(buildSettings.pluginProvidedClassesDir.toURI().toURL())
 
-        return new URLClassLoader(urls.toArray(new URL[urls.size()]))
+
+        return classLoader
     }
 
     protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {

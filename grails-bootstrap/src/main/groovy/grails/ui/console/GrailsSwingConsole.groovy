@@ -17,9 +17,7 @@ package grails.ui.console
 
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.cli.fork.ExecutionContext
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProjectClassExecutor
 
 /**
  * Forks a Groovy Swing console UI for the current application
@@ -28,46 +26,24 @@ import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
  * @since 2.3
  */
 @CompileStatic
-class GrailsSwingConsole extends ForkedGrailsProcess{
-    ExecutionContext executionContext
+class GrailsSwingConsole extends ForkedGrailsProjectClassExecutor{
 
     GrailsSwingConsole(BuildSettings buildSettings) {
-        executionContext = new ExecutionContext()
-        executionContext.initialize(buildSettings)
+        super(buildSettings)
     }
 
-
-    private GrailsSwingConsole() {
-        executionContext = readExecutionContext()
-        if (executionContext == null) {
-            throw new IllegalStateException("Forked process created without first creating execution context and calling fork()")
-        }
+    protected GrailsSwingConsole() {
     }
 
     static void main(String[] args) {
         new GrailsSwingConsole().run()
     }
 
-    private void run() {
-        ExecutionContext ec = executionContext
-        BuildSettings buildSettings = initializeBuildSettings(ec)
-        URLClassLoader classLoader = initializeClassLoader(buildSettings)
-        initializeLogging(ec.grailsHome,classLoader)
-        Thread.currentThread().setContextClassLoader(classLoader)
-
-        final projectConsole = classLoader.loadClass("org.codehaus.groovy.grails.project.ui.GrailsProjectConsole").newInstance(buildSettings)
-
-        runConsole(projectConsole)
-    }
-
-    void runConsole(def console) {
-        ((GroovyObject)console).invokeMethod("run", null)
-    }
+    @Override
+    protected String getProjectClassType() { "org.codehaus.groovy.grails.project.ui.GrailsProjectConsole" }
 
     @Override
-    ExecutionContext createExecutionContext() {
-        return executionContext
+    void runInstance(instance) {
+        ((GroovyObject)instance).invokeMethod("run", null)
     }
-
-
 }

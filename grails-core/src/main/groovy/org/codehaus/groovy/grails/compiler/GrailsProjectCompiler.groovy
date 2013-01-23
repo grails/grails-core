@@ -22,6 +22,7 @@ import grails.util.PluginBuildSettings
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.Phases
+import org.codehaus.groovy.grails.cli.fork.compile.ForkedGrailsCompiler
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
@@ -226,8 +227,17 @@ class GrailsProjectCompiler {
      * Compiles plugin and normal sources
      */
     void compileAll() {
-        compilePlugins()
-        compile()
+        if(buildSettings.forkSettings.compile && !Environment.isFork()) {
+            def forkedCompiler = new ForkedGrailsCompiler(buildSettings)
+            def forkConfig = buildSettings.forkSettings.compile
+            if (forkConfig instanceof Map)
+                forkedCompiler.configure(forkConfig)
+            forkedCompiler.fork()
+        }
+        else {
+            compilePlugins()
+            compile()
+        }
     }
 
     /**

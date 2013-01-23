@@ -364,7 +364,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * Fork Settings. These are the default settings used to control forked mode, and what
      */
-    Map<String, Object> forkSettings = [run:false, test:false, console:false, shell:false]
+    Map<String, Object> forkSettings = [run:false, test:false, console:false, shell:false, compile:false]
 
     /** Implementation of the "grailsScript()" method used in Grails scripts.  */
     private boolean useMavenDependencyResolver
