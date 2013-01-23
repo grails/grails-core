@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons.test;
 
+import grails.util.Metadata;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.GroovyTestCase;
@@ -59,6 +60,7 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
         ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl);
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
+        ga.getMetadata().put(Metadata.APPLICATION_NAME, getClass().getName());
 
         ga.setApplicationContext(ctx);
         ga.initialise();

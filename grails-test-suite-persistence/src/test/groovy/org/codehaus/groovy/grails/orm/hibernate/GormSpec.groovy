@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.util.Metadata
 import spock.lang.Specification
 import org.springframework.util.Log4jConfigurer
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -53,6 +54,7 @@ abstract class GormSpec extends Specification {
         parentCtx = new MockApplicationContext()
 
         grailsApplication = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
+        grailsApplication.metadata[Metadata.APPLICATION_NAME] = getClass().name
 
         def dependentPlugins = configurePlugins()
 

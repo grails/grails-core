@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.cli.parsing
 
-import grails.util.Environment;
+import grails.util.Environment
+import spock.lang.Ignore;
 import spock.lang.Shared;
 import spock.lang.Specification
 
@@ -143,6 +144,7 @@ class CommandLineParserSpec extends Specification {
             cl.optionValue('host') == "localhost"
     }
 
+    @Ignore
     void "Test help message with declared options"() {
         when:
             def parser = new CommandLineParser()

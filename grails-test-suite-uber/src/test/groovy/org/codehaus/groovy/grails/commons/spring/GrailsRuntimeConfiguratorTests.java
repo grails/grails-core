@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.commons.spring;
 
+import grails.util.Metadata;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
@@ -113,6 +114,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
         Class<?> c = gcl.parseClass("class TestController { def scaffold = Test }");
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[]{dc,c}, gcl);
+        app.getMetadata().put(Metadata.APPLICATION_NAME, getClass().getName());
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
 
@@ -177,6 +179,7 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
                 "resources.groovy");
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl);
+        app.getMetadata().put(Metadata.APPLICATION_NAME, getClass().getName());
 
         MockApplicationContext parent = new MockApplicationContext();
         parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);

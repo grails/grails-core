@@ -36,13 +36,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
 
     public GrailsEnvironment(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
-
-    }
-
-    @Override
-    protected void customizePropertySources(MutablePropertySources propertySources) {
-        super.customizePropertySources(propertySources);
-        getPropertySources().addFirst(new GrailsConfigPropertySource(grailsApplication));
+        getPropertySources().addFirst(new GrailsConfigPropertySource());
     }
 
     @Override
@@ -55,7 +49,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
 
     private class GrailsConfigPropertySource extends PropertySource<GrailsApplication> {
 
-        public GrailsConfigPropertySource(GrailsApplication grailsApplication) {
+        public GrailsConfigPropertySource() {
             super(grailsApplication.getMetadata().getApplicationName(), grailsApplication);
         }
 

@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.util.Metadata
 import grails.util.MockHttpServletResponse
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
@@ -48,6 +49,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ctx = new MockApplicationContext()
         onSetUp()
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl)
+        ga.metadata[Metadata.APPLICATION_NAME] = getClass().name
         def mainContext = new MockApplicationContext()
         mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
         ga.mainContext = mainContext

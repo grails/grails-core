@@ -107,6 +107,11 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         return "MockApplicationContext";
     }
 
+    @Override
+    public String getApplicationName() {
+        return getId();
+    }
+
     public String getDisplayName() {
         return getId();
     }
