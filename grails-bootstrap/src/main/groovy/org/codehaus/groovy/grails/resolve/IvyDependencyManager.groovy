@@ -452,6 +452,10 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         convertToGrailsDependencies(getApplicationDependencyDescriptors().findAll { it.scope == scope })
     }
 
+    Collection<Dependency> getPluginDependencies(String scope) {
+        convertToGrailsDependencies(effectivePluginDependencyDescriptors.findAll { EnhancedDefaultDependencyDescriptor dd -> dd.scope == scope})
+    }
+
     @Override
     Collection<Dependency> getAllDependencies(String scope) {
         convertToGrailsDependencies(dependencyDescriptors.findAll { it.scope == scope })

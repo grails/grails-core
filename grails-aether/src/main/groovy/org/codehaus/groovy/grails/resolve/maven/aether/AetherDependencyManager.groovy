@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.resolve.maven.aether
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 import org.apache.maven.model.building.DefaultModelBuildingRequest
 import org.apache.maven.model.building.ModelBuilder
@@ -83,6 +84,7 @@ class AetherDependencyManager implements DependencyManager{
     private Set <org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []
     private List<Dependency> buildDependencies = []
     private Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsDependenciesByScope = [:].withDefault { [] }
+    private Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsPluginDependenciesByScope = [:].withDefault { [] }
     private List<org.codehaus.groovy.grails.resolve.Dependency> grailsDependencies = []
     private List<RemoteRepository> repositories = []
     String cacheDir
@@ -409,6 +411,7 @@ class AetherDependencyManager implements DependencyManager{
         aetherDependencies << dependency
         if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
             grailsPluginDependencies << grailsDependency
+            grailsPluginDependenciesByScope[dependency.scope] << grailsDependency
         }
 
     }
@@ -436,6 +439,7 @@ class AetherDependencyManager implements DependencyManager{
         buildDependencies << mavenDependency
         if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
             grailsPluginDependencies << dependency
+            grailsPluginDependenciesByScope["build"] << dependency
         }
 
     }
@@ -448,6 +452,7 @@ class AetherDependencyManager implements DependencyManager{
         buildDependencies << dependency
         if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
             grailsPluginDependencies << grailsDependency
+            grailsPluginDependenciesByScope["build"] << grailsDependency
         }
 
     }
@@ -463,11 +468,16 @@ class AetherDependencyManager implements DependencyManager{
             grailsDependencies << dependency
             grailsDependenciesByScope[scope] << dependency
             dependencies << mavenDependency
-            if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
+            if (isGrailsPlugin(dependency)) {
                 grailsPluginDependencies.add dependency
+                grailsPluginDependenciesByScope[scope] << dependency
             }
 
         }
+    }
+
+    protected boolean isGrailsPlugin(org.codehaus.groovy.grails.resolve.Dependency dependency) {
+        dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip'
     }
 
     @Override
@@ -479,8 +489,9 @@ class AetherDependencyManager implements DependencyManager{
     }
 
     @Override
+    @CompileStatic(TypeCheckingMode.SKIP)
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getApplicationDependencies() {
-        return grailsDependencies.findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }.asImmutable()
+        return grailsDependencies.findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited && !isGrailsPlugin(d)}.asImmutable()
     }
 
     @Override
@@ -489,8 +500,13 @@ class AetherDependencyManager implements DependencyManager{
     }
 
     @Override
+    @CompileStatic(TypeCheckingMode.SKIP)
     Collection<org.codehaus.groovy.grails.resolve.Dependency> getApplicationDependencies(String scope) {
-        return grailsDependenciesByScope[scope].findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }.asImmutable()
+        return grailsDependenciesByScope[scope].findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited && !isGrailsPlugin(d) }.asImmutable()
+    }
+
+    Collection<org.codehaus.groovy.grails.resolve.Dependency> getPluginDependencies(String scope) {
+        return grailsPluginDependenciesByScope[scope].findAll{ org.codehaus.groovy.grails.resolve.Dependency d -> !d.inherited }.asImmutable()
     }
 
     @Override

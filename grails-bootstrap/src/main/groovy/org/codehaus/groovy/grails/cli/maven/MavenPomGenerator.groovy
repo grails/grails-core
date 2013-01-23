@@ -19,7 +19,9 @@ import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import grails.util.BuildSettings
 import grails.util.Metadata
 
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.resolve.Dependency
+import org.codehaus.groovy.grails.resolve.DependencyManager;
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
@@ -89,14 +91,14 @@ class MavenPomGenerator extends BaseSettingsApi{
         }
     }
 
-    def addDependenciesForScope(IvyDependencyManager dependencyManager, String scope, ArrayList<String> dependencies, String type = "", String newScope = null) {
-        final appDependencies = type ? dependencyManager.effectivePluginDependencyDescriptors : dependencyManager.getApplicationDependencyDescriptors(scope)
-        dependencies.addAll(appDependencies.findAll {  EnhancedDefaultDependencyDescriptor dd -> dd.scope == scope }.collect() {  EnhancedDefaultDependencyDescriptor dd ->
+    protected void addDependenciesForScope(DependencyManager dependencyManager, String scope, ArrayList<String> dependencies, String type = "", String newScope = null) {
+        Collection<Dependency> appDependencies = type ? dependencyManager.getPluginDependencies(scope) : dependencyManager.getApplicationDependencies(scope)
+        dependencies.addAll(appDependencies.collect {  Dependency dd  ->
             """
     <dependency>
-        <groupId>$dd.dependencyId.organisation</groupId>
-        <artifactId>$dd.dependencyId.name</artifactId>
-        <version>$dd.dependencyRevisionId.revision</version>
+        <groupId>$dd.group</groupId>
+        <artifactId>$dd.name</artifactId>
+        <version>$dd.version</version>
         <scope>${ newScope ?: scope }</scope>
         $type
     </dependency>

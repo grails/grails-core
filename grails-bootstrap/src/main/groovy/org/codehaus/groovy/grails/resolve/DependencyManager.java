@@ -107,6 +107,14 @@ public interface DependencyManager {
     Collection<Dependency> getApplicationDependencies(String scope);
 
     /**
+     * The direct plugin dependencies of the application, not including framework or dependencies inherited from plugins
+     *
+     * @param scope The scope of the dependencies
+     * @return Direct application dependencies
+     */
+    Collection<Dependency> getPluginDependencies(String scope);
+
+    /**
      * All dependencies of the current application
      *
      * @param scope The scope of the dependencies
