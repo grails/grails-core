@@ -35,9 +35,9 @@ class AetherDependencyManagerSpec extends Specification {
             report.files.find { it.name.contains('grails-bootstrap-2.2.0')}
             report.files.find { it.name.contains('grails-bootstrap-2.2.0-sources')}
             report.files.find { it.name.contains('grails-bootstrap-2.2.0-javadoc')}
-//            report.files.find { it.name.contains('jline-1.0')}
-//            report.files.find { it.name.contains('jline-1.0-sources')}
-//            report.files.find { it.name.contains('jline-1.0-javadoc')}
+            report.files.find { it.name.contains('jline-1.0')}
+            report.files.find { it.name.contains('jline-1.0-sources')}
+            report.files.find { it.name.contains('jline-1.0-javadoc')}
     }
 
     void "Test simple dependency resolve"() {

@@ -28,6 +28,7 @@ import org.apache.maven.settings.building.SettingsBuilder
 import org.apache.maven.settings.building.SettingsBuildingResult
 import org.codehaus.groovy.grails.resolve.DependencyManager
 import org.codehaus.groovy.grails.resolve.DependencyManagerUtils
+import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
@@ -43,6 +44,7 @@ import org.sonatype.aether.repository.LocalRepository
 import org.sonatype.aether.repository.Proxy
 import org.sonatype.aether.repository.RemoteRepository
 import org.sonatype.aether.repository.RepositoryPolicy
+import org.sonatype.aether.resolution.ArtifactRequest
 import org.sonatype.aether.resolution.ArtifactResolutionException
 import org.sonatype.aether.resolution.ArtifactResult
 import org.sonatype.aether.resolution.DependencyRequest
@@ -53,6 +55,7 @@ import org.sonatype.aether.transfer.ArtifactTransferException
 import org.sonatype.aether.transfer.TransferCancelledException
 import org.sonatype.aether.transfer.TransferEvent
 import org.sonatype.aether.util.artifact.DefaultArtifact
+import org.sonatype.aether.util.artifact.SubArtifact
 import org.sonatype.aether.util.filter.ScopeDependencyFilter
 import org.sonatype.aether.util.graph.DefaultDependencyNode
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator
@@ -241,20 +244,40 @@ class AetherDependencyManager implements DependencyManager{
      * @param scope The scope (defaults to 'runtime')
      * @return A DependencyReport instance
      */
-    AetherDependencyReport resolve(String scope = "runtime") {
+    DependencyReport resolve(String scope = "runtime") {
 
 
         DependencyNode root = collectDependencies(scope)
 
-        if (includeSource) {
-            addAttachments(root, "sources")
-        }
-        if (includeJavadoc) {
-            addAttachments(root, "javadoc")
-        }
 
         try {
-            resolveToResult(root, scope)
+            DependencyResult results = resolveToResult(root, scope)
+
+
+            if (includeSource || includeJavadoc) {
+
+                def attachmentRequests = new ArrayList<ArtifactRequest>()
+                for(ArtifactResult ar in results.artifactResults) {
+
+                    final artifact = ar.artifact
+                    attachmentRequests << new ArtifactRequest(artifact, repositories, null)
+                    if (includeJavadoc)
+                        attachmentRequests << new ArtifactRequest(new DefaultArtifact(artifact.groupId, artifact.artifactId, "javadoc", artifact.extension, artifact.version), repositories, null)
+                    if (includeJavadoc)
+                        attachmentRequests << new ArtifactRequest(new DefaultArtifact(artifact.groupId, artifact.artifactId, "sources", artifact.extension, artifact.version), repositories, null)
+
+                }
+
+                try {
+                    final allArtifacts = repositorySystem.resolveArtifacts(session, attachmentRequests)
+
+                    return new AetherArtifactResultReport(scope, allArtifacts)
+                } catch (ArtifactResolutionException are) {
+                    return new AetherArtifactResultReport(scope, are.results)
+                }
+            }
+
+
         } catch (org.sonatype.aether.resolution.DependencyResolutionException e) {
             boolean failWithException = true
             if (e.cause instanceof ArtifactResolutionException) {
