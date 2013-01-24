@@ -285,7 +285,13 @@ abstract class ForkedGrailsProcess {
     public static List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         List<File> buildDependencies = []
 
-        buildDependencies.add findJarFile(GroovySystem)
+        File groovyJar = buildSettings.compileDependencies.find { File f -> f.name.contains "groovy-all" }
+
+        if (!groovyJar)
+            groovyJar = findJarFile(GroovySystem)
+
+
+        buildDependencies.add groovyJar
         buildDependencies.add findJarFile(Log)
         buildDependencies.add findJarFile(Gant)
 
