@@ -22,6 +22,7 @@ import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 
 import java.lang.reflect.Method
 
@@ -41,6 +42,7 @@ abstract class ForkedGrailsProcess {
     int maxPerm = 256
     boolean debug = false
     boolean reloading = true
+    boolean forkReserve
     File reloadingAgent
     List<String> jvmArgs
     ClassLoader forkedClassLoader
@@ -57,6 +59,13 @@ abstract class ForkedGrailsProcess {
                 // ignore
             }
         }
+    }
+
+    /**
+     * @return Whether this process is a reserve process. A reserve process is an additional JVM, bootstrapped and idle that can resume execution at a later date
+     */
+    static boolean isReserveProcess() {
+        System.getProperty("grails.fork.reserve")!=null
     }
 
     @CompileStatic
@@ -79,16 +88,95 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     Process fork() {
         ExecutionContext executionContext = createExecutionContext()
-
         if (reloading) {
             discoverAndSetAgent(executionContext)
         }
-        def processBuilder = new ProcessBuilder()
+
+        def resumeDir = new File(executionContext.projectWorkDir, "${getClass().simpleName}-process-resume")
+        if (forkReserve && resumeDir.exists() && InteractiveMode.isActive()) {
+            resumeDir.delete()
+            sleep(100)
+
+            String classpathString = getBoostrapClasspath(executionContext)
+            List<String> cmd = buildProcessCommand(executionContext, classpathString, true)
+
+            return forkReserveProcess(cmd, executionContext)
+        }
+        else {
+            String classpathString = getBoostrapClasspath(executionContext)
+            List<String> cmd = buildProcessCommand(executionContext, classpathString)
+
+            def processBuilder = new ProcessBuilder()
+            processBuilder
+                .directory(executionContext.getBaseDir())
+                .redirectErrorStream(false)
+                .command(cmd)
+
+            def process = processBuilder.start()
+
+            if (forkReserve && InteractiveMode.isActive()) {
+                List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
+                forkReserveProcess(reserveCmd, executionContext)
+
+            }
+
+            return attachOutputListener(process)
+        }
+
+    }
+
+    protected Process forkReserveProcess(List<String> cmd, ExecutionContext executionContext) {
+        final p2 = new ProcessBuilder()
+            .directory(executionContext.getBaseDir())
+            .redirectErrorStream(false)
+            .command(cmd)
+            .start()
+
+        attachOutputListener(p2, true)
+    }
+
+    protected Process attachOutputListener(Process process, boolean async = false) {
+        def is = process.inputStream
+        def es = process.errorStream
+        def t1 = new Thread(new TextDumper(is))
+        def t2 = new Thread(new TextDumper(es))
+        t1.start()
+        t2.start()
+
+
+        def callable = {
+            int result = process.waitFor()
+            if (result == 1) {
+                try { t1.join() } catch (InterruptedException ignore) {}
+                try { t2.join() } catch (InterruptedException ignore) {}
+                try { es.close() } catch (IOException ignore) {}
+                try { is.close() } catch (IOException ignore) {}
+
+                throw new RuntimeException("Forked Grails VM exited with error")
+            }
+
+        }
+        if (async) {
+            Thread.start callable
+        }
+        else {
+            callable.call()
+        }
+        return process
+    }
+
+    protected String getBoostrapClasspath(ExecutionContext executionContext) {
         def cp = new StringBuilder()
         for (File file : executionContext.getBuildDependencies()) {
             cp << file << File.pathSeparator
         }
 
+        final classpathString = cp.toString()
+        classpathString
+    }
+
+    @CompileStatic
+    protected List<String> buildProcessCommand(ExecutionContext executionContext, String classpathString, boolean isReserve = false) {
         def baseName = executionContext.getBaseDir().canonicalFile.name
         File tempFile = File.createTempFile(baseName, "grails-execution-context")
 
@@ -99,11 +187,14 @@ abstract class ForkedGrailsProcess {
             oos.writeObject(executionContext)
         }
 
-        List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(),"-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", cp.toString()]
+        List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
         if (debug) {
-            cmd.addAll(["-Xdebug","-Xnoagent","-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"] )
+            cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"])
         }
         final console = GrailsConsole.getInstance()
+        if (isReserve) {
+            cmd.add "-Dgrails.fork.reserve=true"
+        }
         if (console.isVerbose()) {
             cmd.add("-Dgrails.verbose=true")
             cmd.add("-Dgrails.full.stacktrace=true")
@@ -118,31 +209,7 @@ abstract class ForkedGrailsProcess {
         if (jvmArgs) {
             cmd.addAll(jvmArgs)
         }
-
-        processBuilder
-                .directory(executionContext.getBaseDir())
-                .redirectErrorStream(false)
-                .command(cmd)
-
-        def process = processBuilder.start()
-
-        def is = process.inputStream
-        def es = process.errorStream
-        def t1 = new Thread(new TextDumper(is))
-        def t2 = new Thread(new TextDumper(es))
-        t1.start()
-        t2.start()
-
-        int result = process.waitFor()
-        if (result == 1) {
-            try { t1.join() } catch (InterruptedException ignore) {}
-            try { t2.join() } catch (InterruptedException ignore) {}
-            try { es.close() } catch (IOException ignore) {}
-            try { is.close() } catch (IOException ignore) {}
-
-            throw new RuntimeException("Forked Grails VM exited with error")
-        }
-        return process
+        return cmd
     }
 
     abstract ExecutionContext createExecutionContext()

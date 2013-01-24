@@ -31,6 +31,7 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor{
     ForkedGrailsCompiler(BuildSettings buildSettings) {
         super(buildSettings)
         this.reloading = false
+        this.forkReserve = true
     }
 
     protected ForkedGrailsCompiler() {
