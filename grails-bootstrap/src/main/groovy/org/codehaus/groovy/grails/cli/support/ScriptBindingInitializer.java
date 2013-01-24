@@ -209,16 +209,6 @@ public class ScriptBindingInitializer {
          project.getBuildListeners().clear();
          GrailsConsoleAntBuilder.addGrailsConsoleBuildListener(project);
 
-         GrailsConsole instance = GrailsConsole.getInstance();
-         project.addBuildListener(new GrailsConsoleBuildListener(instance));
-
-         if (!instance.isVerbose()) {
-             for (Object buildListener : project.getBuildListeners()) {
-                 if (buildListener instanceof BuildLogger) {
-                     ((BuildLogger)buildListener).setMessageOutputLevel(LogLevel.ERR.getLevel());
-                 }
-             }
-         }
      }
 
 

@@ -23,6 +23,7 @@ import org.apache.tools.ant.BuildLogger;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
+import org.apache.tools.ant.types.LogLevel;
 import org.apache.tools.ant.util.StringUtils;
 
 /**
@@ -67,6 +68,17 @@ public class GrailsConsoleAntBuilder extends AntBuilder {
         logger.setErrorPrintStream(System.err);
 
         project.addBuildListener(logger);
+
+        GrailsConsole instance = GrailsConsole.getInstance();
+        project.addBuildListener(new GrailsConsoleBuildListener(instance));
+
+        if (!instance.isVerbose()) {
+            for (Object buildListener : project.getBuildListeners()) {
+                if (buildListener instanceof BuildLogger) {
+                    ((BuildLogger)buildListener).setMessageOutputLevel(LogLevel.ERR.getLevel());
+                }
+            }
+        }
     }
 
     private static class GrailsConsoleLogger extends DefaultLogger {

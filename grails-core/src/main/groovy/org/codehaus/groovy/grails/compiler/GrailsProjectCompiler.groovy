@@ -23,6 +23,7 @@ import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.Phases
 import org.codehaus.groovy.grails.cli.fork.compile.ForkedGrailsCompiler
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
@@ -114,7 +115,7 @@ class GrailsProjectCompiler {
 
     AntBuilder getAnt() {
         if (ant == null) {
-           ant = new AntBuilder()
+           ant = new GrailsConsoleAntBuilder()
             AntTypeDefinition atd = new AntTypeDefinition();
             atd.setName('groovyc');
             atd.setClassName(org.codehaus.groovy.grails.compiler.Grailsc.name);
@@ -123,6 +124,7 @@ class GrailsProjectCompiler {
             ComponentHelper.getComponentHelper(ant.project)
                     .addDataTypeDefinition(atd);
            ant.path(id: "grails.compile.classpath", compileClasspath)
+
         }
         return ant
     }
