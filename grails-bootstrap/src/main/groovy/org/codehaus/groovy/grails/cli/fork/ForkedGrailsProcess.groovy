@@ -46,6 +46,13 @@ abstract class ForkedGrailsProcess {
     File reloadingAgent
     List<String> jvmArgs
     ClassLoader forkedClassLoader
+    ExecutionContext executionContext
+
+    private String resumeIndicatorName
+
+    ForkedGrailsProcess() {
+        resumeIndicatorName = "${getClass().simpleName}-process-resume"
+    }
 
     @CompileStatic
     void configure(Map forkConfig) {
@@ -86,13 +93,54 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
+    protected void waitForResume() {
+        // wait for resume indicator
+        def resumeDir = new File(executionContext.projectWorkDir, resumeIndicatorName)
+        resumeDir.mkdirs()
+        resumeDir.deleteOnExit()
+        startIdleKiller()
+        while (resumeDir.exists()) {
+            sleep(100)
+        }
+    }
+
+    @CompileStatic
+    void killAfterTimeout() {
+        int idleTime = 1 * 60 // one hour
+
+        try {
+            Thread.sleep(idleTime * 60 * 1000) // convert minutes to ms
+        } catch (e) {
+            return;
+        }
+
+        def lockDir = new File(executionContext.projectWorkDir, "process-lock")
+        if (lockDir.mkdir()) {
+            System.exit 0
+        } else {
+            // someone is already connected; let the process finish
+        }
+    }
+
+    @CompileStatic
+    private void startIdleKiller() {
+        def idleKiller = new Thread({
+            killAfterTimeout()
+        } as Runnable)
+
+        idleKiller.daemon = true
+        idleKiller.start()
+    }
+
+
+    @CompileStatic
     Process fork() {
         ExecutionContext executionContext = createExecutionContext()
         if (reloading) {
             discoverAndSetAgent(executionContext)
         }
 
-        def resumeDir = new File(executionContext.projectWorkDir, "${getClass().simpleName}-process-resume")
+        def resumeDir = new File(executionContext.projectWorkDir, resumeIndicatorName)
         if (forkReserve && resumeDir.exists() && InteractiveMode.isActive()) {
             resumeDir.delete()
             sleep(100)
@@ -125,6 +173,7 @@ abstract class ForkedGrailsProcess {
 
     }
 
+    @CompileStatic
     protected Process forkReserveProcess(List<String> cmd, ExecutionContext executionContext) {
         final p2 = new ProcessBuilder()
             .directory(executionContext.getBaseDir())
@@ -135,6 +184,7 @@ abstract class ForkedGrailsProcess {
         attachOutputListener(p2, true)
     }
 
+    @CompileStatic
     protected Process attachOutputListener(Process process, boolean async = false) {
         def is = process.inputStream
         def es = process.errorStream
@@ -165,6 +215,7 @@ abstract class ForkedGrailsProcess {
         return process
     }
 
+    @CompileStatic
     protected String getBoostrapClasspath(ExecutionContext executionContext) {
         def cp = new StringBuilder()
         for (File file : executionContext.getBuildDependencies()) {

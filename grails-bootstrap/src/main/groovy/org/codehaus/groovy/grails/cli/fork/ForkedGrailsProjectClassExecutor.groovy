@@ -26,7 +26,6 @@ import groovy.transform.CompileStatic
  */
 @CompileStatic
 abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
-    ExecutionContext executionContext
 
     ForkedGrailsProjectClassExecutor(BuildSettings buildSettings) {
         executionContext = new ExecutionContext()
@@ -57,42 +56,11 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
             runInstance(projectClassInstance)
         }
         else {
-            // wait for resume indicator
-            def resumeDir = new File(executionContext.projectWorkDir, "${getClass().simpleName}-process-resume")
-            resumeDir.mkdirs()
-            startIdleKiller()
-            while(resumeDir.exists()) {
-                sleep(100)
-            }
+            waitForResume()
             runInstance(projectClassInstance)
         }
     }
 
-    void killAfterTimeout() {
-        int idleTime = 4 * 60 // four hours
-
-        try {
-            Thread.sleep(idleTime * 60 * 1000) // convert minutes to ms
-        } catch (e) {
-            return;
-        }
-
-        def lockDir = new File(executionContext.projectWorkDir, "process-lock")
-        if (lockDir.mkdir()) {
-            System.exit 0
-        } else {
-            // someone is already connected; let the process finish
-        }
-    }
-
-    private void startIdleKiller() {
-        def idleKiller = new Thread({
-            killAfterTimeout()
-        } as Runnable)
-
-        idleKiller.daemon = true
-        idleKiller.start()
-    }
 
     protected Object createInstance(Class projectComponentClass, BuildSettings buildSettings) {
         projectComponentClass.newInstance(buildSettings)

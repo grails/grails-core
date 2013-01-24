@@ -15,6 +15,7 @@
  */
 package org.grails.plugins.tomcat.fork
 
+import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
@@ -33,12 +34,13 @@ import org.grails.plugins.tomcat.TomcatKillSwitch
  */
 class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer {
 
+    public static final GrailsConsole CONSOLE = GrailsConsole.getInstance()
     @Delegate EmbeddableServer tomcatRunner
-    TomcatExecutionContext executionContext
 
 
     ForkedTomcatServer(TomcatExecutionContext executionContext) {
         this.executionContext = executionContext
+        this.forkReserve = true
     }
 
     private ForkedTomcatServer() {
@@ -60,16 +62,28 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @CompileStatic
     def run() {
-        TomcatExecutionContext ec = executionContext
+        if (!isReserveProcess()) {
+            runInternal()
+        }
+        else {
+            CONSOLE.verbose("Waiting for resume signal for idle JVM")
+            waitForResume()
+            CONSOLE.verbose("Resuming idle JVM")
+            runInternal()
+        }
+
+    }
+
+    protected void runInternal() {
+        TomcatExecutionContext ec = (TomcatExecutionContext)executionContext
         BuildSettings buildSettings = initializeBuildSettings(ec)
         URLClassLoader classLoader = initializeClassLoader(buildSettings)
-        initializeLogging(ec.grailsHome,classLoader)
+        initializeLogging(ec.grailsHome, classLoader)
 
         tomcatRunner = createTomcatRunner(buildSettings, ec, classLoader)
         if (ec.securePort > 0) {
             tomcatRunner.startSecure(ec.host, ec.port, ec.securePort)
-        }
-        else {
+        } else {
             tomcatRunner.start(ec.host, ec.port)
         }
 
@@ -108,7 +122,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
     @CompileStatic
     void startSecure(String host, int httpPort, int httpsPort) {
-        final ec = executionContext
+        final ec = (TomcatExecutionContext)executionContext
         ec.host = host
         ec.port = httpPort
         ec.securePort = httpsPort
@@ -144,8 +158,9 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     }
 
     void stop() {
+        final ec = (TomcatExecutionContext)executionContext
         try {
-            new URL("http://${executionContext?.host}:${executionContext?.port  + 1}").text
+            new URL("http://${ec?.host}:${executionContext?.ec  + 1}").text
         } catch(e) {
             // ignore
         }
