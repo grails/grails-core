@@ -28,57 +28,27 @@ _grails_clean_called = true
 
 includeTargets << grailsScript("_GrailsEvents")
 
+import org.codehaus.groovy.grails.project.creation.*
+
+projectCleaner = new GrailsProjectCleaner(grailsSettings, eventListener)
+projectCleaner.ant = ant
+
 target (cleanAll: "Cleans a Grails project") {
-    clean()
-    cleanTestReports()
-    grailsConsole.updateStatus "Application cleaned."
+    projectCleaner.cleanAll(false)
 }
 
 target (clean: "Implementation of clean") {
-    depends(cleanCompiledSources, cleanWarFile)
+    projectCleaner.clean(false)
 }
 
 target (cleanCompiledSources: "Cleans compiled Java and Groovy sources") {
-    def webInf = "${basedir}/web-app/WEB-INF"
-    ant.delete(dir:"${webInf}/classes")
-    ant.delete(file:webXmlFile.absolutePath, failonerror:false)
-    ant.delete(dir:"${projectWorkDir}/gspcompile", failonerror:false)
-    ant.delete(dir:"${webInf}/lib")
-    ant.delete(dir:"${basedir}/web-app/plugins")
-    ant.delete(dir:classesDirPath)
-    ant.delete(dir:pluginClassesDirPath, failonerror:false)
-    ant.delete(dir:resourcesDirPath)
-    ant.delete(dir:testDirPath)
-    ant.delete(failonerror:false, includeemptydirs: true) {
-        fileset(dir:grailsSettings.projectWorkDir) {
-            include name:"*.resolve"
-        }
-    }
+    projectCleaner.cleanCompiledSources(false)
 }
 
 target (cleanTestReports: "Cleans the test reports") {
-    // Delete all reports *except* TEST-TestSuites.xml which we need
-    // for the "--rerun" option to work.
-    ant.delete(failonerror:false, includeemptydirs: true) {
-        fileset(dir:grailsSettings.testReportsDir.path) {
-            include(name: "**/*")
-            exclude(name: "TESTS-TestSuites.xml")
-        }
-    }
+    projectCleaner.cleanTestReports(false)
 }
 
 target (cleanWarFile: "Cleans the deployable .war file") {
-    if (buildConfig.grails.project.war.file) {
-        warName = buildConfig.grails.project.war.file
-    }
-    else {
-        def fileName = grailsAppName
-        def version = metadata.'app.version'
-        if (version) {
-            fileName += "-$version"
-        }
-        warName = "${basedir}/${fileName}.war"
-    }
-
-    ant.delete(file:warName, failonerror:false)
+    projectCleaner.cleanWarFile(false)
 }
