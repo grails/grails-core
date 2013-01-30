@@ -10,4 +10,14 @@ dependencies {
     compile "junit:junit:${junitVersion}", project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
 
     compile project(":grails-web")
+
+    compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
+        ext.notInPom = true
+    }
+    compile  "jline:jline:$jlineVersion", {
+        ext.notInPom = true
+    }
+    compile  "org.fusesource.jansi:jansi:$jansiVersion", {
+        ext.notInPom = true
+    }
 }

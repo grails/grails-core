@@ -61,6 +61,18 @@ class GrailsProjectRunner extends BaseSettingsApi {
         initialize(projectPackager, warCreator, classLoader)
     }
 
+    GrailsProjectPackager getProjectPackager() {
+        return projectPackager
+    }
+
+    GrailsProjectWarCreator getWarCreator() {
+        return warCreator
+    }
+
+    String getServerContextPath() {
+        return serverContextPath
+    }
+
     @CompileStatic
     private void initialize(GrailsProjectPackager projectPackager, GrailsProjectWarCreator warCreator, ClassLoader classLoader) {
         this.projectPackager = projectPackager

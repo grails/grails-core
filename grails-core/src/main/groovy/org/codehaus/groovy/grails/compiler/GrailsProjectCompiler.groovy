@@ -22,6 +22,7 @@ import grails.util.PluginBuildSettings
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.Phases
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.fork.compile.ForkedGrailsCompiler
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
@@ -38,7 +39,7 @@ import org.apache.tools.ant.ComponentHelper
  * @author Graeme Rocher
  * @since 2.0
  */
-class GrailsProjectCompiler {
+class GrailsProjectCompiler extends BaseSettingsApi{
 
     public static final List<String> EXCLUDED_PATHS =  ["views", "i18n", "conf"]
     private static final String CLASSPATH_REF = "grails.compile.classpath"
@@ -76,6 +77,7 @@ class GrailsProjectCompiler {
      * @param rootLoader The ClassLoader
      */
     GrailsProjectCompiler(PluginBuildSettings pluginBuildSettings, ClassLoader rootLoader = Thread.currentThread().getContextClassLoader()) {
+        super(pluginBuildSettings.buildSettings, false)
         pluginSettings = pluginBuildSettings
         buildSettings = pluginBuildSettings.buildSettings
         targetClassesDir = buildSettings.classesDir

@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package org.codehaus.groovy.grails.test.event;
+package org.codehaus.groovy.grails.test.event
+
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
 
 /**
  * Publishes test related events to the Grails build system.
  */
+@CompileStatic
 class GrailsTestEventPublisher {
 
-    protected Closure event
+    protected GrailsBuildEventListener buildEventListener
 
     /**
      * @param event the "event" closure from the Grails build system
      */
-    GrailsTestEventPublisher(Closure event) {
-        this.event = event
+    GrailsTestEventPublisher(GrailsBuildEventListener buildEventListener) {
+        this.buildEventListener = buildEventListener
     }
 
     /**
@@ -40,7 +44,7 @@ class GrailsTestEventPublisher {
      * @param name a logical name for the test "unit"
      */
     void testCaseStart(String name) {
-        event("TestCaseStart", [name])
+        buildEventListener.triggerEvent("TestCaseStart", name)
     }
 
     /**
@@ -53,7 +57,7 @@ class GrailsTestEventPublisher {
      * @param name a logical name for the test
      */
     void testStart(String name) {
-        event("TestStart", [name])
+        buildEventListener.triggerEvent("TestStart", name)
     }
 
     /**
@@ -69,7 +73,7 @@ class GrailsTestEventPublisher {
      *                false if this failure was a direct assertion failure or incorrect assumption
      */
     void testFailure(String name, Throwable failure, boolean isError = false) {
-        event("TestFailure", [name, failure, isError])
+        buildEventListener.triggerEvent("TestFailure", name, failure, isError)
     }
 
     /**
@@ -85,7 +89,7 @@ class GrailsTestEventPublisher {
      *                false if this failure was a direct assertion failure or incorrect assumption
      */
     void testFailure(String name, String failure = null, boolean isError = false) {
-        event("TestFailure", [name, failure, isError])
+        buildEventListener.triggerEvent("TestFailure", name, failure, isError)
     }
 
     /**
@@ -103,7 +107,7 @@ class GrailsTestEventPublisher {
      *                false if this failure was a direct assertion failure or incorrect assumption
      */
     void testEnd(String name) {
-        event("TestEnd", [name])
+        buildEventListener.triggerEvent("TestEnd", name)
     }
 
     /**
@@ -117,6 +121,6 @@ class GrailsTestEventPublisher {
      * @param name a logical name for the test "unit"
      */
     void testCaseEnd(String name, String out = null, String err = null) {
-        event("TestCaseEnd", [name, out, err])
+        buildEventListener.triggerEvent("TestCaseEnd", name, out, err)
     }
 }

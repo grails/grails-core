@@ -16,6 +16,8 @@
 
 package org.codehaus.groovy.grails.test.support
 
+import grails.util.Holders
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.GrailsTestTypeResult
@@ -192,10 +194,11 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Calls {@code body} with the GrailsTestTargetPattern that matched the source, and the File for the source.
      */
+    @CompileStatic
     protected void eachSourceFile(Closure body) {
-        testTargetPatterns.each { testTargetPattern ->
-            findSourceFiles(testTargetPattern).each { sourceFile ->
-                body(testTargetPattern, sourceFile)
+        for(GrailsTestTargetPattern testTargetPattern in testTargetPatterns) {
+            findSourceFiles(testTargetPattern).each { File sourceFile ->
+                body.call(testTargetPattern, sourceFile)
             }
         }
     }
@@ -219,6 +222,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Convenience method for obtaining the class file for a test class
      */
+    @CompileStatic
     protected File sourceFileToClassFile(File sourceFile) {
         new File(compiledClassesDir, sourceFileToClassName(sourceFile).replace(".", "/") + ".class")
     }
@@ -226,6 +230,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Convenience method for obtaining the class file for a test class
      */
+    @CompileStatic
     protected Class sourceFileToClass(File sourceFile) {
         loadClass(sourceFileToClassName(sourceFile))
     }
@@ -243,6 +248,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      * Loods the class named by {@code className} using a class loader that can load the test classes,
      * throwing a RuntimeException if the class can't be loaded.
      */
+    @CompileStatic
     protected Class loadClass(String className) {
         try {
             getTestClassLoader().loadClass(className)
@@ -259,7 +265,8 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
         if (buildBinding.variables.containsKey("appCtx")) {
             return buildBinding.getProperty("appCtx")
         }
-
-        throw new IllegalStateException("ApplicationContext requested, but is not present in the build binding")
+        else {
+            return Holders.applicationContext
+        }
     }
 }

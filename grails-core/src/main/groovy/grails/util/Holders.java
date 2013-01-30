@@ -52,6 +52,16 @@ public class Holders {
         // static only
     }
 
+    public static void clear() {
+        resourceLoaders.set(null);
+        pluginManagers.set(null);
+        pluginManagersInCreation.set(null);
+        configs.set(null);
+        if(servletContexts != null) {
+            servletContexts.set(null);
+        }
+    }
+
     public static void setServletContext(final ServletContext servletContext) {
         servletContexts.set(servletContext);
     }

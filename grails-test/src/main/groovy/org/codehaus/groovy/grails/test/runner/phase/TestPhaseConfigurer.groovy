@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2013 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.io.support.Resource
+package org.codehaus.groovy.grails.test.runner.phase
 
 /**
- * Gant script that handles general initialization of a Grails applications
- *
- * @deprecated Use "create-app --inplace" or "upgrade".
  * @author Graeme Rocher
- * @author Peter Ledbrook
- *
- * @since 0.4
+ * @since 2.3
  */
-
-includeTargets << grailsScript("_GrailsInit")
-
-setDefaultTarget("init")
+public interface TestPhaseConfigurer {
 
 
+    /**
+     * Preparation for the test phase
+     */
+    void prepare()
+
+    /**
+     * Cleanup of the test phase
+     */
+    void cleanup()
+}

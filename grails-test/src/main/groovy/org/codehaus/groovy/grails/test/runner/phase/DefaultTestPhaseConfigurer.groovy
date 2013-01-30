@@ -1,5 +1,5 @@
 /*
- * Copyright 2004-2005 the original author or authors.
+ * Copyright 2013 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.codehaus.groovy.grails.test.runner.phase
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
-import org.codehaus.groovy.grails.io.support.Resource
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.test.GrailsTestType
 
 /**
- * Gant script that handles general initialization of a Grails applications
- *
- * @deprecated Use "create-app --inplace" or "upgrade".
  * @author Graeme Rocher
- * @author Peter Ledbrook
- *
- * @since 0.4
  */
-
-includeTargets << grailsScript("_GrailsInit")
-
-setDefaultTarget("init")
+@CompileStatic
+class DefaultTestPhaseConfigurer implements TestPhaseConfigurer{
 
 
+    void prepare() {
+        // noop, subclasses can override
+    }
+
+    void cleanup() {
+        // noop, subclasses can override
+    }
+}

@@ -16,10 +16,13 @@
 
 package org.codehaus.groovy.grails.test.io
 
+import groovy.transform.CompileStatic
+
 /**
  * Convenience class to temporarily swap in an output stream
  * for standard error and standard out.
  */
+@CompileStatic
 class SystemOutAndErrSwapper {
 
     final boolean echoOut
@@ -96,8 +99,8 @@ class SystemOutAndErrSwapper {
         swappedInErr = null
 
         def streams = []
-        streams << (echoOut ? swappedInOutStream.streams.last() : swappedInOutStream)
-        streams << (echoErr ? swappedInErrStream.streams.last() : swappedInErrStream)
+        streams << (echoOut ? ((MultiplexingOutputStream)swappedInOutStream).streams.last() : swappedInOutStream)
+        streams << (echoErr ? ((MultiplexingOutputStream)swappedInErrStream).streams.last() : swappedInErrStream)
 
         swappedInOutStream = null
         swappedInErrStream = null
