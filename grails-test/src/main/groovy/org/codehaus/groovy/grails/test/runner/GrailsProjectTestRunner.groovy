@@ -20,6 +20,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
+import org.codehaus.groovy.grails.project.creation.GrailsProjectCleaner
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.GrailsTestType
@@ -209,7 +210,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
             buildEventListener.triggerEvent("AllTestsStart")
         projectPackager.packageApplication()
         if (testOptions.clean) {
-            // TODO: run clean
+            new GrailsProjectCleaner(buildSettings, buildEventListener).cleanAll()
         }
 
 
