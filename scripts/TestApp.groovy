@@ -28,6 +28,7 @@ TEST_PHASE_AND_TYPE_SEPARATOR = projectTestRunner.TEST_PHASE_AND_TYPE_SEPARATOR
 
 target('default': "Run a Grails applications unit tests") {
     depends(checkVersion, configureProxy, cleanTestReports)
-
-    projectTestRunner.runAllTests(argsMap)
+    
+    allTests()
+    
 }

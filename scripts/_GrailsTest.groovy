@@ -81,7 +81,14 @@ testsFailed = false
 projectWatcher = null
 
 target(allTests: "Runs the project's tests.") {
-    projectTestRunner.runAllTests(argsMap, false)
+    depends(compile, startLogging, packagePlugins)
+    if(grailsSettings.forkSettings.test) {
+        // new ForkedGrailsTestRunner().fork()
+    }
+    else {
+        projectTestRunner.runAllTests(argsMap, false)
+    }    
+    
 }
 
 /**
