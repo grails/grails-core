@@ -42,6 +42,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
     private BuildSettings buildSettings
 
     private boolean isForkedRun
+    private boolean existingServer
     String functionalBaseUrl
     protected MetaClassRegistryCleaner registryCleaner
 
@@ -56,37 +57,45 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         registryCleaner = org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner.createAndRegister()
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
 
-        if (warMode) {
-
-            // need to swap out the args map so any test phase/targetting patterns
-            // aren't intepreted as the war name.
-            projectRunner.warCreator.packageWar()
-
-            if (https) {
-                projectRunner.runWarHttps()
-            }
-            else {
-                projectRunner.runWar()
-            }
-        } else {
-            projectRunner.projectPackager.packageApplication()
-            if (https) {
-                projectRunner.runAppHttps()
-            }
-            else {
-                projectRunner.runApp()
-            }
-
-            if (!isForkedRun) {
-                def appCtx = Holders.applicationContext
-                PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
-            }
-        }
 
         if (baseUrl) {
             functionalBaseUrl = baseUrl
         } else {
-            functionalBaseUrl = (httpsBaseUrl ? 'https' : 'http') + "://localhost:$projectRunner.serverPort$projectRunner.serverContextPath/"
+            functionalBaseUrl = (httpsBaseUrl ? 'https' : 'http') + "://${projectRunner.serverHost}:$projectRunner.serverPort$projectRunner.serverContextPath/"
+        }
+
+        if (!projectRunner.isServerRunning()) {
+
+            if (warMode) {
+
+                // need to swap out the args map so any test phase/targetting patterns
+                // aren't intepreted as the war name.
+                projectRunner.warCreator.packageWar()
+
+                if (https) {
+                    projectRunner.runWarHttps()
+                }
+                else {
+                    projectRunner.runWar()
+                }
+            } else {
+                projectRunner.projectPackager.packageApplication()
+                if (https) {
+                    projectRunner.runAppHttps()
+                }
+                else {
+                    projectRunner.runApp()
+                }
+
+                if (!isForkedRun) {
+                    def appCtx = Holders.applicationContext
+                    PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
+                }
+            }
+
+        }
+        else {
+            existingServer = true
         }
 
         System.setProperty(buildSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
@@ -100,7 +109,8 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             appCtx?.close()
         }
 
-        projectRunner.stopServer()
+        if (!existingServer)
+            projectRunner.stopServer()
 
         functionalBaseUrl = null
         System.setProperty(BuildSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')

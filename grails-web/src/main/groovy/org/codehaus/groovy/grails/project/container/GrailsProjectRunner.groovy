@@ -73,6 +73,17 @@ class GrailsProjectRunner extends BaseSettingsApi {
         return serverContextPath
     }
 
+    /**
+     * @return Whether the server is running
+     */
+    boolean isServerRunning() {
+        try {
+            new Socket(serverHost, serverPort)
+            return true
+        } catch (e) {
+            return false
+        }
+    }
     @CompileStatic
     private void initialize(GrailsProjectPackager projectPackager, GrailsProjectWarCreator warCreator, ClassLoader classLoader) {
         this.projectPackager = projectPackager
