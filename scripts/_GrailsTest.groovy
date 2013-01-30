@@ -16,6 +16,7 @@
 import org.codehaus.groovy.grails.test.runner.*
 import org.codehaus.groovy.grails.test.runner.phase.*
 import org.codehaus.groovy.grails.support.*
+import org.codehaus.groovy.grails.cli.fork.testing.*
 /**
  * Gant script that runs the Grails unit tests
  *
@@ -83,7 +84,11 @@ projectWatcher = null
 target(allTests: "Runs the project's tests.") {
     depends(compile, startLogging, packagePlugins)
     if(grailsSettings.forkSettings.test) {
-        // new ForkedGrailsTestRunner().fork()
+        def forkedTestRunner = new ForkedGrailsTestRunner(grailsSettings)
+        if(grailsSettings.forkSettings.test instanceof Map) {
+            forkedTestRunner.configure(grailsSettings.forkSettings.test)
+        }
+        forkedTestRunner.fork()
     }
     else {
         projectTestRunner.runAllTests(argsMap, false)

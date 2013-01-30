@@ -28,8 +28,12 @@ import groovy.transform.CompileStatic
 abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
 
     ForkedGrailsProjectClassExecutor(BuildSettings buildSettings) {
-        executionContext = new ExecutionContext()
+        executionContext = createExecutionContext()
         executionContext.initialize(buildSettings)
+    }
+
+    protected ExecutionContext createExecutionContext() {
+        new ExecutionContext()
     }
 
 
@@ -69,11 +73,6 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
     protected abstract String getProjectClassType()
 
     abstract void runInstance(def instance)
-
-    @Override
-    ExecutionContext createExecutionContext() {
-        return executionContext
-    }
 
 
 }

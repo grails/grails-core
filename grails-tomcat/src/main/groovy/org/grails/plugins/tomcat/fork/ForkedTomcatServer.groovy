@@ -153,7 +153,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     }
 
     @Override
-    ExecutionContext createExecutionContext() {
+    ExecutionContext getExecutionContext() {
         return executionContext
     }
 

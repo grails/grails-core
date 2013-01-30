@@ -126,16 +126,22 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
         this.testNames = lookupTestPatterns()
 
         // initialize the default binding
-        testExecutionContext.setVariable("grailsSettings", projectPackager.buildSettings)
-        testExecutionContext.setVariable("testOptions", testOptions)
-        testExecutionContext.setVariable("classLoader", Thread.currentThread().contextClassLoader)
-        testExecutionContext.setVariable("resolveResources", { String pattern ->
+        final context = testExecutionContext
+        initialiseContext(context)
+    }
+
+    @CompileStatic
+    void initialiseContext(Binding context) {
+        context.setVariable("grailsSettings", this.projectPackager.buildSettings)
+        context.setVariable("testOptions", testOptions)
+        context.setVariable("classLoader", Thread.currentThread().contextClassLoader)
+        context.setVariable("resolveResources", { String pattern ->
             resolveResources(pattern)
         })
-        testExecutionContext.setVariable("testReportsDir", testReportsDir)
-        testExecutionContext.setVariable("reportFormats", reportFormats)
-        testExecutionContext.setVariable("ant", ant)
-
+        context.setVariable("testReportsDir", this.testReportsDir)
+        context.setVariable("reportFormats", reportFormats)
+        context.setVariable("ant", ant)
+        testFeatureDiscovery.testExecutionContext = context
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
@@ -304,7 +310,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
                 buildEventListener.triggerEvent("TestPhaseEnd", phase)
             }
         }
-        catch(e) {
+        catch(Throwable e) {
             testsFailed = true
             throw e
         }

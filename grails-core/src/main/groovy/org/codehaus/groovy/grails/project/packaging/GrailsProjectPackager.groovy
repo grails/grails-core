@@ -69,26 +69,19 @@ class GrailsProjectPackager extends BaseSettingsApi {
     private File webXmlFile
 
     GrailsProjectPackager(GrailsProjectCompiler compiler, boolean doCompile = true) {
-        this(compiler, new File(compiler.buildSettings.configFilePath), doCompile)
+        this(compiler, compiler.buildSettings.configFile, doCompile)
     }
 
     GrailsProjectPackager(GrailsProjectCompiler compiler, File configFile, boolean doCompile = true) {
-        super(compiler.buildSettings, false)
-        projectCompiler = compiler
-        servletVersion = buildSettings.servletVersion
-        Metadata.current[Metadata.SERVLET_VERSION] = servletVersion
-        classLoader = compiler.classLoader
-        pluginSettings = compiler.pluginSettings
-        resourcesDirPath = buildSettings.resourcesDir.path
-        basedir = buildSettings.baseDir
-        webXmlFile = buildSettings.webXmlLocation
-        ant = compiler.ant
-        this.configFile = configFile
-        this.doCompile = doCompile
+        this(compiler, null, configFile, doCompile)
     }
 
+    GrailsProjectPackager(GrailsProjectCompiler compiler, GrailsBuildEventListener buildEventListener,boolean doCompile = true) {
+        this(compiler, buildEventListener, compiler.buildSettings.configFile, doCompile)
+
+    }
     GrailsProjectPackager(GrailsProjectCompiler compiler, GrailsBuildEventListener buildEventListener,File configFile, boolean doCompile = true) {
-        super(compiler.buildSettings, false)
+        super(compiler.buildSettings, buildEventListener, false)
         projectCompiler = compiler
         servletVersion = buildSettings.servletVersion
         Metadata.current[Metadata.SERVLET_VERSION] = servletVersion

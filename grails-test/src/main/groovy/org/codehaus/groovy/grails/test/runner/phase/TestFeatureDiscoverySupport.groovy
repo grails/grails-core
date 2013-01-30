@@ -38,7 +38,7 @@ class TestFeatureDiscoverySupport {
         if (hasProperty(phaseKey)) {
             return this."$phaseKey"
         }
-        else if (testExecutionContext.hasVariable(phaseKey)) {
+        else if (testExecutionContext?.hasVariable(phaseKey)) {
             return (List<String>)testExecutionContext.getVariable(phaseKey)
         }
         else {
@@ -51,7 +51,7 @@ class TestFeatureDiscoverySupport {
             return configurers[phase]
         }
         else {
-            if (testExecutionContext.hasVariable("${phase}TestPhasePreparation") && testExecutionContext.hasVariable("${phase}TestPhaseCleanUp")) {
+            if (testExecutionContext?.hasVariable("${phase}TestPhasePreparation") && testExecutionContext?.hasVariable("${phase}TestPhaseCleanUp")) {
                 return new ClosureInvokingTestPhaseConfigurer((Closure)testExecutionContext.getVariable("${phase}TestPhasePreparation"),(Closure)testExecutionContext.getVariable("${phase}TestPhaseCleanUp"))
             }
         }

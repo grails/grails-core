@@ -194,7 +194,6 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Calls {@code body} with the GrailsTestTargetPattern that matched the source, and the File for the source.
      */
-    @CompileStatic
     protected void eachSourceFile(Closure body) {
         for(GrailsTestTargetPattern testTargetPattern in testTargetPatterns) {
             findSourceFiles(testTargetPattern).each { File sourceFile ->

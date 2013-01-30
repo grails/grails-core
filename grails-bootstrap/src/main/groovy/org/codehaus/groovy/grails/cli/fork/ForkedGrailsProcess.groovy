@@ -135,7 +135,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     Process fork() {
-        ExecutionContext executionContext = createExecutionContext()
+        ExecutionContext executionContext = getExecutionContext()
         if (reloading) {
             discoverAndSetAgent(executionContext)
         }
@@ -263,8 +263,6 @@ abstract class ForkedGrailsProcess {
         return cmd
     }
 
-    abstract ExecutionContext createExecutionContext()
-
     @CompileStatic
     ExecutionContext readExecutionContext() {
         String location = System.getProperty("grails.build.execution.context")
@@ -326,8 +324,9 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    protected URLClassLoader createClassLoader(BuildSettings buildSettings) {
+    protected GroovyClassLoader createClassLoader(BuildSettings buildSettings) {
         def classLoader = new GroovyClassLoader()
+
         for(File f in buildSettings.runtimeDependencies) {
             classLoader.addURL(f.toURI().toURL())
         }
@@ -411,6 +410,7 @@ class ExecutionContext implements Serializable {
     List<File> runtimeDependencies
     List<File> buildDependencies
     List<File> providedDependencies
+    List<File> testDependencies
 
     File grailsWorkDir
     File projectWorkDir
@@ -429,6 +429,7 @@ class ExecutionContext implements Serializable {
         buildDependencies = isolatedBuildDependencies
         runtimeDependencies = settings.runtimeDependencies
         providedDependencies = settings.providedDependencies
+        testDependencies = settings.testDependencies
         baseDir = settings.baseDir
         env = Environment.current.name
         grailsHome = settings.grailsHome

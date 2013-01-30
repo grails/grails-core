@@ -21,6 +21,7 @@ import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import grails.util.Metadata;
 import grails.util.PluginBuildSettings;
+import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
@@ -390,7 +391,7 @@ public class BaseSettingsApi {
 
 
 
-    public void makeApiAvailableToScripts(final GantBinding binding, final Object cla) {
+    public void makeApiAvailableToScripts(final Binding binding, final Object cla) {
         final Method[] declaredMethods = cla.getClass().getDeclaredMethods();
         for (Method method : declaredMethods) {
             final String name = method.getName();
