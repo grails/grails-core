@@ -121,7 +121,7 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
         instance.projectPackager.projectCompiler.configureClasspath()
         instance.projectPackager.packageApplication()
-        instance.runAllTests()
+        instance.runAllTests(executionContext.argsMap)
     }
 
 

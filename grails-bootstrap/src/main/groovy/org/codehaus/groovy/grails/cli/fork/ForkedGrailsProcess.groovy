@@ -97,7 +97,6 @@ abstract class ForkedGrailsProcess {
         // wait for resume indicator
         def resumeDir = new File(executionContext.projectWorkDir, resumeIndicatorName)
         resumeDir.mkdirs()
-        resumeDir.deleteOnExit()
         startIdleKiller()
         while (resumeDir.exists()) {
             sleep(100)
@@ -134,8 +133,9 @@ abstract class ForkedGrailsProcess {
 
 
     @CompileStatic
-    Process fork() {
+    Process fork(Map argsMap = new LinkedHashMap()) {
         ExecutionContext executionContext = getExecutionContext()
+        executionContext.argsMap = argsMap
         if (reloading) {
             discoverAndSetAgent(executionContext)
         }
@@ -148,7 +148,7 @@ abstract class ForkedGrailsProcess {
             String classpathString = getBoostrapClasspath(executionContext)
             List<String> cmd = buildProcessCommand(executionContext, classpathString, true)
 
-            return forkReserveProcess(cmd, executionContext)
+            forkReserveProcess(cmd, executionContext)
         }
         else {
             String classpathString = getBoostrapClasspath(executionContext)
@@ -174,14 +174,19 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    protected Process forkReserveProcess(List<String> cmd, ExecutionContext executionContext) {
-        final p2 = new ProcessBuilder()
+    protected void forkReserveProcess(List<String> cmd, ExecutionContext executionContext) {
+        final builder = new ProcessBuilder()
             .directory(executionContext.getBaseDir())
             .redirectErrorStream(false)
             .command(cmd)
-            .start()
+        Thread.start {
 
-        attachOutputListener(p2, true)
+            sleep 2000
+            final p2 = builder.start()
+
+            attachOutputListener(p2)
+
+        }
     }
 
     @CompileStatic
@@ -422,6 +427,7 @@ class ExecutionContext implements Serializable {
 
     String env
     File grailsHome
+    Map argsMap
 
     void initialize(BuildSettings settings) {
         List<File> isolatedBuildDependencies = buildMinimalIsolatedClasspath(settings)
