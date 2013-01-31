@@ -86,6 +86,7 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
         GrailsBuildEventListener eventListener = (GrailsBuildEventListener)scriptBinding.getVariable("eventListener")
         scriptBinding.setVariable("pluginSettings", pluginSettings)
         scriptBinding.setVariable("grailsSettings", buildSettings)
+        eventListener.initialize()
         final projectCompiler = forkedClassLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectCompiler").newInstance(pluginSettings)
 
         final projectPackager = forkedClassLoader.loadClass("org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager").newInstance(projectCompiler, eventListener)
