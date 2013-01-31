@@ -321,7 +321,7 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
 
 
 //  see      GRAILS-9804
-    void testMultipleAdditionalCriterias() {
+    void testDetachedCriteriaFromNamedQuery() {
         def now = new Date()
 
         6.times { cnt ->
@@ -332,84 +332,39 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         }
 
         //test with a list of criteria closures
-        def results = NamedCriteriaPublication.publishedAfter(now - 5,[
-            {eq ('paperback', true)},
-            {like ('title', '%3')}
-        ])
-        assertEquals 1, results?.size()
+        def criteria = NamedCriteriaPublication.publishedAfter(now - 5).toDetachedCriteria().where {
+            eq('paperback', true)
+        }
+        assertEquals 6, criteria.list().size()
 
+        def criteria1 = criteria.where {
+            like('title', '%3')
+        }
+        assertEquals 1, criteria1.list()?.size()
 
         // test with multiple trailing closures
-        results = NamedCriteriaPublication.publishedAfter(now - 5)
-            {
-                eq 'paperback', true
+        def results = NamedCriteriaPublication.publishedAfter(now - 5).toDetachedCriteria().where{
+            eq 'paperback', true
+        }.where{
+            or {
+                like 'title', '%3'
+                like 'title', '%2'
             }
-            {
-                or{
-                    like 'title', '%3'
-                    like 'title', '%2'
-                }
-            }
+        }.list()
         assertEquals 2, results?.size()
 
-        results = NamedCriteriaPublication.publishedAfter(now - 5, [max: 2, offset: 1]) {
+        results = NamedCriteriaPublication.publishedAfter(now - 5).toDetachedCriteria().where {
             eq 'paperback', true
-        } {
-            or{
+        }.where {
+            or {
                 like 'title', '%3'
                 like 'title', '%2'
             }
-        }
+        }.list([max: 2, offset: 1])
         assertEquals 1, results?.size()
-
-        results = NamedCriteriaPublication.publishedBetween(now - 5, now + 1, [max: 2, offset: 1]) {
-            eq 'paperback', true
-        }{
-            or{
-                like 'title', '%3'
-                like 'title', '%2'
-            }
-        }
-        assertEquals 1, results?.size()
-
-        def publications = NamedCriteriaPublication.recentPublications(max: 3) {
-            like 'title', 'Some%'
-        }
-        assertEquals 3, publications?.size()
-
-
-        publications = NamedCriteriaPublication.recentPublications(max: 3) {
-            like 'title', 'Some%'
-        }{
-            or{
-                like 'title', '%3'
-                like 'title', '%2'
-            }
-        }
-        assertEquals 2, publications?.size()
-
-        publications = NamedCriteriaPublication.recentPublications(max: 3,[ {
-            like 'title', 'Some%'
-        },{
-            or{
-                like 'title', '%3'
-                like 'title', '%2'
-            }
-        }])
-        assertEquals 2, publications?.size()
-
-        def cnt = NamedCriteriaPublication.recentPublications.count ([{
-            like 'title', 'Some%'
-        },{
-            or{
-                like 'title', '%3'
-                like 'title', '%2'
-            }
-        }])
-        assertEquals 2, cnt
-
     }
 
+/*
     // test that if called with the wrong number of parameters it fails
     void testParameterCheck(){
         def now = new Date()
@@ -443,7 +398,7 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         }
 
     }
-
+*/
 
     //see        GRAILS-8963
     void testClosureAfterList(){
