@@ -141,6 +141,8 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
         context.setVariable("testReportsDir", this.testReportsDir)
         context.setVariable("reportFormats", reportFormats)
         context.setVariable("ant", ant)
+        context.setVariable("unitTests", testFeatureDiscovery.unitTests)
+        context.setVariable("integrationTests", testFeatureDiscovery.integrationTests)
         testFeatureDiscovery.testExecutionContext = context
     }
 
