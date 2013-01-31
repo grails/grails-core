@@ -15,11 +15,13 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
+import grails.gorm.DetachedCriteria
 import grails.util.GrailsNameUtils
 
 import java.lang.reflect.Modifier
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.orm.hibernate.metaclass.*
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.grails.datastore.gorm.finders.FinderMethod
 import org.hibernate.criterion.CriteriaSpecification
@@ -88,8 +90,8 @@ class NamedCriteriaProxy<T> {
     private queryBuilder
     private inCountMethod = false
 
-    private invokeCriteriaClosures(additionalCriteriaClosures = null) {
-        def crit = getPreparedCriteriaClosure(additionalCriteriaClosures)
+    private invokeCriteriaClosure(additionalCriteriaClosure = null) {
+        def crit = getPreparedCriteriaClosure(additionalCriteriaClosure)
         crit()
     }
 
@@ -97,18 +99,13 @@ class NamedCriteriaProxy<T> {
         queryBuilder?."${propName}" = val
     }
 
-    private listInternal(Object[] params, def additionalCriteriaClosures, Boolean isDistinct) {
+    private listInternal(Map paramsMap, Closure additionalCriteriaClosure, Boolean isDistinct) {
         def listClosure = {
             queryBuilder = delegate
-            invokeCriteriaClosures(additionalCriteriaClosures)
+            invokeCriteriaClosure(additionalCriteriaClosure)
             if (isDistinct) {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
             }
-        }
-
-        def paramsMap
-        if (params && params[-1] instanceof Map) {
-            paramsMap = params[-1]
         }
 
         if (paramsMap) {
@@ -118,100 +115,60 @@ class NamedCriteriaProxy<T> {
         }
     }
 
-    def list(Object[] params, def additionalCriteriaClosures = null) {
-        handleParams(params, true, false)
+    /**
+     * transforms the named query into a detached criteria
+     * Before calling this method, the named criteria parameters must be set
+     * @return
+     */
+    def toDetachedCriteria() {
+        new DetachedCriteria(domainClass.clazz).build {
+            queryBuilder = delegate
+            invokeCriteriaClosure()
+        }
     }
 
-    def listDistinct(Object[] params, def additionalCriteriaClosures = null) {
-        handleParams(params, true, true)
+
+    def list( Map args = Collections.emptyMap(), Closure additionalCriteriaClosure = null) {
+        listInternal args, additionalCriteriaClosure, false
+    }
+    def list( Closure additionalCriteriaClosure) {
+        list (Collections.emptyMap(), additionalCriteriaClosure)
+    }
+
+    def listDistinct( Map args = Collections.emptyMap(), Closure additionalCriteriaClosure = null) {
+        listInternal args, additionalCriteriaClosure, true
+    }
+    def listDistinct( Closure additionalCriteriaClosure) {
+        listDistinct (Collections.emptyMap(), additionalCriteriaClosure)
     }
 
     def call(Object[] params) {
-        handleParams(params, false)
-    }
-
-    /**
-     * Method that interprets the params for all calls to the named query
-     * @param params - all the parameters
-     * @param calledFromList - depending on this flag, the method considers that the first parameters from the array are named criteria params
-     * @param isDistinct  - distinct flag
-     * @return
-     */
-    private handleParams(Object[] params, boolean calledFromList, Boolean isDistinct = false){
-
-        // will handle the following cases
-        // 1) no additional criteria closures
-        // 2) one or multiple criteria closures at the end
-        // 3) an array of multiple criteria closures at the end
-
-        boolean isLastParameterCollectionOfClosures =  params &&
-            ([Collection, Closure[]].any { it.isAssignableFrom(params[-1].getClass()) }) &&  // check if last parameter is a collection
-            ( params[-1] && (params[-1][0] instanceof Closure))  // check that it contains at least a Closure
-
-        if ( calledFromList || ((params && (params[-1] instanceof Closure) ) || isLastParameterCollectionOfClosures)) {
-            def additionalCriteriaClosures = []
-
-            if (isLastParameterCollectionOfClosures){
-                //the last parameter is a collection of additional criteria closures
-                additionalCriteriaClosures = params[-1]
-                params = removeLastParam(params)
-
-            } else{
-                // one or multiple criteria Closures at the end
-                while (params && (params[-1] instanceof Closure)) {
-                    additionalCriteriaClosures << params[-1]
-                    params = removeLastParam(params)
-                }
-
-            }
-
-            if (!calledFromList){
-                // after stripping all the closures set the namedCriteriaParams
-                if (params) {
-                    if (params[-1] instanceof Map) {  // the last parameter is a map with list settings
-                        if (params.length > 1) {
-                            setNamedCriteriaParams(params[0..-2] as Object[])
-                            params = [params[-1]] as Object[]
-                        }
-                    } else {    // no list settings
-                        setNamedCriteriaParams(params)
-                        params = new Object[0]
+        if (params && params[-1] instanceof Closure) {
+            def additionalCriteriaClosure = params[-1]
+            params = params.length > 1 ? params[0..-2] : [:]
+            def listArgs = null
+            if (params) {
+                if (params[-1] instanceof Map) {  // the last parameter is a map with list settings
+                    listArgs = params[-1]
+                    if (params.length > 1) {
+                        namedCriteriaParams = params[0..-2] as Object[]
                     }
+                } else {
+                    namedCriteriaParams = params
                 }
             }
-
-            //forward call to list
-            listInternal(params, additionalCriteriaClosures, isDistinct)
-        } else {
-            //no additional criteria closures
-            setNamedCriteriaParams(params)
+            list(listArgs, additionalCriteriaClosure)
+        }
+        else {
+            namedCriteriaParams = params
             this
         }
-    }
-
-
-    /**
-     * utility method that verifies if the parameters are compatible with the named query
-     * @param params
-     */
-    private void setNamedCriteriaParams(params){
-        //for now only check the no of parameters
-        if ((params.size() != this.criteriaClosure.maximumNumberOfParameters) && !(params.size()==0 && this.criteriaClosure.maximumNumberOfParameters==1)){
-            throw new IllegalArgumentException("""
-                    The named query must be invoked with ${this.criteriaClosure.maximumNumberOfParameters} parameters.
-                """)
-        }
-        namedCriteriaParams = params
-    }
-
-    def removeLastParam(params){
-        params.length > 1 ? params[0..-2] : [:]
     }
 
     T get() {
         def getClosure = {
             queryBuilder = delegate
-            invokeCriteriaClosures()
+            invokeCriteriaClosure()
             maxResults 1
             uniqueResult = true
         }
@@ -222,18 +179,18 @@ class NamedCriteriaProxy<T> {
         id = HibernatePluginSupport.convertValueToIdentifierType(domainClass, id)
         def getClosure = {
             queryBuilder = delegate
-            invokeCriteriaClosures()
+            invokeCriteriaClosure()
             eq 'id', id
             uniqueResult = true
         }
         domainClass.clazz.withCriteria(getClosure)
     }
 
-    int count(def additionalCriteriaClosures) {
+    int count(Closure additionalCriteriaClosure = null) {
         def countClosure = {
             inCountMethod = true
             queryBuilder = delegate
-            invokeCriteriaClosures(additionalCriteriaClosures)
+            invokeCriteriaClosure(additionalCriteriaClosure)
             uniqueResult = true
             projections {
                 rowCount()
@@ -262,8 +219,8 @@ class NamedCriteriaProxy<T> {
     def findAllWhere(Map params, Boolean uniq = false) {
         def queryClosure = {
             queryBuilder = delegate
-            invokeCriteriaClosures()
-            params.each { key, val ->
+            invokeCriteriaClosure()
+            params.each {key, val ->
                 eq key, val
             }
             if (uniq) {
@@ -335,7 +292,7 @@ class NamedCriteriaProxy<T> {
         proxy
     }
 
-    private getPreparedCriteriaClosure(additionalCriteriaClosures = null) {
+    private getPreparedCriteriaClosure(additionalCriteriaClosure = null) {
         def closureClone = criteriaClosure.clone()
         closureClone.resolveStrategy = Closure.DELEGATE_FIRST
         if (namedCriteriaParams) {
@@ -349,12 +306,10 @@ class NamedCriteriaProxy<T> {
                 previousClosure()
             }
             closureClone()
-            if (additionalCriteriaClosures) {
-                additionalCriteriaClosures.each { Closure additionalCriteriaClosure ->
-                    additionalCriteriaClosure = additionalCriteriaClosure.clone()
-                    additionalCriteriaClosure.delegate = delegate
-                    additionalCriteriaClosure()
-                }
+            if (additionalCriteriaClosure) {
+                additionalCriteriaClosure = additionalCriteriaClosure.clone()
+                additionalCriteriaClosure.delegate = delegate
+                additionalCriteriaClosure()
             }
         }
         c
