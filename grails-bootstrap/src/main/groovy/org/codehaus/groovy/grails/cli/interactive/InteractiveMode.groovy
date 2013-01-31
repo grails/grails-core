@@ -94,6 +94,14 @@ class InteractiveMode {
         String originalGrailsEnvDefault = System.getProperty(Environment.DEFAULT)
         addStatus("Enter a script name to run. Use TAB for completion: ")
 
+        Runtime.addShutdownHook {
+            final files = settings.projectWorkDir.listFiles()
+            if (files) {
+                final toDelete = files.findAll { File f -> f.name.endsWith("-resume") && f.directory }
+                toDelete*.delete()
+            }
+        }
+
         while (interactiveModeActive) {
             String scriptName = showPrompt()
             if (scriptName == null) {
