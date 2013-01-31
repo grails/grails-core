@@ -60,6 +60,7 @@ public class ScriptBindingInitializer {
     public static final String GRAILS_VERSION = "grailsVersion";
     public static final String USER_HOME = "userHome";
     public static final String GRAILS_ENV = "grailsEnv";
+    public static final String ARGS_MAP = "argsMap";
 
     private BuildSettings settings;
     private PluginPathDiscoverySupport pluginPathSupport;
@@ -97,7 +98,7 @@ public class ScriptBindingInitializer {
          @SuppressWarnings("rawtypes")
          Map argsMap = new LinkedHashMap(commandLine.getUndeclaredOptions());
          argsMap.put("params", commandLine.getRemainingArgs());
-         binding.setVariable("argsMap", argsMap);
+         binding.setVariable(ARGS_MAP, argsMap);
          binding.setVariable("args", commandLine.getRemainingArgsLineSeparated());
          binding.setVariable(GRAILS_SCRIPT, c);
          URLClassLoader classLoader = this.classLoader;

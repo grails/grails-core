@@ -141,7 +141,7 @@ abstract class ForkedGrailsProcess {
         }
 
         def resumeDir = new File(executionContext.projectWorkDir, resumeIndicatorName)
-        if (forkReserve && resumeDir.exists() && InteractiveMode.isActive()) {
+        if (isForkingReserveEnabled() && resumeDir.exists()) {
             resumeDir.delete()
             sleep(100)
 
@@ -162,7 +162,7 @@ abstract class ForkedGrailsProcess {
 
             def process = processBuilder.start()
 
-            if (forkReserve && InteractiveMode.isActive()) {
+            if (isForkingReserveEnabled()) {
                 List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
                 forkReserveProcess(reserveCmd, executionContext)
 
@@ -171,6 +171,10 @@ abstract class ForkedGrailsProcess {
             return attachOutputListener(process)
         }
 
+    }
+
+    protected boolean isForkingReserveEnabled() {
+        forkReserve && InteractiveMode.isActive() && !debug
     }
 
     @CompileStatic
@@ -244,7 +248,7 @@ abstract class ForkedGrailsProcess {
         }
 
         List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
-        if (debug) {
+        if (debug && !isReserve) {
             cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"])
         }
         final console = GrailsConsole.getInstance()

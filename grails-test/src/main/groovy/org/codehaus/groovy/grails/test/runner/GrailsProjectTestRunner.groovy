@@ -37,7 +37,7 @@ import org.codehaus.groovy.grails.test.support.GrailsTestMode
  * to be registered with the #testFeatureDiscovery property
  *
  *
- *
+ * TODO: Verify fitnesse, cucumber, guard, functional-test and clover plugins still work
  *
  * @author Graeme Rocher
  * @since 2.3

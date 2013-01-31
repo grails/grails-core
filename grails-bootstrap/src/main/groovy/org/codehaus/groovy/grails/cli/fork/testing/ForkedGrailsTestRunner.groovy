@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.cli.fork.testing
 
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
+import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
@@ -80,13 +81,10 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
     @Override
     protected Object createInstance(Class projectComponentClass, BuildSettings buildSettings) {
-        final scriptBinding = new Binding()
         final pluginSettings = GrailsPluginUtils.getPluginBuildSettings(buildSettings)
-        ScriptBindingInitializer.initBinding(scriptBinding, buildSettings, (URLClassLoader)forkedClassLoader, GrailsConsole.getInstance())
-        GrailsBuildEventListener eventListener = (GrailsBuildEventListener)scriptBinding.getVariable("eventListener")
-        scriptBinding.setVariable("pluginSettings", pluginSettings)
-        scriptBinding.setVariable("grailsSettings", buildSettings)
-        eventListener.initialize()
+        Binding scriptBinding = createExecutionContext(buildSettings, pluginSettings)
+
+        GrailsBuildEventListener eventListener = createEventListener(scriptBinding)
         final projectCompiler = forkedClassLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectCompiler").newInstance(pluginSettings)
 
         final projectPackager = forkedClassLoader.loadClass("org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager").newInstance(projectCompiler, eventListener)
