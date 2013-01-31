@@ -81,7 +81,7 @@ createArtifact = { Map args = [:] ->
     if (!templateFile.exists()) {
         // now check for template provided by plugins
         def possibleResources = pluginSettings.pluginDirectories.collect { dir ->
-            new FileSystemResource("${dir.path}/src/templates/artifacts/${type ?: lastType}.groovy")
+            new FileSystemResource("${dir.path}/src/${templatePath}/${type ?: lastType}.groovy")
         }   
         templateFile = possibleResources.find { it.exists() }
         if (!templateFile) {
