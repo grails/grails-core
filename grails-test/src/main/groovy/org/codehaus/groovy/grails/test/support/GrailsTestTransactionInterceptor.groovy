@@ -1,3 +1,5 @@
+package org.codehaus.groovy.grails.test.support
+
 /*
  * Copyright 2009 the original author or authors.
  *
@@ -13,13 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.test.support
-
-import org.springframework.transaction.support.DefaultTransactionDefinition
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.context.ApplicationContext
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.springframework.context.ApplicationContext
+import org.springframework.transaction.support.AbstractPlatformTransactionManager
+import org.springframework.transaction.support.DefaultTransactionDefinition
 
 /**
  * Establishes a rollback only transaction for running a test in.
@@ -28,54 +28,53 @@ class GrailsTestTransactionInterceptor {
 
     static final String TRANSACTIONAL = "transactional"
 
-    ApplicationContext applicationContext
-    protected final transactionManager
-    protected transactionStatus
+	ApplicationContext applicationContext
+	protected List transactionManagers = []
+	protected List transactionStatuses = []
 
-    GrailsTestTransactionInterceptor(ApplicationContext applicationContext) {
-        this.applicationContext = applicationContext
+	GrailsTestTransactionInterceptor(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext
 
-        if (applicationContext.containsBean("transactionManager")) {
-            transactionManager = applicationContext.getBean("transactionManager")
-        }
-    }
+		List<String> transactionManagerNames = applicationContext.beanDefinitionNames.findAll { String name ->
+			return name == 'transactionManager' || name.startsWith('transactionManager_')
+		}
 
-    /**
-     * Establishes a transaction.
-     */
-    void init() {
-        if (!transactionManager) {
-            return
-        }
+		transactionManagerNames.eachWithIndex { String name, i ->
+			AbstractPlatformTransactionManager tm = applicationContext.getBean(name)
+			if(i > 0) {
+				tm.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_NEVER)
+			}
+			transactionManagers << tm
+		}
+	}
 
-        if (transactionStatus == null) {
-            transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition())
-        }
-        else {
-            throw new RuntimeException("init() called on test transaction interceptor during transaction")
-        }
-    }
+	/**
+	 * Establishes a transaction.
+	 */
+	void init() {
+		transactionManagers.each {transactionManager ->
+			transactionStatuses << transactionManager.getTransaction(new DefaultTransactionDefinition())
+		}
+		
+	}
 
-    /**
-     * Rolls back the current transaction.
-     */
-    void destroy() {
-        if (!transactionManager) {
-            return
-        }
+	/**
+	 * Rolls back the current transaction.
+	 */
+	void destroy() {
+		transactionStatuses.eachWithIndex { transactionStatus, i ->
+			transactionManagers[i].rollback(transactionStatus)
+		}
+		
+		transactionStatuses.clear()
+	}
 
-        if (transactionStatus) {
-            transactionManager.rollback(transactionStatus)
-            transactionStatus = null
-        }
-    }
-
-    /**
-     * A test is non transactional if it defines an instance or static property name 'transactional' with
-     * a value of {@code false}.
-     */
-    boolean isTransactional(test) {
-        def value = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(test, TRANSACTIONAL)
-        !(value instanceof Boolean) || (Boolean) value
-    }
+	/**
+	 * A test is non transactional if it defines an instance or static property name 'transactional' with
+	 * a value of {@code false}.
+	 */
+	boolean isTransactional(test) {
+		def value = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(test, TRANSACTIONAL)
+		!(value instanceof Boolean) || (Boolean) value
+	}
 }
