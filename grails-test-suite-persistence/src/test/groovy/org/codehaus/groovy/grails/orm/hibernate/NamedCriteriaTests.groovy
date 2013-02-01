@@ -895,4 +895,52 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         def pub = NamedCriteriaPublication.recentPublications.findWhere(title: 'Book Number 2')
         assertEquals 'Book Number 2', pub.title
     }
+
+
+
+//  see      GRAILS-9804
+    void testDetachedCriteriaFromNamedQuery() {
+        def now = new Date()
+
+        6.times { cnt ->
+            assert new NamedCriteriaPublication(title: "Some Old Book #${cnt}",
+                datePublished: now - 1000, paperback: true).save(failOnError: true).id
+            assert new NamedCriteriaPublication(title: "Some New Book #${cnt}",
+                datePublished: now, paperback: true).save(failOnError: true).id
+        }
+
+        //test with a list of criteria closures
+        def criteria = NamedCriteriaPublication.publishedAfter(now - 5).toDetachedCriteria().where {
+            eq('paperback', true)
+        }
+        assertEquals 6, criteria.list().size()
+
+        def criteria1 = criteria.where {
+            like('title', '%3')
+        }
+        assertEquals 1, criteria1.list()?.size()
+
+        // test with multiple trailing closures
+        def results = NamedCriteriaPublication.publishedAfter(now - 5).toDetachedCriteria().where{
+            eq 'paperback', true
+        }.where{
+            or {
+                like 'title', '%3'
+                like 'title', '%2'
+            }
+        }.list()
+        assertEquals 2, results?.size()
+
+        results = NamedCriteriaPublication.publishedAfter(now - 5).toDetachedCriteria().where {
+            eq 'paperback', true
+        }.where {
+            or {
+                like 'title', '%3'
+                like 'title', '%2'
+            }
+        }.list([max: 2, offset: 1])
+        assertEquals 1, results?.size()
+    }
+
+
 }
