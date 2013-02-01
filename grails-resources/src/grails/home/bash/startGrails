@@ -190,7 +190,7 @@ fi
 # Process JVM args
 AGENT_STRING="@agent.string@"
 CMD_LINE_ARGS=""
-DISABLE_RELOADING=false
+DISABLE_RELOADING=true
 
 while true; do
   if [ "$1" = "-cp" ] || [ "$1" = "-classpath" ]; then
@@ -201,6 +201,7 @@ while true; do
 
   if [ "$1" = "-reloading" ]; then
     AGENT=$AGENT_STRING
+    DISABLE_RELOADING=false
     shift
     break
   fi

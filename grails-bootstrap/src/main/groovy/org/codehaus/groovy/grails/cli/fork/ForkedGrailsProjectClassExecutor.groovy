@@ -51,23 +51,32 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
 
 
     protected final void run() {
-        ExecutionContext ec = executionContext
-        BuildSettings buildSettings = initializeBuildSettings(ec)
-        URLClassLoader classLoader = initializeClassLoader(buildSettings)
-        initializeLogging(ec.grailsHome,classLoader)
-        Thread.currentThread().setContextClassLoader(classLoader)
-
-        final projectComponentClass = classLoader.loadClass(getProjectClassType())
-        final projectClassInstance = createInstance(projectComponentClass, buildSettings)
 
         if (!isReserveProcess()) {
+            Object projectClassInstance = initializeProjectInstance()
 
             runInstance(projectClassInstance)
         }
         else {
-            waitForResume()
-            runInstance(projectClassInstance)
+            // don't wait if the resume directory already exists, another process exists
+            if (!resumeDir.exists()) {
+                Object projectClassInstance = initializeProjectInstance()
+                waitForResume()
+                runInstance(projectClassInstance)
+            }
         }
+    }
+
+    protected Object initializeProjectInstance() {
+        ExecutionContext ec = executionContext
+        BuildSettings buildSettings = initializeBuildSettings(ec)
+        URLClassLoader classLoader = initializeClassLoader(buildSettings)
+        initializeLogging(ec.grailsHome, classLoader)
+        Thread.currentThread().setContextClassLoader(classLoader)
+
+        final projectComponentClass = classLoader.loadClass(getProjectClassType())
+        final projectClassInstance = createInstance(projectComponentClass, buildSettings)
+        projectClassInstance
     }
 
 

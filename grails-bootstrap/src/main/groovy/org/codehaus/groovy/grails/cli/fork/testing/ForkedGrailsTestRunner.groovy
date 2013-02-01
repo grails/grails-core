@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
- *
+ * Allows forking of JVM when executing the GrailsProjectTestRunner class from the grails-test module.
  *
  * @author Graeme Rocher
  * @since 2.3

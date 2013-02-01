@@ -50,6 +50,8 @@ abstract class ForkedGrailsProcess {
 
     private String resumeIndicatorName
 
+    protected File resumeDir
+
     ForkedGrailsProcess() {
         resumeIndicatorName = "${getClass().simpleName}-process-resume"
     }
@@ -95,12 +97,16 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     protected void waitForResume() {
         // wait for resume indicator
-        def resumeDir = new File(executionContext.projectWorkDir, resumeIndicatorName)
+        def resumeDir = getResumeDir()
         resumeDir.mkdirs()
         startIdleKiller()
         while (resumeDir.exists()) {
             sleep(100)
         }
+    }
+
+    protected File getResumeDir() {
+        new File(executionContext.projectWorkDir, resumeIndicatorName)
     }
 
     @CompileStatic
