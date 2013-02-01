@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
-import grails.gorm.DetachedCriteria
 import grails.util.GrailsNameUtils
 
 import java.lang.reflect.Modifier
@@ -115,19 +114,6 @@ class NamedCriteriaProxy<T> {
         }
     }
 
-    /**
-     * transforms the named query into a detached criteria
-     * Before calling this method, the named criteria parameters must be set
-     * @return
-     */
-    def toDetachedCriteria() {
-        new DetachedCriteria(domainClass.clazz).build {
-            queryBuilder = delegate
-            invokeCriteriaClosure()
-        }
-    }
-
-
     def list( Map args = Collections.emptyMap(), Closure additionalCriteriaClosure = null) {
         listInternal args, additionalCriteriaClosure, false
     }
@@ -146,7 +132,7 @@ class NamedCriteriaProxy<T> {
         if (params && params[-1] instanceof Closure) {
             def additionalCriteriaClosure = params[-1]
             params = params.length > 1 ? params[0..-2] : [:]
-            def listArgs = null
+            def listArgs = [:]
             if (params) {
                 if (params[-1] instanceof Map) {  // the last parameter is a map with list settings
                     listArgs = params[-1]
