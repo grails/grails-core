@@ -19,6 +19,8 @@ import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.cli.fork.testing.ForkedGrailsTestRunner
 
 import java.awt.Desktop
 
@@ -102,6 +104,8 @@ class InteractiveMode {
             }
         }
 
+        startBackgroundTestRunner()
+
         while (interactiveModeActive) {
             String scriptName = showPrompt()
             if (scriptName == null) {
@@ -177,6 +181,20 @@ class InteractiveMode {
 
         interactiveModeActive = false
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
+    }
+
+    @CompileStatic
+    protected void startBackgroundTestRunner() {
+        Thread.start {
+            // start a background JVM ready to run tests
+            if (settings.forkSettings.test) {
+                final runner = new ForkedGrailsTestRunner(settings)
+                runner.forkReserve()
+                if (settings.forkSettings.test instanceof Map) {
+                    runner.configure((Map) settings.forkSettings.test)
+                }
+            }
+        }
     }
 
     protected void quit() {

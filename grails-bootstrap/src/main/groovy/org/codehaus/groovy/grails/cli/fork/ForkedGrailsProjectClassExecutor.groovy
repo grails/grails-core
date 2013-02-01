@@ -62,6 +62,7 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
             if (!resumeDir.exists()) {
                 Object projectClassInstance = initializeProjectInstance()
                 waitForResume()
+                this.executionContext = readExecutionContext()
                 runInstance(projectClassInstance)
             }
         }

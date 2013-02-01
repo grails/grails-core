@@ -50,8 +50,6 @@ abstract class ForkedGrailsProcess {
 
     private String resumeIndicatorName
 
-    protected File resumeDir
-
     ForkedGrailsProcess() {
         resumeIndicatorName = "${getClass().simpleName}-process-resume"
     }
@@ -146,15 +144,12 @@ abstract class ForkedGrailsProcess {
             discoverAndSetAgent(executionContext)
         }
 
-        def resumeDir = new File(executionContext.projectWorkDir, resumeIndicatorName)
+        final resumeDir = getResumeDir()
         if (isForkingReserveEnabled() && resumeDir.exists()) {
             resumeDir.delete()
             sleep(100)
-
-            String classpathString = getBoostrapClasspath(executionContext)
-            List<String> cmd = buildProcessCommand(executionContext, classpathString, true)
-
-            forkReserveProcess(cmd, executionContext)
+            storeExecutionContext(executionContext)
+            forkReserve(executionContext)
         }
         else {
             String classpathString = getBoostrapClasspath(executionContext)
@@ -177,6 +172,13 @@ abstract class ForkedGrailsProcess {
             return attachOutputListener(process)
         }
 
+    }
+
+    public void forkReserve(ExecutionContext executionContext = getExecutionContext()) {
+        String classpathString = getBoostrapClasspath(executionContext)
+        List<String> cmd = buildProcessCommand(executionContext, classpathString, true)
+
+        forkReserveProcess(cmd, executionContext)
     }
 
     protected boolean isForkingReserveEnabled() {
@@ -243,15 +245,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected List<String> buildProcessCommand(ExecutionContext executionContext, String classpathString, boolean isReserve = false) {
-        def baseName = executionContext.getBaseDir().canonicalFile.name
-        File tempFile = File.createTempFile(baseName, "grails-execution-context")
-
-        tempFile.deleteOnExit()
-
-        tempFile.withOutputStream { OutputStream fos ->
-            def oos = new ObjectOutputStream(fos)
-            oos.writeObject(executionContext)
-        }
+        File tempFile = storeExecutionContext(executionContext)
 
         List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
         if (debug && !isReserve) {
@@ -276,6 +270,19 @@ abstract class ForkedGrailsProcess {
             cmd.addAll(jvmArgs)
         }
         return cmd
+    }
+
+    protected File storeExecutionContext(ExecutionContext executionContext) {
+        def baseName = executionContext.getBaseDir().canonicalFile.name
+        File tempFile = File.createTempFile(baseName, "grails-execution-context")
+
+        tempFile.deleteOnExit()
+
+        tempFile.withOutputStream { OutputStream fos ->
+            def oos = new ObjectOutputStream(fos)
+            oos.writeObject(executionContext)
+        }
+        tempFile
     }
 
     @CompileStatic
@@ -443,7 +450,7 @@ class ExecutionContext implements Serializable {
 
     String env
     File grailsHome
-    Map argsMap
+    Map argsMap = new LinkedHashMap()
 
     void initialize(BuildSettings settings) {
         List<File> isolatedBuildDependencies = buildMinimalIsolatedClasspath(settings)
