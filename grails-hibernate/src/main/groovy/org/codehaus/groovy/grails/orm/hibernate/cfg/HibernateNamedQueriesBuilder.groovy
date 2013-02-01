@@ -98,18 +98,13 @@ class NamedCriteriaProxy<T> {
         queryBuilder?."${propName}" = val
     }
 
-    private listInternal(Object[] params, Closure additionalCriteriaClosure, Boolean isDistinct) {
+    private listInternal(Map paramsMap, Closure additionalCriteriaClosure, Boolean isDistinct) {
         def listClosure = {
             queryBuilder = delegate
             invokeCriteriaClosure(additionalCriteriaClosure)
             if (isDistinct) {
                 resultTransformer = CriteriaSpecification.DISTINCT_ROOT_ENTITY
             }
-        }
-
-        def paramsMap
-        if (params && params[-1] instanceof Map) {
-            paramsMap = params[-1]
         }
 
         if (paramsMap) {
@@ -119,20 +114,28 @@ class NamedCriteriaProxy<T> {
         }
     }
 
-    def list(Object[] params, Closure additionalCriteriaClosure = null) {
-        listInternal params, additionalCriteriaClosure, false
+    def list( Map args = Collections.emptyMap(), Closure additionalCriteriaClosure = null) {
+        listInternal args, additionalCriteriaClosure, false
+    }
+    def list( Closure additionalCriteriaClosure) {
+        list (Collections.emptyMap(), additionalCriteriaClosure)
     }
 
-    def listDistinct(Object[] params, Closure additionalCriteriaClosure = null) {
-        listInternal params, additionalCriteriaClosure, true
+    def listDistinct( Map args = Collections.emptyMap(), Closure additionalCriteriaClosure = null) {
+        listInternal args, additionalCriteriaClosure, true
+    }
+    def listDistinct( Closure additionalCriteriaClosure) {
+        listDistinct (Collections.emptyMap(), additionalCriteriaClosure)
     }
 
     def call(Object[] params) {
         if (params && params[-1] instanceof Closure) {
             def additionalCriteriaClosure = params[-1]
             params = params.length > 1 ? params[0..-2] : [:]
+            def listArgs = [:]
             if (params) {
-                if (params[-1] instanceof Map) {
+                if (params[-1] instanceof Map) {  // the last parameter is a map with list settings
+                    listArgs = params[-1]
                     if (params.length > 1) {
                         namedCriteriaParams = params[0..-2] as Object[]
                     }
@@ -140,7 +143,7 @@ class NamedCriteriaProxy<T> {
                     namedCriteriaParams = params
                 }
             }
-            list(params, additionalCriteriaClosure)
+            list(listArgs, additionalCriteriaClosure)
         }
         else {
             namedCriteriaParams = params
