@@ -37,7 +37,7 @@ class TomcatExecutionContext extends ExecutionContext {
     @Override
     protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         final buildDependencies = super.buildMinimalIsolatedClasspath(buildSettings)
-        final tomcatJars = ForkedTomcatServer.findTomcatJars(buildSettings)
+        final tomcatJars = org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess.findTomcatJars(buildSettings)
         buildDependencies.addAll(tomcatJars.findAll { File f -> !f.name.contains('juli')})
 
         return buildDependencies

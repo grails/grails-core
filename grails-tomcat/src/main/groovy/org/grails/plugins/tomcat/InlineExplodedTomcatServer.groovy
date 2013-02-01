@@ -140,10 +140,11 @@ class InlineExplodedTomcatServer extends TomcatServer {
             tomcat.service.addConnector(sslConnector)
         }
 
-        tomcat.start()
         if (Environment.isFork()) {
             ForkedTomcatServer.startKillSwitch(tomcat, httpPort)
         }
+        tomcat.start()
+
     }
 
     void stop() {

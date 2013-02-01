@@ -55,12 +55,6 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     }
 
     @CompileStatic
-    public static Collection<File> findTomcatJars(BuildSettings buildSettings) {
-        return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") && !it.name.contains("grails-plugin-tomcat") } +
-                buildSettings.providedDependencies.findAll { File it -> it.name.contains("tomcat") && !it.name.contains("grails-plugin-tomcat") }
-    }
-
-    @CompileStatic
     def run() {
         if (!isReserveProcess()) {
             runInternal()
@@ -152,15 +146,11 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         }
     }
 
-    @Override
-    ExecutionContext getExecutionContext() {
-        return executionContext
-    }
 
     void stop() {
         final ec = (TomcatExecutionContext)executionContext
         try {
-            new URL("http://${ec?.host}:${executionContext?.ec  + 1}").text
+            new URL("http://${ec?.host ?: 'localhost'}:${(ec?.port ?: 8080 )  + 1}").text
         } catch(e) {
             // ignore
         }

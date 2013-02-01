@@ -21,6 +21,7 @@ import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProjectClassExecutor
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
@@ -130,6 +131,7 @@ class TestExecutionContext extends ExecutionContext {
     protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         final classpath = super.buildMinimalIsolatedClasspath(buildSettings)
         classpath << buildSettings.testDependencies.find { File f -> f.name.startsWith('junit') }
+        classpath.addAll ForkedGrailsProcess.findTomcatJars(buildSettings)
         return classpath
     }
 }

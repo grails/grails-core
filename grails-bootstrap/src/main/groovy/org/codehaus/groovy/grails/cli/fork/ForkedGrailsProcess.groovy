@@ -333,6 +333,12 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
+    public static Collection<File> findTomcatJars(BuildSettings buildSettings) {
+        return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") && !it.name.contains("grails-plugin-tomcat") } +
+            buildSettings.providedDependencies.findAll { File it -> it.name.contains("tomcat") && !it.name.contains("grails-plugin-tomcat") }
+    }
+
+    @CompileStatic
     protected GroovyClassLoader createClassLoader(BuildSettings buildSettings) {
         def classLoader = new GroovyClassLoader()
 
