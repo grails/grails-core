@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.orm.hibernate.cfg
 
+import grails.gorm.DetachedCriteria
 import grails.util.GrailsNameUtils
 
 import java.lang.reflect.Modifier
@@ -212,6 +213,18 @@ class NamedCriteriaProxy<T> {
             }
         }
         domainClass.clazz.withCriteria(queryClosure)
+    }
+
+    /**
+     * transforms the named query into a detached criteria
+     * Before calling this method, the named criteria parameters must be set
+     * @return
+     */
+    def toDetachedCriteria() {
+        new DetachedCriteria(domainClass.clazz).build {
+            queryBuilder = delegate
+            invokeCriteriaClosure()
+        }
     }
 
     def propertyMissing(String propertyName) {
