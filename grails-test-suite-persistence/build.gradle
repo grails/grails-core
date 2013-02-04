@@ -25,8 +25,8 @@ dependencies {
 }
 test {
     maxParallelForks = 2
-    forkEvery = 200
-    jvmArgs = ['-Xmx2048M','-XX:MaxPermSize=256m']
+    forkEvery = 100
+    jvmArgs = ['-Xmx1048M','-XX:MaxPermSize=256m']
     excludes = ['**/GrailsDomainBinderTests.class']
 }
 
