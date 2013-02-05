@@ -22,11 +22,8 @@ import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
-<<<<<<< HEAD
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
-=======
 import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport
->>>>>>> 2.2.x
 
 import java.lang.reflect.Method
 
