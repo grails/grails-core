@@ -156,6 +156,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
 
     @CompileStatic
     void runAllTests(Map<String, String> argsMap, boolean triggerEvents = true) {
+        testExecutionContext.setVariable("serverContextPath", this.projectPackager.configureServerContextPath())
 
         // The test targeting patterns
         List<String> testTargeters = []

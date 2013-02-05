@@ -30,6 +30,7 @@ includeTargets << grailsScript("_GrailsRun")
 includeTargets << grailsScript("_GrailsClean")
 
 
+
 projectTestRunner = new GrailsProjectTestRunner(projectPackager)
 projectTestRunner.testExecutionContext = binding
 // Miscellaneous 'switches' that affect test operation
@@ -82,7 +83,7 @@ testsFailed = false
 projectWatcher = null
 
 target(allTests: "Runs the project's tests.") {
-    depends(compile, startLogging, packagePlugins)
+    depends(compile, startLogging, packagePlugins, configureServerContextPath)
     if(grailsSettings.forkSettings.test) {
         def forkedTestRunner = new ForkedGrailsTestRunner(grailsSettings)
         if(grailsSettings.forkSettings.test instanceof Map) {

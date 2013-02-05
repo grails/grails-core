@@ -19,6 +19,7 @@ package org.codehaus.groovy.grails.project.packaging
 import grails.build.logging.GrailsConsole
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
+import grails.util.Holders
 import grails.util.Metadata
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
@@ -347,7 +348,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
                 }
             }
             ConfigurationHelper.initConfig(config, null, classLoader)
-            ConfigurationHolder.config = config
+            Holders.config = config
         }
         return config
     }
