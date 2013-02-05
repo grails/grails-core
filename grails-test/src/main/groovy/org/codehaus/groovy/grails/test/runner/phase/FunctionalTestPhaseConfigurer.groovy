@@ -91,7 +91,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                     try {
                         def appCtx = Holders.applicationContext
                         PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
-                    } catch (IllegalArgumentException e) {
+                    } catch (IllegalStateException | IllegalArgumentException e) {
                         // no appCtx configured, ignore
                     }
                 }
@@ -111,7 +111,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             GrailsWebApplicationContext appCtx
             try {
                 appCtx = (GrailsWebApplicationContext)Holders.applicationContext
-            } catch (IllegalArgumentException e) {
+            } catch (IllegalStateException | IllegalArgumentException e ) {
                 // no configured app ctx
             }
             if (appCtx) {

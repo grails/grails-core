@@ -20,6 +20,7 @@ import jline.ConsoleReader;
 import jline.History;
 import jline.Terminal;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.DemuxOutputStream;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream;
@@ -61,6 +62,8 @@ public class GrailsConsole {
     public static final String STACKTRACE_FILTERED_MESSAGE = " (NOTE: Stack trace has been filtered. Use --verbose to see entire trace.)";
     public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
     public static final Character SECURE_MASK_CHAR = new Character('*');
+    private final PrintStream originalSystemOut;
+    private final PrintStream originalSystemErr;
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -121,10 +124,12 @@ public class GrailsConsole {
 
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
-        out = new PrintStream(ansiWrap(System.out));
+        originalSystemOut = System.out;
+        originalSystemErr = System.err;
+        out = new PrintStream(ansiWrap(originalSystemOut));
 
         System.setOut(new GrailsConsolePrintStream(out));
-        System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(System.err)));
+        System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(originalSystemErr)));
 
         if (isInteractiveEnabled()) {
             reader = createConsoleReader();
@@ -343,6 +348,7 @@ public class GrailsConsole {
      * Indicates progress with the default progress indicator
      */
     public void indicateProgress() {
+        verifySystemOut();
         progressIndicatorActive = true;
         if (isAnsiEnabled()) {
             if (lastMessage != null && lastMessage.length() > 0) {
@@ -379,6 +385,7 @@ public class GrailsConsole {
      * @param total  The total
      */
     public void indicateProgressPercentage(long number, long total) {
+        verifySystemOut();
         progressIndicatorActive = true;
         String currMsg = lastMessage;
         try {
@@ -402,6 +409,7 @@ public class GrailsConsole {
      * @param number The number
      */
     public void indicateProgress(int number) {
+        verifySystemOut();
         progressIndicatorActive = true;
         String currMsg = lastMessage;
         try {
@@ -427,6 +435,7 @@ public class GrailsConsole {
     }
 
     private void outputMessage(String msg, int replaceCount) {
+        verifySystemOut();
         if (msg == null || msg.trim().length() == 0) return;
         try {
             if (isAnsiEnabled()) {
@@ -507,6 +516,7 @@ public class GrailsConsole {
     }
 
     private void logSimpleError(String msg) {
+        verifySystemOut();
         if (progressIndicatorActive) {
             out.println();
         }
@@ -575,6 +585,7 @@ public class GrailsConsole {
      * @param msg The message to log
      */
     public void log(String msg) {
+        verifySystemOut();
         PrintStream printStream = out;
         try {
             if (userInputActive) {
@@ -605,6 +616,7 @@ public class GrailsConsole {
      */
     private boolean appendCalled = false;
     public void append(String msg) {
+        verifySystemOut();
         PrintStream printStream = out;
         try {
             if (userInputActive && !appendCalled) {
@@ -634,6 +646,7 @@ public class GrailsConsole {
     }
 
     public void verbose(String msg) {
+        verifySystemOut();
         try {
             if (verbose) {
                 out.println(msg);
@@ -698,6 +711,7 @@ public class GrailsConsole {
      * @return The user input prompt
      */
     private String showPrompt(String prompt) {
+        verifySystemOut();
         cursorMove = 0;
         if (!userInputActive) {
             return readLine(prompt, false);
@@ -812,6 +826,7 @@ public class GrailsConsole {
     }
 
     public void error(String label, String message) {
+        verifySystemOut();
         if (message == null) {
             return;
         }
@@ -835,6 +850,16 @@ public class GrailsConsole {
             }
         } finally {
             postPrintMessage();
+        }
+    }
+
+    private void verifySystemOut() {
+        // something bad may have overridden the system out
+        if(!(System.out instanceof GrailsConsolePrintStream)) {
+            System.setOut(new GrailsConsolePrintStream(originalSystemOut));
+        }
+        if(!(System.err instanceof GrailsConsoleErrorPrintStream)) {
+            System.setErr(new GrailsConsoleErrorPrintStream(originalSystemErr));
         }
     }
 
