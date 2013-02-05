@@ -22,7 +22,11 @@ import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
+<<<<<<< HEAD
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
+=======
+import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport
+>>>>>>> 2.2.x
 
 import java.lang.reflect.Method
 
@@ -366,6 +370,12 @@ abstract class ForkedGrailsProcess {
         classLoader.addURL(buildSettings.pluginBuildClassesDir.toURI().toURL())
         classLoader.addURL(buildSettings.pluginProvidedClassesDir.toURI().toURL())
 
+
+        def pluginSupport = new PluginPathDiscoverySupport(buildSettings)
+
+        for(File f in pluginSupport.listJarsInPluginLibs()) {
+            classLoader.addURL(f.toURI().toURL())
+        }
 
         return classLoader
     }
