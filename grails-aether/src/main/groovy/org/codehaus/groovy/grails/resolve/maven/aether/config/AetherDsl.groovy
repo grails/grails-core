@@ -151,7 +151,7 @@ class AetherDsl {
         callable.delegate = rc
         callable.call()
 
-        this.dependencyManager.repositories = rc.repositories
+        this.dependencyManager.repositories.addAll(rc.repositories)
     }
 
     void dependencies(Closure callable) {
