@@ -217,9 +217,12 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
      * @param triggerEvents Whether to trigger events on start and finish of the test run (optional)
      **/
     void runAllTests(boolean triggerEvents = true) {
-        if (triggerEvents)
+        if (triggerEvents) {
             buildEventListener.triggerEvent("AllTestsStart")
+        }
+
         projectPackager.packageApplication()
+
         if (testOptions.clean) {
             new GrailsProjectCleaner(buildSettings, buildEventListener).cleanAll()
         }

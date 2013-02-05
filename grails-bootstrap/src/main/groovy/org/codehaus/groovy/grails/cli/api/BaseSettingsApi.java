@@ -109,6 +109,10 @@ public class BaseSettingsApi {
         this.buildEventListener = buildEventListener;
     }
 
+    public GrailsBuildEventListener getBuildEventListener() {
+        return buildEventListener;
+    }
+
     public void enableUaa() {
         try {
             Class<?> uaaClass = BaseSettingsApi.class.getClassLoader().loadClass("org.codehaus.groovy.grails.cli.support.UaaEnabler");

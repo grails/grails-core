@@ -61,13 +61,15 @@ class GrailsProjectPackager extends BaseSettingsApi {
     String servletVersion = "2.5"
     ClassLoader classLoader
 
-    private String serverContextPath
-    private ConfigObject config
-    private AntBuilder ant
-    private File basedir
-    private resourcesDirPath
-    private boolean doCompile
-    private File webXmlFile
+    protected String serverContextPath
+    protected ConfigObject config
+    protected AntBuilder ant
+    protected File basedir
+    protected resourcesDirPath
+    protected boolean doCompile
+    protected File webXmlFile
+    protected boolean packaged
+    protected boolean webXmlGenerated
 
     GrailsProjectPackager(GrailsProjectCompiler compiler, boolean doCompile = true) {
         this(compiler, compiler.buildSettings.configFile, doCompile)
@@ -131,6 +133,9 @@ class GrailsProjectPackager extends BaseSettingsApi {
      * Generates the web.xml file used by Grails to startup
      */
     void generateWebXml(GrailsPluginManager pluginManager) {
+        // don't duplicate work
+        if (webXmlFile.exists() && webXmlGenerated) return
+
         File projectWorkDir = buildSettings.projectWorkDir
         ConfigObject buildConfig = buildSettings.config
         def webXml = new FileSystemResource("$basedir/src/templates/war/web.xml")
@@ -166,6 +171,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
                 buildEventListener.triggerEvent("WebXmlStart", webXml.filename)
                 pluginManager.doWebDescriptor(webXml, sw)
                 webXmlFile.withWriter { it << sw.toString() }
+                webXmlGenerated = true
                 buildEventListener.triggerEvent("WebXmlEnd", webXml.filename)
             }
         }
@@ -242,6 +248,10 @@ class GrailsProjectPackager extends BaseSettingsApi {
      */
     @CompileStatic
     ConfigObject packageApplication() {
+        // don't duplicate work
+        if (config != null && packaged == true) {
+            return config
+        }
 
         if (doCompile) {
             projectCompiler.compilePlugins()
@@ -282,6 +292,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         packageMetadataFile()
 
         startLogging(config)
+        packaged = true
         return config
     }
 
@@ -348,8 +359,8 @@ class GrailsProjectPackager extends BaseSettingsApi {
                 }
             }
             ConfigurationHelper.initConfig(config, null, classLoader)
-            Holders.config = config
         }
+        Holders.config = config
         return config
     }
 

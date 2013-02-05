@@ -21,6 +21,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.project.container.GrailsProjectRunner
+import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
 
 /**
@@ -54,6 +55,14 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
 
     @Override
     void prepare() {
+        final packager = projectRunner.projectPackager
+        packager.packageApplication()
+        final isServerRunning = projectRunner.isServerRunning()
+        if (!isServerRunning)  {
+
+            def grailsProjectPluginLoader = new GrailsProjectPluginLoader(null, packager.classLoader, packager.buildSettings, projectRunner.buildEventListener)
+            packager.generateWebXml(grailsProjectPluginLoader.loadPlugins())
+        }
         registryCleaner = org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner.createAndRegister()
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
 
@@ -64,8 +73,9 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             functionalBaseUrl = (httpsBaseUrl ? 'https' : 'http') + "://${projectRunner.serverHost}:$projectRunner.serverPort$projectRunner.serverContextPath/"
         }
 
-        if (!projectRunner.isServerRunning()) {
+        if (!isServerRunning) {
 
+            packager.createConfig()
             if (warMode) {
 
                 // need to swap out the args map so any test phase/targetting patterns
@@ -120,8 +130,9 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             }
         }
 
-        if (!existingServer)
+        if (!existingServer) {
             projectRunner.stopServer()
+        }
 
         functionalBaseUrl = null
         System.setProperty(BuildSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
