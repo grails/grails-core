@@ -21,6 +21,7 @@ import grails.util.GrailsNameUtils;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -47,6 +48,35 @@ public class PluginPathDiscoverySupport {
         List<File> dirs = new ArrayList<File>();
         dirs.addAll(settings.getPluginDirectories());
         return dirs;
+    }
+
+    /**
+     * Lists all the jars found inside a plugins 'lib' directory
+     *
+     * @return A list of plugin jars
+     * @since 2.3
+     */
+    public List<File> listJarsInPluginLibs() {
+        List<File> jars = new ArrayList<File>();
+        List<File> pluginDirs = listKnownPluginDirs();
+        for (File pluginDir : pluginDirs) {
+            if(pluginDir.exists()) {
+                File libDir = new File(pluginDir, "lib");
+                if(libDir.exists()) {
+                    File[] files = libDir.listFiles(new FilenameFilter() {
+                        @Override
+                        public boolean accept(File file, String s) {
+                            return s.endsWith(".jar");
+                        }
+                    });
+
+                    if(files != null && files.length > 0) {
+                        jars.addAll(Arrays.asList(files));
+                    }
+                }
+            }
+        }
+        return jars;
     }
     /**
      * Gets the name of a plugin based on its directory. The method

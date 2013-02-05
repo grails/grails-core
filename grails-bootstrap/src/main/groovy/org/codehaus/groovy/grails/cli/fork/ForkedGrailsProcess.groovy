@@ -20,6 +20,7 @@ import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport
 
 import java.lang.reflect.Method
 
@@ -194,14 +195,28 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    protected URLClassLoader createClassLoader(BuildSettings buildSettings) {
-        def urls = buildSettings.runtimeDependencies.collect { File f -> f.toURI().toURL() }
-        urls.add(buildSettings.classesDir.toURI().toURL())
-        urls.add(buildSettings.pluginClassesDir.toURI().toURL())
-        urls.add(buildSettings.pluginBuildClassesDir.toURI().toURL())
-        urls.add(buildSettings.pluginProvidedClassesDir.toURI().toURL())
+    protected GroovyClassLoader createClassLoader(BuildSettings buildSettings) {
+        def classLoader = new GroovyClassLoader()
 
-        return new URLClassLoader(urls as URL[])
+        for(File f in buildSettings.runtimeDependencies) {
+            classLoader.addURL(f.toURI().toURL())
+        }
+        for(File f in buildSettings.providedDependencies) {
+            classLoader.addURL(f.toURI().toURL())
+        }
+        classLoader.addURL(buildSettings.classesDir.toURI().toURL())
+        classLoader.addURL(buildSettings.pluginClassesDir.toURI().toURL())
+        classLoader.addURL(buildSettings.pluginBuildClassesDir.toURI().toURL())
+        classLoader.addURL(buildSettings.pluginProvidedClassesDir.toURI().toURL())
+
+
+        def pluginSupport = new PluginPathDiscoverySupport(buildSettings)
+
+        for(File f in pluginSupport.listJarsInPluginLibs()) {
+            classLoader.addURL(f.toURI().toURL())
+        }
+
+        return classLoader
     }
 
     protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
