@@ -88,8 +88,12 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                 }
 
                 if (!isForkedRun) {
-                    def appCtx = Holders.applicationContext
-                    PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
+                    try {
+                        def appCtx = Holders.applicationContext
+                        PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
+                    } catch (IllegalArgumentException e) {
+                        // no appCtx configured, ignore
+                    }
                 }
             }
 
@@ -104,9 +108,16 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
     @Override
     void cleanup() {
         if (!warMode && !isForkedRun) {
-            GrailsWebApplicationContext appCtx = (GrailsWebApplicationContext)Holders.applicationContext
-            PersistenceContextInterceptorExecutor.destroyPersistenceContext(appCtx)
-            appCtx?.close()
+            GrailsWebApplicationContext appCtx
+            try {
+                appCtx = (GrailsWebApplicationContext)Holders.applicationContext
+            } catch (IllegalArgumentException e) {
+                // no configured app ctx
+            }
+            if (appCtx) {
+                PersistenceContextInterceptorExecutor.destroyPersistenceContext(appCtx)
+                appCtx?.close()
+            }
         }
 
         if (!existingServer)
