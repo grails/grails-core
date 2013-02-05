@@ -12,7 +12,7 @@ import spock.lang.Issue
 class WhereMethodSpec extends GormSpec {
     @Override
     List getDomainClasses() {
-        [Face, Nose,Person, Pet]
+        [Face, Nose,Person, Pet, Rectangle]
     }
 
     @Issue('GRAILS-8526')
