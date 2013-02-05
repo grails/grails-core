@@ -933,8 +933,7 @@ class CallMe {
 
    }
 
-
-    def "Test eqProperty query"() {
+    def "Test compare properties query"() {
        given:"A bunch of people"
             createPeople()
             new Person(firstName: "Frank", lastName: "Frank").save()
@@ -951,9 +950,78 @@ class CallMe {
             count == 1
             result.firstName == "Frank"
 
+       when:"We query for a person with different first and last name"
+             query = Person.where {
+                  firstName != lastName
+             }
+             def results = query.list()
+             count = query.count()
+
+       then:"The correct result is returned"
+            result != null
+            count == 6
    }
 
-   @Ignore // rlike database specific
+
+    def "Test compare numeric properties"() {
+        given:"A bunch of rectangles"
+            new Rectangle(width: 2, length: 2).save()
+            new Rectangle(width: 2, length: 4).save()
+
+        when:"We query for squares"
+            def query = Rectangle.where {
+                width == length
+            }
+            def result = query.get()
+            int count = query.count()
+
+        then:"The correct result is returned"
+            result != null
+            count == 1
+            result.length == 2
+
+        when:"We query for width > length"
+            query = Rectangle.where {
+                width > length
+            }
+            count = query.count()
+
+        then:"The correct result is returned"
+            count == 0
+
+        when:"We query for width >= length"
+            query = Rectangle.where {
+                width >= length
+            }
+            count = query.count()
+            result = query.list()
+
+        then:"The correct result is returned"
+            count == 1
+            result[0].width == 2
+
+        when:"We query for width < length"
+            query = Rectangle.where {
+                width < length
+            }
+            count = query.count()
+            result = query.get()
+
+        then:"The correct result is returned"
+            count == 1
+            result.length == 4
+
+        when:"We query for width <= length"
+            query = Rectangle.where {
+                width <= length
+            }
+            count = query.count()
+
+        then:"The correct result is returned"
+            count == 2
+    }
+
+    @Ignore // rlike database specific
    def "Test rlike query"() {
        given:"A bunch of people"
             createPeople()
@@ -1184,6 +1252,27 @@ class CallMe {
 
     }
 
+    @Issue('GRAILS-9328')
+    def "Test equals with subquery"() {
+        given: "A bunch of people with an average age of 40"
+            new Person(firstName: "Homer", lastName: "Simpson", age:45).save()
+            new Person(firstName: "Marge", lastName: "Simpson", age:40).save()
+            new Person(firstName: "Barney", lastName: "Rubble", age:35).save()
+            new Person(firstName: "Fred", lastName: "Flinstone", age:40).save()
+
+        when: "A where query is used"
+            def query = Person.where {
+                age == avg(age)
+            }
+            def results = query.list()
+
+        then: "The correct result is returned"
+            results.size() == 2
+            results[0].firstName == 'Marge'
+            results[1].firstName == 'Fred'
+    }
+
+
     protected def createPeople() {
         new Person(firstName: "Homer", lastName: "Simpson", age:45).save()
         new Person(firstName: "Marge", lastName: "Simpson", age:40).save()
@@ -1231,3 +1320,14 @@ class Nose implements Serializable {
         face index:true
     }
 }
+
+@Entity
+class Rectangle implements Serializable {
+    Long id
+    Long version
+
+    Integer width
+    Integer length
+
+}
+
