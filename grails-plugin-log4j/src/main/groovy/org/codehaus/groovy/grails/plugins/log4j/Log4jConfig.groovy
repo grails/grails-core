@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins.log4j
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
-
+import grails.util.Metadata
 import org.apache.commons.beanutils.BeanUtils
 import org.apache.log4j.Appender
 import org.apache.log4j.ConsoleAppender
@@ -205,7 +205,7 @@ class Log4jConfig {
             Logger logger = Logger.getLogger("StackTrace")
             logger.additivity = false
             def fileAppender = createFullstackTraceAppender()
-            if (!logger.allAppenders.hasMoreElements()) {
+            if (fileAppender && !logger.allAppenders.hasMoreElements()) {
                 logger.addAppender fileAppender
             }
         }
@@ -236,11 +236,41 @@ class Log4jConfig {
         BuildSettings settings = BuildSettingsHolder.getSettings()
         def targetDir = settings?.getProjectTargetDir()
         targetDir?.mkdirs()
-        fileAppender.file = targetDir ? "${targetDir.absolutePath}/stacktrace.log" : "stacktrace.log"
 
-        fileAppender.activateOptions()
-        appenders.stacktrace = fileAppender
-        return fileAppender
+        if (!targetDir && Environment.isWarDeployed()) {
+
+            final tomcatHome = System.getProperty('catalina.home')
+            final applicationName = Metadata.getCurrent().getApplicationName() ?: 'grails'
+            targetDir = new File('.')
+            if (tomcatHome) {
+                targetDir = new File(tomcatHome, 'logs')
+                if (!targetDir.exists()) {
+                    targetDir = new File(System.getProperty("java.io.tmpdir"))
+                }
+            }
+            else {
+                targetDir = new File(System.getProperty("java.io.tmpdir"))
+            }
+        }
+        final targetFile = targetDir ? new File(targetDir,"stacktrace.log") : new File("stacktrace.log")
+        fileAppender.file = targetFile.absolutePath
+
+        try {
+            fileAppender.activateOptions()
+            appenders.stacktrace = fileAppender
+            return fileAppender
+
+        } catch (java.io.FileNotFoundException e) {
+            LogLog.error("""WARNING: Unable to create the full stacktrace logger. The target file [$targetFile] is not writeable. Consider reconfiguring the stacktrace logger. Example:
+
+log4j = {
+  appenders {
+    console name:'stacktrace'
+  }
+
+}
+""")
+        }
     }
 
     @CompileStatic
