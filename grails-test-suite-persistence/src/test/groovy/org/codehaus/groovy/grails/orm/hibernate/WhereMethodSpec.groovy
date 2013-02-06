@@ -52,7 +52,6 @@ class WhereMethodSpec extends GormSpec{
     private processPetSize(int size) { size }
 
     @Issue('GRAILS-9695')
-    @Ignore // FIXME:  http://jira.grails.org/browse/GRAILS-9695
     def "Test query with 3 level deep domain association"() {
         given:"create people and faces"
         createPeopleWithFaces()
@@ -71,7 +70,7 @@ class WhereMethodSpec extends GormSpec{
         }
 
         then:"The correct results are returned"
-        query.count() == 4
+            query.count() == 4
 
         when:"A query that queries an association 2 levels deep is executed via nesting"
         query = Nose.where {
@@ -79,7 +78,7 @@ class WhereMethodSpec extends GormSpec{
         }
 
         then:"The correct results are returned"
-        query.count() == 4
+          query.count() == 4
     }
 
     private createPeopleWithFaces() {
