@@ -165,6 +165,28 @@ public class GrailsBuildEventListener implements BuildListener {
     }
 
     /**
+     * For backwards compatibility with _Events.groovy script
+     *
+     * @param eventName The event name
+     * @param arguments The arguments
+     * @deprecated Use #triggerEvent instead
+     */
+    @Deprecated
+    public void event(String eventName, List arguments) {
+        triggerEvent(eventName, arguments.toArray());
+    }
+
+    /**
+     * For backwards compatibility with _Events.groovy script
+     *
+     * @param eventName The event name
+     * @deprecated Use #triggerEvent instead
+     */
+    @Deprecated
+    public void event(String eventName) {
+        triggerEvent(eventName);
+    }
+    /**
      * Triggers and event for the given name and binding
      * @param eventName The name of the event
      */
