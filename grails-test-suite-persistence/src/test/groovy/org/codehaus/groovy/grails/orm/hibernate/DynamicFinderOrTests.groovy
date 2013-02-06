@@ -6,7 +6,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 class DynamicFinderOrTests extends AbstractGrailsHibernateTests {
 
     protected getDomainClasses() {
-        [Person, Pet]
+        [Person,Face, Nose, Pet]
     }
 
     void testFindAllByOr() {
