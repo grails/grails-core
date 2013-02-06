@@ -75,7 +75,6 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
     }
 
-
     @Override
     protected String getProjectClassType() {
         return "org.codehaus.groovy.grails.test.runner.GrailsProjectTestRunner"
@@ -124,10 +123,11 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
         instance.projectPackager.packageApplication()
         instance.runAllTests(executionContext.argsMap)
     }
-
-
 }
+
 class TestExecutionContext extends ExecutionContext {
+    private static final long serialVersionUID = 1
+
     @Override
     protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         final classpath = super.buildMinimalIsolatedClasspath(buildSettings)
