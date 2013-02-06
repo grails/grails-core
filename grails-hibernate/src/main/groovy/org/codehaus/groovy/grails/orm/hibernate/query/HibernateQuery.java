@@ -22,6 +22,7 @@ import java.lang.reflect.Field;
 import java.util.*;
 
 import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
+import org.grails.datastore.gorm.query.criteria.DetachedAssociationCriteria;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
 import org.grails.datastore.mapping.model.types.Association;
@@ -69,6 +70,12 @@ public class HibernateQuery extends Query {
     private static Field opField = ReflectionUtils.findField(SimpleExpression.class, "op");
     private static ConversionService conversionService = new DefaultConversionService();
 
+    private LinkedList<String> aliasStack = new LinkedList<String>();
+    private LinkedList<PersistentEntity> entityStack = new LinkedList<PersistentEntity>();
+    private LinkedList<Association> associationStack = new LinkedList<Association>();
+    private LinkedList<Criteria> aliasInstanceStack = new LinkedList<Criteria>();
+
+
     public HibernateQuery(Criteria criteria, HibernateSession session, PersistentEntity entity) {
         super(session, entity);
         this.criteria = criteria;
@@ -108,7 +115,7 @@ public class HibernateQuery extends Query {
     @Override
     public void add(Criterion criterion) {
         if (criterion instanceof FunctionCallingCriterion) {
-            org.hibernate.criterion.Criterion sqlRestriction = getRestrictionForFunctionCall((FunctionCallingCriterion) criterion, entity);
+            org.hibernate.criterion.Criterion sqlRestriction = getRestrictionForFunctionCall((FunctionCallingCriterion) criterion, getEntity());
             if (sqlRestriction != null) {
                 addToCriteria(sqlRestriction);
             }
@@ -125,9 +132,71 @@ public class HibernateQuery extends Query {
                 doTypeConversionIfNeccessary(getEntity(), pc);
             }
         }
-        final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(getEntity(), criterion, alias).toHibernateCriterion(this);
-        if (hibernateCriterion != null) {
-            addToCriteria(hibernateCriterion);
+        if(criterion instanceof DetachedAssociationCriteria) {
+            DetachedAssociationCriteria associationCriteria = (DetachedAssociationCriteria) criterion;
+
+            Association association = associationCriteria.getAssociation();
+
+            CriteriaAndAlias criteriaAndAlias = getCriteriaAndAlias(association);
+
+            aliasInstanceStack.add(criteriaAndAlias.criteria);
+            aliasStack.add(criteriaAndAlias.alias);
+            associationStack.add(association);
+            entityStack.add(association.getAssociatedEntity());
+
+            try {
+                List<Criterion> associationCriteriaList = associationCriteria.getCriteria();
+                for(Criterion c : associationCriteriaList) {
+                    add(c);
+                }
+            }
+            finally {
+                aliasInstanceStack.removeLast();
+                aliasStack.removeLast();
+                entityStack.removeLast();
+                associationStack.removeLast();
+            }
+        }
+        else {
+
+            final org.hibernate.criterion.Criterion hibernateCriterion = new HibernateCriterionAdapter(getEntity(), criterion, getCurrentAlias())
+                .toHibernateCriterion(this);
+            if (hibernateCriterion != null) {
+                addToCriteria(hibernateCriterion);
+            }
+        }
+    }
+
+    @Override
+    public PersistentEntity getEntity() {
+        if(!entityStack.isEmpty()) {
+            return entityStack.getLast();
+        }
+        return super.getEntity();
+    }
+
+    private String getAssociationPath(String propertyName) {
+        StringBuilder fullPath = new StringBuilder();
+        for (Iterator<Association> iterator = associationStack.iterator(); iterator.hasNext(); ) {
+            Association association = iterator.next();
+            fullPath.append(association.getName());
+            fullPath.append('.');
+        }
+        fullPath.append(propertyName);
+        return fullPath.toString();
+    }
+
+    private String getCurrentAlias() {
+        if(alias != null) {
+            return alias;
+        }
+        else {
+            if(!aliasStack.isEmpty()) {
+                return aliasStack.getLast();
+            }
+            else {
+                return null;
+            }
         }
     }
 
@@ -331,13 +400,14 @@ public class HibernateQuery extends Query {
 
     private CriteriaAndAlias getOrCreateAlias(String associationName, @SuppressWarnings("hiding") String alias) {
         CriteriaAndAlias subCriteria;
+        String associationPath = getAssociationPath(associationName);
         if (createdAssociationPaths.containsKey(associationName)) {
-            subCriteria = createdAssociationPaths.get(associationName);
+            subCriteria = createdAssociationPaths.get(associationPath);
         }
         else {
-            Criteria sc = criteria.createAlias(associationName, alias);
+            Criteria sc = criteria.createAlias(associationPath, alias);
             subCriteria = new CriteriaAndAlias(sc, alias);
-            createdAssociationPaths.put(associationName,subCriteria);
+            createdAssociationPaths.put(associationPath,subCriteria);
         }
         return subCriteria;
     }
@@ -378,8 +448,8 @@ public class HibernateQuery extends Query {
     public Query order(Order order) {
         super.order(order);
         criteria.addOrder(order.getDirection() == Order.Direction.ASC ?
-                org.hibernate.criterion.Order.asc(calculatePropertyName(order.getProperty())) :
-                org.hibernate.criterion.Order.desc(calculatePropertyName(order.getProperty())));
+            org.hibernate.criterion.Order.asc(calculatePropertyName(order.getProperty())) :
+            org.hibernate.criterion.Order.desc(calculatePropertyName(order.getProperty())));
         return this;
     }
 
@@ -435,16 +505,27 @@ public class HibernateQuery extends Query {
     }
 
     String handleAssociationQuery(Association<?> association, @SuppressWarnings("unused") List<Criterion> criteriaList) {
-        String associationName = calculatePropertyName(association.getName());
-        String newAlias = generateAlias(associationName);
-        CriteriaAndAlias criteriaAndAlias = getOrCreateAlias(associationName, newAlias);
+        CriteriaAndAlias criteriaAndAlias = getCriteriaAndAlias(association);
 
         return criteriaAndAlias.alias;
     }
 
+    private CriteriaAndAlias getCriteriaAndAlias(Association<?> association) {
+        String associationName = calculatePropertyName(association.getName());
+        String newAlias = generateAlias(associationName);
+        return getOrCreateAlias(associationName, newAlias);
+    }
+
     private void addToCriteria(org.hibernate.criterion.Criterion criterion) {
+
         if (criterion != null) {
-            criteria.add(criterion);
+            if (!aliasInstanceStack.isEmpty()) {
+                Criteria c = aliasInstanceStack.getLast();
+                c.add(criterion);
+            }
+            else {
+                criteria.add(criterion);
+            }
         }
     }
 

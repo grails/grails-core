@@ -92,7 +92,13 @@ public class HibernateCriterionAdapter {
             @Override
             public org.hibernate.criterion.Criterion toHibernateCriterion(HibernateQuery hibernateQuery, Query.Criterion criterion, String alias) {
                 DetachedAssociationCriteria<?> existing = (DetachedAssociationCriteria<?>) criterion;
-                alias = hibernateQuery.handleAssociationQuery(existing.getAssociation(), existing.getCriteria());
+                String newAlias = hibernateQuery.handleAssociationQuery(existing.getAssociation(), existing.getCriteria());
+                if(alias == null) {
+                    alias = newAlias;
+                }
+                else {
+                    alias = alias + '.' + newAlias;
+                }
                 Junction conjunction = Restrictions.conjunction();
                 applySubCriteriaToJunction(existing.getAssociation().getAssociatedEntity(), hibernateQuery, existing.getCriteria(), conjunction, alias);
                 return conjunction;
@@ -103,7 +109,13 @@ public class HibernateCriterionAdapter {
             public org.hibernate.criterion.Criterion toHibernateCriterion(HibernateQuery hibernateQuery, Query.Criterion criterion, String alias) {
                 AssociationQuery existing = (AssociationQuery) criterion;
                 Junction conjunction = Restrictions.conjunction();
-                alias = hibernateQuery.handleAssociationQuery(existing.getAssociation(), existing.getCriteria().getCriteria());
+                String newAlias = hibernateQuery.handleAssociationQuery(existing.getAssociation(), existing.getCriteria().getCriteria());
+                if(alias == null) {
+                    alias = newAlias;
+                }
+                else {
+                    alias = alias + '.' + newAlias;
+                }
                 applySubCriteriaToJunction(existing.getAssociation().getAssociatedEntity(), hibernateQuery, existing.getCriteria().getCriteria(), conjunction, alias);
                 return conjunction;
             }
