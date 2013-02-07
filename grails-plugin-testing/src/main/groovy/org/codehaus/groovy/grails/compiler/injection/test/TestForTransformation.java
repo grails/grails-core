@@ -132,7 +132,7 @@ public class TestForTransformation extends TestMixinTransformation {
 
         boolean junit3Test = isJunit3Test(classNode);
         boolean spockTest = isSpockTest(classNode);
-        boolean isJunit = classNode.getName().endsWith("Tests");
+        boolean isJunit = !junit3Test && !spockTest;
 
         if(!junit3Test && !spockTest && !isJunit) return;
 
