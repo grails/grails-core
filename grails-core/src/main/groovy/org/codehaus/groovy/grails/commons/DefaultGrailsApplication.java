@@ -20,6 +20,7 @@ import grails.util.GrailsUtil;
 import grails.util.Metadata;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObjectSupport;
+import groovy.lang.GroovySystem;
 import groovy.util.ConfigObject;
 
 import java.io.IOException;
@@ -239,8 +240,13 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
         // first load the domain classes
         log.debug("Going to inspect artefact classes.");
+        boolean warDeployed = Environment.isWarDeployed();
         for (final Class<?> theClass : classes) {
             log.debug("Inspecting [" + theClass.getName() + "]");
+            // start fresh
+            if(!warDeployed) {
+                GroovySystem.getMetaClassRegistry().removeMetaClass(theClass);
+            }
             if (allArtefactClasses.contains(theClass)) {
                 continue;
             }

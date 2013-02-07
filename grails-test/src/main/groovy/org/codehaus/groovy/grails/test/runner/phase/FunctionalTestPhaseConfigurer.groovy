@@ -55,6 +55,9 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
 
     @Override
     void prepare() {
+        grails.util.Holders.pluginManager = null
+        grails.util.Holders.grailsApplication = null
+
         final packager = projectRunner.projectPackager
         packager.packageApplication()
         final isServerRunning = projectRunner.isServerRunning()
