@@ -194,7 +194,7 @@ public class TestForTransformation extends TestMixinTransformation {
     public void testFor(ClassNode classNode, ClassExpression ce) {
 
         autoAnnotateSetupTeardown(classNode);
-        boolean junit3Test = isJunit3Test(classNode);
+        boolean isJunit3Test = isJunit3Test(classNode);
 
         // make sure the 'log' property is not the one from GroovyTestCase
         FieldNode log = classNode.getField("log");
@@ -203,22 +203,31 @@ public class TestForTransformation extends TestMixinTransformation {
         }
         boolean isSpockTest = isSpockTest(classNode);
 
-        if (!isSpockTest && !junit3Test) {
+        boolean isJunit4 = !isSpockTest && !isJunit3Test;
+        if (isJunit4) {
             // assume JUnit 4
             Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
+            boolean hasTestMethods = false;
             for (String methodName : declaredMethodsMap.keySet()) {
                 MethodNode methodNode = declaredMethodsMap.get(methodName);
                 if (isCandidateMethod(methodNode) && methodNode.getName().startsWith("test")) {
                     if (methodNode.getAnnotations().size()==0) {
                         methodNode.addAnnotation(TEST_ANNOTATION);
+                        hasTestMethods = true;
                     }
                 }
             }
+            if(!hasTestMethods) {
+                isJunit4 = false;
+            }
         }
 
-        final MethodNode methodToAdd = weaveMock(classNode, ce, true);
-        if (methodToAdd != null && junit3Test) {
-            addMethodCallsToMethod(classNode,SET_UP_METHOD, Arrays.asList(methodToAdd));
+        if(isJunit4 || isJunit3Test || isSpockTest) {
+
+            final MethodNode methodToAdd = weaveMock(classNode, ce, true);
+            if (methodToAdd != null && isJunit3Test) {
+                addMethodCallsToMethod(classNode,SET_UP_METHOD, Arrays.asList(methodToAdd));
+            }
         }
     }
 

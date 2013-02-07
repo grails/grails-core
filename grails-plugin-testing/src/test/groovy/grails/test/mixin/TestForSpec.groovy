@@ -35,45 +35,7 @@ class TestForSpec extends Specification{
             test.retrieveLog() instanceof Log
     }
     
-    void "Test that TestFor doesn't apply if the test is not JUnit 4, Junit 4 or Spock"() {
-        when:
-            def test = invalidTest
 
-        then:
-            test != null
-            test.getClass().getDeclaredMethod("testBlah", null).getAnnotation(Test.class) == null
-        
-        when:
-            test.retrieveLog() instanceof Log
-        
-        then:
-            thrown MissingPropertyException
-        
-    }
-
-    def getInvalidTest() {
-        final gcl = new GroovyClassLoader()
-        gcl.parseClass('''
-class SimpleController {
-    def index = {
-        render "Hello"
-    }
-}
-''')
-        gcl.parseClass('''
-import grails.test.mixin.*
-
-@TestFor(SimpleController)
-class ControllerHelper  {
-              
-    void testBlah() {}
-    def retrieveLog() { log }
-}
-
-
-''').newInstance()   
-    }
-    
     def getSpockTest() {
         final gcl = new GroovyClassLoader()
         gcl.parseClass('''
