@@ -210,8 +210,10 @@ public class TestForTransformation extends TestMixinTransformation {
             boolean hasTestMethods = false;
             for (String methodName : declaredMethodsMap.keySet()) {
                 MethodNode methodNode = declaredMethodsMap.get(methodName);
-                if (isCandidateMethod(methodNode) && (methodNode.getName().startsWith("test") || methodNode.getAnnotations(TEST_ANNOTATION.getClassNode()).size()>0)) {
-                    if (methodNode.getAnnotations().size()==0) {
+                ClassNode testAnnotationClassNode = TEST_ANNOTATION.getClassNode();
+                List<AnnotationNode> existingTestAnnotations = methodNode.getAnnotations(testAnnotationClassNode);
+                if (isCandidateMethod(methodNode) && (methodNode.getName().startsWith("test") || existingTestAnnotations.size()>0)) {
+                    if (existingTestAnnotations.size()==0) {
                         methodNode.addAnnotation(TEST_ANNOTATION);
                     }
                     hasTestMethods = true;
