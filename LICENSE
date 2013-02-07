@@ -242,7 +242,7 @@ SECTION 2: Apache License, V2.0
    >>> commons-lang-2.6
    >>> commons-pool-1.5.6
    >>> commons-validator-1.3.1
-   >>> concurrentlinkedhashmap-lru-1.3.1
+   >>> concurrentlinkedhashmap-lru-1.2_jdk5
    >>> ehcache-core-2.4.6
    >>> gant_groovy1.7-1.9.6
    >>> groovy-all-2.0.2
@@ -963,7 +963,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
->>> concurrentlinkedhashmap-lru-1.3.1
+>>> concurrentlinkedhashmap-lru-1.2_jdk5
 
 Copyright 2011 Benjamin Manes
 
@@ -985,7 +985,7 @@ ADDITIONAL LICENSE INFORMATION:
 
 > Creative Commons Attribution License  2.5
 
-C:\Documents and Settings\dileep.antony\My Documents\Downloads\concurrentlinkedhashmap-lru-1.3.1-sources.jar\com\googlecode\concurrentlinkedhashmap\ThreadSafe.java
+C:\Documents and Settings\dileep.antony\My Documents\Downloads\concurrentlinkedhashmap-lru-1.2_jdk5-sources.jar\com\googlecode\concurrentlinkedhashmap\ThreadSafe.java
 
 Copyright (c) 2005 Brian Goetz
 Released under the Creative Commons Attribution License
