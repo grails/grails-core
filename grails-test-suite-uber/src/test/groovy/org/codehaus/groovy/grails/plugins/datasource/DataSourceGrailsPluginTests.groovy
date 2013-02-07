@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.plugins.datasource;
 
 import grails.spring.BeanBuilder
+import grails.util.Holders
 
 import javax.sql.DataSource
 
@@ -18,7 +19,8 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
     @Override
     protected void onSetUp() {
-        PluginManagerHolder.setPluginManager(null)
+        Holders.setPluginManager(null)
+        Holders.setGrailsApplication(null)
     }
 
     void testDataSourceWithEncryptedPassword() {
