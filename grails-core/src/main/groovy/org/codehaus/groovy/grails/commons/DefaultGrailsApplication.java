@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import grails.util.GrailsUtil;
 import grails.util.Metadata;
@@ -206,7 +207,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     private void updateArtefactHandlers() {
         // Cache the list as an array
         artefactHandlers = artefactHandlersByName.values().toArray(
-                new ArtefactHandler[artefactHandlersByName.size()]);
+            new ArtefactHandler[artefactHandlersByName.size()]);
     }
 
 
