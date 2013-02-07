@@ -191,12 +191,20 @@ public class ClasspathConfigurer {
         }
 
         for (File file : runtimeDeps) {
-            if (file == null || urls.contains(file)) {
+            if (file == null ) {
                 continue;
             }
 
+
+            if(file.getName().contains("xercesImpl")) {
+                // workaround for GRAILS-9708
+                System.setProperty("javax.xml.parsers.DocumentBuilderFactory","com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+            }
             if (excludes != null && !excludes.contains(file.getName())) {
-                urls.add(file.toURI().toURL());
+                URL url = file.toURI().toURL();
+                if(urls.contains(url)) continue;
+
+                urls.add(url);
                 excludes.add(file.getName());
             }
         }
