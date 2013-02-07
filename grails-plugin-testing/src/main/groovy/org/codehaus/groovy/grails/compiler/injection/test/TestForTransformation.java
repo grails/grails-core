@@ -213,8 +213,8 @@ public class TestForTransformation extends TestMixinTransformation {
                 if (isCandidateMethod(methodNode) && methodNode.getName().startsWith("test")) {
                     if (methodNode.getAnnotations().size()==0) {
                         methodNode.addAnnotation(TEST_ANNOTATION);
-                        hasTestMethods = true;
                     }
+                    hasTestMethods = true;
                 }
             }
             if(!hasTestMethods) {
