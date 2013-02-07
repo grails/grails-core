@@ -385,9 +385,14 @@ functionalTestPhasePreparation = {
 
         testOptions.https ? runWarHttps() : runWar()
     } else if (runningFunctionalTestsInline) {
+        grails.util.Holders.pluginManager = null
+        prevAppCtx = binding.hasProperty('appCtx') ? appCtx : null
+        appCtx = null
+        grailsApp = null
+        grails.util.Holders.grailsApplication = null
         packageApp()
         testOptions.https ? runAppHttps() : runApp()
-        prevAppCtx = binding.hasProperty('appCtx') ? appCtx : null
+        
         appCtx = ApplicationHolder.application.mainContext
         initPersistenceContext()
     }
