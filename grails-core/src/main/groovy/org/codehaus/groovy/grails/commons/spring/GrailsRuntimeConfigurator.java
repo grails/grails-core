@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.commons.spring;
 import grails.spring.BeanBuilder;
 import grails.util.CollectionUtils;
 import grails.util.Environment;
+import grails.util.Holders;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.Script;
@@ -33,7 +34,6 @@ import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
@@ -95,17 +95,17 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
         try {
             pluginManager = parent == null ? null : parent.getBean(GrailsPluginManager.class);
-            pluginManager = pluginManager == null ? PluginManagerHolder.getPluginManager() : pluginManager;
+            pluginManager = pluginManager == null ? Holders.getPluginManager() : pluginManager;
         } catch (BeansException e) {
             // ignore
         }
         if (pluginManager == null) {
-            pluginManager = PluginManagerHolder.getPluginManager();
+            pluginManager = Holders.getPluginManager();
         }
         if (pluginManager == null) {
             pluginManager = new DefaultGrailsPluginManager("**/plugins/*/**GrailsPlugin.groovy", application);
         }
-        PluginManagerHolder.setPluginManager(pluginManager);
+        Holders.setPluginManager(pluginManager);
     }
 
     /**
