@@ -27,7 +27,7 @@ ext {
     datastoreVersion = "1.1.4.BUILD-SNAPSHOT"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = "2.0.6"
+    groovyVersion = "2.1.0"
     gradleGroovyVersion = groovyVersion
     gradleGroovyVersion = "1.8.2"
     ivyVersion = "2.2.0"
