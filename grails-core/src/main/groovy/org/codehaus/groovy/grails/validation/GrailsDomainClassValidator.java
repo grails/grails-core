@@ -232,7 +232,7 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
 
         GrailsDomainClass associatedDomainClass = getAssociatedDomainClass(associatedObject, persistentProperty);
 
-        if (associatedDomainClass == null || !isOwningInstance(bean, associatedDomainClass)) {
+        if (associatedDomainClass == null || !isOwningInstance(bean, associatedDomainClass) && !persistentProperty.isExplicitSaveUpdateCascade()) {
             return;
         }
 

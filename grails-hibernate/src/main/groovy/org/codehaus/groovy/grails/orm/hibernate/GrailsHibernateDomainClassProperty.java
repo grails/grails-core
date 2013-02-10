@@ -51,6 +51,7 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
     private GrailsDomainClassProperty otherSide;
     private boolean owingSide;
     private String columnName;
+    private boolean explicitSaveUpdateCascade;
 
     public GrailsHibernateDomainClassProperty(GrailsHibernateDomainClass domainClass, String propertyName) {
         this.domainClass = domainClass;
@@ -106,6 +107,14 @@ public class GrailsHibernateDomainClassProperty implements GrailsDomainClassProp
 
     public void setOtherSide(GrailsDomainClassProperty referencedProperty) {
         otherSide = referencedProperty;
+    }
+
+    public boolean isExplicitSaveUpdateCascade() {
+        return explicitSaveUpdateCascade;
+    }
+
+    public void setExplicitSaveUpdateCascade(boolean explicitSaveUpdateCascade) {
+        this.explicitSaveUpdateCascade = explicitSaveUpdateCascade;
     }
 
     public GrailsDomainClassProperty getOtherSide() {
