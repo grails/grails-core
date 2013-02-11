@@ -1369,6 +1369,8 @@ public final class GrailsDomainBinder {
                     }
                 }
 
+                trackCustomCascadingSaves(m, domainClass.getPersistentProperties());
+
                 if (cache) {
                     MAPPING_CACHE.put(domainClass.getClazz(), m);
                 }
@@ -1379,6 +1381,40 @@ public final class GrailsDomainBinder {
             throw new GrailsDomainException("Error evaluating ORM mappings block for domain [" +
                     domainClass.getFullName() + "]:  " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Checks for any custom cascading saves set up via the mapping DSL and records them within the persistent property.
+     * @param mapping The Mapping.
+     * @param persistentProperties The persistent properties of the domain class.
+     */
+    private static void trackCustomCascadingSaves(Mapping mapping, GrailsDomainClassProperty[] persistentProperties) {
+        for (GrailsDomainClassProperty property : persistentProperties) {
+            PropertyConfig propConf = mapping.getPropertyConfig(property.getName());
+
+            if (propConf != null && propConf.getCascade() != null) {
+                property.setExplicitSaveUpdateCascade(isSaveUpdateCascade(propConf.getCascade()));
+            }
+        }
+    }
+
+    /**
+     * Check if a save-update cascade is defined within the Hibernate cascade properties string.
+     * @param cascade The string containing the cascade properties.
+     * @return True if save-update or any other cascade property that encompasses those is present.
+     */
+    private static boolean isSaveUpdateCascade(String cascade) {
+        String[] cascades = cascade.split(",");
+
+        for (String cascadeProp : cascades) {
+            String trimmedProp = cascadeProp.trim();
+
+            if (CASCADE_SAVE_UPDATE.equals(trimmedProp) || CASCADE_ALL.equals(trimmedProp) || CASCADE_ALL_DELETE_ORPHAN.equals(trimmedProp)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

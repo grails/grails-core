@@ -82,6 +82,50 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         errors = new BindException(author, author.class.name)
         authorValidator.validate(author, errors, true)
         assert !errors.hasErrors()
+
+        def publisherClass = ga.getDomainClass("Publisher")
+
+        def authorsProperty = publisherClass.getPersistentProperties().find { it.name == 'authors' }
+        authorsProperty.explicitSaveUpdateCascade = true
+
+        def publisherMetaClass = new ExpandoMetaClass(publisherClass.clazz)
+        publisherMetaClass.setErrors = setter
+        publisherMetaClass.initialize()
+
+        // test cascading validation triggered by mapping DSL cascading save and updates.
+        def publisher = publisherClass.newInstance()
+        publisher.metaClass = publisherMetaClass
+        publisher.name = "Book Publisher"
+
+        def publisherValidator = new GrailsDomainClassValidator()
+        publisherValidator.domainClass = publisherClass
+        publisherValidator.messageSource = createMessageSource()
+        publisherValidator.grailsApplication = ga
+
+        errors = new BindException(publisher, publisher.class.name)
+
+        publisherValidator.validate(publisher, errors, true)
+        assert !errors.hasErrors()
+
+        def publisherAuthor = authorClass.newInstance()
+        publisherAuthor.metaClass = authorMetaClass
+        publisher.authors.add(publisherAuthor)
+
+        errors = new BindException(publisher, publisher.class.name)
+
+        publisherValidator.validate(publisher, errors, true)
+        assert errors.hasErrors()
+
+        publisherAuthor.name = "Foo"
+        publisherAuthor.address = addressClass.newInstance()
+        publisherAuthor.address.location = "Portugal"
+        publisherAuthor.address.author = publisherAuthor
+
+        errors = new BindException(publisher, publisher.class.name)
+
+        publisherValidator.validate(publisher, errors, true)
+        assert !errors.hasErrors()
+
     }
 
     protected void onSetUp() {
@@ -117,6 +161,16 @@ class Address {
     static constraints = {
        author(nullable:false)
        location(blank:false)
+    }
+}
+class Publisher {
+    Long id
+    Long version
+    String name
+    Set authors = new HashSet()
+    static hasMany = [authors:Author]
+    static mapping = {
+        authors cascade: 'save-update'
     }
 }
         ''')
