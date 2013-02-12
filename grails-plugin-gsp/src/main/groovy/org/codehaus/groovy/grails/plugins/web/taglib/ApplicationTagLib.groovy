@@ -273,7 +273,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     }
 
     static SUPPORTED_TYPES = [
-        css:[type:"text/css", rel:'stylesheet', media:'screen, projector'],
+        css:[type:"text/css", rel:'stylesheet', media:'screen, projection'],
         js:[type:'text/javascript', writer:'js'],
 
         gif:[rel:'shortcut icon'],
