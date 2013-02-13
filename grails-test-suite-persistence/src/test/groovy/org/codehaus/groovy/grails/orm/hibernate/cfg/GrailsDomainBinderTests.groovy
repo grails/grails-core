@@ -1108,6 +1108,43 @@ class Alert {
         assertEquals(Column.DEFAULT_SCALE, enumColumn.scale)
     }
 
+    void testTrackSaveUpdateCascade() {
+        assertTrue(getCustomCascadedProperty('save-update').isExplicitSaveUpdateCascade())
+    }
+
+    void testTrackAllCascade() {
+        assertTrue(getCustomCascadedProperty('all').isExplicitSaveUpdateCascade())
+    }
+
+    void testTrackAllDeleteOrphanCascade() {
+        assertTrue(getCustomCascadedProperty('all-delete-orphan').isExplicitSaveUpdateCascade())
+    }
+
+    void testTrackNonSaveUpdateCascade() {
+        assertTrue(!getCustomCascadedProperty('delete').isExplicitSaveUpdateCascade())
+    }
+
+    private GrailsDomainClassProperty getCustomCascadedProperty(String cascadeValue) {
+        new DefaultGrailsDomainClass(cl.parseClass('''
+class CascadeChild {
+    Long id
+    Long version
+}'''))
+
+        GrailsDomainClass cascadeParent = new DefaultGrailsDomainClass(
+            cl.parseClass("""\
+class CascadeParent {
+    Long id
+    Long version
+    CascadeChild child
+    static mapping = {
+        child cascade: '${cascadeValue}'
+    }
+}"""))
+        GrailsDomainBinder.evaluateMapping(cascadeParent)
+        return cascadeParent.persistentProperties.find { it.name == 'child' }
+    }
+
     private org.hibernate.mapping.Collection findCollection(DefaultGrailsDomainConfiguration config, String role) {
         config.collectionMappings.find { it.role == role }
     }

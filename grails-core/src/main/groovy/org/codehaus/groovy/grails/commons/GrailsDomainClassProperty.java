@@ -188,6 +188,23 @@ public interface GrailsDomainClassProperty {
     void setOtherSide(GrailsDomainClassProperty referencedProperty);
 
     /**
+     * Check whether this property is set up to receive save-update cascading via the Mapping DSL rather than
+     * using 'belongsTo'.
+     * @return True if this property is explicitly defined to receive save and update cascades, false otherwise.
+     */
+    boolean isExplicitSaveUpdateCascade();
+
+    /**
+     * Sets whether the domain class property is explicitly set up to receive
+     * save and update cascades via a means other than 'belongsTo'.  Specifically,
+     * the cascades will have been set up via the Mapping DSL.
+     *
+     * @param explicitSaveUpdateCascade Whether this property is explicity defined, via
+     * the mapping DSL, to receive save and update cascades.
+     */
+    void setExplicitSaveUpdateCascade(boolean explicitSaveUpdateCascade);
+
+    /**
      * Whether the property is inherited from a super class.
      * @return true if its inherited
      */
