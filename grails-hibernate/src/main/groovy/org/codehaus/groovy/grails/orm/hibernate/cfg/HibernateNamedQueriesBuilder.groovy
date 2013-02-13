@@ -183,6 +183,14 @@ class NamedCriteriaProxy<T> {
         domainClass.clazz.withCriteria(countClosure)
     }
 
+    def scroll(Closure additionalCriteriaClosure = null) {
+        def scrollClosure = {
+            queryBuilder = delegate
+            invokeCriteriaClosure(additionalCriteriaClosure)
+        }
+        domainClass.clazz.createCriteria().scroll(scrollClosure)
+    }
+
     def findWhere(params) {
         findAllWhere(params, true)
     }
