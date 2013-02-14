@@ -58,7 +58,7 @@ class SuiteRunListener extends RunListener {
     void testAssumptionFailure(Failure failure) {
         // assumptions (and AssumptionViolatedException) are specific to JUnit,
         // and are treated as ordinary failures
-        getPerTestRunListener(description).testFailure(failure)
+        getPerTestRunListener(failure.description).testFailure(failure)
     }
 
     void testFinished(Description description) {
@@ -73,7 +73,7 @@ class SuiteRunListener extends RunListener {
         // nothing to do
     }
 
-    private getPerTestRunListener(description = null) {
+    private PerTestRunListener getPerTestRunListener(Description description = null) {
         if (description && perTestListener?.name != description.className) {
             perTestListener?.finish()
 
