@@ -261,9 +261,7 @@ class HibernateGormStaticApi<D> extends GormStaticApi<D> {
             }
             results.clear()
             for (id in ids) {
-                final obj = idsMap[id]
-                if (obj)
-                    results << obj
+                results << idsMap[id]
             }
             results
         } as HibernateCallback)
