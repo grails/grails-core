@@ -67,6 +67,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     private GrailsDomainClass component;
     private boolean basicCollectionType;
     private Map<String, Object> defaultConstraints;
+    private boolean explicitSaveUpdateCascade = false;
 
     /**
      * Constructor.
@@ -444,6 +445,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             }
         }
         otherSide = property;
+    }
+
+    public boolean isExplicitSaveUpdateCascade() {
+        return explicitSaveUpdateCascade;
+    }
+
+    public void setExplicitSaveUpdateCascade(boolean explicitSaveUpdateCascade) {
+        this.explicitSaveUpdateCascade = explicitSaveUpdateCascade;
     }
 
     public boolean isInherited() {
