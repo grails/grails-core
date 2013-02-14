@@ -82,7 +82,7 @@ createArtifact = { Map args = [:] ->
         // now check for template provided by plugins
         def possibleResources = pluginSettings.pluginDirectories.collect { dir ->
             new FileSystemResource("${dir.path}/src/${templatePath}/${type ?: lastType}.groovy")
-        }   
+        }
         templateFile = possibleResources.find { it.exists() }
         if (!templateFile) {
             // template not found in application, use default template
@@ -100,8 +100,7 @@ createArtifact = { Map args = [:] ->
     }
 
     copyGrailsResource(artifactFile, templateFile)
-    ant.replace(file: artifactFile,
-        token: "@artifact.name@", value: "${className}${suffix}")
+    ant.replace(file: artifactFile, token: "@artifact.name@", value: "${className}${suffix}")
     if (pkg) {
         ant.replace(file: artifactFile, token: "@artifact.package@", value: "package ${pkg}\n\n")
     }
@@ -113,6 +112,11 @@ createArtifact = { Map args = [:] ->
         ant.replace(file: artifactFile, token: "@artifact.superclass@", value: args["superClass"])
     }
     ant.replace(file: artifactFile, token: "@artifact.testclass@", value: "${className}${type}")
+
+    // optional extra ant.replace name/value pairs
+    args.replacements.each { token, value ->
+        ant.replace(file: artifactFile, token: token, value: value)
+    }
 
     event("CreatedFile", [artifactFile])
     event("CreatedArtefact", [ artifactFile, className])

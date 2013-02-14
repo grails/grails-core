@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import grails.util.GrailsNameUtils
+
 /**
  * Gant script that creates a Grails Gant script
  *
@@ -28,12 +30,17 @@ includeTargets << grailsScript("_GrailsCreateArtifacts")
 target ('default': "Creates a Grails Gant Script") {
     depends(checkVersion, parseArguments)
 
-    def type = "Script"
+    String type = "Script"
     promptForName(type: type)
 
     for (name in argsMap["params"]) {
-        createArtifact(name: name, suffix: "", type: type,
-                       path: "scripts", skipPackagePrompt: true)
+        String className = GrailsNameUtils.getClassNameRepresentation(name)
+        String scriptName = GrailsNameUtils.getScriptName(className)
+        def replacements = ['@gant.class.name@': className,
+                            '@gant.script.name@': scriptName]
+
+        createArtifact(name: name, suffix: "", type: type, path: "scripts",
+                       skipPackagePrompt: true, replacements: replacements)
     }
 }
 
