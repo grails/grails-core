@@ -33,6 +33,7 @@ target
 /eclipse-build
 
 /.idea/
+/grails-aether/bin/
 /grails-bootstrap/bin/
 /grails-core/bin/
 /grails-crud/bin/
@@ -46,6 +47,7 @@ target
 /grails-plugin-domain-class/bin/
 /grails-plugin-filters/bin/
 /grails-plugin-gsp/bin/
+/grails-plugin-hibernate/bin/
 /grails-plugin-i18n/bin/
 /grails-plugin-logging/bin/
 /grails-plugin-mimetypes/bin/
@@ -64,6 +66,7 @@ target
 /grails-test-suite-uber/configured/
 /grails-test-suite-web/bin/
 /grails-test/bin/
+/grails-tomcat/bin/
 /grails-web/bin/
 /grails-webflow/bin/
 /grails-wrapper/bin/
