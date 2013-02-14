@@ -162,7 +162,7 @@ public class LazyMetaPropertyMap implements Map {
     public void putAll(Map map) {
         for (Iterator i = map.keySet().iterator(); i.hasNext();) {
             Object key = i.next();
-            put(key, map.get(i));
+            put(key, map.get(key));
         }
     }
 
@@ -227,8 +227,8 @@ public class LazyMetaPropertyMap implements Map {
     private boolean isExcluded(MetaProperty mp) {
         return
                 Modifier.isStatic(mp.getModifiers()) ||
-                EXCLUDES.contains(mp.getName()) ||
-                GrailsDomainConfigurationUtil.isConfigurational(mp.getName()) ||
-                (mp instanceof MetaBeanProperty) && (((MetaBeanProperty) mp).getGetter()) == null;
+                        EXCLUDES.contains(mp.getName()) ||
+                        GrailsDomainConfigurationUtil.isConfigurational(mp.getName()) ||
+                        (mp instanceof MetaBeanProperty) && (((MetaBeanProperty) mp).getGetter()) == null;
     }
 }

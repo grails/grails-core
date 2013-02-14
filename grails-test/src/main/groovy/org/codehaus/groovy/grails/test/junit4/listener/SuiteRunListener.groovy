@@ -29,6 +29,7 @@ import org.junit.runner.notification.RunListener
  * Listens in on the execution of an entire test suite (or test "type" in Grails) and creates
  * new TestRunListeners for each actual test class.
  */
+@groovy.transform.CompileStatic
 class SuiteRunListener extends RunListener {
 
     private final GrailsTestEventPublisher eventPublisher
@@ -58,7 +59,7 @@ class SuiteRunListener extends RunListener {
     void testAssumptionFailure(Failure failure) {
         // assumptions (and AssumptionViolatedException) are specific to JUnit,
         // and are treated as ordinary failures
-        getPerTestRunListener(description).testFailure(failure)
+        getPerTestRunListener(failure.description).testFailure(failure)
     }
 
     void testFinished(Description description) {
@@ -73,7 +74,7 @@ class SuiteRunListener extends RunListener {
         // nothing to do
     }
 
-    private getPerTestRunListener(description = null) {
+    private PerTestRunListener getPerTestRunListener(Description description = null) {
         if (description && perTestListener?.name != description.className) {
             perTestListener?.finish()
 
