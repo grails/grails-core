@@ -233,19 +233,6 @@ public class TestForTransformation extends TestMixinTransformation {
         }
     }
 
-    private void autoAnnotateSetupTeardown(ClassNode classNode) {
-        MethodNode setupMethod = classNode.getMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
-        if ( setupMethod != null && setupMethod.getAnnotations(BEFORE_CLASS_NODE).size() == 0) {
-            setupMethod.addAnnotation(BEFORE_ANNOTATION);
-        }
-
-        MethodNode tearDown = classNode.getMethod(TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
-        if ( tearDown != null && tearDown.getAnnotations(AFTER_CLASS_NODE).size() == 0) {
-            tearDown.addAnnotation(AFTER_ANNOTATION);
-        }
-
-    }
-
     private Map<ClassNode, List<Class>> wovenMixins = new HashMap<ClassNode, List<Class>>();
     protected MethodNode weaveMock(ClassNode classNode, ClassExpression value, boolean isClassUnderTest) {
 
