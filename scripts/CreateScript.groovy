@@ -35,12 +35,18 @@ target ('default': "Creates a Grails Gant Script") {
 
     for (name in argsMap["params"]) {
         String className = GrailsNameUtils.getClassNameRepresentation(name)
+        String targetName = GrailsNameUtils.getPropertyNameRepresentation(className)
         String scriptName = GrailsNameUtils.getScriptName(className)
-        def replacements = ['@gant.class.name@': className,
+        def replacements = ['@gant.target.name@': targetName,
+                            '@gant.class.name@': className,
                             '@gant.script.name@': scriptName]
 
         createArtifact(name: name, suffix: "", type: type, path: "scripts",
                        skipPackagePrompt: true, replacements: replacements)
+
+        createArtifact(name: name, suffix: 'Tests', type: 'CliTests', path: 'test/cli',
+                       templatePath: 'templates/testing', skipPackagePrompt: true,
+                       replacements: replacements)
     }
 }
 
