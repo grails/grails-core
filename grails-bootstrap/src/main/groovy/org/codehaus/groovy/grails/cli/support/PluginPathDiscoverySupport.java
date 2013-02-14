@@ -64,7 +64,6 @@ public class PluginPathDiscoverySupport {
                 File libDir = new File(pluginDir, "lib");
                 if(libDir.exists()) {
                     File[] files = libDir.listFiles(new FilenameFilter() {
-                        @Override
                         public boolean accept(File file, String s) {
                             return s.endsWith(".jar");
                         }
