@@ -77,6 +77,7 @@ public class TestMixinTransformation implements ASTTransformation{
                     MY_TYPE_NAME + " not allowed for interfaces.");
         }
 
+        autoAnnotateSetupTeardown(classNode);
         ListExpression values = getListOfClasses(node);
 
         weaveMixinsIntoClass(classNode, values);
@@ -247,5 +248,18 @@ public class TestMixinTransformation implements ASTTransformation{
 
     protected void error(SourceUnit source, String me) {
         source.getErrorCollector().addError(new SimpleMessage(me,source), true);
+    }
+
+    protected void autoAnnotateSetupTeardown(ClassNode classNode) {
+        MethodNode setupMethod = classNode.getMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        if ( setupMethod != null && setupMethod.getAnnotations(TestForTransformation.BEFORE_CLASS_NODE).size() == 0) {
+            setupMethod.addAnnotation(TestForTransformation.BEFORE_ANNOTATION);
+        }
+
+        MethodNode tearDown = classNode.getMethod(TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        if ( tearDown != null && tearDown.getAnnotations(TestForTransformation.AFTER_CLASS_NODE).size() == 0) {
+            tearDown.addAnnotation(TestForTransformation.AFTER_ANNOTATION);
+        }
+
     }
 }

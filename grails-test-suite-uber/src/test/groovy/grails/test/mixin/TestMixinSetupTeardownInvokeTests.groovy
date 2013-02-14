@@ -10,22 +10,21 @@ import org.junit.Test
 class TestMixinSetupTeardownInvokeTests {
 
     def value
-    int counter
     void setUp() {
         value = 'World!'
     }
 
     void tearDown() {
-        counter++
+        System.setProperty(TestMixinSetupTeardownInvokeTests.name, "invoked")
     }
 
     @Test
     void testThatSetupWasInvoked() {
-        value == 'World!'
+        assert value == 'World!'
     }
 
     @Test
     void testThatSetupWasInvoked2() {
-        counter == 1
+        assert System.getProperty(TestMixinSetupTeardownInvokeTests.name) == 'invoked'
     }
 }
