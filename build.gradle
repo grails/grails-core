@@ -41,7 +41,7 @@ ext {
     hibernateVersion = "3.6.10.Final"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.10"
-    concurrentlinkedhashmapVersion = "1.2_jdk5"
+    concurrentlinkedhashmapVersion = "1.3.1"
 }
 
 version = grailsVersion
@@ -79,15 +79,16 @@ if (jointBuildGroovyJarProperty) {
 
 allprojects {
     repositories {
+        mavenLocal()
         maven { url "http://repo.grails.org/grails/core" }
     }
 
     configurations {
         all {
             resolutionStrategy {
-                def cacheHours = isCiBuild ? 1 : 24
-                cacheDynamicVersionsFor cacheHours, 'hours'
-                cacheChangingModulesFor cacheHours, 'hours'
+//                def cacheHours = isCiBuild ? 1 : 24
+//                cacheDynamicVersionsFor cacheHours, 'hours'
+//                cacheChangingModulesFor cacheHours, 'hours'
             }
         }
     }

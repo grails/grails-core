@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.Mock;
 
+import grails.test.mixin.domain.DomainClassUnitTestMixin;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -27,6 +28,9 @@ import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Used by the {@link grails.test.mixin.Mock} local transformation to add
@@ -68,10 +72,24 @@ public class MockTransformation extends TestForTransformation {
             return;
         }
 
+        List<ClassExpression> domainClassNodes = new ArrayList<ClassExpression>();
         for (Expression expression : values.getExpressions()) {
             if (expression instanceof ClassExpression) {
-                weaveMock(classNode, (ClassExpression)expression, false);
+                ClassExpression classEx = (ClassExpression) expression;
+                ClassNode cn = classEx.getType();
+                Class mixinClassForArtefactType = getMixinClassForArtefactType(cn);
+                if(mixinClassForArtefactType != null) {
+
+                    weaveMock(classNode, classEx, false);
+                }
+                else {
+                    domainClassNodes.add(classEx);
+                }
             }
+        }
+        if(!domainClassNodes.isEmpty()) {
+            weaveMixinClass(classNode, DomainClassUnitTestMixin.class);
+            addMockCollaborators(classNode, "Domain", domainClassNodes);
         }
     }
 }

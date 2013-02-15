@@ -83,10 +83,11 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     static void initializeDatastoreImplementation() {
         ClassPropertyFetcher.clearCache()
         if (applicationContext == null) {
-            super.initGrailsApplication()
+            initGrailsApplication()
         }
 
         simpleDatastore = new SimpleMapDatastore(applicationContext)
+        simpleDatastore.mappingContext.setCanInitializeEntities(false)
         transactionManager = new DatastoreTransactionManager(datastore: simpleDatastore)
         applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
         applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
@@ -118,6 +119,20 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         simpleDatastore.clearData()
     }
 
+    def mockDomains(Class... domainsClassToMock) {
+        initialMockDomainSetup()
+        for(Class c in domainsClassToMock) {
+            PersistentEntity entity = simpleDatastore.mappingContext.addPersistentEntity(c)
+            GrailsDomainClass domain = registerGrailsDomainClass(c)
+
+            Validator validator = registerDomainClassValidator(domain)
+            simpleDatastore.mappingContext.addEntityValidator(entity, validator)
+
+        }
+        def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
+        enhancer.enhance()
+        simpleDatastore.mappingContext.initialize()
+    }
     /**
      * Mocks a domain class providing the equivalent GORM behavior but against an in-memory concurrent hash map instead
      * of a database
@@ -126,17 +141,49 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
      * @return An instance of the mocked domain class
      */
     def mockDomain(Class domainClassToMock, List domains = []) {
+        initialMockDomainSetup()
+        PersistentEntity entity = simpleDatastore.mappingContext.addPersistentEntity(domainClassToMock)
+        GrailsDomainClass domain = registerGrailsDomainClass(domainClassToMock)
+        simpleDatastore.mappingContext.initialize()
+//        DomainClassGrailsPlugin.addRelationshipManagementMethods(domain, applicationContext)
+        Validator validator = registerDomainClassValidator(domain)
+        simpleDatastore.mappingContext.addEntityValidator(entity, validator)
+
+        enhanceSingleEntity(entity)
+        if (domains) {
+            saveDomainList(entity, domains)
+        }
+        else {
+            return applicationContext.getBean(domain.fullName)
+        }
+    }
+
+    protected void initialMockDomainSetup() {
         ConstraintEvalUtils.clearDefaultConstraints()
         grailsApplication.getArtefactHandler(DomainClassArtefactHandler.TYPE).setGrailsApplication(grailsApplication)
-        GrailsDomainClass domain = grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, domainClassToMock)
-        PersistentEntity entity = simpleDatastore.mappingContext.addPersistentEntity(domainClassToMock)
+    }
 
-        final mc = GrailsClassUtils.getExpandoMetaClass(domainClassToMock)
+    protected void saveDomainList(PersistentEntity entity, List domains) {
+        for (obj in domains) {
+            if (obj instanceof Map) {
+                entity.javaClass.newInstance(obj).save()
+            } else if (entity.isInstance(obj)) {
+                obj.save()
+            }
+        }
+    }
 
-        ControllersGrailsPlugin.enhanceDomainWithBinding(applicationContext, domain, mc)
-        DomainClassGrailsPlugin.registerConstraintsProperty(mc, domain)
-//        DomainClassGrailsPlugin.addRelationshipManagementMethods(domain, applicationContext)
-        def validationBeanName = "${domain.fullName}Validator"
+    protected void enhanceSingleEntity(PersistentEntity entity) {
+        def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
+        if (entity.javaClass.getAnnotation(Enhanced) != null) {
+            enhancer.enhance(entity, true)
+        } else {
+            enhancer.enhance(entity)
+        }
+    }
+
+    protected Validator registerDomainClassValidator(GrailsDomainClass domain) {
+        String validationBeanName = "${domain.fullName}Validator"
         defineBeans {
             "${domain.fullName}"(domain.clazz) { bean ->
                 bean.singleton = false
@@ -151,27 +198,16 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         }
 
         def validator = applicationContext.getBean(validationBeanName, Validator.class)
-        simpleDatastore.mappingContext.addEntityValidator(entity, validator)
+        validator
+    }
 
-        def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
-        if (domainClassToMock.getAnnotation(Enhanced) != null) {
-            enhancer.enhance(entity, true)
-        }
-        else {
-            enhancer.enhance(entity)
-        }
-        if (domains) {
-            for (obj in domains) {
-                if (obj instanceof Map) {
-                    domainClassToMock.newInstance(obj).save()
-                }
-                else if (entity.isInstance(obj)) {
-                    obj.save()
-                }
-            }
-        }
-        else {
-            return applicationContext.getBean(domain.fullName)
-        }
+    protected GrailsDomainClass registerGrailsDomainClass(Class domainClassToMock) {
+        GrailsDomainClass domain = grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, domainClassToMock)
+
+        final mc = GrailsClassUtils.getExpandoMetaClass(domainClassToMock)
+
+        ControllersGrailsPlugin.enhanceDomainWithBinding(applicationContext, domain, mc)
+        DomainClassGrailsPlugin.registerConstraintsProperty(mc, domain)
+        return domain
     }
 }

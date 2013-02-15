@@ -134,7 +134,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.grails", "grails-web", grailsVersion),
                             ModuleRevisionId.newInstance("org.slf4j", "slf4j-api", slf4jVersion),
                             ModuleRevisionId.newInstance("org.springframework", "spring-test", springVersion),
-                            ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),
+                            ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.3.1"),
                             ModuleRevisionId.newInstance("junit", "junit", junitVersion),
                         };
                         registerDependencies(dependencyManager, "build", buildDependencies);

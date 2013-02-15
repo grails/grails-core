@@ -270,33 +270,61 @@ public class TestForTransformation extends TestMixinTransformation {
         return testForMethod;
     }
 
-    private void addMockCollaboratorToSetup(ClassNode classNode, ClassExpression targetClassExpression, String artefactType) {
+    protected Class getMixinClassForArtefactType(ClassNode classNode) {
+        String className = classNode.getName();
+        for (String artefactType : artefactTypeToTestMap.keySet()) {
+            if (className.endsWith(artefactType)) {
+                Class mixinClass = artefactTypeToTestMap.get(artefactType);
+                if(mixinClass != null) {
+                    return mixinClass;
+                }
+            }
+        }
+        return null;
+    }
 
+
+    private void addMockCollaboratorToSetup(ClassNode classNode, ClassExpression targetClassExpression, String artefactType) {
+        BlockStatement methodBody = getOrCreateTestSetupMethod(classNode);
+        addMockCollaborator(artefactType, targetClassExpression,methodBody);
+    }
+
+    protected BlockStatement getOrCreateTestSetupMethod(ClassNode classNode) {
         BlockStatement methodBody;
         if (isJunit3Test(classNode)) {
             methodBody = getJunit3Setup(classNode);
-            addMockCollaborator(artefactType, targetClassExpression,methodBody);
         }
         else {
-            addToJunit4BeforeMethods(classNode, artefactType, targetClassExpression);
+            methodBody = getExistingOrCreateJUnit4Setup(classNode);
         }
+        return methodBody;
     }
 
     private void addToJunit4BeforeMethods(ClassNode classNode, String artefactType, ClassExpression targetClassExpression) {
-        Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
-        boolean weavedIntoBeforeMethods = false;
-        for (MethodNode methodNode : declaredMethodsMap.values()) {
-            if (isDeclaredBeforeMethod(methodNode)) {
-                Statement code = getMethodBody(methodNode);
-                addMockCollaborator(artefactType, targetClassExpression, (BlockStatement) code);
-                weavedIntoBeforeMethods = true;
-            }
+        BlockStatement junit4Setup = getExistingOrCreateJUnit4Setup(classNode);
+        addMockCollaborator(artefactType,targetClassExpression,junit4Setup);
+    }
+
+    protected BlockStatement getExistingOrCreateJUnit4Setup(ClassNode classNode) {
+        Statement code = getExistingJUnit4BeforeMethod(classNode);
+        if(code instanceof BlockStatement) {
+            return (BlockStatement) code;
+        }
+        else {
+            return getJunit4Setup(classNode);
         }
 
-        if (!weavedIntoBeforeMethods) {
-            BlockStatement junit4Setup = getJunit4Setup(classNode);
-            addMockCollaborator(artefactType,targetClassExpression,junit4Setup);
+    }
+
+    protected Statement getExistingJUnit4BeforeMethod(ClassNode classNode) {
+        Statement code = null;
+        Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
+        for (MethodNode methodNode : declaredMethodsMap.values()) {
+            if (isDeclaredBeforeMethod(methodNode)) {
+                code = getMethodBody(methodNode);
+            }
         }
+        return code;
     }
 
     private Statement getMethodBody(MethodNode methodNode) {
@@ -431,5 +459,18 @@ public class TestForTransformation extends TestMixinTransformation {
         ArgumentListExpression args = new ArgumentListExpression();
         args.addExpression(targetClass);
         methodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "mock" + mockType, args)));
+    }
+
+    protected void addMockCollaborators(ClassNode classNode, String mockType, List<ClassExpression> targetClasses) {
+         addMockCollaborators(mockType, targetClasses, getOrCreateTestSetupMethod(classNode));
+    }
+
+
+    protected void addMockCollaborators(String mockType, List<ClassExpression> targetClasses, BlockStatement methodBody) {
+        ArgumentListExpression args = new ArgumentListExpression();
+        for(ClassExpression ce : targetClasses) {
+            args.addExpression(ce);
+        }
+        methodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "mock" + mockType + 's', args)));
     }
 }
