@@ -116,7 +116,8 @@ public class TestMixinTransformation implements ASTTransformation{
 
                     final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
 
-                    GrailsASTUtils.addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
+                    FieldNode fieldNode = GrailsASTUtils.addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
+                    if(fieldNode == null) return; // already woven
                     VariableExpression fieldReference = new VariableExpression(fieldName);
 
                     while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
