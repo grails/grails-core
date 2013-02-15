@@ -9,8 +9,7 @@ class DomainClassUnitTestMixinTests {
 
     @Test
     void testBackReferenceAssignment() {
-        mockDomain Writer
-        mockDomain Publication
+        mockDomains Writer, Publication
 
         def publication = new Publication(title: 'Some Paper')
         def writer = new Writer(name: 'Some Writer')
