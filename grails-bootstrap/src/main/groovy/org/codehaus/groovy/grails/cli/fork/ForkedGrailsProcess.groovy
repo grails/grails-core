@@ -42,6 +42,7 @@ abstract class ForkedGrailsProcess {
     int minMemory = 64
     int maxPerm = 256
     boolean debug = false
+	String debugArgs = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
     boolean reloading = true
     boolean forkReserve
     File reloadingAgent
@@ -249,8 +250,8 @@ abstract class ForkedGrailsProcess {
         File tempFile = storeExecutionContext(executionContext)
 
         List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
-        if (debug && !isReserve) {
-            cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"])
+		if (debug && !isReserve) {
+            cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", debugArgs])
         }
         final console = GrailsConsole.getInstance()
         if (isReserve) {
