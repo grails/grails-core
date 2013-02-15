@@ -121,5 +121,10 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
         public IdentityMapping getIdentityMapping(ClassMapping classMapping) {
             return null;
         }
+
+        @Override
+        public void setCanExpandMappingContext(boolean canExpandMappingContext) {
+            // noop
+        }
     }
 }
