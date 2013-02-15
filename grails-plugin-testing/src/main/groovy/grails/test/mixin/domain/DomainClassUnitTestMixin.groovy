@@ -131,8 +131,8 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
         }
         def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
-        enhancer.enhance()
         simpleDatastore.mappingContext.initialize()
+        enhancer.enhance()
     }
     /**
      * Mocks a domain class providing the equivalent GORM behavior but against an in-memory concurrent hash map instead
