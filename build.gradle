@@ -81,7 +81,6 @@ if (jointBuildGroovyJarProperty) {
 
 allprojects {
     repositories {
-        mavenLocal()
         maven { url "http://repo.grails.org/grails/core" }
         // TODO configure this as a remote for repo.grails.org so we don't need this here...
         maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
@@ -90,9 +89,9 @@ allprojects {
     configurations {
         all {
             resolutionStrategy {
-//                def cacheHours = isCiBuild ? 1 : 24
-//                cacheDynamicVersionsFor cacheHours, 'hours'
-//                cacheChangingModulesFor cacheHours, 'hours'
+                def cacheHours = isCiBuild ? 1 : 24
+                cacheDynamicVersionsFor cacheHours, 'hours'
+                cacheChangingModulesFor cacheHours, 'hours'
             }
         }
     }
@@ -143,6 +142,12 @@ subprojects { project ->
             module.dependencies << new org.gradle.plugins.ide.idea.model.ModuleLibrary(
                     [new org.gradle.plugins.ide.idea.model.Path("jar://\$GRADLE_USER_HOME/cache/org.slf4j/slf4j-simple/jars/slf4j-simple-${slf4jVersion}.jar!/")], [], [], [], "TEST"
             )
+        }
+    }
+
+    repositories {
+        if(!isCiBuild) {
+            mavenLocal()
         }
     }
 
