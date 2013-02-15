@@ -23,29 +23,26 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
-import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.grails.datastore.gorm.GormEnhancer
 import org.grails.datastore.gorm.events.AutoTimestampEventListener
 import org.grails.datastore.gorm.events.DomainEventListener
-import org.junit.After
-import org.junit.Before
-import org.junit.BeforeClass
-import org.grails.datastore.mapping.core.Datastore
+import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory
 import org.grails.datastore.mapping.core.DatastoreUtils
 import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.model.PersistentEntity
+import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
+import org.junit.After
+import org.junit.AfterClass
+import org.junit.Before
+import org.junit.BeforeClass
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.validation.Validator
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
-import org.grails.datastore.gorm.validation.constraints.UniqueConstraint
-import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory
-import org.junit.AfterClass
-import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 
 /**
  * <p>A mixin that can be applied to JUnit or Spock tests to add testing support

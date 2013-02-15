@@ -31,14 +31,7 @@ import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
@@ -593,11 +586,12 @@ public class GrailsASTUtils {
         }
     }
 
-    public static void addFieldIfNonExistent(ClassNode classNode, ClassNode fieldType, String fieldName) {
+    public static FieldNode addFieldIfNonExistent(ClassNode classNode, ClassNode fieldType, String fieldName) {
         if (classNode != null && classNode.getField(fieldName) == null) {
-            classNode.addField(fieldName, Modifier.PRIVATE, fieldType,
+            return classNode.addField(fieldName, Modifier.PRIVATE, fieldType,
                     new ConstructorCallExpression(fieldType, new ArgumentListExpression()));
         }
+        return null;
     }
 
     public static void addAnnotationIfNecessary(ClassNode classNode, @SuppressWarnings("unused") Class<Entity> entityClass) {
