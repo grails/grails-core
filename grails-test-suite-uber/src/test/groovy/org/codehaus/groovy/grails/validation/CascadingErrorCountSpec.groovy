@@ -8,7 +8,7 @@ import grails.test.mixin.Mock
 /**
  */
 @TestFor(CascadingPerson)
-@Mock(Name)
+@Mock([CascadingPerson, Name])
 class CascadingErrorCountSpec extends Specification {
 
     void "Test that the error count is correct when validating sorted set"() {
