@@ -121,8 +121,9 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
     def mockDomains(Class... domainsClassToMock) {
         initialMockDomainSetup()
-        for(Class c in domainsClassToMock) {
-            PersistentEntity entity = simpleDatastore.mappingContext.addPersistentEntity(c)
+        Collection<PersistentEntity> entities = simpleDatastore.mappingContext.addPersistentEntities(domainsClassToMock)
+        for(PersistentEntity entity in entities) {
+            final c = entity.javaClass
             GrailsDomainClass domain = registerGrailsDomainClass(c)
 
             Validator validator = registerDomainClassValidator(domain)
