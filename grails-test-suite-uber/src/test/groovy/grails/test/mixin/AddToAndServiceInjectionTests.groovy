@@ -8,7 +8,7 @@ import org.junit.Test
  */
 
 @TestFor(Ship)
-@Mock(Pirate)
+@Mock([Ship, Pirate])
 class AddToAndServiceInjectionTests {
 
     @Test
