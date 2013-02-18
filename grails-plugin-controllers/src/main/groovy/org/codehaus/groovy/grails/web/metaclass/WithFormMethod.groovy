@@ -89,8 +89,11 @@ class WithFormMethod {
         final request = webRequest.getCurrentRequest()
         SynchronizerTokensHolder tokensHolderInSession = request.getSession(false)?.getAttribute(SynchronizerTokensHolder.HOLDER)
         String urlInRequest = webRequest.params[SynchronizerTokensHolder.TOKEN_URI]
+        String tokenInRequest = webRequest.params[SynchronizerTokensHolder.TOKEN_KEY]
 
-        tokensHolderInSession.resetToken(urlInRequest)
+        if (urlInRequest && tokenInRequest) {
+            tokensHolderInSession.resetToken(urlInRequest, tokenInRequest)
+        }
         if (tokensHolderInSession.isEmpty()) request.getSession(false)?.removeAttribute(SynchronizerTokensHolder.HOLDER)
     }
 }

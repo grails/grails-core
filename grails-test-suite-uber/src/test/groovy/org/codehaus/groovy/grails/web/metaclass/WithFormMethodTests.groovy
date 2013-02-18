@@ -242,4 +242,47 @@ class WithFormMethodTests extends GroovyTestCase {
         assertEquals "bar", result2.foo
     }
 
+    void testHandleSubmitOfTwoFormsWithSameURL() {
+        def withForm = new WithFormMethod()
+        def url1 = "http://grails.org/submit"
+        def url2 = "http://grails.org/submit"
+
+        SynchronizerTokensHolder tokensHolder = new SynchronizerTokensHolder()
+        def token1 = tokensHolder.generateToken(url1)
+        def token2 = tokensHolder.generateToken(url2)
+
+        def request1 = GrailsWebUtil.bindMockWebRequest()
+        request1.session.setAttribute(SynchronizerTokensHolder.HOLDER,tokensHolder)
+        request1.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_URI,url1)
+        request1.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_KEY,token1)
+
+        def result1 = withForm.withForm(request1) {
+            return [foo:"bar"]
+        }.invalidToken {
+            throw new GrailsRuntimeException("invalid token")
+        }
+
+        assertEquals "bar", result1.foo
+
+        def request2 = GrailsWebUtil.bindMockWebRequest()
+        request2.session.setAttribute(SynchronizerTokensHolder.HOLDER,tokensHolder)
+        request2.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_URI,url2)
+        request2.currentRequest.addParameter(SynchronizerTokensHolder.TOKEN_KEY,token2)
+
+        def result2 = withForm.withForm(request2) {
+            return [foo:"bar"]
+        }.invalidToken {
+            throw new GrailsRuntimeException("invalid token")
+        }
+
+        assertEquals "bar", result2.foo
+
+        shouldFail(GrailsRuntimeException) {
+            withForm.withForm(request2) {
+                return [foo:"bar"]
+            }.invalidToken {
+                throw new GrailsRuntimeException("invalid token")
+            }
+        }
+    }
 }
