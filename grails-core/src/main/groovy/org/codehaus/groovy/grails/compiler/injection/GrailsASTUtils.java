@@ -276,6 +276,7 @@ public class GrailsASTUtils {
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
         methodNode.addAnnotations(declaredMethod.getAnnotations());
 
+
         classNode.addMethod(methodNode);
         return methodNode;
     }
@@ -319,7 +320,7 @@ public class GrailsASTUtils {
         }
 
         for (Parameter parameterType : parameterTypes) {
-            arguments.addExpression(new VariableExpression(parameterType.getName()));
+            arguments.addExpression(new VariableExpression(parameterType.getName(), nonGeneric(parameterType.getType())));
         }
         return arguments;
     }
@@ -536,9 +537,7 @@ public class GrailsASTUtils {
         }
 
         if (type.isArray()) {
-            final ClassNode nonGen = ClassHelper.makeWithoutCaching(Object.class);
-            nonGen.setUsingGenerics(false);
-            return nonGen.makeArray();
+            return type.getComponentType().getPlainNodeReference().makeArray();
         }
 
         return type.getPlainNodeReference();
