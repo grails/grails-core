@@ -146,8 +146,9 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
 
             public void onNew(File file) {
                 LOG.info("File [" + file + "] added. Applying changes to application.");
-                if (!file.getName().toLowerCase().endsWith(".properties")) {
-                    // only sleep for source files, not i18n files
+                String fileName = file.getName();
+                if (fileName.endsWith(".groovy") || fileName.endsWith(".java")) {
+                    // only wait a bit for source files to give the user a chance to make the class valid
                     sleep(5000);
                 }
                 compileIfSource(file);
