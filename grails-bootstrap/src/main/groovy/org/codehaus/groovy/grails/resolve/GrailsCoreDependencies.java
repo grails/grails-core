@@ -181,7 +181,7 @@ public class GrailsCoreDependencies {
                         String datastoreMappingVersion = "1.1.4.BUILD-SNAPSHOT";
                         ModuleRevisionId[] compileDependencies = {
                             ModuleRevisionId.newInstance("aopalliance", "aopalliance", "1.0"),
-                            ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.2_jdk5"),
+                            ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.3.1"),
                             ModuleRevisionId.newInstance("commons-codec", "commons-codec", "1.5"),
                             ModuleRevisionId.newInstance("commons-collections", "commons-collections", "3.2.1"),
                             ModuleRevisionId.newInstance("commons-io", "commons-io", "2.1"),
