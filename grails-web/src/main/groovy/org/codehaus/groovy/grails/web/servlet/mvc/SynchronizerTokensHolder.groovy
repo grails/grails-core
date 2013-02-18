@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
 import javax.servlet.http.HttpSession
+import java.util.concurrent.CopyOnWriteArraySet
 
 /**
  * A token used to handle double-submits.
@@ -29,28 +30,38 @@ class SynchronizerTokensHolder implements Serializable {
     public static final String TOKEN_KEY = "org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN"
     public static final String TOKEN_URI = "org.codehaus.groovy.grails.SYNCHRONIZER_URI"
 
-    Map<String, UUID> currentTokens;
+    Map<String, Set<UUID>> currentTokens= [:].withDefault { new CopyOnWriteArraySet<UUID>() };
 
     SynchronizerTokensHolder() {
-        // generateToken(url)
-        currentTokens = new HashMap<String, UUID>();
     }
 
     boolean isValid(String url, String token) {
-        currentTokens[url]?.equals(UUID.fromString(token))
+        final uuid = UUID.fromString(token)
+        currentTokens[url]?.contains(uuid)
     }
 
     String generateToken(String url) {
-        currentTokens[url] = UUID.randomUUID()
-        return currentTokens[url]
+        final uuid = UUID.randomUUID()
+        currentTokens[url].add(uuid)
+        return uuid
     }
 
     void resetToken(String url) {
         currentTokens.remove(url)
     }
 
+    void resetToken(String url, String token) {
+        if (url && token) {
+            final set = currentTokens[url]
+            set.remove(UUID.fromString(token))
+            if (set.isEmpty()) {
+                currentTokens.remove(url)
+            }
+        }
+    }
+
     boolean isEmpty() {
-        return currentTokens.isEmpty()
+        return currentTokens.isEmpty() || currentTokens.every { String url, Set<UUID> uuids -> uuids.isEmpty() }
     }
 
     static SynchronizerTokensHolder store(HttpSession session) {
