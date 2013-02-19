@@ -115,7 +115,6 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
         isInitialized = true;
     }
 
-    @Override
     public boolean isInitialized() {
         return isInitialized;
     }

@@ -122,7 +122,6 @@ public class GrailsDomainClassMappingContext extends AbstractMappingContext {
             return null;
         }
 
-        @Override
         public void setCanExpandMappingContext(boolean canExpandMappingContext) {
             // noop
         }
