@@ -170,13 +170,15 @@ public class TestForTransformation extends TestMixinTransformation {
                 String fileName = source.getName();
                 String className = GrailsResourceUtils.getClassName(new org.codehaus.groovy.grails.io.support.FileSystemResource(fileName));
                 if (className != null) {
-                    boolean isSpock = className.endsWith("Spec");
                     String targetClassName = null;
 
-                    if (isJunit) {
+                    if (className.endsWith("Tests")) {
                         targetClassName = className.substring(0, className.indexOf("Tests"));
                     }
-                    else if (isSpock) {
+                    else if (className.endsWith("Test")) {
+                        targetClassName = className.substring(0, className.indexOf("Test"));
+                    }
+                    else if (className.endsWith("Spec")) {
                         targetClassName = className.substring(0, className.indexOf("Spec"));
                     }
 
