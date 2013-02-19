@@ -217,7 +217,13 @@ class PluginInstallEngine {
          *        avoid errors about not being able to find the src folders AFTER
          *        the plugin has been uninstalled.
          */
-		if(!inlinePlugins.find { it.key.endsWith(name) } ) {
+		if(!inlinePlugins.find {
+            def pluginName = it.key.toString()
+            if (pluginName.contains(':')) {
+                pluginName = pluginName.split(':')[-1]
+            }
+            return pluginName.equals(name)
+        } ) {
         	installPluginZipInternal name, version, zipFile, false, false, true
 		} else {
 			// Remove the plugin to prevent duplicate class compile errors with inline version.
@@ -420,7 +426,13 @@ class PluginInstallEngine {
 		 * plugin uses "endsWith", as inline plugins can be declared with a full
 		 * vector in settings.groovy (i.e. 'com.mycompany:my-plugin")
 		 */
-		if(inlinePlugins.find { it.key.endsWith(name) } ) {
+		if( inlinePlugins.find {
+            def pluginName = it.key.toString()
+            if (pluginName.contains(':')) {
+                pluginName = pluginName.split(':')[-1]
+            }
+            return pluginName.equals(name)
+        } ) {
 			return true
 		}
 
