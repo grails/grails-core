@@ -40,6 +40,7 @@ public class DirectoryWatcher extends Thread {
     private List<FileChangeListener> listeners = new ArrayList<FileChangeListener>();
 
     private Map<File, Long> lastModifiedMap = new ConcurrentHashMap<File, Long>();
+    private Map<File, Collection<String>> directoryToExtensionsMap = new ConcurrentHashMap<File, Collection<String>>();
     private Map<File, Long> directoryWatch = new ConcurrentHashMap<File, Long>();
     private boolean active = true;
     private long sleepTime = 3000;
@@ -91,7 +92,18 @@ public class DirectoryWatcher extends Thread {
      * @param fileExtensions The extensions
      */
     public void addWatchDirectory(File dir, List<String> fileExtensions) {
+        trackDirectoryExtensions(dir, fileExtensions);
         cacheFilesForDirectory(dir, fileExtensions, false);
+    }
+
+    protected void trackDirectoryExtensions(File dir, List<String> fileExtensions) {
+        Collection<String> existingExtensions = directoryToExtensionsMap.get(dir);
+        if(existingExtensions == null) {
+            directoryToExtensionsMap.put(dir, fileExtensions);
+        }
+        else {
+            existingExtensions.addAll(fileExtensions);
+        }
     }
 
     /**
@@ -109,6 +121,7 @@ public class DirectoryWatcher extends Thread {
         else {
             fileExtensions.add(extension);
         }
+        trackDirectoryExtensions(dir, fileExtensions);
         cacheFilesForDirectory(dir, fileExtensions, false);
     }
 
@@ -168,6 +181,10 @@ public class DirectoryWatcher extends Thread {
             final Long currentTimestamp = directoryWatch.get(directory);
 
             if (currentTimestamp < directory.lastModified()) {
+                Collection<String> extensions = directoryToExtensionsMap.get(directory);
+                if(extensions == null) {
+                    extensions = this.extensions;
+                }
                 cacheFilesForDirectory(directory, extensions, true);
             }
         }
