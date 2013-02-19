@@ -70,6 +70,9 @@ class Parent2 {
 
     void testToString() {
         def instance = appCtx.getBean("ChildDomainClass").newInstance()
+
+        assertEquals('Child : (unsaved)', instance.toString())
+
         instance.id = 1
         assertEquals('Child : 1', instance.toString())
 
