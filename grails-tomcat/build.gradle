@@ -1,4 +1,4 @@
-def tomcatVersion = "7.0.35"
+def tomcatVersion = "7.0.37"
 configurations {
     optional
 }
