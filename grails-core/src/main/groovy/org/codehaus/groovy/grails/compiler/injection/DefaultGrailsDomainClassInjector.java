@@ -30,14 +30,7 @@ import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.GStringExpression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
@@ -192,9 +185,10 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
                 classNode, "toString", classesWithInjectedToString);
 
         if (!hasToString && !isEnum(classNode)) {
-            GStringExpression ge = new GStringExpression(classNode.getName() + " : ${id}");
+            GStringExpression ge = new GStringExpression(classNode.getName() + " : ${id ? id : '(unsaved)'}");
             ge.addString(new ConstantExpression(classNode.getName() + " : "));
-            ge.addValue(new VariableExpression("id"));
+            VariableExpression idVariable = new VariableExpression("id");
+            ge.addValue(new TernaryExpression(new BooleanExpression(idVariable), idVariable, new ConstantExpression("(unsaved)")));
             Statement s = new ReturnStatement(ge);
             MethodNode mn = new MethodNode("toString", Modifier.PUBLIC, new ClassNode(String.class), new Parameter[0], new ClassNode[0], s);
             classNode.addMethod(mn);

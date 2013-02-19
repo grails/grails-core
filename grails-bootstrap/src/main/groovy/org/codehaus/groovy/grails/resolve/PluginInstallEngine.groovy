@@ -221,12 +221,18 @@ class PluginInstallEngine {
          *        avoid errors about not being able to find the src folders AFTER
          *        the plugin has been uninstalled.
          */
-        if (!inlinePlugins.find { it.key.endsWith(name) } ) {
-            installPluginZipInternal name, version, zipFile, false, false, true
-        } else {
-            // Remove the plugin to prevent duplicate class compile errors with inline version.
-            uninstallPlugin name, version
-        }
+		if(!inlinePlugins.find {
+            def pluginName = it.key.toString()
+            if (pluginName.contains(':')) {
+                pluginName = pluginName.split(':')[-1]
+            }
+            return pluginName.equals(name)
+        } ) {
+        	installPluginZipInternal name, version, zipFile, false, false, true
+		} else {
+			// Remove the plugin to prevent duplicate class compile errors with inline version.
+			uninstallPlugin name, version
+		}
     }
 
     /**
@@ -410,22 +416,28 @@ class PluginInstallEngine {
      */
     protected boolean checkExistingPluginInstall(String name, version, File pluginZip, boolean isResolve = true) {
         Resource currentInstall = pluginSettings.getPluginDirForName(name)
-        def inlinePlugins = settings.config.grails.plugin.location
+		def inlinePlugins = settings.config.grails.plugin.location
 
-        if (!currentInstall?.exists()) {
-            return false
+		if (!currentInstall?.exists()) {
+			return false
         }
-
-        /*
-         * If the plugin to be installed is currently configured to be inline,
-         * do not install it.  This is because we want to use the inline over
-         * the modified dependency artifact.  The comparison to find the inline
-         * plugin uses "endsWith", as inline plugins can be declared with a full
-         * vector in settings.groovy (i.e. 'com.mycompany:my-plugin")
-         */
-        if (inlinePlugins.find { it.key.endsWith(name) } ) {
-            return true
-        }
+		
+		/*
+		 * If the plugin to be installed is currently configured to be inline,
+		 * do not install it.  This is because we want to use the inline over
+		 * the modified dependency artifact.  The comparison to find the inline
+		 * plugin uses "endsWith", as inline plugins can be declared with a full
+		 * vector in settings.groovy (i.e. 'com.mycompany:my-plugin")
+		 */
+		if( inlinePlugins.find {
+            def pluginName = it.key.toString()
+            if (pluginName.contains(':')) {
+                pluginName = pluginName.split(':')[-1]
+            }
+            return pluginName.equals(name)
+        } ) {
+			return true
+		}
 
         PluginBuildSettings pluginSettings = pluginSettings
         def pluginDir = currentInstall.file.canonicalFile
