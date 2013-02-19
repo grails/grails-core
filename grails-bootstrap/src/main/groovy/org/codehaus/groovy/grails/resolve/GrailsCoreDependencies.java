@@ -35,7 +35,7 @@ public class GrailsCoreDependencies {
     protected final String h2Version = "1.3.164";
     protected final String ehcacheVersion = "2.4.6";
     protected final String jaxbVersion = "2.0";
-    protected final String tomcatVersion = "7.0.35";
+    protected final String tomcatVersion = "7.0.37";
     private String servletApiVersion = "3.0.1";
 
     public boolean java5compatible;
