@@ -308,6 +308,12 @@ abstract class ForkedGrailsProcess {
         List<File> buildDependencies = []
 
         File groovyJar = buildSettings.compileDependencies.find { File f -> f.name.contains "groovy-all" }
+        File toolsJar = findToolsJar()
+
+
+        if (toolsJar?.exists()) {
+            buildDependencies.add(toolsJar)
+        }
 
         if (!groovyJar)
             groovyJar = findJarFile(GroovySystem)
@@ -338,6 +344,21 @@ abstract class ForkedGrailsProcess {
 
         buildDependencies.addAll bootstrapJars
         buildDependencies
+    }
+
+    @CompileStatic
+    protected static File findToolsJar() {
+        final javaHome = System.getenv("JAVA_HOME")
+        File toolsJar = javaHome ? new File(javaHome, "lib/tools.jar") : null
+        if (!toolsJar?.exists()) {
+            try {
+                final toolsClass = Thread.currentThread().getContextClassLoader().loadClass('sun.tools.native2ascii.Main')
+                toolsJar = findJarFile(toolsClass)
+            } catch (e) {
+                // ignore
+            }
+        }
+        toolsJar
     }
 
     @CompileStatic
