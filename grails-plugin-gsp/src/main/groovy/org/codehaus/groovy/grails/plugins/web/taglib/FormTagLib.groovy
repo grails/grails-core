@@ -624,7 +624,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
                     years = (tempyear + relativeYears.fromInt)..(tempyear + relativeYears.toInt)
                 }
             } else {
-                years = (tempyear - 100)..(tempyear + 100)
+                years = (tempyear + 100)..(tempyear - 100)
             }
         }
 
