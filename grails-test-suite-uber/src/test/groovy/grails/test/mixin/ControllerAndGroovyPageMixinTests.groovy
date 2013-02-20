@@ -10,9 +10,16 @@ import org.junit.Test
 @TestFor(MyController)
 class ControllerAndGroovyPageMixinTests {
 
-    // verifies the above 2 mixins can operator together without error
+    // GRAILS-9718
     @Test
     void testController() {
         controller != null
+
+        views['/foo/_bar.gsp'] = 'Id: ${params.id}'
+
+        params.id = 10
+        def content = render(template:"/foo/bar")
+
+        assert content == 'Id: 10'
     }
 }
