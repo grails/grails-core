@@ -93,6 +93,7 @@ public class TestForTransformation extends TestMixinTransformation {
 
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
+    public static final String VOID_TYPE = "void";
 
     private ResourceLocator resourceLocator;
 
@@ -216,7 +217,9 @@ public class TestForTransformation extends TestMixinTransformation {
                 List<AnnotationNode> existingTestAnnotations = methodNode.getAnnotations(testAnnotationClassNode);
                 if (isCandidateMethod(methodNode) && (methodNode.getName().startsWith("test") || existingTestAnnotations.size()>0)) {
                     if (existingTestAnnotations.size()==0) {
-                        methodNode.addAnnotation(TEST_ANNOTATION);
+                        ClassNode returnType = methodNode.getReturnType();
+                        if(returnType.getName().equals(VOID_TYPE))
+                            methodNode.addAnnotation(TEST_ANNOTATION);
                     }
                     hasTestMethods = true;
                 }
