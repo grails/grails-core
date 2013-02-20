@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
+import org.codehaus.groovy.grails.web.pages.GroovyPageRequestBinding
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
@@ -60,7 +61,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
     @Before
     void bindGrailsWebRequest() {
         super.bindGrailsWebRequest()
-        pageScope = new GroovyPageBinding()
+        pageScope = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest))
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
 
     }
