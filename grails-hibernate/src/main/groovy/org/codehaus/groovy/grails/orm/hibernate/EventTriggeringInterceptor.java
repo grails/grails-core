@@ -25,7 +25,12 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.Mapping;
 import org.codehaus.groovy.grails.orm.hibernate.support.ClosureEventListener;
 import org.codehaus.groovy.grails.orm.hibernate.support.SoftKey;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
@@ -33,6 +38,7 @@ import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent;
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEventListener;
 import org.grails.datastore.mapping.engine.event.ValidationEvent;
 import org.hibernate.HibernateException;
+import org.hibernate.SessionFactory;
 import org.hibernate.event.PostDeleteEvent;
 import org.hibernate.event.PostInsertEvent;
 import org.hibernate.event.PostLoadEvent;
@@ -42,6 +48,9 @@ import org.hibernate.event.PreInsertEvent;
 import org.hibernate.event.PreLoadEvent;
 import org.hibernate.event.PreUpdateEvent;
 import org.hibernate.event.SaveOrUpdateEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -60,6 +69,8 @@ public class EventTriggeringInterceptor extends AbstractPersistenceEventListener
             new ConcurrentHashMap<SoftKey<Class<?>>, Boolean>();
     private boolean failOnError;
     private List<?> failOnErrorPackages = Collections.emptyList();
+
+    protected Logger log = LoggerFactory.getLogger(getClass());
 
     public EventTriggeringInterceptor(HibernateDatastore datastore, ConfigObject co) {
         super(datastore);
@@ -211,10 +222,9 @@ public class EventTriggeringInterceptor extends AbstractPersistenceEventListener
             synchronized(clazz) {
                 eventListener = eventListeners.get(key);
                 if (eventListener == null) {
-                    shouldTrigger = (entity != null &&
-                            (GroovySystem.getMetaClassRegistry().getMetaClass(entity.getClass()) != null) &&
-                            (DomainClassArtefactHandler.isDomainClass(clazz) ||
-                                    AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz)));
+                    shouldTrigger = (GroovySystem.getMetaClassRegistry().getMetaClass(entity.getClass()) != null &&
+                            (DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz)) &&
+                            isDefinedByCurrentDataStore(entity));
                     if (shouldTrigger) {
                         eventListener = new ClosureEventListener(clazz, failOnError, failOnErrorPackages);
                         ClosureEventListener previous = eventListeners.putIfAbsent(key, eventListener);
@@ -227,6 +237,49 @@ public class EventTriggeringInterceptor extends AbstractPersistenceEventListener
             }
         }
         return eventListener;
+    }
+
+    protected boolean isDefinedByCurrentDataStore(Object entity) {
+        SessionFactory currentDataStoreSessionFactory = ((HibernateDatastore) datastore).getSessionFactory();
+        ApplicationContext applicationContext = datastore.getApplicationContext();
+
+        Mapping mapping = GrailsDomainBinder.getMapping(entity.getClass());
+        List<String> dataSourceNames = null;
+        if (mapping == null) {
+            GrailsApplication grailsApplication = applicationContext.getBean("grailsApplication", GrailsApplication.class);
+            GrailsDomainClass dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, entity.getClass().getName());
+            if (dc != null) {
+                dataSourceNames = GrailsHibernateUtil.getDatasourceNames(dc);
+            }
+        }
+        else {
+            dataSourceNames = mapping.getDatasources();
+        }
+
+        if (dataSourceNames == null) {
+            return false;
+        }
+
+        for (String dataSource : dataSourceNames) {
+            if (GrailsDomainClassProperty.ALL_DATA_SOURCES.equals(dataSource)) {
+                return true;
+            }
+            boolean isDefault = dataSource.equals(GrailsDomainClassProperty.DEFAULT_DATA_SOURCE);
+            String suffix = isDefault ? "" : "_" + dataSource;
+            String sessionFactoryBeanName = "sessionFactory" + suffix;
+
+            if (applicationContext.containsBean(sessionFactoryBeanName)) {
+                SessionFactory sessionFactory = applicationContext.getBean(sessionFactoryBeanName, SessionFactory.class);
+                if (currentDataStoreSessionFactory == sessionFactory) {
+                    return true;
+                }
+            }
+            else {
+                log.warn("Cannot resolve SessionFactory for dataSource {} and entity {}",
+                        new Object[] { dataSource, entity.getClass().getName()});
+            }
+        }
+        return false;
     }
 
     /**
