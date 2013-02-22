@@ -148,9 +148,9 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
 
         def callable = filterConfig.after.clone()
         def currentModel = modelAndView?.model
-        if(currentModel == null) {
+        if (currentModel == null) {
             final templateModel = request.getAttribute(GrailsApplicationAttributes.TEMPLATE_MODEL)
-            if(templateModel != null) {
+            if (templateModel != null) {
                 currentModel = templateModel
             }
         }

@@ -185,7 +185,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return GrailsASTUtils.isCandidateInstanceMethod(classNode, declaredMethod);
     }
 
-    protected boolean isStaticCandidateMethod(@SuppressWarnings("unused") ClassNode classNode, MethodNode declaredMethod) {
+    protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
         return GrailsASTUtils.isCandidateMethod(declaredMethod);
     }
 
@@ -211,7 +211,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected MethodNode populateAutowiredApiLookupMethod(ClassNode classNode, ClassNode implementationNode,
-                                                          @SuppressWarnings("unused") String apiInstanceProperty, String methodName, BlockStatement methodBody) {
+                                                          String apiInstanceProperty, String methodName, BlockStatement methodBody) {
         ArgumentListExpression arguments = new ArgumentListExpression();
         arguments.addExpression(new ConstantExpression("Method on class ["+classNode+"] was used outside of a Grails application. If running in the context of a test using the mocking API or bootstrap Grails correctly."));
         methodBody.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));
@@ -240,7 +240,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
      * @param source The source
      * @param classNode The class node
      */
-    @SuppressWarnings("unused")
     protected void performInjectionInternal(String apiInstanceProperty, SourceUnit source, ClassNode classNode) {
         // do nothing
     }

@@ -111,7 +111,7 @@ public class GrailsClassUtils {
      * @return The value of the property or null if none exists
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName, @SuppressWarnings("unused") Class<?> propertyType) {
+    public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName, Class<?> propertyType) {
         // validate
         if (clazz == null || StringUtils.isBlank(propertyName)) {
             return null;

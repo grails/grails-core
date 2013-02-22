@@ -53,8 +53,6 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
     protected MessageSource messageSource;
     protected GrailsApplication grailsApplication;
 
-
-
     @SuppressWarnings("rawtypes")
     public boolean supports(Class clazz) {
         return targetClass.equals(clazz);
@@ -108,7 +106,6 @@ public class GrailsDomainClassValidator implements CascadingValidator, GrailsApp
      * @param obj  The object to validate
      * @param errors The Errors object
      */
-    @SuppressWarnings("unused")
     protected void postValidate(Object obj, Errors errors) {
         // do nothing
     }

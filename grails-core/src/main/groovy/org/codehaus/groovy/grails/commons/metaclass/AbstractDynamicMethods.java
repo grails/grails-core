@@ -60,7 +60,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
      * @param theClass
      * @param inRegistry
      */
-    public AbstractDynamicMethods(Class<?> theClass, @SuppressWarnings("unused") boolean inRegistry) {
+    public AbstractDynamicMethods(Class<?> theClass, boolean inRegistry) {
         clazz = theClass;
     }
 

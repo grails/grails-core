@@ -16,38 +16,40 @@
  */
 package org.codehaus.groovy.grails.plugins.scaffolding
 
+import grails.util.GrailsUtil
+
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.control.CompilerConfiguration
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.compiler.injection.NamedArtefactTypeAstTransformation
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGenerator
 import org.codehaus.groovy.grails.scaffolding.GrailsTemplateGenerator
 import org.codehaus.groovy.grails.scaffolding.view.ScaffoldingViewResolver
-import org.springframework.beans.PropertyValue
-import org.springframework.beans.factory.config.BeanDefinition
-import org.springframework.context.ApplicationContext
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier
-import org.codehaus.groovy.control.CompilerConfiguration
-import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
-import org.codehaus.groovy.grails.compiler.injection.NamedArtefactTypeAstTransformation
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer;
+import org.springframework.context.ApplicationContext
 
 /**
- * Handles the configuration of dynamic scaffolding in Grails.
+ * Handles the configuration of dynamic scaffolding.
  *
  * @author Graeme Rocher
  * @since 0.4
  */
 class ScaffoldingGrailsPlugin {
 
-    static final LOG = LogFactory.getLog(DefaultGrailsPlugin)
+    static final Log LOG = LogFactory.getLog(DefaultGrailsPlugin)
 
-    def version = grails.util.GrailsUtil.getGrailsVersion()
+    def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [controllers:version, groovyPages:version]
     def observe = ['controllers', 'domainClass']
     def loadAfter = ['controllers']
@@ -56,10 +58,13 @@ class ScaffoldingGrailsPlugin {
         ScaffoldingViewResolver.clearViewCache()
 
         scaffoldedActionMap(HashMap)
+
         controllerToScaffoldedDomainClassMap(HashMap)
+
         scaffoldingTemplateGenerator(DefaultGrailsTemplateGenerator, ref("classLoader")) {
             grailsApplication = ref("grailsApplication")
         }
+
         jspViewResolver(ScaffoldingViewResolver) { bean ->
             bean.lazyInit = true
             bean.parent = 'abstractViewResolver'
@@ -71,34 +76,35 @@ class ScaffoldingGrailsPlugin {
     }
 
     def doWithApplicationContext = { ApplicationContext ctx ->
-        if (!application.warDeployed) {
-            Thread.start {
-                try {
-                    configureScaffolding(ctx, application)
-                } catch (e) {
-                    log.error("Error configuration scaffolding: ${e.message}", e )
-                }
-            }
-        }
-        else {
+        if (application.warDeployed) {
             configureScaffolding(ctx, application)
-        }
-    }
-
-    def configureScaffolding(ApplicationContext appCtx, app) {
-        for (controllerClass in app.controllerClasses) {
-            configureScaffoldingController(appCtx, app, controllerClass)
-        }
-    }
-
-    public static configureScaffoldingController(ApplicationContext appCtx, GrailsApplication application, GrailsControllerClass controllerClass) {
-
-        def scaffoldProperty = controllerClass.getPropertyValue("scaffold", Object)
-        if (!scaffoldProperty || !appCtx) {
             return
         }
 
-        Map scaffoldedActionMap = appCtx.getBean("scaffoldedActionMap")
+        Thread.start {
+            try {
+                configureScaffolding(ctx, application)
+            }
+            catch (e) {
+                log.error("Error configuration scaffolding: ${e.message}", e )
+            }
+        }
+    }
+
+    def configureScaffolding(ApplicationContext ctx, application) {
+        for (controllerClass in application.controllerClasses) {
+            configureScaffoldingController(ctx, application, controllerClass)
+        }
+    }
+
+    static void configureScaffoldingController(ApplicationContext ctx, GrailsApplication application, GrailsControllerClass controllerClass) {
+
+        def scaffoldProperty = controllerClass.getPropertyValue("scaffold", Object)
+        if (!scaffoldProperty || !ctx) {
+            return
+        }
+
+        Map scaffoldedActionMap = ctx.scaffoldedActionMap
         GrailsDomainClass domainClass = getScaffoldedDomainClass(application, controllerClass, scaffoldProperty)
         scaffoldedActionMap[controllerClass.logicalPropertyName] = []
         if (!domainClass) {
@@ -106,14 +112,14 @@ class ScaffoldingGrailsPlugin {
             return
         }
 
-        GrailsTemplateGenerator generator = appCtx.getBean("scaffoldingTemplateGenerator")
-        ClassLoader parentLoader = appCtx.getBean("classLoader")
+        GrailsTemplateGenerator generator = ctx.scaffoldingTemplateGenerator
+        ClassLoader parentLoader = ctx.classLoader
 
-        Map scaffoldedDomains = appCtx.getBean("controllerToScaffoldedDomainClassMap")
+        Map scaffoldedDomains = ctx.controllerToScaffoldedDomainClassMap
         scaffoldedDomains[controllerClass.logicalPropertyName] = domainClass
         String controllerSource = generateControllerSource(generator, domainClass)
         def scaffoldedInstance = createScaffoldedInstance(parentLoader, controllerSource)
-        appCtx.autowireCapableBeanFactory.autowireBeanProperties(scaffoldedInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
+        ctx.autowireCapableBeanFactory.autowireBeanProperties(scaffoldedInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         List actionProperties = getScaffoldedActions(scaffoldedInstance)
 
         def javaClass = controllerClass.clazz
@@ -156,13 +162,13 @@ class ScaffoldingGrailsPlugin {
     }
 
     private static GrailsDomainClass getScaffoldedDomainClass(application, GrailsControllerClass controllerClass, scaffoldProperty) {
-        GrailsDomainClass domainClass = null
+        GrailsDomainClass domainClass
 
         if (scaffoldProperty) {
             if (scaffoldProperty instanceof Class) {
                 domainClass = application.getDomainClass(scaffoldProperty.name)
             }
-            else if (scaffoldProperty) {
+            else {
                 scaffoldProperty = controllerClass.packageName ? "${controllerClass.packageName}.${controllerClass.name}" : controllerClass.name
                 domainClass = application.getDomainClass(scaffoldProperty)
             }
@@ -173,10 +179,8 @@ class ScaffoldingGrailsPlugin {
     private static createScaffoldedInstance(ClassLoader parentLoader, String controllerSource) {
         def configuration = new CompilerConfiguration()
         configuration.addCompilationCustomizers(new ASTTransformationCustomizer(new NamedArtefactTypeAstTransformation(ControllerArtefactHandler.TYPE)))
-        def classLoader = new GroovyClassLoader(parentLoader, configuration)
 
-        def scaffoldedControllerClass = classLoader.parseClass(controllerSource)
-        return scaffoldedControllerClass.newInstance()
+        return new GroovyClassLoader(parentLoader, configuration).parseClass(controllerSource).newInstance()
     }
 
     private static List getScaffoldedActions(scaffoldedInstance) {

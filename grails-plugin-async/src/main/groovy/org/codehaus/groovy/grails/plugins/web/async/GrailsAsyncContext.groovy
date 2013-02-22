@@ -22,10 +22,9 @@ import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
-import org.codehaus.groovy.grails.web.sitemesh.SpringMVCViewDecorator
 import org.codehaus.groovy.grails.web.util.WebUtils
 
-import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
+import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext
 
 /**
  * Wraps an AsyncContext providing additional logic to provide the appropriate context to a Grails application.

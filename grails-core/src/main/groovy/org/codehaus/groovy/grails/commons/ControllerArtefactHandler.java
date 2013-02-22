@@ -83,11 +83,11 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
         String pluginName = null;
 
         if (featureId instanceof Map) {
-        	Map featureIdMap = (Map)featureId;
-        	uri = (String)featureIdMap.get("uri");
-        	pluginName = (String)featureIdMap.get("pluginName");
+            Map featureIdMap = (Map)featureId;
+            uri = (String)featureIdMap.get("uri");
+            pluginName = (String)featureIdMap.get("pluginName");
         } else {
-        	uri = featureId.toString();
+            uri = featureId.toString();
         }
 
         GrailsClass controllerClass = uriToControllerClassCache.get(uri);

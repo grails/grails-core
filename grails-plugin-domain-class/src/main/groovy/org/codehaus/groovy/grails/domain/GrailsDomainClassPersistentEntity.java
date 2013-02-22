@@ -65,7 +65,6 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
     }
 
     public void initialize() {
-        @SuppressWarnings("hiding")
         final GrailsDomainClassProperty identifier = domainClass.getIdentifier();
         if (identifier != null) {
             this.identifier = new GrailsDomainClassPersistentProperty(this, identifier);
@@ -136,12 +135,7 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
     }
 
     public PersistentProperty getPropertyByName(String name) {
-        if(getIdentity().getName().equals(name)) {
-            return getIdentity();
-        }
-        else {
-            return propertiesByName.get(name);
-        }
+        return getIdentity().getName().equals(name) ? getIdentity() : propertiesByName.get(name);
     }
 
     public Class getJavaClass() {
@@ -256,7 +250,6 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
             public PropertyMapping getMapping() {
                 return null;
             }
-
         };
         configureAssociation(grailsDomainClassProperty, oneToOne);
         return oneToOne;
@@ -269,7 +262,6 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
             public PropertyMapping getMapping() {
                 return null;
             }
-
         };
         configureAssociation(grailsDomainClassProperty, oneToOne);
         return oneToOne;
@@ -282,13 +274,12 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
             public PropertyMapping getMapping() {
                 return null;
             }
-
         };
         configureAssociation(grailsDomainClassProperty, oneToOne);
         return oneToOne;
     }
 
-    private Association createOneToMany(@SuppressWarnings("hiding") GrailsDomainClassMappingContext mappingContext,
+    private Association createOneToMany(GrailsDomainClassMappingContext mappingContext,
             GrailsDomainClassProperty grailsDomainClassProperty) {
         final OneToMany oneToMany = new OneToMany(this, mappingContext, grailsDomainClassProperty.getName(), grailsDomainClassProperty.getType()) {
 
@@ -309,14 +300,11 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
         association.setReferencedPropertyName(grailsDomainClassProperty.getReferencedPropertyName());
     }
 
-    private Association createEmbedded(
-            @SuppressWarnings("hiding") GrailsDomainClassMappingContext mappingContext,
-            GrailsDomainClassProperty grailsDomainClassProperty) {
+    private Association createEmbedded(GrailsDomainClassMappingContext mappingContext, GrailsDomainClassProperty grailsDomainClassProperty) {
         Embedded persistentProperty = new Embedded(this, mappingContext, grailsDomainClassProperty.getName(), grailsDomainClassProperty.getClass()) {
             public PropertyMapping getMapping() {
                 return null;
             }
-
         };
         persistentProperty.setOwningSide(grailsDomainClassProperty.isOwningSide());
         persistentProperty.setReferencedPropertyName(grailsDomainClassProperty.getReferencedPropertyName());

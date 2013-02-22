@@ -149,10 +149,10 @@ class GrailsProjectWatcherSpec extends Specification {
 
 class MockFile extends File {
     String absPath = "reloading-test/src/java/com/domain/package/Class.java"
-    public MockFile(String fileName) {
+    MockFile(String fileName) {
         super(fileName)
     }
-    public String getAbsolutePath() {
+    String getAbsolutePath() {
         return absPath
     }
 }

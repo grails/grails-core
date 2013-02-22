@@ -15,8 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins.log4j
 
-import org.codehaus.groovy.grails.plugins.log4j.web.util.Log4jConfigListener
 import grails.util.Metadata
+
+import org.codehaus.groovy.grails.plugins.log4j.web.util.Log4jConfigListener
 
 /**
  * Provides a lazy initialized commons logging log property for all classes.

@@ -178,7 +178,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         return uris;
     }
 
-    public boolean mapsToURI(@SuppressWarnings("hiding") String uri) {
+    public boolean mapsToURI(String uri) {
         for (String uri1 : uris) {
             if (pathMatcher.match(uri1, uri)) {
                 return true;
@@ -187,11 +187,11 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
         return false;
     }
 
-    public String getViewByURI(@SuppressWarnings("hiding") String uri) {
+    public String getViewByURI(String uri) {
         return uri2viewMap.get(uri);
     }
 
-    public String getMethodActionName(@SuppressWarnings("hiding") String uri) {
+    public String getMethodActionName(String uri) {
         return uri2methodMap.get(uri);
     }
 

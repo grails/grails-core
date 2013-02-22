@@ -133,10 +133,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             }
             loadedClasses.add(aClass);
         }
-
     }
-
-
 
     /**
      * Loads a GrailsApplication using the given ResourceLocator instance which will search for appropriate class names
@@ -156,8 +153,8 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             }
             loadedClasses.add(aClass);
         }
-
     }
+
     /**
      * Initialises the default set of ArtefactHandler instances.
      *
@@ -209,7 +206,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             new ArtefactHandler[artefactHandlersByName.size()]);
     }
 
-
     /**
      * Returns all the classes identified as artefacts by ArtefactHandler instances.
      *
@@ -245,7 +241,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         for (final Class<?> theClass : classes) {
             log.debug("Inspecting [" + theClass.getName() + "]");
             // start fresh
-            if(!warDeployed) {
+            if (!warDeployed) {
                 GroovySystem.getMetaClassRegistry().removeMetaClass(theClass);
             }
             if (allArtefactClasses.contains(theClass)) {
@@ -291,7 +287,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         loadedClasses.add(clazz);
         populateAllClasses();
     }
-
 
     public ClassLoader getClassLoader() {
         return cl;

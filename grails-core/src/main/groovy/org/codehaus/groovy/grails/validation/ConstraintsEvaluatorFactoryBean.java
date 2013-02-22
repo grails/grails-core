@@ -14,11 +14,11 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import java.util.Map;
+
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
-
-import java.util.Map;
 
 /**
  * Constructs the default constraints evaluator instance.
@@ -27,6 +27,7 @@ import java.util.Map;
  * @since 2.0
  */
 public class ConstraintsEvaluatorFactoryBean implements FactoryBean<ConstraintsEvaluator>, InitializingBean {
+
     private ConstraintsEvaluator constraintsEvaluator;
     private Class<?> constraintsEvaluatorClass = DefaultConstraintEvaluator.class;
     @SuppressWarnings("rawtypes") private Map defaultConstraints;
@@ -48,10 +49,11 @@ public class ConstraintsEvaluatorFactoryBean implements FactoryBean<ConstraintsE
     }
 
     public boolean isSingleton() {
-        return Boolean.TRUE;
+        return true;
     }
 
     public void afterPropertiesSet() throws Exception {
-        constraintsEvaluator = (ConstraintsEvaluator) BeanUtils.instantiateClass(constraintsEvaluatorClass.getConstructor(new Class[]{Map.class}), defaultConstraints);
+        constraintsEvaluator = (ConstraintsEvaluator)BeanUtils.instantiateClass(
+                constraintsEvaluatorClass.getConstructor(new Class[] { Map.class }), defaultConstraints);
     }
 }

@@ -57,7 +57,7 @@ public class Holders {
         pluginManagers.set(null);
         pluginManagersInCreation.set(null);
         configs.set(null);
-        if(servletContexts != null) {
+        if (servletContexts != null) {
             servletContexts.set(null);
         }
     }

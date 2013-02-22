@@ -50,14 +50,12 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
             return ''
         }
 
-        def className = null
-        def lineNumber = null
         def sw = new StringWriter()
         def pw = new PrintWriter(sw)
         def lineNumbersShown = [:].withDefault { k -> [] }
 
         Throwable cause = exception
-        while (cause != null) {
+        while (cause) {
 
             if (!cause.stackTrace) break
             if (cause instanceof NestedServletException) {
@@ -67,11 +65,9 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
 
             boolean first = true
             for (entry in cause.stackTrace) {
-                Resource res = null
-                className = entry.className
-                lineNumber = entry.lineNumber
-
-                lineNumber = getLineNumberInfo(cause, lineNumber)
+                Resource res
+                String className = entry.className
+                int lineNumber = getLineNumberInfo(cause, entry.lineNumber)
                 if (first) {
                     res = getFileNameInfo(cause, res)
                     if (res != null) {
@@ -89,17 +85,17 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
 
                     lineNumbersShown[res.filename] << lineNumber
                     pw.print formatCodeSnippetStart(res, lineNumber)
-                    final input = null
+                    def input = null
                     try {
                         input = res.inputStream
                         input.withReader { fileIn ->
                             def reader = new LineNumberReader(fileIn)
-                            def last = lineNumber + 3
+                            int last = lineNumber + 3
                             def range = (lineNumber - 3..last)
-                            def currentLine = reader.readLine()
+                            String currentLine = reader.readLine()
 
                             while (currentLine != null) {
-                                Integer currentLineNumber = reader.lineNumber
+                                int currentLineNumber = reader.lineNumber
                                 if (currentLineNumber in range) {
                                     boolean isErrorLine = currentLineNumber == lineNumber
                                     if (isErrorLine) {
@@ -207,12 +203,12 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
     }
 
     protected String formatCodeSnippetLine(int currentLineNumber, currentLine) {
-        return """${currentLineNumber}: ${currentLine}
+        """${currentLineNumber}: ${currentLine}
 """
     }
 
     protected String formatCodeSnippetErrorLine(int currentLineNumber, currentLine) {
-        return """${currentLineNumber}: ${currentLine}
+        """${currentLineNumber}: ${currentLine}
 """
     }
 
@@ -222,7 +218,7 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
      * @return The root cause
      */
     protected Throwable getRootCause(Throwable ex) {
-        while (ex.getCause() != null && !ex.equals(ex.getCause())) {
+        while (ex.getCause() != null && !ex.is(ex.getCause())) {
             ex = ex.getCause()
         }
         return ex

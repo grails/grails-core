@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.plugins.publishing
 
-import spock.lang.Specification
 import grails.util.BuildSettings
+
 import org.codehaus.groovy.grails.io.support.FileSystemResource
+
+import spock.lang.Specification
 
 class PluginDescriptorGeneratorSpec extends Specification {
 
@@ -60,7 +62,6 @@ class PluginDescriptorGeneratorSpec extends Specification {
             xml.resources.resource[1].text() == 'MyService2'
 
     }
-
 
     PluginDescriptorGenerator systemUnderTest() {
         final settings = new BuildSettings()

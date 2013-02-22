@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins.support;
+package org.codehaus.groovy.grails.plugins.support
 
 import grails.util.GrailsUtil
 

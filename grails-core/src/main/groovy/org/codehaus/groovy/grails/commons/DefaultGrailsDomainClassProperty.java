@@ -650,14 +650,14 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             return Collections.emptyMap();
         }
 
-        public GrailsDomainClassProperty getPropertyByName(@SuppressWarnings("hiding") String name) {
+        public GrailsDomainClassProperty getPropertyByName(String name) {
             for (GrailsDomainClassProperty property : properties) {
                 if (property.getName().equals(name)) return property;
             }
             return null;
         }
 
-        public GrailsDomainClassProperty getPersistentProperty(@SuppressWarnings("hiding") String name) {
+        public GrailsDomainClassProperty getPersistentProperty(String name) {
             return getPropertyByName(name);
         }
 

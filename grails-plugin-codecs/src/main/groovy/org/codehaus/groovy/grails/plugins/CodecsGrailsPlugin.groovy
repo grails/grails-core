@@ -18,16 +18,29 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.Environment
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.plugins.codecs.*
-import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.CodecArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsCodecClass
+import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
+import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.HexCodec
+import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
+import org.codehaus.groovy.grails.plugins.codecs.MD5BytesCodec
+import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
+import org.codehaus.groovy.grails.plugins.codecs.SHA1BytesCodec
+import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
+import org.codehaus.groovy.grails.plugins.codecs.SHA256BytesCodec
+import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
+import org.codehaus.groovy.grails.plugins.codecs.URLCodec
 
 /**
- * A plugin that configures pluggable codecs.
+ * Configures pluggable codecs.
  *
  * @author Jeff Brown
  * @since 0.4
  */
 class CodecsGrailsPlugin {
+
+    private static final Object[] EMPTY_ARGS = []
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
@@ -68,7 +81,7 @@ class CodecsGrailsPlugin {
         def decoder
         if (Environment.current == Environment.DEVELOPMENT) {
             // Resolve codecs in every call in case of a codec reload
-            encoder = {    ->
+            encoder = { ->
                 def encodeMethod = codecClass.getEncodeMethod()
                 if (encodeMethod) {
                     return encodeMethod(delegate)
@@ -77,10 +90,10 @@ class CodecsGrailsPlugin {
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
                 // this is because the delegate might be a Map, in which case delegate.class doesn't
                 // do what we want here...
-                throw new MissingMethodException(encodeMethodName, delegate.getClass(), []as Object[])
+                throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS)
             }
 
-            decoder = {    ->
+            decoder = { ->
                 def decodeMethod = codecClass.getDecodeMethod()
                 if (decodeMethod) {
                     return decodeMethod(delegate)
@@ -89,7 +102,7 @@ class CodecsGrailsPlugin {
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
                 // this is because the delegate might be a Map, in which case delegate.class doesn't
                 // do what we want here...
-                throw new MissingMethodException(decodeMethodName, delegate.getClass(), []as Object[])
+                throw new MissingMethodException(decodeMethodName, delegate.getClass(), EMPTY_ARGS)
             }
         }
         else {
@@ -103,7 +116,7 @@ class CodecsGrailsPlugin {
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
                 // this is because the delegate might be a Map, in which case delegate.class doesn't
                 // do what we want here...
-                encoder = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), []as Object[]) }
+                encoder = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }
             if (decodeMethod) {
                 decoder = { -> decodeMethod(delegate) }
@@ -112,7 +125,7 @@ class CodecsGrailsPlugin {
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
                 // this is because the delegate might be a Map, in which case delegate.class doesn't
                 // do what we want here...
-                decoder = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), []as Object[]) }
+                decoder = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }
         }
 

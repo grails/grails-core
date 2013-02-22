@@ -1,6 +1,5 @@
 package grails.web
 
-import grails.web.CamelCaseUrlConverter;
 import spock.lang.Specification
 import spock.lang.Unroll
 

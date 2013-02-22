@@ -488,7 +488,6 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         c.call(new Object[]{ctx});
     }
 
-
     public void doWithRuntimeConfiguration(RuntimeSpringConfiguration springConfig) {
 
         if (!pluginBean.isReadableProperty(DO_WITH_SPRING)) {

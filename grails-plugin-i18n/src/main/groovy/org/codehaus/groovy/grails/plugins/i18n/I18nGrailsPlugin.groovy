@@ -15,37 +15,32 @@
  */
 package org.codehaus.groovy.grails.plugins.i18n
 
-import java.io.File
-
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
 
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.logging.LogFactory
-
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-
+import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource
-import org.springframework.core.io.Resource;
-import org.springframework.context.support.ReloadableResourceBundleMessageSource
-import org.springframework.util.ResourceUtils
+import org.springframework.core.io.Resource
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
-import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 
 /**
- * A plugin that configures Grails' internationalisation support.
+ * Configures Grails' internationalisation support.
  *
  * @author Graeme Rocher
  * @since 0.4
  */
 class I18nGrailsPlugin {
 
-    private static LOG = LogFactory.getLog(I18nGrailsPlugin)
+    private static LOG = LogFactory.getLog(this)
 
     String baseDir = "grails-app/i18n"
     String version = GrailsUtil.getGrailsVersion()
@@ -63,52 +58,48 @@ class I18nGrailsPlugin {
             messageResources = plugin.watchedResources
         }
 
-        if (messageResources) {
-            for (resource in messageResources) {
-				// Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
-				// Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
-				def isInlineResource = false
-				try {
-					isInlineResource = (resource instanceof ClassPathResource) ? false :
-						BuildSettingsHolder?.settings?.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
-				} catch(e) {
-					// Ignore the failed getFile/getRealPath on a non exploded resource. 
-				}
-				String path
-
-				// If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
-				// generate the path to the resource based on its relativity to the application.
-				if (isInlineResource) {
-					path = resource.file.path
-				} else {
-                    // Extract the file path of the file's parent directory
-                    // that comes after "grails-app/i18n".
-                    if (resource instanceof ContextResource) {
-                        path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
-                    } else {
-                        path = StringUtils.substringAfter(resource.path, baseDir)
-                    }
-                }
-
-                // look for an underscore in the file name (not the full path)
-                String fileName = resource.filename
-                int firstUnderscore = fileName.indexOf('_')
-
-                if (firstUnderscore > 0) {
-                    // grab everything up to but not including
-                    // the first underscore in the file name
-                    int numberOfCharsToRemove = fileName.length() - firstUnderscore
-                    int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
-                    path = path[0..lastCharacterToRetain]
-                }
-                else {
-                    // Lop off the extension - the "basenames" property in the
-                    // message source cannot have entries with an extension.
-                    path -= ".properties"
-                }
-
-                baseNames << (isInlineResource ? path : "WEB-INF/" + baseDir + path)
+        for (resource in messageResources) {
+            // Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
+            // Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
+            boolean isInlineResource = false
+            try {
+                isInlineResource = (resource instanceof ClassPathResource) ? false :
+                    BuildSettingsHolder?.settings?.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
+            } catch(e) {
+                // Ignore the failed getFile/getRealPath on a non exploded resource.
             }
+
+            String path
+
+            // If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
+            // generate the path to the resource based on its relativity to the application.
+            if (isInlineResource) {
+                path = resource.file.path
+            } else {
+                // Extract the file path of the file's parent directory that comes after "grails-app/i18n".
+                if (resource instanceof ContextResource) {
+                    path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
+                } else {
+                    path = StringUtils.substringAfter(resource.path, baseDir)
+                }
+            }
+
+            // look for an underscore in the file name (not the full path)
+            String fileName = resource.filename
+            int firstUnderscore = fileName.indexOf('_')
+
+            if (firstUnderscore > 0) {
+                // grab everything up to but not including the first underscore in the file name
+                int numberOfCharsToRemove = fileName.length() - firstUnderscore
+                int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
+                path = path[0..lastCharacterToRetain]
+            }
+            else {
+                // Lop off the extension - the "basenames" property in the message source cannot have entries with an extension.
+                path -= ".properties"
+            }
+
+            baseNames << (isInlineResource ? path : "WEB-INF/" + baseDir + path)
         }
 
         LOG.debug "Creating messageSource with basenames: $baseNames"
@@ -119,11 +110,7 @@ class I18nGrailsPlugin {
             pluginManager = manager
             if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD)) {
                 def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
-                if (cacheSecondsSetting != null) {
-                    cacheSeconds = cacheSecondsSetting as Integer
-                } else {
-                    cacheSeconds = 5
-                }
+                cacheSeconds = cacheSecondsSetting == null ? 5 : cacheSecondsSetting as Integer
             }
         }
 
@@ -169,13 +156,13 @@ class I18nGrailsPlugin {
     }
 
     def onChange = { event ->
-        def context = event.ctx
-        if (!context) {
-            log.debug("Application context not found. Can't reload")
+        def ctx = event.ctx
+        if (!ctx) {
+            LOG.debug("Application context not found. Can't reload")
             return
         }
 
-        def resourcesDir = BuildSettingsHolder?.settings?.resourcesDir?.path
+        def resourcesDir = BuildSettingsHolder.settings?.resourcesDir?.path
         if (resourcesDir && event.source instanceof Resource) {
             def eventFile = event.source.file.canonicalFile
             def nativeascii = event.application.config.grails.enable.native2ascii
@@ -188,10 +175,8 @@ class I18nGrailsPlugin {
                 def eventFileRelative = relativePath(appI18nDir, eventFile)
 
                 if (nativeascii) {
-                    ant.native2ascii(src:"./grails-app/i18n",
-                                     dest:i18nDir,
-                                     includes:eventFileRelative,
-                                     encoding:"UTF-8")
+                    ant.native2ascii(src:"./grails-app/i18n", dest:i18nDir,
+                                     includes:eventFileRelative, encoding:"UTF-8")
                 }
                 else {
                     ant.copy(todir:i18nDir) {
@@ -214,10 +199,8 @@ class I18nGrailsPlugin {
 
                         ant.mkdir(dir: destDir)
                         if (nativeascii) {
-                            ant.native2ascii(src: pluginI18nDir.absolutePath,
-                                    dest: destDir,
-                                    includes: eventFileRelative,
-                                    encoding: "UTF-8")
+                            ant.native2ascii(src: pluginI18nDir.absolutePath, dest: destDir,
+                                             includes: eventFileRelative, encoding: "UTF-8")
                         } else {
                             ant.copy(todir:destDir) {
                                 fileset(dir:pluginI18nDir.absolutePath, includes:eventFileRelative)
@@ -228,7 +211,7 @@ class I18nGrailsPlugin {
             }
         }
 
-        def messageSource = context.messageSource
+        def messageSource = ctx.messageSource
         if (messageSource instanceof ReloadableResourceBundleMessageSource) {
             messageSource.clearCache()
         }

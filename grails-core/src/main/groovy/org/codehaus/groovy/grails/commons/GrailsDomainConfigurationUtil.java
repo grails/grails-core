@@ -330,10 +330,7 @@ public class GrailsDomainConfigurationUtil {
                 !name.equals(GrailsDomainClassProperty.MAPPED_BY) &&
                 !name.equals(GrailsDomainClassProperty.BELONGS_TO) &&
                 !name.equals(PROPERTIES_PROPERTY);
-
-
     }
-
 
     /**
      * Evaluates the constraints closure to build the list of constraints

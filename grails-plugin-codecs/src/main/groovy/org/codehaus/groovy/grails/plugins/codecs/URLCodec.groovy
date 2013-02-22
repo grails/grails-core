@@ -34,12 +34,7 @@ class URLCodec {
         URLDecoder.decode(obj.toString(), URLCodec.getEncoding())
     }
 
-    private static def getEncoding() {
-        def request = RequestContextHolder.getRequestAttributes()?.request
-        def encoding = "UTF-8"
-        if (request?.characterEncoding) {
-            encoding = request?.characterEncoding
-        }
-        return encoding
+    private static String getEncoding() {
+        RequestContextHolder.getRequestAttributes()?.request?.characterEncoding ?: 'UTF-8'
     }
 }

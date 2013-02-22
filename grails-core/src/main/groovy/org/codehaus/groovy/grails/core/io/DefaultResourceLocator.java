@@ -16,6 +16,16 @@
 package org.codehaus.groovy.grails.core.io;
 
 import grails.util.Environment;
+
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
@@ -28,27 +38,21 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
- * Default implementation of the ResourceLocator interface that doesn't take into account servlet loading.
+ * Default ResourceLocator implementation that doesn't take into account servlet loading.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
-public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware, PluginManagerAware{
-    protected static final Resource NULL_RESOURCE = new ByteArrayResource("null".getBytes());
+public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAware, PluginManagerAware {
+
     public static final String WILDCARD = "*";
     public static final String FILE_SEPARATOR = File.separator;
     public static final String CLOSURE_MARKER = "$";
     public static final String WEB_APP_DIR = "web-app";
+
+    protected static final Resource NULL_RESOURCE = new ByteArrayResource("null".getBytes());
+
     protected PathMatchingResourcePatternResolver patchMatchingResolver;
     protected List<String> classSearchDirectories = new ArrayList<String>();
     protected List<String> resourceSearchDirectories = new ArrayList<String>();
@@ -159,16 +163,10 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
     protected Resource findResourceInBinaryPlugins(PluginResourceInfo info) {
         if (pluginManager != null) {
             String fullPluginName = info.pluginName;
-            GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
-            BinaryGrailsPlugin binaryPlugin = null;
-            for (GrailsPlugin plugin : allPlugins) {
+            for (GrailsPlugin plugin : pluginManager.getAllPlugins()) {
                 if (plugin.getFileSystemName().equals(fullPluginName) && (plugin instanceof BinaryGrailsPlugin)) {
-                    binaryPlugin = (BinaryGrailsPlugin) plugin;
+                    return ((BinaryGrailsPlugin)plugin).getResource(info.uri);
                 }
-            }
-
-            if (binaryPlugin != null) {
-                return binaryPlugin.getResource(info.uri);
             }
         }
         return null;
@@ -202,7 +200,6 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
                     classNameToResourceCache.put(className, resource);
                     break;
                 }
-
             }
         }
         return resource != null && resource.exists() ? resource : null;
@@ -223,8 +220,8 @@ public class DefaultResourceLocator implements ResourceLocator, ResourceLoaderAw
 
     private Resource resolveExceptionSafe(String pathPattern) {
         try {
-            Resource[] resources = patchMatchingResolver.getResources("file:"+pathPattern);
-            if (resources != null && resources.length>0) {
+            Resource[] resources = patchMatchingResolver.getResources("file:" + pathPattern);
+            if (resources != null && resources.length > 0) {
                 return resources[0];
             }
         } catch (IOException e) {

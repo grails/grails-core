@@ -55,7 +55,6 @@ public class DomainBuilder extends ObjectGraphBuilder {
             }
         }
 
-        @SuppressWarnings("unused")
         private boolean isCollection(Object parent, Object child, String parentName, String propertyName) {
             try {
                 Field field = parent.getClass().getDeclaredField(propertyName);

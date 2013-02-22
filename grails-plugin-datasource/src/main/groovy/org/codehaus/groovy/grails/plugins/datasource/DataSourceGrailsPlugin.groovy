@@ -48,7 +48,7 @@ class DataSourceGrailsPlugin {
 
     private static final Log log = LogFactory.getLog(DataSourceGrailsPlugin)
     def version = GrailsUtil.getGrailsVersion()
-    def dependsOn = [core: GrailsUtil.getGrailsVersion()]
+    def dependsOn = [core: version]
 
     def watchedResources = "file:./grails-app/conf/DataSource.groovy"
 

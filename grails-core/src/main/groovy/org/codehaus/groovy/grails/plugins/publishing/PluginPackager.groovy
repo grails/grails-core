@@ -16,13 +16,14 @@
 
 package org.codehaus.groovy.grails.plugins.publishing
 
+import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
+
+import org.codehaus.groovy.grails.io.support.FileSystemResource
+import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import grails.util.BuildSettings
-import org.codehaus.groovy.grails.io.support.Resource
-import org.codehaus.groovy.grails.io.support.FileSystemResource
 import org.springframework.util.AntPathMatcher
 
 /**
@@ -110,7 +111,7 @@ class PluginPackager {
      * @return The plugin properties
      */
     def generatePluginXml(File descriptor) {
-        pluginInfo = new AstPluginDescriptorReader().readPluginInfo(new FileSystemResource(descriptor));
+        pluginInfo = new AstPluginDescriptorReader().readPluginInfo(new FileSystemResource(descriptor))
         def pluginBaseDir = descriptor.parentFile
         def pluginProps = pluginInfo
         // Work out what the name of the plugin is from the name of the descriptor file.
@@ -293,7 +294,6 @@ class PluginPackager {
                         "**/*.gsp", "**/*.jsp"]).each {
                             exclude name: it
                     }
-
                 }
             }
             mkdir(dir:"${metaInf}/scripts")

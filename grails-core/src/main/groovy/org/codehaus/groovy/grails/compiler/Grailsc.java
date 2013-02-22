@@ -15,20 +15,20 @@
  */
 package org.codehaus.groovy.grails.compiler;
 
-import org.codehaus.groovy.ant.Groovyc;
-import org.codehaus.groovy.control.CompilationUnit;
-import org.codehaus.groovy.control.Phases;
 import grails.build.logging.GrailsConsole;
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.codehaus.groovy.ant.Groovyc;
+import org.codehaus.groovy.control.CompilationUnit;
+import org.codehaus.groovy.control.Phases;
+import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation;
+
 public class Grailsc extends Groovyc {
 
     private List<File> destList = new ArrayList<File>();
-
 
     @Override protected CompilationUnit makeCompileUnit() {
         CompilationUnit unit = super.makeCompileUnit();
@@ -36,7 +36,6 @@ public class Grailsc extends Groovyc {
         unit.addPhaseOperation(operation, Phases.CANONICALIZATION);
         return unit;
     }
-
 
     @Override
     protected void scanDir(File srcDir, File destDir, String[] files) {
@@ -79,5 +78,4 @@ public class Grailsc extends Groovyc {
            super.compile();
         }
     }
-
 }

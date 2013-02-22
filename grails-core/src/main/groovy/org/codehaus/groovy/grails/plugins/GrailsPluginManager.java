@@ -273,7 +273,6 @@ public interface GrailsPluginManager extends ApplicationContextAware, ServletCon
      */
     String getPluginPath(String name);
 
-
     /**
      * Looks up the plugin that defined the given instance. If no plugin
      * defined the instance then null is returned.

@@ -35,7 +35,7 @@ import org.springframework.context.ApplicationContext
  */
 class FiltersGrailsPlugin {
 
-    private static final TYPE = FiltersConfigArtefactHandler.TYPE
+    private static final String TYPE = FiltersConfigArtefactHandler.TYPE
     private static final Log LOG = LogFactory.getLog(FiltersGrailsPlugin)
 
     def version = GrailsUtil.getGrailsVersion()
@@ -79,7 +79,7 @@ class FiltersGrailsPlugin {
         reloadFilters(event.application, event.ctx)
     }
 
-    public static void reloadFilters(GrailsApplication application, ApplicationContext applicationContext) {
+    static void reloadFilters(GrailsApplication application, ApplicationContext applicationContext) {
 
         LOG.info "reloadFilters"
         def filterConfigs = application.getArtefacts(TYPE)
@@ -100,7 +100,7 @@ class FiltersGrailsPlugin {
                 def bean = applicationContext.getBean(c.fullName)
                 LOG.debug("Processing filter '${bean.getClass().name}'")
 
-                def dependsOn = null
+                def dependsOn
                 if (bean.metaClass.hasProperty(bean, "dependsOn")) {
                     dependsOn = bean.dependsOn
                     LOG.debug("  depends on '${dependsOn.join(",")}'")

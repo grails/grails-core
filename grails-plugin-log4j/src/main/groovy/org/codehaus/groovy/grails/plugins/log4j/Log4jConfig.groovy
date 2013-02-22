@@ -19,6 +19,8 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.Metadata
+import groovy.transform.CompileStatic
+
 import org.apache.commons.beanutils.BeanUtils
 import org.apache.log4j.Appender
 import org.apache.log4j.ConsoleAppender
@@ -35,7 +37,6 @@ import org.apache.log4j.jdbc.JDBCAppender
 import org.apache.log4j.varia.NullAppender
 import org.apache.log4j.xml.XMLLayout
 import org.codehaus.groovy.grails.plugins.log4j.appenders.GrailsConsoleAppender
-import groovy.transform.CompileStatic
 
 /**
  * Encapsulates the configuration of Log4j.
@@ -60,7 +61,7 @@ class Log4jConfig {
     }
 
     @CompileStatic
-    public static void initialize(ConfigObject config) {
+    static void initialize(ConfigObject config) {
         if (config == null) {
             return
         }
@@ -145,7 +146,6 @@ class Log4jConfig {
         callable.resolveStrategy = Closure.DELEGATE_FIRST
         callable.call()
     }
-
 
     /**
      * Configure Log4J from a map whose values are DSL closures.  This simply

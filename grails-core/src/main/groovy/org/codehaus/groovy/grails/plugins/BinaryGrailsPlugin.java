@@ -68,7 +68,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         }
     }
 
-    protected void initializeViewMap(@SuppressWarnings("hiding") BinaryGrailsPluginDescriptor descriptor) {
+    protected void initializeViewMap(BinaryGrailsPluginDescriptor descriptor) {
         final Resource descriptorResource = descriptor.getResource();
 
         final Resource viewsPropertiesResource;
@@ -109,7 +109,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         }
     }
 
-    protected void initializeProvidedArtefacts(@SuppressWarnings("hiding") GPathResult descriptor) {
+    protected void initializeProvidedArtefacts(GPathResult descriptor) {
 
         List<Class> artefacts = new ArrayList<Class>();
         if (descriptor != null) {
@@ -144,7 +144,6 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
     public BinaryGrailsPluginDescriptor getBinaryDescriptor() {
         return descriptor;
     }
-
 
     /**
      * Resolves a static resource contained within this binary plugin

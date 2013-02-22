@@ -58,7 +58,6 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      */
     String VIEW = "view";
 
-
     /**
      * Checks to see if an action is accessible via a particular http method.
      *

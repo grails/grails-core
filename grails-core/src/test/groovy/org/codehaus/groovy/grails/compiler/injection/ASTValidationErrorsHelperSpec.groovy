@@ -3,12 +3,9 @@ package org.codehaus.groovy.grails.compiler.injection
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.springframework.validation.Errors
 
 import spock.lang.Specification
-
 
 class ASTValidationErrorsHelperSpec extends Specification {
 
@@ -17,20 +14,18 @@ class ASTValidationErrorsHelperSpec extends Specification {
     void setupSpec() {
         gcl = new GrailsAwareClassLoader()
         def transformer = new ClassInjector() {
-                    @Override
-                    void performInjection(SourceUnit source, ClassNode classNode) {
-                        performInject(source, null, classNode)
-                    }
-                    @Override
-                    void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-                        new ASTValidationErrorsHelper().injectErrorsCode(classNode)
-                    }
-                    @Override
-                    boolean shouldInject(URL url) {
-                        return true;
-                    }
-                }
-        gcl.classInjectors = [transformer]as ClassInjector[]
+            @Override
+            void performInjection(SourceUnit source, ClassNode classNode) {
+                performInject(source, null, classNode)
+            }
+            @Override
+            void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+                new ASTValidationErrorsHelper().injectErrorsCode(classNode)
+            }
+            @Override
+            boolean shouldInject(URL url) { true }
+        }
+        gcl.classInjectors = [transformer] as ClassInjector[]
     }
 
     void 'Test injected errors property'() {

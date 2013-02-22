@@ -17,8 +17,12 @@
 package org.codehaus.groovy.grails.compiler
 
 import grails.util.BuildSettings
+import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.util.PluginBuildSettings
+
+import org.apache.tools.ant.AntTypeDefinition
+import org.apache.tools.ant.ComponentHelper
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.Phases
@@ -29,9 +33,6 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
-import grails.util.Environment
-import org.apache.tools.ant.AntTypeDefinition
-import org.apache.tools.ant.ComponentHelper
 
 /**
  * Encapsulates the compilation logic required for a Grails application.
@@ -117,16 +118,15 @@ class GrailsProjectCompiler extends BaseSettingsApi{
 
     AntBuilder getAnt() {
         if (ant == null) {
-           ant = new GrailsConsoleAntBuilder()
-            AntTypeDefinition atd = new AntTypeDefinition();
-            atd.setName('groovyc');
-            atd.setClassName(org.codehaus.groovy.grails.compiler.Grailsc.name);
-            atd.setClass(org.codehaus.groovy.grails.compiler.Grailsc);
-            atd.setClassLoader(classLoader);
+            ant = new GrailsConsoleAntBuilder()
+            AntTypeDefinition atd = new AntTypeDefinition()
+            atd.setName('groovyc')
+            atd.setClassName(Grailsc.name)
+            atd.setClass(Grailsc)
+            atd.setClassLoader(classLoader)
             ComponentHelper.getComponentHelper(ant.project)
-                    .addDataTypeDefinition(atd);
+                           .addDataTypeDefinition(atd)
            ant.path(id: "grails.compile.classpath", compileClasspath)
-
         }
         return ant
     }
@@ -231,11 +231,12 @@ class GrailsProjectCompiler extends BaseSettingsApi{
      * Compiles plugin and normal sources
      */
     void compileAll() {
-        if(buildSettings.forkSettings.compile && !Environment.isFork()) {
+        if (buildSettings.forkSettings.compile && !Environment.isFork()) {
             def forkedCompiler = new ForkedGrailsCompiler(buildSettings)
             def forkConfig = buildSettings.forkSettings.compile
-            if (forkConfig instanceof Map)
+            if (forkConfig instanceof Map) {
                 forkedCompiler.configure(forkConfig)
+            }
             forkedCompiler.fork()
         }
         else {
@@ -362,7 +363,7 @@ class GrailsProjectCompiler extends BaseSettingsApi{
             def cl = new GrailsAwareClassLoader(classLoader)
             cl.addURL(new File(classesDirString).toURI().toURL())
             def unit = new CompilationUnit (config , null , cl)
-            unit.addPhaseOperation(new GrailsAwareInjectionOperation(), Phases.CANONICALIZATION);
+            unit.addPhaseOperation(new GrailsAwareInjectionOperation(), Phases.CANONICALIZATION)
             def pluginFiles = pluginCompileInfo.pluginDescriptors
 
             for (plugin in pluginFiles) {

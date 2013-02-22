@@ -204,7 +204,6 @@ public class GrailsMetaClassUtils {
         return null;
     }
 
-
     /**
      * Invokes a method if it exists otherwise returns null
      *

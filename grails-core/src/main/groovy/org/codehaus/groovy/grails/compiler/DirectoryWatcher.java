@@ -98,7 +98,7 @@ public class DirectoryWatcher extends Thread {
 
     protected void trackDirectoryExtensions(File dir, List<String> fileExtensions) {
         Collection<String> existingExtensions = directoryToExtensionsMap.get(dir);
-        if(existingExtensions == null) {
+        if (existingExtensions == null) {
             directoryToExtensionsMap.put(dir, fileExtensions);
         }
         else {
@@ -182,7 +182,7 @@ public class DirectoryWatcher extends Thread {
 
             if (currentTimestamp < directory.lastModified()) {
                 Collection<String> extensions = directoryToExtensionsMap.get(directory);
-                if(extensions == null) {
+                if (extensions == null) {
                     extensions = this.extensions;
                 }
                 cacheFilesForDirectory(directory, extensions, true);

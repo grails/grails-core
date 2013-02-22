@@ -27,7 +27,6 @@ import org.springframework.core.io.Resource;
  * @deprecated This class is deprecated from version 1.2 and above
  */
 @Deprecated
-@SuppressWarnings("unused")
 public class DefaultPluginMetaManager implements PluginMetaManager{
 
     public DefaultPluginMetaManager() {

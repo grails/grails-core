@@ -45,7 +45,7 @@ class FilterConfig extends ControllersApi {
     ModelAndView modelAndView
     boolean initialised = false
 
-    public FilterConfig() {
+    FilterConfig() {
         initializeMetaClass()
     }
 

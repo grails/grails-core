@@ -27,12 +27,12 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.springframework.context.ResourceLoaderAware
+import org.springframework.core.io.AbstractResource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.ResourceLoader
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.util.Assert
-import org.springframework.core.io.AbstractResource
 
 /**
  * Default implementation of the generator that generates grails artifacts (controllers, views etc.)
@@ -67,11 +67,9 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
 
     void setGrailsApplication(GrailsApplication ga) {
         grailsApplication = ga
-        if (ga != null) {
-            def suffix = ga.config?.grails?.scaffolding?.templates?.domainSuffix
-            if (suffix != [:]) {
-                domainSuffix = suffix
-            }
+        def suffix = ga?.config?.grails?.scaffolding?.templates?.domainSuffix
+        if (suffix) {
+            domainSuffix = suffix
         }
     }
 
@@ -229,7 +227,6 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
 
             t.make(binding).writeTo(out)
         }
-
     }
 
     void generateController(GrailsDomainClass domainClass, Writer out) {
@@ -264,15 +261,14 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
         return true
     }
 
-    public static String makeRelativeIfPossible(String fileName, String base = System.getProperty("base.dir")) {
+    static String makeRelativeIfPossible(String fileName, String base = System.getProperty("base.dir")) {
         if (base) {
             fileName = fileName - new File(base).canonicalPath
         }
         return fileName
     }
 
-
-    public getTemplateText(String template) {
+    String getTemplateText(String template) {
         def application = grailsApplication
         // first check for presence of template in application
         if (resourceLoader && application?.warDeployed) {

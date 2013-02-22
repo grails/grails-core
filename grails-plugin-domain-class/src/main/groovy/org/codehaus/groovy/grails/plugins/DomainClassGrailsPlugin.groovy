@@ -19,7 +19,12 @@ import grails.artefact.Enhanced
 import grails.util.GrailsUtil
 import grails.validation.ValidationErrors
 
-import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.ComponentCapableDomainClass
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.domain.GormApiSupport
 import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
@@ -66,38 +71,39 @@ class DomainClassGrailsPlugin {
 
         for (dc in application.domainClasses) {
             // Note the use of Groovy's ability to use dynamic strings in method names!
-            if (!dc.abstract) {
-                "${dc.fullName}"(dc.clazz) { bean ->
-                    bean.singleton = false
-                    bean.autowire = "byName"
-                }
-                "${dc.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
-                    targetObject = ref("grailsApplication", true)
-                    targetMethod = "getArtefact"
-                    bean.lazyInit = true
-                    arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
-                }
-                "${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
-                    targetObject = ref("${dc.fullName}DomainClass")
-                    bean.lazyInit = true
-                    targetMethod = "getClazz"
-                }
-                "${dc.fullName}Validator"(GrailsDomainClassValidator) { bean ->
-                    messageSource = ref("messageSource")
-                    bean.lazyInit = true
-                    domainClass = ref("${dc.fullName}DomainClass")
-                    grailsApplication = ref("grailsApplication", true)
-                }
+            if (dc.abstract) {
+                continue
             }
 
+            "${dc.fullName}"(dc.clazz) { bean ->
+                bean.singleton = false
+                bean.autowire = "byName"
+            }
+            "${dc.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
+                targetObject = ref("grailsApplication", true)
+                targetMethod = "getArtefact"
+                bean.lazyInit = true
+                arguments = [DomainClassArtefactHandler.TYPE, dc.fullName]
+            }
+            "${dc.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
+                targetObject = ref("${dc.fullName}DomainClass")
+                bean.lazyInit = true
+                targetMethod = "getClazz"
+            }
+            "${dc.fullName}Validator"(GrailsDomainClassValidator) { bean ->
+                messageSource = ref("messageSource")
+                bean.lazyInit = true
+                domainClass = ref("${dc.fullName}DomainClass")
+                grailsApplication = ref("grailsApplication", true)
+            }
         }
     }
 
-    public static getDefaultConstraints(ConfigObject config) {
+    static getDefaultConstraints(ConfigObject config) {
         ConstraintEvalUtils.getDefaultConstraints(config)
     }
 
-    static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
+    static final Map PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
     def doWithDynamicMethods = { ApplicationContext ctx->
         enhanceDomainClasses(application, ctx)
@@ -110,37 +116,42 @@ class DomainClassGrailsPlugin {
         } catch (e) {
             // restricted environment, ignore
         }
-        if (cls instanceof Class) {
-            final domainClass = application.addArtefact(DomainClassArtefactHandler.TYPE, cls)
-            if (!domainClass.abstract) {
-                def beans = beans {
-                    "${domainClass.fullName}"(domainClass.clazz) { bean ->
-                        bean.singleton = false
-                        bean.autowire = "byName"
-                    }
-                    "${domainClass.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
-                        targetObject = ref("grailsApplication", true)
-                        targetMethod = "getArtefact"
-                        bean.lazyInit = true
-                        arguments = [DomainClassArtefactHandler.TYPE, domainClass.fullName]
-                    }
-                    "${domainClass.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
-                        targetObject = ref("${domainClass.fullName}DomainClass")
-                        bean.lazyInit = true
-                        targetMethod = "getClazz"
-                    }
-                    "${domainClass.fullName}Validator"(GrailsDomainClassValidator) { bean ->
-                        messageSource = ref("messageSource")
-                        bean.lazyInit = true
-                        domainClass = ref("${domainClass.fullName}DomainClass")
-                        grailsApplication = ref("grailsApplication", true)
-                    }
-                }
-                beans.registerBeans(event.ctx)
-                enhanceDomainClasses(event.application, event.ctx)
-                event.application.refreshConstraints()
+
+        if (!(cls instanceof Class)) {
+            return
+        }
+
+        final domainClass = application.addArtefact(DomainClassArtefactHandler.TYPE, cls)
+        if (domainClass.abstract) {
+            return
+        }
+
+        def beans = beans {
+            "${domainClass.fullName}"(domainClass.clazz) { bean ->
+                bean.singleton = false
+                bean.autowire = "byName"
+            }
+            "${domainClass.fullName}DomainClass"(MethodInvokingFactoryBean) { bean ->
+                targetObject = ref("grailsApplication", true)
+                targetMethod = "getArtefact"
+                bean.lazyInit = true
+                arguments = [DomainClassArtefactHandler.TYPE, domainClass.fullName]
+            }
+            "${domainClass.fullName}PersistentClass"(MethodInvokingFactoryBean) { bean ->
+                targetObject = ref("${domainClass.fullName}DomainClass")
+                bean.lazyInit = true
+                targetMethod = "getClazz"
+            }
+            "${domainClass.fullName}Validator"(GrailsDomainClassValidator) { bean ->
+                messageSource = ref("messageSource")
+                bean.lazyInit = true
+                domainClass = ref("${domainClass.fullName}DomainClass")
+                grailsApplication = ref("grailsApplication", true)
             }
         }
+        beans.registerBeans(event.ctx)
+        enhanceDomainClasses(event.application, event.ctx)
+        event.application.refreshConstraints()
     }
 
     def onConfigChange = { event ->
@@ -191,7 +202,7 @@ class DomainClassGrailsPlugin {
             else {
                 if (!domainClass.abstract) {
                     Validator validator = ctx.getBean("${domainClass.fullName}Validator", Validator)
-                    def gormValidationApi = null
+                    def gormValidationApi
                     metaClass.static.currentGormValidationApi = {->
                         // lazy initialize this, since in all likelihood this method will be overriden by the hibernate plugin
                         if (gormValidationApi == null) {
@@ -270,7 +281,7 @@ class DomainClassGrailsPlugin {
      * Registers the constraints property for the given MetaClass and domainClass instance
      */
     static void registerConstraintsProperty(MetaClass metaClass, GrailsDomainClass domainClass) {
-        metaClass.'static'.getConstraints = { -> domainClass.constrainedProperties }
+        metaClass.static.getConstraints = { -> domainClass.constrainedProperties }
 
         metaClass.getConstraints = {-> domainClass.constrainedProperties }
     }
@@ -286,7 +297,7 @@ class DomainClassGrailsPlugin {
         obj
     }
 
-    public static addRelationshipManagementMethods(GrailsDomainClass dc, ApplicationContext ctx) {
+    static addRelationshipManagementMethods(GrailsDomainClass dc, ApplicationContext ctx) {
         def metaClass = dc.metaClass
         for (p in dc.persistentProperties) {
             def prop = p

@@ -15,6 +15,11 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
+import grails.util.Environment
+import grails.util.GrailsUtil
+
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastructureAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
@@ -33,7 +38,6 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.beans.factory.support.DefaultListableBeanFactory
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader
 import org.springframework.core.io.Resource
-import grails.util.*
 
 /**
  * Configures the core shared beans within the Grails application context.

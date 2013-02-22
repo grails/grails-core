@@ -15,8 +15,9 @@
  */
 package org.codehaus.groovy.grails.validation
 
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import grails.util.ClosureToMapPopulator
+
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 
 /**
  * Utility methods for configuring constraints
@@ -38,13 +39,13 @@ class ConstraintEvalUtils {
     /**
      * Looks up the default configured constraints from the given configuration
      */
-    public static Map<String, Object> getDefaultConstraints(ConfigObject config) {
+    static Map<String, Object> getDefaultConstraints(ConfigObject config) {
         def cid = System.identityHashCode(config)
         if (defaultConstraintsMap == null || configId != cid) {
             configId = cid
             def constraints = config?.grails?.gorm?.default?.constraints
             if (constraints instanceof Closure) {
-                defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints);
+                defaultConstraintsMap = new ClosureToMapPopulator().populate((Closure<?>) constraints)
             }
             else {
                 defaultConstraintsMap = Collections.emptyMap()
@@ -53,7 +54,7 @@ class ConstraintEvalUtils {
         return defaultConstraintsMap
     }
 
-    public static void clearDefaultConstraints() {
+    static void clearDefaultConstraints() {
         defaultConstraintsMap =  null
         configId = null
     }

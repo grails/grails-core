@@ -21,8 +21,6 @@ import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
-import java.util.List;
-
 /**
  * An AST transform used to apply a named artefact type
  *
@@ -30,7 +28,8 @@ import java.util.List;
  * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
-public class NamedArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation{
+public class NamedArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation {
+
     String artefactType;
 
     public NamedArtefactTypeAstTransformation(String artefactType) {
@@ -38,10 +37,8 @@ public class NamedArtefactTypeAstTransformation extends AbstractArtefactTypeAstT
     }
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
-        List<ClassNode> classes = source.getAST().getClasses();
-        for (ClassNode aClass : classes) {
-
-            performInjectionOnArtefactType(source, aClass, artefactType);
+        for (ClassNode node : source.getAST().getClasses()) {
+            performInjectionOnArtefactType(source, node, artefactType);
         }
     }
 }

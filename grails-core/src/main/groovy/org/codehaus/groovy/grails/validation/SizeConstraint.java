@@ -70,7 +70,6 @@ public class SizeConstraint extends AbstractConstraint {
         return ConstrainedProperty.SIZE_CONSTRAINT;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void processValidate(Object target, Object propertyValue, Errors errors) {
         Object[] args = { constraintPropertyName, constraintOwningClass, propertyValue,

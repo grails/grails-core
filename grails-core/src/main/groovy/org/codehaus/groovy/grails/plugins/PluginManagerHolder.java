@@ -29,7 +29,7 @@ public abstract class PluginManagerHolder {
      * @deprecated
      */
     @Deprecated
-    public static void setInCreation(@SuppressWarnings("unused") boolean inCreation) {
+    public static void setInCreation(boolean inCreation) {
     }
 
     /**

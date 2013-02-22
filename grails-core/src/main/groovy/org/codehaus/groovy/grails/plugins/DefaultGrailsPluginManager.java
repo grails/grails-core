@@ -399,7 +399,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         return grailsUserPlugins;
     }
 
-
     private boolean isGrailsPlugin(Class<?> pluginClass) {
         return pluginClass != null && pluginClass.getName().endsWith(GRAILS_PLUGIN_SUFFIX);
     }

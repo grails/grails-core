@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.documentation
 
-import grails.util.Metadata
-
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 /**
@@ -25,7 +23,6 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
  * @since 1.2
  */
 class DocumentationContext {
-
 
     static DocumentationContext getInstance() {
         new DocumentationContext()

@@ -61,7 +61,6 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
                     MY_TYPE_NAME + " not allowed for interfaces.");
         }
 
-
         Expression value = node.getMember("value");
 
         if (value != null && (value instanceof ConstantExpression)) {
@@ -72,9 +71,7 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
         else {
             throw new RuntimeException("Class ["+cName+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
         }
-
     }
-
 
     public static List<ClassInjector> findInjectors(String artefactType, ClassInjector[] classInjectors) {
         List<ClassInjector> injectors = new ArrayList<ClassInjector>();

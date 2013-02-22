@@ -37,16 +37,9 @@ public class Log4jConfigListener implements ServletContextListener {
 
     public void contextInitialized(ServletContextEvent event) {
         try {
-//            Object grailsApplication = GrailsWebUtil.lookupApplication(event.getServletContext());
-
-//            ConfigObject co = grailsApplication != null ? getConfig(grailsApplication) : null;
-//            if (co == null) {
-                // in this case we're running inside a WAR deployed environment
-                // create empty app to provide metadata
-                Object grailsApplication = createGrailsApplication(Thread.currentThread().getContextClassLoader());
-                ConfigObject co = getConfig(grailsApplication);
-                Log4jConfig.initialize(co);
-//            }
+            Object grailsApplication = createGrailsApplication(Thread.currentThread().getContextClassLoader());
+            ConfigObject co = getConfig(grailsApplication);
+            Log4jConfig.initialize(co);
         }
         catch (Throwable e) {
             LogLog.error("Error initializing log4j: " + e.getMessage(), e);

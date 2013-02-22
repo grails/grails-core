@@ -63,7 +63,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
         logMessageFormat(TRACE, format, arg1, arg2);
     }
 
-    public void trace(String format, Object[] argArray) {
+    public void trace(String format, Object... argArray) {
         logMessageFormat(TRACE, format, argArray);
     }
 
@@ -87,7 +87,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
         logMessageFormat(DEBUG, format, arg1, arg2);
     }
 
-    public void debug(String format, Object[] argArray) {
+    public void debug(String format, Object... argArray) {
         logMessageFormat(DEBUG, format, argArray);
     }
 
@@ -111,7 +111,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
         logMessageFormat(INFO, format, arg1, arg2);
     }
 
-    public void info(String format, Object[] argArray) {
+    public void info(String format, Object... argArray) {
         logMessageFormat(INFO, format, argArray);
     }
 
@@ -131,7 +131,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
         logMessageFormat(WARN, format, arg);
     }
 
-    public void warn(String format, Object[] argArray) {
+    public void warn(String format, Object... argArray) {
         logMessageFormat(WARN, format, argArray);
     }
 
@@ -159,7 +159,7 @@ public class GrailsLog4jLoggerAdapter extends MarkerIgnoringBase {
         logMessageFormat(ERROR, format, arg1, arg2);
     }
 
-    public void error(String format, Object[] argArray) {
+    public void error(String format, Object... argArray) {
         logMessageFormat(ERROR, format, argArray);
     }
 

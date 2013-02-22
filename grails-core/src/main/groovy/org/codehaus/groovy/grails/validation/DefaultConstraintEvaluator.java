@@ -175,7 +175,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         }
     }
 
-    protected boolean canPropertyBeConstrained(@SuppressWarnings("unused") GrailsDomainClassProperty property) {
+    protected boolean canPropertyBeConstrained(GrailsDomainClassProperty property) {
         return true;
     }
 
@@ -229,7 +229,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
 
     @SuppressWarnings("unchecked")
     protected void applyDefaultConstraints(String propertyName, GrailsDomainClassProperty p,
-            ConstrainedProperty cp, @SuppressWarnings("hiding") Map<String, Object> defaultConstraints) {
+            ConstrainedProperty cp, Map<String, Object> defaultConstraints) {
 
         if (defaultConstraints != null && !defaultConstraints.isEmpty()) {
             if (defaultConstraints.containsKey("*")) {
@@ -246,8 +246,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         }
     }
 
-    protected void applyDefaultNullableConstraint(@SuppressWarnings("unused") GrailsDomainClassProperty p,
-            ConstrainedProperty cp) {
+    protected void applyDefaultNullableConstraint(GrailsDomainClassProperty p, ConstrainedProperty cp) {
         applyDefaultNullableConstraint(cp);
     }
 

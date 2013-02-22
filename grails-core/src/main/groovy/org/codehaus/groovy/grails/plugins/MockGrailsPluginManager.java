@@ -27,7 +27,6 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
@@ -60,7 +59,7 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
         return plugins.get(name);
     }
 
-    public GrailsPlugin getGrailsPlugin(String name, @SuppressWarnings("unused") BigDecimal version) {
+    public GrailsPlugin getGrailsPlugin(String name, BigDecimal version) {
         return plugins.get(name);
     }
 

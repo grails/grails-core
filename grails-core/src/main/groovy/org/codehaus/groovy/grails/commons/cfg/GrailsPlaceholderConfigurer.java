@@ -38,7 +38,7 @@ public class GrailsPlaceholderConfigurer extends PropertyPlaceholderConfigurer {
 
     @Override
     protected void loadProperties(Properties props) throws IOException {
-        ConfigObject config =   grailsApplication.getConfig();
+        ConfigObject config = grailsApplication.getConfig();
         if (config != null) {
             props.putAll(config.toProperties());
         }

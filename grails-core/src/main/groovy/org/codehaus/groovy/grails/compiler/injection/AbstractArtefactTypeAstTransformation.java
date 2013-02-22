@@ -16,31 +16,30 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.build.logging.GrailsConsole;
+
+import java.util.List;
+
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
-import java.util.List;
-
 /**
- *
- * Base implementation for the artefact type transformation
+ * Base implementation for the artefact type transformation.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public abstract class AbstractArtefactTypeAstTransformation implements ASTTransformation {
+
     protected void performInjectionOnArtefactType(SourceUnit sourceUnit, ClassNode cNode, String artefactType) {
         try {
-            ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
-            List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(artefactType, classInjectors);
-            if (!injectors.isEmpty()) {
-                for (ClassInjector injector : injectors) {
-                    injector.performInjection(sourceUnit,cNode);
-                }
+            List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(
+                    artefactType, GrailsAwareInjectionOperation.getClassInjectors());
+            for (ClassInjector injector : injectors) {
+                injector.performInjection(sourceUnit, cNode);
             }
         } catch (RuntimeException e) {
             GrailsConsole.getInstance().error("Error occurred calling AST injector: " + e.getMessage(), e);

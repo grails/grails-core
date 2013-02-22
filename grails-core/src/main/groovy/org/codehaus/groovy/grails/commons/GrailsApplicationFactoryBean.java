@@ -129,7 +129,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
      * @param resourceLoader
      */
     @Deprecated
-    public void setGrailsResourceLoader(@SuppressWarnings("unused") GrailsResourceLoader resourceLoader) {
+    public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {
         // do nothing
     }
 

@@ -37,7 +37,15 @@ import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -608,7 +616,6 @@ public class GrailsASTUtils {
         return isDomainClass;
     }
 
-
     public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
         addDelegateInstanceMethods(classNode, classNode,delegateNode, delegateInstance);
     }
@@ -620,12 +627,10 @@ public class GrailsASTUtils {
 
                 if (isConstructorMethod(declaredMethod)) {
                     addDelegateConstructor(classNode, declaredMethod);
-
                 }
                 else if (isCandidateInstanceMethod(supportedSuperType, declaredMethod)) {
                     addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod);
                 }
-
             }
             delegateNode = delegateNode.getSuperClass();
         }
@@ -639,7 +644,7 @@ public class GrailsASTUtils {
         return null;
     }
 
-    public static void addAnnotationIfNecessary(ClassNode classNode, @SuppressWarnings("unused") Class<Entity> entityClass) {
+    public static void addAnnotationIfNecessary(ClassNode classNode, Class<Entity> entityClass) {
         List<AnnotationNode> annotations = classNode.getAnnotations();
         ClassNode annotationClassNode = new ClassNode(Entity.class);
         AnnotationNode annotationToAdd = new AnnotationNode(annotationClassNode);
@@ -782,7 +787,6 @@ public class GrailsASTUtils {
         }
         return results;
     }
-
 
     /**
      * Returns a map containing the names and types of the given association type. eg. GrailsDomainClassProperty.HAS_MANY

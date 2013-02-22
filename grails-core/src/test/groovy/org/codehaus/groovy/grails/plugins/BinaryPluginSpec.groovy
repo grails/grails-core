@@ -3,6 +3,7 @@ package org.codehaus.groovy.grails.plugins
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+
 import spock.lang.Specification
 
 class BinaryPluginSpec extends Specification {
@@ -44,7 +45,6 @@ class BinaryPluginSpec extends Specification {
 
             def xml = new XmlSlurper().parseText(str)
 
-
         when:
             def resource = new MockBinaryPluginResource(str.bytes)
             def descriptor = new BinaryGrailsPluginDescriptor(resource, xml)
@@ -68,8 +68,6 @@ foo.bar=one
         then:
             viewClass != null
             viewClass == MyView
-
-
     }
 
     def "Test load static resource from binary plugin"() {
@@ -84,7 +82,6 @@ foo.bar=one
     '''
 
             def xml = new XmlSlurper().parseText(str)
-
 
         when:
             def resource = new MockBinaryPluginResource(str.bytes)
@@ -102,9 +99,11 @@ foo.bar=one
             cssResource == null
     }
 }
+
 class TestBinaryGrailsPlugin {
     def version = 1.0
 }
+
 class TestBinaryResource {}
 
 class MockBinaryPluginResource extends ByteArrayResource {
@@ -119,13 +118,11 @@ class MockBinaryPluginResource extends ByteArrayResource {
     Resource createRelative(String relativePath) {
         return relativesResources[relativePath]
     }
-
-
 }
+
 class MyView extends Script {
     @Override
     Object run() {
         return "Good"
     }
-
 }

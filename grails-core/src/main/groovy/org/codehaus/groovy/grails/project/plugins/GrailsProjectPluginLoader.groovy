@@ -72,8 +72,9 @@ class GrailsProjectPluginLoader extends BaseSettingsApi {
             }
 
             profile("loading plugins") {
-                if(buildEventListener != null)
+                if (buildEventListener != null) {
                     buildEventListener.triggerEvent("PluginLoadStart", pluginManager)
+                }
                 pluginManager.loadPlugins()
                 Holders.setPluginManager(pluginManager)
                 def baseDescriptor = pluginSettings.basePluginDescriptor
@@ -86,8 +87,9 @@ class GrailsProjectPluginLoader extends BaseSettingsApi {
                 }
                 if (pluginManager.failedLoadPlugins) {
                     List<String> pluginNames = pluginManager.failedLoadPlugins.collect { GrailsPlugin plugin -> plugin.getName() }
-                    if(buildEventListener != null)
+                    if (buildEventListener != null) {
                         buildEventListener.triggerEvent("StatusError", "Error: The following plugins failed to load due to missing dependencies: ${pluginNames}")
+                    }
                     for (GrailsPlugin p in pluginManager.failedLoadPlugins) {
                         println "- Plugin: ${p.getName()}"
                         println "   - Dependencies:"
@@ -104,9 +106,9 @@ class GrailsProjectPluginLoader extends BaseSettingsApi {
                 pluginManager.doArtefactConfiguration()
                 grailsApplication.initialise()
 
-                if(buildEventListener != null)
+                if (buildEventListener != null) {
                     buildEventListener.triggerEvent("PluginLoadEnd", [pluginManager])
-
+                }
             }
             return pluginManager
         }
