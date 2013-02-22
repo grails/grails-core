@@ -37,7 +37,7 @@ class ValidationSupport {
                 ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
             }
 
-            def messageSource = ctx?.messageSource
+            def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
             def localErrors = new ValidationErrors(object, object.class.name)
             def originalErrors = object.errors
             for (originalError in originalErrors.allErrors) {
