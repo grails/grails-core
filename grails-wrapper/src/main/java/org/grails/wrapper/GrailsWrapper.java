@@ -18,7 +18,6 @@ package org.grails.wrapper;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,7 +39,7 @@ import java.util.zip.ZipFile;
  * @since 2.1
  */
 public class GrailsWrapper {
-    
+
     public static void main(final String[] args) throws Exception{
         final ResourceBundle applicationBundle = ResourceBundle.getBundle("application");
         final ResourceBundle wrapperBundle = ResourceBundle.getBundle("grails-wrapper");
@@ -56,9 +55,9 @@ public class GrailsWrapper {
         addSystemProperties(wrapperBundle);
 
         final File grailsHome = configureGrailsInstallation(distUrl, grailsVersion);
-        
+
         System.setProperty("grails.home", grailsHome.getAbsolutePath());
-        
+
         final List<String> newArgsList = new ArrayList<String>();
         for(int i = 0; i < args.length; i++) {
             final String arg = args[i];
@@ -74,7 +73,7 @@ public class GrailsWrapper {
                 newArgsList.add(arg);
             }
         }
-        
+
         final String[] newArgsArray = newArgsList.toArray(new String[0]);
         final URL[] urls = new URL[2];
         urls[0] = new File(grailsHome, "dist/grails-bootstrap-" + grailsVersion + ".jar").toURI().toURL();
@@ -90,7 +89,7 @@ public class GrailsWrapper {
         final URLClassLoader urlClassLoader = new URLClassLoader(urls);
         final Class<?> loadClass = urlClassLoader.loadClass("org.codehaus.groovy.grails.cli.support.GrailsStarter");
         final Method mainMethod = loadClass.getMethod("main", String[].class);
-        
+
         mainMethod.invoke(null, new Object[]{newArgsArray});
     }
 
@@ -111,7 +110,7 @@ public class GrailsWrapper {
                 return findGroovyAllJar(file);
             }
             final String fileName = file.getName();
-            if(fileName.matches("groovy-all-(\\d+)(\\.\\d+)*\\.jar")) {
+            if (fileName.matches("groovy-all-(\\d+)(\\.\\d+)*\\.jar")) {
                 return file;
             }
         }
@@ -119,7 +118,6 @@ public class GrailsWrapper {
     }
 
     /**
-     * 
      * @param distUrl URL to directory where the distribution zip is found
      * @param grailsVersion version of Grails to configure
      * @return a File pointing to the directory where this version of Grails is configured
@@ -128,7 +126,7 @@ public class GrailsWrapper {
             final String grailsVersion) throws Exception {
         final String src = distUrl + "grails-" + grailsVersion + ".zip";
         final URI uri = new URI(src);
-        
+
         final File grailsCacheDir =  new File(System.getProperty("user.home") + "/.grails/");
         final File wrapperDir = new File(grailsCacheDir, "wrapper");
         final File downloadFile = new File(wrapperDir, "grails-" + grailsVersion + "-download.zip");
@@ -140,7 +138,7 @@ public class GrailsWrapper {
         final File grailsHome = new File(installDir, "grails-" + grailsVersion);
         return grailsHome;
     }
-    
+
     public static void extract(final File zip, final File dest) throws IOException {
         System.out.println("Extracting " + zip.getAbsolutePath() + " to " + dest.getAbsolutePath());
         Enumeration<?> entries;

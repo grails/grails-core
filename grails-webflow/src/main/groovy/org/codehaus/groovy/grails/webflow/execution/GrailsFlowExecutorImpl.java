@@ -89,7 +89,7 @@ public class GrailsFlowExecutorImpl extends FlowExecutorImpl{
         }
     }
 
-    private boolean isNotValidFlowDefinitionId(@SuppressWarnings("unused") FlowExecution flowExecution,
+    private boolean isNotValidFlowDefinitionId(FlowExecution flowExecution,
             GrailsWebRequest webRequest) {
         final FlowDefinitionLocator locator = getDefinitionLocator();
         final String requestPath = webRequest.getControllerName() + "/" + webRequest.getActionName();

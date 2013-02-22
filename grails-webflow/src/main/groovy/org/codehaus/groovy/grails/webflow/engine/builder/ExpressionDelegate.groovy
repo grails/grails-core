@@ -14,7 +14,7 @@
  */
 package org.codehaus.groovy.grails.webflow.engine.builder
 
-import org.springframework.webflow.execution.RequestContext;
+import org.springframework.webflow.execution.RequestContext
 
 /**
  * Used for evaluating PropertyExpression instances

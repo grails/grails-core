@@ -18,20 +18,17 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.commons.GrailsClassUtils as GCU
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
-import org.codehaus.groovy.grails.validation.Validateable
 import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport
 import org.springframework.context.ApplicationContext
-import org.springframework.core.type.filter.AnnotationTypeFilter
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 
 class ValidationGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
-    def dependsOn = [:]
     def loadAfter = ['hibernate', 'controllers']
 
     static final ThreadLocal PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()

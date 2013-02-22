@@ -21,29 +21,27 @@ import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.validation.FieldError
 import org.springframework.web.context.support.WebApplicationContextUtils
 
-
 class ValidationSupport {
 
-    static validateInstance(object, List fieldsToValidate = null) {
+    static boolean validateInstance(object, List fieldsToValidate = null) {
         if (!object.hasProperty('constraints')) {
             return true
         }
 
         def constraints = object.constraints
-
         if (constraints) {
-            def ctx = null
+            def ctx
 
             def sch = ServletContextHolder.servletContext
             if (sch) {
                 ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
             }
 
-            def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
+            def messageSource = ctx?.messageSource
             def localErrors = new ValidationErrors(object, object.class.name)
             def originalErrors = object.errors
             for (originalError in originalErrors.allErrors) {
-                if(originalError instanceof FieldError) {
+                if (originalError instanceof FieldError) {
                     if (originalErrors.getFieldError(originalError.field)?.bindingFailure) {
                         localErrors.rejectValue originalError.field, originalError.code, originalError.arguments, originalError.defaultMessage
                     }

@@ -51,7 +51,7 @@ class PdfBuilder {
         createPdf xml, outputFile, guideDir
     }
 
-    public static String createXml(File htmlFile, String base) {
+    static String createXml(File htmlFile, String base) {
         String xml = htmlFile.text
 
         // fix inner anchors
@@ -64,7 +64,7 @@ class PdfBuilder {
         xml
     }
 
-    public static void createPdf(String xml, File outputFile, File urlBase) {
+    static void createPdf(String xml, File outputFile, File urlBase) {
         def dbf = DocumentBuilderFactory.newInstance()
         dbf.validating = false
         dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd", false

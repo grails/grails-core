@@ -14,8 +14,8 @@
  */
 package grails.doc.filters
 
-import org.radeox.regex.MatchResult
 import org.radeox.filter.context.FilterContext
+import org.radeox.regex.MatchResult
 
 /**
  * @author Graeme Rocher
@@ -24,7 +24,7 @@ import org.radeox.filter.context.FilterContext
 class ListFilter extends org.radeox.filter.ListFilter {
 
     void handleMatch(StringBuffer buffer, MatchResult result, FilterContext context) {
-        super.handleMatch(buffer, result, context);
+        super.handleMatch(buffer, result, context)
         buffer << "\n\n"
     }
 }

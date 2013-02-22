@@ -5,7 +5,7 @@ import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.validation.Validateable
 import org.springframework.context.support.StaticMessageSource
 
-public class ValidationGrailsPluginTests extends GroovyTestCase {
+class ValidationGrailsPluginTests extends GroovyTestCase {
 
     protected void tearDown() {
         super.tearDown()

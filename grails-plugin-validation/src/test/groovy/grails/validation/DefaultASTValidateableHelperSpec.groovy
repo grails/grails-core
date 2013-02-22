@@ -1,10 +1,6 @@
-package grails.validation;
+package grails.validation
 
 import static org.junit.Assert.*
-
-import java.net.URL
-
-import javax.servlet.ServletContext
 
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
@@ -16,13 +12,12 @@ import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.mock.web.MockServletContext
-import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.context.WebApplicationContext
 
 import spock.lang.Specification
 
 /**
  * Tests relevant to grails.validation.Validateable
- *
  */
 class DefaultASTValidateableHelperSpec extends Specification {
 
@@ -31,19 +26,14 @@ class DefaultASTValidateableHelperSpec extends Specification {
     def setupSpec() {
         def gcl = new GrailsAwareClassLoader()
         def transformer = new ClassInjector() {
-                    @Override
-                    void performInjection(SourceUnit source, ClassNode classNode) {
-                        performInject(source, null, classNode)
-                    }
-                    @Override
-                    void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-                        new DefaultASTValidateableHelper().injectValidateableCode(classNode)
-                    }
-                    @Override
-                    boolean shouldInject(URL url) {
-                        return true;
-                    }
-                }
+            void performInjection(SourceUnit source, ClassNode classNode) {
+                performInject(source, null, classNode)
+            }
+            void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+                new DefaultASTValidateableHelper().injectValidateableCode(classNode)
+            }
+            boolean shouldInject(URL url) { true }
+        }
         gcl.classInjectors = [transformer]as ClassInjector[]
         widgetClass = gcl.parseClass('''
         class Widget {

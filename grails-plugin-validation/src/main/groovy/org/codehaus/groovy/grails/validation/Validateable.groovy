@@ -19,7 +19,7 @@ import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 
-import org.codehaus.groovy.transform.GroovyASTTransformationClass;
+import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
 /**
  * @deprecated Use {@link grails.validation.Validateable} instead.
