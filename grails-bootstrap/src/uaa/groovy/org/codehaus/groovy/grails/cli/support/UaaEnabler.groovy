@@ -13,26 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.cli.support;
+package org.codehaus.groovy.grails.cli.support
 
-import grails.build.logging.GrailsConsole;
-import grails.util.BuildSettings;
+import grails.build.logging.GrailsConsole
+import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode;
-import groovy.util.XmlSlurper;
+import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
+
+import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.resolve.DependencyManager
-import org.codehaus.groovy.tools.LoaderConfiguration;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.Exception;
-import java.net.URL;
-import java.util.List;
-
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
+import org.codehaus.groovy.tools.LoaderConfiguration
 
 /**
  * Integrates UAA usage tracking with Grails.
@@ -40,7 +32,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
  * @author Graeme Rocher
  * @since 2.0
  */
-public class UaaEnabler {
+class UaaEnabler {
 
     private static final String MESSAGE = """##########################################################.
 Grails would like to send information to VMware domains to improve your experience. We include anonymous usage information as part of these downloads.
@@ -55,8 +47,8 @@ To consent to the Terms of Use, please enter 'Y'. Enter 'N' to indicate your do 
 ##########################################################.
 Enter Y or N:"""
 
-    private static boolean enabled = false;
-    public static final int ONE_MINUTE = 1800;
+    private static boolean enabled = false
+    public static final int ONE_MINUTE = 1800
     GroovyClassLoader classLoader
     BuildSettings buildSettings
     PluginBuildSettings pluginBuildSettings
@@ -80,20 +72,20 @@ Enter Y or N:"""
         }
     }
 
-    public boolean isAvailable() {
+    boolean isAvailable() {
         try {
-            return  classLoader.loadClass("org.springframework.uaa.client.UaaServiceFactory") != null;
+            return  classLoader.loadClass("org.springframework.uaa.client.UaaServiceFactory") != null
         } catch (Throwable e) {
-            return false;
+            return false
         }
     }
 
-    public static boolean isEnabled() {
-        return enabled;
+    static boolean isEnabled() {
+        return enabled
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    public void enable(boolean interactive) {
+    void enable(boolean interactive) {
         def VersionHelper = classLoader.loadClass("org.springframework.uaa.client.VersionHelper")
         def UaaClient = classLoader.loadClass("org.springframework.uaa.client.protobuf.UaaClient")
         final uaaService = classLoader.loadClass("org.springframework.uaa.client.UaaServiceFactory").getUaaService()
@@ -103,59 +95,55 @@ Enter Y or N:"""
             // prompt for UAA choice
             if (privacyLevel.equals(UaaClient.Privacy.PrivacyLevel.UNDECIDED_TOU)) {
                 while (true) {
-                    GrailsConsole console = GrailsConsole.getInstance();
-                    String selection = console.userInput(MESSAGE, ["y", "n"] as String[]);
+                    GrailsConsole console = GrailsConsole.getInstance()
+                    String selection = console.userInput(MESSAGE, ["y", "n"] as String[])
                     if ("y".equalsIgnoreCase(selection)) {
-                        uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.ENABLE_UAA);
-                        break;
+                        uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.ENABLE_UAA)
+                        break
                     }
                     else if ("n".equalsIgnoreCase(selection)) {
-                        uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.DECLINE_TOU);
-                        break;
+                        uaaService.setPrivacyLevel(UaaClient.Privacy.PrivacyLevel.DECLINE_TOU)
+                        break
                     }
-
                 }
             }
         }
 
         if (isUaaAccepted(privacyLevel)) {
             Runnable r = new Runnable() {
-                public void run() {
+                void run() {
                     try {
-                        Thread.sleep(ONE_MINUTE);
-                        final product = VersionHelper.getProduct("Grails", buildSettings.getGrailsVersion());
+                        Thread.sleep(ONE_MINUTE)
+                        final product = VersionHelper.getProduct("Grails", buildSettings.getGrailsVersion())
                         uaaService.registerProductUsage(product)
 
-
-                        URL centralURL = new URL(DependencyManager.GRAILS_CENTRAL_PLUGIN_LIST);
-
-                        InputStream input = null;
-
+                        URL centralURL = new URL(DependencyManager.GRAILS_CENTRAL_PLUGIN_LIST)
+                        InputStream input
 
                         try {
-                            input = centralURL.openStream();
-                            final GPathResult pluginList = new XmlSlurper().parse(input);
+                            input = centralURL.openStream()
+                            final GPathResult pluginList = new XmlSlurper().parse(input)
 
-                            final GrailsPluginInfo[] pluginInfos = pluginBuildSettings.getPluginInfos(pluginBuildSettings.getPluginDirPath());
+                            final GrailsPluginInfo[] pluginInfos = pluginBuildSettings.getPluginInfos(pluginBuildSettings.getPluginDirPath())
                             for (GrailsPluginInfo pluginInfo : pluginInfos) {
-                                boolean registerUsage = false;
+                                boolean registerUsage = false
 
                                 if (buildSettings.getDefaultPluginSet().contains(pluginInfo.getName())) {
-                                    registerUsage = true;
+                                    registerUsage = true
                                 }
                                 else {
-                                    final Object plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName());
+                                    final Object plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName())
                                     if (plugin != null) {
-                                        registerUsage = true;
+                                        registerUsage = true
                                     }
                                 }
                                 if (registerUsage) {
-                                    uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()));
+                                    uaaService.registerFeatureUsage(product, VersionHelper.getFeatureUse(pluginInfo.getName(), pluginInfo.getVersion()))
                                 }
                             }
                         } finally {
                             try {
-                                if(input != null) input.close();
+                                if (input != null) input.close()
                             } catch (IOException e) {
                                 // ignore
                             }
@@ -164,16 +152,16 @@ Enter Y or N:"""
                         // ignore, don't bother the user
                     }
                 }
-            };
+            }
 
-            new Thread(r).start();
-            enabled = true;
+            new Thread(r).start()
+            enabled = true
         }
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
     private static boolean isUaaAccepted(privacyLevel) {
         return privacyLevel.equals(privacyLevel.ENABLE_UAA) ||
-            privacyLevel.equals(privacyLevel.LIMITED_DATA);
+            privacyLevel.equals(privacyLevel.LIMITED_DATA)
     }
 }

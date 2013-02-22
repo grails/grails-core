@@ -1,6 +1,6 @@
 package grails.util
 
-import org.codehaus.groovy.grails.cli.support.GrailsStarter;
+import org.codehaus.groovy.grails.cli.support.GrailsStarter
 
 // First check for a system property called "grails.home". If that
 // exists, we use its value as the location of Grails. Otherwise, we

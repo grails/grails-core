@@ -695,7 +695,7 @@ public abstract class AbstractIvyDependencyManager {
         }
 
         String org = descriptor.getDependencyId().getOrganisation();
-        if(!pluginDep && !"org.grails".equals(org) && !"org.springframework.uaa".equals(org)) {
+        if (!pluginDep && !"org.grails".equals(org) && !"org.springframework.uaa".equals(org)) {
             mappings = new ArrayList<String>(mappings);
 
             if (includeJavadoc) {
@@ -731,7 +731,6 @@ public abstract class AbstractIvyDependencyManager {
         //
         //    http://jira.codehaus.org/browse/GRAILS-6270
         //
-        @SuppressWarnings("hiding")
         DefaultModuleDescriptor moduleDescriptor =
             DefaultModuleDescriptor.newDefaultInstance(ModuleRevisionId.newInstance(
                     "org.grails.internal", applicationName, applicationVersion));

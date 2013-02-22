@@ -14,20 +14,20 @@
  */
 package org.codehaus.groovy.grails.resolve.reporting
 
+import static org.fusesource.jansi.Ansi.Color.*
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.resolve.Dependency
+
 import org.fusesource.jansi.Ansi
-import static org.fusesource.jansi.Ansi.Color.*
 
 /**
- * A graph renderer that outputs a dependency graph to system out or the given writer
+ * A graph renderer that outputs a dependency graph to system out or the given writer.
  *
  * @since 2.3
  * @author Graeme Rocher
  */
 @CompileStatic
-class SimpleGraphRenderer implements DependencyGraphRenderer{
+class SimpleGraphRenderer implements DependencyGraphRenderer {
     private static final GrailsConsole CONSOLE = GrailsConsole.getInstance()
     private static final String TOP_LEVEL_PREFIX = "+--- "
     private static final String UNRESOLVED_PREFIX = ">>>> "
@@ -48,13 +48,13 @@ class SimpleGraphRenderer implements DependencyGraphRenderer{
         def pw = new PrintWriter(writer)
 
         pw.println()
-        if(ansiEnabled && CONSOLE.isAnsiEnabled()) {
+        if (ansiEnabled && CONSOLE.isAnsiEnabled()) {
             pw.println(new Ansi().a(Ansi.Attribute.INTENSITY_BOLD).fg(GREEN).a(scope).fg(YELLOW).a(" - $description".toString()).fg(DEFAULT).a(Ansi.Attribute.INTENSITY_BOLD_OFF))
         }
         else {
-            pw.println("$scope - $description");
+            pw.println("$scope - $description")
         }
-        for(child in root.children) {
+        for (child in root.children) {
             renderGraph(child,pw, 0)
         }
         if (ansiEnabled) {
@@ -78,14 +78,14 @@ class SimpleGraphRenderer implements DependencyGraphRenderer{
             }
 
             if (depth>1) {
-                for(num in 1..(depth-1)) {
+                for (num in 1..(depth-1)) {
                     writer.print(PADDING)
                 }
             }
 
             writeDependency(writer, TRANSITIVE_PREFIX, current)
         }
-        for(child in current.children) {
+        for (child in current.children) {
             renderGraph(child, writer,depth + 1)
         }
     }

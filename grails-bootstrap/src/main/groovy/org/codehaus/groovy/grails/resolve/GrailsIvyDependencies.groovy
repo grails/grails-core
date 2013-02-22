@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.resolve
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.apache.ivy.core.module.id.ModuleRevisionId
 import org.codehaus.groovy.grails.resolve.config.DependencyConfigurationConfigurer
 import org.codehaus.groovy.grails.resolve.config.JarDependenciesConfigurer
@@ -26,6 +27,7 @@ import org.codehaus.groovy.grails.resolve.config.RepositoriesConfigurer
  */
 @CompileStatic
 class GrailsIvyDependencies extends GrailsCoreDependencies {
+
     GrailsIvyDependencies(String grailsVersion) {
         super(grailsVersion)
     }
@@ -45,8 +47,8 @@ class GrailsIvyDependencies extends GrailsCoreDependencies {
 
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, Collection<Dependency> dependencies, boolean transitive) {
         for (Dependency d : dependencies) {
-            EnhancedDefaultDependencyDescriptor dd = registerDependency(dependencyManager, scope, ModuleRevisionId.newInstance(d.getGroup(), d.getName(), d.getVersion()), d.getExcludeArray());
-            dd.setTransitive(transitive);
+            EnhancedDefaultDependencyDescriptor dd = registerDependency(dependencyManager, scope, ModuleRevisionId.newInstance(d.getGroup(), d.getName(), d.getVersion()), d.getExcludeArray())
+            dd.setTransitive(transitive)
         }
     }
 
@@ -56,23 +58,22 @@ class GrailsIvyDependencies extends GrailsCoreDependencies {
         }
     }
 
-
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, String... excludes) {
         for (ModuleRevisionId mrid : dependencies) {
-            registerDependency(dependencyManager, scope, mrid, excludes);
+            registerDependency(dependencyManager, scope, mrid, excludes)
         }
     }
 
     private static EnhancedDefaultDependencyDescriptor registerDependency(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId mrid, String... excludes) {
-        EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, true, scope);
-        descriptor.setInherited(true);
+        EnhancedDefaultDependencyDescriptor descriptor = new EnhancedDefaultDependencyDescriptor(mrid, false, true, scope)
+        descriptor.setInherited(true)
         if (excludes != null) {
             for (String exclude : excludes) {
-                descriptor.exclude(exclude);
+                descriptor.exclude(exclude)
             }
         }
-        dependencyManager.registerDependency(scope, descriptor);
-        return descriptor;
+        dependencyManager.registerDependency(scope, descriptor)
+        return descriptor
     }
 
     /**
@@ -82,49 +83,47 @@ class GrailsIvyDependencies extends GrailsCoreDependencies {
      * This method is used internally and should not be called in user code.
      */
     @CompileStatic(TypeCheckingMode.SKIP)
-    public Closure createDeclaration() {
+    Closure createDeclaration() {
         return  {
-                def rootDelegate = (DependencyConfigurationConfigurer)getDelegate()
+            def rootDelegate = (DependencyConfigurationConfigurer)getDelegate()
 
-                rootDelegate.log "warn"
+            rootDelegate.log "warn"
 
-                // Repositories
-                rootDelegate.repositories  {
-                        def repositoriesDelegate = (RepositoriesConfigurer)getDelegate();
+            // Repositories
+            rootDelegate.repositories  {
+                def repositoriesDelegate = (RepositoriesConfigurer)getDelegate()
 
-                        repositoriesDelegate.grailsPlugins()
-                        repositoriesDelegate.grailsHome()
-                }
-                // Dependencies
+                repositoriesDelegate.grailsPlugins()
+                repositoriesDelegate.grailsHome()
+            }
+            // Dependencies
 
-                rootDelegate.dependencies{
-                        JarDependenciesConfigurer dependenciesDelegate = (JarDependenciesConfigurer)getDelegate();
-                        def dependencyManager = dependenciesDelegate.getDependencyManager()
+            rootDelegate.dependencies{
+                JarDependenciesConfigurer dependenciesDelegate = (JarDependenciesConfigurer)getDelegate()
+                def dependencyManager = dependenciesDelegate.getDependencyManager()
 
-                        boolean defaultDependenciesProvided = dependencyManager.getDefaultDependenciesProvided()
-                        String compileTimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "compile"
-                        String runtimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "runtime";
+                boolean defaultDependenciesProvided = dependencyManager.getDefaultDependenciesProvided()
+                String compileTimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "compile"
+                String runtimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "runtime"
 
-                        // dependencies needed by the Grails build system
-                        GrailsIvyDependencies.registerDependencies(dependencyManager, "build", buildDependencies)
+                // dependencies needed by the Grails build system
+                GrailsIvyDependencies.registerDependencies(dependencyManager, "build", buildDependencies)
 
-                        // dependencies needed when creating docs
-                        GrailsIvyDependencies.registerDependencies(dependencyManager, "docs", docDependencies)
+                // dependencies needed when creating docs
+                GrailsIvyDependencies.registerDependencies(dependencyManager, "docs", docDependencies)
 
-                        // dependencies needed during development, but not for deployment
-                        GrailsIvyDependencies.registerDependencies(dependencyManager, "provided", providedDependencies)
+                // dependencies needed during development, but not for deployment
+                GrailsIvyDependencies.registerDependencies(dependencyManager, "provided", providedDependencies)
 
-                        // dependencies needed at compile time
-                        GrailsIvyDependencies.registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies)
+                // dependencies needed at compile time
+                GrailsIvyDependencies.registerDependencies(dependencyManager, compileTimeDependenciesMethod, compileDependencies)
 
-                        // dependencies needed for running tests
-                        GrailsIvyDependencies.registerDependencies(dependencyManager, "test", testDependencies)
+                // dependencies needed for running tests
+                GrailsIvyDependencies.registerDependencies(dependencyManager, "test", testDependencies)
 
-                        // dependencies needed at runtime only
-                        GrailsIvyDependencies.registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies)
-                }
-
+                // dependencies needed at runtime only
+                GrailsIvyDependencies.registerDependencies(dependencyManager, runtimeDependenciesMethod, runtimeDependencies)
+            }
         }
     }
-
 }

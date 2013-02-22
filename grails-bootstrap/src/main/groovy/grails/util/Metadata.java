@@ -158,7 +158,6 @@ public class Metadata extends Properties {
         return m;
     }
 
-
     /**
      * Loads and returns a new Metadata object for the given File.
      * @param file The File

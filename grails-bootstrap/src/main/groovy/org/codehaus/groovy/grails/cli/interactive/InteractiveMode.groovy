@@ -126,7 +126,7 @@ class InteractiveMode {
                     }
                     else if ("quit".equals(trimmed)) {
                         quit()
-                    } else if('stop-app'.equals(trimmed)) {
+                    } else if ('stop-app'.equals(trimmed)) {
                         stopApp()
                     } else if ("exit".equals(trimmed)) {
                         exit()
@@ -207,7 +207,7 @@ class InteractiveMode {
     }
 
     protected void stopApp() {
-        if(settings.forkSettings?.get('run')) {
+        if (settings.forkSettings?.get('run')) {
             parseAndExecute 'stop-app'
         } else if (grailsServer) {
             try {
@@ -223,7 +223,7 @@ class InteractiveMode {
     }
 
     protected void exit(boolean shouldStopApp = false) {
-        if(shouldStopApp) {
+        if (shouldStopApp) {
             stopApp()
         }
         goodbye()

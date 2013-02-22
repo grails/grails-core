@@ -15,7 +15,12 @@
  */
 package org.codehaus.groovy.grails.cli.support;
 
-import groovy.lang.*;
+import groovy.lang.ExpandoMetaClass;
+import groovy.lang.GroovySystem;
+import groovy.lang.MetaClass;
+import groovy.lang.MetaClassRegistry;
+import groovy.lang.MetaClassRegistryChangeEvent;
+import groovy.lang.MetaClassRegistryChangeEventListener;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -41,7 +46,6 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
     private static final Object NO_CUSTOM_METACLASS = new Object();
     private static boolean cleaning;
     private static final MetaClassRegistryCleaner INSTANCE = new MetaClassRegistryCleaner();
-
 
     private MetaClassRegistryCleaner() {
     }

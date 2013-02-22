@@ -25,7 +25,7 @@ import groovy.transform.ToString
  */
 @Canonical
 @ToString
-public class ResolvedArtifactReport {
+class ResolvedArtifactReport {
 
     ResolvedArtifactReport(Dependency dependency, File file) {
         this.dependency = dependency
@@ -41,5 +41,4 @@ public class ResolvedArtifactReport {
      * @return The file for this dependency
      */
     File file
-
 }

@@ -60,16 +60,16 @@ public class PluginPathDiscoverySupport {
         List<File> jars = new ArrayList<File>();
         List<File> pluginDirs = listKnownPluginDirs();
         for (File pluginDir : pluginDirs) {
-            if(pluginDir.exists()) {
+            if (pluginDir.exists()) {
                 File libDir = new File(pluginDir, "lib");
-                if(libDir.exists()) {
+                if (libDir.exists()) {
                     File[] files = libDir.listFiles(new FilenameFilter() {
                         public boolean accept(File file, String s) {
                             return s.endsWith(".jar");
                         }
                     });
 
-                    if(files != null && files.length > 0) {
+                    if (files != null && files.length > 0) {
                         jars.addAll(Arrays.asList(files));
                     }
                 }
@@ -77,6 +77,7 @@ public class PluginPathDiscoverySupport {
         }
         return jars;
     }
+
     /**
      * Gets the name of a plugin based on its directory. The method
      * basically finds the plugin descriptor and uses the name of the

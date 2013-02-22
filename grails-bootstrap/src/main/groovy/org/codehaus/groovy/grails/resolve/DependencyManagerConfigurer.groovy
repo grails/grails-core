@@ -6,6 +6,7 @@ import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.apache.ivy.plugins.repository.TransferEvent
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.util.DefaultMessageLogger
@@ -13,7 +14,6 @@ import org.apache.ivy.util.Message
 import org.codehaus.groovy.tools.LoaderConfiguration
 
 /**
- *
  * Configures the Ivy dependency manager for usage within Grails
  *
  * @author Graeme Rocher
@@ -58,7 +58,7 @@ class DependencyManagerConfigurer {
         def lc = new LoaderConfiguration()
         lc.setRequireMain(false)
         System.setProperty("grails.home", grailsHome.canonicalPath)
-        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn");
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "warn")
         new File(grailsHome, "conf/aether-starter.conf").withInputStream { InputStream it ->
             lc.configure(it)
         }
@@ -90,7 +90,6 @@ class DependencyManagerConfigurer {
         if (dependencyConfig instanceof Closure) {
             aetherDependencyManager.parseDependencies(dependencyConfig)
         }
-
     }
 
     DependencyManager configureIvy(BuildSettings buildSettings) {
@@ -117,7 +116,6 @@ class DependencyManagerConfigurer {
 
         def grailsConfig = config.grails
 
-
         setCacheDir(grailsConfig, dependencyManager)
 
         if (!buildSettings.dependenciesExternallyConfigured) {
@@ -141,7 +139,7 @@ class DependencyManagerConfigurer {
     }
 
 //    @CompileStatic
-    public static IvyDependencyManager createIvyDependencyManager(BuildSettings buildSettings) {
+    static IvyDependencyManager createIvyDependencyManager(BuildSettings buildSettings) {
         Message.setDefaultLogger new DefaultMessageLogger(Message.MSG_WARN)
 
         Metadata metadata = Metadata.getCurrent()
@@ -160,7 +158,7 @@ class DependencyManagerConfigurer {
             dependencyConfig = grailsConfig.global.dependency.resolution
             dependencyManager.inheritsAll = true
         }
-        if(dependencyConfig instanceof Closure) {
+        if (dependencyConfig instanceof Closure) {
             return dependencyConfig
         }
     }

@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.io.support.Resource
  * A completor for the create-scaffold-controller command
  */
 class CreateScaffoldController extends ClassNameCompletor {
+
     @Override
     String getCommandName() { "create-scaffold-controller" }
 
@@ -30,6 +31,4 @@ class CreateScaffoldController extends ClassNameCompletor {
     boolean shouldInclude(Resource res) {
         GrailsResourceUtils.isDomainClass(res.getURL())
     }
-
-
 }

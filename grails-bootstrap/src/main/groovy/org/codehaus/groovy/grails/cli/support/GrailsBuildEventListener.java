@@ -19,17 +19,26 @@ import grails.build.logging.GrailsConsole;
 import grails.util.BuildSettings;
 import grails.util.GrailsNameUtils;
 import grails.util.PluginBuildSettings;
-import groovy.lang.*;
+import groovy.lang.Binding;
+import groovy.lang.Closure;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.MissingPropertyException;
+import groovy.lang.Script;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.tools.ant.BuildEvent;
 import org.apache.tools.ant.BuildListener;
 import org.codehaus.groovy.grails.io.support.Resource;
 import org.codehaus.groovy.runtime.StackTraceUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * @author Graeme Rocher
@@ -68,7 +77,7 @@ public class GrailsBuildEventListener implements BuildListener {
         this.globalEventHooks = globalEventHooks;
     }
 
-    protected void loadEventHooks(@SuppressWarnings("hiding") BuildSettings buildSettings) {
+    protected void loadEventHooks(BuildSettings buildSettings) {
         if (buildSettings == null) {
             return;
         }
@@ -172,7 +181,7 @@ public class GrailsBuildEventListener implements BuildListener {
      * @deprecated Use #triggerEvent instead
      */
     @Deprecated
-    public void event(String eventName, List arguments) {
+    public void event(String eventName, @SuppressWarnings("rawtypes") List arguments) {
         triggerEvent(eventName, arguments.toArray());
     }
 
@@ -206,7 +215,7 @@ public class GrailsBuildEventListener implements BuildListener {
             for (Closure handler : handlers) {
                 handler.setDelegate(binding);
                 try {
-                    if(handler.getParameterTypes().length == 0) {
+                    if (handler.getParameterTypes().length == 0) {
                         handler.call();
                     }
                     else {

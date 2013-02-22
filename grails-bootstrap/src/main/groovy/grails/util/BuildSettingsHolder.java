@@ -34,7 +34,7 @@ public final class BuildSettingsHolder {
         try {
             // test if classpath has been initialized already
             Class.forName("org.springframework.core.io.Resource");
-            if(settings != null) {
+            if (settings != null) {
                 GrailsPluginUtils.getPluginBuildSettings(settings);
             } else {
                 GrailsPluginUtils.setPluginBuildSettings(null);

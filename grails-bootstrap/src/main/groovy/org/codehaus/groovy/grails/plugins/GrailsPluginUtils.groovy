@@ -14,10 +14,11 @@
  */
 package org.codehaus.groovy.grails.plugins
 
-import grails.util.BuildSettings;
+import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.PluginBuildSettings
 import groovy.util.slurpersupport.GPathResult
+
 import org.codehaus.groovy.grails.io.support.Resource
 
 /**
@@ -312,4 +313,3 @@ class GrailsPluginUtils {
         INSTANCE = null
     }
 }
-

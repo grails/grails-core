@@ -21,7 +21,6 @@ package org.codehaus.groovy.grails.resolve.reporting
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface DependencyGraphRenderer {
-
+interface DependencyGraphRenderer {
     void render(GraphNode root)
 }

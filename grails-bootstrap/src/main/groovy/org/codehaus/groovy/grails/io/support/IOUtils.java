@@ -46,8 +46,10 @@ import java.util.Map;
  * @author Juergen Hoeller
  * @since 06.10.2003
  */
+@SuppressWarnings("unchecked")
 public class IOUtils {
 
+    @SuppressWarnings("rawtypes")
     private static Map algorithms = new HashMap();
     static {
         algorithms.put("md5", "MD5");
@@ -80,9 +82,9 @@ public class IOUtils {
             ch = (byte) (ch >>> 4); // shift the bits down
             ch = (byte) (ch & 0x0F); // must do this is high order bit is on!
 
-            out.append(CHARS[(int) ch]); // convert the nibble to a String Character
+            out.append(CHARS[ch]); // convert the nibble to a String Character
             ch = (byte) (in[i] & 0x0F); // Strip off low nibble
-            out.append(CHARS[(int) ch]); // convert the nibble to a String Character
+            out.append(CHARS[ch]); // convert the nibble to a String Character
         }
         //CheckStyle:MagicNumber ON
 
@@ -189,7 +191,6 @@ public class IOUtils {
 
         return copyToByteArray(new BufferedInputStream(new FileInputStream(in)));
     }
-
 
     //---------------------------------------------------------------------
     // Copy methods for java.io.InputStream / java.io.OutputStream

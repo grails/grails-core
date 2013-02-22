@@ -41,7 +41,6 @@ public class AntPathMatcher {
 
     private String pathSeparator = DEFAULT_PATH_SEPARATOR;
 
-
     /** Set the path separator to use for pattern parsing. Default is "/", as in Ant. */
     public void setPathSeparator(String pathSeparator) {
         this.pathSeparator = pathSeparator == null ? DEFAULT_PATH_SEPARATOR : pathSeparator;
@@ -354,7 +353,6 @@ public class AntPathMatcher {
     public Comparator<String> getPatternComparator(String path) {
         return new AntPatternComparator(path);
     }
-
 
     private static class AntPatternComparator implements Comparator<String> {
 

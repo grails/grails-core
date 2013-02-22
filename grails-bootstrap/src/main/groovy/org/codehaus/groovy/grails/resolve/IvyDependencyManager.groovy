@@ -19,12 +19,16 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
+
+import java.util.concurrent.ConcurrentLinkedQueue
+
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Artifact
 import org.apache.ivy.core.module.descriptor.Configuration
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.module.descriptor.ExcludeRule
 import org.apache.ivy.core.module.id.ModuleRevisionId
+import org.apache.ivy.core.report.*
 import org.apache.ivy.core.resolve.IvyNode
 import org.apache.ivy.core.resolve.ResolveEngine
 import org.apache.ivy.core.resolve.ResolveOptions
@@ -33,12 +37,7 @@ import org.apache.ivy.core.sort.SortEngine
 import org.apache.ivy.plugins.repository.TransferListener
 import org.codehaus.groovy.grails.plugins.VersionComparator
 import org.codehaus.groovy.grails.resolve.ivy.IvyGraphNode
-import org.codehaus.groovy.grails.resolve.reporting.DependencyGraphRenderer
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
-
-import java.util.concurrent.ConcurrentLinkedQueue
-
-import org.apache.ivy.core.report.*
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -85,7 +84,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     GPathResult downloadPluginList(File localFile) {
         DependencyManagerUtils.downloadPluginList(localFile)
     }
-/**
+
+    /**
      * Resets the Grails plugin resolver if it is used
      */
     void resetGrailsPluginsResolver() {
@@ -430,7 +430,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     @CompileStatic
-    public Set<Dependency> convertToGrailsDependencies(Set<DependencyDescriptor> descriptors) {
+    Set<Dependency> convertToGrailsDependencies(Set<DependencyDescriptor> descriptors) {
         Set<Dependency> dependencies = []
         for (DependencyDescriptor dd in descriptors) {
             final drid = dd.dependencyRevisionId

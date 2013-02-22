@@ -14,11 +14,11 @@
  */
 package org.codehaus.groovy.grails.resolve;
 
-import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+
+import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 
 /**
  * Encapsulates information about the core dependencies of Grails.
@@ -47,7 +47,6 @@ public class GrailsCoreDependencies {
     protected Collection<Dependency> runtimeDependencies;
     protected Collection<Dependency> testDependencies;
 
-
     public GrailsCoreDependencies(String grailsVersion) {
         this(grailsVersion, "2.5", false);
     }
@@ -67,7 +66,6 @@ public class GrailsCoreDependencies {
             new Dependency("org.grails", "grails-scripts", grailsVersion, true )
         );
 
-
         docDependencies = Arrays.asList(
             new Dependency("org.grails", "grails-docs", grailsVersion, true),
             new Dependency("com.lowagie","itext", "2.0.8", true)
@@ -79,7 +77,6 @@ public class GrailsCoreDependencies {
             new Dependency("org.apache.tomcat.embed", "tomcat-embed-jasper", tomcatVersion, true),
             new Dependency("org.apache.tomcat.embed", "tomcat-embed-logging-log4j", tomcatVersion, true)
         );
-
 
         compileDependencies = Arrays.asList(
             new Dependency("org.codehaus.groovy", "groovy-all", groovyVersion, true),
@@ -104,7 +101,6 @@ public class GrailsCoreDependencies {
             compileDependencies.add(  new Dependency("org.grails", "grails-plugin-async", grailsVersion, true) );
         }
 
-
         testDependencies = Arrays.asList(
             new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
             new Dependency("org.grails", "grails-test", grailsVersion, true)
@@ -119,10 +115,9 @@ public class GrailsCoreDependencies {
 
         );
 
-        if(java5compatible) {
+        if (java5compatible) {
             runtimeDependencies.add(new Dependency("javax.xml", "jaxb-api", jaxbVersion, true) );
         }
-
     }
 
     public void setJava5compatible(boolean java5compatible) {

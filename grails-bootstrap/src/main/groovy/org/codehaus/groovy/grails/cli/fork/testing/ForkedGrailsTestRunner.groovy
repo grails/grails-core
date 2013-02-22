@@ -20,11 +20,11 @@ import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.grails.cli.fork.ExecutionContext
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProjectClassExecutor
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
@@ -72,7 +72,6 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
             GrailsConsole.getInstance().error("Error running forked test-app: " + e.getMessage(), e)
             System.exit(1)
         }
-
     }
 
     @Override

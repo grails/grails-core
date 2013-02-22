@@ -15,18 +15,18 @@
 package org.codehaus.groovy.grails.resolve
 
 import groovy.transform.CompileStatic
+
 import org.apache.ivy.core.report.ArtifactDownloadReport
 import org.apache.ivy.core.report.ResolveReport
 
 /**
- *
- * A {@link DependencyReport} implementation for Ivy
+ * A {@link DependencyReport} implementation for Ivy.
  *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
-class IvyDependencyReport implements DependencyReport{
+class IvyDependencyReport implements DependencyReport {
 
     ResolveReport resolveReport
     List<File> jarFiles = []

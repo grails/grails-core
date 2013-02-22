@@ -31,10 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.ivy.core.report.ResolveReport;
 import org.codehaus.groovy.grails.resolve.DependencyReport;
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager;
-import org.codehaus.groovy.grails.resolve.ResolveException;
 
 /**
  * Support class that configures the Grails classpath when executing command line scripts.
@@ -70,7 +67,6 @@ public class ClasspathConfigurer {
                 existingJars.add(url.getFile());
             }
 
-
             URL[] urls = getClassLoaderUrls(settings, new File(settings.getProjectWorkDir(), "scriptCache"), existingJars, skipPlugins);
             addUrlsToRootLoader(settings.getRootLoader(), urls);
 
@@ -88,9 +84,8 @@ public class ClasspathConfigurer {
      * Creates a new root loader with the Grails libraries and the
      * application's plugin libraries on the classpath.
      */
-    protected URL[] getClassLoaderUrls(@SuppressWarnings("hiding") BuildSettings settings,
-                                       File cacheDir, Set<String> excludes,
-                                       @SuppressWarnings("hiding") boolean skipPlugins) throws MalformedURLException {
+    protected URL[] getClassLoaderUrls(BuildSettings settings, File cacheDir, Set<String> excludes,
+                                       boolean skipPlugins) throws MalformedURLException {
         List<URL> urls = new ArrayList<URL>();
 
         // If 'grailsHome' is set, make sure the script cache directory takes precedence
@@ -123,12 +118,10 @@ public class ClasspathConfigurer {
         // will be required for the build to work.
         addDependenciesToURLs(excludes, urls, settings.getTestDependencies());
 
-
         // Important, we call these so they're properly initialized!
         settings.getRuntimeDependencies();
 
         settings.getCompileDependencies();
-
 
         // Add the libraries of both project and global plugins.
         if (!skipPlugins) {
@@ -161,7 +154,7 @@ public class ClasspathConfigurer {
         return urls.toArray(new URL[urls.size()]);
     }
 
-    private void handleResolveError(@SuppressWarnings("hiding") BuildSettings settings, DependencyReport buildResolveReport) {
+    private void handleResolveError(BuildSettings settings, DependencyReport buildResolveReport) {
         cleanResolveCache(settings);
         GrailsConsole grailsConsole = GrailsConsole.getInstance();
         grailsConsole.error(buildResolveReport.getResolveError().getMessage());
@@ -199,13 +192,13 @@ public class ClasspathConfigurer {
             }
 
 
-            if(file.getName().contains("xercesImpl")) {
+            if (file.getName().contains("xercesImpl")) {
                 // workaround for GRAILS-9708
                 System.setProperty("javax.xml.parsers.DocumentBuilderFactory","com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
             }
             if (excludes != null && !excludes.contains(file.getName())) {
                 URL url = file.toURI().toURL();
-                if(urls.contains(url)) continue;
+                if (urls.contains(url)) continue;
 
                 urls.add(url);
                 excludes.add(file.getName());
@@ -220,8 +213,7 @@ public class ClasspathConfigurer {
      * @param urls      The list of URLs to add the plugin JARs to.
      * @param settings
      */
-    protected void addPluginLibs(File pluginDir, List<URL> urls,
-                                 @SuppressWarnings("hiding") BuildSettings settings) throws MalformedURLException {
+    protected void addPluginLibs(File pluginDir, List<URL> urls, BuildSettings settings) throws MalformedURLException {
         if (!pluginDir.exists()) return;
 
         // otherwise just add them

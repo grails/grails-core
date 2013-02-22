@@ -123,14 +123,14 @@ class PluginInstallEngineSpec extends Specification {
         return descriptor
     }
 
-    public void cleanup() {
+    void cleanup() {
         metaClassRegistry.removeMetaClass IvyDependencyManager
         metaClassRegistry.removeMetaClass Metadata
     }
 
     private class MetadataStorage {
 
-        private def metadata = [:]
+        private metadata = [:]
 
         MetadataStorage(map = [:]) {
             putAll(map)

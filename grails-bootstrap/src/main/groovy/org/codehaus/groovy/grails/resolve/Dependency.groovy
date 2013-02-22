@@ -13,6 +13,7 @@ import groovy.transform.CompileStatic
 class Dependency {
 
     public static final String WILDCARD = "*"
+
     String group
     String name
     String version
@@ -24,7 +25,7 @@ class Dependency {
         this.group = group
         this.name = name
         this.version = version
-        for(e in exc) {
+        for (e in exc) {
             exclude(e)
         }
     }
@@ -34,7 +35,7 @@ class Dependency {
         this.name = name
         this.version = version
         this.inherited = inherited
-        for(e in exc) {
+        for (e in exc) {
             exclude(e)
         }
     }

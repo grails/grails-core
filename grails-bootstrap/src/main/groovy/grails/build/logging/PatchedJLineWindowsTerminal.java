@@ -1,14 +1,14 @@
 package grails.build.logging;
 
-import jline.ConsoleReader;
-import jline.Terminal;
-import jline.WindowsTerminal;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import jline.ConsoleReader;
+import jline.Terminal;
+import jline.WindowsTerminal;
 
 public final class PatchedJLineWindowsTerminal extends WindowsTerminal {
     private static final int ENABLE_PROCESSED_INPUT = 1;
@@ -16,7 +16,6 @@ public final class PatchedJLineWindowsTerminal extends WindowsTerminal {
     private final ConsoleReader reader;
 
     public PatchedJLineWindowsTerminal(ConsoleReader reader) {
-        super();
         this.reader = reader;
     }
 
@@ -71,7 +70,7 @@ public final class PatchedJLineWindowsTerminal extends WindowsTerminal {
         });
     }
 
-    private Object invokePrivateMethod(Class clazz, Object o, String methodName, Object[] params) {
+    private Object invokePrivateMethod(Class<?> clazz, Object o, String methodName, Object[] params) {
         final Method methods[] = clazz.getDeclaredMethods();
         for (int i = 0; i < methods.length; ++i) {
             if (methodName.equals(methods[i].getName())) {
@@ -87,5 +86,4 @@ public final class PatchedJLineWindowsTerminal extends WindowsTerminal {
         }
         throw new RuntimeException("Method '" + methodName + "' not found");
     }
-
 }

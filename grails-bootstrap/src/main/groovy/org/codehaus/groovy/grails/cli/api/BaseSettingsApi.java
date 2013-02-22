@@ -28,12 +28,6 @@ import groovy.lang.MetaClass;
 import groovy.util.ConfigSlurper;
 import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-import org.codehaus.gant.GantBinding;
-import org.codehaus.groovy.grails.cli.ScriptExitException;
-import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
-import org.codehaus.groovy.grails.io.support.*;
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
-import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -49,6 +43,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+
+import org.codehaus.groovy.grails.cli.ScriptExitException;
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
+import org.codehaus.groovy.grails.io.support.ClassPathResource;
+import org.codehaus.groovy.grails.io.support.FileSystemResource;
+import org.codehaus.groovy.grails.io.support.IOUtils;
+import org.codehaus.groovy.grails.io.support.PathMatchingResourcePatternResolver;
+import org.codehaus.groovy.grails.io.support.Resource;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.runtime.MethodClosure;
 
 /**
  * Utility methods used on the command line.
@@ -265,7 +269,7 @@ public class BaseSettingsApi {
         return value != null ? value : defaultValue;
     }
 
-    public void updateMetadata(@SuppressWarnings("hiding") Metadata metadata, @SuppressWarnings("rawtypes") Map entries) {
+    public void updateMetadata(Metadata metadata, @SuppressWarnings("rawtypes") Map entries) {
         for (Object key : entries.keySet()) {
             final Object value = entries.get(key);
             if (value != null) {
@@ -281,8 +285,7 @@ public class BaseSettingsApi {
      * file. If it doesn't exist, the file is created.
      */
     public void updateMetadata(@SuppressWarnings("rawtypes") Map entries) {
-        @SuppressWarnings("hiding") Metadata metadata = Metadata.getCurrent();
-        updateMetadata(metadata, entries);
+        updateMetadata(Metadata.getCurrent(), entries);
     }
 
     /**
@@ -350,10 +353,10 @@ public class BaseSettingsApi {
     /**
      * Exits the build immediately with a given exit code.
      */
-   public void exit(int code) {
-       if (buildEventListener != null) {
-           buildEventListener.triggerEvent("Exiting", code);
-       }
+    public void exit(int code) {
+        if (buildEventListener != null) {
+            buildEventListener.triggerEvent("Exiting", code);
+        }
 
         // Prevent system.exit during unit/integration testing
         if (System.getProperty("grails.cli.testing") != null || System.getProperty("grails.disable.exit") != null) {
@@ -392,8 +395,6 @@ public class BaseSettingsApi {
         logError(message, t);
         exit(1);
     }
-
-
 
     public void makeApiAvailableToScripts(final Binding binding, final Object cla) {
         final Method[] declaredMethods = cla.getClass().getDeclaredMethods();

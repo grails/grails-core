@@ -64,7 +64,6 @@ import org.codehaus.groovy.grails.io.support.Resource;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
-
 /**
  * Handles Grails command line interface for running scripts.
  *
@@ -338,7 +337,6 @@ public class GrailsScriptRunner {
     }
 
     private int executeCommand(CommandLine commandLine, String scriptName, String env) {
-        @SuppressWarnings("hiding")
         GrailsConsole console = getConsole(commandLine);
 
         // Load the BuildSettings file for this project if it exists. Note
@@ -365,7 +363,6 @@ public class GrailsScriptRunner {
         // settings.setGrailsEnv(env);
         // settings.setDefaultEnv(useDefaultEnv);
 
-
         try {
             BuildSettingsHolder.setSettings(settings);
             return callPluginOrGrailsScript(commandLine, scriptName, env);
@@ -376,7 +373,7 @@ public class GrailsScriptRunner {
     }
 
     private GrailsConsole getConsole(CommandLine commandLine) {
-        @SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
+        GrailsConsole console = GrailsConsole.getInstance();
 
         // Set the console display properties
         console.setAnsiEnabled(!commandLine.hasOption(CommandLine.NOANSI_ARGUMENT));
@@ -724,7 +721,7 @@ public class GrailsScriptRunner {
     }
 
     private String askUserForBestMatch(String scriptName, List<String> topMatches) {
-        @SuppressWarnings("hiding") GrailsConsole console = GrailsConsole.getInstance();
+        GrailsConsole console = GrailsConsole.getInstance();
         console.addStatus("Script '" + scriptName + "' not found, did you mean:");
         int i = 0;
         for (String s : topMatches) {
@@ -835,11 +832,13 @@ public class GrailsScriptRunner {
      * underscore, '_') found in the given directory to the given list.
      */
     private static void addCommandScripts(File dir, List<File> scripts) {
-        if (dir.exists()) {
-            for (File file : dir.listFiles()) {
-                if (scriptFilePattern.matcher(file.getName()).matches()) {
-                    scripts.add(file);
-                }
+        if (!dir.exists()) {
+            return;
+        }
+
+        for (File file : dir.listFiles()) {
+            if (scriptFilePattern.matcher(file.getName()).matches()) {
+                scripts.add(file);
             }
         }
     }

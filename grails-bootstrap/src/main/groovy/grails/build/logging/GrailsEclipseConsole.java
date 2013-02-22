@@ -52,11 +52,11 @@ public class GrailsEclipseConsole extends GrailsConsole {
      * before creating an instance.
      */
     public GrailsEclipseConsole() throws IOException {
-    	super();
+        super();
     }
 
     @Override
-    protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
+    protected OutputStream ansiWrap(OutputStream out) {
         if (DEBUG) {
             try {
                 out.write(("<<<"+ECLIPSE_SUPPORTS_ANSI_PROP+":"+eclipseSupportsAnsi()+">>>\n").getBytes());

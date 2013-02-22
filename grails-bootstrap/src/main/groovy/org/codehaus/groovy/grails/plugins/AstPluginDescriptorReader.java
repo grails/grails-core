@@ -18,6 +18,13 @@ package org.codehaus.groovy.grails.plugins;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.MetaClass;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.PropertyNode;
@@ -33,12 +40,6 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.io.support.Resource;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Used to read plugin information from the AST.
@@ -111,7 +112,6 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
                         else {
                             value = expr.getText();
                         }
-
 
                         if (DefaultGroovyMethods.hasProperty(pluginInfo, name) != null) {
                             pluginInfoMetaClass.setProperty(pluginInfo,name, value);

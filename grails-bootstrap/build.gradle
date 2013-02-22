@@ -60,12 +60,12 @@ jar {
     from compileUaaGroovy.outputs.files
 }
 
-
 eclipse {
-	classpath {
-		plusConfigurations += configurations.uaa
-	}
+    classpath {
+        plusConfigurations += configurations.uaa
+    }
 }
+
 install.doLast {
     final aetherConf = new File("$rootProject.projectDir/conf/uaa-starter.conf")
     aetherConf.parentFile.mkdirs()

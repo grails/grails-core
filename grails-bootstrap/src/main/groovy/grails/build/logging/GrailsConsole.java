@@ -16,11 +16,27 @@
 
 package grails.build.logging;
 
+import static org.fusesource.jansi.Ansi.ansi;
+import static org.fusesource.jansi.Ansi.Color.DEFAULT;
+import static org.fusesource.jansi.Ansi.Color.RED;
+import static org.fusesource.jansi.Ansi.Color.YELLOW;
+import static org.fusesource.jansi.Ansi.Erase.FORWARD;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Stack;
+
 import jline.ConsoleReader;
 import jline.History;
 import jline.Terminal;
+
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.DemuxOutputStream;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream;
@@ -31,14 +47,6 @@ import org.codehaus.groovy.runtime.typehandling.NumberMath;
 import org.fusesource.jansi.Ansi;
 import org.fusesource.jansi.Ansi.Color;
 import org.fusesource.jansi.AnsiConsole;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.Stack;
-
-import static org.fusesource.jansi.Ansi.Color.*;
-import static org.fusesource.jansi.Ansi.Erase.FORWARD;
-import static org.fusesource.jansi.Ansi.ansi;
 
 /**
  * Utility class for delivering console output in a nicely formatted way.
@@ -206,27 +214,8 @@ public class GrailsConsole {
      * like they do not understand ansi, even if we were to implement support in Eclipse to'
      * handle it and the wrapped stream will not pass the ansi chars on to Eclipse).
      */
-    protected OutputStream ansiWrap(@SuppressWarnings("hiding") OutputStream out) {
+    protected OutputStream ansiWrap(OutputStream out) {
         return AnsiConsole.wrapOutputStream(out);
-    }
-
-    // hack to workaround JLine bug - see https://issues.apache.org/jira/browse/GERONIMO-3978 for source of fix
-    private void fixCtrlC() {
-        if (reader == null) {
-            return;
-        }
-
-        try {
-            Field f = ConsoleReader.class.getDeclaredField("keybindings");
-            f.setAccessible(true);
-            short[] keybindings = (short[])f.get(reader);
-            if (keybindings[3] == -48) {
-                keybindings[3] = 3;
-            }
-        }
-        catch (Exception ignored) {
-            // shouldn't happen
-        }
     }
 
     private boolean isWindows() {
@@ -236,16 +225,16 @@ public class GrailsConsole {
     public static synchronized GrailsConsole getInstance() {
         if (instance == null) {
             try {
-            	setInstance(createInstance());
+                setInstance(createInstance());
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
             }
         }
         return instance;
     }
-    
+
     public static void setInstance(GrailsConsole newConsole) {
-    	instance = newConsole;
+        instance = newConsole;
         if (!(System.out instanceof GrailsConsolePrintStream)) {
             System.setOut(new GrailsConsolePrintStream(instance.out));
         }
@@ -439,8 +428,6 @@ public class GrailsConsole {
         if (msg == null || msg.trim().length() == 0) return;
         try {
             if (isAnsiEnabled()) {
-
-
                 out.print(erasePreviousLine(CATEGORY_SEPARATOR));
                 lastStatus = outputCategory(ansi(), CATEGORY_SEPARATOR)
                         .fg(Color.DEFAULT).a(msg).reset();
@@ -635,7 +622,6 @@ public class GrailsConsole {
         }
     }
 
-
     /**
      * Synonym for #log
      *
@@ -809,7 +795,7 @@ public class GrailsConsole {
     }
 
     private Ansi erasePreviousLine(String categoryName) {
-        @SuppressWarnings("hiding") int cursorMove = this.cursorMove;
+        int cursorMove = this.cursorMove;
         if (userInputActive) cursorMove++;
         if (cursorMove > 0) {
             int moveLeftLength = categoryName.length() + lastMessage.length();
@@ -855,10 +841,10 @@ public class GrailsConsole {
 
     private void verifySystemOut() {
         // something bad may have overridden the system out
-        if(!(System.out instanceof GrailsConsolePrintStream)) {
+        if (!(System.out instanceof GrailsConsolePrintStream)) {
             System.setOut(new GrailsConsolePrintStream(originalSystemOut));
         }
-        if(!(System.err instanceof GrailsConsoleErrorPrintStream)) {
+        if (!(System.err instanceof GrailsConsoleErrorPrintStream)) {
             System.setErr(new GrailsConsoleErrorPrintStream(originalSystemErr));
         }
     }

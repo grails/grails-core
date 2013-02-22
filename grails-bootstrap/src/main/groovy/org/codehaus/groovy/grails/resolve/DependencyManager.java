@@ -16,10 +16,8 @@ package org.codehaus.groovy.grails.resolve;
 
 import grails.util.BuildSettings;
 import groovy.util.slurpersupport.GPathResult;
-import org.codehaus.groovy.grails.resolve.reporting.DependencyGraphRenderer;
 
 import java.io.File;
-import java.net.URL;
 import java.util.Collection;
 
 /**
@@ -63,7 +61,6 @@ public interface DependencyManager {
      * @return The copy
      */
     DependencyManager createCopy(BuildSettings buildSettings);
-
 
     /**
      * Resolve dependencies for the given scope

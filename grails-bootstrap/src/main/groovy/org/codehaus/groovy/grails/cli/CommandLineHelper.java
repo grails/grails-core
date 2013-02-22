@@ -37,7 +37,6 @@ public class CommandLineHelper {
     /**
      * @deprecated Use no-args constructor
      */
-    @SuppressWarnings("unused")
     @Deprecated
     public CommandLineHelper(PrintStream out) {
     }
@@ -45,7 +44,6 @@ public class CommandLineHelper {
     /**
      * @deprecated Use no-args constructor
      */
-    @SuppressWarnings("unused")
     @Deprecated
     public CommandLineHelper(InputStream input, PrintStream out) {
     }

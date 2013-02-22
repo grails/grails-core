@@ -28,7 +28,7 @@ class ForkedGrailsProcessConfig {
 
     ForkedGrailsProcessConfig(config) {
         if (config instanceof Map<String, Object>) {
-            this.forked = true
+            forked = true
             def map = (Map<String, Object>)config
 
             if (map.maxMemory) {
@@ -43,10 +43,9 @@ class ForkedGrailsProcessConfig {
             if (map.debug) {
                 debug = true
             }
-
         }
         else if (config) {
-            this.forked = true
+            forked = true
         }
     }
 

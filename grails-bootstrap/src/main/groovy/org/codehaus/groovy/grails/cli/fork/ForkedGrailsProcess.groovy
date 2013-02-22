@@ -22,12 +22,12 @@ import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
-import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport
 
 import java.lang.reflect.Method
 
 import org.apache.commons.logging.Log
+import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
+import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport
 
 /**
  * Helper class for kicking off forked JVM processes, helpful in managing the setup and
@@ -42,7 +42,7 @@ abstract class ForkedGrailsProcess {
     int minMemory = 64
     int maxPerm = 256
     boolean debug = false
-	String debugArgs = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005";
+    String debugArgs = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
     boolean reloading = true
     boolean forkReserve
     File reloadingAgent
@@ -116,7 +116,7 @@ abstract class ForkedGrailsProcess {
         try {
             Thread.sleep(idleTime * 60 * 1000) // convert minutes to ms
         } catch (e) {
-            return;
+            return
         }
 
         def lockDir = new File(executionContext.projectWorkDir, "process-lock")
@@ -136,7 +136,6 @@ abstract class ForkedGrailsProcess {
         idleKiller.daemon = true
         idleKiller.start()
     }
-
 
     @CompileStatic
     Process fork(Map argsMap = new LinkedHashMap()) {
@@ -173,10 +172,9 @@ abstract class ForkedGrailsProcess {
 
             return attachOutputListener(process)
         }
-
     }
 
-    public void forkReserve(ExecutionContext executionContext = getExecutionContext()) {
+    void forkReserve(ExecutionContext executionContext = getExecutionContext()) {
         String classpathString = getBoostrapClasspath(executionContext)
         List<String> cmd = buildProcessCommand(executionContext, classpathString, true)
 
@@ -223,7 +221,6 @@ abstract class ForkedGrailsProcess {
 
                 throw new RuntimeException("Forked Grails VM exited with error")
             }
-
         }
         if (async) {
             Thread.start callable
@@ -250,7 +247,7 @@ abstract class ForkedGrailsProcess {
         File tempFile = storeExecutionContext(executionContext)
 
         List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
-		if (debug && !isReserve) {
+        if (debug && !isReserve) {
             cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", debugArgs])
         }
         final console = GrailsConsole.getInstance()
@@ -304,7 +301,7 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    public static List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
+    static List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         List<File> buildDependencies = []
 
         File groovyJar = buildSettings.compileDependencies.find { File f -> f.name.contains "groovy-all" }
@@ -362,14 +359,14 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    public static File findJarFile(Class targetClass) {
+    static File findJarFile(Class targetClass) {
         def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class").getPath()
         final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
         new File(jarPath)
     }
 
     @CompileStatic
-    public static Collection<File> findTomcatJars(BuildSettings buildSettings) {
+    static Collection<File> findTomcatJars(BuildSettings buildSettings) {
         return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") && !it.name.contains("grails-plugin-tomcat") } +
             buildSettings.providedDependencies.findAll { File it -> it.name.contains("tomcat") && !it.name.contains("grails-plugin-tomcat") }
     }
@@ -378,10 +375,10 @@ abstract class ForkedGrailsProcess {
     protected GroovyClassLoader createClassLoader(BuildSettings buildSettings) {
         def classLoader = new GroovyClassLoader()
 
-        for(File f in buildSettings.runtimeDependencies) {
+        for (File f in buildSettings.runtimeDependencies) {
             classLoader.addURL(f.toURI().toURL())
         }
-        for(File f in buildSettings.providedDependencies) {
+        for (File f in buildSettings.providedDependencies) {
             classLoader.addURL(f.toURI().toURL())
         }
         classLoader.addURL(buildSettings.classesDir.toURI().toURL())
@@ -389,10 +386,9 @@ abstract class ForkedGrailsProcess {
         classLoader.addURL(buildSettings.pluginBuildClassesDir.toURI().toURL())
         classLoader.addURL(buildSettings.pluginProvidedClassesDir.toURI().toURL())
 
-
         def pluginSupport = new PluginPathDiscoverySupport(buildSettings)
 
-        for(File f in pluginSupport.listJarsInPluginLibs()) {
+        for (File f in pluginSupport.listJarsInPluginLibs()) {
             classLoader.addURL(f.toURI().toURL())
         }
 

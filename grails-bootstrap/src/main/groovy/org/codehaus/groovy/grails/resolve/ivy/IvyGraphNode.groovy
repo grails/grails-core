@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.resolve.ivy
 
 import groovy.transform.CompileStatic
+
 import org.apache.ivy.core.module.id.ModuleRevisionId
 import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.core.resolve.IvyNode
@@ -22,31 +23,33 @@ import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.reporting.GraphNode
 
 /**
- * Adapts an Ivy graph into a Grails one
+ * Adapts an Ivy graph into a Grails one.
  *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
-class IvyGraphNode extends GraphNode{
+class IvyGraphNode extends GraphNode {
+
     IvyGraphNode(ResolveReport report) {
         super(new Dependency("org.grails.internal", "root", "1.0")) // version numbers not relevant for root node / dummy object
         createGraph(this, report.getDependencies(), report.getConfigurations())
     }
+
     void createGraph(GraphNode current, Collection<IvyNode> nodes, String[] confs) {
-        for(IvyNode node in nodes) {
-            if (node.isLoaded()) {
-
-                final ModuleRevisionId id = node.id
-                def graphNode = new GraphNode(new Dependency(id.organisation, id.name, id.revision))
-                current.children << graphNode
-
-                final Collection<IvyNode> dependencies = node.getDependencies(confs[0], confs)
-                if (dependencies) {
-                    createGraph(graphNode, dependencies, confs)
-                }
+        for (IvyNode node in nodes) {
+            if (!node.isLoaded()) {
+                continue
             }
 
+            final ModuleRevisionId id = node.id
+            def graphNode = new GraphNode(new Dependency(id.organisation, id.name, id.revision))
+            current.children << graphNode
+
+            final Collection<IvyNode> dependencies = node.getDependencies(confs[0], confs)
+            if (dependencies) {
+                createGraph(graphNode, dependencies, confs)
+            }
         }
     }
 }

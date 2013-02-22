@@ -22,7 +22,8 @@ import org.codehaus.groovy.grails.io.support.Resource
 /**
  * A completor for the create-controller command
  */
-class CreateController extends ClassNameCompletor{
+class CreateController extends ClassNameCompletor {
+
     @Override
     String getCommandName() { "create-controller" }
 
@@ -30,6 +31,4 @@ class CreateController extends ClassNameCompletor{
     boolean shouldInclude(Resource res) {
         GrailsResourceUtils.isDomainClass(res.getURL())
     }
-
-
 }

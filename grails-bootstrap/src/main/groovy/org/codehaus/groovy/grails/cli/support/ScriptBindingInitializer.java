@@ -22,14 +22,6 @@ import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.AntBuilder;
-import org.apache.tools.ant.BuildLogger;
-import org.apache.tools.ant.Project;
-import org.apache.tools.ant.types.LogLevel;
-import org.codehaus.gant.GantBinding;
-import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder;
-import org.codehaus.groovy.grails.cli.logging.GrailsConsoleBuildListener;
-import org.codehaus.groovy.grails.cli.parsing.CommandLine;
 
 import java.io.File;
 import java.net.URLClassLoader;
@@ -39,6 +31,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.tools.ant.Project;
+import org.codehaus.gant.GantBinding;
+import org.codehaus.groovy.grails.cli.api.BaseSettingsApi;
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder;
+import org.codehaus.groovy.grails.cli.parsing.CommandLine;
 
 /**
  * Configures the binding used when running Grails scripts.
@@ -64,7 +62,6 @@ public class ScriptBindingInitializer {
 
     private BuildSettings settings;
     private PluginPathDiscoverySupport pluginPathSupport;
-    private boolean isInteractive;
     private CommandLine commandLine;
     private URLClassLoader classLoader;
 
@@ -72,7 +69,6 @@ public class ScriptBindingInitializer {
         this.commandLine = commandLine;
         this.settings = settings;
         this.pluginPathSupport = pluginPathSupport;
-        isInteractive = interactive;
         this.classLoader = classLoader;
     }
 
@@ -198,13 +194,11 @@ public class ScriptBindingInitializer {
         binding.setVariable("pluginsDirPath", buildSettings.getProjectPluginsDir().getPath());
         binding.setVariable("globalPluginsDirPath", buildSettings.getGlobalPluginsDir().getPath());
 
-
         GroovyClassLoader eventsClassLoader = new GroovyClassLoader(classLoader);
         GrailsBuildEventListener buildEventListener = new GrailsBuildEventListener(eventsClassLoader, binding, buildSettings);
         binding.setVariable("eventsClassLoader", eventsClassLoader);
         binding.setVariable("eventListener", buildEventListener);
-        if(binding instanceof GantBinding) {
-
+        if (binding instanceof GantBinding) {
             ((GantBinding)binding).addBuildListener(buildEventListener);
         }
 
@@ -222,9 +216,5 @@ public class ScriptBindingInitializer {
          Project project = ant.getProject();
          project.getBuildListeners().clear();
          GrailsConsoleAntBuilder.addGrailsConsoleBuildListener(project);
-
      }
-
-
-
 }

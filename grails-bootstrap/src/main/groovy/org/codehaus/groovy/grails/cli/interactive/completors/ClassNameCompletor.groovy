@@ -18,10 +18,11 @@ package org.codehaus.groovy.grails.cli.interactive.completors
 import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
 import jline.SimpleCompletor
+
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.io.support.Resource
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 /**
  * A completor that completes
@@ -38,7 +39,6 @@ abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettin
      * @return The command name doing the completion
      */
     abstract String getCommandName()
-
 
     @Override
     int complete(String buffer, int cursor, List clist) {
@@ -57,7 +57,6 @@ abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettin
 
         return super.complete(buffer, cursor, clist)
     }
-
 
     boolean shouldInclude(Resource res) { true }
 }

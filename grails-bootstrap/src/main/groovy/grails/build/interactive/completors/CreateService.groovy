@@ -22,7 +22,8 @@ import org.codehaus.groovy.grails.io.support.Resource
 /**
  * A completor for the create-service command
  */
-class CreateService extends ClassNameCompletor{
+class CreateService extends ClassNameCompletor {
+
     @Override
     String getCommandName() { "create-service" }
 
@@ -30,6 +31,4 @@ class CreateService extends ClassNameCompletor{
     boolean shouldInclude(Resource res) {
         GrailsResourceUtils.isDomainClass(res.getURL())
     }
-
-
 }

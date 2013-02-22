@@ -56,7 +56,6 @@ public interface DependencyReport {
      */
     String getScope();
 
-
     /**
      * @return Whether there was a resolve error
      */
@@ -65,5 +64,4 @@ public interface DependencyReport {
      * @return The resolve error if there was one, otherwise null if no error occured
      */
     Throwable getResolveError();
-
 }

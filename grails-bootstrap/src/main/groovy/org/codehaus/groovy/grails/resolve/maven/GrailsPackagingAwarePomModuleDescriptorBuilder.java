@@ -235,7 +235,6 @@ public class GrailsPackagingAwarePomModuleDescriptorBuilder extends PomModuleDes
                 + EXTRA_INFO_DELIMITER + artifaceId + EXTRA_INFO_DELIMITER + "scope";
     }
 
-
     private static String getDependencyMgtExtraInfoKeyForVersion(
             String groupId, String artifaceId) {
         return DEPENDENCY_MANAGEMENT + EXTRA_INFO_DELIMITER + groupId

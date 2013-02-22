@@ -422,7 +422,6 @@ class PluginBuildSettings {
         return (Resource[])sourceFiles
     }
 
-
     /**
      * Gets all the plugin source directories for the given plugin directory
      */
@@ -554,7 +553,6 @@ class PluginBuildSettings {
         return allArtefactResources
     }
 
-
     /**
      * @return A list of plugin infos that are supported and scoped for compile or runtime
      */
@@ -622,7 +620,6 @@ class PluginBuildSettings {
     Resource[] getArtefactResourcesForOne(String projectDir) {
         return resourceResolver("file:${projectDir}/grails-app/**/*.groovy")
     }
-
 
     Resource[] getPluginDescriptorsForCurrentEnvironment() {
         def descriptorList  = cache.pluginDescriptorsForCurrentEnvironment

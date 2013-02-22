@@ -16,13 +16,12 @@
 package org.codehaus.groovy.grails.exceptions
 
 /**
- *
  * Interfaces for classes to implement that print code snippets
  *
  * @author Graeme Rocher
  * @since 2.2
  */
-public interface CodeSnippetPrinter {
+interface CodeSnippetPrinter {
 
     /**
      * Attempts to present a preview code snippet of the code that went wrong

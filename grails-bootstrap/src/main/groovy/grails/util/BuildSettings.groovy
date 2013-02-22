@@ -15,19 +15,17 @@
  */
 package grails.util
 
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
-import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
-import org.codehaus.groovy.grails.io.support.IOUtils
-import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.resolve.*
-import org.codehaus.groovy.runtime.StackTraceUtils
-import org.codehaus.groovy.tools.LoaderConfiguration
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
+import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
+import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
+import org.codehaus.groovy.grails.io.support.IOUtils
+import org.codehaus.groovy.grails.resolve.*
+import org.codehaus.groovy.runtime.StackTraceUtils
 
 /**
  * <p>Represents the project paths and other build settings
@@ -42,7 +40,6 @@ import static grails.build.logging.GrailsConsole.instance as CONSOLE
  */
 class BuildSettings extends AbstractBuildSettings {
 
-
     static final String BUILD_SCOPE = "build"
     static final String COMPILE_SCOPE = "compile"
     static final String RUNTIME_SCOPE = "runtime"
@@ -54,7 +51,6 @@ class BuildSettings extends AbstractBuildSettings {
     static final String RUNTIME_SCOPE_DESC = "Dependencies needed at runtime but not for compilation"
     static final String TEST_SCOPE_DESC = "Dependencies needed for test compilation and execution but not at runtime"
     static final String PROVIDED_SCOPE_DESC = "Dependencies needed at development time, but not during deployment"
-
 
     static final Map<String, String> SCOPE_TO_DESC = [
         (BuildSettings.BUILD_SCOPE): BuildSettings.BUILD_SCOPE_DESC,
@@ -359,7 +355,7 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * The file containing the proxy settings
      */
-    File proxySettingsFile;
+    File proxySettingsFile
 
     /**
      * Fork Settings. These are the default settings used to control forked mode, and what
@@ -485,7 +481,7 @@ class BuildSettings extends AbstractBuildSettings {
     }()
 
     @CompileStatic
-    public List<File> doResolve(String scope, List<File> pluginZips, boolean includeAppJars = true) {
+    List<File> doResolve(String scope, List<File> pluginZips, boolean includeAppJars = true) {
         final resolveReport = dependencyManager.resolve(scope)
         ((GroovyObject)this).setProperty("${scope}ResolveReport".toString(), resolveReport )
         List<File> jarFiles
@@ -502,7 +498,6 @@ class BuildSettings extends AbstractBuildSettings {
         resolveCache[scope] = resolveReport.allArtifacts
         jarFiles
     }
-
 
     @CompileStatic
     private List<File> findAndRemovePluginDependencies(String scope, Collection<File> jarFiles, List<File> scopePluginDependencies) {
@@ -672,6 +667,7 @@ class BuildSettings extends AbstractBuildSettings {
 
         return internalPluginProvidedDependencies
     }
+
     /**
      * Obtains a list of source plugins that are runtime time dependencies
      *
@@ -849,7 +845,7 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     @CompileStatic
-    protected def loadBuildPropertiesFromClasspath(Properties buildProps) {
+    protected void loadBuildPropertiesFromClasspath(Properties buildProps) {
         InputStream stream = getClass().classLoader.getResourceAsStream("grails.build.properties")
         if (stream == null) {
             stream = getClass().classLoader.getResourceAsStream("build.properties")
@@ -1064,7 +1060,6 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
-
     @CompileStatic
     static void initialiseDefaultLog4j(ClassLoader classLoader) {
         def defaultLog4j = new Properties()
@@ -1082,7 +1077,6 @@ class BuildSettings extends AbstractBuildSettings {
             // ignore
         }
     }
-
 
     @CompileStatic
     ConfigObject loadConfig(ConfigObject config) {
@@ -1200,78 +1194,68 @@ class BuildSettings extends AbstractBuildSettings {
         for (dir in pluginDirs) {
             handleInlinePlugin(dir.name, dir)
         }
-
     }
 
     @CompileStatic
     void handleInlinePlugin(String pluginName, File dir) {
 
-            if (isInlinePluginLocation(dir) ) {
-                // Try BuildConfig.groovy first, which should work
-                // work for in-place plugins.
-                def path = dir.absolutePath
-                def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
+        if (!isInlinePluginLocation(dir)) {
+            return
+        }
 
-                if (!pluginDependencyDescriptor.exists()) {
-                    // OK, that doesn't exist, so try dependencies.groovy.
-                    pluginDependencyDescriptor = new File("$path/dependencies.groovy")
-                }
+        // Try BuildConfig.groovy first, which should work
+        // work for in-place plugins.
+        def path = dir.absolutePath
+        def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
 
-                if (pluginDependencyDescriptor.exists()) {
-                    def gcl = obtainGroovyClassLoader()
+        if (!pluginDependencyDescriptor.exists()) {
+            // OK, that doesn't exist, so try dependencies.groovy.
+            pluginDependencyDescriptor = new File("$path/dependencies.groovy")
+        }
 
-                    try {
-                        Script script = (Script)gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
-                        def pluginSlurper = createConfigSlurper()
-                        def pluginConfig = pluginSlurper.parse(script)
+        if (pluginDependencyDescriptor.exists()) {
+            def gcl = obtainGroovyClassLoader()
 
+            try {
+                Script script = (Script)gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
+                def pluginSlurper = createConfigSlurper()
+                def pluginConfig = pluginSlurper.parse(script)
 
-
-                        def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
-                        if (inlinePlugins) {
-                            for (File inlinePlugin in inlinePlugins) {
-                                addPluginDirectory inlinePlugin, true
-                                // recurse
-                                handleInlinePlugin(inlinePlugin.name, inlinePlugin)
-                            }
-                        }
-                    }
-                    catch (Throwable e) {
-                        CONSOLE.error "WARNING: Inline plugins for [$pluginName] cannot be read due to error: ${e.message}", e
+                def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
+                if (inlinePlugins) {
+                    for (File inlinePlugin in inlinePlugins) {
+                        addPluginDirectory inlinePlugin, true
+                        // recurse
+                        handleInlinePlugin(inlinePlugin.name, inlinePlugin)
                     }
                 }
             }
-
+            catch (Throwable e) {
+                CONSOLE.error "WARNING: Inline plugins for [$pluginName] cannot be read due to error: ${e.message}", e
+            }
+        }
     }
-
 
     protected boolean settingsFileLoaded = false
 
-
     @CompileStatic
     DependencyManager configureDependencyManager() {
-        DependencyManagerConfigurer configurer = new DependencyManagerConfigurer();
+        DependencyManagerConfigurer configurer = new DependencyManagerConfigurer()
 
-        if(useMavenDependencyResolver) {
+        if (useMavenDependencyResolver) {
             return configurer.configureAether(this)
         }
-        else {
-
-            return configurer.configureIvy(this);
-        }
+        return configurer.configureIvy(this)
     }
 
     @CompileStatic
     DependencyManager createNewDependencyManager() {
 
-        if(useMavenDependencyResolver) {
+        if (useMavenDependencyResolver) {
             return DependencyManagerConfigurer.createAetherDependencyManager(this)
         }
-        else {
-            return DependencyManagerConfigurer.createIvyDependencyManager(this);
-        }
+        return DependencyManagerConfigurer.createIvyDependencyManager(this)
     }
-
 
     @CompileStatic
     protected ConfigObject loadSettingsFile() {
@@ -1321,31 +1305,27 @@ class BuildSettings extends AbstractBuildSettings {
         return gcl
     }
 
-
-    public boolean isRegisteredInMetadata(String pluginName) {
+    boolean isRegisteredInMetadata(String pluginName) {
         if (dependencyManager instanceof IvyDependencyManager) {
             return dependencyManager.metadataRegisteredPluginNames?.contains(pluginName)
         }
-        else {
-            return true
-        }
+        return true
     }
 
     @Deprecated
-    public boolean notDefinedInBuildConfig(String pluginName) {
-        if (dependencyManager instanceof IvyDependencyManager) {
-
-            def descriptors = dependencyManager.pluginDependencyDescriptors.findAll {EnhancedDefaultDependencyDescriptor desc ->
-                def nonTransitive = !desc.plugin
-                def exported = desc.exportedToApplication
-                nonTransitive || exported
-            }
-            def defined = descriptors*.dependencyId*.name.contains(pluginName)
-            return !defined
-        }
-        else {
+    boolean notDefinedInBuildConfig(String pluginName) {
+        if (!(dependencyManager instanceof IvyDependencyManager)) {
             return true
         }
+
+        def descriptors = dependencyManager.pluginDependencyDescriptors.findAll {EnhancedDefaultDependencyDescriptor desc ->
+            def nonTransitive = !desc.plugin
+            def exported = desc.exportedToApplication
+            nonTransitive || exported
+        }
+
+        def defined = descriptors*.dependencyId*.name.contains(pluginName)
+        return !defined
     }
 
     @CompileStatic
@@ -1484,31 +1464,31 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     private getForkConfig() {
-        def result = config.grails.project.fork;
-		String syspropDebugArgs = System.getProperty("grails.project.fork.run.debugArgs");
-		if (syspropDebugArgs) {
-			//TODO; some way to copy over existing properties
-			//  The code below doesn't appear to work in all cases and sometimes results in 
-			//  errors like this: 
-			//  org.codehaus.groovy.runtime.typehandling.GroovyCastException: Cannot cast 
-			//object 'groovy.util.ConfigObject@8cf401' with class 'groovy.util.ConfigObject' 
-//			def oldMap = result?.run;
-//			result.run = [
-//				maxMemory: oldMap?.maxMemory, 
-//				minMemory: oldMap?.minMemory
-//			];
-			result.run = [:];
-			result.run.debug = true;
-			result.run.debugArgs = syspropDebugArgs;
-		}
-		syspropDebugArgs = System.getProperty("grails.project.fork.test.debugArgs");
-		if (syspropDebugArgs) {
-			//TODO; some way to copy over existing properties
-			result.test = [:];
-			result.test.debug = true;
-			result.test.debugArgs = syspropDebugArgs;
-		}
-		return result;
+        def result = config.grails.project.fork
+        String syspropDebugArgs = System.getProperty("grails.project.fork.run.debugArgs")
+        if (syspropDebugArgs) {
+            //TODO; some way to copy over existing properties
+            //  The code below doesn't appear to work in all cases and sometimes results in
+            //  errors like this:
+            //  org.codehaus.groovy.runtime.typehandling.GroovyCastException: Cannot cast
+            //object 'groovy.util.ConfigObject@8cf401' with class 'groovy.util.ConfigObject'
+//            def oldMap = result?.run;
+//            result.run = [
+//                maxMemory: oldMap?.maxMemory,
+//                minMemory: oldMap?.minMemory
+//            ];
+            result.run = [:]
+            result.run.debug = true
+            result.run.debugArgs = syspropDebugArgs
+        }
+        syspropDebugArgs = System.getProperty("grails.project.fork.test.debugArgs")
+        if (syspropDebugArgs) {
+            //TODO; some way to copy over existing properties
+            result.test = [:]
+            result.test.debug = true
+            result.test.debugArgs = syspropDebugArgs
+        }
+        return result
     }
 
     protected File makeAbsolute(File dir) {
@@ -1608,7 +1588,7 @@ class BuildSettings extends AbstractBuildSettings {
         if (basePluginFile?.exists()) {
             return basePluginFile
         }
-        return null;
+        return null
     }
 
     boolean isPluginProject() {

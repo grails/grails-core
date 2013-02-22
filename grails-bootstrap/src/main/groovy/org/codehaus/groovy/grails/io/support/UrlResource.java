@@ -35,7 +35,6 @@ public class UrlResource extends AbstractFileResolvingResource {
      */
     private final URI uri;
 
-
     /**
      * Create a new UrlResource.
      * @param url a URL
@@ -84,7 +83,6 @@ public class UrlResource extends AbstractFileResolvingResource {
             return originalUrl;
         }
     }
-
 
     /**
      * This implementation opens an InputStream for the given URL.
@@ -172,7 +170,6 @@ public class UrlResource extends AbstractFileResolvingResource {
         return "URL [" + url + "]";
     }
 
-
     /**
      * This implementation compares the underlying URL references.
      */
@@ -189,5 +186,4 @@ public class UrlResource extends AbstractFileResolvingResource {
     public int hashCode() {
         return cleanedUrl.hashCode();
     }
-
 }

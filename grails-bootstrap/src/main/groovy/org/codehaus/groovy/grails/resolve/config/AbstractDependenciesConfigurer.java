@@ -233,7 +233,7 @@ abstract class AbstractDependenciesConfigurer extends AbstractDependencyManageme
         return properties.containsKey(propertyName) ? Boolean.valueOf(properties.get(propertyName).toString()) : defaultValue;
     }
 
-    protected void preprocessDependencyProperties(@SuppressWarnings("unused") Map<Object, Object> dependency) {
+    protected void preprocessDependencyProperties(Map<Object, Object> dependency) {
         // used in plugin subclass to populate default group id
     }
 

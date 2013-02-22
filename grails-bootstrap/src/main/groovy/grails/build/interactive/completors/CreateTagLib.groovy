@@ -22,7 +22,8 @@ import org.codehaus.groovy.grails.io.support.Resource
 /**
  * A completor for the create-tag-lib command
  */
-class CreateTagLib extends ClassNameCompletor{
+class CreateTagLib extends ClassNameCompletor {
+
     @Override
     String getCommandName() { "create-tag-lib" }
 
@@ -30,6 +31,4 @@ class CreateTagLib extends ClassNameCompletor{
     boolean shouldInclude(Resource res) {
         GrailsResourceUtils.isDomainClass(res.getURL())
     }
-
-
 }

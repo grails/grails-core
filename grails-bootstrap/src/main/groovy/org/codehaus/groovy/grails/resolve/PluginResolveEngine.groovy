@@ -18,8 +18,8 @@ package org.codehaus.groovy.grails.resolve
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.util.slurpersupport.GPathResult
+
 import org.apache.ivy.core.cache.ArtifactOrigin
-import org.apache.ivy.core.report.ResolveReport
 import org.apache.ivy.plugins.repository.Repository
 import org.apache.ivy.plugins.repository.Resource
 import org.apache.ivy.plugins.resolver.DependencyResolver
@@ -173,7 +173,6 @@ To install specific version of plugin type 'grails install-plugin [NAME] [VERSIO
 For further info visit http://grails.org/Plugins
 '''
     }
-
 
     /**
      * Resolve a Plugin zip for for the given name and plugin version

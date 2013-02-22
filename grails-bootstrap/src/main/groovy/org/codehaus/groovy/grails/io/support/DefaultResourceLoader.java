@@ -107,6 +107,7 @@ public class DefaultResourceLoader implements ResourceLoader {
             super(path, classLoader);
         }
 
+        @SuppressWarnings("unused")
         public String getPathWithinContext() {
             return getPath();
         }

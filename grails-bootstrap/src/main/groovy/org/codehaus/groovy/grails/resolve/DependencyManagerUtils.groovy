@@ -16,12 +16,14 @@ package org.codehaus.groovy.grails.resolve
 
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
+
+import java.util.concurrent.ConcurrentHashMap
+
+import javax.xml.parsers.ParserConfigurationException
+
 import org.xml.sax.ErrorHandler
 import org.xml.sax.SAXException
 import org.xml.sax.SAXParseException
-
-import javax.xml.parsers.ParserConfigurationException
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Abstract implementation of DependencyManager interface
@@ -32,7 +34,7 @@ import java.util.concurrent.ConcurrentHashMap
 @CompileStatic
 abstract class DependencyManagerUtils {
 
-    private static Map<File,GPathResult> parsedXmlCache = new ConcurrentHashMap<File, GPathResult>();
+    private static Map<File,GPathResult> parsedXmlCache = new ConcurrentHashMap<File, GPathResult>()
 
     static GPathResult downloadPluginList(File localFile) {
         GPathResult parsedXml = parsedXmlCache[localFile]
@@ -50,18 +52,10 @@ abstract class DependencyManagerUtils {
 
                 def xmlSlurper = new XmlSlurper()
                 xmlSlurper.setErrorHandler(new ErrorHandler() {
-                    public void warning(SAXParseException e) throws SAXException {
-                        // noop
-                    }
-
-                    public void error(SAXParseException e) throws SAXException {
-                        // noop
-                    }
-
-                    public void fatalError(SAXParseException e) throws SAXException {
-                        // noop
-                    }
-                });
+                    void warning(SAXParseException e) { /*noop*/ }
+                    void error(SAXParseException e) { /*noop*/ }
+                    void fatalError(SAXParseException e) { /*noop*/ }
+                })
                 parsedXml = xmlSlurper.parse(localFile)
                 parsedXmlCache.put(localFile, parsedXml)
             }

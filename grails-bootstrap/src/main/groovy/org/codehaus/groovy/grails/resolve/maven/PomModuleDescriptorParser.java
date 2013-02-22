@@ -30,11 +30,11 @@ import org.apache.ivy.core.IvyContext;
 import org.apache.ivy.core.cache.ArtifactOrigin;
 import org.apache.ivy.core.module.descriptor.Artifact;
 import org.apache.ivy.core.module.descriptor.Configuration;
+import org.apache.ivy.core.module.descriptor.Configuration.Visibility;
 import org.apache.ivy.core.module.descriptor.DefaultArtifact;
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor;
 import org.apache.ivy.core.module.descriptor.ModuleDescriptor;
-import org.apache.ivy.core.module.descriptor.Configuration.Visibility;
 import org.apache.ivy.core.module.id.ModuleRevisionId;
 import org.apache.ivy.core.resolve.ResolveData;
 import org.apache.ivy.core.resolve.ResolveEngine;
@@ -65,7 +65,6 @@ import org.xml.sax.SAXException;
  */
 public final class PomModuleDescriptorParser implements ModuleDescriptorParser {
 
-
     private static final PomModuleDescriptorParser INSTANCE = new PomModuleDescriptorParser();
 
     public static PomModuleDescriptorParser getInstance() {
@@ -74,7 +73,6 @@ public final class PomModuleDescriptorParser implements ModuleDescriptorParser {
 
     private PomModuleDescriptorParser() {
     }
-
 
     public void toIvyFile(InputStream is, Resource res, File destFile, ModuleDescriptor md)
             throws ParseException, IOException {
@@ -254,7 +252,6 @@ public final class PomModuleDescriptorParser implements ModuleDescriptorParser {
                             throw new IOException("Impossible to import module for " + res.getName() + "."
                                     + " Import=" + importModRevID);
                         }
-
                     } else {
                         mdBuilder.addDependencyMgt(dep);
                     }
