@@ -103,7 +103,7 @@ class DomainClassGrailsPlugin {
         ConstraintEvalUtils.getDefaultConstraints(config)
     }
 
-    static final Map PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
+    static final PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 
     def doWithDynamicMethods = { ApplicationContext ctx->
         enhanceDomainClasses(application, ctx)
