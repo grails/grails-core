@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
+
 import org.apache.maven.repository.internal.MavenRepositorySystemSession
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.plexus.logging.Logger
@@ -37,7 +38,6 @@ import org.sonatype.aether.util.repository.DefaultAuthenticationSelector
 class AetherDsl {
     AetherDependencyManager dependencyManager
     @Delegate MavenRepositorySystemSession session
-
 
     ExclusionDependencySelector exclusionDependencySelector
 
@@ -136,7 +136,6 @@ class AetherDsl {
                 if (tmp.exclusions) {
                      exclusionDependencySelector = new ExclusionDependencySelector(new HashSet<Exclusion>(tmp.exclusions))
                 }
-
             }
             try {
                 callable.delegate = this
@@ -146,6 +145,7 @@ class AetherDsl {
             }
         }
     }
+
     void repositories(Closure callable) {
         def rc = new RepositoryConfiguration()
         callable.delegate = rc

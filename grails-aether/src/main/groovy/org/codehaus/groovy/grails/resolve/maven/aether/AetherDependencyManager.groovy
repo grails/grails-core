@@ -19,6 +19,7 @@ import grails.util.BuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
+
 import org.apache.maven.model.building.DefaultModelBuildingRequest
 import org.apache.maven.model.building.ModelBuilder
 import org.apache.maven.model.building.ModelBuildingResult
@@ -56,13 +57,11 @@ import org.sonatype.aether.transfer.ArtifactTransferException
 import org.sonatype.aether.transfer.TransferCancelledException
 import org.sonatype.aether.transfer.TransferEvent
 import org.sonatype.aether.util.artifact.DefaultArtifact
-import org.sonatype.aether.util.artifact.SubArtifact
 import org.sonatype.aether.util.filter.ScopeDependencyFilter
 import org.sonatype.aether.util.graph.DefaultDependencyNode
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 import org.sonatype.aether.util.repository.DefaultProxySelector
-
 
 /**
  * An implementation of the {@link DependencyManager} interface that uses Aether, the dependency resolution
@@ -72,14 +71,14 @@ import org.sonatype.aether.util.repository.DefaultProxySelector
  * @since 2.3
  */
 @CompileStatic
-class AetherDependencyManager implements DependencyManager{
+class AetherDependencyManager implements DependencyManager {
 
     static final String DEFAULT_CACHE = "${System.getProperty('user.home')}/.m2/repository"
     static final Map<String, List<String>> SCOPE_MAPPINGS = [compile:['compile'],
                                                              optional:['optional'],
                                                              runtime:['compile', 'optional','runtime'],
                                                              test:['compile','provided', 'runtime', 'optional','test'],
-                                                             provided:['provided']];
+                                                             provided:['provided']]
     private List<Dependency> dependencies = []
     private Set <org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []
     private List<Dependency> buildDependencies = []
@@ -122,7 +121,7 @@ class AetherDependencyManager implements DependencyManager{
         final contextLoader = currentThread.getContextClassLoader()
 
         try {
-            currentThread.setContextClassLoader(getClass().getClassLoader());
+            currentThread.setContextClassLoader(getClass().getClassLoader())
             final container = new DefaultPlexusContainer()
             loggerManager = new GrailsConsoleLoggerManager()
             container.setLoggerManager(loggerManager)
@@ -130,10 +129,8 @@ class AetherDependencyManager implements DependencyManager{
             repositorySystem = container.lookup(RepositorySystem.class)
             settingsBuilder = container.lookup(SettingsBuilder.class)
             modelBuilder = container.lookup(ModelBuilder.class)
-
         }
         finally {
-
             currentThread.setContextClassLoader(contextLoader)
         }
     }
@@ -142,16 +139,16 @@ class AetherDependencyManager implements DependencyManager{
         return session
     }
 
-
-
     void produceReport(String scope) {
         final desc = BuildSettings.SCOPE_TO_DESC[scope]
-        if (desc)
+        if (desc) {
             reportOnScope(scope, desc)
+        }
         else {
             produceReport()
         }
     }
+
     /**
      * Produces a report printed to System.out of the dependency graph
      */
@@ -186,8 +183,9 @@ class AetherDependencyManager implements DependencyManager{
                 List<ArtifactResult> results = cause.getResults()
                 for(ArtifactResult r in results) {
                     if (!r.isResolved()) {
-                        if (r.artifact)
+                        if (r.artifact) {
                             unresolved << r.artifact
+                        }
                         else {
                             if (r.exceptions) {
                                 def ex = r.exceptions[0]
@@ -241,20 +239,18 @@ class AetherDependencyManager implements DependencyManager{
     void setSettings(Settings settings) {
         this.settings = settings
     }
-/**
+
+    /**
      * Resolve dependencies for the given scope
      * @param scope The scope (defaults to 'runtime')
      * @return A DependencyReport instance
      */
     DependencyReport resolve(String scope = "runtime") {
 
-
         DependencyNode root = collectDependencies(scope)
-
 
         try {
             DependencyResult results = resolveToResult(root, scope)
-
 
             if (includeSource || includeJavadoc) {
 
@@ -263,11 +259,14 @@ class AetherDependencyManager implements DependencyManager{
 
                     final artifact = ar.artifact
                     attachmentRequests << new ArtifactRequest(artifact, repositories, null)
-                    if (includeJavadoc)
-                        attachmentRequests << new ArtifactRequest(new DefaultArtifact(artifact.groupId, artifact.artifactId, "javadoc", artifact.extension, artifact.version), repositories, null)
-                    if (includeJavadoc)
-                        attachmentRequests << new ArtifactRequest(new DefaultArtifact(artifact.groupId, artifact.artifactId, "sources", artifact.extension, artifact.version), repositories, null)
-
+                    if (includeJavadoc) {
+                        attachmentRequests << new ArtifactRequest(new DefaultArtifact(
+                            artifact.groupId, artifact.artifactId, "javadoc", artifact.extension, artifact.version), repositories, null)
+                    }
+                    if (includeJavadoc) {
+                        attachmentRequests << new ArtifactRequest(new DefaultArtifact(
+                            artifact.groupId, artifact.artifactId, "sources", artifact.extension, artifact.version), repositories, null)
+                    }
                 }
 
                 try {
@@ -278,9 +277,7 @@ class AetherDependencyManager implements DependencyManager{
                     return new AetherArtifactResultReport(scope, are.results)
                 }
             }
-
-
-        } catch (org.sonatype.aether.resolution.DependencyResolutionException e) {
+        } catch (DependencyResolutionException e) {
             boolean failWithException = true
             if (e.cause instanceof ArtifactResolutionException) {
                 ArtifactResolutionException are = (ArtifactResolutionException) e.cause
@@ -300,12 +297,10 @@ class AetherDependencyManager implements DependencyManager{
             }
         }
 
-
         def nlg = new PreorderNodeListGenerator()
         root.accept nlg
 
-
-        return new AetherDependencyReport(nlg, scope);
+        return new AetherDependencyReport(nlg, scope)
     }
 
     protected void addAttachments(DependencyNode root, String classifier) {
@@ -328,7 +323,6 @@ class AetherDependencyManager implements DependencyManager{
                 final filter = new ScopeDependencyFilter(includedScopes, [])
                 dependencyRequest.setFilter(filter)
             }
-
         }
         DependencyResult resolveResult = repositorySystem.resolveDependencies(session, dependencyRequest)
         resolveResult
@@ -339,7 +333,7 @@ class AetherDependencyManager implements DependencyManager{
         settings = result.getEffectiveSettings()
         final proxyHost = System.getProperty("http.proxyHost")
         final proxyPort = System.getProperty("http.proxyPort")
-        if(proxyHost && proxyPort) {
+        if (proxyHost && proxyPort) {
             final proxyUser = System.getProperty("http.proxyUserName")
             final proxyPass = System.getProperty("http.proxyPassword")
             addProxy(proxyHost, proxyPort, proxyUser, proxyPass, System.getProperty('http.nonProxyHosts'))
@@ -355,7 +349,7 @@ class AetherDependencyManager implements DependencyManager{
         session.setChecksumPolicy(checksumPolicy)
 
         LocalRepository localRepo = new LocalRepository(cacheDir ?: settings.localRepository ?: DEFAULT_CACHE)
-        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo));
+        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo))
 
         if (readPom) {
             def pomFile = new File(basedir, "pom.xml")
@@ -370,19 +364,20 @@ class AetherDependencyManager implements DependencyManager{
             }
         }
 
-
-        def collectRequest = new CollectRequest();
-        if (scope == 'build')
+        def collectRequest = new CollectRequest()
+        if (scope == 'build') {
             collectRequest.setDependencies(buildDependencies)
-        else
+        }
+        else {
             collectRequest.setDependencies(dependencies)
+        }
 
         collectRequest.setRepositories(repositories)
 
         return repositorySystem.collectDependencies(session, collectRequest).getRoot()
     }
 
-    public org.sonatype.aether.repository.Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {
+    Proxy addProxy(String proxyHost, String proxyPort, String proxyUser, String proxyPass, String nonProxyHosts) {
         Proxy proxy
         if (proxyHost && proxyPort ) {
             if (proxyUser && proxyPass) {
@@ -402,7 +397,7 @@ class AetherDependencyManager implements DependencyManager{
         return proxy
     }
 
-    public void addDependency(Dependency dependency) {
+    void addDependency(Dependency dependency) {
         Artifact artifact = dependency.artifact
         final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
         grailsDependencies << grailsDependency
@@ -413,7 +408,6 @@ class AetherDependencyManager implements DependencyManager{
             grailsPluginDependencies << grailsDependency
             grailsPluginDependenciesByScope[dependency.scope] << grailsDependency
         }
-
     }
 
     protected void includeJavadocAndSourceIfNecessary(List<Dependency> aetherDependencies, Dependency dependency) {
@@ -428,12 +422,12 @@ class AetherDependencyManager implements DependencyManager{
         }
     }
 
-    public void addBuildDependency(org.codehaus.groovy.grails.resolve.Dependency dependency) {
+    void addBuildDependency(org.codehaus.groovy.grails.resolve.Dependency dependency) {
         Collection<Exclusion> exclusions = new ArrayList<>()
         for( exc in dependency.excludes) {
             exclusions << new Exclusion(exc.group, exc.name, "*", "*")
         }
-        final mavenDependency = new org.sonatype.aether.graph.Dependency(new DefaultArtifact(dependency.pattern), "compile", false, exclusions)
+        final mavenDependency = new Dependency(new DefaultArtifact(dependency.pattern), "compile", false, exclusions)
         grailsDependencies << dependency
         grailsDependenciesByScope["build"] << dependency
         buildDependencies << mavenDependency
@@ -441,10 +435,9 @@ class AetherDependencyManager implements DependencyManager{
             grailsPluginDependencies << dependency
             grailsPluginDependenciesByScope["build"] << dependency
         }
-
     }
 
-    public void addBuildDependency(Dependency dependency) {
+    void addBuildDependency(Dependency dependency) {
         Artifact artifact = dependency.artifact
         final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
         grailsDependencies << grailsDependency
@@ -454,15 +447,14 @@ class AetherDependencyManager implements DependencyManager{
             grailsPluginDependencies << grailsDependency
             grailsPluginDependenciesByScope["build"] << grailsDependency
         }
-
     }
 
-    public void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope, ExclusionDependencySelector exclusionDependencySelector = null) {
+    void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope, ExclusionDependencySelector exclusionDependencySelector = null) {
         Collection<Exclusion> exclusions = new ArrayList<>()
         for( exc in dependency.excludes) {
             exclusions << new Exclusion(exc.group, exc.name, "*", "*")
         }
-        final mavenDependency = new org.sonatype.aether.graph.Dependency(new DefaultArtifact(dependency.pattern), scope, false, exclusions)
+        final mavenDependency = new Dependency(new DefaultArtifact(dependency.pattern), scope, false, exclusions)
 
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(mavenDependency)) {
             grailsDependencies << dependency
@@ -472,7 +464,6 @@ class AetherDependencyManager implements DependencyManager{
                 grailsPluginDependencies.add dependency
                 grailsPluginDependenciesByScope[scope] << dependency
             }
-
         }
     }
 
@@ -514,4 +505,3 @@ class AetherDependencyManager implements DependencyManager{
         return grailsDependencies[scope].asImmutable()
     }
 }
-

@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
+
 import org.sonatype.aether.repository.ArtifactRepository
 import org.sonatype.aether.repository.RemoteRepository
 
@@ -43,7 +44,7 @@ class RepositoryConfiguration {
             final repository = new RemoteRepository("mavenCentral", "default", "http://repo1.maven.org/maven2/")
             repositories << repository
             return repository
-        };
+        }
     }
 
     RemoteRepository grailsCentral() {
@@ -51,7 +52,7 @@ class RepositoryConfiguration {
             final repository = new RemoteRepository("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
             repositories << repository
             return repository
-        };
+        }
     }
 
     RemoteRepository mavenRepo(String url) {
@@ -59,7 +60,7 @@ class RepositoryConfiguration {
             final repository = new RemoteRepository(url, "default", url)
             repositories << repository
             return repository
-        };
+        }
     }
 
     RemoteRepository mavenRepo(Map<String, String> properties) {
@@ -71,8 +72,7 @@ class RepositoryConfiguration {
                 final repository = new RemoteRepository(id, "default", url)
                 repositories << repository
                 return repository
-            };
-
+            }
         }
     }
 }

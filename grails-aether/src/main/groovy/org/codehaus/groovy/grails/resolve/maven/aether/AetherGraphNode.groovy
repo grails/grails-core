@@ -15,12 +15,12 @@
 package org.codehaus.groovy.grails.resolve.maven.aether
 
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.reporting.GraphNode
 import org.sonatype.aether.artifact.Artifact
 import org.sonatype.aether.graph.DependencyNode
 import org.sonatype.aether.resolution.DependencyResult
-import org.sonatype.aether.util.graph.PreorderNodeListGenerator
 
 /**
  * Adapts a Aether dependency graph into the Grails graph node API for reporting
@@ -29,27 +29,28 @@ import org.sonatype.aether.util.graph.PreorderNodeListGenerator
  * @since 2.3
  */
 @CompileStatic
-class AetherGraphNode extends GraphNode{
+class AetherGraphNode extends GraphNode {
+
     AetherGraphNode(DependencyResult dependencyResult, List<Artifact> unresolved) {
         super(new Dependency("org.grails.internal", "root", "1.0")) // version numbers not relevant for root node / dummy object
         createGraph(this, dependencyResult.root.children, unresolved)
     }
 
     void createGraph(GraphNode current, List<DependencyNode> nodes, List<Artifact> unresolved) {
-            for(DependencyNode node in nodes) {
-                def dependency = node.dependency
-                if (dependency) {
-
-                    def artifact = dependency.artifact
-                    final notResolved = unresolved.contains(artifact)
-                    if (artifact.file || notResolved) {
-                        def graphNode = new GraphNode(new Dependency(artifact.groupId, artifact.artifactId, artifact.version))
-                        graphNode.resolved = !notResolved
-                        current.children << graphNode
-                        createGraph(graphNode, node.children, unresolved)
-                    }
-                }
+        for(DependencyNode node in nodes) {
+            def dependency = node.dependency
+            if (!dependency) {
+                continue
             }
-    }
 
+            def artifact = dependency.artifact
+            final notResolved = unresolved.contains(artifact)
+            if (artifact.file || notResolved) {
+                def graphNode = new GraphNode(new Dependency(artifact.groupId, artifact.artifactId, artifact.version))
+                graphNode.resolved = !notResolved
+                current.children << graphNode
+                createGraph(graphNode, node.children, unresolved)
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.resolve.maven.aether.support
 
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
+
 import org.codehaus.plexus.logging.AbstractLogger
 import org.codehaus.plexus.logging.AbstractLoggerManager
 import org.codehaus.plexus.logging.Logger
@@ -105,5 +106,3 @@ class GrailsConsoleLogger extends AbstractLogger{
         return this
     }
 }
-
-

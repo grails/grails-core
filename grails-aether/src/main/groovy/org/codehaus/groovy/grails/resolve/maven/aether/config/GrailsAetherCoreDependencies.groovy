@@ -16,11 +16,9 @@ package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
-import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
-import org.sonatype.aether.graph.Exclusion
-import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 
 /**
@@ -30,7 +28,8 @@ import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
  * @since 2.3
  */
 @CompileStatic
-class GrailsAetherCoreDependencies extends GrailsCoreDependencies{
+class GrailsAetherCoreDependencies extends GrailsCoreDependencies {
+
     GrailsAetherCoreDependencies(String grailsVersion) {
         super(grailsVersion)
     }
@@ -52,10 +51,10 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies{
      * This method is used internally and should not be called in user code.
      */
     @CompileStatic(TypeCheckingMode.SKIP)
-    public Closure createDeclaration() {
+    Closure createDeclaration() {
         return  {
 
-            AetherDsl dsl = (AetherDsl)getDelegate()
+            AetherDsl dsl = getDelegate()
 
             // if the grails version ends in snapshot we need an extra repository in order for Grails to function. This is only used for development versions of Grails
             if (grailsVersion.endsWith("-SNAPSHOT")) {
@@ -66,12 +65,12 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies{
             }
 
             dsl.dependencies{
-                DependenciesConfiguration dependenciesDelegate = (DependenciesConfiguration)getDelegate();
+                DependenciesConfiguration dependenciesDelegate = getDelegate()
                 def dependencyManager = dependenciesDelegate.getDependencyManager()
 
                 boolean defaultDependenciesProvided = dependencyManager.getDefaultDependenciesProvided()
                 String compileTimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "compile"
-                String runtimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "runtime";
+                String runtimeDependenciesMethod = defaultDependenciesProvided ? "provided" : "runtime"
 
                 // dependencies needed by the Grails build system
                 registerDependencies(dependenciesDelegate, "build", buildDependencies)
@@ -92,17 +91,15 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies{
 
                 registerDependencies(dependenciesDelegate, runtimeDependenciesMethod, runtimeDependencies)
             }
-
         }
     }
 
     void registerDependencies(DependenciesConfiguration configuration, String scope, Collection<Dependency> dependencies) {
-        for(org.codehaus.groovy.grails.resolve.Dependency d in dependencies) {
+        for (Dependency d in dependencies) {
             if (scope == 'build') {
                 configuration.addBuildDependency(d)
             }
             else {
-
                 configuration.addDependency(d, scope)
             }
         }

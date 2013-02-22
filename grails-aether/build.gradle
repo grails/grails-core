@@ -4,9 +4,9 @@ ext {
 }
 
 dependencies {
-    compile("org.sonatype.aether:aether-api:${aetherVersion}") 
-    compile("org.sonatype.aether:aether-util:${aetherVersion}") 
-    compile("org.sonatype.aether:aether-impl:${aetherVersion}") 
+    compile("org.sonatype.aether:aether-api:${aetherVersion}")
+    compile("org.sonatype.aether:aether-util:${aetherVersion}")
+    compile("org.sonatype.aether:aether-impl:${aetherVersion}")
     compile("org.sonatype.aether:aether-connector-file:${aetherVersion}")
     compile("org.sonatype.aether:aether-connector-wagon:${aetherVersion}") {
 //        exclude module:'plexus-component-annotations'
@@ -14,7 +14,7 @@ dependencies {
 //        exclude module:'plexus-utils'
 //        exclude module:'sisu-inject-plexus'
     }
-    compile("org.sonatype.aether:aether-connector-asynchttpclient:${aetherVersion}") 
+    compile("org.sonatype.aether:aether-connector-asynchttpclient:${aetherVersion}")
     compile("org.apache.maven:maven-aether-provider:$mavenVersion")
     compile "org.apache.maven:maven-settings-builder:$mavenVersion"
 
@@ -23,9 +23,8 @@ dependencies {
     runtime "org.slf4j:slf4j-simple:$slf4jVersion"
 }
 
-
 install.doLast {
-    final aetherConf = new File("$rootProject.projectDir/conf/aether-starter.conf")
+    final aetherConf = new File(rootProject.projectDir, "conf/aether-starter.conf")
     aetherConf.parentFile.mkdirs()
 
     aetherConf.withPrintWriter { writer ->

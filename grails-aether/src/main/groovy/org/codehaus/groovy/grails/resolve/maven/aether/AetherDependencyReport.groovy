@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.resolve.maven.aether
 
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
@@ -27,7 +28,8 @@ import org.sonatype.aether.util.graph.PreorderNodeListGenerator
  * @author Graeme Rocher
  */
 @CompileStatic
-class AetherDependencyReport implements DependencyReport{
+class AetherDependencyReport implements DependencyReport {
+
     PreorderNodeListGenerator resolveResult
     String scope
     Throwable error
@@ -45,7 +47,6 @@ class AetherDependencyReport implements DependencyReport{
         this.error = error
         this.jarFiles = findAndRemovePluginDependencies(resolveResult.files)
     }
-
 
     private List<File> findAndRemovePluginDependencies(Collection<File> jarFiles) {
         jarFiles = jarFiles?.findAll { File it -> it != null} ?: new ArrayList<File>()
@@ -82,7 +83,6 @@ class AetherDependencyReport implements DependencyReport{
         getFiles().toList()
     }
 
-
     @Override
     String getScope() {
         return scope
@@ -101,6 +101,4 @@ class AetherDependencyReport implements DependencyReport{
     File[] getFiles() {
         resolveResult.getFiles()
     }
-
-
 }

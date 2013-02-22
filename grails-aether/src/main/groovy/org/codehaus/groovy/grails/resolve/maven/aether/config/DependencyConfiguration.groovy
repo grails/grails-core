@@ -17,11 +17,11 @@ package org.codehaus.groovy.grails.resolve.maven.aether.config
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.Exclusion
 
 /**
- *
  * Used to configure an individual dependency
  *
  * @author Graeme Rocher
@@ -46,9 +46,10 @@ class DependencyConfiguration {
             }
         }
     }
+
     void exclude(Map<String,String> exc) {
         List<Exclusion> exclusions = getExclusionList()
-        exclusions << new Exclusion(exc.group, exc.name, exc.classifier, exc.extension);
+        exclusions << new Exclusion(exc.group, exc.name, exc.classifier, exc.extension)
         dependency = dependency.setExclusions(exclusions)
     }
 
@@ -88,8 +89,8 @@ class DependencyConfiguration {
     void setProperty(String name, value) {
         dependency."$name" = value
     }
+
     void setChanging(boolean b) {
         GrailsConsole.getInstance().warn("Option [changing] on dependency [$dependency] not supported by Aether dependency manager")
     }
-
 }

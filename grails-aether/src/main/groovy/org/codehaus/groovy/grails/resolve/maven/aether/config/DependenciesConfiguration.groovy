@@ -15,12 +15,13 @@
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
+
+import java.util.regex.Pattern
+
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
-
-import java.util.regex.Pattern
 
 /**
  * @author Graeme Rocher
@@ -28,7 +29,7 @@ import java.util.regex.Pattern
  */
 @CompileStatic
 class DependenciesConfiguration {
-    static final Pattern DEPENDENCY_PATTERN = Pattern.compile("([a-zA-Z0-9\\-/\\._+=]*?):([a-zA-Z0-9\\-/\\._+=]+?):([a-zA-Z0-9\\-/\\.,\\]\\[\\(\\)_+=]+)");
+    static final Pattern DEPENDENCY_PATTERN = Pattern.compile("([a-zA-Z0-9\\-/\\._+=]*?):([a-zA-Z0-9\\-/\\._+=]+?):([a-zA-Z0-9\\-/\\.,\\]\\[\\(\\)_+=]+)")
     public static final String SCOPE_COMPILE = "compile"
     public static final String SCOPE_RUNTIME = "runtime"
     public static final String SCOPE_PROVIDED = "provided"
@@ -56,7 +57,6 @@ class DependenciesConfiguration {
         }
     }
 
-
     protected void addDependency(Map<String, String> properties, String scope, Closure customizer = null) {
         Dependency d = createDependencyForProperties(properties, scope)
         addDependency(d, customizer)
@@ -67,7 +67,7 @@ class DependenciesConfiguration {
         addBuildDependency(d, customizer)
     }
 
-    public Dependency createDependencyForProperties(Map<String, String> properties, String scope) {
+    Dependency createDependencyForProperties(Map<String, String> properties, String scope) {
         if (!properties.group) {
             properties.group = defaultGroup
         }
@@ -145,7 +145,7 @@ class DependenciesConfiguration {
         }
         else {
             throw new IllegalArgumentException( "Bad artifact coordinates " + pattern
-                + ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>" );
+                + ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>" )
 
         }
     }
@@ -162,5 +162,4 @@ class DependenciesConfiguration {
         }
         dependency
     }
-
 }

@@ -5,10 +5,9 @@ import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.RemoteRepository
+
 import spock.lang.Specification
 
-/**
- */
 class AetherDependencyManagerSpec extends Specification {
 
     void "Test resolve with source and javadocs"() {
@@ -99,7 +98,6 @@ class AetherDependencyManagerSpec extends Specification {
             !report.files.find { it.name.contains('spring-core')}
     }
 
-
     void "Test plugin dependency resolve"() {
         given: "A dependency manager instance"
         def dependencyManager = new AetherDependencyManager()
@@ -139,7 +137,6 @@ class AetherDependencyManagerSpec extends Specification {
         then:"The resolve is successful"
             report != null
             report.files.find { it.name.contains 'ehcache' }
-
     }
 
     void "Test dependencies inherited from framework can be excluded"() {
@@ -161,9 +158,7 @@ class AetherDependencyManagerSpec extends Specification {
             report != null
             !dependencyManager.allDependencies.find { Dependency d -> d.name == 'grails-plugin-servlets'}
             !report.files.find { it.name.contains 'grails-plugin-servlets' }
-
     }
-
 
     void "Test dependencies inherited vs dependencies not inherited"() {
         given: "A dependency manager instance"
@@ -187,14 +182,12 @@ class AetherDependencyManagerSpec extends Specification {
         then:"The resolve is successful"
             applicationDependencies.size() == 1
             allDependenices.size() > 1
-
     }
 
     void "Test configure authentication" () {
         given: "A dependency manager instance"
         def dependencyManager = new AetherDependencyManager()
         dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
-
 
         when:"Credentials are specified"
             Authentication authentication
