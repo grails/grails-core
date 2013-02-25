@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.converters.api
 
 import grails.converters.JSON
+
 import org.codehaus.groovy.grails.web.converters.Converter
 import org.codehaus.groovy.grails.web.json.JSONArray
 import org.codehaus.groovy.grails.web.json.JSONObject
@@ -35,13 +36,11 @@ class ConvertersControllersApi {
      * @param controller The controller
      * @param converter The converter instance
      */
-
     void render(controller, Converter converter) {
         converter.render(controller.response)
 
         // Prevent Grails from looking for a view if this method is used.
-        def webRequest = GrailsWebRequest.lookup()
-        webRequest.renderView = false
+        GrailsWebRequest.lookup().renderView = false
     }
 
     /**
@@ -51,10 +50,12 @@ class ConvertersControllersApi {
      * @param value the value
      */
     void jsonHeader(controller, value) {
-        if (value) {
-            def json = (value instanceof JSON || value instanceof JSONObject || value instanceof JSONArray ||
-            value instanceof String) ? value : (new JSON(value))
-            controller.response?.setHeader("X-JSON", json.toString())
+        if (!value) {
+            return
         }
+
+        def json = (value instanceof JSON || value instanceof JSONObject || value instanceof JSONArray ||
+                    value instanceof String) ? value : new JSON(value)
+        controller.response?.setHeader("X-JSON", json.toString())
     }
 }

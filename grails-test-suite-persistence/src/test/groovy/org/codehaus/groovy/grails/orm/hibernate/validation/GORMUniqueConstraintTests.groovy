@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate.validation
 
-import org.codehaus.groovy.grails.validation.exceptions.ConstraintException
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
+import org.codehaus.groovy.grails.validation.exceptions.ConstraintException
 
 /**
  * Checks UniqueConstraint using GORM-s.
@@ -9,7 +9,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
  * @author Alexey Sergeev
  */
 class GORMUniqueConstraintTests extends AbstractUniqueConstraintTests {
-    
+
     void testValidatorBeanPresence() {
         assertTrue applicationContext.containsBean("UserValidator")
         def validator = applicationContext.getBean("UserValidator")

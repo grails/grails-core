@@ -16,14 +16,12 @@
 package org.grails.plugins.tomcat.fork
 
 import grails.build.logging.GrailsConsole
-import grails.util.BuildSettings
-import grails.util.Environment
 import groovy.transform.CompileStatic
+
 import org.apache.catalina.LifecycleException
 import org.apache.catalina.connector.Connector
 import org.apache.catalina.startup.Tomcat
 import org.apache.coyote.http11.Http11NioProtocol
-import org.grails.plugins.tomcat.IsolatedTomcat
 import org.grails.plugins.tomcat.TomcatServer
 
 /**
@@ -47,26 +45,26 @@ class TomcatWarRunner extends TomcatServer{
     }
 
     protected void enableSslConnector(String host, int httpsPort) {
-        Connector sslConnector;
+        Connector sslConnector
         try {
             sslConnector = new Connector()
         } catch (Exception e) {
-            throw new RuntimeException("Couldn't create HTTPS connector", e);
+            throw new RuntimeException("Couldn't create HTTPS connector", e)
         }
 
-        sslConnector.setScheme("https");
-        sslConnector.setSecure(true);
-        sslConnector.setPort(httpsPort);
-        sslConnector.setProperty("SSLEnabled", "true");
-        sslConnector.setAttribute("keystoreFile", keystoreFile);
-        sslConnector.setAttribute("keystorePass", keyPassword);
-        sslConnector.setURIEncoding("UTF-8");
+        sslConnector.setScheme("https")
+        sslConnector.setSecure(true)
+        sslConnector.setPort(httpsPort)
+        sslConnector.setProperty("SSLEnabled", "true")
+        sslConnector.setAttribute("keystoreFile", keystoreFile)
+        sslConnector.setAttribute("keystorePass", keyPassword)
+        sslConnector.setURIEncoding("UTF-8")
 
         if (!host.equals("localhost")) {
-            sslConnector.setAttribute("address", host);
+            sslConnector.setAttribute("address", host)
         }
 
-        tomcat.getService().addConnector(sslConnector);
+        tomcat.getService().addConnector(sslConnector)
     }
 
 
@@ -106,8 +104,8 @@ class TomcatWarRunner extends TomcatServer{
             enableSslConnector(host, httpsPort)
         }
 
-        final int serverPort = httpPort;
-        ForkedTomcatServer.startKillSwitch(tomcat, serverPort);
+        final int serverPort = httpPort
+        ForkedTomcatServer.startKillSwitch(tomcat, serverPort)
 
         try {
             tomcat.start()
@@ -117,7 +115,6 @@ class TomcatWarRunner extends TomcatServer{
             CONSOLE.error("Error loading Tomcat: " + e.getMessage(), e)
             System.exit(1)
         }
-
     }
 
     @Override

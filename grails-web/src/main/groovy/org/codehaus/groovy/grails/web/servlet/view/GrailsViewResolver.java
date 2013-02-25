@@ -101,7 +101,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             }
         };
 
-        View view=null;
+        View view = null;
         if (entry == null) {
             try {
                 view = updater.run();
@@ -149,7 +149,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             grailsApplication = getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
         }
 
-        GroovyPageScriptSource scriptSource = null;
+        GroovyPageScriptSource scriptSource;
         if (controller == null) {
             scriptSource = groovyPageLocator.findViewByPath(viewName);
         }

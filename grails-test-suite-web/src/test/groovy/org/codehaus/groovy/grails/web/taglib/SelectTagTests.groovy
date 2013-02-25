@@ -1,9 +1,9 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import org.apache.commons.lang.WordUtils
+import org.springframework.context.MessageSourceResolvable
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.w3c.dom.Document
-import org.springframework.context.MessageSourceResolvable
-import org.apache.commons.lang.WordUtils
 
 /**
  * @author Graeme Rocher
@@ -193,7 +193,6 @@ class SelectTagTests extends AbstractGrailsTagTests {
             tag.call(attributes)
         }
 
-
         def doc = parseText(sw.toString())
         assertNotNull(doc)
 
@@ -263,7 +262,6 @@ class SelectTagTests extends AbstractGrailsTagTests {
         checkMultiSelect(categories, selected, {cat -> selected.contains(cat.code) })
     }
 
-
     void testMultipleSelectWithObjectValues() {
         def sel1 = new Expando(code: 'T', label: 'Thriller'),
             sel2 = new Expando(code: 'C', label: 'Crime')
@@ -276,7 +274,6 @@ class SelectTagTests extends AbstractGrailsTagTests {
         def selected = [ sel1, sel2]
         checkMultiSelect(categories, selected, {cat -> selected.contains(cat) })
     }
-
 
     void checkMultiSelect(List categories, List selected, Closure isSelected) {
         final StringWriter sw = new StringWriter()

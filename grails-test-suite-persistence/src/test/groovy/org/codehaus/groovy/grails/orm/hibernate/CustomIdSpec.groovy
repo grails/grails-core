@@ -44,10 +44,9 @@ class CustomIdSpec extends GormSpec {
     }
 
     @Override
-    public List getDomainClasses() {
+    List getDomainClasses() {
         [ClassWithCustomId, ClassWithAssignedCustomId]
     }
-
 }
 
 @Entity

@@ -28,7 +28,6 @@ class InvalidVersionedObjectEvictionSpec extends GormSpec {
             foo.version = 0
             foo.name = 'valid2'
 
-
         then:"The last saved is successful"
             foo.merge(failOnError:true, flush:true)
     }
@@ -41,11 +40,7 @@ class InvalidVersionedObjectEvictionSpec extends GormSpec {
 
 @Entity
 class Bar {
-
     String name
-
-    static constraints = {
-    }
 }
 
 @Entity

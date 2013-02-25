@@ -8,7 +8,6 @@ import grails.persistence.Entity
  */
 class ListEagerFetchingTests extends AbstractGrailsHibernateTests {
 
-
     void testListEagerFetchResults() {
 
         new Store(name:"one")
@@ -32,8 +31,6 @@ class ListEagerFetchingTests extends AbstractGrailsHibernateTests {
     protected getDomainClasses() {
         [Store, Category]
     }
-
-
 }
 
 @Entity

@@ -19,7 +19,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     static setterGetterClass
     static dateBindingClass
     static classWithHasMany
-    
+
     def setupSpec() {
         final gcl = new GrailsAwareClassLoader()
         final transformer = new AstDatabindingInjector()
@@ -111,7 +111,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                     }
                 }
             ''')
-            
+
             // there must be a request bound in order for the structured date editor to be registered
             GrailsWebUtil.bindMockWebRequest()
     }
@@ -381,6 +381,6 @@ class AstDatabindingInjector implements ClassInjector {
         new DefaultASTDatabindingHelper().injectDatabindingCode(source, context, classNode)
     }
     boolean shouldInject(URL url) {
-        return true;
+        return true
     }
 }

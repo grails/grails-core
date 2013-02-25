@@ -133,10 +133,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         // Step 2: lookup the controller in the application.
         GrailsControllerClass controllerClass;
         Object attribute = grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
-        if(attribute instanceof GrailsControllerClass && ((GrailsControllerClass)attribute).mapsToURI(uri)) {
-        	controllerClass = (GrailsControllerClass) attribute;
+        if (attribute instanceof GrailsControllerClass && ((GrailsControllerClass)attribute).mapsToURI(uri)) {
+            controllerClass = (GrailsControllerClass) attribute;
         } else {
-        	controllerClass = getControllerClassByURI(uri);
+            controllerClass = getControllerClassByURI(uri);
         }
 
         if (controllerClass == null) {
@@ -325,7 +325,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     @SuppressWarnings("rawtypes")
     public Object handleAction(GroovyObject controller, Object action, HttpServletRequest request,
-            @SuppressWarnings("unused") HttpServletResponse response, Map params) {
+            HttpServletResponse response, Map params) {
         GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params");
         // if there are additional params add them to the params dynamic property
         if (params != null && !params.isEmpty()) {

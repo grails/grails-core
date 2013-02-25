@@ -1,14 +1,13 @@
 package grails.test.mixin
 
-import spock.lang.Specification
 import grails.persistence.Entity
+import spock.lang.Specification
 
 /**
  * Tests the usage of unique contstraint in unit tests
  */
 @TestFor(Group)
-class DomainClassWithUniqueConstraintSpec extends Specification{
-
+class DomainClassWithUniqueConstraintSpec extends Specification {
 
     void "Test that unique constraint is enforced"() {
         given:"An existing persisted instance"
@@ -23,6 +22,7 @@ class DomainClassWithUniqueConstraintSpec extends Specification{
             Group.count() == 1
     }
 }
+
 @Entity
 class Group {
     String name

@@ -148,7 +148,7 @@ class WebMetaUtils {
         }
     }
 
-    public static Map getCommandObjectBindingParams(Class commandObjectClass, Map params) {
+    static Map getCommandObjectBindingParams(Class commandObjectClass, Map params) {
         def commandParamsKey = convertTypeNameToParamsPrefix(commandObjectClass)
         def commandParams = params
         if (params != null && commandParamsKey != null && params[commandParamsKey] instanceof Map) {
@@ -318,7 +318,7 @@ class WebMetaUtils {
         }
     }
 
-    public static void registerPropertyMissingForTag(MetaClass mc, String name, Object result) {
+    static void registerPropertyMissingForTag(MetaClass mc, String name, Object result) {
         mc."${GrailsClassUtils.getGetterName(name)}" = {-> result }
     }
 }

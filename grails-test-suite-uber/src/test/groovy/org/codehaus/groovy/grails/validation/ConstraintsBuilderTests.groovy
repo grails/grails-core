@@ -94,7 +94,6 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
 
     protected void onSetUp() {
 
-
         gcl.parseClass('''
 class Book {
     Long id
@@ -119,6 +118,4 @@ class Site {
 }
         ''')
     }
-
-
 }

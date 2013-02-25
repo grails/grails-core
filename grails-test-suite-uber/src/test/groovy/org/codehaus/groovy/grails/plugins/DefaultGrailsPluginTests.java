@@ -115,7 +115,6 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
         versionPlugin.doWithRuntimeConfiguration(springConfig);
 
-        @SuppressWarnings("hiding")
         ApplicationContext ctx = springConfig.getApplicationContext();
 
         assertTrue(ctx.containsBean("classEditor"));
@@ -129,7 +128,6 @@ public class DefaultGrailsPluginTests extends AbstractGrailsMockTests {
         RuntimeSpringConfiguration springConfig = new DefaultRuntimeSpringConfiguration();
         versionPlugin.doWithRuntimeConfiguration(springConfig);
 
-        @SuppressWarnings("hiding")
         ApplicationContext ctx = springConfig.getApplicationContext();
 
         assertTrue(ctx.containsBean("classEditor"));

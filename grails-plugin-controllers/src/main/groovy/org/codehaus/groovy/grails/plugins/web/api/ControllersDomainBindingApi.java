@@ -29,7 +29,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BindingResult;
 
 /**
- * Enhancements made to domain classes to for data binding.
+ * Enhancements made to domain classes for data binding.
  *
  * @author Graeme Rocher
  * @since 2.0

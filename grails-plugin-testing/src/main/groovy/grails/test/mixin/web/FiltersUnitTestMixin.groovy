@@ -75,7 +75,7 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
             bindGrailsWebRequest()
         }
         if (!grailsApplication.hasArtefactHandler(FiltersConfigArtefactHandler.TYPE)) {
-            grailsApplication.registerArtefactHandler(new FiltersConfigArtefactHandler());
+            grailsApplication.registerArtefactHandler(new FiltersConfigArtefactHandler())
         }
 
         final grailsFilter = grailsApplication.addArtefact(FiltersConfigArtefactHandler.TYPE, filterClass)
@@ -88,7 +88,6 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
             }
             "$grailsFilter.fullName"(grailsFilter.clazz)
         }
-
 
         FiltersGrailsPlugin.reloadFilters(grailsApplication, applicationContext)
         return getCompositeInterceptor()

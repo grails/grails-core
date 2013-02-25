@@ -19,8 +19,7 @@ package org.codehaus.groovy.grails.test.runner.phase
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface TestPhaseConfigurer {
-
+interface TestPhaseConfigurer {
 
     /**
      * Preparation for the test phase

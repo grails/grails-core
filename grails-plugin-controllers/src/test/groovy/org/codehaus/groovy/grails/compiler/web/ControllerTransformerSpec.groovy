@@ -58,8 +58,8 @@ class ControllerTransformerSpec extends Specification {
         when:
             def transformer = new ControllerTransformer()
 
-    then:
-        transformer.artefactType == 'Controller'
+        then:
+            transformer.artefactType == 'Controller'
     }
 
     void "Test that the API is injected via AST"() {
@@ -90,13 +90,11 @@ class TestTransformedController {}
             controller.getRequest() instanceof HttpServletRequest
             controller.request instanceof HttpServletRequest
 
-
         when:
             controller.render(view:"foo")
 
         then:
             controller.modelAndView != null
-
     }
 
     void "Test annotated artefact"() {
@@ -114,7 +112,6 @@ class AnnotatedControllerTransformerController {
 
             controller != null
             controller.instanceControllersApi != null
-
     }
 
     def cleanup() {

@@ -1,11 +1,8 @@
-package grails.test;
+package grails.test
 
-import java.util.Collection;
-import java.util.Iterator;
-
-import grails.util.Environment;
-import spock.lang.Shared;
-import spock.lang.Specification;
+import grails.util.Environment
+import spock.lang.Shared
+import spock.lang.Specification
 
 /**
  * Grails internal class for running Spec in a defined Grails Environment
@@ -18,14 +15,14 @@ import spock.lang.Specification;
  *
  * @author Lari Hotari
  */
-public abstract class AbstractGrailsEnvChangingSpec extends Specification {
+abstract class AbstractGrailsEnvChangingSpec extends Specification {
     @Shared
     String originalGrailsEnv
     @Shared
     String originalGrailsEnvDefault
     static List<String> grailsEnvs = [Environment.DEVELOPMENT.name, Environment.TEST.name, Environment.PRODUCTION.name]
 
-    public String getGrailsEnvName() {
+    String getGrailsEnvName() {
         null
     }
 

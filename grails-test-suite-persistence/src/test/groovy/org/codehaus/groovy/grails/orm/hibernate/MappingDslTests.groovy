@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import javax.sql.DataSource
+
 import org.hibernate.type.TextType
 
  /**
@@ -341,14 +342,11 @@ class MappedPerson {
     }
 }
 
-
 @Entity
-class MappedChild {
-}
+class MappedChild {}
 
 @Entity
 class MappedAddress {
-
     static belongsTo = MappedPerson
 }
 

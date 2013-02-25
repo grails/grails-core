@@ -766,7 +766,6 @@ class PersistenceMethodTests extends AbstractGrailsHibernateTests {
             domainClass.executeQuery()
         }
 
-
         shouldFail(MissingMethodException) {
             domainClass.executeQuery("query", "param", [:], "4")
         }
@@ -939,4 +938,3 @@ class PersistentMethodTestsDescendent extends PersistentMethodTests {
         gender(blank:false)
     }
 }
-

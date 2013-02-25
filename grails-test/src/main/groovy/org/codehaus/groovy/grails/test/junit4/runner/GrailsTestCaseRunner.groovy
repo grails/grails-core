@@ -16,25 +16,21 @@
 
 package org.codehaus.groovy.grails.test.junit4.runner
 
-import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
+import java.lang.reflect.InvocationTargetException
 
+import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
+import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
+import org.codehaus.groovy.grails.test.support.GrailsTestMode
+import org.junit.internal.runners.statements.Fail
+import org.junit.internal.runners.statements.RunAfters
+import org.junit.internal.runners.statements.RunBefores
 import org.junit.rules.MethodRule
+import org.junit.runner.notification.RunNotifier
 import org.junit.runners.BlockJUnit4ClassRunner
 import org.junit.runners.model.FrameworkMethod
 import org.junit.runners.model.Statement
-import org.junit.runner.notification.RunNotifier
-import org.junit.internal.runners.statements.RunAfters
-import org.junit.internal.runners.statements.RunBefores
-import org.junit.internal.runners.statements.Fail
-
 import org.springframework.context.ApplicationContext
 import org.springframework.util.ReflectionUtils
-
-import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
-import org.codehaus.groovy.grails.test.support.GrailsTestMode
-import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
-
-import java.lang.reflect.InvocationTargetException
 
 class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
 
@@ -92,12 +88,12 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    private Statement withRules(FrameworkMethod method, Object target,
-        Statement statement) {
-        Statement result= statement;
-        for (MethodRule each : rules(target))
-            result= each.apply(result, method, target);
-        return result;
+    private Statement withRules(FrameworkMethod method, Object target, Statement statement) {
+        Statement result = statement
+        for (MethodRule each : rules(target)) {
+            result = each.apply(result, method, target)
+        }
+        return result
     }
 
     protected withGrailsTestEnvironment(Statement statement, Object test) {

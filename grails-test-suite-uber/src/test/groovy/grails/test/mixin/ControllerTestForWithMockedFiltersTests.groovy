@@ -1,6 +1,6 @@
 package grails.test.mixin
 
-import org.junit.Test;
+import org.junit.Test
 
 @TestFor(FirstController)
 @Mock(RedirectingFilters)

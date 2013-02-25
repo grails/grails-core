@@ -1,11 +1,9 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
-
 import org.hibernate.type.YesNoType
 
 /**
@@ -13,7 +11,6 @@ import org.hibernate.type.YesNoType
  * @since 1.1
  */
 class MappingDefaultsTests extends AbstractGrailsHibernateTests {
-
 
     protected void onSetUp() {
         gcl.parseClass """

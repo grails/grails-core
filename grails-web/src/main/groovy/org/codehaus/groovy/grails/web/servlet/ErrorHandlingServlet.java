@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
+import grails.util.GrailsWebUtil;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collections;
@@ -22,7 +24,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import grails.util.GrailsWebUtil;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
@@ -50,20 +51,21 @@ import org.springframework.web.servlet.ViewResolver;
  */
 public class ErrorHandlingServlet extends GrailsDispatcherServlet {
 
+    public static final String UTF_8 = "UTF-8";
+
     private static final String CONFIG_OPTION_GSP_ENCODING = "grails.views.gsp.encoding";
     private static final long serialVersionUID = 8792197458391395589L;
     private static final String GSP_SUFFIX = ".gsp";
     private static final String JSP_SUFFIX = ".jsp";
     private static final String TEXT_HTML = "text/html";
-    public static final String UTF_8 = "UTF-8";
+
     private String defaultEncoding;
 
     @Override
     protected void initFrameworkServlet() throws ServletException, BeansException {
         super.initFrameworkServlet();
 
-        final GrailsApplication grailsApplication = GrailsWebUtil.lookupApplication(getServletContext());
-        String encoding = (String) grailsApplication.getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
+        String encoding = (String)GrailsWebUtil.lookupApplication(getServletContext()).getFlatConfig().get(CONFIG_OPTION_GSP_ENCODING);
         if (encoding != null) {
             defaultEncoding = encoding;
         }
@@ -77,11 +79,11 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
     @SuppressWarnings("unchecked")
     @Override
     protected void doDispatch(final HttpServletRequest request, final HttpServletResponse response) throws Exception {
-        int statusCode;
 
         // Do nothing in the case of an already committed response. Assume error already handled
         if (response.isCommitted()) return;
 
+        int statusCode;
         if (request.getAttribute("javax.servlet.error.status_code") != null) {
             statusCode = Integer.parseInt(request.getAttribute("javax.servlet.error.status_code").toString());
         }
@@ -96,69 +98,69 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                 request.setAttribute("exception", new GrailsWrappedRuntimeException(getServletContext(), t));
             }
         }
+
         final UrlMappingsHolder urlMappingsHolder = (UrlMappingsHolder)getBean(UrlMappingsHolder.BEAN_ID);
-        UrlMappingInfo matchedInfo = null;
+        UrlMappingInfo urlMappingInfo = null;
         if (t != null) {
             createStackTraceFilterer().filter(t, true);
-            matchedInfo = urlMappingsHolder.matchStatusCode(statusCode, t);
-            if (matchedInfo == null) {
-                matchedInfo = urlMappingsHolder.matchStatusCode(statusCode, GrailsExceptionResolver.getRootCause(t));
+            urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode, t);
+            if (urlMappingInfo == null) {
+                urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode, GrailsExceptionResolver.getRootCause(t));
             }
         }
 
-        if (matchedInfo == null) {
-            matchedInfo = urlMappingsHolder.matchStatusCode(statusCode);
+        if (urlMappingInfo == null) {
+            urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode);
         }
-        final UrlMappingInfo urlMappingInfo = matchedInfo;
 
-        if (urlMappingInfo != null) {
-            RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
-            boolean restoreOriginalRequestAttributes = false;
-            if (requestAttributes instanceof GrailsWebRequest) {
-                final GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
-                urlMappingInfo.configure(webRequest);
-            }
-            else {
-                restoreOriginalRequestAttributes = true;
-                GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
-                RequestContextHolder.setRequestAttributes(webRequest);
-                urlMappingInfo.configure(webRequest);
-            }
+        if (urlMappingInfo == null) {
+            renderDefaultResponse(response, statusCode);
+            return;
+        }
 
-            HttpServletResponse originalResponse = WrappedResponseHolder.getWrappedResponse();
-
-            try {
-                WrappedResponseHolder.setWrappedResponse(response);
-                String viewName = urlMappingInfo.getViewName();
-                if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                    WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
-                }
-                else {
-                    ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
-                    if (viewResolver != null) {
-                        View v;
-                        try {
-                            if (!response.isCommitted()) {
-                                response.setContentType("text/html;charset="+defaultEncoding);
-                            }
-                            v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
-                            v.render(Collections.EMPTY_MAP, request, response);
-                        }
-                        catch (Throwable e) {
-                            createStackTraceFilterer().filter(e);
-                            renderDefaultResponse(response, statusCode, "Internal Server Error", e.getMessage());
-                        }
-                    }
-                }
-            } finally {
-                WrappedResponseHolder.setWrappedResponse(originalResponse);
-                if (restoreOriginalRequestAttributes) {
-                    RequestContextHolder.setRequestAttributes(requestAttributes);
-                }
-            }
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        boolean restoreOriginalRequestAttributes = false;
+        if (requestAttributes instanceof GrailsWebRequest) {
+            final GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
+            urlMappingInfo.configure(webRequest);
         }
         else {
-            renderDefaultResponse(response, statusCode);
+            restoreOriginalRequestAttributes = true;
+            GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
+            RequestContextHolder.setRequestAttributes(webRequest);
+            urlMappingInfo.configure(webRequest);
+        }
+
+        HttpServletResponse originalResponse = WrappedResponseHolder.getWrappedResponse();
+
+        try {
+            WrappedResponseHolder.setWrappedResponse(response);
+            String viewName = urlMappingInfo.getViewName();
+            if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+            }
+            else {
+                ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
+                if (viewResolver != null) {
+                    View v;
+                    try {
+                        if (!response.isCommitted()) {
+                            response.setContentType("text/html;charset="+defaultEncoding);
+                        }
+                        v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
+                        v.render(Collections.EMPTY_MAP, request, response);
+                    }
+                    catch (Throwable e) {
+                        createStackTraceFilterer().filter(e);
+                        renderDefaultResponse(response, statusCode, "Internal Server Error", e.getMessage());
+                    }
+                }
+            }
+        } finally {
+            WrappedResponseHolder.setWrappedResponse(originalResponse);
+            if (restoreOriginalRequestAttributes) {
+                RequestContextHolder.setRequestAttributes(requestAttributes);
+            }
         }
     }
 

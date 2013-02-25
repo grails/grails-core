@@ -1,11 +1,11 @@
 package org.codehaus.groovy.grails.web.taglib
 
 class ReturnValueTagLibTests extends AbstractGrailsTagTests {
+
     void onSetUp() {
         gcl.parseClass('''
 class ReturnValueTagLib {
         static returnObjectForTags = ['numberretval']
-
 
     Closure numberretval = { attrs ->
         // out shouldn't be used in returnObjectForTags tags, but we don't prevent it

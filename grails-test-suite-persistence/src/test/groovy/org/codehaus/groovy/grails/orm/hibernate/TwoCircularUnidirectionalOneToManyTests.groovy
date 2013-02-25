@@ -49,7 +49,6 @@ class TwoCircularUnidirectionalOneToManyUser {
         assertFalse userDomainClass.getPropertyByName("parents").isBidirectional()
         assertFalse userDomainClass.getPropertyByName("parents").isManyToMany()
 
-
         def userClass = userDomainClass.clazz
         def user1 = userClass.newInstance(name:'A')
         def user2 = userClass.newInstance(name:'B')

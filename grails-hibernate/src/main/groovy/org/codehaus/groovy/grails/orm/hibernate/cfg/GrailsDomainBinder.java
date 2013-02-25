@@ -228,7 +228,7 @@ public final class GrailsDomainBinder {
             this.sessionFactoryBeanName = sessionFactoryBeanName;
         }
 
-        public void doSecondPass(Map<?, ?> persistentClasses, @SuppressWarnings("unused") Map<?, ?> inheritedMetas) throws MappingException {
+        public void doSecondPass(Map<?, ?> persistentClasses, Map<?, ?> inheritedMetas) throws MappingException {
             bindCollectionSecondPass(property, mappings, persistentClasses, collection, sessionFactoryBeanName);
             createCollectionKeys();
         }
@@ -412,7 +412,7 @@ public final class GrailsDomainBinder {
         String columnName = getIndexColumnName(property, sessionFactoryBeanName);
         final boolean isManyToMany = property.isManyToMany();
 
-        if(isManyToMany && !property.isOwningSide()) {
+        if (isManyToMany && !property.isOwningSide()) {
             throw new MappingException("Invalid association ["+property.getDomainClass().getName()+"->"+ property.getName() +"]. List collection types only supported on the owning side of a many-to-many relationship.");
         }
 
@@ -973,8 +973,8 @@ public final class GrailsDomainBinder {
      * @param persistentClasses
      * @return The DependantValue (key)
      */
-    private static DependantValue createPrimaryKeyValue(Mappings mappings, @SuppressWarnings("unused") GrailsDomainClassProperty property,
-                                                        Collection collection, @SuppressWarnings("unused") Map<?, ?> persistentClasses) {
+    private static DependantValue createPrimaryKeyValue(Mappings mappings, GrailsDomainClassProperty property,
+                                                        Collection collection, Map<?, ?> persistentClasses) {
         KeyValue keyValue;
         DependantValue key;
         String propertyRef = collection.getReferencedPropertyName();
@@ -1356,13 +1356,13 @@ public final class GrailsDomainBinder {
                 }
 
                 final Object identity = m.getIdentity();
-                if(identity instanceof Identity) {
+                if (identity instanceof Identity) {
                     final Identity identityObject = (Identity) identity;
                     final String idName = identityObject.getName();
-                    if(idName != null && !GrailsDomainClassProperty.IDENTITY.equals(idName)) {
+                    if (idName != null && !GrailsDomainClassProperty.IDENTITY.equals(idName)) {
                         GrailsDomainClassProperty persistentProperty = domainClass.getPersistentProperty(idName);
-                        if(!persistentProperty.isIdentity()) {
-                            if(persistentProperty instanceof DefaultGrailsDomainClassProperty) {
+                        if (!persistentProperty.isIdentity()) {
+                            if (persistentProperty instanceof DefaultGrailsDomainClassProperty) {
                                 ((DefaultGrailsDomainClassProperty)persistentProperty).setIdentity(true);
                             }
                         }
@@ -1445,7 +1445,7 @@ public final class GrailsDomainBinder {
         String className = theClass.getName();
         for(Iterator<Map.Entry<Class<?>, Mapping>> it = MAPPING_CACHE.entrySet().iterator(); it.hasNext();) {
             Map.Entry<Class<?>, Mapping> entry = it.next();
-            if(className.equals(entry.getKey().getName())) {
+            if (className.equals(entry.getKey().getName())) {
                 it.remove();
             }
         }
@@ -1595,7 +1595,7 @@ public final class GrailsDomainBinder {
      * @param sessionFactoryBeanName  the session factory bean name
      */
     private static void bindJoinedSubClass(GrailsDomainClass sub, JoinedSubclass joinedSubclass,
-            Mappings mappings, @SuppressWarnings("unused") Mapping gormMapping, String sessionFactoryBeanName) {
+            Mappings mappings, Mapping gormMapping, String sessionFactoryBeanName) {
         bindClass(sub, joinedSubclass, mappings);
 
         if (joinedSubclass.getEntityPersisterClass() == null) {
@@ -2119,7 +2119,7 @@ public final class GrailsDomainBinder {
      * @param sessionFactoryBeanName  the session factory bean name
      */
     private static void bindComponent(Component component, GrailsDomainClassProperty property,
-            @SuppressWarnings("unused") boolean isNullable, Mappings mappings, String sessionFactoryBeanName) {
+            boolean isNullable, Mappings mappings, String sessionFactoryBeanName) {
         component.setEmbedded(true);
         Class<?> type = property.getType();
         String role = StringHelper.qualify(type.getName(), property.getName());
@@ -2238,8 +2238,7 @@ public final class GrailsDomainBinder {
         return prop;
     }
 
-    private static void bindOneToMany(GrailsDomainClassProperty currentGrailsProp, OneToMany one,
-            @SuppressWarnings("unused") Mappings mappings) {
+    private static void bindOneToMany(GrailsDomainClassProperty currentGrailsProp, OneToMany one, Mappings mappings) {
         one.setReferencedEntityName(currentGrailsProp.getReferencedPropertyType().getName());
         one.setIgnoreNotFound(true);
     }
@@ -2606,7 +2605,7 @@ public final class GrailsDomainBinder {
      * @param sessionFactoryBeanName  the session factory bean name
      */
     private static void bindSimpleValue(GrailsDomainClassProperty property, GrailsDomainClassProperty parentProperty,
-            SimpleValue simpleValue, String path, @SuppressWarnings("unused") Mappings mappings, String sessionFactoryBeanName) {
+            SimpleValue simpleValue, String path, Mappings mappings, String sessionFactoryBeanName) {
         // set type
         bindSimpleValue(property,parentProperty, simpleValue, path, getPropertyConfig(property), sessionFactoryBeanName);
     }
@@ -2699,7 +2698,7 @@ public final class GrailsDomainBinder {
      * @param mappings    The mappings
      */
     private static void bindSimpleValue(String type, SimpleValue simpleValue, boolean nullable,
-            String columnName, @SuppressWarnings("unused") Mappings mappings) {
+            String columnName, Mappings mappings) {
 
         simpleValue.setTypeName(type);
         Table t = simpleValue.getTable();

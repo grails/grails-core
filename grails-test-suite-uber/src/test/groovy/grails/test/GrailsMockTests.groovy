@@ -438,16 +438,16 @@ class GrailsMockImpl implements GrailsMockInterface {
 
 class GrailsMockWithMetaClassGetProperty {
     static {
-        setMetaClass(GroovySystem.getMetaClassRegistry().getMetaClass(GrailsMockWithMetaClassGetProperty.class), GrailsMockWithMetaClassGetProperty.class);
+        setMetaClass(GroovySystem.getMetaClassRegistry().getMetaClass(GrailsMockWithMetaClassGetProperty), GrailsMockWithMetaClassGetProperty)
     }
 
     protected static void setMetaClass(final MetaClass metaClass, Class nodeClass) {
         final MetaClass newMetaClass = new DelegatingMetaClass(metaClass) {
             @Override
-            public Object getProperty(Object object, String property) {
+            Object getProperty(Object object, String property) {
                 'string returned from metaClass getProperty()'
             }
-        };
-        GroovySystem.getMetaClassRegistry().setMetaClass(nodeClass, newMetaClass);
+        }
+        GroovySystem.getMetaClassRegistry().setMetaClass(nodeClass, newMetaClass)
     }
 }

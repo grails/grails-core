@@ -1,12 +1,8 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import grails.util.CollectionUtils;
-
-import java.util.Map;
-
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 
 class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
     protected GroovyObject renderTagLib
@@ -33,9 +29,9 @@ class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
     protected Map argsToAttrs(String name, Object args) {
         def attr = [template: name]
         if (args instanceof Object[]) {
-            Object[] tagArgs = ((Object[])args);
+            Object[] tagArgs = ((Object[])args)
             if (tagArgs.length > 0 && tagArgs[0] instanceof Map) {
-                attr.put("model", tagArgs[0]);
+                attr.put("model", tagArgs[0])
             }
         }
         attr

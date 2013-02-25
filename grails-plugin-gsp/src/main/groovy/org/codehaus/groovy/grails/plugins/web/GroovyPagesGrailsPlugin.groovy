@@ -17,24 +17,38 @@ package org.codehaus.groovy.grails.plugins.web
 
 import grails.artefact.Enhanced
 import grails.gsp.PageRenderer
-import grails.util.*
+import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
+import grails.util.Environment
+import grails.util.GrailsUtil
 
 import java.lang.reflect.Modifier
 
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClass
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
-import org.codehaus.groovy.grails.plugins.web.taglib.*
+import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.CountryTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.FormatTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.PluginTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.RenderTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.SitemeshTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
-import org.codehaus.groovy.grails.web.pages.*
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
+import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
@@ -45,17 +59,15 @@ import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.view.JstlView
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 
 /**
- * A Plugin that sets up and configures the GSP and GSP tag library support in Grails.
+ * Sets up and configures the GSP and GSP tag library support in Grails.
  *
  * @author Graeme Rocher
  * @since 1.1
  */
 class GroovyPagesGrailsPlugin {
 
-    // monitor all resources that end with TagLib.groovy
     def watchedResources = ["file:./plugins/*/grails-app/taglib/**/*TagLib.groovy",
                             "file:./grails-app/taglib/**/*TagLib.groovy"]
 
@@ -63,7 +75,6 @@ class GroovyPagesGrailsPlugin {
     def dependsOn = [core: version, i18n: version]
     def observe = ['controllers']
 
-    // Provide these tag libraries declaratively
     def providedArtefacts = [
         ApplicationTagLib,
         CountryTagLib,
@@ -80,8 +91,8 @@ class GroovyPagesGrailsPlugin {
     /**
      * Clear the page cache with the ApplicationContext is loaded
      */
-    def doWithApplicationContext = {ApplicationContext ctx ->
-        ctx.getBean("groovyPagesTemplateEngine").clearPageCache()
+    def doWithApplicationContext = { ApplicationContext ctx ->
+        ctx.groovyPagesTemplateEngine.clearPageCache()
     }
 
     /**
@@ -102,13 +113,13 @@ class GroovyPagesGrailsPlugin {
         boolean warDeployedWithReload = application.warDeployed && enableReload
         boolean enableCacheResources = !(application?.flatConfig?.get(GroovyPagesTemplateEngine.CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES) == true)
 
-        boolean customResourceLoader=false
+        boolean customResourceLoader = false
         // If the development environment is used we need to load GSP files relative to the base directory
         // as oppose to in WAR deployment where views are loaded from /WEB-INF
         def viewsDir = application.config.grails.gsp.view.dir
         if (viewsDir) {
             log.info "Configuring GSP views directory as '${viewsDir}'"
-            customResourceLoader=true
+            customResourceLoader = true
             groovyPageResourceLoader(GroovyPageResourceLoader) {
                 baseResource = "file:${viewsDir}"
                 pluginSettings = GrailsPluginUtils.getPluginBuildSettings()
@@ -116,7 +127,7 @@ class GroovyPagesGrailsPlugin {
         }
         else {
             if (developmentMode) {
-                customResourceLoader=true
+                customResourceLoader = true
                 groovyPageResourceLoader(GroovyPageResourceLoader) { bean ->
                     bean.lazyInit = true
                     BuildSettings settings = BuildSettingsHolder.settings
@@ -127,7 +138,7 @@ class GroovyPagesGrailsPlugin {
             }
             else {
                 if (warDeployedWithReload && env.hasReloadLocation()) {
-                    customResourceLoader=true
+                    customResourceLoader = true
                     groovyPageResourceLoader(GroovyPageResourceLoader) {
                         def location = GroovyPagesGrailsPlugin.transformToValidLocation(env.reloadLocation)
                         baseResource = "file:${location}"
@@ -256,7 +267,7 @@ class GroovyPagesGrailsPlugin {
         }
     }
 
-    private void enhanceClasses(classes, apiObject) {
+    private void enhanceClasses(List<Class> classes, apiObject) {
         def nonEnhancedClasses = [] as Set
         for (Class clazz in classes) {
             if (!clazz.getAnnotation(Enhanced)) {
@@ -270,6 +281,7 @@ class GroovyPagesGrailsPlugin {
                 superClass = superClass.superclass
             }
         }
+
         if (nonEnhancedClasses) {
             def enhancer = new MetaClassEnhancer()
             enhancer.addApi apiObject
@@ -283,16 +295,14 @@ class GroovyPagesGrailsPlugin {
     def doWithDynamicMethods = { ApplicationContext ctx ->
         WebMetaUtils.registerStreamCharBufferMetaClass()
 
-        TagLibraryLookup gspTagLibraryLookup = ctx.getBean("gspTagLibraryLookup")
+        TagLibraryLookup gspTagLibraryLookup = ctx.gspTagLibraryLookup
         GrailsPluginManager pluginManager = getManager()
 
         if (manager?.hasGrailsPlugin("controllers")) {
-            def controllerClasses = application.controllerClasses*.clazz
-            enhanceClasses(controllerClasses, ctx.getBean("instanceControllerTagLibraryApi"))
+            enhanceClasses(application.controllerClasses*.clazz, ctx.instanceControllerTagLibraryApi)
         }
 
-        def tagLibClasses = application.tagLibClasses*.clazz
-        enhanceClasses(tagLibClasses, ctx.getBean("instanceTagLibraryApi"))
+        enhanceClasses(application.tagLibClasses*.clazz, ctx.instanceTagLibraryApi)
         application.tagLibClasses.each { taglibClass ->
             WebMetaUtils.enhanceTagLibMetaClass(taglibClass, gspTagLibraryLookup)
         }
@@ -315,17 +325,17 @@ class GroovyPagesGrailsPlugin {
 
                 // The tag library lookup class caches "tag -> taglib class"
                 // so we need to update it now.
-                def lookup = event.ctx.getBean("gspTagLibraryLookup")
+                def lookup = event.ctxgspTagLibraryLookup
                 lookup.registerTagLib(taglibClass)
 
-                enhanceClasses([taglibClass.clazz], ctx.getBean("instanceTagLibraryApi"))
-                WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.getBean("gspTagLibraryLookup"))
+                enhanceClasses([taglibClass.clazz], ctxinstanceTagLibraryApi)
+                WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctxgspTagLibraryLookup)
             }
         } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
-            enhanceClasses([event.source], ctx.getBean("instanceControllerTagLibraryApi"))
+            enhanceClasses([event.source], ctx.instanceControllerTagLibraryApi)
         }
 
         // clear uri cache after changes
-        ctx.getBean("groovyPagesUriService").clear()
+        ctx.groovyPagesUriService.clear()
     }
 }

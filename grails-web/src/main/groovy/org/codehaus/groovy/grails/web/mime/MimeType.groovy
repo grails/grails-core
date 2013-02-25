@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.mime
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 
 /**
  * @author Graeme Rocher
@@ -24,18 +23,13 @@ import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
  */
 class MimeType {
 
-    static {
-        ShutdownOperations.addOperation({ reset() } as Runnable)
-    }
-
     /**
      * The bean name used to store the mime type definitions
      */
     public static final String BEAN_NAME = "mimeTypes"
 
-    static final XML = 'application/xml'
+    static final String XML = 'application/xml'
 
-    private static MIMES
     private static DEFAULTS = createDefaults()
 
     MimeType(String n, Map params = [:]) {
@@ -45,7 +39,7 @@ class MimeType {
 
     String name
     String extension
-    Map parameters = [q:"1.0"]
+    Map parameters = [q: "1.0"]
 
     boolean equals(Object o) { o instanceof MimeType && name.equals(o.name) }
     int hashCode() { name.hashCode() }
@@ -58,24 +52,16 @@ class MimeType {
      * @return An array of MimeTypes
      */
     static MimeType[] getConfiguredMimeTypes() {
-        def webRequest = GrailsWebRequest.lookup()
-        def context = webRequest?.getApplicationContext()
-        if (context?.containsBean(MimeType.BEAN_NAME)) {
-            return context?.getBean(MimeType.BEAN_NAME, MimeType[].class)
-        }
-        return DEFAULTS
-    }
-
-    static reset() {
-        MIMES = null
+        def ctx = GrailsWebRequest.lookup()?.getApplicationContext()
+        ctx?.containsBean(MimeType.BEAN_NAME) ? ctx?.getBean(MimeType.BEAN_NAME, MimeType[]) : DEFAULTS
     }
 
     /**
      * Creates the default MimeType configuration if none exists in Config.groovy
      */
     static MimeType[] createDefaults() {
-        def mimes = [ new MimeType('text/html') ]
+        def mimes = [new MimeType('text/html')]
         mimes[-1].extension = 'html'
-        return mimes as MimeType[]
+        mimes
     }
 }

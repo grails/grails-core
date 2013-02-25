@@ -1,19 +1,18 @@
 package org.codehaus.groovy.grails.web.pages
 
-import grails.util.Environment;
-import groovy.lang.MetaClass
+import grails.util.Environment
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.springframework.web.context.request.RequestContextHolder as RCH
 
 class GroovyPagesMetaUtils {
-    private final static Object[] EMPTY_OBJECT_ARRAY=new Object[0];
+    private final static Object[] EMPTY_OBJECT_ARRAY = new Object[0]
 
-    public static void registerMethodMissingForGSP(Class gspClass, TagLibraryLookup gspTagLibraryLookup) {
+    static void registerMethodMissingForGSP(Class gspClass, TagLibraryLookup gspTagLibraryLookup) {
         registerMethodMissingForGSP(GrailsMetaClassUtils.getExpandoMetaClass(gspClass), gspTagLibraryLookup)
     }
 
-    public static void registerMethodMissingForGSP(final MetaClass mc, final TagLibraryLookup gspTagLibraryLookup) {
+    static void registerMethodMissingForGSP(final MetaClass mc, final TagLibraryLookup gspTagLibraryLookup) {
         final boolean addMethodsToMetaClass = !Environment.isDevelopmentMode()
 
         mc.methodMissing = { String name, args ->
@@ -22,7 +21,7 @@ class GroovyPagesMetaUtils {
         registerMethodMissingWorkaroundsForDefaultNamespace(mc, gspTagLibraryLookup)
     }
 
-    public static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, args, boolean addMethodsToMetaClass) {
+    static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, args, boolean addMethodsToMetaClass) {
         final GroovyObject tagBean = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
         if (tagBean != null) {
             final MetaMethod method=tagBean.respondsTo(name, args).find{ it }
@@ -39,12 +38,12 @@ class GroovyPagesMetaUtils {
         throw new MissingMethodException(name, type, args)
     }
 
-    public static void registerMethodMissingWorkaroundsForDefaultNamespace(MetaClass mc, TagLibraryLookup gspTagLibraryLookup) {
+    static void registerMethodMissingWorkaroundsForDefaultNamespace(MetaClass mc, TagLibraryLookup gspTagLibraryLookup) {
         // hasErrors gets mixed up by hasErrors method without this metaclass modification
         registerMethodMissingForTags(mc, gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, 'hasErrors', false)
     }
 
-    public static addTagLibMethodToMetaClass(final GroovyObject tagBean, final MetaMethod method, final MetaClass mc) {
+    static addTagLibMethodToMetaClass(final GroovyObject tagBean, final MetaMethod method, final MetaClass mc) {
         Class[] paramTypes = method.nativeParameterTypes
         Closure methodMissingClosure = null
         switch(paramTypes.length) {

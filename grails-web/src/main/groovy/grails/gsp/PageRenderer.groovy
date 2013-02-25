@@ -17,7 +17,6 @@ package grails.gsp
 
 import java.security.Principal
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
 
 import javax.servlet.AsyncContext
 import javax.servlet.DispatcherType
@@ -32,23 +31,17 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
 import javax.servlet.http.Part
+
 import org.apache.commons.collections.iterators.IteratorEnumeration
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriSupport
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
-import org.springframework.core.io.Resource
-import org.springframework.core.io.ResourceLoader
 import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.support.ServletContextResourceLoader
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageResourceScriptSource
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 
 /**
  * Simplified API for rendering GSP pages from services, jobs and other non-request classes.
@@ -56,7 +49,7 @@ import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPage
  * @author Graeme Rocher
  * @since 2.0
  */
-class PageRenderer implements ApplicationContextAware, ServletContextAware{
+class PageRenderer implements ApplicationContextAware, ServletContextAware {
 
     private GroovyPagesTemplateEngine templateEngine
     GrailsConventionGroovyPageLocator groovyPageLocator
@@ -297,7 +290,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware{
         }
 
         void setAttribute(String name, Object o) {
-            if(o != null) {
+            if (o != null) {
                 attributes[name] = o
             } else {
                 attributes.remove name

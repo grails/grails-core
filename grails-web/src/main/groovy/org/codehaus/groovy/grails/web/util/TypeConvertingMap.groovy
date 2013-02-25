@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.web.util
 
 import org.apache.commons.lang.builder.HashCodeBuilder
 
-
 /**
  * A category for use with maps that want type conversion capabilities.
  *
@@ -41,70 +40,70 @@ class TypeConvertingMap extends AbstractTypeConvertingMap {
     }
 
     Byte 'byte'(String name) {
-        return super.getByte(name);
+        return super.getByte(name)
     }
 
     Byte 'byte'(String name, Integer defaultValue) {
-        return super.getByte(name, defaultValue);
+        return super.getByte(name, defaultValue)
     }
 
     Character 'char'(String name) {
-        return super.getChar(name);
+        return super.getChar(name)
     }
 
     Character 'char'(String name, Character defaultValue) {
-        return super.getChar(name, defaultValue?.charValue() as Integer);
+        return super.getChar(name, defaultValue?.charValue() as Integer)
     }
 
     Character 'char'(String name, Integer defaultValue) {
-        return super.getChar(name, defaultValue);
+        return super.getChar(name, defaultValue)
     }
 
     Integer 'int'(String name) {
-        return super.getInt(name);
+        return super.getInt(name)
     }
 
     Integer 'int'(String name, Integer defaultValue) {
-        return super.getInt(name, defaultValue);
+        return super.getInt(name, defaultValue)
     }
 
     Long 'long'(String name) {
-        return super.getLong(name);
+        return super.getLong(name)
     }
 
     Long 'long'(String name, Long defaultValue) {
-        return super.getLong(name, defaultValue);
+        return super.getLong(name, defaultValue)
     }
 
     Short 'short'(String name) {
-        return super.getShort(name);
+        return super.getShort(name)
     }
 
     Short 'short'(String name, Integer defaultValue) {
-        return super.getShort(name, defaultValue);
+        return super.getShort(name, defaultValue)
     }
 
     Double 'double'(String name) {
-        return super.getDouble(name);
+        return super.getDouble(name)
     }
 
     Double 'double'(String name, Double defaultValue) {
-        return super.getDouble(name, defaultValue);
+        return super.getDouble(name, defaultValue)
     }
 
     Float 'float'(String name) {
-        return super.getFloat(name);
+        return super.getFloat(name)
     }
 
     Float 'float'(String name, Float defaultValue) {
-        return super.getFloat(name, defaultValue);
+        return super.getFloat(name, defaultValue)
     }
 
     Boolean 'boolean'(String name) {
-        return super.getBoolean(name);
+        return super.getBoolean(name)
     }
 
     Boolean 'boolean'(String name, Boolean defaultValue) {
-        return super.getBoolean(name, defaultValue);
+        return super.getBoolean(name, defaultValue)
     }
 }

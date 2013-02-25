@@ -2,8 +2,10 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.gorm.DetachedCriteria
 import grails.persistence.Entity
-import spock.lang.Ignore
+
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
+
+import spock.lang.Ignore
 import spock.lang.Issue
 
 /**
@@ -34,7 +36,6 @@ class WhereMethodSpec extends GormSpec {
             owner.firstName == args.name
         }
     }
-
 
     @Issue('GRAILS-8366')
     def "Test calling method on RHS of collection size() query"() {
@@ -132,11 +133,9 @@ class WhereMethodSpec extends GormSpec {
             pets.size() == 2
         }
 
-
         then:"The results are valid"
         owners.count() == 2
     }
-
 
     def "Test where query with join"() {
         given:"some people"
@@ -160,7 +159,6 @@ class WhereMethodSpec extends GormSpec {
         results.size() == 3
     }
 
-
     @Issue('GRAILS-9447')
     def "Test where query integer type conversion"() {
         given:"some people"
@@ -172,7 +170,6 @@ class WhereMethodSpec extends GormSpec {
         then:"The correct results are returned and type conversion happens as expected"
             results.size() == 3
             results[0].id == 3
-
     }
 
     def "Test whereAny method"() {
@@ -203,7 +200,6 @@ class WhereMethodSpec extends GormSpec {
 
         then:"The correct result is returned"
             pets.size() == 2
-
     }
 
     def "Test where with multiple property projections using chaining"() {
@@ -262,15 +258,13 @@ class CallMe {
 ''')
     }
 
-
     def "Test parameterized where query"() {
         given:"A bunch of people"
-              createPeople()
+            createPeople()
 
         when:"parameters are used instead of literals"
             def fn = "Bart"
             def ln = "Simpson"
-
 
             def query = Person.where { firstName != fn && lastName == ln }.sort("firstName", "desc")
             def people = query.list()
@@ -282,12 +276,11 @@ class CallMe {
     @Ignore
     def "Test .count on a query with sort parameters"() {
         given:"A bunch of people"
-              createPeople()
+            createPeople()
 
         when:"parameters are used instead of literals"
             def fn = "Bart"
             def ln = "Simpson"
-
 
             def query = Person.where { firstName != fn && lastName == ln }.sort("firstName", "desc")
             def cnt = query.count()
@@ -295,7 +288,6 @@ class CallMe {
         then:"The correct results are returned"
             cnt == 3
     }
-
 
     def "Test property projection"() {
         given:"A bunch of people"
@@ -311,20 +303,19 @@ class CallMe {
             results == ["Homer", "Marge", "Bart", "Lisa"]
     }
 
-  def "Test invoke dynamic finder on where query"() {
-      given:"A bunch of people"
-        createPeople()
+    def "Test invoke dynamic finder on where query"() {
+        given:"A bunch of people"
+            createPeople()
 
-      when:"We create a where query and combine it with a dynamic finder"
-        def query = Person.where {
-            lastName == "Simpson"
-        }
-        Person p = query.findByFirstName("Bart")
+        when:"We create a where query and combine it with a dynamic finder"
+            def query = Person.where {
+                lastName == "Simpson"
+            }
+            Person p = query.findByFirstName("Bart")
 
-      then:"The correct result is returned"
-        p != null
-        p.firstName == "Bart"
-
+        then:"The correct result is returned"
+            p != null
+            p.firstName == "Bart"
   }
 
   def "Test function execution"() {
@@ -332,7 +323,6 @@ class CallMe {
           createPeopleWithPets()
           def p = new Person(firstName: "Old", lastName: "Person").save()
           new Pet(owner:p, birthDate: Date.parse('yyyy-MM-dd','2009-06-01'), name:"Old Dog").save()
-
 
       def currentYear = new Date()[Calendar.YEAR]
       when:"A function is used on the property"
@@ -585,7 +575,6 @@ class CallMe {
             result != null
             result.firstName == "Marge"
 
-
         when: "A where query is used with else statement"
              useBart = false
              int count = 1
@@ -686,7 +675,6 @@ class CallMe {
        then:"The correct results are returned"
             results.size() == 1
             results[0].firstName == "Ed"
-
 
      when:"We query for people with greater than 2 pets"
             query = Person.where {
@@ -794,8 +782,6 @@ class CallMe {
             count == 2
             results[0].firstName == "Ed"
             results[1].firstName == "Joe"
-
-
    }
 
    def "Test query association with or"() {
@@ -813,7 +799,6 @@ class CallMe {
             count == 2
             results[0].firstName == "Fred"
             results[1].firstName == "Joe"
-
 
        when:"We use a logical or to query pets combined with another top-level logical expression"
            query = Person.where {
@@ -928,9 +913,7 @@ class CallMe {
             results[0].firstName == "Bart"
             results[1].firstName == "Lisa"
             results[2].firstName == "Marge"
-
-
-   }
+    }
 
     def "Test compare properties query"() {
        given:"A bunch of people"
@@ -1227,12 +1210,9 @@ class CallMe {
             def result = query.get()
 
         then:"The correct result is returned"
-
             result != null
             result.firstName == "Bart"
-
     }
-
 
     def "Test basic single criterion where call"() {
         given:"A bunch of people"
@@ -1248,7 +1228,6 @@ class CallMe {
 
             result != null
             result.firstName == "Bart"
-
     }
 
     @Issue('GRAILS-9328')
@@ -1272,7 +1251,7 @@ class CallMe {
     }
 
 
-    protected def createPeople() {
+    protected void createPeople() {
         new Person(firstName: "Homer", lastName: "Simpson", age:45).save()
         new Person(firstName: "Marge", lastName: "Simpson", age:40).save()
         new Person(firstName: "Bart", lastName: "Simpson", age:9).save()
@@ -1281,16 +1260,12 @@ class CallMe {
         new Person(firstName: "Fred", lastName: "Flinstone", age:41).save()
     }
 
-    protected def createPeopleWithPets() {
+    protected void createPeopleWithPets() {
         new Person(firstName: "Joe", lastName: "Bloggs").addToPets(name: "Jack").addToPets(name: "Butch").save()
-
         new Person(firstName: "Ed", lastName: "Floggs").addToPets(name: "Mini").addToPets(name: "Barbie").addToPets(name:"Ken").save()
-
         new Person(firstName: "Fred", lastName: "Cloggs").addToPets(name: "Jim").addToPets(name: "Joe").save()
     }
-
 }
-
 
 @Entity
 class Face implements Serializable {
@@ -1327,6 +1302,4 @@ class Rectangle implements Serializable {
 
     Integer width
     Integer length
-
 }
-

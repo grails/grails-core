@@ -29,11 +29,9 @@ import org.springframework.util.ReflectionUtils
 /**
  * Provides common functionality for the inline and isolated variants of tomcat server.
  *
- *
  * @author Graeme Rocher
  * @see org.grails.plugins.tomcat.fork.TomcatWarRunner
  * @see org.grails.plugins.tomcat.fork.TomcatDevelopmentRunner
- *
  */
 abstract class TomcatServer implements EmbeddableServer {
 
@@ -93,7 +91,6 @@ abstract class TomcatServer implements EmbeddableServer {
         def shouldScan = (Boolean) (scanConfig.enabled instanceof Boolean ? scanConfig.enabled : false)
         def extraJarsToSkip = scanConfig.excludes
         if (extraJarsToSkip instanceof List && shouldScan) {
-
             try {
                 def jarsToSkipField = ReflectionUtils.findField(StandardJarScanner, "defaultJarsToSkip", Set)
                 ReflectionUtils.makeAccessible(jarsToSkipField)
@@ -105,6 +102,7 @@ abstract class TomcatServer implements EmbeddableServer {
         }
         shouldScan
     }
+
     /**
      * The host and port params will never be null, defaults will be passed if necessary.
      *

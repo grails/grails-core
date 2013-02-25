@@ -35,10 +35,9 @@ class AssociationIdSpec extends GormSpec {
     }
 
     @Override
-    public List getDomainClasses() {
+    List getDomainClasses() {
         [AssociationPet, PetOwner, PetOwnerSubclass]
     }
-
 }
 
 @Entity

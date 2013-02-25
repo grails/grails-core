@@ -14,21 +14,22 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
 import grails.artefact.Artefact
 import groovy.xml.MarkupBuilder
+
 import java.beans.PropertyEditor
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
+
 import org.apache.commons.lang.StringEscapeUtils
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
-import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
  * Tags to handle validation and errors.
@@ -398,11 +399,11 @@ class ValidationTagLib {
                         out << "document.forms['${form}'].elements['${constraint.propertyName}']," // the field
                         out << '"Test message"' // TODO: Resolve the actual message
                         switch (vt) {
-                            case 'mask': out << ",function() { return '${constraint.regex}'; }";break;
-                            case 'intRange': out << ",function() { if (arguments[0]=='min') return ${constraint.range.from}; else return ${constraint.range.to} }";break;
-                            case 'floatRange': out << ",function() { if (arguments[0]=='min') return ${constraint.range.from}; else return ${constraint.range.to} }";break;
-                            case 'maxLength': out << ",function() { return ${constraint.maxSize};  }";break;
-                            case 'minLength': out << ",function() { return ${constraint.minSize};  }";break;
+                            case 'mask': out << ",function() { return '${constraint.regex}'; }";break
+                            case 'intRange': out << ",function() { if (arguments[0]=='min') return ${constraint.range.from}; else return ${constraint.range.to} }";break
+                            case 'floatRange': out << ",function() { if (arguments[0]=='min') return ${constraint.range.from}; else return ${constraint.range.to} }";break
+                            case 'maxLength': out << ",function() { return ${constraint.maxSize};  }";break
+                            case 'minLength': out << ",function() { return ${constraint.minSize};  }";break
                         }
                         out << ');\n'
                     }
@@ -415,7 +416,7 @@ class ValidationTagLib {
             def validateType = k.substring(0,1).toUpperCase() + k.substring(1)
             out << "if (!validate${validateType}(form)) return false;\n"
         }
-        out << 'return true;\n';
+        out << 'return true;\n'
         out << '}\n'
         // out << "document.forms['${attrs.form}'].onsubmit = function(e) {return validateForm(this)}\n"
         out << '</script>'

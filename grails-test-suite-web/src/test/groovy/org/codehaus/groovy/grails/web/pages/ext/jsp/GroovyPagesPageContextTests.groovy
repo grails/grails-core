@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
 import grails.util.GrailsWebUtil
-import org.springframework.web.context.request.RequestContextHolder
+
 import javax.servlet.jsp.PageContext
+
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
@@ -51,7 +53,6 @@ class GroovyPagesPageContextTests extends GroovyTestCase {
         assertEquals "bar", pageContext.getAttribute("foo", PageContext.PAGE_SCOPE)
         assertEquals "bar", pageContext.findAttribute("foo")
         assertEquals "diff", pageContext.getAttribute("foo", PageContext.SESSION_SCOPE)
-
 
         pageContext.removeAttribute "foo"
 

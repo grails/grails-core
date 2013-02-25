@@ -53,7 +53,6 @@ class JSONBindingToNullTests {
     void testXmlBindingToNull() {
         def pebbles = new User(username:"pebbles", password:"letmein", firstName:"Pebbles", lastName:"Flintstone", middleName:"T", phone:"555-555-5555", email:'pebbles@flintstone.com', activationDate:new Date(), logonFailureCount:0, deactivationDate:null).save(flush:true)
 
-
         request.method = 'PUT'
         request.xml = pebbles
         params.id = pebbles.id

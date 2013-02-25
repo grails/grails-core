@@ -24,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
@@ -92,7 +94,7 @@ public class GroovyPageLayoutFinder {
         }
         final Object layoutAttribute = request.getAttribute(LAYOUT_ATTRIBUTE);
         if (request.getAttribute(RENDERING_VIEW_ATTRIBUTE) != null || layoutAttribute != null) {
-            String layoutName = layoutAttribute != null ? layoutAttribute.toString() : null;
+            String layoutName = layoutAttribute == null ? null : layoutAttribute.toString();
 
             if (layoutName == null) {
                 layoutName = page.getProperty("meta.layout");
@@ -103,8 +105,7 @@ public class GroovyPageLayoutFinder {
             if (StringUtils.isBlank(layoutName)) {
                 GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
                 if (controller != null) {
-                    String controllerName = (String)controller
-                            .getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
+                    String controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
                     String actionUri = (String)controller.getProperty(ControllerDynamicMethods.ACTION_URI_PROPERTY);
 
                     if (LOG.isDebugEnabled()) {
@@ -149,7 +150,7 @@ public class GroovyPageLayoutFinder {
     }
 
     protected Decorator getApplicationDefaultDecorator(HttpServletRequest request) {
-        return getNamedDecorator(request, (defaultDecoratorName != null) ? defaultDecoratorName : "application",
+        return getNamedDecorator(request, defaultDecoratorName == null ? "application" : defaultDecoratorName,
                 !enableNonGspViews || defaultDecoratorName == null);
     }
 
@@ -239,42 +240,20 @@ public class GroovyPageLayoutFinder {
 
         @Override
         public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((actionUri == null) ? 0 : actionUri.hashCode());
-            result = prime * result + ((controllerName == null) ? 0 : controllerName.hashCode());
-            return result;
+            return new HashCodeBuilder().append(actionUri).append(controllerName).toHashCode();
         }
 
         @Override
         public boolean equals(Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+
             LayoutCacheKey other = (LayoutCacheKey)obj;
-            if (actionUri == null) {
-                if (other.actionUri != null) {
-                    return false;
-                }
-            }
-            else if (!actionUri.equals(other.actionUri)) {
-                return false;
-            }
-            if (controllerName == null) {
-                if (other.controllerName != null) {
-                    return false;
-                }
-            }
-            else if (!controllerName.equals(other.controllerName)) {
-                return false;
-            }
-            return true;
+            return new EqualsBuilder()
+                .append(other.actionUri, actionUri)
+                .append(other.controllerName, controllerName)
+                .isEquals();
         }
     }
 

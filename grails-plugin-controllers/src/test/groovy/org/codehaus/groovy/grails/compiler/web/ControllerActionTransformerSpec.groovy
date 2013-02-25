@@ -20,19 +20,15 @@ class ControllerActionTransformerSpec extends Specification {
         System.properties[BuildSettings.CONVERT_CLOSURES_KEY] = 'true'
         gcl = new GrailsAwareClassLoader()
         def transformer = new ControllerActionTransformer() {
-                @Override
-                boolean shouldInject(URL url) {
-                    return true;
-                }
+            @Override
+            boolean shouldInject(URL url) { true }
+        }
 
-            }
-         def transformer2 = new ControllerTransformer() {
-                @Override
-                boolean shouldInject(URL url) {
-                    return true;
-                }
+        def transformer2 = new ControllerTransformer() {
+            @Override
+            boolean shouldInject(URL url) { true }
+        }
 
-            }
         gcl.classInjectors = [transformer,transformer2] as ClassInjector[]
         def webRequest = GrailsWebUtil.bindMockWebRequest()
         def appCtx = new GrailsWebApplicationContext()

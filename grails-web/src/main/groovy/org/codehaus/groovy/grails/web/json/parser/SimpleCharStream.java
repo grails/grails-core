@@ -39,7 +39,7 @@ public class SimpleCharStream {
         tabSize = i;
     }
 
-    protected int getTabSize(@SuppressWarnings("unused") int i) {
+    protected int getTabSize(int i) {
         return tabSize;
     }
 

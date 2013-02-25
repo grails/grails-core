@@ -248,7 +248,6 @@ class Pet {
         request.addParameter("title", "The Stand")
         request.addParameter("author.id", "null")
 
-
         def params = c.params
         def b = ga.getDomainClass("databindingtests.Book").newInstance()
 

@@ -1,20 +1,22 @@
 package org.codehaus.groovy.grails.web.pages.discovery
 
-import spock.lang.Specification
-import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
-import org.springframework.core.io.ByteArrayResource
-import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
-import org.springframework.web.context.request.RequestContextHolder
-import grails.util.GrailsWebUtil
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import grails.util.GrailsUtil
-import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
+import grails.util.GrailsWebUtil
+
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin
+import org.codehaus.groovy.grails.plugins.BinaryGrailsPluginDescriptor
+import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
+import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
+import org.springframework.web.context.request.RequestContextHolder
+
+import spock.lang.Specification
 
 class GrailsConventionGroovyPageLocatorSpec extends Specification {
 
@@ -36,7 +38,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
                 URL getURL() {
                     return new URL("file://myapp/grails-app/views/test/_bar.gsp")
                 }
-
             }
         when: "The controller and template name is specified"
             def source = pageLocator.findTemplate(new TestController(), "bar")
@@ -136,7 +137,6 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
                 URL getURL() {
                     return new URL("file://myapp/grails-app/views/foo/bar.gsp")
                 }
-
             }
         when: "The controller and view name is specified"
             def source = pageLocator.findViewByPath("/foo/bar")
@@ -256,6 +256,4 @@ class MockBinaryPluginResource extends ByteArrayResource {
     Resource createRelative(String relativePath) {
         return relativesResources[relativePath]
     }
-
-
 }

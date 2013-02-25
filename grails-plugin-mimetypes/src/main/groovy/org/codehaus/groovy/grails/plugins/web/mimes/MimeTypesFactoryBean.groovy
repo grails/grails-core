@@ -33,13 +33,9 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplication
 
     private MimeType[] mimeTypes
 
-    MimeType[] getObject() {
-        return mimeTypes
-    }
+    MimeType[] getObject() { mimeTypes }
 
-    Class<?> getObjectType() {
-        return MimeType[].class
-    }
+    Class<?> getObjectType() { MimeType[] }
 
     boolean isSingleton() { true }
 
@@ -64,6 +60,6 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplication
                 mimes[-1].extension = entry.key
             }
         }
-        mimeTypes = mimes as MimeType[]
+        mimeTypes = mimes
     }
 }

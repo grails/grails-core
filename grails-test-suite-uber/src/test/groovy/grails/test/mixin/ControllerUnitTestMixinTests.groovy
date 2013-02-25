@@ -33,7 +33,6 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         mockController(TestController)
     }
 
-
     void testCallingSuperMethod() {
         def subController = mockController(SubController)
 
@@ -149,7 +148,6 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 
     void testWithFormTokenSynchronization() {
-
 
         def controller = getMockController()
         controller.renderWithForm()

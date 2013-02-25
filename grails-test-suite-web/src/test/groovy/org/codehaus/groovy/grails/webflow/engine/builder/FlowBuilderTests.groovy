@@ -1,13 +1,13 @@
-package org.codehaus.groovy.grails.webflow.engine.builder;
+package org.codehaus.groovy.grails.webflow.engine.builder
 
-import org.springframework.webflow.engine.*
-import org.springframework.webflow.engine.support.ActionTransitionCriteria
-import org.springframework.webflow.engine.builder.support.FlowBuilderServices
-import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
-import org.springframework.binding.convert.service.DefaultConversionService
-import org.springframework.webflow.expression.DefaultExpressionParserFactory
-import org.springframework.webflow.definition.registry.FlowDefinitionRegistryImpl
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
+import org.springframework.binding.convert.service.DefaultConversionService
+import org.springframework.webflow.definition.registry.FlowDefinitionRegistryImpl
+import org.springframework.webflow.engine.*
+import org.springframework.webflow.engine.builder.support.FlowBuilderServices
+import org.springframework.webflow.engine.support.ActionTransitionCriteria
+import org.springframework.webflow.expression.DefaultExpressionParserFactory
+import org.springframework.webflow.mvc.builder.MvcViewFactoryCreator
 
 class FlowBuilderTests extends GroovyTestCase{
 
@@ -50,7 +50,6 @@ class FlowBuilderTests extends GroovyTestCase{
         }
 
         assert flow : "flow should not be null"
-
 
         def state = flow.getState('displaySearchForm')
 
@@ -149,7 +148,6 @@ class FlowBuilderTests extends GroovyTestCase{
     }
 
     void testFlowDataModel() {
-
 
         def flow = new FlowBuilder("myFlow",getFlowBuilderServices(), new FlowDefinitionRegistryImpl()).flow {
             displaySearchForm {

@@ -1,6 +1,4 @@
-package org.codehaus.groovy.grails.commons;
-
-import org.codehaus.groovy.grails.commons.metaclass.*
+package org.codehaus.groovy.grails.commons
 
 import org.springframework.beans.BeanUtils
 

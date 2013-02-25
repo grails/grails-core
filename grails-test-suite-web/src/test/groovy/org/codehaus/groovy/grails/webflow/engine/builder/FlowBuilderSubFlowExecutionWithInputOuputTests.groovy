@@ -1,5 +1,4 @@
-package org.codehaus.groovy.grails.webflow.engine.builder;
-
+package org.codehaus.groovy.grails.webflow.engine.builder
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.webflow.support.AbstractGrailsTagAwareFlowExecutionTests
@@ -43,7 +42,6 @@ class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAw
         end()
     }
 
-
     Closure getFlowClosure() {
         return {
             start {
@@ -83,7 +81,6 @@ class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAw
         }
     }
 
-
     void testSubFlowInputOutput() {
         registerFlow('subber/subber', subber)
         GrailsWebRequest webrequest = grails.util.GrailsWebUtil.bindMockWebRequest()
@@ -110,7 +107,6 @@ class FlowBuilderSubFlowExecutionWithInputOuputTests extends AbstractGrailsTagAw
         assert flowScope.constantOut2 == 'constantOut2Value'
         assert flowScope.dynamicOut1 == 'conversationAttribute1Value'
         assert flowScope.dynamicOut2 == 'conversationAttribute2Value'
-
     }
 
     void testFailOnRequiredInput() {

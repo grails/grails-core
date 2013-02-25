@@ -56,7 +56,6 @@ class DeliveryInstruction {
 ''')
     }
 
-
     void testCompositeIdentifierWithCustomColumnNames() {
         def DeliveryInstruction = ga.getDomainClass("DeliveryInstruction").clazz
         def IntervalQuantity = ga.getDomainClass("IntervalQuantity").clazz

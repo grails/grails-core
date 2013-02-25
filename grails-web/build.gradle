@@ -42,7 +42,6 @@ dependencies {
     optional("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
         exclude group:'commons-cli', module:'commons-cli'
     }
-
 }
 
 sourceSets {
@@ -60,7 +59,6 @@ javadoc.classpath += files(configurations.optional)
 jar {
     from compileJsp21Groovy.outputs.files
 }
-
 
 eclipse {
     classpath {

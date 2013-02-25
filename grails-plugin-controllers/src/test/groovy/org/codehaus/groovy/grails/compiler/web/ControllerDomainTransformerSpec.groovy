@@ -2,22 +2,24 @@ package org.codehaus.groovy.grails.compiler.web
 
 import grails.spring.WebBeanBuilder
 import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
+
 import spock.lang.Specification
-import org.codehaus.groovy.grails.plugins.web.api.ControllersDomainBindingApi
 
 /**
  * Tests for ControllerDomainTransformer
  */
-class ControllerDomainTransformerSpec extends Specification{
+class ControllerDomainTransformerSpec extends Specification {
 
     void setup() {
         GrailsWebUtil.bindMockWebRequest(applicationContext)
@@ -77,7 +79,6 @@ class TestEntity {
              cls
     }
 
-
     Class getTestClass() {
         def cls = classLoader.parseClass('''
         class Test {
@@ -100,17 +101,12 @@ class TestEntity {
         def gcl = new GrailsAwareClassLoader()
         def transformer = new ControllerDomainTransformer() {
             @Override
-            boolean shouldInject(URL url) {
-                return true;
-            }
-
+            boolean shouldInject(URL url) { true }
         }
         gcl.classInjectors = [transformer] as ClassInjector[]
 
         return gcl
     }
-
-
 
     WebApplicationContext getApplicationContext() {
         def bb = new WebBeanBuilder()

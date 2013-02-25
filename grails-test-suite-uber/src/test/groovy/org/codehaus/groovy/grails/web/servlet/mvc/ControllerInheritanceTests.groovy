@@ -12,10 +12,7 @@ class ControllerInheritanceFooBaseController {
     }
 }
 
-class ControllerInheritanceFooController extends ControllerInheritanceFooBaseController {
-
-
-}
+class ControllerInheritanceFooController extends ControllerInheritanceFooBaseController {}
         '''
     }
 

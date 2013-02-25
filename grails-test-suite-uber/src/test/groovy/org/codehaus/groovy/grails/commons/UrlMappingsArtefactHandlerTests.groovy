@@ -1,6 +1,6 @@
-package org.codehaus.groovy.grails.commons;
+package org.codehaus.groovy.grails.commons
 
-import org.springframework.core.io.*
+import org.springframework.core.io.ByteArrayResource
 
 /**
  * Tests for UrlMappingsArtefactHandler.

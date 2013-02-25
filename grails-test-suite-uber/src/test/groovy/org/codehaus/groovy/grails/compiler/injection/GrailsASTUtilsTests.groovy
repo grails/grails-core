@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.compiler.injection
 
-
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 

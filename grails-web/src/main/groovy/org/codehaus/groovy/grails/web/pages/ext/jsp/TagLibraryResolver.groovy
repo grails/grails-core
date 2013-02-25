@@ -15,25 +15,24 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import java.util.zip.ZipInputStream
+import grails.util.BuildSettingsHolder
+
 import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 import javax.servlet.ServletContext
 import javax.xml.parsers.SAXParserFactory
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
-
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.util.Assert
 import org.springframework.web.context.ServletContextAware
 import org.springframework.web.context.support.ServletContextResource
-
 import org.xml.sax.InputSource
-import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.mxp1.MXParser
-import grails.util.BuildSettingsHolder
+import org.xmlpull.v1.XmlPullParser
 
 /**
  * Resolves all of the available tag libraries from web.xml and all available JAR files.
@@ -42,12 +41,13 @@ import grails.util.BuildSettingsHolder
  *
  * @author Graeme Rocher
  */
-class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
+class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware {
+
+    private tagLibs = [:]
+    private tagLibLocations = [:]
 
     GrailsApplication grailsApplication
     ServletContext servletContext
-    private tagLibs = [:]
-    private tagLibLocations = [:]
 
     /**
      * Resolves a JspTagLib instance for the given URI
@@ -55,7 +55,7 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
     JspTagLib resolveTagLibrary(String uri) {
         if (tagLibs[uri]) return tagLibs[uri]
 
-        JspTagLib jspTagLib = null
+        JspTagLib jspTagLib
 
         String loc = tagLibLocations[uri]
 
@@ -112,8 +112,6 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
             return
         }
 
-        def source = new InputSource(webXml.getInputStream())
-
         SAXParserFactory factory = SAXParserFactory.newInstance()
         factory.namespaceAware = false
         factory.validating = false
@@ -121,7 +119,7 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware{
         WebXmlTagLibraryReader webXmlReader = new WebXmlTagLibraryReader()
         reader.setContentHandler webXmlReader
         reader.setEntityResolver new LocalEntityResolver()
-        reader.parse source
+        reader.parse new InputSource(webXml.getInputStream())
 
         for (entry in webXmlReader.getTagLocations()) {
             tagLibLocations[entry.key] = entry.value

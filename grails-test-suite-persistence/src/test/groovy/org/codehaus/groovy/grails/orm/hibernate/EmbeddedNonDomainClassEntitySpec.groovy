@@ -2,10 +2,7 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
 
-/**
- *
- */
-class EmbeddedNonDomainClassEntitySpec extends GormSpec{
+class EmbeddedNonDomainClassEntitySpec extends GormSpec {
 
     void "Test that a non-domain class be embedded"() {
         given:"A domain class with an embedded class is created"
@@ -25,7 +22,6 @@ class EmbeddedNonDomainClassEntitySpec extends GormSpec{
         [Place]
     }
 }
-
 
 /**
  * a business place for displaying on map

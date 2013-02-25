@@ -16,8 +16,10 @@ package grails.test
 
 import grails.validation.ValidationException
 import groovy.xml.StreamingMarkupBuilder
+
 import java.beans.Introspector
 import java.beans.PropertyDescriptor
+
 import org.apache.commons.logging.Log
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -28,7 +30,9 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.mimes.FormatInterceptor
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder
+import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator
 import org.codehaus.groovy.grails.web.binding.DataBindingLazyMetaPropertyMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
@@ -39,13 +43,10 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.BeanUtils
 import org.springframework.beans.SimpleTypeConverter
 import org.springframework.mock.web.MockHttpSession
-import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.ModelAndView
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
 
 /**
  * A utility/helper class for mocking various types of Grails artifacts
@@ -640,7 +641,6 @@ class MockUtils {
                         case 3: return clazz."findAllBy${method[7..-1]}"(args[0], args[1], args[2]).size()
                         case 4: return clazz."findAllBy${method[7..-1]}"(args[0], args[1], args[2], args[3]).size()
                     }
-
                 }
                 else {
                     throw new MissingMethodException(method, delegate, args)
@@ -793,7 +793,7 @@ class MockUtils {
                     triggerEvent delegate, 'beforeDelete'
                     testInstances.remove(i)
                     triggerEvent delegate, 'afterDelete'
-                    break;
+                    break
                 }
             }
         }
@@ -968,7 +968,6 @@ class MockUtils {
                 constrainedProperties = constraintsBuilder.constrainedProperties
             }
         }
-
 
         // Attach the instantiated constraints to the domain/command
         // object.
@@ -1145,7 +1144,7 @@ class MockUtils {
 
             case "InList":
                  if (propValue in args[0]) result << record
-                 break;
+                 break
 
             default:
                 throw new RuntimeException("Unrecognised comparator: ${comparator}")

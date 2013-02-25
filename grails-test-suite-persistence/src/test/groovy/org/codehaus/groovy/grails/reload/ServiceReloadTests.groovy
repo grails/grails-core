@@ -1,16 +1,12 @@
-package org.codehaus.groovy.grails.reload;
+package org.codehaus.groovy.grails.reload
 
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.commons.*
-import org.apache.commons.logging.*
-import org.codehaus.groovy.grails.plugins.web.*
+import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
 
 /**
  * Tests for auto-reloading of services
  *
  * @author Graeme Rocher
  */
-
 class ServiceReloadTests extends AbstractGrailsPluginTests {
 
     def service1 = '''

@@ -1,14 +1,10 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.springframework.web.context.request.RequestContextHolder
 import grails.test.mixin.TestFor
 import spock.lang.Specification
-import grails.converters.JSON
 
 @TestFor(ArrayController)
-class JSONRequestToResponseRenderingSpec extends Specification{
+class JSONRequestToResponseRenderingSpec extends Specification {
 
     def "Test that JSON arrays are correctly converted in controllers"() {
         given:"A JSON request containing arrays"
@@ -42,9 +38,8 @@ class JSONRequestToResponseRenderingSpec extends Specification{
         then:"Check that the JSON is convereted back correctly"
             response.json.track.segments != null
     }
-
-
 }
+
 class ArrayController {
     def list() {
         def json = request.JSON

@@ -15,14 +15,14 @@
  */
 package org.codehaus.groovy.grails.web.converters.configuration;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Singleton which holds all default and named configurations for the Converter classes.

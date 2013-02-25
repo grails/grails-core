@@ -19,17 +19,16 @@ import grails.util.GrailsUtil
 
 import java.lang.reflect.Method
 
+import org.codehaus.groovy.grails.commons.GrailsServiceClass
+import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
+import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
+import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.transaction.annotation.Transactional
-import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
-
-import org.codehaus.groovy.grails.commons.GrailsServiceClass
-import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
-import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
 
 /**
- * Configures services in the spring context.
+ * Configures services in the Spring context.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -48,15 +47,13 @@ class ServicesGrailsPlugin {
 
         def aliasNameToListOfBeanNames = [:].withDefault { key -> [] }
         def registeredBeanNames = []
-        for (serviceGrailsClass in application.serviceClasses) {
-            GrailsServiceClass serviceClass = serviceGrailsClass
+        for (GrailsServiceClass serviceClass in application.serviceClasses) {
             def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
 
-            def beanName
+            String beanName
             if (providingPlugin && !serviceClass.shortName.toLowerCase().startsWith(providingPlugin.name.toLowerCase())) {
                 beanName = "${providingPlugin.name}${serviceClass.shortName}"
-                def aliasName = serviceClass.propertyName
-                aliasNameToListOfBeanNames[aliasName] << beanName
+                aliasNameToListOfBeanNames[serviceClass.propertyName] << beanName
             } else {
                 beanName = serviceClass.propertyName
             }
@@ -108,6 +105,7 @@ class ServicesGrailsPlugin {
                 }
             }
         }
+
         aliasNameToListOfBeanNames.each { aliasName, listOfBeanNames ->
             if (listOfBeanNames.size() == 1 && !registeredBeanNames.contains(aliasName)) {
                 registerAlias listOfBeanNames[0], aliasName
@@ -121,7 +119,7 @@ class ServicesGrailsPlugin {
         try {
             serviceClass.transactional &&
               !AnnotationUtils.findAnnotation(javaClass, Transactional) &&
-                 !javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, Transactional)!=null }
+                 !javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, Transactional) != null }
         }
         catch (e) {
             return false

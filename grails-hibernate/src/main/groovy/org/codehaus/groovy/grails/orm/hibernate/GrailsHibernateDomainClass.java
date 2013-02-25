@@ -22,7 +22,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.AbstractGrailsClass;
+import org.codehaus.groovy.grails.commons.ExternalGrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
@@ -185,7 +189,6 @@ public class GrailsHibernateDomainClass extends AbstractGrailsClass implements E
         }
         return new DefaultConstraintEvaluator();
     }
-
 
     public boolean isOwningClass(Class domainClass) {
         return false;

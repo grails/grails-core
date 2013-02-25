@@ -57,7 +57,6 @@ public class ParseTests extends TestCase {
         return result.toString();
     }
 
-
     public void testParse() throws Exception {
         ParsedResult result = parseCode("myTest1", "<div>hi</div>");
         String expected = makeImports() +
@@ -144,7 +143,6 @@ public class ParseTests extends TestCase {
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
         return GrailsWebUtil.bindMockWebRequest(appCtx);
     }
-
 
     public void testParseWithLocalEncoding() throws IOException {
         String src = "This is just plain ASCII to make sure test works on all platforms";

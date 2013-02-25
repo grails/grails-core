@@ -1,12 +1,10 @@
 package org.codehaus.groovy.grails.plugins.web.api
 
-import spock.lang.Specification
 import org.springframework.mock.web.MockHttpServletRequest
 
-/**
- */
-class ServletRequestApiSpec extends Specification{
+import spock.lang.Specification
 
+class ServletRequestApiSpec extends Specification{
 
     void "Test identification of XHR requests"() {
         given:"An instance of the servlet API extension"

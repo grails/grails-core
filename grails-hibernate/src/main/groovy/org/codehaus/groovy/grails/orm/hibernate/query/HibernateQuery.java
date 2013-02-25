@@ -19,7 +19,14 @@ import grails.orm.HibernateCriteriaBuilder;
 import grails.orm.RlikeExpression;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.FetchType;
 
 import org.codehaus.groovy.grails.orm.hibernate.HibernateSession;
 import org.grails.datastore.gorm.query.criteria.DetachedAssociationCriteria;
@@ -33,23 +40,23 @@ import org.grails.datastore.mapping.query.criteria.FunctionCallingCriterion;
 import org.hibernate.Criteria;
 import org.hibernate.FetchMode;
 import org.hibernate.SessionFactory;
-import org.hibernate.criterion.*;
+import org.hibernate.criterion.CriteriaSpecification;
+import org.hibernate.criterion.DetachedCriteria;
+import org.hibernate.criterion.Projections;
+import org.hibernate.criterion.Restrictions;
+import org.hibernate.criterion.SimpleExpression;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.function.SQLFunction;
 import org.hibernate.engine.SessionFactoryImplementor;
 import org.hibernate.persister.entity.PropertyMapping;
 import org.hibernate.type.BasicType;
 import org.hibernate.type.TypeResolver;
-import org.springframework.core.convert.ConversionException;
 import org.springframework.core.convert.ConversionService;
 import org.springframework.core.convert.support.DefaultConversionService;
-import org.springframework.core.convert.support.GenericConversionService;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
 import org.springframework.orm.hibernate3.HibernateTemplate;
 import org.springframework.util.ReflectionUtils;
-
-import javax.persistence.FetchType;
 
 /**
  * Bridges the Query API with the Hibernate Criteria API
@@ -132,7 +139,7 @@ public class HibernateQuery extends Query {
                 doTypeConversionIfNeccessary(getEntity(), pc);
             }
         }
-        if(criterion instanceof DetachedAssociationCriteria) {
+        if (criterion instanceof DetachedAssociationCriteria) {
             DetachedAssociationCriteria associationCriteria = (DetachedAssociationCriteria) criterion;
 
             Association association = associationCriteria.getAssociation();
@@ -145,8 +152,9 @@ public class HibernateQuery extends Query {
             entityStack.add(association.getAssociatedEntity());
 
             try {
+                @SuppressWarnings("unchecked")
                 List<Criterion> associationCriteriaList = associationCriteria.getCriteria();
-                for(Criterion c : associationCriteriaList) {
+                for (Criterion c : associationCriteriaList) {
                     add(c);
                 }
             }
@@ -169,7 +177,7 @@ public class HibernateQuery extends Query {
 
     @Override
     public PersistentEntity getEntity() {
-        if(!entityStack.isEmpty()) {
+        if (!entityStack.isEmpty()) {
             return entityStack.getLast();
         }
         return super.getEntity();
@@ -187,11 +195,11 @@ public class HibernateQuery extends Query {
     }
 
     private String getCurrentAlias() {
-        if(alias != null) {
+        if (alias != null) {
             return alias;
         }
         else {
-            if(!aliasStack.isEmpty()) {
+            if (!aliasStack.isEmpty()) {
                 return aliasStack.getLast();
             }
             else {
@@ -200,19 +208,21 @@ public class HibernateQuery extends Query {
         }
     }
 
+    @SuppressWarnings("unchecked")
     static void doTypeConversionIfNeccessary(PersistentEntity entity, PropertyCriterion pc) {
-        if(!pc.getClass().getSimpleName().startsWith(SIZE_CONSTRAINT_PREFIX)) {
+        if (pc.getClass().getSimpleName().startsWith(SIZE_CONSTRAINT_PREFIX)) {
+            return;
+        }
 
-            String property = pc.getProperty();
-            Object value = pc.getValue();
-            PersistentProperty p = entity.getPropertyByName(property);
-            if(p != null && !p.getType().isInstance(value)) {
-                pc.setValue( conversionService.convert(value, p.getType()));
-            }
+        String property = pc.getProperty();
+        Object value = pc.getValue();
+        PersistentProperty p = entity.getPropertyByName(property);
+        if (p != null && !p.getType().isInstance(value)) {
+            pc.setValue(conversionService.convert(value, p.getType()));
         }
     }
 
-    org.hibernate.criterion.Criterion getRestrictionForFunctionCall(FunctionCallingCriterion criterion, @SuppressWarnings("hiding") PersistentEntity entity) {
+    org.hibernate.criterion.Criterion getRestrictionForFunctionCall(FunctionCallingCriterion criterion, PersistentEntity entity) {
         org.hibernate.criterion.Criterion sqlRestriction;HibernateTemplate hibernateSession = (HibernateTemplate)session.getNativeInterface();
 
         SessionFactory sessionFactory = hibernateSession.getSessionFactory();
@@ -225,7 +235,6 @@ public class HibernateQuery extends Query {
              "] on non-existent property [" + property + "] of [" + entity.getJavaClass() + "]");
 
         String functionName = criterion.getFunctionName();
-
 
         SessionFactoryImplementor impl = (SessionFactoryImplementor) sessionFactory;
         Dialect dialect = impl.getDialect();
@@ -300,7 +309,6 @@ public class HibernateQuery extends Query {
         addToCriteria(Restrictions.gt(calculatePropertyName(property), value));
         return this;
     }
-
 
     @Override
     public Query and(Criterion a, Criterion b) {
@@ -389,7 +397,7 @@ public class HibernateQuery extends Query {
     public AssociationQuery createQuery(String associationName) {
         final PersistentProperty property = entity.getPropertyByName(calculatePropertyName(associationName));
         if (property != null && (property instanceof Association)) {
-            @SuppressWarnings("hiding") String alias = generateAlias(associationName);
+            String alias = generateAlias(associationName);
             CriteriaAndAlias subCriteria = getOrCreateAlias(associationName, alias);
 
             Association association = (Association) property;
@@ -398,7 +406,7 @@ public class HibernateQuery extends Query {
         throw new InvalidDataAccessApiUsageException("Cannot query association [" + calculatePropertyName(associationName) + "] of entity [" + entity + "]. Property is not an association!");
     }
 
-    private CriteriaAndAlias getOrCreateAlias(String associationName, @SuppressWarnings("hiding") String alias) {
+    private CriteriaAndAlias getOrCreateAlias(String associationName, String alias) {
         CriteriaAndAlias subCriteria;
         String associationPath = getAssociationPath(associationName);
         if (createdAssociationPaths.containsKey(associationName)) {
@@ -421,25 +429,25 @@ public class HibernateQuery extends Query {
     }
 
     @Override
-    public Query max(@SuppressWarnings("hiding") int max) {
+    public Query max(int max) {
         criteria.setMaxResults(max);
         return this;
     }
 
     @Override
-    public Query maxResults(@SuppressWarnings("hiding") int max) {
+    public Query maxResults(int max) {
         criteria.setMaxResults(max);
         return this;
     }
 
     @Override
-    public Query offset(@SuppressWarnings("hiding") int offset) {
+    public Query offset(int offset) {
         criteria.setFirstResult(offset);
         return this;
     }
 
     @Override
-    public Query firstResult(@SuppressWarnings("hiding") int offset) {
+    public Query firstResult(int offset) {
         offset(offset);
         return this;
     }
@@ -465,7 +473,6 @@ public class HibernateQuery extends Query {
         if (projectionLength < 2) {
             criteria.setResultTransformer(CriteriaSpecification.DISTINCT_ROOT_ENTITY);
         }
-
 
         applyFetchStrategies();
         return criteria.list();
@@ -498,16 +505,13 @@ public class HibernateQuery extends Query {
         return criteria.uniqueResult();
     }
 
-    @SuppressWarnings("hiding")
     @Override
     protected List executeQuery(PersistentEntity entity, Junction criteria) {
         return list();
     }
 
-    String handleAssociationQuery(Association<?> association, @SuppressWarnings("unused") List<Criterion> criteriaList) {
-        CriteriaAndAlias criteriaAndAlias = getCriteriaAndAlias(association);
-
-        return criteriaAndAlias.alias;
+    String handleAssociationQuery(Association<?> association, List<Criterion> criteriaList) {
+        return getCriteriaAndAlias(association).alias;
     }
 
     private CriteriaAndAlias getCriteriaAndAlias(Association<?> association) {

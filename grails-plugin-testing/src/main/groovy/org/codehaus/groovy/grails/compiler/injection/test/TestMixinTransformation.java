@@ -20,9 +20,24 @@ import grails.test.mixin.TestMixin;
 import grails.test.mixin.support.MixinMethod;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
+
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
+
 import junit.framework.TestCase;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
+
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
@@ -34,11 +49,10 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.junit.*;
-
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
 
 /**
  * An AST transformation to be applied to tests for adding behavior to a target test class.
@@ -81,8 +95,6 @@ public class TestMixinTransformation implements ASTTransformation{
         ListExpression values = getListOfClasses(node);
 
         weaveMixinsIntoClass(classNode, values);
-
-
     }
 
     protected ListExpression getListOfClasses(AnnotationNode node) {
@@ -117,7 +129,7 @@ public class TestMixinTransformation implements ASTTransformation{
                     final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
 
                     FieldNode fieldNode = GrailsASTUtils.addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
-                    if(fieldNode == null) return; // already woven
+                    if (fieldNode == null) return; // already woven
                     VariableExpression fieldReference = new VariableExpression(fieldName);
 
                     while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
@@ -261,6 +273,5 @@ public class TestMixinTransformation implements ASTTransformation{
         if ( tearDown != null && tearDown.getAnnotations(TestForTransformation.AFTER_CLASS_NODE).size() == 0) {
             tearDown.addAnnotation(TestForTransformation.AFTER_ANNOTATION);
         }
-
     }
 }

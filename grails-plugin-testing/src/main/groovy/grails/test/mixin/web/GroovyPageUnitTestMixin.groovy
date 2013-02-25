@@ -23,16 +23,16 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.pages.GroovyPageRequestBinding
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
+import org.junit.After
 import org.junit.Assert
 import org.junit.Before
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.junit.After
 
 /**
  * <p>A unit testing mixing that add behavior to support the testing of tag libraries
@@ -70,7 +70,6 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
     void clearPageScope() {
         pageScope = null
     }
-
 
     /**
      * Mocks a tag library, making it available to subsequent calls to controllers mocked via

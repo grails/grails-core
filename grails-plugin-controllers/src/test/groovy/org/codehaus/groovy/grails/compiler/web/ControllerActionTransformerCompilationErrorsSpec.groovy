@@ -1,12 +1,9 @@
 package org.codehaus.groovy.grails.compiler.web
 
-import org.codehaus.groovy.control.CompilationFailedException
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import org.springframework.web.context.request.RequestContextHolder
 
-import spock.lang.FailsWith
 import spock.lang.Specification
 
 class ControllerActionTransformerCompilationErrorsSpec extends Specification {
@@ -16,17 +13,13 @@ class ControllerActionTransformerCompilationErrorsSpec extends Specification {
     void setupSpec() {
         gcl = new GrailsAwareClassLoader()
         def transformer = new ControllerActionTransformer() {
-                    @Override
-                    boolean shouldInject(URL url) {
-                        return true;
-                    }
-                }
+            @Override
+            boolean shouldInject(URL url) { true }
+        }
         def transformer2 = new ControllerTransformer() {
-                    @Override
-                    boolean shouldInject(URL url) {
-                        return true;
-                    }
-                }
+            @Override
+            boolean shouldInject(URL url) { true }
+        }
         gcl.classInjectors = [transformer, transformer2]as ClassInjector[]
     }
 

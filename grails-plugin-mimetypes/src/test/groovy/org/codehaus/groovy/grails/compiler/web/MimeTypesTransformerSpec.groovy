@@ -1,7 +1,9 @@
 package org.codehaus.groovy.grails.compiler.web
 
 import grails.util.GrailsWebUtil
+
 import javax.servlet.http.HttpServletResponse
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
@@ -9,6 +11,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 import org.springframework.web.context.request.RequestContextHolder
+
 import spock.lang.Specification
 
 class MimeTypesTransformerSpec extends Specification {
@@ -52,7 +55,6 @@ import javax.servlet.AsyncListener
 import javax.servlet.ServletRequest
 import javax.servlet.ServletResponse
 
-
 class MimeTypesCompiledController {
     def request = new MyMockRequest()
     def index() {
@@ -63,8 +65,8 @@ class MimeTypesCompiledController {
     }
 }
 class MyMockRequest extends org.springframework.mock.web.MockHttpServletRequest {
-    javax.servlet.DispatcherType dispatcherType;
-    AsyncContext asyncContext;
+    javax.servlet.DispatcherType dispatcherType
+    AsyncContext asyncContext
 
     String getFormat() { "html" }
 

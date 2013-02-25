@@ -15,27 +15,15 @@
  */
 package grails.test
 
-import grails.util.GrailsWebUtil
 import org.apache.commons.lang.StringUtils
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-
-import org.codehaus.groovy.grails.plugins.web.mapping.UrlMappingsGrailsPlugin
-import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
-import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
-import org.springframework.core.io.support.PathMatchingResourcePatternResolver
-import org.springframework.web.context.WebApplicationContext
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.servlet.DispatcherServlet
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
-import org.springframework.web.context.ServletContextAware
-import javax.servlet.ServletContext
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.springframework.beans.BeanUtils
 import org.springframework.core.io.FileSystemResourceLoader
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Luke Daley
@@ -127,7 +115,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
     }
 
     void assertUrlMapping(assertions, url) {
-        assertUrlMapping(assertions, url, null);
+        assertUrlMapping(assertions, url, null)
     }
 
     void assertUrlMapping(assertions, url, paramAssertions) {

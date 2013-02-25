@@ -1,5 +1,4 @@
-package org.codehaus.groovy.grails.plugins.services;
-
+package org.codehaus.groovy.grails.plugins.services
 
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
@@ -58,8 +57,6 @@ class PerMethodTransactionalService {
 }
 """
     }
-
-
 
     void testPerMethodTransactionAnnotations() {
         def appCtx = initializeContext()

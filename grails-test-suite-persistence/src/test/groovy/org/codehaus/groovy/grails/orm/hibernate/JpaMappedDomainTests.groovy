@@ -70,7 +70,7 @@ class Owner {
         assertEquals 0, Animal.count()
     }
 
-    public void testValidatorHasMessageSource() {
+    void testValidatorHasMessageSource() {
         def Animal = ga.getDomainClass("Animal")
         assertEquals applicationContext.getBean("messageSource"), Animal.validator.messageSource
     }

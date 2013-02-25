@@ -26,7 +26,7 @@ import org.springframework.core.io.Resource
  * @author Graeme Rocher
  * @since 2.0
  */
-class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter{
+class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
 
     ErrorsViewStackTracePrinter(ResourceLocator resourceLocator) {
         super(resourceLocator)
@@ -40,33 +40,34 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter{
     @Override
     String prettyPrint(Throwable t) {
         if (t instanceof GrailsWrappedRuntimeException) {
-            return super.prettyPrint(t.cause)
+            t = t.cause
         }
         return super.prettyPrint(t)
     }
 
     @Override
-    String prettyPrintCodeSnippet(Throwable exception) {
-        if (exception instanceof GrailsWrappedRuntimeException) {
-            return super.prettyPrintCodeSnippet(exception.cause)
+    String prettyPrintCodeSnippet(Throwable t) {
+        if (t instanceof GrailsWrappedRuntimeException) {
+            t = t.cause
         }
-        return super.prettyPrintCodeSnippet(exception)
+        return super.prettyPrintCodeSnippet(t)
     }
 
     @Override
     String formatCodeSnippetStart(Resource resource, int lineNumber) {
-        def path = resource.filename
+        String path = resource.filename
         // try calc better path
         try {
-            def abs = resource.file.absolutePath
-            def i = abs.indexOf(GrailsResourceUtils.GRAILS_APP_DIR)
+            String abs = resource.file.absolutePath
+            int i = abs.indexOf(GrailsResourceUtils.GRAILS_APP_DIR)
             if (i > -1) {
                 path = abs[i..-1]
             }
         } catch (e) {
             path = resource.filename
         }
-        """<h2>Around line ${lineNumber} of <span class="filename">${path}</span></h2>
+        """\
+<h2>Around line ${lineNumber} of <span class="filename">${path}</span></h2>
 <pre class="snippet">"""
     }
 
@@ -75,17 +76,18 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter{
         "</pre>"
     }
 
-    @Override protected String formatCodeSnippetLine(int currentLineNumber, Object currentLine) {
-        return "<code class=\"line\"><span class=\"lineNumber\">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"
+    @Override
+    protected String formatCodeSnippetLine(int currentLineNumber, Object currentLine) {
+        """<code class="line"><span class="lineNumber">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
     }
 
-    @Override protected String formatCodeSnippetErrorLine(int currentLineNumber, Object currentLine) {
-        return "<code class=\"line error\"><span class=\"lineNumber\">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"
+    @Override
+    protected String formatCodeSnippetErrorLine(int currentLineNumber, Object currentLine) {
+        """<code class="line error"><span class="lineNumber">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
     }
 
-    @Override protected int getLineNumberInfo(Throwable cause, int defaultInfo) {
+    @Override
+    protected int getLineNumberInfo(Throwable cause, int defaultInfo) {
         return super.getLineNumberInfo(cause, defaultInfo)
     }
-
-
 }

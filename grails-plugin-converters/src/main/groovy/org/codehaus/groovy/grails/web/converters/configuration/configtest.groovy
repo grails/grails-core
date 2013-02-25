@@ -1,10 +1,6 @@
 package org.codehaus.groovy.grails.web.converters.configuration
 
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
-import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import grails.converters.JSON
-import org.codehaus.groovy.grails.web.converters.configuration.ChainedConverterConfiguration
-import org.codehaus.groovy.grails.web.converters.configuration.ImmutableConverterConfiguration
 
 /**
  * @author Siegfried Puchbauer
@@ -12,11 +8,11 @@ import org.codehaus.groovy.grails.web.converters.configuration.ImmutableConverte
 
 new ConvertersConfigurationInitializer().initalize()
 
-def defcfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class)
+def defcfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON)
 def imcfg = new ImmutableConverterConfiguration<JSON>(defcfg)
 def chcfg = new ChainedConverterConfiguration<JSON>(defcfg)
 
-Thread.sleep(30)
+sleep 30
 
 println defcfg
 println imcfg

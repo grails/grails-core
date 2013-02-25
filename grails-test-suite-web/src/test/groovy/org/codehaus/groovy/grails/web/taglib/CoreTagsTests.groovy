@@ -1,7 +1,5 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import grails.util.GrailsUtil
-
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 /**
@@ -105,7 +103,6 @@ bar
 <g:elseif test="${foo}" env="development">bar</g:elseif>
 '''
         assertOutputEquals("", template, [foo:false], { it.toString().trim() })
-
 
         template = '''
 <g:if test="${foo}">foo</g:if>

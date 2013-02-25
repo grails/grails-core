@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.commons.metaclass;
+package org.codehaus.groovy.grails.commons.metaclass
 
 import org.springframework.beans.BeanUtils
 
@@ -23,7 +23,7 @@ import org.springframework.beans.BeanUtils
 class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
 
     void testRegexMethodDefinition() {
-        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class)
+        def metaClass = new DynamicMethodsExpandoMetaClass(Book)
         metaClass.initialize()
 
         metaClass./^findBy(\w+)$/ = { matcher, args ->
@@ -41,7 +41,7 @@ class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
     }
 
     void testRegexStaticMethodDefinition() {
-        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class, true)
+        def metaClass = new DynamicMethodsExpandoMetaClass(Book, true)
         metaClass.initialize()
 
         metaClass.'static'./^findBy(\w+)$/ = { matcher, args ->
@@ -54,7 +54,7 @@ class DynamicMethodsExpandoMetaClassTests extends GroovyTestCase {
     }
 
     void testMixStandardAndRegixMethodDefinitions() {
-        def metaClass = new DynamicMethodsExpandoMetaClass(Book.class, true)
+        def metaClass = new DynamicMethodsExpandoMetaClass(Book, true)
         metaClass.initialize()
 
         metaClass.'static'./^findBy(\w+)$/ = { matcher, args ->

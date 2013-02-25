@@ -7,13 +7,11 @@ class ExtendAbstractJavaClassTests extends AbstractGrailsHibernateTests{
 
     protected void onSetUp() {
         gcl.parseClass('''
-import grails.persistence.*
-
+import grails.persistence.Entity
+import org.codehaus.groovy.grails.orm.hibernate.ExtendAbstractJavaClassTests.JavaClass
 
 @Entity
-class ExtendAbstractJava extends org.codehaus.groovy.grails.orm.hibernate.ExtendAbstractJavaClassTests.JavaClass {
-
-}
+class ExtendAbstractJava extends JavaClass {}
 ''')
     }
 
@@ -27,7 +25,5 @@ class ExtendAbstractJava extends org.codehaus.groovy.grails.orm.hibernate.Extend
         assert e.id
     }
 
-    public static abstract class JavaClass {}
+    static abstract class JavaClass {}
 }
-
-

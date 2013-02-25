@@ -7,7 +7,7 @@ import org.hibernate.criterion.CriteriaSpecification
 class CreateAliasSpec extends GormSpec {
 
     @Override
-    public List getDomainClasses() {
+    List getDomainClasses() {
         [Pirate, Ship]
     }
 

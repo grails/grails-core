@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.api
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.mime.DefaultAcceptHeaderParser
 import org.codehaus.groovy.grails.web.mime.MimeType
@@ -49,13 +50,13 @@ class ResponseMimeTypesApi {
     /**
      * Initialize with settings provided by GrailsApplication and the given MimeType[]
      *
-     * @param grailsApplication The GrailsApplication
+     * @param application The GrailsApplication
      * @param mimeTypes The mime types
      */
-    ResponseMimeTypesApi(GrailsApplication grailsApplication, MimeType[] mimeTypes) {
-        this.grailsApplication = grailsApplication
-        this.mimeTypes = mimeTypes
-        this.useAcceptHeader = grailsApplication.flatConfig.get("grails.mime.use.accept.header") ? true : false
+    ResponseMimeTypesApi(GrailsApplication application, MimeType[] types) {
+        grailsApplication = application
+        mimeTypes = types
+        useAcceptHeader = grailsApplication.flatConfig.get("grails.mime.use.accept.header") ? true : false
     }
 
     /**

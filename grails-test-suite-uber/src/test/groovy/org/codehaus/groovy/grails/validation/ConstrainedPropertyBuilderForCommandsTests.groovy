@@ -143,7 +143,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
             }''')
     }
 
-    public void testImportFrom_AllConstraints_ConstraintsExist() {
+    void testImportFrom_AllConstraints_ConstraintsExist() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsCommand")
 
@@ -163,7 +163,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertNotNull(person.getConstraints().get("email"))
     }
 
-    public void testImportFrom_AllConstraints_Validation() {
+    void testImportFrom_AllConstraints_Validation() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsCommand")
 
@@ -204,7 +204,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertNull(person.getErrors().getFieldErrors("firstName")[0].getRejectedValue())
     }
 
-    public void testImportFrom_SomeConstraints_ConstraintsExist() {
+    void testImportFrom_SomeConstraints_ConstraintsExist() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonSomeConstraintsNoNormalConstraintsCommand")
 
@@ -225,7 +225,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertNotNull(person.getConstraints().get("email"))
     }
 
-    public void testImportFrom_SomeConstraints_Validation() {
+    void testImportFrom_SomeConstraints_Validation() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonSomeConstraintsNoNormalConstraintsCommand")
 
@@ -267,7 +267,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
     }
 
-    public void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsFirst() {
+    void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsFirst() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsWithNormalConstraintsFirstCommand")
 
@@ -297,7 +297,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertEquals("123123", person.getConstraints().get("telephone").getAppliedConstraint("matches").getParameter())
     }
 
-    public void testImportFrom_AllConstraints_Validation_NormalConstraintsFirst() {
+    void testImportFrom_AllConstraints_Validation_NormalConstraintsFirst() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsWithNormalConstraintsFirstCommand")
 
@@ -341,7 +341,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
     }
 
-    public void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsLast() {
+    void testImportFrom_AllConstraints_ConstraintsExist_NormalConstraintsLast() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsWithNormalConstraintsLastCommand")
 
@@ -371,7 +371,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertEquals("123123", person.getConstraints().get("telephone").getAppliedConstraint("matches").getParameter())
     }
 
-    public void testImportFrom_AllConstraints_Validation_NormalConstraintsLast() {
+    void testImportFrom_AllConstraints_Validation_NormalConstraintsLast() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsWithNormalConstraintsLastCommand")
 
@@ -417,7 +417,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertEquals("wrongEmail", person.getErrors().getFieldErrors("email")[0].getRejectedValue())
     }
 
-    public void testImportFrom_AllConstraints_ConstraintsExist_Including() {
+    void testImportFrom_AllConstraints_ConstraintsExist_Including() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsIncludingCommand")
 
@@ -439,7 +439,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertNotNull(person.getConstraints().get("email"))
     }
 
-    public void testImportFrom_AllConstraints_ConstraintsExist_Excluding() {
+    void testImportFrom_AllConstraints_ConstraintsExist_Excluding() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsExcludingCommand")
 
@@ -462,7 +462,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertNotNull(person.getConstraints().get("email"))
     }
 
-    public void testImportFrom_AllConstraints_ConstraintsExist_IncludingByRegexp() {
+    void testImportFrom_AllConstraints_ConstraintsExist_IncludingByRegexp() {
         parseCommandTestClasses()
         def personCommandClazz = gcl.loadClass("PersonAllConstraintsNoNormalConstraintsIncludingByRegexpCommand")
 
@@ -486,7 +486,7 @@ class ConstrainedPropertyBuilderForCommandsTests extends AbstractGrailsControlle
         assertNotNull(person.getConstraints().get("email"))
     }
 
-    public void testImportFrom_AllConstraints_ConstraintsExist_IncludingExcludingByRegexp() {
+    void testImportFrom_AllConstraints_ConstraintsExist_IncludingExcludingByRegexp() {
         parseCommandTestClasses()
         def personCommandClazz =
             gcl.loadClass("PersonAllConstraintsNoNormalConstraintsIncludingExcludingByRegexpCommand")

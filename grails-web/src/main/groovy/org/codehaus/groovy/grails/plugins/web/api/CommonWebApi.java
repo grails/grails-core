@@ -61,7 +61,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      *
      * @return The GrailsParameterMap instance
      */
-    public GrailsParameterMap getParams(@SuppressWarnings("unused") Object instance) {
+    public GrailsParameterMap getParams(Object instance) {
         return currentRequestAttributes().getParams();
     }
 
@@ -70,7 +70,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      *
      * @return The FlashScope instance
      */
-    public FlashScope getFlash(@SuppressWarnings("unused") Object instance) {
+    public FlashScope getFlash(Object instance) {
         return currentRequestAttributes().getFlashScope();
     }
 
@@ -79,7 +79,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      *
      * @return The HttpSession instance
      */
-    public HttpSession getSession(@SuppressWarnings("unused") Object instance) {
+    public HttpSession getSession(Object instance) {
         return currentRequestAttributes().getSession();
     }
 
@@ -88,7 +88,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      *
      * @return The HttpServletRequest instance
      */
-    public HttpServletRequest getRequest(@SuppressWarnings("unused") Object instance) {
+    public HttpServletRequest getRequest(Object instance) {
         return currentRequestAttributes().getCurrentRequest();
     }
 
@@ -97,7 +97,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      *
      * @return The ServletContext instance
      */
-    public ServletContext getServletContext(@SuppressWarnings("unused") Object instance) {
+    public ServletContext getServletContext(Object instance) {
         if (servletContext == null) {
             servletContext = currentRequestAttributes().getServletContext();
         }
@@ -109,7 +109,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      *
      * @return The HttpServletResponse instance
      */
-    public HttpServletResponse getResponse(@SuppressWarnings("unused") Object instance) {
+    public HttpServletResponse getResponse(Object instance) {
         return currentRequestAttributes().getCurrentResponse();
     }
 
@@ -118,7 +118,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      *
      * @return The GrailsApplicationAttributes instance
      */
-    public GrailsApplicationAttributes getGrailsAttributes(@SuppressWarnings("unused") Object instance) {
+    public GrailsApplicationAttributes getGrailsAttributes(Object instance) {
         return currentRequestAttributes().getAttributes();
     }
 
@@ -148,7 +148,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * Obtains the currently executing action name
      * @return The action name
      */
-    public String getActionName(@SuppressWarnings("unused") Object instance) {
+    public String getActionName(Object instance) {
         return currentRequestAttributes().getActionName();
     }
 
@@ -156,7 +156,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * Obtains the currently executing controller name
      * @return The controller name
      */
-    public String getControllerName(@SuppressWarnings("unused") Object instance) {
+    public String getControllerName(Object instance) {
         return currentRequestAttributes().getControllerName();
     }
 
@@ -165,7 +165,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      *
      * @return The GrailsWebRequest instance
      */
-    public GrailsWebRequest getWebRequest(@SuppressWarnings("unused") Object instance) {
+    public GrailsWebRequest getWebRequest(Object instance) {
         return currentRequestAttributes();
     }
 

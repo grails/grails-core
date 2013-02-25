@@ -35,8 +35,8 @@ import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
 import org.springframework.web.context.WebApplicationContext
 
- /**
- * Handles the configuration of URL mappings for Grails.
+/**
+ * Handles the configuration of URL mappings.
  *
  * @author Graeme Rocher
  * @since 0.4
@@ -49,11 +49,7 @@ class UrlMappingsGrailsPlugin {
     def dependsOn = [core:version]
 
     def doWithSpring = {
-        String serverURL
-        final configuredServerURL = application.config?.grails?.serverURL
-        if (configuredServerURL) {
-            serverURL = configuredServerURL
-        }
+        String serverURL = application.config?.grails?.serverURL ?: null
 
         def urlConverterType = application.config?.grails?.web?.url?.converter
         "${grails.web.UrlConverter.BEAN_NAME}"('hyphenated' == urlConverterType ? HyphenatedUrlConverter : CamelCaseUrlConverter)
@@ -151,25 +147,26 @@ class UrlMappingsGrailsPlugin {
     }
 
     def onChange = { event ->
-        if (application.isUrlMappingsClass(event.source)) {
-            application.addArtefact(UrlMappingsArtefactHandler.TYPE, event.source)
+        if (!application.isUrlMappingsClass(event.source)) {
+            return
+        }
 
-            ApplicationContext ctx = applicationContext
-            UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(application, ctx, manager)
+        application.addArtefact(UrlMappingsArtefactHandler.TYPE, event.source)
 
-            HotSwappableTargetSource ts = ctx.getBean("urlMappingsTargetSource", HotSwappableTargetSource)
-            ts.swap urlMappingsHolder
+        ApplicationContext ctx = applicationContext
+        UrlMappingsHolder urlMappingsHolder = createUrlMappingsHolder(application, ctx, manager)
 
-            LinkGenerator linkGenerator = ctx.getBean("grailsLinkGenerator", LinkGenerator)
-            if (linkGenerator instanceof CachingLinkGenerator) {
-                linkGenerator.clearCache()
-            }
+        HotSwappableTargetSource ts = ctx.getBean("urlMappingsTargetSource", HotSwappableTargetSource)
+        ts.swap urlMappingsHolder
+
+        LinkGenerator linkGenerator = ctx.getBean("grailsLinkGenerator", LinkGenerator)
+        if (linkGenerator instanceof CachingLinkGenerator) {
+            linkGenerator.clearCache()
         }
     }
 
     private UrlMappingsHolder createUrlMappingsHolder(GrailsApplication application, WebApplicationContext applicationContext, GrailsPluginManager pluginManager) {
-        def factory = new UrlMappingsHolderFactoryBean()
-        factory.applicationContext = applicationContext
+        def factory = new UrlMappingsHolderFactoryBean(applicationContext: applicationContext)
         factory.afterPropertiesSet()
         return factory.getObject()
     }

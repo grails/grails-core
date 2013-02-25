@@ -1,6 +1,7 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+
 import org.junit.Test
 
 /**
@@ -49,12 +50,10 @@ class AbstractCustomPropertyValue {
 
 @Entity
 class CustomProperty {
-
-    public AbstractCustomPropertyValue newValue (String value) {
+    AbstractCustomPropertyValue newValue (String value) {
         return new StringPropertyValue (value)
     }
 }
-
 
 @Entity
 class StringPropertyValue extends AbstractCustomPropertyValue {
@@ -65,7 +64,7 @@ class StringPropertyValue extends AbstractCustomPropertyValue {
         stringValue (nullable: true)
     }
 
-    public StringPropertyValue (String value) {
+    StringPropertyValue (String value) {
         this.stringValue = value
         this.valid = true
     }

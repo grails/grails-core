@@ -87,7 +87,6 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
     }
 }
 
-
 @Entity
 class Site {
     String description
@@ -101,6 +100,7 @@ class Site {
         activated(nullable:true)
     }
 }
+
 @Entity
 class SiteMode {
     String code

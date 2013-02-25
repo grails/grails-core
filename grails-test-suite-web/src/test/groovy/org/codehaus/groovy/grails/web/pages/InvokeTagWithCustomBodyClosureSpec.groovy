@@ -1,12 +1,8 @@
 package org.codehaus.groovy.grails.web.pages
 
-import grails.test.AbstractGrailsEnvChangingSpec
-
-import spock.lang.Specification
-import grails.test.mixin.TestFor
-import grails.util.Environment;
 import grails.artefact.Artefact
-
+import grails.test.AbstractGrailsEnvChangingSpec
+import grails.test.mixin.TestFor
 
 @TestFor(CustomApplicationTagLib)
 class InvokeTagWithCustomBodyClosureSpec extends AbstractGrailsEnvChangingSpec {
@@ -30,6 +26,7 @@ class InvokeTagWithCustomBodyClosureSpec extends AbstractGrailsEnvChangingSpec {
             content == '<a href="/one/two"></a><a href="/foo/bar">Hello World</a><a href="/one/two"></a><a href="/foo/bar">Hello World</a>'
     }
 }
+
 @Artefact("TagLibrary")
 class CustomApplicationTagLib {
     static namespace = "a"

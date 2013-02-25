@@ -39,21 +39,13 @@ import org.springframework.context.ApplicationContextAware;
  * @author Graeme Rocher
  * @since 1.1
  */
-public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicationAware, InitializingBean{
+public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicationAware, InitializingBean {
 
     protected ApplicationContext applicationContext;
     protected GrailsApplication grailsApplication;
     protected Map<String, Map<String, Object>> tagNamespaces = new HashMap<String, Map<String, Object>>();
     protected Map<String, NamespacedTagDispatcher> namespaceDispatchers = new HashMap<String, NamespacedTagDispatcher>();
     protected Map<String, Set<String>> tagsThatReturnObjectForNamespace = new HashMap<String, Set<String>>();
-
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
-    public void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication;
-    }
 
     public void afterPropertiesSet() throws Exception {
         if (grailsApplication == null || applicationContext == null) {
@@ -87,8 +79,8 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         String namespace = taglib.getNamespace();
         namespaceDispatchers.put(namespace, new NamespacedTagDispatcher(namespace, GroovyPage.class, grailsApplication, this));
         Set<String> tagsThatReturnObject=tagsThatReturnObjectForNamespace.get(namespace);
-        if (tagsThatReturnObject==null) {
-            tagsThatReturnObject=new HashSet<String>();
+        if (tagsThatReturnObject == null) {
+            tagsThatReturnObject = new HashSet<String>();
             tagsThatReturnObjectForNamespace.put(namespace, tagsThatReturnObject);
         }
         Map<String, Object> tags = tagNamespaces.get(namespace);
@@ -125,7 +117,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     }
 
     public boolean doesTagReturnObject(String namespace, String tagName) {
-        Set<String> tagsThatReturnObject=tagsThatReturnObjectForNamespace.get(namespace);
+        Set<String> tagsThatReturnObject = tagsThatReturnObjectForNamespace.get(namespace);
         return tagsThatReturnObject != null && tagsThatReturnObject.contains(tagName);
     }
 
@@ -152,5 +144,13 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
      */
     public Set<String> getAvailableNamespaces() {
         return namespaceDispatchers.keySet();
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
     }
 }

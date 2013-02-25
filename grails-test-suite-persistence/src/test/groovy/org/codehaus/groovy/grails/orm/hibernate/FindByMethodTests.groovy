@@ -11,14 +11,14 @@ class FindByMethodTests extends AbstractGrailsHibernateTests {
     protected getDomainClasses() {
         [FindByMethodBook, FindByMethodUser, FindByBooleanPropertyBook, Highway, Person, Pet, Face, Nose]
     }
-	
-	void testNullAsSoleParameter() {
-		def bookClass = ga.getDomainClass(FindByMethodBook.name).clazz
-		assertNotNull bookClass.findAllByReleaseDate(null)
-		
-		// per GRAILS-3463, this second call was throwing MissingMethodException
-		assertNotNull bookClass.findAllByReleaseDate(null)
-	}
+
+    void testNullAsSoleParameter() {
+        def bookClass = ga.getDomainClass(FindByMethodBook.name).clazz
+        assertNotNull bookClass.findAllByReleaseDate(null)
+
+        // per GRAILS-3463, this second call was throwing MissingMethodException
+        assertNotNull bookClass.findAllByReleaseDate(null)
+    }
 
     void testNullParameters() {
         def bookClass = ga.getDomainClass(FindByMethodBook.name).clazz

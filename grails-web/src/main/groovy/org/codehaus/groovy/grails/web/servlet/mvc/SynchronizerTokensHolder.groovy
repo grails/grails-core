@@ -30,10 +30,7 @@ class SynchronizerTokensHolder implements Serializable {
     public static final String TOKEN_KEY = "org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN"
     public static final String TOKEN_URI = "org.codehaus.groovy.grails.SYNCHRONIZER_URI"
 
-    Map<String, Set<UUID>> currentTokens= [:].withDefault { new CopyOnWriteArraySet<UUID>() };
-
-    SynchronizerTokensHolder() {
-    }
+    Map<String, Set<UUID>> currentTokens= [:].withDefault { new CopyOnWriteArraySet<UUID>() }
 
     boolean isValid(String url, String token) {
         final uuid = UUID.fromString(token)
@@ -65,8 +62,11 @@ class SynchronizerTokensHolder implements Serializable {
     }
 
     static SynchronizerTokensHolder store(HttpSession session) {
-        SynchronizerTokensHolder tokensHolder = session.getAttribute(HOLDER) ?: new SynchronizerTokensHolder()
-        session.setAttribute(HOLDER, tokensHolder)
+        SynchronizerTokensHolder tokensHolder = session.getAttribute(HOLDER)
+        if (!tokensHolder) {
+            tokensHolder = new SynchronizerTokensHolder()
+            session.setAttribute(HOLDER, tokensHolder)
+        }
         return tokensHolder
     }
 }

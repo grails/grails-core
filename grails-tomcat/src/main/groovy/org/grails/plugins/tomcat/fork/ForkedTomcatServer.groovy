@@ -65,7 +65,6 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
             CONSOLE.verbose("Resuming idle JVM")
             runInternal()
         }
-
     }
 
     protected void runInternal() {
@@ -83,8 +82,6 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
 
         setupReloading(classLoader, buildSettings)
     }
-
-
 
     @Override
     protected void discoverAndSetAgent(ExecutionContext executionContext) {
@@ -138,14 +135,11 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
     boolean isAvailable(String host, int port) {
         try {
             new Socket(host, port)
-
-
             return true
         } catch (e) {
             return false
         }
     }
-
 
     void stop() {
         final ec = (TomcatExecutionContext)executionContext
@@ -156,10 +150,7 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         }
     }
 
-
-    public static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
-        new Thread(new TomcatKillSwitch(tomcat, serverPort)).start();
+    static void startKillSwitch(final Tomcat tomcat, final int serverPort) {
+        new Thread(new TomcatKillSwitch(tomcat, serverPort)).start()
     }
-
 }
-

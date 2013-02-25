@@ -14,14 +14,15 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import javax.annotation.PostConstruct;
-
 import grails.artefact.Artefact
+
+import javax.annotation.PostConstruct
+
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 import org.springframework.util.ClassUtils
 
 /**

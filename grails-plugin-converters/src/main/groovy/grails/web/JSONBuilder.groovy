@@ -14,7 +14,7 @@
  */
 package grails.web
 
-import grails.converters.JSON;
+import grails.converters.JSON
 
 /**
  * Builds JSON data. Replaces {@link grails.util.JSonBuilder}.

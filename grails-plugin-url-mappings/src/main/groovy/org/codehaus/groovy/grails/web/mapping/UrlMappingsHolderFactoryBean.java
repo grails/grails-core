@@ -73,9 +73,8 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
 
         GrailsClass[] mappings = grailsApplication.getArtefacts(UrlMappingsArtefactHandler.TYPE);
 
-        final DefaultUrlMappingEvaluator defaultUrlMappingEvaluator = new DefaultUrlMappingEvaluator((WebApplicationContext) applicationContext);
-        defaultUrlMappingEvaluator.setPluginManager(pluginManager);
-        UrlMappingEvaluator mappingEvaluator = defaultUrlMappingEvaluator;
+        final DefaultUrlMappingEvaluator mappingEvaluator = new DefaultUrlMappingEvaluator((WebApplicationContext) applicationContext);
+        mappingEvaluator.setPluginManager(pluginManager);
 
         if (mappings.length == 0) {
             urlMappings.addAll(mappingEvaluator.evaluateMappings(DefaultUrlMappings.getMappings()));
@@ -97,7 +96,6 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
                 }
             }
         }
-
 
         DefaultUrlMappingsHolder defaultUrlMappingsHolder = new DefaultUrlMappingsHolder(urlMappings, excludePatterns, true);
 
@@ -131,7 +129,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
         this.grailsApplication = grailsApplication;
     }
 
-    public void setServletContext(@SuppressWarnings("unused") ServletContext servletContext) {
+    public void setServletContext(ServletContext servletContext) {
         // not used
     }
 

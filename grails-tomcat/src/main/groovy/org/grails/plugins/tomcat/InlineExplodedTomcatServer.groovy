@@ -15,21 +15,18 @@
  */
 package org.grails.plugins.tomcat
 
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
+import grails.util.Environment
 import grails.util.GrailsNameUtils
+
+import org.apache.catalina.Context
+import org.apache.catalina.Loader
 import org.apache.catalina.connector.Connector
 import org.apache.catalina.startup.Tomcat
 import org.apache.coyote.http11.Http11NioProtocol
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import org.apache.tomcat.util.scan.StandardJarScanner
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.grails.plugins.tomcat.fork.ForkedTomcatServer
-
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
-import org.apache.tomcat.util.scan.StandardJarScanner
-import org.springframework.util.ReflectionUtils
-import org.apache.catalina.Loader
-import org.apache.catalina.Context
-import grails.util.Environment
 
 /**
  * Serves the app, without packaging as a war and runs it in the same JVM.
@@ -94,8 +91,6 @@ class InlineExplodedTomcatServer extends TomcatServer {
     protected Loader createTomcatLoader(ClassLoader classLoader) {
         new TomcatLoader(classLoader)
     }
-
-
 
     void doStart(String host, int httpPort, int httpsPort) {
         preStart()
@@ -165,8 +160,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
             return
         }
 
-        System.setProperty("javax.sql.DataSource.Factory", "org.apache.commons.dbcp.BasicDataSourceFactory");
-
+        System.setProperty("javax.sql.DataSource.Factory", "org.apache.commons.dbcp.BasicDataSourceFactory")
 
         jndiEntries.each { name, resCfg ->
             if (resCfg) {
@@ -188,5 +182,4 @@ class InlineExplodedTomcatServer extends TomcatServer {
             }
         }
     }
-
 }

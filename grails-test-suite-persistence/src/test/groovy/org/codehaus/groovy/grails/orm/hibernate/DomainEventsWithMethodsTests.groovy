@@ -281,7 +281,6 @@ import grails.persistence.*
     }
 }
 
-
 @Entity
 class PersonWithNoArgBeforeValidate {
     String name
@@ -295,6 +294,7 @@ class PersonWithNoArgBeforeValidate {
         }
     }
 }
+
 @Entity
 class PersonWithListArgBeforeValidate {
     String name
@@ -310,6 +310,7 @@ class PersonWithListArgBeforeValidate {
         }
     }
 }
+
 @Entity
 class PersonWithOverloadedBeforeValidate {
     String name

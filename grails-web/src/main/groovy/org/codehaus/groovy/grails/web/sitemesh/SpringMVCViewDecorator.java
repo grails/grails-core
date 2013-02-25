@@ -53,7 +53,7 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
     }
 
     public void render(Content content, HttpServletRequest request,
-                       HttpServletResponse response, @SuppressWarnings("unused") ServletContext servletContext) {
+                       HttpServletResponse response, ServletContext servletContext) {
         HTMLPage htmlPage = GSPSitemeshPage.content2htmlPage(content);
         request.setAttribute(RequestConstants.PAGE, htmlPage);
 

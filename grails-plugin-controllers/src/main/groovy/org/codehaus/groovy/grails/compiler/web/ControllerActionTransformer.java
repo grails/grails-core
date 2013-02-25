@@ -332,7 +332,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     closureExpression, "call", closureInvocationArguments);
             newMethodCode.addStatement(new ExpressionStatement(methodCallExpression));
 
-
             final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC,
                     new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
 
@@ -522,9 +521,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         return substringFoundInDescription;
     }
 
-    protected Statement getCommandObjectDataBindingStatement(
-            @SuppressWarnings("unused") final ClassNode controllerClassNode, final String paramName,
-            @SuppressWarnings("unused") ClassNode commandObjectClassNode) {
+    protected Statement getCommandObjectDataBindingStatement(final ClassNode controllerClassNode, final String paramName,
+            ClassNode commandObjectClassNode) {
 
         BlockStatement bindingStatement = new BlockStatement();
         final ArgumentListExpression getCommandObjectBindingParamsArgs = new ArgumentListExpression();

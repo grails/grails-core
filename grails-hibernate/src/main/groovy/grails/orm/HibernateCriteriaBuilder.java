@@ -236,7 +236,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
 
     /**
      * Adds a sql projection to the criteria
-     * 
+     *
      * @param sql SQL projecting a single value
      * @param columnAlias column alias for the projected value
      * @param type the type of the projected value
@@ -247,7 +247,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
 
     /**
      * Adds a sql projection to the criteria
-     * 
+     *
      * @param sql SQL projecting
      * @param columnAliases List of column aliases for the projected values
      * @param types List of types for the projected values
@@ -258,7 +258,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
 
     /**
      * Adds a sql projection to the criteria
-     * 
+     *
      * @param sql SQL projecting
      * @param groupBy group by clause
      * @param columnAliases List of column aliases for the projected values
@@ -1938,7 +1938,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
             c.addOrder( ignoreCase ? Order.asc(sort).ignoreCase() : Order.asc(sort) );
         }
     }
-    
+
     /*
      * Define constants which may be used inside of criteria queries
      * to refer to standard Hibernate Type instances.

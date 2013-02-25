@@ -24,10 +24,8 @@ class CustomCascadeMappingOne {
     }
 }
 
-
 @Entity
 class CustomCascadeMappingTwo {
-
     String name
 }
 '''

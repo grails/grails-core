@@ -118,7 +118,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
             pageName = groovyPagesTemplateEngine.getCurrentRequestUri(request);
         }
 
-
         boolean isNotInclude = !WebUtils.isIncludeRequest(request) ;
         if (isNotInclude && isSecurePath(pageName)) {
             sendNotFound(response, pageName);
@@ -138,7 +137,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
 
             renderPageWithEngine(groovyPagesTemplateEngine, request, response, scriptSource);
         }
-
     }
 
     public GroovyPagesTemplateEngine getGroovyPagesTemplateEngine() {

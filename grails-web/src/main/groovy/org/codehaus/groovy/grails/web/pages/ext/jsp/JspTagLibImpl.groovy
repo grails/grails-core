@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.springframework.util.Assert
 import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter
+import org.springframework.util.Assert
 
 /**
  * @author Graeme Rocher
@@ -53,6 +53,6 @@ class JspTagLibImpl implements JspTagLib {
             return sw.toString()
         }
 
-        return super.invokeMethod(name, args);
+        return super.invokeMethod(name, args)
     }
 }

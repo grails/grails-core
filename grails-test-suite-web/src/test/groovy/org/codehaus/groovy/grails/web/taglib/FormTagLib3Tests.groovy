@@ -235,7 +235,6 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         }
     }
 
-
     void testHtmlEscapingTextAreaTag() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
@@ -327,7 +326,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             assertEquals 'Tag [select] is missing required attribute [name]', message
         }
     }
-    
+
     void testSelectTagWithNullAttribute() {
         final StringWriter sw = new StringWriter()
         final PrintWriter pw = new PrintWriter(sw)
@@ -336,7 +335,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             assertNotNull tag
             tag([name: 'mySelectTag', from: [], errors: null])
         }
-        
+
         println sw.toString()
 
         assertTrue sw.toString().startsWith('<select name="mySelectTag" id="mySelectTag" >')

@@ -209,7 +209,7 @@ public class JSON extends AbstractConverter<JSONWriter> {
         }
     }
 
-    public ObjectMarshaller<JSON> lookupObjectMarshaller(@SuppressWarnings("hiding") Object target) {
+    public ObjectMarshaller<JSON> lookupObjectMarshaller(Object target) {
         return config.getMarshaller(target);
     }
 
@@ -229,7 +229,7 @@ public class JSON extends AbstractConverter<JSONWriter> {
      * @return a JSON String
      * @throws JSONException
      */
-    public String toString(@SuppressWarnings("hiding") boolean prettyPrint) throws JSONException {
+    public String toString(boolean prettyPrint) throws JSONException {
         String json = super.toString();
         if (prettyPrint) {
             Object jsonObject = new JSONTokener(json).nextValue();

@@ -46,5 +46,5 @@ class ControllerWithCollabController {
 }
 
 interface MyCallable {
-    void callMe();
+    void callMe()
 }

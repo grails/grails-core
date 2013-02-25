@@ -26,7 +26,12 @@ import groovy.lang.Writable;
 import groovy.text.Template;
 import groovy.xml.StreamingMarkupBuilder;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -207,7 +212,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                                 "Argument [file] of render method specified without valid [contentType] argument");
                     }
 
-
                     InputStream input = null;
                     try {
                         if (o instanceof File) {
@@ -239,8 +243,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                         }
                     }
                 }
-
-
             }
             else if (statusSet) {
                 // GRAILS-6711 nothing to render, just setting status code, so don't render the map
@@ -280,7 +282,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private void detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName, boolean hasContentType) {
         if (hasContentType) return;
         String contentType;
-        @SuppressWarnings("hiding") MimeUtility mimeUtility = lookupMimeUtility(webRequest);
+        MimeUtility mimeUtility = lookupMimeUtility(webRequest);
         if (mimeUtility != null) {
             MimeType mimeType = mimeUtility.getMimeTypeForExtension(FilenameUtils.getExtension(fileName));
             if (mimeType != null) {
@@ -289,8 +291,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 String encoding = encodingObj != null ? encodingObj.toString() : DEFAULT_ENCODING;
                 setContentType(response, contentType, encoding);
             } else {
-                throw new ControllerExecutionException(
-                        "Content type could not be determined for file: " + fileName);
+                throw new ControllerExecutionException("Content type could not be determined for file: " + fileName);
             }
         }
     }
@@ -360,7 +361,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             else if (argMap.containsKey(ARGUMENT_MODEL)) {
                 Object modelObject = argMap.get(ARGUMENT_MODEL);
-                if(modelObject instanceof Map) {
+                if (modelObject instanceof Map) {
                     setTemplateModel(webRequest, binding, (Map)modelObject);
                 }
                 renderTemplateForModel(t, modelObject, target, out);
@@ -381,7 +382,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private void setTemplateModel(GrailsWebRequest webRequest, Map binding, Map modelObject) {
-        Map modelMap = (Map) modelObject;
+        Map modelMap = modelObject;
         webRequest.setAttribute(GrailsApplicationAttributes.TEMPLATE_MODEL, modelMap, RequestAttributes.SCOPE_REQUEST);
         binding.putAll(modelMap);
     }
@@ -537,6 +538,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private boolean isJSONResponse(HttpServletResponse response) {
         String contentType = response.getContentType();
         return contentType != null && (contentType.indexOf("application/json") > -1 ||
-                contentType.indexOf("text/json") > -1);
+               contentType.indexOf("text/json") > -1);
     }
 }

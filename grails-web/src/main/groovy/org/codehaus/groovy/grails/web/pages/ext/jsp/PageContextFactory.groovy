@@ -17,11 +17,10 @@ package org.codehaus.groovy.grails.web.pages.ext.jsp
 import javax.servlet.ServletContext
 import javax.servlet.jsp.PageContext as PC
 
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes as GAA
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-
 import org.springframework.web.context.request.RequestContextHolder
 
 /**

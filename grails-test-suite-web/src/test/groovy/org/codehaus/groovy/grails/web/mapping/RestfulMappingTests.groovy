@@ -1,10 +1,8 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.springframework.core.io.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
+import org.springframework.core.io.*
 import org.springframework.mock.web.MockServletContext
-
 
 class RestfulMappingTests extends AbstractGrailsMappingTests {
 
@@ -147,8 +145,5 @@ mappings {
 
         assertEquals "authentication", info.controllerName
         assertEquals "handleLogin", info.actionName
-
     }
-
 }
-

@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests;
+import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
@@ -37,8 +37,6 @@ class DataBindingWithUnidirectionalAssociationBook {
     @Override protected void onTearDown() {
         RequestContextHolder.setRequestAttributes(null)
     }
-
-
 
     void testBindToNewInstance() {
         super.buildMockRequest()

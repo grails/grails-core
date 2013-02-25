@@ -25,18 +25,18 @@ import org.xml.sax.Attributes
  */
 class WebXmlTagLibraryReader extends DefaultHandler {
 
-    static final TAG_TAGLIB_URI = "taglib-uri"
-    static final TAG_TAGLIB_LOC = "taglib-location"
-    static final TAG_TAGLIB = "taglib"
+    static final String TAG_TAGLIB_URI = "taglib-uri"
+    static final String TAG_TAGLIB_LOC = "taglib-location"
+    static final String TAG_TAGLIB = "taglib"
 
     /**
      * Contains a map of URI to tag library locations once the handler has read the web.xml file
      */
     Map tagLocations = [:]
 
-    private location
-    private uri
-    private buf
+    private String location
+    private String uri
+    private StringBuilder buf
 
     void startElement(String ns, String localName, String qName, Attributes attributes) {
         if (TAG_TAGLIB_URI == qName || TAG_TAGLIB_LOC == qName) {
@@ -45,7 +45,7 @@ class WebXmlTagLibraryReader extends DefaultHandler {
     }
 
     void characters(char[] chars, int offset, int length) {
-        buf?.append(chars,offset, length)
+        buf?.append(chars, offset, length)
     }
 
     void endElement(String ns, String localName, String qName) {

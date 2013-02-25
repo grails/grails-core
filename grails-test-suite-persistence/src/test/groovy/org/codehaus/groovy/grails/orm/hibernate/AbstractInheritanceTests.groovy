@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 class AbstractInheritanceTests extends AbstractGrailsHibernateTests {
+
     @Override protected void onSetUp() {
         gcl.parseClass('''
 import grails.persistence.*
@@ -43,7 +44,7 @@ abstract class AbstractInheritanceContract {
 
   static transients = [ 'name' ]
 
-  abstract String getTypeName();
+  abstract String getTypeName()
 
   def onLoad() {
     name = getTypeName()
@@ -72,11 +73,8 @@ import grails.persistence.*
 class ConcreteGormEnhanced extends BaseNonGormEnhanced {
 
 }
-
-
 ''')
     }
-
 
     void testAbstractInheritanceWithOneToMany() {
         def Derived = ga.getDomainClass("AbstractInheritanceDerived").clazz
@@ -106,12 +104,10 @@ class ConcreteGormEnhanced extends BaseNonGormEnhanced {
         def Inservice = ga.getDomainClass("AbstractInheritanceInservice").clazz
         def Contract = ga.getDomainClass("AbstractInheritanceContract").clazz
 
-
         def bob = Person.newInstance(name:"Bob")
         bob.save()
         def fred = Person.newInstance(name:"Fred")
         fred.save()
-
 
         final now = new Date()
         Referral.newInstance(contractDate:now)
@@ -141,7 +137,5 @@ class ConcreteGormEnhanced extends BaseNonGormEnhanced {
         def comment = referral.comments.iterator().next()
         assert comment != null
         assert comment.person.name == 'Bob'
-
     }
-
 }

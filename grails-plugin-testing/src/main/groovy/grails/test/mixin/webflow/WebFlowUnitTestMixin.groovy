@@ -16,6 +16,8 @@
 package grails.test.mixin.webflow
 
 import grails.test.mixin.web.ControllerUnitTestMixin
+
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.junit.Assert
 
 /**
@@ -47,7 +49,7 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
     }
 
     def propertyMissing(String name) {
-        def controller = webRequest.currentRequest.getAttribute(org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes.CONTROLLER)
+        def controller = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.CONTROLLER)
         def webFlowName = name
         if (controller == null) {
             Assert.fail("No controller mocked. Call mockController(Class) first")
@@ -58,10 +60,10 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
         } catch (MissingPropertyException mpe) {
             Assert.fail("No flow named $name found in controller $controller")
         }
-        if (webFlowClosure instanceof Closure) {
 
-            flowMap = grails.test.mixin.webflow.WebFlowUnitTestSupport.translate(webFlowClosure, {
-                lastEventName = it.event;
+        if (webFlowClosure instanceof Closure) {
+            flowMap = WebFlowUnitTestSupport.translate(webFlowClosure, {
+                lastEventName = it.event
                 lastTransitionName = it.transition
                 isOutput = it.isOutput
                 isInput = it.isInput
@@ -72,6 +74,7 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
         }
         return webFlowClosure
     }
+
     /**
      * Registers the end transition state of a web flow if it is returned as
      * <code>return success()</code>

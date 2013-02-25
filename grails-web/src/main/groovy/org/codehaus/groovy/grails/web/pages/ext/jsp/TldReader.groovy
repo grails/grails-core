@@ -15,9 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.xml.sax.helpers.DefaultHandler
-import org.xml.sax.Attributes
 import org.springframework.util.ClassUtils
+import org.xml.sax.Attributes
+import org.xml.sax.helpers.DefaultHandler
 
 /**
  * A SAX parser implementation that reads the contents of a tag library definition (TLD) into two properties
@@ -30,8 +30,8 @@ class TldReader extends DefaultHandler {
 
     StringBuilder buf
 
-    private tagName
-    private className
+    private String tagName
+    private String className
 
     void startElement(String nsuri, String localName, String qName, Attributes attributes) {
         if ("name" == qName || "tagclass" == qName || "tag-class" == qName || "listener-class" == qName) {
@@ -47,7 +47,7 @@ class TldReader extends DefaultHandler {
         switch (qName) {
             case "name":
                 if (!tagName) {
-                    tagName = buf.toString().trim();
+                    tagName = buf.toString().trim()
                     buf = null
                 }
                 break
@@ -62,7 +62,7 @@ class TldReader extends DefaultHandler {
                 listeners << listenerClass.newInstance()
                 break
             case ~/tag-{0,1}class/:
-                className = buf.toString().trim();
+                className = buf.toString().trim()
                 buf = null
             break
         }

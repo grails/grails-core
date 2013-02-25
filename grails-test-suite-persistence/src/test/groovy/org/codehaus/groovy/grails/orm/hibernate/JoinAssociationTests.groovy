@@ -91,7 +91,6 @@ class Role {
         session.flush()
         session.clear()
 
-
         def results = User.createCriteria().listDistinct {
             roles {
                 eq('name', 'Role1')

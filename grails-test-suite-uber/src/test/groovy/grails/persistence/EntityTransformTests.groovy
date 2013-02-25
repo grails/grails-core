@@ -127,7 +127,6 @@ p = new Permission(user:u, permission:"uber")
         [new Approver(firstName:"joe", lastName:"bloggs"), new Personnel(firstName:"jack", lastName:"dee") ]
         ''')
 
-
         assertEquals "joe, bloggs", entities[0].toString()
         assertEquals "jack, dee", entities[1].toString()
     }

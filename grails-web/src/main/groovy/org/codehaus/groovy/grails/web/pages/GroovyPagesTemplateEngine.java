@@ -86,8 +86,9 @@ import org.springframework.web.context.support.ServletContextResource;
  * @since 0.1
  */
 public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
-    public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES="grails.gsp.disable.caching.resources";
-    public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD="grails.gsp.enable.reload";
+
+    public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = "grails.gsp.disable.caching.resources";
+    public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = "grails.gsp.enable.reload";
     public static final String BEAN_ID = "groovyPagesTemplateEngine";
 
     private static final String GENERATED_GSP_NAME_PREFIX = "gsp_script_";
@@ -103,7 +104,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     private boolean reloadEnabled;
     private TagLibraryLookup tagLibraryLookup;
     private TagLibraryResolver jspTagLibraryResolver;
-    private boolean cacheResources=true;
+    private boolean cacheResources = true;
 
     private GrailsApplication grailsApplication;
     private Map<String, Class<?>> cachedDomainsWithoutPackage;
@@ -186,7 +187,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
      * @param url The URL of the page
      * @return An array where the index is the line number witin the compiled GSP and the value is the line number within the source
      */
-    public int[] calculateLineNumbersForPage(@SuppressWarnings("unused") ServletContext context, String url) {
+    public int[] calculateLineNumbersForPage(ServletContext context, String url) {
         try {
             Template t = createTemplate(url);
             if (t instanceof GroovyPageTemplate) {
@@ -547,7 +548,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
                 if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
                     encoding = gspEnc.toString();
                 }
-
             }
             parser = new GroovyPageParser(name, path, path, inputStream, encoding);
 

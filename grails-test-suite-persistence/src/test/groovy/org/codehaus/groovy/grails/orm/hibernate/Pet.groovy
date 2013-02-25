@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
 
-
 @Entity
 class Pet {
     String name

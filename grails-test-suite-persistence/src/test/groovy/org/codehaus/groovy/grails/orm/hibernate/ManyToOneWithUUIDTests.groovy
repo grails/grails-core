@@ -9,7 +9,6 @@ class ManyToOneWithUUIDTests extends AbstractGrailsHibernateTests{
         gcl.parseClass('''
 import grails.persistence.*
 
-
 @Entity
 class ManyToOneWithUUIDPage extends org.codehaus.groovy.grails.orm.hibernate.AbstractPage {
     String id
@@ -37,7 +36,6 @@ class ManyToOneWithUUIDPageElement {
         def pe = PageElement.newInstance(page:page)
         assert pe.save()
 
-
         session.clear()
 
         pe = PageElement.get(pe.id)
@@ -45,6 +43,6 @@ class ManyToOneWithUUIDPageElement {
         assert pe
         assert pe.page
     }
-
 }
+
 abstract class AbstractPage {}

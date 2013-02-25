@@ -84,15 +84,15 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
     }
 
     static class DummySiteMeshFactory extends BaseFactory {
-        public DummySiteMeshFactory(Config config) {
+        DummySiteMeshFactory(Config config) {
             super(config)
         }
-        
+
         @Override
-        public void refresh() {
+        void refresh() {
         }
     }
-    
+
     def configureSitemesh() {
         def mockServletConfig = new MockServletConfig()
         def siteMeshConfig = new Config(mockServletConfig)
@@ -101,7 +101,7 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
         siteMeshFactory.decoratorMapper = [getNamedDecorator: {request, name -> decorator(name)}] as DecoratorMapper
         FactoryHolder.factory = siteMeshFactory
     }
-    
+
     void testMultipleLevelsOfLayouts() {
         def resourceLoader = new MockStringResourceLoader()
         resourceLoader.registerMockResource('/layout/dialog.gsp', '''<html>
@@ -113,9 +113,9 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
         <body onload="${g.pageProperty(name:'body.onload')}"><div id="base"><g:layoutBody /></div></body>
 </html>''')
         appCtx.groovyPageLocator.addResourceLoader resourceLoader
-        
+
         configureSitemesh()
-        
+
         def template = '''
 <g:applyLayout name="base"><g:applyLayout name="dialog">
 <html>
@@ -147,7 +147,7 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
 </html>
 ''', result
     }
-    
+
     void testParameters() {
         def template = '''
 <html>

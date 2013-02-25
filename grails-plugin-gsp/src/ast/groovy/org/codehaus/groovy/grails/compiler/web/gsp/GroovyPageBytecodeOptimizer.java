@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.web.gsp;
 
+import java.net.URL;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -24,9 +25,6 @@ import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GroovyPageInjector;
-
-import java.net.URL;
-
 
 @AstTransformer
 public class GroovyPageBytecodeOptimizer implements GroovyPageInjector {
@@ -44,9 +42,7 @@ public class GroovyPageBytecodeOptimizer implements GroovyPageInjector {
             GroovyPageOptimizerVisitor groovyPageVisitor = new GroovyPageOptimizerVisitor(classNode);
             groovyPageVisitor.visitBlockStatement(block);
         }
-
     }
-
 
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);

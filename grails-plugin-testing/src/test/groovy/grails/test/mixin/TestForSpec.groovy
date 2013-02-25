@@ -1,8 +1,9 @@
 package grails.test.mixin
 
-import org.junit.Test
-import spock.lang.Specification
 import org.apache.commons.logging.Log
+import org.junit.Test
+
+import spock.lang.Specification
 
 class TestForSpec extends Specification{
 
@@ -60,8 +61,6 @@ class ControllerTestForTests extends spock.lang.Specification  {
 
     def retrieveLog() { log }
 }
-
-
 ''').newInstance()
     }
     def getJunit4Test() {
@@ -86,8 +85,6 @@ class ControllerTestForTests {
 
     def retrieveLog() { log }
 }
-
-
 ''').newInstance()
     }
 
@@ -113,8 +110,6 @@ class ControllerTestForTests extends GroovyTestCase {
 
     def retrieveLog() { log }
 }
-
-
 ''').newInstance()
     }
 }

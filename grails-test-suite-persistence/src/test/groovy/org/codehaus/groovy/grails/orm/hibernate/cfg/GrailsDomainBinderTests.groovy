@@ -1156,7 +1156,7 @@ class CascadeParent {
 
     private DefaultGrailsDomainConfiguration getDomainConfig(GroovyClassLoader cl, classes) {
         def grailsApplication = new DefaultGrailsApplication(classes as Class[], cl)
-        def pluginManager = new MockGrailsPluginManager(grailsApplication);
+        def pluginManager = new MockGrailsPluginManager(grailsApplication)
         getDomainConfig grailsApplication, pluginManager
     }
 

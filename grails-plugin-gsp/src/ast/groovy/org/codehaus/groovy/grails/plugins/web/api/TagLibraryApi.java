@@ -72,7 +72,7 @@ public class TagLibraryApi extends CommonWebApi {
      * @param instance The tag library instance
      * @param message The error message
      */
-    public void throwTagError(@SuppressWarnings("unused") Object instance, String message) {
+    public void throwTagError(Object instance, String message) {
         throw new GrailsTagException(message);
     }
 
@@ -99,7 +99,7 @@ public class TagLibraryApi extends CommonWebApi {
      * @param instance The tag library instance
      * @return The writer to use
      */
-    public Writer getOut(@SuppressWarnings("unused") Object instance) {
+    public Writer getOut(Object instance) {
         return GroovyPageOutputStack.currentWriter();
     }
 
@@ -108,7 +108,7 @@ public class TagLibraryApi extends CommonWebApi {
      * @param instance The tag library instance
      * @param newOut The new output writer
      */
-    public void setOut(@SuppressWarnings("unused") Object instance, Writer newOut) {
+    public void setOut(Object instance, Writer newOut) {
         GroovyPageOutputStack.currentStack().push(newOut,true);
     }
 

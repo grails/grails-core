@@ -99,7 +99,7 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     protected void onInit() {
-        if(name == 'testPaginateMappingAndAction') {
+        if (name == 'testPaginateMappingAndAction') {
             def mappingClass = gcl.parseClass('''
     class TestUrlMappings {
         static mappings = {

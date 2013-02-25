@@ -6,11 +6,10 @@ import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptProvider
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.web.util.WebUtils
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
 class JavascriptTagLibTests extends AbstractGrailsTagTests {
 
@@ -260,7 +259,6 @@ class TestUrlMappings {
         }
     }
 
-
     void testJSLibWithBase() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
@@ -271,7 +269,6 @@ class TestUrlMappings {
             assertEquals("<script src=\"http://testserver/static/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
     }
-
 
     void testJSSrcWithBase() {
         StringWriter sw = new StringWriter()
@@ -307,6 +304,7 @@ class TestUrlMappings {
         }
     }
 }
+
 class TestProvider implements JavascriptProvider {
 
     def doRemoteFunction(Object taglib, Object attrs, Object out) {

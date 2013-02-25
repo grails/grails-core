@@ -47,7 +47,6 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 
         mockController.render file:new ByteArrayInputStream("hello".bytes), contentType:"text/plain"
 
-
         assert "hello" == response.contentAsString
         assert null == response.getHeader(HttpHeaders.CONTENT_DISPOSITION)
 
@@ -232,8 +231,6 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 }
 
 class RenderController {
-
-
 
     def renderBug = {
         render(view:'login', [foo:"bar"])

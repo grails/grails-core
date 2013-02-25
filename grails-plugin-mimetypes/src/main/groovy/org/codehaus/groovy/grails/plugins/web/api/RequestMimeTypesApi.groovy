@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.api
 
 import javax.servlet.http.HttpServletRequest
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.mime.DefaultAcceptHeaderParser
 import org.codehaus.groovy.grails.web.mime.MimeType
@@ -37,12 +38,12 @@ class RequestMimeTypesApi {
 
     RequestMimeTypesApi() {}
 
-    MimeType[] getMimeTypes() { mimeTypes }
-
     RequestMimeTypesApi(GrailsApplication application, MimeType[] mimeTypes) {
         this.mimeTypes = mimeTypes
         grailsApplication = application
     }
+
+    MimeType[] getMimeTypes() { mimeTypes }
 
     /**
      * Obtains the request format, which is dictated by the CONTENT_TYPE header and evaluated using the

@@ -16,7 +16,6 @@
 
 package org.codehaus.groovy.grails.web.binding
 
-
 class DataBindingLazyMetaPropertyMapTests extends GroovyTestCase {
 
     void testDataBindingWithSubmap() {
@@ -28,8 +27,8 @@ class DataBindingLazyMetaPropertyMapTests extends GroovyTestCase {
         assertEquals "Homer", map.name
         assertEquals "stuff", map.other
     }
-
 }
+
 class PropertyMapTest {
     String name
     Integer age

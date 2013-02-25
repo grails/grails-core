@@ -1,20 +1,18 @@
 package org.codehaus.groovy.grails.orm.hibernate.metaclass
 
-import spock.lang.Specification
-import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.hibernate.SessionFactory
 import java.util.regex.Pattern
-import org.codehaus.groovy.grails.orm.hibernate.GormSpec
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.hibernate.Criteria
+
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.orm.hibernate.Customer
-import org.hibernate.impl.CriteriaImpl
+import org.codehaus.groovy.grails.orm.hibernate.GormSpec
+import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore
 import org.grails.datastore.mapping.model.MappingContext
+import org.hibernate.Criteria
+import org.hibernate.SessionFactory
+import org.hibernate.impl.CriteriaImpl
+
 import spock.lang.Issue
 
-/**
- */
 class AbstractFindByPersistentMethodSpec extends GormSpec {
 
     @Issue('GRAILS-8762')
@@ -35,6 +33,7 @@ class AbstractFindByPersistentMethodSpec extends GormSpec {
         [Customer]
     }
 }
+
 class TestFindBy extends AbstractFindByPersistentMethod {
 
     TestFindBy(HibernateDatastore datastore, GrailsApplication application) {
@@ -43,6 +42,6 @@ class TestFindBy extends AbstractFindByPersistentMethod {
 
     @Override
     protected Object getResult(Criteria crit, boolean useLimit) {
-        return crit;
+        return crit
     }
 }

@@ -139,7 +139,7 @@ public abstract class GroovyPage extends Script {
             return EMPTY_CLASS_ARR;
         }
 
-        public Object doCall(@SuppressWarnings("unused") Object obj) {
+        public Object doCall(Object obj) {
             return retval;
         }
 
@@ -147,7 +147,7 @@ public abstract class GroovyPage extends Script {
             return retval;
         }
 
-        public Object doCall(@SuppressWarnings("unused") Object[] args) {
+        public Object doCall(Object[] args) {
             return retval;
         }
 
@@ -179,7 +179,7 @@ public abstract class GroovyPage extends Script {
         return codecOut;
     }
 
-    public void setOut(@SuppressWarnings("unused") Writer newWriter) {
+    public void setOut(Writer newWriter) {
         throw new IllegalStateException("Setting out in page isn't allowed.");
     }
 

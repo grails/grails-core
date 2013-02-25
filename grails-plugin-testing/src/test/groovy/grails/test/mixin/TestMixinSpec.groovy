@@ -1,23 +1,22 @@
 package grails.test.mixin
 
 import grails.test.mixin.support.GrailsUnitTestMixin
+
 import org.junit.After
 import org.junit.Before
 import org.junit.runner.Result
 import org.junit.runner.notification.RunNotifier
 import org.junit.runners.BlockJUnit4ClassRunner
 import org.spockframework.runtime.*
+
 import spock.lang.*
 
- /**
+/**
  * Tests for the mixin that adds functionality to a test case
  *
  * @author Graeme Rocher
- *
  */
 class TestMixinSpec extends Specification {
-
-
 
     void "Test that appropriate test hooks are called for a JUnit 3 test"() {
         setup:
@@ -39,7 +38,6 @@ class TestMixinSpec extends Specification {
             MyMixin.doLastCalled == true
             GrailsUnitTestMixin.grailsApplication == null
             GrailsUnitTestMixin.applicationContext == null
-
     }
 
     void "Test that appropriate test hooks are called for a JUnit 4 test"() {
@@ -53,7 +51,6 @@ class TestMixinSpec extends Specification {
             def result = new Result()
             notifier.addListener(result.createListener())
             runner.run(notifier)
-
 
         then: "Check that @Before and @After hooks are called and the test was run"
             result.runCount == 1
@@ -73,7 +70,6 @@ class TestMixinSpec extends Specification {
             def result = new Result()
             notifier.addListener(result.createListener())
             adapter.run(notifier)
-
 
         then: "Check that the test is run and @Before and @After hooks are called"
             result.runCount == 1
@@ -95,7 +91,6 @@ class MyJunit3Test extends GroovyTestCase {
 }
 ''').newInstance()
     }
-
 
     def getJunit4Test() {
         new GroovyClassLoader().parseClass('''
@@ -129,7 +124,6 @@ class MyJunitSpockTest extends spock.lang.Specification {
     }
 }
 
-
 class MyMixin extends GrailsUnitTestMixin{
     static doFirstCalled = false
     static doLastCalled = false
@@ -148,11 +142,9 @@ class MyMixin extends GrailsUnitTestMixin{
         doLastCalled = true
     }
 }
-class SecondMixin extends GrailsUnitTestMixin{
 
+class SecondMixin extends GrailsUnitTestMixin{
     void secondCall() {
         // do nothing
     }
-
 }
-

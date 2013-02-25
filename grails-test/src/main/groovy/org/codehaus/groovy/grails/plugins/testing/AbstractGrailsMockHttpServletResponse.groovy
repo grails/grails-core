@@ -17,13 +17,15 @@ package org.codehaus.groovy.grails.plugins.testing
 import grails.artefact.ApiDelegate
 import grails.converters.JSON
 import groovy.util.slurpersupport.GPathResult
+
 import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
 import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.json.JSONElement
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletResponse
-import javax.servlet.http.HttpServletResponse
 import org.springframework.util.ReflectionUtils
 
 /**
@@ -50,7 +52,6 @@ abstract class AbstractGrailsMockHttpServletResponse extends MockHttpServletResp
     void leftShift(String content) {
         writer << content
     }
-
 
     /**
      * Return the primary value for the given header as a String, if any.
@@ -130,6 +131,4 @@ abstract class AbstractGrailsMockHttpServletResponse extends MockHttpServletResp
 
         return super.getRedirectedUrl()
     }
-
-
 }

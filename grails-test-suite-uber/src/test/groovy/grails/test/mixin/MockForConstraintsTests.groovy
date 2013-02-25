@@ -19,8 +19,6 @@ class MockForConstraintsTests {
         assert "nullable" == book.errors["title"]
         assert "nullable" == book.errors["author"]
 
-
-
         // So let's demonstrate the unique and minSize constraints.
 
         book = new ConstrainedBook(title: "Misery", author: "JK")
@@ -34,6 +32,7 @@ class MockForConstraintsTests {
         assert book.validate()
     }
 }
+
 class ConstrainedBook {
     Long id
     Long version

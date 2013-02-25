@@ -41,6 +41,4 @@ class NamedCriteriaInheritanceTests extends AbstractGrailsHibernateTests {
         assertEquals 1, publications?.size()
         assertEquals 'Some Old Book', publications[0].title
     }
-
-
 }

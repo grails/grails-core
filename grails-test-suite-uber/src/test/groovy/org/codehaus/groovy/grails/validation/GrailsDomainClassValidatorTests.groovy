@@ -175,6 +175,4 @@ class Publisher {
 }
         ''')
     }
-
-
 }

@@ -113,9 +113,9 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         }
         return fieldNode;
     }
-    
+
     private Set<String> getPropertyNamesToIncludeInWhiteListForParentClass(final SourceUnit sourceUnit, final ClassNode parentClassNode) {
-    	final Set<String> propertyNames;
+        final Set<String> propertyNames;
         if (CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.containsKey(parentClassNode)) {
             propertyNames = CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.get(parentClassNode);
         } else {
@@ -210,7 +210,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
         CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES.put(classNode, propertyNamesToIncludeInWhiteList);
         Map<String, ClassNode> allAssociationMap = GrailsASTUtils.getAllAssociationMap(classNode);
         for (String associationName : allAssociationMap.keySet()) {
-            if(!propertyNamesToIncludeInWhiteList.contains(associationName) && !unbindablePropertyNames.contains(associationName)) {
+            if (!propertyNamesToIncludeInWhiteList.contains(associationName) && !unbindablePropertyNames.contains(associationName)) {
                 propertyNamesToIncludeInWhiteList.add(associationName);
             }
         }

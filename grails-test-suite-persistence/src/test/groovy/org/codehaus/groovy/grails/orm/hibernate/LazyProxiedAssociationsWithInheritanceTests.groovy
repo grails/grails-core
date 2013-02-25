@@ -165,14 +165,12 @@ class LazyProxiedAssociationsWithInheritanceTests extends AbstractGrailsHibernat
     }
 }
 
-
 @Entity
 class ContentRevision implements Serializable {
-
     Date dateCreated
-
     static belongsTo = [content: Content]
 }
+
 @Entity
 class Content implements Serializable {
 

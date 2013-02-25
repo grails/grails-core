@@ -1,11 +1,13 @@
 package org.codehaus.groovy.grails.compiler.gorm
 
 import grails.spring.BeanBuilder
+
 import org.codehaus.groovy.grails.orm.hibernate.SessionFactoryHolder
 import org.codehaus.groovy.grails.orm.hibernate.SessionFactoryProxy
 import org.hibernate.dialect.H2Dialect
 import org.springframework.context.ApplicationContext
 import org.springframework.orm.hibernate3.LocalSessionFactoryBean
+
 import spock.lang.Specification
 
  /**
@@ -22,8 +24,6 @@ class SessionFactoryProxySpec extends Specification{
 
         then:
            sessionFactory.@currentSessionContext.@sessionFactory == sessionFactoryProxy
-
-
     }
 
     void "Verify that we can access other properties of the SessionFactoryImpl via the proxy in Groovy code"() {
@@ -36,9 +36,7 @@ class SessionFactoryProxySpec extends Specification{
 
         then:
             eventListeners != null
-
     }
-
 
     ApplicationContext getApplicationContext() {
         BeanBuilder bb = new BeanBuilder()

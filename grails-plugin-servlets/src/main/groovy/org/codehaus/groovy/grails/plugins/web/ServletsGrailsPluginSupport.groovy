@@ -20,6 +20,7 @@ import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.HttpSession
+
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi
 
@@ -31,15 +32,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ServletRequestApi
  */
 class ServletsGrailsPluginSupport {
 
-
     static enhanceServletApi(ConfigObject config = new ConfigObject()) {
-        def requestEnhancer = new MetaClassEnhancer()
-        final servletRequestApi = new ServletRequestApi()
-        final xhrIdentifier = config?.grails?.web?.xhr?.identifier
-        if(xhrIdentifier instanceof Closure) {
-            servletRequestApi.xhrRequestIdentifier = xhrIdentifier
-        }
-        requestEnhancer.addApi servletRequestApi
 
         def getAttributeClosure = { String name ->
             def mp = delegate.class.metaClass.getMetaProperty(name)
@@ -62,7 +55,7 @@ class ServletsGrailsPluginSupport {
         def setAttributeSubScript = { String key, Object val ->
             delegate.setAttribute(key, val)
         }
-        // enables acces to servlet context with servletContext.foo syntax
+        // enables access to servlet context with servletContext.foo syntax
         ServletContext.metaClass.getProperty = getAttributeClosure
         ServletContext.metaClass.setProperty = setAttributeClosure
         ServletContext.metaClass.getAt = getAttributeSubscript
@@ -87,6 +80,13 @@ class ServletsGrailsPluginSupport {
         HttpServletRequest.metaClass.getProperty = getAttributeClosure
         HttpServletRequest.metaClass.setProperty = setAttributeClosure
 
+        final servletRequestApi = new ServletRequestApi()
+        final xhrIdentifier = config?.grails?.web?.xhr?.identifier
+        if (xhrIdentifier instanceof Closure) {
+            servletRequestApi.xhrRequestIdentifier = xhrIdentifier
+        }
+        def requestEnhancer = new MetaClassEnhancer()
+        requestEnhancer.addApi servletRequestApi
         requestEnhancer.enhance HttpServletRequest.metaClass
 
         // allows the syntax response << "foo"

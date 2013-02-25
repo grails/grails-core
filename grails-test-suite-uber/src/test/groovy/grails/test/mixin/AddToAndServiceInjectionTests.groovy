@@ -4,9 +4,6 @@ import grails.persistence.Entity
 
 import org.junit.Test
 
-/**
- */
-
 @TestFor(Ship)
 @Mock([Ship, Pirate])
 class AddToAndServiceInjectionTests {

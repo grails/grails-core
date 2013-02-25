@@ -1,10 +1,12 @@
 package org.codehaus.groovy.grails.compiler.web.converters
 
 import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import spock.lang.Specification
 import org.springframework.web.context.request.RequestContextHolder
+
+import spock.lang.Specification
 
 class ConvertersControllersApiSpec extends Specification {
 
@@ -12,11 +14,7 @@ class ConvertersControllersApiSpec extends Specification {
         given:
             def gcl = new GrailsAwareClassLoader()
             def transformer = new ConvertersControllersTransformer() {
-                @Override
-                boolean shouldInject(URL url) {
-                    return true;
-                }
-
+                boolean shouldInject(URL url) { true }
             }
             gcl.classInjectors = [transformer] as ClassInjector[]
 
@@ -48,10 +46,7 @@ class RenderTestController {
         then:
             response != null
             response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><string>test</string>'
-
     }
-
-
 
     void "Test that the render method for converters on annotated domain"() {
         given:
@@ -87,7 +82,5 @@ class RenderTestController {
         then:
             response != null
             response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><string>test</string>'
-
     }
-
 }

@@ -297,7 +297,6 @@ Validation Error(s) occurred during save():
     }
 }
 
-
 @Entity
 class SavePersistentMethodTeam {
     String name
@@ -349,4 +348,3 @@ class SavePersistentMethodCustomValidation {
         title(validator: { val, obj -> throw new IllegalStateException() })
     }
 }
-

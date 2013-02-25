@@ -17,6 +17,11 @@ package org.codehaus.groovy.grails.web.converters.configuration;
 
 import grails.converters.JSON;
 import grails.converters.XML;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -28,10 +33,6 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarshaller;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Siegfried Puchbauer

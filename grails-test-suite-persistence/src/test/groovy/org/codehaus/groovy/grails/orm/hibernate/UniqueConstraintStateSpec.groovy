@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
 
-
 class UniqueConstraintStateSpec extends GormSpec {
 
     void "Test that the domain validator state is correct for a unique constraint"() {
@@ -20,7 +19,6 @@ class UniqueConstraintStateSpec extends GormSpec {
         then:"The domain class is valid"
             domain != null
             domain.validator != null
-
     }
 
     @Override
@@ -28,6 +26,7 @@ class UniqueConstraintStateSpec extends GormSpec {
         [UniqueThing]
     }
 }
+
 @Entity
 class UniqueThing {
 

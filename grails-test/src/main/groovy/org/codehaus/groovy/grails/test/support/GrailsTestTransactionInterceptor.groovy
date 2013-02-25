@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.grails.test.support
 
-import org.springframework.transaction.support.DefaultTransactionDefinition
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.context.ApplicationContext
-
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.springframework.context.ApplicationContext
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionStatus
+import org.springframework.transaction.support.DefaultTransactionDefinition
 
 /**
  * Establishes a rollback only transaction for running a test in.
@@ -29,14 +29,14 @@ class GrailsTestTransactionInterceptor {
     static final String TRANSACTIONAL = "transactional"
 
     ApplicationContext applicationContext
-    protected final transactionManager
-    protected transactionStatus
+    protected final PlatformTransactionManager transactionManager
+    protected TransactionStatus transactionStatus
 
     GrailsTestTransactionInterceptor(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
 
         if (applicationContext.containsBean("transactionManager")) {
-            transactionManager = applicationContext.getBean("transactionManager")
+            transactionManager = applicationContext.transactionManager
         }
     }
 

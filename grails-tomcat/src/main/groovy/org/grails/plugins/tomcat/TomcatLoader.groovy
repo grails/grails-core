@@ -92,11 +92,11 @@ class TomcatLoader extends LifecycleBase implements Loader {
 
     @Override protected void startInternal() {
         fireLifecycleEvent(Lifecycle.START_EVENT, this)
-        setState(LifecycleState.STARTING);
+        setState(LifecycleState.STARTING)
     }
 
     @Override protected void stopInternal() {
         fireLifecycleEvent(Lifecycle.STOP_EVENT, this)
-        setState(LifecycleState.STOPPING);
+        setState(LifecycleState.STOPPING)
     }
 }

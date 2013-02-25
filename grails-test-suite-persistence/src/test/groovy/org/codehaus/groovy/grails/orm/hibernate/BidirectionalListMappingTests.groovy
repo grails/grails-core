@@ -4,10 +4,10 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.orm.hibernate.cfg.DefaultGrailsDomainConfiguration
 import org.hibernate.FetchMode
 import org.hibernate.engine.CascadeStyle
+import org.hibernate.mapping.*
 import org.hibernate.type.IntegerType
 import org.hibernate.type.LongType
 import org.hibernate.type.ManyToOneType
-import org.hibernate.mapping.*
 
  /**
  * @author Graeme Rocher
@@ -21,7 +21,6 @@ class BidirectionalListMappingTests extends GroovyTestCase {
 
     protected void setUp() {
         ExpandoMetaClass.enableGlobally()
-
 
         def gcl = new GroovyClassLoader()
         gcl.parseClass '''

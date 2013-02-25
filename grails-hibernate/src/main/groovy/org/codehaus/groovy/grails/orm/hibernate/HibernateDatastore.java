@@ -55,7 +55,7 @@ public class HibernateDatastore extends AbstractDatastore implements Application
     }
 
     @Override
-    protected Session createSession(@SuppressWarnings("hiding") Map<String, String> connectionDetails) {
+    protected Session createSession(Map<String, String> connectionDetails) {
         return new HibernateSession(this, sessionFactory);
     }
 

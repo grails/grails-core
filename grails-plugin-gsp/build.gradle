@@ -1,4 +1,3 @@
-
 sourceSets {
     ast {
         groovy.srcDirs = ['src/ast/groovy']
@@ -28,7 +27,6 @@ test {
 jar{
     from compileAstGroovy.outputs.files
 }
-
 
 eclipse {
     classpath {

@@ -17,10 +17,9 @@ package org.codehaus.groovy.grails.web.pages.ext.jsp
 
 import javax.xml.parsers.SAXParserFactory
 
-import org.codehaus.groovy.grails.web.pages.ext.jsp.WebXmlTagLibraryReader
 import org.xml.sax.InputSource
 
-class WebXmlTagLibraryReaderTests extends GroovyTestCase{
+class WebXmlTagLibraryReaderTests extends GroovyTestCase {
 
     void testWebXmlTagLibraryReader() {
         def is = new InputSource(new StringReader(testWebXml))

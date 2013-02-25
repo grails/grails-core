@@ -344,18 +344,18 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 allDatasourceNames << name - 'dataSource_'
             }
         }
-        
+
         def datasourceNames
-        if(event.source instanceof Class) {
+        if (event.source instanceof Class) {
             GrailsDomainClass dc = application.getDomainClass(event.source.name)
-            if(!dc.getMappingStrategy().equalsIgnoreCase(GrailsDomainClass.GORM)) {
+            if (!dc.getMappingStrategy().equalsIgnoreCase(GrailsDomainClass.GORM)) {
                 return
             }
             GrailsDomainBinder.clearMappingCache(event.source)
             def dcMappingDsNames = GrailsHibernateUtil.getDatasourceNames(dc) as Set
             datasourceNames = [] as Set
             for(name in allDatasourceNames) {
-                if(name in dcMappingDsNames || dcMappingDsNames.contains(GrailsDomainClassProperty.ALL_DATA_SOURCES)) {
+                if (name in dcMappingDsNames || dcMappingDsNames.contains(GrailsDomainClassProperty.ALL_DATA_SOURCES)) {
                     datasourceNames << name
                 }
             }
@@ -363,7 +363,7 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
             GrailsDomainBinder.clearMappingCache()
             datasourceNames = allDatasourceNames
         }
-        
+
         def beans = beans {
             for (String datasourceName in datasourceNames) {
                 LOG.debug "processing DataSource $datasourceName"
@@ -371,16 +371,16 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                 String suffix = isDefault ? '' : '_' + datasourceName
                 def hibConfig = application.config["hibernate$suffix"]
                 def sessionFactoryReload = hibConfig?.containsKey('reload') ? hibConfig.reload : true
-                
-                if(sessionFactoryReload) {
+
+                if (sessionFactoryReload) {
                     "${SessionFactoryHolder.BEAN_ID}$suffix"(SessionFactoryHolder) {
                        sessionFactory = bean(ConfigurableLocalSessionFactoryBean) { bean ->
                            bean.parent = ref("abstractSessionFactoryBeanConfig$suffix")
                            proxyIfReloadEnabled = false
                        }
                     }
-    
-                    if(event.source instanceof Class) {
+
+                    if (event.source instanceof Class) {
                         GrailsDomainClass dc = application.getDomainClass(event.source.name)
                         if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
                             "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {

@@ -33,7 +33,6 @@ class PlateEvent extends StationEvent {
 ''')
     }
 
-
     void testMappedIdentityForSubclass() {
         DataSource ds = applicationContext.getBean('dataSource')
 

@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
 /**
  * Ensures that after initialisation the constraints static property is a map of
  * navigable constrained properties.
@@ -29,10 +31,7 @@ class ConstraintPropertyTests  extends AbstractGrailsHibernateTests {
     protected getDomainClasses() {
         return [ConstrainedBook]
     }
-
-
 }
-import grails.persistence.*
 
 @Entity
 class ConstrainedBook {

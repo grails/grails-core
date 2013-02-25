@@ -1,7 +1,7 @@
-
 package org.codehaus.groovy.grails.commons.metaclass
 
 import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
@@ -11,8 +11,6 @@ import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.web.context.request.RequestContextHolder
 
 class MetaClassEnhancerTests extends GroovyTestCase {
-
-
 
     void testEnhanceMetaClass() {
         def ctx = new MockApplicationContext()
@@ -42,6 +40,7 @@ class MetaClassEnhancerTests extends GroovyTestCase {
         RequestContextHolder.setRequestAttributes(null)
     }
 }
+
 class TestMetaClassController {
 
     def testRenderText = {

@@ -163,7 +163,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         return builder.getUrlMappings();
     }
 
-
     private void configureUrlMappingDynamicObjects(Object object) {
         if (pluginManager != null) {
             WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()), null);
@@ -356,15 +355,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         if (delegate != null) callable.setDelegate(delegate);
                         callable.call();
 
-                        @SuppressWarnings("hiding")
                         Object controllerName;
-                        @SuppressWarnings("hiding")
                         Object actionName;
-                        @SuppressWarnings("hiding")
                         Object pluginName;
-                        @SuppressWarnings("hiding")
                         Object viewName;
-                        @SuppressWarnings("hiding")
                         Object uri;
 
                         if (binding != null) {
@@ -505,9 +499,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
         private UrlMapping getURLMappingForNamedArgs(Map namedArguments,
                 UrlMappingData urlData, String mapping, boolean isResponseCode) {
-            @SuppressWarnings("hiding")
             Object controllerName;
-            @SuppressWarnings("hiding")
             Object actionName;
             final Map bindingVariables = binding != null ? binding.getVariables() : null;
             boolean restRequest = false;
@@ -520,17 +512,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 controllerName = getControllerName(namedArguments, bindingVariables);
                 actionName = getActionName(namedArguments, bindingVariables);
             }
-            @SuppressWarnings("hiding")
             Object pluginName = getPluginName(namedArguments, bindingVariables);
 
-            @SuppressWarnings("hiding")
             Object viewName = getViewName(namedArguments, bindingVariables);
             if (actionName != null && viewName != null) {
                 viewName = null;
                 LOG.warn("Both [action] and [view] specified in URL mapping [" + mapping + "]. The action takes precendence!");
             }
 
-            @SuppressWarnings("hiding")
             Object uri = getURI(namedArguments, bindingVariables);
             ConstrainedProperty[] constraints = previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
 
@@ -569,7 +558,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 urlMapping.setRestfulMapping(true);
             }
             else {
-                @SuppressWarnings("hiding")
                 Object parseRequest = getParseRequest(namedArguments,bindingVariables);
                 if (parseRequest instanceof Boolean) {
                     urlMapping.setParseRequest((Boolean) parseRequest);
@@ -621,10 +609,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private UrlMapping createURLMapping(UrlMappingData urlData, boolean isResponseCode,
-                @SuppressWarnings("hiding") Object controllerName,
-                @SuppressWarnings("hiding") Object actionName,
-                @SuppressWarnings("hiding") Object pluginName,
-                @SuppressWarnings("hiding") Object viewName, ConstrainedProperty[] constraints) {
+                Object controllerName, Object actionName, Object pluginName,
+                Object viewName, ConstrainedProperty[] constraints) {
             if (!isResponseCode) {
                 return new RegexUrlMapping(urlData, controllerName, actionName, pluginName, viewName,
                         constraints, sc);

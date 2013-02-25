@@ -208,7 +208,7 @@ hibernate {
     }
 
     protected Resource[] getResources(String pattern) throws IOException {
-        return new PathMatchingResourcePatternResolver().getResources(pattern);
+        return new PathMatchingResourcePatternResolver().getResources(pattern)
     }
 
     protected void onTearDown() {

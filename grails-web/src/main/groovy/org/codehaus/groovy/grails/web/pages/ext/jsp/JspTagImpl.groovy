@@ -15,19 +15,20 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import javax.servlet.jsp.tagext.SimpleTag
-import org.springframework.beans.BeanWrapperImpl
-import javax.servlet.jsp.tagext.BodyTag
-import javax.servlet.jsp.tagext.Tag
-import javax.servlet.jsp.tagext.TagAdapter
-import javax.servlet.jsp.tagext.IterationTag
-import javax.servlet.jsp.tagext.BodyContent
-import org.apache.commons.logging.LogFactory
-import javax.servlet.jsp.tagext.TryCatchFinally
-import javax.servlet.jsp.tagext.JspFragment
 import javax.servlet.jsp.JspContext
 import javax.servlet.jsp.JspWriter
+import javax.servlet.jsp.tagext.BodyContent
+import javax.servlet.jsp.tagext.BodyTag
+import javax.servlet.jsp.tagext.IterationTag
+import javax.servlet.jsp.tagext.JspFragment
+import javax.servlet.jsp.tagext.SimpleTag
+import javax.servlet.jsp.tagext.Tag
+import javax.servlet.jsp.tagext.TagAdapter
+import javax.servlet.jsp.tagext.TryCatchFinally
+
+import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
+import org.springframework.beans.BeanWrapperImpl
 
 /**
  * @author Graeme Rocher
@@ -43,7 +44,7 @@ class JspTagImpl implements JspTag {
     boolean iteration
 
     JspTagImpl(Class tagClass) {
-        this.tagClass = tagClass;
+        this.tagClass = tagClass
         tryCatchFinally = TryCatchFinally.isAssignableFrom(tagClass)
         body = BodyTag.isAssignableFrom(tagClass)
         iteration = IterationTag.isAssignableFrom(tagClass)
@@ -59,7 +60,7 @@ class JspTagImpl implements JspTag {
 
     void doTag(Writer targetWriter, Map attributes, Closure body) {
         def tag = createTagInstance()
-        GroovyPagesPageContext pageContext = PageContextFactory.getCurrent();
+        GroovyPagesPageContext pageContext = PageContextFactory.getCurrent()
         if (tag.metaClass.hasProperty(tag, "jspContext")) {
             tag.jspContext = pageContext
         }
@@ -141,7 +142,7 @@ class JspTagImpl implements JspTag {
     }
 
     void withJspWriterDelegate(GroovyPagesPageContext pageContext,Writer delegate, Closure callable) {
-        pageContext.pushWriter new JspWriterDelegate(delegate);
+        pageContext.pushWriter new JspWriterDelegate(delegate)
         try {
             callable()
         }

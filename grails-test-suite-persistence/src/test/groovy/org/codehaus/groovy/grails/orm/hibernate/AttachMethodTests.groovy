@@ -14,7 +14,6 @@ class AttachMethodTests extends AbstractGrailsHibernateTests {
         [AttachMethod]
     }
 
-
     void testAttachMethod() {
         def testClass = ga.getDomainClass(AttachMethod.name).clazz
 
@@ -25,7 +24,6 @@ class AttachMethodTests extends AbstractGrailsHibernateTests {
         assertTrue session.contains(test)
         assertTrue test.attached
         assertTrue test.isAttached()
-
 
         test.discard()
 

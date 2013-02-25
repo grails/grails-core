@@ -296,7 +296,8 @@ class MockBuildSettings extends BuildSettings {
 
     static version
 
-    @Override protected loadBuildPropertiesFromClasspath(Properties buildProps) {
+    @Override
+    protected void loadBuildPropertiesFromClasspath(Properties buildProps) {
         buildProps['grails.version'] = version
     }
 }

@@ -11,7 +11,6 @@ grails.gorm.default.constraints = {
 ''', "Config")
     }
 
-
     void testEmbeddedDomainWithinDomain() {
         def p = new PersonWithNullableAddress(name:"Bob")
 

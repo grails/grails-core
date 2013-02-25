@@ -1,11 +1,11 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import org.springframework.mock.web.MockHttpServletRequest
 import grails.util.GrailsWebUtil
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.WebApplicationContext
+
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.springframework.context.support.StaticMessageSource
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.web.context.request.RequestContextHolder
 
 class GrailsParameterMapTests extends GroovyTestCase {
 
@@ -63,7 +63,6 @@ class GrailsParameterMapTests extends GroovyTestCase {
 
         assert 'bar' == params.foo
         assert 'two' == params.one
-
 
         params = new GrailsParameterMap(request)
         assert params.foo == null // should be null, request can't be parsed twice
@@ -217,7 +216,6 @@ class GrailsParameterMapTests extends GroovyTestCase {
         mockRequest.addParameter("foo", "date.struct")
         mockRequest.addParameter("foo_year", "")
         mockRequest.addParameter("foo_month", "")
-
 
         theMap = new GrailsParameterMap(mockRequest)
         assert theMap['foo'] == null : "should be null"

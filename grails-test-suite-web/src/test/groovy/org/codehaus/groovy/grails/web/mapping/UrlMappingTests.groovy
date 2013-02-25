@@ -1,10 +1,8 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.springframework.core.io.*
 import org.codehaus.groovy.grails.web.servlet.mvc.*
+import org.springframework.core.io.*
 import org.springframework.mock.web.MockServletContext
-
 
 class UrlMappingTests extends AbstractGrailsMappingTests {
 
@@ -54,7 +52,6 @@ mappings {
         assert reverse
         assertEquals "/tsandcs", reverse.createURL(id: "tsandcs", "utf-8")
         assertEquals "/tsandcs?foo=bar", reverse.createURL(id: "tsandcs", foo: "bar", "utf-8")
-
     }
 
     void testTopLevelMapping() {
@@ -77,7 +74,5 @@ mappings {
 
         assertEquals "content", info.controllerName
         assertEquals "view", info.actionName
-
     }
 }
-

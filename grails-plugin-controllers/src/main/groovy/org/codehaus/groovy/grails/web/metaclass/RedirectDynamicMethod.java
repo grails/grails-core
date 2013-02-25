@@ -18,29 +18,31 @@ package org.codehaus.groovy.grails.web.metaclass;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.validation.Errors;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.servlet.support.RequestDataValueProcessor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.springframework.context.ApplicationContext;
+import org.springframework.validation.Errors;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.servlet.support.RequestDataValueProcessor;
 
 /**
  * Implements the "redirect" Controller method for action redirection.
@@ -208,7 +210,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     /**
-     * getter to obtain RequestDataValueProcessor from 
+     * getter to obtain RequestDataValueProcessor from
      */
     private void initRequestDataValueProcessor() {
         GrailsWebRequest webRequest = (GrailsWebRequest)RequestContextHolder.currentRequestAttributes();

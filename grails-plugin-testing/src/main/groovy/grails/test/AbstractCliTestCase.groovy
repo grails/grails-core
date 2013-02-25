@@ -1,8 +1,11 @@
 package grails.test
 
 import grails.util.BuildSettingsHolder
+
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.locks.*
+import java.util.concurrent.locks.Condition
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReentrantLock
 
 /**
  * This abstract test case makes it easy to run a Grails command and
@@ -211,7 +214,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
         assert output.contains("|Loading Grails ${grailsVersion}")
     }
 
-    public boolean isWindows() {
+    boolean isWindows() {
         return System.getProperty("os.name").startsWith("Windows")
     }
 }

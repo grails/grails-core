@@ -257,7 +257,7 @@ class RenderTagLib implements RequestConstants {
             }
 
             if (propertyValue) {
-                if(attrs.containsKey('equals')) {
+                if (attrs.containsKey('equals')) {
                     if (attrs.equals instanceof List) {
                         invokeBody = attrs.equals[i] == propertyValue
                     }
@@ -363,13 +363,13 @@ class RenderTagLib implements RequestConstants {
 
         def linkTagAttrs = [:]
         def action
-        if(attrs.containsKey('mapping')) {
+        if (attrs.containsKey('mapping')) {
             linkTagAttrs.mapping = attrs.mapping
             action = attrs.action
         } else {
             action = attrs.action ?: params.action
         }
-        if(action) {
+        if (action) {
             linkTagAttrs.action = action
         }
             if (attrs.controller) {
@@ -550,7 +550,7 @@ class RenderTagLib implements RequestConstants {
         }
         writer << '>'
         def linkAttrs = [params: linkParams]
-        if(mapping) {
+        if (mapping) {
             linkAttrs.mapping = mapping
         } else {
             linkAttrs.action = action

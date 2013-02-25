@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.grails.plugins.converters
 
-import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
-import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
-
+import grails.converters.JSON
+import grails.converters.XML
 import grails.util.GrailsUtil
+
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.converters.codecs.JSONCodec
 import org.codehaus.groovy.grails.plugins.converters.codecs.XMLCodec
@@ -26,9 +26,11 @@ import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationLis
 import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.configuration.ObjectMarshallerRegisterer
+import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
+import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
 
- /**
- * A plug-in that allows the obj as XML syntax.
+/**
+ * Allows the "obj as XML" and "obj as JSON" syntax.
  *
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
@@ -48,10 +50,7 @@ class ConvertersGrailsPlugin {
     def providedArtefacts = [JSONCodec, XMLCodec]
     def observe = ["controllers"]
 
-    def dependsOn = [
-        controllers: GrailsUtil.getGrailsVersion(),
-        domainClass: GrailsUtil.getGrailsVersion()
-    ]
+    def dependsOn = [controllers: version, domainClass: version]
 
     def doWithSpring = {
         xmlParsingParameterCreationListener(XMLParsingParameterCreationListener)
@@ -66,12 +65,12 @@ class ConvertersGrailsPlugin {
 
         errorsXmlMarshallerRegisterer(ObjectMarshallerRegisterer) {
             marshaller = { XmlErrorsMarshaller om -> }
-            converterClass = grails.converters.XML
+            converterClass = XML
         }
 
         errorsJsonMarshallerRegisterer(ObjectMarshallerRegisterer) {
             marshaller = { JsonErrorsMarshaller om -> }
-            converterClass = grails.converters.JSON
+            converterClass = JSON
         }
 
         instanceConvertersControllersApi(ConvertersControllersApi)
@@ -81,7 +80,7 @@ class ConvertersGrailsPlugin {
 
         applicationContext.convertersConfigurationInitializer.initialize(application)
 
-        ConvertersPluginSupport.enhanceApplication(application,applicationContext)
+        ConvertersPluginSupport.enhanceApplication(application, applicationContext)
 
         log.debug "Converters Plugin configured successfully"
     }

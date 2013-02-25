@@ -1,12 +1,10 @@
 package grails.test.mixin
 
-import org.springframework.mock.web.MockHttpServletRequest
 import javax.servlet.http.HttpServletRequest
+
 import org.junit.Test
+import org.springframework.mock.web.MockHttpServletRequest
 
-/**
-
- */
 @TestFor(SearchService)
 class MockForTests {
 
@@ -33,7 +31,6 @@ class MockForTests {
     }
 }
 
-
 class SearchService {
     def solrServer
 
@@ -47,4 +44,3 @@ class SolrServer {
         throw new RuntimeException("real method called instead of mock")
     }
 }
-

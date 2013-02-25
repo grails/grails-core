@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.reload;
+package org.codehaus.groovy.grails.reload
 
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
 

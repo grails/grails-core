@@ -197,7 +197,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
         String[] interceptorNames = webContext.getBeanNamesForType(HandlerInterceptor.class);
         String[] webRequestInterceptors = webContext.getBeanNamesForType(WebRequestInterceptor.class);
-        @SuppressWarnings("hiding") HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
+        HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
 
         // Merge the handler and web request interceptors into a single array. Note that we
         // start with the web request interceptors to ensure that the OpenSessionInViewInterceptor
@@ -321,7 +321,6 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     else {
                         mv = null;
                     }
-
                 }else {
                     // Actually invoke the handler.
                     HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());

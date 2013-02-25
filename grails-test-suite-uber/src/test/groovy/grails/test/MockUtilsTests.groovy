@@ -14,6 +14,8 @@
  */
 package grails.test
 
+import grails.persistence.Entity
+
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
@@ -24,7 +26,6 @@ import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
-import grails.persistence.Entity
 
 /**
  * Test case for {@link MockUtils}.

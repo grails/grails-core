@@ -6,10 +6,10 @@ import grails.test.mixin.TestFor
 import grails.test.mixin.Mock
 import spock.lang.Specification
 
-
 @TestFor(UserController)
 @Mock(AuthenticationFilters)
-class FiltersUnitTestSpec extends Specification{
+class FiltersUnitTestSpec extends Specification {
+
     void "test filters are applied for a unit test"() {
         when:"A filter is used around a controller"
             params.username = ''
@@ -42,7 +42,6 @@ class FiltersUnitTestSpec extends Specification{
             request.testModel == [foo:'bar']
     }
 
-
     void "Test returned model is passed in after filter"() {
         when:"A filter is used around a controller action that returns a model"
             withFilters(action: "model2") {
@@ -52,7 +51,6 @@ class FiltersUnitTestSpec extends Specification{
         then:"The model is correctly passed to the after filter"
             request.testModel == [foo:'bar']
     }
-
 
     void "Test template model is passed in after filter"() {
         when:"A filter is used around a controller action that returns a model"

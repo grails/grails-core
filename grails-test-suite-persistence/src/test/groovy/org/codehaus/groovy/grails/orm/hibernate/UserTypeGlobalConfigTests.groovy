@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 class UserTypeGlobalConfigTests extends AbstractGrailsHibernateTests {
+
     @Override protected void onSetUp() {
         gcl.parseClass('''
 grails.gorm.default.mapping = {
@@ -10,7 +11,6 @@ grails.gorm.default.mapping = {
 
         gcl.parseClass '''
 import grails.persistence.*
-
 
 @Entity
 class UserTypeGlobalConfigFoo {
@@ -30,7 +30,6 @@ class UserTypeGlobalConfigPerson {
 class UserTypeGlobalConfigAddress {
     Boolean home
 }
-
 '''
     }
 

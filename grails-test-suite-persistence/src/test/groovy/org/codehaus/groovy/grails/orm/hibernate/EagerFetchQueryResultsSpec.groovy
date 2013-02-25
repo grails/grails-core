@@ -19,7 +19,7 @@ class EagerFetchQueryResultsSpec extends GormSpec {
             ["Author1", "Author2"] as Set == authors.collect {it.name} as Set
     }
 
-    public void createSampleData() {
+    void createSampleData() {
         EagerFetchQueryResultsBook book1 = new EagerFetchQueryResultsBook(title: 'Book1')
         EagerFetchQueryResultsAuthor author1 = new EagerFetchQueryResultsAuthor(name: 'Author1')
         author1.save(flush: true, failOnError: true)

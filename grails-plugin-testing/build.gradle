@@ -12,7 +12,6 @@ dependencies {
             project(':grails-test'),
             project(':grails-hibernate')
 
-
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
         transitive = false
@@ -51,5 +50,4 @@ dependencies {
     compile("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-
 }

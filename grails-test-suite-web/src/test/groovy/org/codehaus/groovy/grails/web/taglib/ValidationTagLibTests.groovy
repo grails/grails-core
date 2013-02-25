@@ -64,8 +64,6 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         parsePhoneDomainTestClasses()
     }
 
-
-
     void testFieldValueWithClassAndPropertyNameLookupFromBundle() {
         def domain = ga.getDomainClass("ValidationTagLibBook")
 

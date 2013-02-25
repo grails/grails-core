@@ -87,7 +87,7 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
 
     @SuppressWarnings("rawtypes")
     public void testOldMethod () throws Exception {
-        GroovyShell shell = new GroovyShell ();
+        GroovyShell shell = new GroovyShell();
         Script script = shell.parse (
                 "mappings {\n" +
                 "    \"/$controller/$action?/$id?\" { \n" +
@@ -97,8 +97,7 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
                 "    }\n" +
                 "}\n");
 
-        @SuppressWarnings("hiding")
-        DefaultUrlMappingEvaluator evaluator = new DefaultUrlMappingEvaluator (new MockServletContext("/test"));
+        DefaultUrlMappingEvaluator evaluator = new DefaultUrlMappingEvaluator(new MockServletContext("/test"));
         List mappings = evaluator.evaluateMappings(script.getClass());
         assertEquals(1, mappings.size());
         assertNull(((UrlMapping) mappings.get(0)).getActionName());

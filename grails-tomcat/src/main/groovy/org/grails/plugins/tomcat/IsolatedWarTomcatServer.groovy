@@ -15,10 +15,11 @@
  */
 package org.grails.plugins.tomcat
 
-import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 
 /**
  * Serves a packaged war, in a forked JVM.
@@ -34,6 +35,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
     protected final File warDir
     protected final String contextPath
     protected ant = new GrailsConsoleAntBuilder()
+
     IsolatedWarTomcatServer(String warPath, String contextPath) {
         super()
 
@@ -51,7 +53,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
         def resultProperty = "tomcat.result"
 
-        System.setProperty("TomcatKillSwitch.active", "true");
+        System.setProperty("TomcatKillSwitch.active", "true")
         Thread.start("tomcat process runner") {
             ant.java(classname: IsolatedTomcat.name, fork: true, failonerror: false, output: outFile, error: errFile, resultproperty: resultProperty) {
 
@@ -93,7 +95,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
                     sleep(5000)
                 } catch (e) {
                     println "bad"
-                    System.setProperty("TomcatKillSwitch.active", "false");
+                    System.setProperty("TomcatKillSwitch.active", "false")
                     break
                 }
             }
@@ -132,11 +134,10 @@ class IsolatedWarTomcatServer extends TomcatServer {
         }
 
         GrailsConsole.instance.log "Tomcat Server running WAR (output written to: $outFile)"
-
     }
 
     @CompileStatic
-    public static Collection<File> findTomcatJars(BuildSettings buildSettings) {
+    static Collection<File> findTomcatJars(BuildSettings buildSettings) {
         return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") } +
                 buildSettings.compileDependencies.findAll { File it -> it.name.contains("tomcat") } +
                     buildSettings.runtimeDependencies.findAll { File it -> it.name.contains("tomcat") } +
@@ -151,4 +152,3 @@ class IsolatedWarTomcatServer extends TomcatServer {
         }
     }
 }
-

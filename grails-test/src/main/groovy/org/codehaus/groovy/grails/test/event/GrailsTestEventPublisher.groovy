@@ -17,7 +17,8 @@
 package org.codehaus.groovy.grails.test.event
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener;
+
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 
 /**
  * Publishes test related events to the Grails build system.

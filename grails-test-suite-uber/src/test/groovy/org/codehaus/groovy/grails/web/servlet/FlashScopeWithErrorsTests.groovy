@@ -33,10 +33,8 @@ class FlashScopeWithErrorsTests extends AbstractGrailsControllerTests {
     void testFlashScopeWithErrors() {
         def b = new Book()
 
-
         b.validate()
         def flash = new GrailsFlashScope()
-
 
         flash.book = b
         assert b.hasErrors()
@@ -46,7 +44,6 @@ class FlashScopeWithErrorsTests extends AbstractGrailsControllerTests {
 
         assert flash.book
         assert flash.book.hasErrors()
-
     }
 }
 

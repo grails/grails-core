@@ -8,7 +8,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  */
 class MultipleRenderCallsContentTypeTests extends AbstractGrailsControllerTests {
 
-
     @Override
     protected Collection<Class> getControllerClasses() {
         [MultipleRenderController]

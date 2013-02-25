@@ -14,11 +14,13 @@
  */
 package org.codehaus.groovy.grails.web.converters
 
-import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import grails.converters.XML
-import org.apache.commons.logging.*
 import groovy.util.slurpersupport.GPathResult
+
+import javax.servlet.http.HttpServletRequest
+
+import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 /**
  * Automatically parses an incoming XML request and populates the params object with
@@ -29,10 +31,10 @@ import groovy.util.slurpersupport.GPathResult
  */
 class XMLParsingParameterCreationListener extends AbstractParsingParameterCreationListener {
 
-    static final LOG = LogFactory.getLog(XMLParsingParameterCreationListener)
+    static final LOG = LogFactory.getLog(this)
 
     void paramsCreated(GrailsParameterMap params) {
-        def request = params.getRequest()
+        HttpServletRequest request = params.getRequest()
         if (request.format != 'xml') {
             return
         }

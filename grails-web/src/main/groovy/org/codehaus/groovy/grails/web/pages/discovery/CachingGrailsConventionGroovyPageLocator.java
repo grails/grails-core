@@ -20,17 +20,20 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.springframework.core.io.ByteArrayResource;
 
 /**
- * Extends GrailsConventionGroovyPageLocator adding caching of the located GrailsPageScriptSource
+ * Extends GrailsConventionGroovyPageLocator adding caching of the located GrailsPageScriptSource.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
 public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGroovyPageLocator {
+
     private static final GroovyPageResourceScriptSource NULL_SCRIPT = new GroovyPageResourceScriptSource("/null",new ByteArrayResource("".getBytes()));
     private Map<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>> uriResolveCache = new ConcurrentHashMap<GroovyPageLocatorCacheKey, CacheEntry<GroovyPageScriptSource>>();
     private long cacheTimeout = -1;
@@ -128,42 +131,21 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
 
         @Override
         public final int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((contextPath == null) ? 0 : contextPath.hashCode());
-            result = prime * result + ((pluginName == null) ? 0 : pluginName.hashCode());
-            result = prime * result + ((uri == null) ? 0 : uri.hashCode());
-            return result;
+            return new HashCodeBuilder().append(contextPath).append(pluginName).append(uri).toHashCode();
         }
 
         @Override
         public final boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+
             GroovyPageLocatorCacheKey other = (GroovyPageLocatorCacheKey)obj;
-            if (contextPath == null) {
-                if (other.contextPath != null)
-                    return false;
-            }
-            else if (!contextPath.equals(other.contextPath))
-                return false;
-            if (pluginName == null) {
-                if (other.pluginName != null)
-                    return false;
-            }
-            else if (!pluginName.equals(other.pluginName))
-                return false;
-            if (uri == null) {
-                if (other.uri != null)
-                    return false;
-            }
-            else if (!uri.equals(other.uri))
-                return false;
-            return true;
+            return new EqualsBuilder()
+                .append(other.contextPath, contextPath)
+                .append(other.pluginName, pluginName)
+                .append(other.uri, uri)
+                .isEquals();
         }
     }
 

@@ -148,7 +148,6 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         super.tearDown()
     }
 
-
     def withConfig(String text, Closure callable) {
         def config = new ConfigSlurper().parse(text)
         try {

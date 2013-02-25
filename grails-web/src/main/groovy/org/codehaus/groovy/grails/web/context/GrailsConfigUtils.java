@@ -180,7 +180,7 @@ public class GrailsConfigUtils {
     }
 
     // support GrailsApplication mocking, see ControllersGrailsPluginTests
-    public static boolean isConfigTrue(@SuppressWarnings("unused")Object application, @SuppressWarnings("unused")String propertyName) {
+    public static boolean isConfigTrue(Object application, String propertyName) {
         return false;
     }
 }

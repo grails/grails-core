@@ -16,21 +16,22 @@
 
 package org.codehaus.groovy.grails.plugins.converters
 
+import grails.artefact.Enhanced
 import grails.converters.JSON
 import grails.converters.XML
+import groovy.transform.CompileStatic
+
 import javax.servlet.http.HttpServletRequest
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersApi
-import org.springframework.context.ApplicationContext
-import org.springframework.validation.Errors
-import org.springframework.validation.BeanPropertyBindingResult
-import grails.validation.ValidationErrors
 import org.grails.datastore.mapping.validation.ValidationErrors
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import grails.artefact.Enhanced
+import org.springframework.context.ApplicationContext
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.Errors
 
 /**
  * @author Graeme Rocher
@@ -54,14 +55,13 @@ class ConvertersPluginSupport {
             GrailsMetaClassUtils.getExpandoMetaClass(c)
         })
 
-
         enhanceRequest()
         enhanceDomainClasses(application, enhancer)
     }
 
     static void enhanceDomainClasses(GrailsApplication grailsApplication, MetaClassEnhancer metaClassEnhancer) {
         for(GrailsDomainClass dc in grailsApplication.domainClasses) {
-            if(!dc.getClazz().getAnnotation(Enhanced)) {
+            if (!dc.getClazz().getAnnotation(Enhanced)) {
                 metaClassEnhancer.enhance(dc.metaClass)
             }
         }

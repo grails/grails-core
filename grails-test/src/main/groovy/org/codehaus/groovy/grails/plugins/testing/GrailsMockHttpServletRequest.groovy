@@ -51,18 +51,19 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     @ApiDelegate(HttpServletRequest) RequestMimeTypesApi requestMimeTypesApi = new RequestMimeTypesApi()
 
     boolean invalidToken
-    MultiValueMap multipartFiles = new LinkedMultiValueMap<String, MultipartFile>();
+    MultiValueMap multipartFiles = new LinkedMultiValueMap<String, MultipartFile>()
 
-    private Map<String, String> multipartContentTypes = Collections.emptyMap();
-    private Map<String, HttpHeaders> multipartHeaders = Collections.emptyMap();
-    private HttpHeaders httpHeaders = new HttpHeaders();
-    private String requestHeaders = null;
-    private HttpMethod requestMethod = HttpMethod.GET;
+    private Map<String, String> multipartContentTypes = Collections.emptyMap()
+    private Map<String, HttpHeaders> multipartHeaders = Collections.emptyMap()
+    private HttpHeaders httpHeaders = new HttpHeaders()
+
+    HttpHeaders requestHeaders
+    HttpMethod requestMethod = HttpMethod.GET
 
     private cachedJson
     private cachedXml
-    DispatcherType dispatcherType;
-    AsyncContext asyncContext;
+    DispatcherType dispatcherType
+    AsyncContext asyncContext
 
     /**
      * Sets the request format to use
@@ -105,7 +106,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
             setContent(sourceXml.bytes)
         }
         else {
-            XML xml = new XML(sourceXml);
+            XML xml = new XML(sourceXml)
             setContent(xml.toString().bytes)
         }
 
@@ -333,11 +334,11 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      * @param file multipart file to be added
      */
     void addFile(MultipartFile file) {
-        setMethod("POST");
-        setContentType("multipart/form-data");
+        setMethod("POST")
+        setContentType("multipart/form-data")
 
-        Assert.notNull(file, "MultipartFile must not be null");
-        multipartFiles.add(file.getName(), file);
+        Assert.notNull(file, "MultipartFile must not be null")
+        multipartFiles.add(file.getName(), file)
     }
 
     /**
@@ -347,50 +348,34 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      * @param contents The bytes
      */
     void addFile(String location, byte[] contents) {
-        setMethod("POST");
-        setContentType("multipart/form-data");
+        setMethod("POST")
+        setContentType("multipart/form-data")
 
-        multipartFiles.add(location, new GrailsMockMultipartFile(location, contents));
+        multipartFiles.add(location, new GrailsMockMultipartFile(location, contents))
     }
 
     @Override
     void clearAttributes() {
         super.clearAttributes()
-        multipartFiles.clear();
-        multipartContentTypes.clear();
-        httpHeaders.clear();
+        multipartFiles.clear()
+        multipartContentTypes.clear()
+        httpHeaders.clear()
     }
 
     String getMultipartContentType(String paramOrFileName) {
-        return multipartContentTypes.get(paramOrFileName);
+        return multipartContentTypes.get(paramOrFileName)
     }
 
     String setMultipartContentType(String paramOrFileName, String contentType) {
-        return multipartContentTypes.put(paramOrFileName, contentType);
+        return multipartContentTypes.put(paramOrFileName, contentType)
     }
 
     HttpHeaders getMultipartHeaders(String paramOrFileName) {
-        return multipartHeaders.get(paramOrFileName);
+        return multipartHeaders.get(paramOrFileName)
     }
 
     HttpHeaders setMultipartHeaders(String paramOrFileName, HttpHeaders headers) {
-        return multipartHeaders.put(paramOrFileName, headers);
-    }
-
-    HttpHeaders getRequestHeaders() {
-        return requestHeaders;
-    }
-
-    void setRequestHeaders(HttpHeaders headers) {
-        requestHeaders = headers;
-    }
-
-    HttpMethod getRequestMethod() {
-        return requestMethod;
-    }
-
-    HttpMethod setRequestMethod(HttpMethod method) {
-        requestMethod = method;
+        return multipartHeaders.put(paramOrFileName, headers)
     }
 
     Collection<Part> getParts() {
@@ -420,7 +405,6 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     boolean isAsyncStarted() { asyncContext != null }
 
     boolean isAsyncSupported() { true }
-
 }
 
 class MockPart implements Part {
@@ -431,7 +415,6 @@ class MockPart implements Part {
     MockPart(MultipartFile file) {
         this.file = file
     }
-
 
     InputStream getInputStream() {
         file.inputStream
@@ -520,7 +503,6 @@ class MockAsyncContext implements AsyncContext {
                 AsyncListener al = listener.listener
                 al.onError(new AsyncEvent(this, e))
             }
-
         }
     }
 

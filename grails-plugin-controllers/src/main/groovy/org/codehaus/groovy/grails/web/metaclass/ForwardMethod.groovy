@@ -14,10 +14,11 @@
  */
 package org.codehaus.groovy.grails.web.metaclass
 
+import grails.web.UrlConverter
+
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import grails.web.*
 import org.apache.commons.beanutils.BeanUtils
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -75,5 +76,4 @@ class ForwardMethod {
         UrlConverter urlConverter = lookupUrlConverter(webRequest)
         (urlConverter) ? urlConverter.toUrlElement(value) : value
     }
-
 }

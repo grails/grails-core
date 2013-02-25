@@ -1,10 +1,11 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.springframework.core.io.*
 import grails.util.GrailsWebUtil
-import org.springframework.mock.web.MockServletContext
+
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException
+import org.springframework.core.io.*
+import org.springframework.mock.web.MockServletContext
 
 class RegexUrlMappingTests extends AbstractGrailsMappingTests {
 
@@ -151,7 +152,6 @@ mappings {
         }
     }
 
-
     void testCreateUrlWithFragment() {
         GrailsWebUtil.bindMockWebRequest()
 
@@ -186,7 +186,6 @@ mappings {
         def m8 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null, null, null, null, servletContext)
         def m9 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null, null, null, null, servletContext)
         def m10 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null, null, null, null, servletContext)
-
 
         assertTrue m1.compareTo(m2) > 0
         assertTrue m1.compareTo(m3) > 0

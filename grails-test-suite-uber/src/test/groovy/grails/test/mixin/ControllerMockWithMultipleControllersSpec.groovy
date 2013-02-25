@@ -2,7 +2,6 @@ package grails.test.mixin
 
 import spock.lang.Specification
 
-
 @Mock([FirstController, SimpleController])
 class ControllerMockWithMultipleControllersSpec extends Specification {
 

@@ -1,14 +1,11 @@
 package org.codehaus.groovy.grails.web.metaclass
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.codehaus.groovy.grails.web.servlet.GrailsFlashScope
-import grails.util.MockHttpServletResponse
-
 import grails.util.MockRequestDataValueProcessor
 
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.servlet.GrailsFlashScope
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.servlet.support.RequestDataValueProcessor
-
 
 /**
  * @author Graeme Rocher
@@ -17,13 +14,13 @@ import org.springframework.web.servlet.support.RequestDataValueProcessor
 class ChainMethodTests extends AbstractGrailsControllerTests {
 
     void registerRequestDataValueProcessor() {
-        RequestDataValueProcessor requestDataValueProcessor = new MockRequestDataValueProcessor();
-        MockApplicationContext applicationContext = (MockApplicationContext)ctx;
-        applicationContext.registerMockBean("requestDataValueProcessor",requestDataValueProcessor);
+        RequestDataValueProcessor requestDataValueProcessor = new MockRequestDataValueProcessor()
+        MockApplicationContext applicationContext = (MockApplicationContext)ctx
+        applicationContext.registerMockBean("requestDataValueProcessor",requestDataValueProcessor)
     }
     void unRegisterRequestDataValueProcessor() {
-        MockApplicationContext applicationContext = (MockApplicationContext)ctx;
-        applicationContext.registerMockBean("requestDataValueProcessor",null);
+        MockApplicationContext applicationContext = (MockApplicationContext)ctx
+        applicationContext.registerMockBean("requestDataValueProcessor",null)
     }
 
     protected void onSetUp() {

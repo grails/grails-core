@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-
 /**
  * @author Graeme Rocher
  * @since 1.0

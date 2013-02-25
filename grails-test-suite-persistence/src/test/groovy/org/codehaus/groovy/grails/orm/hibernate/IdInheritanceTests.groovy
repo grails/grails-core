@@ -31,18 +31,17 @@ class Child extends Parent {
 '''
     }
 
+    void testDirectAccess() {
+        def child = ga.getDomainClass("Child").newInstance()
+        child.save('flush': true)
 
-  void testDirectAccess() {
-    def child = ga.getDomainClass("Child").newInstance()
-    child.save('flush': true)
+        assert 1 == child.id
+    }
 
-    assert 1 == child.id
-  }
+    void testInheritedMethodAccess() {
+        def child = ga.getDomainClass("Child").newInstance()
+        child.save('flush': true)
 
-  void testInheritedMethodAccess() {
-    def child = ga.getDomainClass("Child").newInstance()
-    child.save('flush': true)
-
-    assert "1" == child.toString()
-  }
+        assert "1" == child.toString()
+    }
 }

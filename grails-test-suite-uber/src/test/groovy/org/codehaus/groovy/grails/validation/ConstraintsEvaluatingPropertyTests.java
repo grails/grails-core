@@ -50,7 +50,6 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         assertFalse(constraints.isEmpty());
     }
 
-
     /**
      * Test that static constraints work
      */
@@ -119,7 +118,6 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
         p = (ConstrainedProperty)constraints.get("remarks");
         assertTrue("Remarks property should be optional", p.isNullable());
     }
-
 
     /**
      * Test that static constraints work

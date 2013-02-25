@@ -1,13 +1,16 @@
-package org.codehaus.groovy.grails.plugins.scaffolding;
+package org.codehaus.groovy.grails.plugins.scaffolding
 
 import grails.util.GrailsUtil
 
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.plugins.*
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
+import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
+import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.Resource
 
 class ScaffoldingGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -21,7 +24,6 @@ class ScaffoldingGrailsPluginTests extends AbstractGrailsMockTests {
                 dbCreate = "create-drop"
             }
 ''', "Config")
-
 
         gcl.parseClass(
 """
@@ -40,12 +42,11 @@ class TestTagLib {
 """)
     }
 
-
     void testScaffoldingPlugin() {
 
         def mockManager = new MockGrailsPluginManager()
         ctx.registerMockBean("pluginManager", mockManager)
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]));
+        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager(new Resource[0]))
 
         def dependantPluginClasses = []
         dependantPluginClasses << gcl.loadClass("org.codehaus.groovy.grails.plugins.CoreGrailsPlugin")
@@ -62,7 +63,7 @@ class TestTagLib {
         springConfig.servletContext = createMockServletContext()
 
         dependentPlugins.each {
-            mockManager.registerMockPlugin(it); it.manager = mockManager;
+            mockManager.registerMockPlugin(it); it.manager = mockManager
         }
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 

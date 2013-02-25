@@ -39,7 +39,7 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
     }
 
     protected void tearDown() {
-        super.tearDown();
+        super.tearDown()
         ConfigurationHolder.setConfig null
         MimeType.reset()
     }
@@ -137,7 +137,6 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
         assertEquals "<html></html>", response.contentAsString
         assertEquals "html", request.format
     }
-
 
     void testPrototypeFormat() {
         request.addHeader "Accept", "text/javascript, text/html, application/xml, text/xml, */*"

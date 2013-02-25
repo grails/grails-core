@@ -42,7 +42,6 @@ class CompositeInterceptorTests extends GroovyTestCase {
         assertEquals 'bar', t2
     }
 
-
     void testCompositeInterceptorPreHandle() {
         def t1
         def t2

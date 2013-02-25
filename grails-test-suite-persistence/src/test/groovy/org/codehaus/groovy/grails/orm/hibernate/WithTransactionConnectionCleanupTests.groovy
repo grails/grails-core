@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.hibernate.Session
-import org.springframework.orm.hibernate3.SessionFactoryUtils
-
-import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.springframework.orm.hibernate3.SessionHolder
-import org.springframework.orm.hibernate3.HibernateTemplate
-import org.springframework.orm.hibernate3.HibernateCallback
 import grails.persistence.Entity
+
+import org.hibernate.Session
+import org.springframework.orm.hibernate3.HibernateCallback
+import org.springframework.orm.hibernate3.HibernateTemplate
+import org.springframework.orm.hibernate3.SessionFactoryUtils
+import org.springframework.orm.hibernate3.SessionHolder
+import org.springframework.transaction.support.TransactionSynchronizationManager
 
 // test for GRAILS-8108
 class WithTransactionConnectionCleanupTests extends AbstractGrailsHibernateTests{
@@ -16,8 +16,6 @@ class WithTransactionConnectionCleanupTests extends AbstractGrailsHibernateTests
     protected getDomainClasses() {
          [AuthorLeak, BookLeak]
     }
-
-
 
     private void safeWithNewSession(Closure callable) {
         HibernateTemplate template = new HibernateTemplate(sessionFactory)
@@ -62,7 +60,6 @@ class WithTransactionConnectionCleanupTests extends AbstractGrailsHibernateTests
 //                author.save()
 //                Long authorId =  author.id
 
-
                 println "Ended withTransaction (${i})"
                 AuthorLeak another = AuthorLeak.get(authorId)
                 BookLeak book = new BookLeak(title: "The story of ${i}")
@@ -105,10 +102,10 @@ class WithTransactionConnectionCleanupTests extends AbstractGrailsHibernateTests
     }
 
     private void closeSession() {
-        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(sessionFactory);
+        SessionHolder sessionHolder = (SessionHolder) TransactionSynchronizationManager.getResource(sessionFactory)
         if (sessionHolder) {
-            TransactionSynchronizationManager.unbindResource(sessionFactory);
-            SessionFactoryUtils.closeSession(sessionHolder.getSession());
+            TransactionSynchronizationManager.unbindResource(sessionFactory)
+            SessionFactoryUtils.closeSession(sessionHolder.getSession())
         }
     }
 
@@ -120,7 +117,6 @@ class WithTransactionConnectionCleanupTests extends AbstractGrailsHibernateTests
         closeSession()
         nestedWithNewSessionWithNewTransactionLoop()
     }
-
 
     void testNestedCustomWithNewSessionWithNewTransaction() {
         // Will succeed because using custom safeWithNewSession
@@ -147,18 +143,12 @@ class BookLeak {
     String title
 
     static belongsTo = [author: AuthorLeak]
-
-    static constraints = {
-    }
 }
+
 @Entity
 class AuthorLeak {
     String firstName
     String lastName
 
     static hasMany = [books: BookLeak]
-
-    static constraints = {
-    }
 }
-

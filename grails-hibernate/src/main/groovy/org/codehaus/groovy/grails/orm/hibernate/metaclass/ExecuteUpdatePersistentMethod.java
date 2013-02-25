@@ -17,6 +17,17 @@ package org.codehaus.groovy.grails.orm.hibernate.metaclass;
 import grails.gorm.DetachedCriteria;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.GrailsQueryException;
 import org.hibernate.HibernateException;
@@ -25,10 +36,6 @@ import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.springframework.orm.hibernate3.HibernateCallback;
 import org.springframework.orm.hibernate3.SessionFactoryUtils;
-
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Pattern;
 
 /**
  * Allows the executing of arbitrary HQL updates.
@@ -52,7 +59,6 @@ public class ExecuteUpdatePersistentMethod extends AbstractStaticPersistentMetho
     protected Object doInvokeInternal(Class clazz, String methodName, DetachedCriteria additionalCriteria, Object[] arguments) {
         return doInvokeInternal(clazz,methodName, (Closure) null,arguments) ;
     }
-
 
     @Override
     protected Object doInvokeInternal(final Class clazz, final String methodName, Closure additionalCriteria, final Object[] arguments) {

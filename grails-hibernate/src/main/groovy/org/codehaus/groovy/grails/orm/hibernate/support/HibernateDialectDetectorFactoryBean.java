@@ -16,6 +16,12 @@
 package org.codehaus.groovy.grails.orm.hibernate.support;
 
 import groovy.util.ConfigObject;
+
+import java.sql.Connection;
+import java.util.Properties;
+
+import javax.sql.DataSource;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.exceptions.CouldNotDetermineHibernateDialectException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
@@ -29,10 +35,6 @@ import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import javax.sql.DataSource;
-import java.sql.Connection;
-import java.util.Properties;
 
 /**
  * @author Steven Devijver
@@ -71,7 +73,6 @@ public class HibernateDialectDetectorFactoryBean implements FactoryBean<String>,
 
         Connection connection = null;
 
-
         String dbName = (String)JdbcUtils.extractDatabaseMetaData(dataSource, "getDatabaseProductName");
 
         try {
@@ -86,7 +87,6 @@ public class HibernateDialectDetectorFactoryBean implements FactoryBean<String>,
                 hibernateDialectClassName = vendorNameDialectMappings.getProperty(dbName);
             }
 
-
            if (!StringUtils.hasText(hibernateDialectClassName)) {
                 throw new CouldNotDetermineHibernateDialectException(
                         "Could not determine Hibernate dialect for database name [" + dbName + "]!");
@@ -94,7 +94,6 @@ public class HibernateDialectDetectorFactoryBean implements FactoryBean<String>,
         } finally {
             DataSourceUtils.releaseConnection(connection,dataSource);
         }
-
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {

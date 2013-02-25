@@ -340,7 +340,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
      */
     Closure form = { attrs, body ->
 
-        def useToken = false
+        boolean useToken = false
         if (attrs.containsKey('useToken')) {
             useToken = attrs.boolean('useToken')
             attrs.remove('useToken')
@@ -420,7 +420,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
      */
     private void writeHiddenFields(hiddenFields) {
         def writer = getOut()
-		hiddenFields.each { key, value -> writer << "<input type=\"hidden\" name=\"${key}\" value=\"${value}\" />\n" }
+        hiddenFields.each { key, value -> writer << "<input type=\"hidden\" name=\"${key}\" value=\"${value}\" />\n" }
     }
 
     /**

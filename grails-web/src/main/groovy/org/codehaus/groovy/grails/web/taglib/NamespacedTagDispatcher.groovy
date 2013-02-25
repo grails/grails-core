@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib
 
-import grails.util.Environment;
+import grails.util.Environment
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -34,7 +34,7 @@ class NamespacedTagDispatcher extends GroovyObjectSupport {
     protected GrailsApplication application
     protected Class type
     protected TagLibraryLookup lookup
-    protected boolean developmentMode;
+    protected boolean developmentMode
 
     NamespacedTagDispatcher(String ns, Class callingType, GrailsApplication application, TagLibraryLookup lookup) {
         this.namespace = ns

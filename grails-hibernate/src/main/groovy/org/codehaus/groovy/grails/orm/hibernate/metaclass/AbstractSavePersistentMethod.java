@@ -104,7 +104,7 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
 
     public AbstractSavePersistentMethod(Pattern pattern, SessionFactory sessionFactory,
               ClassLoader classLoader, GrailsApplication application,
-              @SuppressWarnings("unused") GrailsDomainClass domainClass, HibernateDatastore datastore) {
+              GrailsDomainClass domainClass, HibernateDatastore datastore) {
         super(pattern, sessionFactory, classLoader, application);
 
         this.datastore = datastore;
@@ -302,7 +302,6 @@ public abstract class AbstractSavePersistentMethod extends AbstractDynamicPersis
                     if (propertyValue != null) {
                         setObjectToReadOnly(propertyValue);
                     }
-
                 }
             }
         }

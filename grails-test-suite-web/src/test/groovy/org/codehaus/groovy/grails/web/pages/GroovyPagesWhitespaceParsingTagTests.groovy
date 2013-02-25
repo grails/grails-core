@@ -1,6 +1,3 @@
-/**
- * Created: Mar 26, 2008
- */
 package org.codehaus.groovy.grails.web.pages
 
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests

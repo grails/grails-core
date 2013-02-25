@@ -36,7 +36,6 @@ class UrlMappingsTestMixinTests {
         assert controller != null
         assert controller instanceof  GrailsUrlMappingsTestCaseFakeController
 
-
         controller = mapURI('/rubbish')
 
         assert controller == null
@@ -125,7 +124,6 @@ class UrlMappingsTestMixinTests {
             param1 = "value1"
         }
     }
-
 
     @Test
     void testGrails5222Again() {

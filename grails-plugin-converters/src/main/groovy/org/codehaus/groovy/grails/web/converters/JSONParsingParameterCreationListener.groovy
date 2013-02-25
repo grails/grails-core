@@ -16,11 +16,12 @@ package org.codehaus.groovy.grails.web.converters
 
 import grails.converters.JSON
 
-import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.codehaus.groovy.grails.web.json.JSONObject
+import javax.servlet.http.HttpServletRequest
+
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.web.json.JSONObject
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 
 /**
  * Automatically parses JSON into the params object.
@@ -30,10 +31,10 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
  */
 class JSONParsingParameterCreationListener extends AbstractParsingParameterCreationListener {
 
-    static final LOG = LogFactory.getLog(JSONParsingParameterCreationListener)
+    static final LOG = LogFactory.getLog(this)
 
     void paramsCreated(GrailsParameterMap params) {
-        def request = params.getRequest()
+        HttpServletRequest request = params.getRequest()
         if (request.format != 'json') {
             return
         }

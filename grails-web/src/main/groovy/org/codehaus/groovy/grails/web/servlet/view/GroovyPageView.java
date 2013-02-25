@@ -201,7 +201,6 @@ public class GroovyPageView extends AbstractUrlBasedView {
             file = pageUrl;
         }
 
-
         return new GroovyPagesException("Error processing GroovyPageView: " + exception.getMessage(),
                 exception, lineNumber, file);
     }

@@ -16,17 +16,15 @@
 package org.grails.plugins.tomcat
 
 import grails.util.BuildSettings
-import grails.util.Environment
 import grails.web.container.EmbeddableServer
 import grails.web.container.EmbeddableServerFactory
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import org.grails.plugins.tomcat.fork.ForkedTomcatServer
 import org.grails.plugins.tomcat.fork.TomcatExecutionContext
 
-class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware {
+class TomcatServerFactory implements EmbeddableServerFactory, BuildSettingsAware {
 
     BuildSettings buildSettings
 
@@ -64,7 +62,6 @@ class TomcatServerFactory implements EmbeddableServerFactory,BuildSettingsAware 
 
         return forkedTomcat
     }
-
 
     private getTomcatJvmArgs() {
         buildSettings.config?.grails?.tomcat?.jvmArgs

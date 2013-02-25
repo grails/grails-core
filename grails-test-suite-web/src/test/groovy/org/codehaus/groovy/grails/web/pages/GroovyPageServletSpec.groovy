@@ -1,21 +1,23 @@
 package org.codehaus.groovy.grails.web.pages
 
-import spock.lang.Specification
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletConfig
-import org.springframework.web.context.WebApplicationContext
-import org.codehaus.groovy.grails.support.MockApplicationContext
-import javax.servlet.http.HttpServletResponse
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.codehaus.groovy.grails.support.SimpleMapResourceLoader
-import org.springframework.core.io.ByteArrayResource
-import javax.servlet.http.HttpServletRequest
-import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource
 import org.springframework.mock.web.MockServletContext
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.util.WebUtils
+
+import spock.lang.Specification
 
 /**
  *  Tests for the GSP servlet
@@ -136,8 +138,6 @@ class GroovyPageServletSpec extends Specification{
             URL getURL() {
                 new URL('http://localhost/WEB-INF/grails-app/views/foo/nonPublic.gsp')
             }
-
-
         }
     }
 
@@ -159,6 +159,7 @@ class GroovyPageServletSpec extends Specification{
         locator.addResourceLoader(resourceLoader)
         engine.setGroovyPageLocator(locator)
         appCtx.registerMockBean("groovyPagesTemplateEngine", engine)
+
         def servlet = new GroovyPagesServlet() {
             GroovyPageScriptSource pageRendered
             @Override
@@ -170,9 +171,8 @@ class GroovyPageServletSpec extends Specification{
             protected void renderPageWithEngine(GroovyPagesTemplateEngine e, HttpServletRequest request, HttpServletResponse response, GroovyPageScriptSource scriptSource) {
                 pageRendered = scriptSource
             }
-
-
         }
+
         servlet.init(new MockServletConfig())
         return servlet
     }

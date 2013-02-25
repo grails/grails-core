@@ -74,7 +74,6 @@ public class SimpleGrailsControllerTests extends TestCase {
                  "}\n" +
             "}");
 
-
         Class<?> restrictedControllerClass = cl.parseClass("@grails.artefact.Artefact(\"Controller\") class RestrictedController {\n"+
                 "static allowedMethods=[action1:'POST', action3:['PUT', 'DELETE'], action4: 'pOsT', action5: ['pUt', 'DeLeTe']]\n" +
                 "def action1 = {}\n" +

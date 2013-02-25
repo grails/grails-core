@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.plugins;
+package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 
@@ -142,9 +142,9 @@ class RelationshipManagementMethodsTests extends AbstractGrailsHibernateTests {
     void onSetUp() {
 
         gcl.parseClass('''
-import grails.persistence.*
+import grails.persistence.Entity
 
-@grails.persistence.Entity
+@Entity
 class DemoUser {
   String name
   static hasMany = [nicknames: String]
@@ -164,27 +164,26 @@ class Address {
 
 @Entity
 class Bookmark {
-
     String url
     static hasMany = [tags:Tag]
     static belongsTo = [Tag]
 }
 
 @Entity
-class BookmarkSubclass extends Bookmark {
-}
+class BookmarkSubclass extends Bookmark {}
 
 @Entity
 class Tag {
     String name
     static hasMany = [bookmarks:Bookmark]
 }
-@grails.persistence.Entity
+
+@Entity
 class Store {
    static hasMany = [widgets: Widget]
 }
 
-@grails.persistence.Entity
+@Entity
 class Widget {
     def someService
     String widgetName

@@ -45,7 +45,7 @@ class Reverse implements CharSequence {
         return end - start;
     }
 
-    public CharSequence subSequence(@SuppressWarnings("hiding") int start, @SuppressWarnings("hiding") int end) {
+    public CharSequence subSequence(int start, int end) {
         return new Reverse(text, anchor - end, anchor - start);
     }
 

@@ -46,7 +46,6 @@ class ControllersMimeTypesApi {
      * @param callable
      * @return  The result of the closure execution selected
      */
-
     def withFormat(instance, Closure callable) {
         HttpServletResponse response = GrailsWebRequest.lookup().currentResponse
         apiSupport.withFormat(response, callable)

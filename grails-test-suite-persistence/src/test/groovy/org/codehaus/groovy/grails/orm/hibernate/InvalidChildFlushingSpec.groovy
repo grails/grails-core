@@ -1,12 +1,11 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.persistence.Entity
-import spock.lang.Issue
-import spock.lang.Ignore
-import spock.lang.FailsWith
-import org.hibernate.cfg.NotYetImplementedException
+
 import org.hibernate.AssertionFailure
 import org.hibernate.FlushMode
+
+import spock.lang.Issue
 
 /**
  */
@@ -23,11 +22,8 @@ class InvalidChildFlushingSpec extends GormSpec{
             def book = new InvalidChildFlushingBook(author: author, name: 'invalid')
             author.addToBooks(book)
 
-
-
         when:"An object with an invalid child is saved and the session is flushed"
             assert !book.save()
-
 
         then:"The flush mode is manual"
             session.flushMode == FlushMode.MANUAL
@@ -40,7 +36,6 @@ class InvalidChildFlushingSpec extends GormSpec{
             thrown AssertionFailure
     }
 
-
     @Issue('GRAILS-8922')
     void "test one-to-one with new invalid child object"() {
         given:"A domain with a one-to-one association"
@@ -51,10 +46,7 @@ class InvalidChildFlushingSpec extends GormSpec{
             face.nose = nose
 
         when:"An object with an invalid child is saved and the session is flushed"
-
             assert !nose.save()
-
-
 
         then:"No error occurs"
             nose != null
@@ -132,4 +124,3 @@ class InvalidChildFlushingNose {
         size(validator: {it != 'invalid'})
     }
 }
-

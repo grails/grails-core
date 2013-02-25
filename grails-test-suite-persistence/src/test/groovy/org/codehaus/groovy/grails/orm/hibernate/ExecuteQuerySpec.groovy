@@ -1,13 +1,11 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-class ExecuteQuerySpec extends GormSpec{
+class ExecuteQuerySpec extends GormSpec {
+
     @Override
     List getDomainClasses() {
         [Person, Pet, Face, Nose]
     }
-
-
-
 
     void "Test executeQuery with select"() {
         given:"Some people"
@@ -28,10 +26,9 @@ class ExecuteQuerySpec extends GormSpec{
 
         then:"No errors occur"
             ages == [9]
-
     }
 
-    protected def createPeople() {
+    protected void createPeople() {
         new Person(firstName: "Homer", lastName: "Simpson", age:45).save()
         new Person(firstName: "Marge", lastName: "Simpson", age:40).save()
         new Person(firstName: "Bart", lastName: "Simpson", age:9).save()

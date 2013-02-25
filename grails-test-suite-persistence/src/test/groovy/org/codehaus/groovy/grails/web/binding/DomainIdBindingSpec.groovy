@@ -56,7 +56,7 @@ class DomainIdBindingSpec extends GormSpec {
     }
 
     @Override
-    public List getDomainClasses() {
+    List getDomainClasses() {
         [WidgetWithBindableId, WidgetWithNonBindableId]
     }
 }

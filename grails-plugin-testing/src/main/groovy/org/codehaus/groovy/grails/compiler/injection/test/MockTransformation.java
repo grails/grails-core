@@ -77,9 +77,8 @@ public class MockTransformation extends TestForTransformation {
             if (expression instanceof ClassExpression) {
                 ClassExpression classEx = (ClassExpression) expression;
                 ClassNode cn = classEx.getType();
-                Class mixinClassForArtefactType = getMixinClassForArtefactType(cn);
-                if(mixinClassForArtefactType != null) {
-
+                Class<?> mixinClassForArtefactType = getMixinClassForArtefactType(cn);
+                if (mixinClassForArtefactType != null) {
                     weaveMock(classNode, classEx, false);
                 }
                 else {
@@ -87,7 +86,7 @@ public class MockTransformation extends TestForTransformation {
                 }
             }
         }
-        if(!domainClassNodes.isEmpty()) {
+        if (!domainClassNodes.isEmpty()) {
             weaveMixinClass(classNode, DomainClassUnitTestMixin.class);
             addMockCollaborators(classNode, "Domain", domainClassNodes);
         }

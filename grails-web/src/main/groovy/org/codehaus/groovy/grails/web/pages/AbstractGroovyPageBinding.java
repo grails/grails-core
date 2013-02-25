@@ -145,7 +145,7 @@ public abstract class AbstractGroovyPageBinding extends Binding {
 
         @Override
         public Object setValue(Object value) {
-            @SuppressWarnings("hiding") String key = String.valueOf(getKey());
+            String key = String.valueOf(getKey());
             Object oldValue = binding.getVariable(key);
             binding.setVariable(key, value);
             super.setValue(value);

@@ -1,10 +1,10 @@
 package grails.test.mixin
 
 import grails.test.mixin.support.GrailsUnitTestMixin
+import grails.util.Mixin
 
 import org.junit.AfterClass
 import org.junit.Assert
-import grails.util.Mixin
 
 import spock.lang.Specification
 
@@ -55,7 +55,6 @@ class MetaClassCleanupSpec extends Specification {
         then:"The correct result is returned"
         greeting == 'goodbye'
     }
-
 
     def "Test that mixins are re-applied after cleanup - step 1"() {
         given:"A mixin class"

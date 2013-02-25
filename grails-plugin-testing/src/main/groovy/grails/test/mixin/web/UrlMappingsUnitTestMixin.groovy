@@ -15,7 +15,10 @@
  */
 package grails.test.mixin.web
 
+import static junit.framework.Assert.assertEquals
+import static junit.framework.Assert.assertNotNull
 import junit.framework.AssertionFailedError
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
@@ -25,8 +28,6 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.util.WebUtils
-import static junit.framework.Assert.assertEquals
-import static junit.framework.Assert.assertNotNull
 
  /**
  * A mixin for testing URL mappings in Grails.
@@ -84,7 +85,8 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
 
                 webRequest.params.putAll(backupParams)
                 if (info.viewName == null && info.URI == null) {
-                    def controller = grailsApplication.getArtefactForFeature(ControllerArtefactHandler.TYPE, "${WebUtils.SLASH}${info.controllerName}${WebUtils.SLASH}${info.actionName ?: ''}");
+                    def controller = grailsApplication.getArtefactForFeature(ControllerArtefactHandler.TYPE,
+                        "${WebUtils.SLASH}${info.controllerName}${WebUtils.SLASH}${info.actionName ?: ''}")
                     if (controller != null) {
                         return applicationContext.getBean(controller.fullName)
                     }
@@ -153,7 +155,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
      * @param url The URL as a string
      */
     void assertUrlMapping(Map assertions, url) {
-        assertUrlMapping(assertions, url, null);
+        assertUrlMapping(assertions, url, null)
     }
 
     /**

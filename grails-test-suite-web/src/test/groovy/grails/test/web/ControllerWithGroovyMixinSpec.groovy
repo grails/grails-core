@@ -4,7 +4,6 @@ import grails.artefact.Artefact
 import grails.test.mixin.TestFor
 import spock.lang.Specification
 
-
 /**
  * Tests that Groovy's @Mixin works on a controller
  */
@@ -18,7 +17,6 @@ class ControllerWithGroovyMixinSpec extends Specification {
         then:"The mixin is used and available"
             response.text.contains "O HAI ITS"
     }
-
 }
 
 @Artefact("Controller")

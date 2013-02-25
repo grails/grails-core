@@ -39,8 +39,8 @@ import org.codehaus.groovy.grails.project.packaging.GrailsProjectWarCreator
  */
 class GrailsProjectRunner extends BaseSettingsApi {
 
-    public static String SCHEME_HTTP = "http"
-    public static String SCHEME_HTTPS = "https"
+    public static final String SCHEME_HTTP = "http"
+    public static final String SCHEME_HTTPS = "https"
 
     private GrailsProjectPackager projectPackager
     private GrailsProjectWarCreator warCreator

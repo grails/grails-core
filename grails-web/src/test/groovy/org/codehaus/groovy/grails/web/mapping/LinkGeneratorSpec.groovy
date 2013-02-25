@@ -72,7 +72,6 @@ class LinkGeneratorSpec extends Specification {
             cachedLink == "$baseUrl/$resource.dir/$resource.file"
     }
 
-
     def "absolute links contains the base url and context"() {
         when:
             resource = mainCssResource + [absolute:true]
@@ -137,7 +136,6 @@ class LinkGeneratorSpec extends Specification {
             link == "/$resource.dir/$resource.file"
     }
 
-
     def "test absolute links created from request scheme"() {
 
         given:
@@ -163,12 +161,10 @@ class LinkGeneratorSpec extends Specification {
             webRequest.baseUrl = null
         then:
             link == "http://localhost:8081/blah/$resource.dir/$resource.file"
-
-
     }
 
     def "caching should take request Host header, scheme and port in to account"() {
-        
+
         given:
             final webRequest = GrailsWebUtil.bindMockWebRequest()
             MockHttpServletRequest request = webRequest.currentRequest
@@ -207,15 +203,11 @@ class LinkGeneratorSpec extends Specification {
             cachedlink = cachingGenerator.resource(resource)
         then:
             cachedlink == "http://localhost:8081/blah/$resource.dir/$resource.file"
-
-
     }
-        
-    
+
     void cleanup() {
         RequestContextHolder.setRequestAttributes(null)
     }
-
 
     protected getGenerator(boolean cache=false) {
         def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)

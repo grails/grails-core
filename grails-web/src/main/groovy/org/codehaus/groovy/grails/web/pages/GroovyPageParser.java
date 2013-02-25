@@ -18,6 +18,27 @@ package org.codehaus.groovy.grails.web.pages;
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
 
+import java.io.BufferedOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,11 +51,6 @@ import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
-
-import java.io.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 /**
  * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/).
  *
@@ -329,7 +345,7 @@ public class GroovyPageParser implements Tokens {
         generateGsp(target, true);
     }
 
-    public void generateGsp(Writer target, @SuppressWarnings("hiding") boolean precompileMode) {
+    public void generateGsp(Writer target, boolean precompileMode) {
         this.precompileMode = precompileMode;
 
         out = new GSPWriter(target, this);
@@ -572,7 +588,6 @@ public class GroovyPageParser implements Tokens {
 
     private void html() {
         if (!finalPass) return;
-
 
         LOG.debug("parse: html");
 
@@ -1182,7 +1197,6 @@ public class GroovyPageParser implements Tokens {
             startPos = endQuotepos + 1;
         }
     }
-
 
     private void pageImport(String value) {
         // LOG.debug("pageImport(" + value + ')');

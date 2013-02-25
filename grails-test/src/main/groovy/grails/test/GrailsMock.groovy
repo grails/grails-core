@@ -15,8 +15,8 @@
 package grails.test
 
 import groovy.mock.interceptor.Demand
-import groovy.mock.interceptor.StrictExpectation
 import groovy.mock.interceptor.LooseExpectation
+import groovy.mock.interceptor.StrictExpectation
 
 /**
  * <p>Provides similar behaviour to MockFor and StubFor, but uses
@@ -238,7 +238,7 @@ class ExplicitDemandProxy {
 }
 
 class ExplicitDemandException extends RuntimeException {
-    public ExplicitDemandException(Class obj, String methodName, Class[] types) {
+    ExplicitDemandException(Class obj, String methodName, Class[] types) {
         super("Could not find method $methodName(${types.collect { it.name }.join(',')}) on $obj")
     }
 }

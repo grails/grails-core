@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.test.runner
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.project.creation.GrailsProjectCleaner
@@ -88,9 +89,6 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
     // Where the test source can be found
     File testSourceDir
 
-
-
-
     File junitReportStyleDir
     boolean createTestReports = true
     boolean testsFailed = false
@@ -152,7 +150,6 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
     protected List<String> lookupTestPatterns() {
         buildSettings.config.grails.testing.patterns ?: ['**.*']
     }
-
 
     @CompileStatic
     void runAllTests(Map<String, String> argsMap, boolean triggerEvents = true) {
@@ -227,7 +224,6 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
             new GrailsProjectCleaner(buildSettings, buildEventListener).cleanAll()
         }
 
-
         ant.mkdir(dir: testReportsDir)
         ant.mkdir(dir: "${testReportsDir}/html")
         ant.mkdir(dir: "${testReportsDir}/plain")
@@ -237,15 +233,13 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
         if (reRunTests) testNames = getFailedTests()
 
         // add the test classes to the classpath
-        if(projectPackager.classLoader instanceof URLClassLoader) {
-
+        if (projectPackager.classLoader instanceof URLClassLoader) {
             projectPackager.classLoader.addURL(buildSettings.testClassesDir.toURI().toURL())
         }
 
         testTargetPatterns = testNames.collect { String it -> new GrailsTestTargetPattern(it) } as GrailsTestTargetPattern[]
 
         buildEventListener.triggerEvent("TestPhasesStart", phasesToRun)
-
 
         // Handle pre 1.2 style testing configuration
         def convertedPhases = [:]
@@ -371,7 +365,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
      * For example, "unit", "jsunit", "webtest", etc.
      */
     @CompileStatic
-    void processTests ( GrailsTestType type ) {
+    void processTests(GrailsTestType type) {
         testExecutionContext.setVariable("currentTestTypeName", type.name)
 
         try {
@@ -391,9 +385,8 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
         }
     }
 
-
     @CompileStatic
-    void runTests ( GrailsTestType type, File compiledClassesDir ) {
+    void runTests(GrailsTestType type, File compiledClassesDir) {
         def testCount = type.prepare(testTargetPatterns.toArray(new GrailsTestTargetPattern[testTargetPatterns.size()]), compiledClassesDir, testExecutionContext)
 
         if (testCount) {
@@ -417,7 +410,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
                 buildEventListener.triggerEvent("TestSuiteEnd", type.name)
 
             }
-            catch (e) {
+            catch (Throwable e) {
                 CONSOLE.error "Error running $type.name tests: ${e.message}", e
                 testsFailed = true
             }

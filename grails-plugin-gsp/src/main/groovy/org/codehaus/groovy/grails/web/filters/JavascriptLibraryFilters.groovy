@@ -1,13 +1,13 @@
 package org.codehaus.groovy.grails.web.filters
 
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.plugins.web.taglib.JavascriptTagLib
-import org.apache.commons.logging.LogFactory
-import org.apache.commons.logging.Log
 
 /**
- * Sets up the Javascript library to use based on configuration
+ * Sets up the Javascript library to use based on configuration.
  *
  * @author Graeme Rocher
  * @since 1.2

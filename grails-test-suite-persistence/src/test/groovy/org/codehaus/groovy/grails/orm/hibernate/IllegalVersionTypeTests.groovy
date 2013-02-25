@@ -1,8 +1,8 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.hibernate.type.IntegerType;
-import org.hibernate.type.LongType;
-import org.hibernate.type.TimestampType;
+import org.hibernate.type.IntegerType
+import org.hibernate.type.LongType
+import org.hibernate.type.TimestampType
 
 /**
  * @author Burt Beckwith
@@ -48,6 +48,7 @@ class IllegalVersionTypeTests extends AbstractGrailsHibernateTests {
         assertTrue sessionFactory.getEntityPersister(clazz.name).versionType instanceof TimestampType
     }
 }
+
 class StringVersion {
     Long id
     String version

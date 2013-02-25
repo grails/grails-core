@@ -193,7 +193,6 @@ mappings {
         response = webRequest.currentResponse
         request.setRequestURI("/other/myAction")
 
-
         filter.doFilterInternal(request, response, null)
 
         assertEquals "/grails/other/myAction.dispatch", response.forwardedUrl

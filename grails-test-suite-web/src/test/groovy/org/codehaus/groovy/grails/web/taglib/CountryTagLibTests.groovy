@@ -57,7 +57,6 @@ class CountryTagLibTests extends AbstractGrailsTagTests {
         def template = "<g:countrySelect name=\"foo\" valueMessagePrefix=\"${msgPrefix}\" value=\"usa\" from=\"['gbr', 'usa', 'deu']\"/>".toString()
         def result = applyTemplate(template, [:])
 
-
         assertResultContains result, "<option value=\"usa\" selected=\"selected\" >${codeMap['usa']}</option>"
 
         codeMap.each { code, val ->

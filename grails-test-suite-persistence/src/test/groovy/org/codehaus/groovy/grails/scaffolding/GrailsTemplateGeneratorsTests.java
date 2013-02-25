@@ -75,7 +75,6 @@ public class GrailsTemplateGeneratorsTests extends TestCase {
         }
     }
 
-
     public void testGenerateController() throws Exception {
         DefaultGrailsTemplateGenerator generator;
 

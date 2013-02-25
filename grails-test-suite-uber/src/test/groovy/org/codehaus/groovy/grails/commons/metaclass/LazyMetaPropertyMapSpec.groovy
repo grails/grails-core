@@ -10,21 +10,16 @@ import spock.lang.Specification
 @TestMixin(GrailsUnitTestMixin)
 class LazyMetaPropertyMapSpec extends Specification {
 
-	def setup() {
-	}
-
-	def cleanup() {
-	}
-
-	void "test putAll adds all key and value pairs provided to this map"() {
+    void "test putAll adds all key and value pairs provided to this map"() {
         given:
             def targetMap = new LazyMetaPropertyMap(new A())
         when:
             targetMap.putAll([someProperty:"a value"])
         then:
             targetMap == [someProperty:"a value"]
-	}
+    }
 }
+
 class A {
     def someProperty = "value"
 }

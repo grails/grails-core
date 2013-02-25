@@ -14,7 +14,6 @@ class Item {
   String  name
   List    parts
   List    nullableParts
-
 }
 
 @Entity
@@ -23,8 +22,6 @@ class Part {
   static belongsTo = [ item: Item ]
 
   String name
-
-
 }
 
 @Entity
@@ -37,16 +34,10 @@ class NullablePart {
   static constraints = {
      item nullable:true
   }
-
 }
 
-
-
 '''
-
     }
-
-
 
     // test for GRAILS-3783
     void testBindAndSaveWithInverseListCollection() {
@@ -54,7 +45,6 @@ class NullablePart {
 
         def Item = ga.getDomainClass("Item").clazz
         def Part = ga.getDomainClass("Part").clazz
-
 
         def item = Item.newInstance(name:"iMac")
 
@@ -81,7 +71,6 @@ class NullablePart {
 
         def Item = ga.getDomainClass("Item").clazz
         def Part = ga.getDomainClass("NullablePart").clazz
-
 
         def item = Item.newInstance(name:"iMac")
 
@@ -152,7 +141,6 @@ class NullablePart {
 
         def Item = ga.getDomainClass("Item").clazz
         def Part = ga.getDomainClass("Part").clazz
-
 
         def item = Item.newInstance(name:"iMac")
 

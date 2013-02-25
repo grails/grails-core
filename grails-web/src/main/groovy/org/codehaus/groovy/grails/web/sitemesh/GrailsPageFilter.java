@@ -186,7 +186,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
      * into returned {@link com.opensymphony.module.sitemesh.Page} object. If
      * {@link com.opensymphony.module.sitemesh.Page} is not parseable, null is returned.
      */
-    private Content obtainContent(@SuppressWarnings("hiding") ContentProcessor contentProcessor, SiteMeshWebAppContext webAppContext,
+    private Content obtainContent(ContentProcessor contentProcessor, SiteMeshWebAppContext webAppContext,
                                   HttpServletRequest request, HttpServletResponse response, FilterChain chain)
                 throws IOException, ServletException {
 
@@ -219,7 +219,7 @@ public class GrailsPageFilter extends SiteMeshFilter {
         String requestURI = urlHelper.getOriginatingRequestUri(request);
         // static content?
         if (requestURI.endsWith(HTML_EXT)) {
-            contentBufferingResponse.setContentType("text/html;charset="+defaultEncoding);
+            contentBufferingResponse.setContentType("text/html;charset=" + defaultEncoding);
         }
     }
 

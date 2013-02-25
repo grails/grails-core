@@ -125,7 +125,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assert 1 == results?.size()
         assert 84 == results[0]
         assert results[0] instanceof Long
-        
+
         results = Box.withCriteria {
             projections {
                 sqlProjection 'sum(width * height) as totalArea', 'totalArea', FLOAT
@@ -135,7 +135,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assert 1 == results?.size()
         assert 84 == results[0]
         assert results[0] instanceof Float
-        
+
         results = Box.withCriteria {
             projections {
                 sqlProjection 'sum(width * height) as totalArea', 'totalArea', DOUBLE
@@ -145,7 +145,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assert 1 == results?.size()
         assert 84 == results[0]
         assert results[0] instanceof Double
-        
+
         results = Box.withCriteria {
             projections {
                 sqlProjection 'sum(width * height) as totalArea', 'totalArea', BIG_INTEGER
@@ -155,7 +155,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assert 1 == results?.size()
         assert 84 == results[0]
         assert results[0] instanceof BigInteger
-        
+
         results = Box.withCriteria {
             projections {
                 sqlProjection 'sum(width * height) as totalArea', 'totalArea', BIG_DECIMAL
@@ -165,7 +165,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assert 1 == results?.size()
         assert 84 == results[0]
         assert results[0] instanceof BigDecimal
-        
+
         results = Box.withCriteria {
             projections {
                 sqlProjection '(2 * (width + height)) as perimeter, (width * height) as area', ['perimeter', 'area'], [INTEGER, INTEGER]
@@ -177,7 +177,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         assert [20, 16] == results[1]
         assert [22, 18] == results[2]
         assert [26, 36] == results[3]
-        
+
         results = Box.withCriteria {
             projections {
                 sqlGroupProjection 'width, sum(height) as combinedHeightsForThisWidth', 'width', ['width', 'combinedHeightsForThisWidth'], [INTEGER, INTEGER]
@@ -798,7 +798,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj3.setProperty("age", 12)
         obj3.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                     "projections { " +
                         "distinct('lastName');" +
@@ -978,7 +977,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                     "projections { " +
                         "countDistinct('lastName')" +
@@ -1034,7 +1032,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 35)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                     "projections { " +
@@ -1092,7 +1089,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                     "projections { " +
                         "sum('age')" +
@@ -1120,7 +1116,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 35)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                     "projections { " +
@@ -1211,7 +1206,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                         "gtProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
@@ -1239,7 +1233,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                         "ge('age',43)" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
@@ -1265,7 +1258,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 45)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                         "le('age',45)" +
@@ -1293,7 +1285,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 45)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                         "lt('age',44)" +
@@ -1394,7 +1385,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                         "ne('firstName','fred')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
@@ -1421,7 +1411,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                         "ltProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
@@ -1447,7 +1436,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 45)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                         "geProperty('firstName','lastName')" +
@@ -1476,7 +1464,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                         "leProperty('firstName','lastName')" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
@@ -1503,7 +1490,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 45)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                         "neProperty('firstName','lastName')" +
@@ -1539,7 +1525,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj3.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                         "between('age',40, 46)" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
@@ -1566,7 +1551,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 35)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                         "ilike('lastName', 'flint%')" +
@@ -1595,7 +1579,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj2.invokeMethod("save", null)
 
-
         List results = parse("{ " +
                         "'in'('firstName',['fred','donkey'])" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
@@ -1621,7 +1604,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj2.setProperty("age", 35)
 
         obj2.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                         "not{" +
@@ -1668,7 +1650,6 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
         obj.setProperty("firstName", "jonh")
         obj.setProperty("lastName", "smith")
         obj.invokeMethod("save", null)
-
 
         List results = parse("{ " +
                 "isNull('age')" +

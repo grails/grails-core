@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import java.beans.PropertyEditorSupport
+
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.beans.PropertyEditorRegistrar
 import org.springframework.beans.PropertyEditorRegistry
@@ -43,7 +44,6 @@ class OneToManyPropertyEditorDomain {
 }
 '''
     }
-
 
     void testUseCustomPropertyEditor() {
         appCtx.registerBeanDefinition("testCustomEditorRegistrar", new RootBeanDefinition(TestCustomPropertyEditorRegistrar))

@@ -133,8 +133,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         if (areFileExtensionsEnabled()) {
             String format = WebUtils.getFormatFromURI(uri, mimeTypes);
             if (format != null) {
-                MimeType[] configuredMimes = mimeTypes != null ? mimeTypes : MimeType.getConfiguredMimeTypes();
-                // only remove the file extension if its one of the configured mimes in Config.groovy
+                MimeType[] configuredMimes = mimeTypes == null ? MimeType.getConfiguredMimeTypes() : mimeTypes;
+                // only remove the file extension if it's one of the configured mimes in Config.groovy
                 for (MimeType configuredMime : configuredMimes) {
                     if (configuredMime.getExtension().equals(format)) {
                         request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, format);
@@ -181,12 +181,12 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                             Object featureId = null;
                             if (pluginName != null) {
-                            	Map featureIdMap = new HashMap();
-                            	featureIdMap.put("uri", featureUri);
-                            	featureIdMap.put("pluginName", pluginName);
-                            	featureId = featureIdMap;
+                                Map featureIdMap = new HashMap();
+                                featureIdMap.put("uri", featureUri);
+                                featureIdMap.put("pluginName", pluginName);
+                                featureId = featureIdMap;
                             } else {
-                            	featureId = featureUri;
+                                featureId = featureUri;
                             }
                             GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
                             if (controller == null) {

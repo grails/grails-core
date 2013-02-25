@@ -271,7 +271,6 @@ class BeanBuilderTests extends GroovyTestCase {
             knights(KnightOfTheRoundTable, "Camelot", leader:"lancelot", quest: holyGrail)
         }
 
-
         def ctx = bb.createApplicationContext()
 
         KnightOfTheRoundTable knights = ctx.getBean("knights")

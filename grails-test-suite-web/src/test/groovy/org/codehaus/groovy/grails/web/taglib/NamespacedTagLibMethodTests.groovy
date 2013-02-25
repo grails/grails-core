@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
-import org.springframework.validation.MapBindingResult
 
 /**
  * @author Graeme Rocher
@@ -9,12 +8,12 @@ import org.springframework.validation.MapBindingResult
  */
 class NamespacedTagLibMethodTests extends AbstractGrailsTagTests {
 
-
     void testInvokeTagLibNoNamespace() {
         def template = createTemplate('<%= link(controller:"hello") { "good" } %>')
         assertTemplateOutputEquals('<a href="/hello">good</a>', template)
         assertTemplateOutputEquals('<a href="/hello">good</a>', template)
     }
+
     void testStringAsBodyDispatch() {
         def template = '<g:tag bean="${foo}"/>'
         assertOutputEquals('errors', template,[foo:new NSTestBean()])

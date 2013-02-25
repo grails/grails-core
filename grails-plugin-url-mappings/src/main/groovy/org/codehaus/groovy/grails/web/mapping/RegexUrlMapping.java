@@ -16,6 +16,24 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+
+import javax.servlet.ServletContext;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,16 +47,6 @@ import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.validation.MapBindingResult;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import javax.servlet.ServletContext;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * <p>A UrlMapping implementation that takes a Grails URL pattern and turns it into a regex matcher so that
@@ -89,7 +97,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object pluginName,
             Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
         super(controllerName, actionName, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
-        this.grailsApplication = GrailsWebUtil.lookupApplication(servletContext);
+        grailsApplication = GrailsWebUtil.lookupApplication(servletContext);
         parse(data, constraints);
     }
 
@@ -101,13 +109,12 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param constraints Any constraints etc.
      * @param servletContext The servlet context
      */
-    public RegexUrlMapping(UrlMappingData data, URI uri, ConstrainedProperty[] constraints,
-            ServletContext servletContext) {
+    public RegexUrlMapping(UrlMappingData data, URI uri, ConstrainedProperty[] constraints, ServletContext servletContext) {
         super(uri, constraints, servletContext);
         parse(data, constraints);
     }
 
-    private void parse(UrlMappingData data, @SuppressWarnings("hiding") ConstrainedProperty[] constraints) {
+    private void parse(UrlMappingData data, ConstrainedProperty[] constraints) {
         Assert.notNull(data, "Argument [data] cannot be null");
 
         String[] urls = data.getLogicalUrls();
@@ -523,8 +530,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param constraints The array of current ConstrainedProperty instances
      * @return Either a Closure or null
      */
-    private Object createRuntimeConstraintEvaluator(final String name,
-            @SuppressWarnings("hiding") ConstrainedProperty[] constraints) {
+    private Object createRuntimeConstraintEvaluator(final String name, ConstrainedProperty[] constraints) {
         if (constraints == null) return null;
 
         for (ConstrainedProperty constraint : constraints) {

@@ -1,12 +1,11 @@
-/**
- * @author mike
- */
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.mock.web.MockServletContext
 
+/**
+ * @author mike
+ */
 class ResponseCodeUrlMappingTests extends AbstractGrailsMappingTests {
     def topLevelMapping = '''
 mappings {
@@ -19,8 +18,7 @@ mappings {
     "500"(controller:"errors", action:"error500")
 }
 '''
-    def UrlMappingsHolder holder
-
+    UrlMappingsHolder holder
 
     void setUp() {
         super.setUp()
@@ -33,7 +31,6 @@ mappings {
         holder.setUrlCreatorMaxWeightedCacheCapacity(0)
         holder.initialize()
     }
-
 
     void testParse() {
         assertNotNull holder
@@ -56,15 +53,15 @@ mappings {
     void testForwardMapping() {
         def info = holder.matchStatusCode(404)
         assertNotNull info
-        assertEquals("errors", info.getControllerName());
-        assertEquals("error404", info.getActionName());
+        assertEquals("errors", info.getControllerName())
+        assertEquals("error404", info.getActionName())
     }
 
     void testForwardMappingWithNamedArgs() {
         def info = holder.matchStatusCode(500)
         assertNotNull info
-        assertEquals("errors", info.getControllerName());
-        assertEquals("error500", info.getActionName());
+        assertEquals("errors", info.getControllerName())
+        assertEquals("error500", info.getActionName())
     }
 
     void testMissingForwardMapping() {

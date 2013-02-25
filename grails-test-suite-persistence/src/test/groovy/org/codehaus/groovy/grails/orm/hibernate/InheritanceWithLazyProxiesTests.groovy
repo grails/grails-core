@@ -1,9 +1,10 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
+import grails.persistence.Entity
+
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.hibernate.Hibernate
 import org.hibernate.proxy.HibernateProxy
-import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil
-import grails.persistence.Entity
 
 /**
  * @author Graeme Rocher
@@ -12,8 +13,6 @@ import grails.persistence.Entity
  * Created: Feb 27, 2009
  */
 class InheritanceWithLazyProxiesTests extends AbstractGrailsHibernateTests {
-
-
 
     void testLazyAssociationsWithInheritance() {
 
@@ -63,8 +62,6 @@ class InheritanceWithLazyProxiesTests extends AbstractGrailsHibernateTests {
     protected getDomainClasses() {
         [InheritanceWithLazyProxiesA,InheritanceWithLazyProxiesB, InheritanceWithLazyProxiesAttributeA, InheritanceWithLazyProxiesAttributeB]
     }
-
-
 }
 
 @Entity

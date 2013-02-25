@@ -2,21 +2,17 @@ package grails.test.mixin
 
 import grails.persistence.Entity
 
-/**
- *
- */
 @TestFor(Uniqueable)
 class DomainClassWithCustomValidatorTests {
     void testThereCanBeOnlyOneSomething() {
-        def uni = new Uniqueable();
+        def uni = new Uniqueable()
         assert uni.save(flush:true)
 
-        def uni2 = new Uniqueable();
+        def uni2 = new Uniqueable()
 
         // checks there is no stack over flow
         uni2.save()
     }
-
 }
 
 @Entity

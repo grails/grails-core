@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.pages
 
 import org.apache.commons.logging.LogFactory
-
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.Phases
@@ -114,7 +113,6 @@ class GroovyPageCompiler {
         if (gspfile.exists() && (!classFile.exists() || gspfile.lastModified() > classFile.lastModified())) {
             LOG.debug("Compiling gsp ${gspfile}...")
 
-
             def gspgroovyfile = new File(new File(generatedGroovyPagesDirectory, packageDir), className + ".groovy")
             gspgroovyfile.getParentFile().mkdirs()
 
@@ -147,7 +145,6 @@ class GroovyPageCompiler {
         else {
            compileGSPRegistry[viewuri] = fullClassName
         }
-
 
         // write the view registry to a properties file (this is read by GroovyPagesTemplateEngine at runtime)
         File viewregistryFile = new File(targetDir, "gsp/views.properties")

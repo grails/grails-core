@@ -3,24 +3,19 @@ package org.codehaus.groovy.grails.compiler.gorm
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.grails.datastore.gorm.GormValidationApi
-import spock.lang.Specification
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 
-class GormValidationTransformerSpec extends Specification {
+import spock.lang.Specification
 
+class GormValidationTransformerSpec extends Specification {
 
     void "Test that the validate methods are available via an AST transformation"() {
         given:
               def gcl = new GrailsAwareClassLoader()
               def transformer = new GormValidationTransformer() {
-                  @Override
-                  boolean shouldInject(URL url) {
-                      return true;
-                  }
-
+                  boolean shouldInject(URL url) { true }
               }
               gcl.classInjectors = [transformer] as ClassInjector[]
-
 
           when:
               def cls = gcl.parseClass('''
@@ -44,7 +39,5 @@ class TestEntity {
 
           then:
              obj.validate() == true
-
     }
-
 }

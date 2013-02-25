@@ -1,8 +1,9 @@
 package org.codehaus.groovy.grails.orm.support
 
 import grails.spring.BeanBuilder
-import org.springframework.jdbc.datasource.DriverManagerDataSource
+
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
+import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.PlatformTransactionManager
 
 /**
@@ -31,7 +32,6 @@ class TransactionManagerPostProcessorTests extends GroovyTestCase{
         }
 
         def ctx = bb.createApplicationContext()
-
 
         MyBean bean = ctx.getBean("myBean")
         assert bean

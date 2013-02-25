@@ -76,7 +76,6 @@ class TwoManyToManyTests extends AbstractGrailsHibernateTests {
         assertEquals 1,rs.getInt("twommperson_id")
         assertEquals 2,rs.getInt("twommbook_id")
 
-
         ps = c.prepareStatement("select * from twommperson_published_books")
         rs = ps.executeQuery()
         assert rs.next()
@@ -91,7 +90,6 @@ class TwoManyToManyTests extends AbstractGrailsHibernateTests {
         assert rs.next()
         assertEquals 1,rs.getInt("twommperson_id")
         assertEquals 5,rs.getInt("twommbook_id")
-
 
         assert rs.next()
         assertEquals 2,rs.getInt("twommperson_id")

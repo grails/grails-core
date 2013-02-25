@@ -103,7 +103,6 @@ import grails.persistence.*
     }
 }
 
-
 class TestConverterController {
     def create = {
         [book:new AutoParamsXmlMarshallingBook(params['book'])]
@@ -141,4 +140,3 @@ class AutoParamsXmlMarshallingAuthor {
         new AutoParamsXmlMarshallingAuthor(id:id.toLong())
     }
 }
-

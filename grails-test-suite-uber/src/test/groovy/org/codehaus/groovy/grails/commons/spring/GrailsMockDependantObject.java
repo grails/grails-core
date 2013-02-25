@@ -6,7 +6,6 @@ public class GrailsMockDependantObject {
 
     GrailsApplication application;
 
-
     public GrailsApplication getApplication() {
         return application;
     }

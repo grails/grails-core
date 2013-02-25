@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.gorm.DetachedCriteria
 
-
 class SubquerySpec extends GormSpec {
     @Override
     List getDomainClasses() {
@@ -101,8 +100,7 @@ class SubquerySpec extends GormSpec {
             results[2].firstName == "Marge"
     }
 
-
-    protected def createPeople() {
+    protected void createPeople() {
         new Person(firstName: "Homer", lastName: "Simpson", age:45).save()
         new Person(firstName: "Marge", lastName: "Simpson", age:40).save()
         new Person(firstName: "Bart", lastName: "Simpson", age:9).save()

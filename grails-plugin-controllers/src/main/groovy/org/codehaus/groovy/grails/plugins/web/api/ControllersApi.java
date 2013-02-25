@@ -164,7 +164,7 @@ public class ControllersApi extends CommonWebApi {
      *
      * @param errors The error instance
      */
-    public void setErrors(@SuppressWarnings("unused") Object instance, Errors errors) {
+    public void setErrors(Object instance, Errors errors) {
         currentRequestAttributes().setAttribute(GrailsApplicationAttributes.ERRORS, errors, 0);
     }
 
@@ -173,7 +173,7 @@ public class ControllersApi extends CommonWebApi {
      *
      * @return The Errors instance
      */
-    public Errors getErrors(@SuppressWarnings("unused") Object instance) {
+    public Errors getErrors(Object instance) {
         return (Errors)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.ERRORS, 0);
     }
 
@@ -182,7 +182,7 @@ public class ControllersApi extends CommonWebApi {
      *
      * @param mav The ModelAndView
      */
-    public void setModelAndView(@SuppressWarnings("unused") Object instance, ModelAndView mav) {
+    public void setModelAndView(Object instance, ModelAndView mav) {
         currentRequestAttributes().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mav, 0);
     }
 
@@ -191,7 +191,7 @@ public class ControllersApi extends CommonWebApi {
      *
      * @return The ModelAndView
      */
-    public ModelAndView getModelAndView(@SuppressWarnings("unused") Object instance) {
+    public ModelAndView getModelAndView(Object instance) {
         return (ModelAndView)currentRequestAttributes().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
     }
 

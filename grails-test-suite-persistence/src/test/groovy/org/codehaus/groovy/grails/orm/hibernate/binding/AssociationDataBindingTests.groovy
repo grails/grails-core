@@ -68,8 +68,6 @@ class AssociationBindingAuthor {
         assertEquals "The Shining", book.title
     }
 
-
-
     void testManyToOneBinding() {
         super.buildMockRequest()
         def Book = ga.getDomainClass("AssociationBindingBook").clazz
@@ -84,7 +82,6 @@ class AssociationBindingAuthor {
         assertNotNull "The author should have been bound", book.author
         assertEquals "The Shining", book.title
     }
-
 
     void testOneToManyListBindingNewInstanceRespectsIncludes() {
         def Book = ga.getDomainClass("AssociationBindingBook").clazz

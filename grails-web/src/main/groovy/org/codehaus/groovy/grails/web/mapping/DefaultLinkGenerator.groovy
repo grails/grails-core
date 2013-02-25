@@ -129,9 +129,8 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     mapping = urlMappingsHolder.getReverseMapping(controller,action,pluginName,params)
                 }
 
-
                 boolean absolute = isAbsolute(attrs)
-                
+
                 if (!absolute) {
                     url = mapping.createRelativeURL(convertedControllerName, convertedActionName, params, encoding, frag)
                     final contextPathAttribute = attrs.get(ATTRIBUTE_CONTEXT_PATH)
@@ -155,23 +154,23 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
         return writer.toString()
     }
 
-	protected boolean isAbsolute(Map attrs) {
-		boolean absolute = false
-		def o = attrs.get(ATTRIBUTE_ABSOLUTE)
-		if(o instanceof Boolean) {
-			absolute = o
-		} else {
-			if(o != null) {
-				try {
-					def str = o.toString()
-					if(str) {
-						absolute = Boolean.parseBoolean(str)
-					}
-				} catch(e){}
-			}
-		}
+    protected boolean isAbsolute(Map attrs) {
+        boolean absolute = false
+        def o = attrs.get(ATTRIBUTE_ABSOLUTE)
+        if (o instanceof Boolean) {
+            absolute = o
+        } else {
+            if (o != null) {
+                try {
+                    def str = o.toString()
+                    if (str) {
+                        absolute = Boolean.parseBoolean(str)
+                    }
+                } catch(e){}
+            }
+        }
         return absolute
-	}
+    }
 
     /**
      * {@inheritDoc }

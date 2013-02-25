@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.taglib
 
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
+
 import org.junit.Test
 
 @TestFor(TwoColumnTagLib)
@@ -46,7 +47,6 @@ class LayoutWriterStackTests {
         assert s1.replaceAll(/\s/, '') == s2.replaceAll(/\s/, '')
     }
 }
-
 
 @Artefact("TagLib")
 class TwoColumnTagLib {

@@ -15,10 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import org.xml.sax.InputSource
-import org.springframework.core.io.ClassPathResource
 import javax.xml.parsers.SAXParserFactory
-import  org.codehaus.groovy.grails.web.taglib.jsp.*
+
+import org.codehaus.groovy.grails.web.taglib.jsp.JspLocaleSelectTag
+import org.springframework.core.io.ClassPathResource
+import org.xml.sax.InputSource
 
 class TldReaderTests extends GroovyTestCase{
 
@@ -37,7 +38,6 @@ class TldReaderTests extends GroovyTestCase{
         reader.parse is
 
         assert tldReader.tags
-        assertEquals tldReader.tags.localeSelect,JspLocaleSelectTag
+        assertEquals tldReader.tags.localeSelect, JspLocaleSelectTag
     }
-
 }

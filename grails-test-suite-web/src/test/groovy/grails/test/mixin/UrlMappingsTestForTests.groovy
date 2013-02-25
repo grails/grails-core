@@ -1,11 +1,9 @@
 package grails.test.mixin
 
-import org.junit.Test
 import grails.artefact.Artefact
 
-/**
+import org.junit.Test
 
- */
 @TestFor(UrlMappings)
 @Mock([BookController])
 
@@ -19,10 +17,8 @@ class UrlMappingsTestForTests {
 
 @Artefact("Controller")
 class BookController {
-
     def list() { }
 }
-
 
 class UrlMappings {
 

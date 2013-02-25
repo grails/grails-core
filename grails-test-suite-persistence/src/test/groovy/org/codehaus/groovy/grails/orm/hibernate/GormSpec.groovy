@@ -1,31 +1,28 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
 import grails.util.Metadata
-import spock.lang.Specification
-import org.springframework.util.Log4jConfigurer
-import org.codehaus.groovy.grails.support.MockApplicationContext
-import spock.lang.Shared
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.springframework.context.support.StaticMessageSource
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
-import org.springframework.context.ApplicationContext
-import org.grails.datastore.mapping.transactions.SessionHolder
-import org.springframework.transaction.support.TransactionSynchronizationManager
-import org.hibernate.SessionFactory
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
-import org.hibernate.Session
-import org.springframework.web.context.request.RequestContextHolder
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.springframework.orm.hibernate3.SessionFactoryUtils
-import org.springframework.core.type.ClassMetadata
+import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.hibernate.EntityMode
+import org.hibernate.Session
+import org.hibernate.SessionFactory
+import org.springframework.context.ApplicationContext
+import org.springframework.context.support.StaticMessageSource
+import org.springframework.orm.hibernate3.SessionFactoryUtils
 import org.springframework.orm.hibernate3.SessionHolder
+import org.springframework.transaction.support.TransactionSynchronizationManager
+import org.springframework.util.Log4jConfigurer
+import org.springframework.web.context.request.RequestContextHolder
 
+import spock.lang.Specification
 
 abstract class GormSpec extends Specification {
 
@@ -194,4 +191,3 @@ hibernate {
 
     abstract List getDomainClasses()
 }
-

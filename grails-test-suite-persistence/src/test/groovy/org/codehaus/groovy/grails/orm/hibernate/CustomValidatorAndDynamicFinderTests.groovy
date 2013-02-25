@@ -1,15 +1,14 @@
 package org.codehaus.groovy.grails.orm.hibernate
 
-import org.hibernate.FlushMode
 import grails.persistence.Entity
+
+import org.hibernate.FlushMode
 
 /**
  * @author Graeme Rocher
  * @since 1.1
  */
 class CustomValidatorAndDynamicFinderTests extends AbstractGrailsHibernateTests {
-
-
 
     // test for GRAILS-4981
     void testCustomValidatorWithFinder() {
@@ -27,11 +26,7 @@ class CustomValidatorAndDynamicFinderTests extends AbstractGrailsHibernateTests 
     protected getDomainClasses() {
         [CustomValidatorAndDynamicFinderFoo]
     }
-
-
 }
-
-
 
 @Entity
 class CustomValidatorAndDynamicFinderFoo {

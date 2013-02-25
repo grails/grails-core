@@ -21,12 +21,12 @@ import org.springframework.context.ApplicationContext
 class GrailsTestInterceptor {
 
     private test
-    private mode
-    private appCtx
-    private testClassSuffixes
+    private GrailsTestMode mode
+    private ApplicationContext appCtx
+    private String[] testClassSuffixes
 
-    private transactionInterceptor
-    private requestEnvironmentInterceptor
+    private GrailsTestTransactionInterceptor transactionInterceptor
+    private GrailsTestRequestEnvironmentInterceptor requestEnvironmentInterceptor
 
     GrailsTestInterceptor(Object test, GrailsTestMode mode, ApplicationContext appCtx, String[] testClassSuffixes) {
         this.test = test
@@ -68,10 +68,8 @@ class GrailsTestInterceptor {
     }
 
     protected destroyTransactionIfNecessary() {
-        if (transactionInterceptor) {
-            transactionInterceptor.destroy()
-            transactionInterceptor = null
-        }
+        transactionInterceptor?.destroy()
+        transactionInterceptor = null
     }
 
     protected getControllerName() {
@@ -87,10 +85,8 @@ class GrailsTestInterceptor {
     }
 
     protected destroyRequestEnvironmentIfNecessary() {
-        if (requestEnvironmentInterceptor) {
-            requestEnvironmentInterceptor.destroy()
-            requestEnvironmentInterceptor = null
-        }
+        requestEnvironmentInterceptor?.destroy()
+        requestEnvironmentInterceptor = null
     }
 
     protected createAutowirer() {
@@ -104,5 +100,4 @@ class GrailsTestInterceptor {
     protected createRequestEnvironmentInterceptor() {
         new GrailsTestRequestEnvironmentInterceptor(appCtx)
     }
-
 }

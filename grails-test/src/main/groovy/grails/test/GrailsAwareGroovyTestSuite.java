@@ -69,15 +69,15 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
         customizeClassLoader(gcl);
     }
 
-    protected void customizeClassLoader(@SuppressWarnings("unused") GrailsAwareClassLoader classLoader) {
+    protected void customizeClassLoader(GrailsAwareClassLoader classLoader) {
         // do nothing by default
     }
 
-    protected void customizeClassInjectors(@SuppressWarnings("unused") List<ClassInjector> classInjectors) {
+    protected void customizeClassInjectors(List<ClassInjector> classInjectors) {
         // do nothing by default
     }
 
-    protected void customizeGrailsResources(@SuppressWarnings("unused") List<org.codehaus.groovy.grails.io.support.Resource> grailsResources) {
+    protected void customizeGrailsResources(List<org.codehaus.groovy.grails.io.support.Resource> grailsResources) {
         // do nothing by default
     }
 
@@ -106,7 +106,7 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
         return new File(grailsHome);
     }
 
-    protected void customizeBuildSettings(@SuppressWarnings("unused") BuildSettings settings) {
+    protected void customizeBuildSettings(BuildSettings settings) {
         // do nothing by default
     }
 

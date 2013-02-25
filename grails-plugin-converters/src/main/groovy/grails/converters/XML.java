@@ -176,7 +176,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> {
         }
     }
 
-    public ObjectMarshaller<XML> lookupObjectMarshaller(@SuppressWarnings("hiding") Object target) {
+    public ObjectMarshaller<XML> lookupObjectMarshaller(Object target) {
         return config.getMarshaller(target);
     }
 

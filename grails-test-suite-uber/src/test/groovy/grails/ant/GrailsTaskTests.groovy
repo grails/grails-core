@@ -6,7 +6,7 @@ import org.apache.tools.ant.types.Path
 /**
  * Test case for {@link GrailsTask}.
  */
-public class GrailsTaskTests extends GroovyTestCase {
+class GrailsTaskTests extends GroovyTestCase {
     void testWithClasspath() {
 //        def task = new GrailsTask()
 //        task.script = "Compile"

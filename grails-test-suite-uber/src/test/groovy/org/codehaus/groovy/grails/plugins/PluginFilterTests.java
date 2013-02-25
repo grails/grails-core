@@ -81,7 +81,6 @@ public class PluginFilterTests extends AbstractGrailsMockTests {
 
     private List getPluginList() {
 
-        @SuppressWarnings("hiding")
         GroovyClassLoader gcl = new GroovyClassLoader();
 
         GrailsApplication app = new DefaultGrailsApplication(new Class[0], gcl);
@@ -107,7 +106,7 @@ public class PluginFilterTests extends AbstractGrailsMockTests {
         return pluginList;
     }
 
-    private void addPlugin(@SuppressWarnings("hiding") GroovyClassLoader gcl, GrailsApplication app,
+    private void addPlugin(GroovyClassLoader gcl, GrailsApplication app,
             List pluginList, String className, String dependencies) {
         Class c = gcl.parseClass("class "
                 + className

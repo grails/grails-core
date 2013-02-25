@@ -279,7 +279,6 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         registry.registerCustomEditor(Date.class, new CompositeEditor(new StructuredDateEditor(dateFormat,true), new CustomDateEditor(new SimpleDateFormat(JSON_DATE_FORMAT), true)));
         registry.registerCustomEditor(Calendar.class, new StructuredDateEditor(dateFormat,true));
 
-
         ServletContext servletContext = grailsWebRequest != null ? grailsWebRequest.getServletContext() : null;
         registerCustomEditors(servletContext, registry);
     }

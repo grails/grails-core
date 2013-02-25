@@ -306,7 +306,7 @@ public class GrailsHibernateUtil {
         }
     }
 
-    public static void cacheCriteriaByMapping(@SuppressWarnings("unused") GrailsApplication grailsApplication,
+    public static void cacheCriteriaByMapping(GrailsApplication grailsApplication,
             Class<?> targetClass, Criteria criteria) {
         cacheCriteriaByMapping(targetClass, criteria);
     }

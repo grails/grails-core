@@ -216,8 +216,8 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         }
 
         HttpServletRequest request = webRequest.getCurrentRequest();
-        return request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT) == null ? null :
-                request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT).toString();
+        Object format = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT);
+        return format == null ? null : format.toString();
     }
 
     protected String getNameForController(Object controller) {

@@ -54,7 +54,6 @@ mappings {
         assertEquals "/(*)/(*)?/(*)?/(*)?", m.urlData.urlPattern
         assertEquals 4, m.urlData.tokens.size()
 
-
         def info = m.match("/myentry/2007/04/28")
 
         assertEquals "myentry", info.id
@@ -64,12 +63,10 @@ mappings {
         assertEquals "blog", info.controllerName
         assertEquals "show", info.actionName
 
-
         assert m.match("/myentry/2007/04/28")
         assert m.match("/myentry/2007/04")
         assert m.match("/myentry/2007")
         assert m.match("/myentry")
-
 
         m = mappings[1]
         info = m.match("/product/MacBook")

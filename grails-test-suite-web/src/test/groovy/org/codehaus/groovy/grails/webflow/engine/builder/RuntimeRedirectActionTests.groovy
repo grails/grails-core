@@ -1,15 +1,13 @@
 package org.codehaus.groovy.grails.webflow.engine.builder
 
+import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.commons.metaclass.PropertyExpression
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
-import org.springframework.webflow.test.MockRequestContext
-import org.springframework.webflow.test.MockExternalContext
-import grails.util.GrailsWebUtil
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.webflow.test.MockExternalContext
+import org.springframework.webflow.test.MockRequestContext
 
-/**
- *
- */
 class RuntimeRedirectActionTests extends GroovyTestCase{
 
     void testRedirectWithPropertyExpression() {
@@ -31,15 +29,9 @@ class RuntimeRedirectActionTests extends GroovyTestCase{
             context.getFlowScope().put("id", "2")
             action.execute(context)
             assert "contextRelative:/book/show/2" == ext.getExternalRedirectUrl()
-
-
         }
         finally {
             RequestContextHolder.setRequestAttributes null
         }
-
-
-
-
     }
 }

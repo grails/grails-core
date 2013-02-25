@@ -1,10 +1,11 @@
 package org.codehaus.groovy.grails.web.binding
 
+import static org.hamcrest.CoreMatchers.*
+import static org.junit.Assert.assertThat
+
 import org.codehaus.groovy.grails.orm.hibernate.AbstractGrailsHibernateTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.springframework.mock.web.MockHttpServletRequest
-import static org.hamcrest.CoreMatchers.*
-import static org.junit.Assert.assertThat
 
 /**
  * @author Rob Fletcher
@@ -40,7 +41,6 @@ class DataBindingWithEmbeddedTests extends AbstractGrailsHibernateTests {
             }
         """)
     }
-
 
     void testDataBindingWithEmbeddedProperty() {
         def Book = ga.getDomainClass("databindingwithembeddedtests.Book").clazz

@@ -1,7 +1,4 @@
-package org.codehaus.groovy.grails.orm.hibernate.metaclass;
-
-import groovy.mock.interceptor.MockFor
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.BeforeValidateHelper;
+package org.codehaus.groovy.grails.orm.hibernate.metaclass
 
 class BeforeValidateHelperTests extends GroovyTestCase {
 

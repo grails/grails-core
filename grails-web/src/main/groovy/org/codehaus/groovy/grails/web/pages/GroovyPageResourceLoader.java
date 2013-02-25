@@ -68,7 +68,7 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
 
         // deal with plug-in resolving
         if (location.startsWith(PLUGINS_PATH)) {
-            if (pluginSettings == null) throw new RuntimeException("'pluginsettings' has not been initialised.");
+            Assert.state(pluginSettings != null, "'pluginsettings' has not been initialised.");
             List<String> pluginBaseDirectories = pluginSettings.getPluginBaseDirectories();
             DefaultGroovyPageLocator.PluginViewPathInfo pluginViewPathInfo = DefaultGroovyPageLocator.getPluginViewPathInfo(location);
             String path = pluginViewPathInfo.basePath;
