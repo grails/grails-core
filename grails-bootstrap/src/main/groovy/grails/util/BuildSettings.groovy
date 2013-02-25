@@ -845,7 +845,7 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     @CompileStatic
-    protected def loadBuildPropertiesFromClasspath(Properties buildProps) {
+    protected void loadBuildPropertiesFromClasspath(Properties buildProps) {
         InputStream stream = getClass().classLoader.getResourceAsStream("grails.build.properties")
         if (stream == null) {
             stream = getClass().classLoader.getResourceAsStream("build.properties")
