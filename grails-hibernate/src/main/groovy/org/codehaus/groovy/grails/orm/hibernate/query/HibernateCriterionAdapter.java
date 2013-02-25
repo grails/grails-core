@@ -44,12 +44,10 @@ import org.springframework.util.ReflectionUtils;
 public class HibernateCriterionAdapter {
     private static final Map<Class<?>, CriterionAdaptor> criterionAdaptors = new HashMap<Class<?>, CriterionAdaptor>();
     private String alias;
-    private PersistentEntity entity;
 
     public HibernateCriterionAdapter(PersistentEntity entity, Query.Criterion criterion, String alias) {
         this.criterion = criterion;
         this.alias = alias;
-        this.entity = entity;
     }
 
     static {
@@ -114,7 +112,7 @@ public class HibernateCriterionAdapter {
                     alias = newAlias;
                 }
                 else {
-                    alias = alias + '.' + newAlias;
+                    alias += '.' + newAlias;
                 }
                 applySubCriteriaToJunction(existing.getAssociation().getAssociatedEntity(), hibernateQuery, existing.getCriteria().getCriteria(), conjunction, alias);
                 return conjunction;
@@ -230,7 +228,7 @@ public class HibernateCriterionAdapter {
      *
      * @param constraintName - the criteria
      */
-    private static Criterion callRestrictionsMethod(String constraintName, Class[] paramTypes, Object[] params) {
+    private static Criterion callRestrictionsMethod(String constraintName, Class<?>[] paramTypes, Object[] params) {
         final Method restrictionsMethod = ReflectionUtils.findMethod(Restrictions.class, constraintName, paramTypes);
         Assert.notNull(restrictionsMethod, "Could not find method: " + constraintName + " in class Restrictions for parameters: " + ArrayUtils.toString(params) + " with types: " + ArrayUtils.toString(paramTypes));
         return (Criterion) ReflectionUtils.invokeMethod(restrictionsMethod, null, params);
