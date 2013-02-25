@@ -325,11 +325,11 @@ class GroovyPagesGrailsPlugin {
 
                 // The tag library lookup class caches "tag -> taglib class"
                 // so we need to update it now.
-                def lookup = event.ctxgspTagLibraryLookup
+                def lookup = event.ctx.gspTagLibraryLookup
                 lookup.registerTagLib(taglibClass)
 
-                enhanceClasses([taglibClass.clazz], ctxinstanceTagLibraryApi)
-                WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctxgspTagLibraryLookup)
+                enhanceClasses([taglibClass.clazz], ctx.instanceTagLibraryApi)
+                WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.gspTagLibraryLookup)
             }
         } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
             enhanceClasses([event.source], ctx.instanceControllerTagLibraryApi)
