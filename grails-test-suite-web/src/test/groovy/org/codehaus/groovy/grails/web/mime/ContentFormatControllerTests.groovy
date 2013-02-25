@@ -19,7 +19,6 @@ class ContentFormatControllerTests extends AbstractGrailsControllerTests {
     protected void onSetUp() {
         ConvertersConfigurationHolder.clear()
         RequestContextHolder.setRequestAttributes(null)
-        MimeType.reset()
         gcl.parseClass("""
 
 grails.mime.use.accept.header = true
@@ -41,7 +40,6 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
     protected void tearDown() {
         super.tearDown()
         ConfigurationHolder.setConfig null
-        MimeType.reset()
     }
 
     void testFormatWithRenderAsXML() {

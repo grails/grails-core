@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.web.binding
 
 import grails.persistence.Entity
 
-import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -14,7 +13,6 @@ class JSONBindingTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
         RequestContextHolder.setRequestAttributes(null)
-        MimeType.reset()
 
         gcl.parseClass("""
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
@@ -39,11 +37,6 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
     @Override
     protected Collection<Class> getDomainClasses() {
         [Site, SiteMode]
-    }
-
-    protected void tearDown() {
-        super.tearDown()
-        MimeType.reset()
     }
 
     void testSimpleJSONBinding() {

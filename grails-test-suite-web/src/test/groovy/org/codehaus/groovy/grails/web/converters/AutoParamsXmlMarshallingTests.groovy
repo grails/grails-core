@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.web.converters
 import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
-import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -16,7 +15,6 @@ class AutoParamsXmlMarshallingTests extends AbstractGrailsControllerTests {
     protected void onSetUp() {
         ConvertersConfigurationHolder.clear()
         RequestContextHolder.setRequestAttributes(null)
-        MimeType.reset()
         gcl.parseClass("""
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       xml: ['text/xml', 'application/xml'],
@@ -34,11 +32,6 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
         gcl.parseClass '''
 import grails.persistence.*
 '''
-    }
-
-    protected void tearDown() {
-        super.tearDown()
-        MimeType.reset()
     }
 
     @Override

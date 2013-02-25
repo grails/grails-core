@@ -30,7 +30,6 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
     protected void tearDown() {
         config = null
         ConfigurationHolder.setConfig null
-        MimeType.reset()
     }
 
     void testXmlContentTypeWithCharset() {

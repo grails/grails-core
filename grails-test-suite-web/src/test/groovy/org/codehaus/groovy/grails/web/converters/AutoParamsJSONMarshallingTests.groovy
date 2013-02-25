@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.web.converters
 
 import grails.persistence.Entity
 
-import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
  /**
@@ -26,11 +25,6 @@ grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
                       json: 'application/json'
                     ]
         """, "Config")
-    }
-
-    protected void tearDown() {
-        super.tearDown()
-        MimeType.reset()
     }
 
     @Override

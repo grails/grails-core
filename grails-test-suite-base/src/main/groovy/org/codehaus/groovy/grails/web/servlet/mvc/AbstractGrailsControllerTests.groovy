@@ -16,7 +16,6 @@ import org.codehaus.groovy.grails.plugins.*
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -141,7 +140,6 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ExpandoMetaClass.disableGlobally()
 
         ConfigurationHolder.config = null
-        MimeType.reset()
         ApplicationHolder.application = null
         PluginManagerHolder.setPluginManager(null)
 
