@@ -15,6 +15,8 @@
  */
 package org.grails.plugins.tomcat
 
+import grails.util.Holders
+
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.util.Environment
 import grails.util.GrailsNameUtils
@@ -71,7 +73,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
     protected void configureAliases(Context context) {
         def aliases = []
-        def pluginManager = PluginManagerHolder.getPluginManager()
+        def pluginManager = Holders.getPluginManager()
 
         if (pluginManager != null) {
             for (plugin in pluginManager.userPlugins) {
