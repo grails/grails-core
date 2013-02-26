@@ -49,7 +49,7 @@ class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
     }
 
     @Override
-    void prepare() {
+    void prepare(Binding testExecutionContext, Map<String, Object> testOptions) {
         registryCleaner = org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner.createAndRegister()
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
         projectTestCompiler.packageTests()
@@ -76,7 +76,7 @@ class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
     }
 
     @Override
-    void cleanup() {
+    void cleanup(Binding testExecutionContext, Map<String, Object> testOptions) {
         PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
         appCtx?.close()
         registryCleaner.clean()

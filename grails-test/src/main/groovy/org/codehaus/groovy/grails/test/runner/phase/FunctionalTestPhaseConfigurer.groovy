@@ -54,10 +54,11 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
     }
 
     @Override
-    void prepare() {
+    void prepare(Binding testExecutionContext, Map<String, Object> testOptions) {
         grails.util.Holders.pluginManager = null
         grails.util.Holders.grailsApplication = null
 
+        warMode = testOptions.war ? true : false
         final packager = projectRunner.projectPackager
         packager.packageApplication()
         final isServerRunning = projectRunner.isServerRunning()
@@ -119,7 +120,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
     }
 
     @Override
-    void cleanup() {
+    void cleanup(Binding testExecutionContext, Map<String, Object> testOptions) {
         if (!warMode && !isForkedRun) {
             GrailsWebApplicationContext appCtx
             try {

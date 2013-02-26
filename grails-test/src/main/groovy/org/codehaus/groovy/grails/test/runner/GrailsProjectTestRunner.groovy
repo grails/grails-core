@@ -296,7 +296,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
                     // is easier to distinguish
                     buildEventListener.triggerEvent("TestPhaseStart", phase)
 
-                    configurer?.prepare()
+                    configurer?.prepare(testExecutionContext, testOptions)
 
                     // Now run all the tests registered for this phase.
                     for(GrailsTestType type in types) {
@@ -305,7 +305,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
                 }
                 finally {
                     // Perform any clean up required.
-                    configurer?.cleanup()
+                    configurer?.cleanup(testExecutionContext, testOptions)
                     testExecutionContext.setVariable("currentTestPhaseName", null)
                 }
 

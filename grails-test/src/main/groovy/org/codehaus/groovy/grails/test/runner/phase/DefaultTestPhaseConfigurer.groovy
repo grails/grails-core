@@ -25,11 +25,13 @@ import org.codehaus.groovy.grails.test.GrailsTestType
 class DefaultTestPhaseConfigurer implements TestPhaseConfigurer{
 
 
-    void prepare() {
+    @Override
+    void prepare(Binding testExecutionContext, Map<String, Object> testOptions) {
         // noop, subclasses can override
     }
 
-    void cleanup() {
+    @Override
+    void cleanup(Binding testExecutionContext, Map<String, Object> testOptions) {
         // noop, subclasses can override
     }
 }

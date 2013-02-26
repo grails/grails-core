@@ -24,10 +24,10 @@ interface TestPhaseConfigurer {
     /**
      * Preparation for the test phase
      */
-    void prepare()
+    void prepare(Binding testExecutionContext, Map<String, Object> testOptions)
 
     /**
      * Cleanup of the test phase
      */
-    void cleanup()
+    void cleanup(Binding testExecutionContext, Map<String, Object> testOptions)
 }
