@@ -22,11 +22,7 @@ import groovy.lang.Mixin;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -89,6 +85,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        if(classNode instanceof InnerClassNode) return;
         Class instanceImplementation = getInstanceImplementation();
 
         if (instanceImplementation != null) {
