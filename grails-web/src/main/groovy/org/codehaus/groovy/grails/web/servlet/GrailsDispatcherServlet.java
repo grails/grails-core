@@ -281,8 +281,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
                 // Expose current RequestAttributes to current thread.
                 previousRequestAttributes = RequestContextHolder.currentRequestAttributes();
+                GrailsWebRequest previousWebRequest = GrailsWebRequest.lookup(request);
                 requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
-                copyParamsFromPreviousRequest(previousRequestAttributes, requestAttributes);
+                if( previousWebRequest != null) {
+                    copyParamsFromPreviousRequest(previousWebRequest, requestAttributes);
+                }
 
                 // Update the current web request.
                 WebUtils.storeGrailsWebRequest(requestAttributes);
