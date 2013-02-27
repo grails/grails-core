@@ -895,4 +895,52 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         def pub = NamedCriteriaPublication.recentPublications.findWhere(title: 'Book Number 2')
         assertEquals 'Book Number 2', pub.title
     }
+
+
+    //see        GRAILS-8963
+    void testClosureAfterList(){
+        def now = new Date()
+
+        6.times { cnt ->
+            assert new NamedCriteriaPublication(title: "Some Old Book #${cnt}",
+                datePublished: now - 1000, paperback: true).save(failOnError: true).id
+            assert new NamedCriteriaPublication(title: "Some New Book #${cnt}",
+                datePublished: now, paperback: true).save(failOnError: true).id
+        }
+
+        def results = NamedCriteriaPublication.recentPublications.list(max: 10, offset: 0){
+            eq 'paperback', true
+        }
+
+        assertEquals PagedResultList.class, results.class
+        assertEquals 6, results.size()
+
+        results = NamedCriteriaPublication.recentPublications.list([max: 10, offset: 0]){
+            eq 'paperback', true
+        }
+
+        assertEquals PagedResultList.class, results.class
+        assertEquals 6, results.size()
+
+        //this will be an ArrayList because there are no list arguments
+        results = NamedCriteriaPublication.recentPublications.list(){
+            eq 'paperback', true
+        }
+        assertEquals 6, results.size()
+
+        results = NamedCriteriaPublication.recentPublications.listDistinct(max: 10, offset: 0){
+            eq 'paperback', true
+        }
+
+        assertEquals PagedResultList.class, results.class
+        assertEquals 6, results.size()
+
+        //this will be an arrayList because there are no list arguments
+        results = NamedCriteriaPublication.recentPublications.listDistinct(){
+            eq 'paperback', true
+        }
+        assertEquals 6, results.size()
+    }
+
+
 }
