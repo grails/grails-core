@@ -243,10 +243,23 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
+    private static boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
+    }
+
+    @CompileStatic
     protected List<String> buildProcessCommand(ExecutionContext executionContext, String classpathString, boolean isReserve = false) {
         File tempFile = storeExecutionContext(executionContext)
+        final javaHomeEnv = System.getenv("JAVA_HOME")
 
-        List<String> cmd = ["java", "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
+        def javaCommand
+        if (javaHomeEnv && !isWindows()) {
+            javaCommand = new File(javaHomeEnv, "bin/java").canonicalPath
+        }
+        else {
+            javaCommand = "java" // assume it is correctly configured using PATH
+        }
+        List<String> cmd = [javaCommand, "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
         if (debug && !isReserve) {
             cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", debugArgs])
         }
