@@ -30,6 +30,7 @@ import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
 import org.apache.log4j.PatternLayout
+import org.apache.log4j.PropertyConfigurator
 import org.apache.log4j.RollingFileAppender
 import org.apache.log4j.SimpleLayout
 import org.apache.log4j.helpers.LogLog
@@ -56,6 +57,7 @@ class Log4jConfig {
     private Map appenders = [:]
     private ConfigObject config
 
+    @CompileStatic
     Log4jConfig(ConfigObject config) {
         this.config = config
     }
@@ -66,9 +68,12 @@ class Log4jConfig {
             return
         }
 
-        LogManager.resetConfiguration()
         Object o = config.get("log4j")
         Log4jConfig log4jConfig = new Log4jConfig(config)
+        LogManager.resetConfiguration()
+        if(Environment.isFork()) {
+            initialiseDefaultLog4jConfiguration()
+        }
         if (o instanceof Closure) {
             log4jConfig.configure((Closure<?>)o)
         }
@@ -83,6 +88,17 @@ class Log4jConfig {
             log4jConfig.configure()
         }
     }
+
+    @CompileStatic
+    static void initialiseDefaultLog4jConfiguration() {
+        def defaultLog4j = new Properties()
+        defaultLog4j."log4j.rootLogger"="error, stdout"
+        defaultLog4j."log4j.appender.stdout"="org.apache.log4j.ConsoleAppender"
+        defaultLog4j."log4j.appender.stdout.layout"="org.apache.log4j.PatternLayout"
+
+        PropertyConfigurator.configure(defaultLog4j)
+    }
+
 
     def propertyMissing(String name) {
         if (LAYOUTS.containsKey(name)) {

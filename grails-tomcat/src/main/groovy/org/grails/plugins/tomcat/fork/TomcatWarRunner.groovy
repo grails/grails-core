@@ -16,6 +16,7 @@
 package org.grails.plugins.tomcat.fork
 
 import grails.build.logging.GrailsConsole
+import grails.util.Metadata
 import groovy.transform.CompileStatic
 
 import org.apache.catalina.LifecycleException
@@ -71,6 +72,7 @@ class TomcatWarRunner extends TomcatServer{
     @Override
     protected void doStart(String host, int httpPort, int httpsPort) {
 
+        Metadata.getCurrent().put(Metadata.WAR_DEPLOYED, "true")
         tomcat.port = httpPort
         tomcat.setSilent(true)
 

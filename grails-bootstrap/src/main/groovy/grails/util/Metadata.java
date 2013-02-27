@@ -306,6 +306,15 @@ public class Metadata extends Properties {
         return warDeployed;
     }
 
+    @Override
+    public synchronized Object put(Object key, Object o2) {
+        try {
+            return super.put(key, o2);
+        } finally {
+            afterLoading();
+        }
+    }
+
     private static void closeQuietly(Closeable c) {
         if (c != null) {
             try {
