@@ -261,7 +261,7 @@ class DataSourceGrailsPlugin {
             shutdownDatasource dataSource, name, appCtx
         }
 
-        if (Metadata.current.isWarDeployed()) {
+        if (Metadata.getCurrent().isWarDeployed() || Environment.isFork()) {
             deregisterJDBCDrivers()
         }
     }
@@ -307,13 +307,11 @@ class DataSourceGrailsPlugin {
     }
 
     private void deregisterJDBCDrivers() {
-        for (Driver driver in DriverManager.drivers) {
-            try {
-                DriverManager.deregisterDriver(driver)
-            }
-            catch (e) {
-                log.debug "Error deregistering JDBC driver [$driver]: $e.message", e
-            }
+        try {
+            DataSourceUtils.clearJdbcDriverRegistrations()
+        }
+        catch (e) {
+            log.debug "Error deregistering JDBC driver [$driver]: $e.message", e
         }
     }
 }
