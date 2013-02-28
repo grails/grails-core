@@ -49,7 +49,7 @@ class PersonController {
 
         controller.params.name = "Joe"
         controller.params.age= "45"
-        controller.params.'address.city' = 'Brighton'
+        controller.params.address = [city: 'Brighton']
 
         def model = controller.save()
 

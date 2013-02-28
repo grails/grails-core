@@ -89,6 +89,7 @@ class Pet {
         params.birthDate_year = '1952'
         params.birthDate_day = '11'
         params.birthDate_month = '3'
+        params.birthDate = 'struct'
 
         person.properties = params
         assertEquals 'Douglas Adams', person.name
@@ -98,6 +99,7 @@ class Pet {
         params.birthDate_year = ''
         params.birthDate_day = ''
         params.birthDate_month = ''
+        params.birthDate = 'struct'
 
         person.properties = params
         assertEquals 'Douglas Adams', person.name
@@ -136,8 +138,7 @@ class Pet {
 
         def params = c.params
         params.title = "The Stand"
-        params.'author.placeOfBirth.name' = 'Maine'
-        params.'author.name' = "Stephen King"
+        params.author = [placeOfBirth: [name: 'Maine'], name: 'Stephen King']
 
         b.properties = params
 
@@ -255,7 +256,7 @@ class Pet {
 
         authorClass.metaClass.static.get = { Serializable id ->
             def result = authorClass.newInstance()
-            result.id = id
+            result.id = id as long
             result.name = "Mocked ${id}"
             result
         }

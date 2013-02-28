@@ -39,6 +39,7 @@ target
 /grails-core/bin/
 /grails-crud/bin/
 /grails-docs/bin/
+/grails-databinding/bin/
 /grails-hibernate/bin/
 /grails-plugin-async/bin/
 /grails-plugin-codecs/bin/

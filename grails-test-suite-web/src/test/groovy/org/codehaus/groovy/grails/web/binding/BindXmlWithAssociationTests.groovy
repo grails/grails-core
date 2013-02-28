@@ -1,8 +1,8 @@
 package org.codehaus.groovy.grails.web.binding
 
-import grails.test.mixin.TestFor
 import grails.persistence.Entity
 import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
 
 @TestFor(PersonController)
 @Mock([TargetPerson, Book])
@@ -32,6 +32,7 @@ class BindXmlWithAssociationTests {
         assert person != null
         assert person.name == 'xyz'
         assert person.book != null
+        assert person.book.id == 1
         assert person.book.title == 'Blah'
         assert person.book.pages == 300
     }
@@ -64,4 +65,8 @@ class Book {
 
     String title
     int pages
+    
+    static constraints = {
+        id bindable: true
+    }
 }
