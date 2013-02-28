@@ -81,32 +81,26 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
         this.applicationContext = applicationContext;
     }
 
-    @Override
     public String getHeader(String headerName) {
         return targetWebRequest.getHeader(headerName);
     }
 
-    @Override
     public String[] getHeaderValues(String headerName) {
         return targetWebRequest.getHeaderValues(headerName);
     }
 
-    @Override
     public Iterator<String> getHeaderNames() {
         return targetWebRequest.getHeaderNames();
     }
 
-    @Override
     public String getParameter(String paramName) {
         return targetWebRequest.getParameter(paramName);
     }
 
-    @Override
     public String[] getParameterValues(String paramName) {
         return targetWebRequest.getParameterValues(paramName);
     }
 
-    @Override
     public Iterator<String> getParameterNames() {
         return targetWebRequest.getParameterNames();
     }
@@ -116,7 +110,6 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
      *
      * @return An instance of GrailsParameterMap
      */
-    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map getParameterMap() {
         if (params == null) {
@@ -125,7 +118,6 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
         return params;
     }
 
-    @Override
     public Locale getLocale() {
         return targetWebRequest.getLocale();
     }
@@ -177,7 +169,6 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
      * Returns the context path of the request.
      * @return the path
      */
-    @Override
     public String getContextPath() {
         final HttpServletRequest request = getCurrentRequest();
         String appUri = (String) request.getAttribute(GrailsApplicationAttributes.APP_URI_ATTRIBUTE);
@@ -187,37 +178,30 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
         return appUri;
     }
 
-    @Override
     public String getRemoteUser() {
         return targetWebRequest.getRemoteUser();
     }
 
-    @Override
     public Principal getUserPrincipal() {
         return targetWebRequest.getUserPrincipal();
     }
 
-    @Override
     public boolean isUserInRole(String role) {
         return targetWebRequest.isUserInRole(role);
     }
 
-    @Override
     public boolean isSecure() {
         return targetWebRequest.isSecure();
     }
 
-    @Override
     public boolean checkNotModified(long lastModifiedTimestamp) {
         return targetWebRequest.checkNotModified(lastModifiedTimestamp);
     }
 
-    @Override
     public boolean checkNotModified(String eTag) {
         return targetWebRequest.checkNotModified(eTag);
     }
 
-    @Override
     public String getDescription(boolean includeClientInfo) {
         return targetWebRequest.getDescription(includeClientInfo);
     }
@@ -430,62 +414,50 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
         return baseUrl;
     }
 
-    @Override
     public Object getNativeRequest() {
         return targetWebRequest.getNativeRequest();
     }
 
-    @Override
     public Object getNativeResponse() {
         return targetWebRequest.getNativeResponse();
     }
 
-    @Override
     public <T> T getNativeRequest(Class<T> requiredType) {
         return targetWebRequest.getNativeRequest(requiredType);
     }
 
-    @Override
     public <T> T getNativeResponse(Class<T> requiredType) {
         return targetWebRequest.getNativeResponse(requiredType);
     }
 
-    @Override
     public Object getAttribute(String name, int scope) {
         return targetWebRequest.getAttribute(name, scope);
     }
 
-    @Override
     public void setAttribute(String name, Object value, int scope) {
         targetWebRequest.setAttribute(name, value, scope);
     }
 
-    @Override
     public void removeAttribute(String name, int scope) {
         targetWebRequest.removeAttribute(name, scope);
     }
 
-    @Override
     public String[] getAttributeNames(int scope) {
         return targetWebRequest.getAttributeNames(scope);
     }
 
-    @Override
     public void registerDestructionCallback(String name, Runnable callback, int scope) {
         targetWebRequest.registerDestructionCallback(name, callback, scope);
     }
 
-    @Override
     public Object resolveReference(String key) {
         return targetWebRequest.resolveReference(key);
     }
 
-    @Override
     public String getSessionId() {
         return targetWebRequest.getSessionId();
     }
 
-    @Override
     public Object getSessionMutex() {
         return targetWebRequest.getSessionMutex();
     }
