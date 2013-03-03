@@ -65,6 +65,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private ApplicationContext applicationContext;
     private String baseUrl;
 
+	private Set<Integer> htmlEncodedIdentityHashCodes=new HashSet<Integer>();
+
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
         attributes = new DefaultGrailsApplicationAttributes(servletContext);
@@ -348,5 +350,13 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
             baseUrl = sb.toString();
         }
         return baseUrl;
+    }
+
+    public boolean isHtmlEscaped(String string) {
+        return htmlEncodedIdentityHashCodes.contains(System.identityHashCode(string));
+    }
+
+    public void registerHtmlEscaped(String escaped) {
+        htmlEncodedIdentityHashCodes.add(System.identityHashCode(escaped));
     }
 }

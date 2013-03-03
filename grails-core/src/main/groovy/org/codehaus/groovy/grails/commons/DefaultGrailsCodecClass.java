@@ -16,9 +16,11 @@
 package org.codehaus.groovy.grails.commons;
 
 import groovy.lang.Closure;
-import groovy.lang.MetaMethod;
 
-import org.codehaus.groovy.runtime.MethodClosure;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+
+import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Jeff Brown
@@ -33,8 +35,8 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     public DefaultGrailsCodecClass(Class<?> clazz) {
         super(clazz, CODEC);
 
-        encodeMethod = getMethodOrClosureMethod("encode");
-        decodeMethod = getMethodOrClosureMethod("decode");
+        encodeMethod = getMethodOrClosureMethod(clazz, "encode");
+        decodeMethod = getMethodOrClosureMethod(clazz, "decode");
     }
 
     public Closure<?> getDecodeMethod() {
@@ -44,18 +46,43 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     public Closure<?> getEncodeMethod() {
         return encodeMethod;
     }
+    
+    private static class MethodCallerClosure extends Closure {
+        private static final long serialVersionUID = 1L;
+        Method method;
+        public MethodCallerClosure(Object owner, Method method) {
+            super(owner);
+            this.method = method;
+            maximumNumberOfParameters = 1;
+            parameterTypes = new Class[]{Object.class};
+        }
+        
+        public Method getMethod() {
+            return method;
+        }
+        
+        protected Object doCall(Object arguments) {
+            return ReflectionUtils.invokeMethod(method, !Modifier.isStatic(method.getModifiers()) ? getOwner() : null, (Object[])arguments);
+        }
 
-    private Closure<?> getMethodOrClosureMethod(String methodName) {
+        @Override
+        public Object call(Object... args) {
+            return doCall(args);
+        }
+    }
+
+    private Closure<?> getMethodOrClosureMethod(Class<?> clazz, String methodName) {
         Closure<?> closure = (Closure<?>) getPropertyOrStaticPropertyOrFieldValue(methodName, Closure.class);
         if (closure == null) {
-            MetaMethod method = getMetaClass().getMetaMethod(methodName, new Object[]{Object.class});
-            if (method != null) {
-                if (method.isStatic()) {
-                    closure = new MethodClosure(getClazz(), methodName);
+            Method method = ReflectionUtils.findMethod(clazz, methodName, null);
+            if(method != null) {
+                Object owner;
+                if(Modifier.isStatic(method.getModifiers())) {
+                    owner=clazz;
+                } else {
+                    owner=getReferenceInstance();
                 }
-                else {
-                    closure = new MethodClosure(getReferenceInstance(), methodName);
-                }
+                return new MethodCallerClosure(owner, method);
             }
         }
         return closure;
