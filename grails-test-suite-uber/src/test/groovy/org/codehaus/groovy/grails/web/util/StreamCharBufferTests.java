@@ -501,12 +501,4 @@ public class StreamCharBufferTests extends TestCase {
             }
         }
     }
-
-    public void testHtmlEncode() throws IOException {
-        StreamCharBuffer charBuffer = new StreamCharBuffer();
-        Writer writer=charBuffer.getWriter();
-        writer.write("\"Hello\" world!");
-        writer.close();
-        assertEquals("&quot;Hello&quot; world!", charBuffer.encodeAsHTML().toString());
-    }
 }

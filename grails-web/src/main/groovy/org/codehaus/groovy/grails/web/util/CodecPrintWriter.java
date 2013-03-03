@@ -12,6 +12,7 @@ import org.codehaus.groovy.runtime.GStringImpl;
 
 public class CodecPrintWriter extends GrailsPrintWriter {
     private Closure<?> encodeClosure;
+    private StreamCharBuffer.Encoder encoder;
 
     public CodecPrintWriter(GrailsApplication grailsApplication, Writer out, Class<?> codecClass) {
         super(out);
@@ -39,6 +40,7 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         if (grailsApplication != null && codecClass != null) {
             GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
             encodeClosure = codecArtefact.getEncodeMethod();
+            encoder=StreamCharBuffer.createEncoder(codecArtefact.getName(), encodeClosure);
         }
     }
 
