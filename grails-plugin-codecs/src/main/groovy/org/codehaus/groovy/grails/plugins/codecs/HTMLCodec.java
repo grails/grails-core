@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import java.util.Set;
+
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
@@ -39,8 +41,8 @@ public class HTMLCodec {
 
         public void markEncoded(String string) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if (webRequest != null && "HTML".equals(getCodecName())) {
-                webRequest.registerHtmlEscaped(string);
+            if (webRequest != null) {
+                webRequest.registerEncodedWith("HTML", string);
             }
         }
     }
@@ -58,12 +60,15 @@ public class HTMLCodec {
                 return "";
             }
             GrailsWebRequest webRequest=GrailsWebRequest.lookup();
-            if(webRequest != null && webRequest.isHtmlEscaped(targetSrc)) {
-                return targetSrc;
+            if(webRequest != null) {
+                Set<String> tags = webRequest.getEncodingTagsFor(targetSrc);
+                if(tags != null && tags.contains("HTML")) {
+                    return targetSrc;
+                }
             }
             String escaped = HtmlUtils.htmlEscape(targetSrc);
             if(webRequest != null)
-                webRequest.registerHtmlEscaped(escaped);
+                webRequest.registerEncodedWith("HTML", escaped);
             return escaped;
         }
         return null;
