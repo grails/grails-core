@@ -39,6 +39,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.Encodeable;
+import org.codehaus.groovy.grails.commons.Encoder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
@@ -223,7 +225,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamCharBuffer implements Writable, CharSequence, Externalizable {
+public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable {
     static final long serialVersionUID = 5486972234419632945L;
     private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
 
@@ -2131,23 +2133,17 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
         public void write(Encoder encoder, StreamCharBuffer subBuffer) throws IOException;
     }
     
-    public static interface Encoder {
-        public String getCodecName();
-        public Object encode(Object o);
-        public void markEncoded(String string);
-    }
-    
     public static Encoder createEncoder(final String codecName, final Closure<?> encodeClosure) {
         return new Encoder() {
             public String getCodecName() {
                 return codecName;
             }
 
-            public Object encode(Object o) {
-                return encodeClosure.call(o);
+            public CharSequence encode(Object o) {
+                return (CharSequence)encodeClosure.call(o);
             }
 
-            public void markEncoded(String string) {
+            public void markEncoded(CharSequence string) {
                 GrailsWebRequest webRequest = GrailsWebRequest.lookup();
                 if (webRequest != null) {
                     webRequest.registerEncodedWith(getCodecName(), string);
@@ -2162,5 +2158,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
     public void setTagResolver(EncodingTagsResolver tagResolver) {
         this.tagsResolver = tagResolver;
+    }
+
+    public CharSequence encode(Encoder encoder) {
+        return encodeToBuffer(encoder);
     }
 }
