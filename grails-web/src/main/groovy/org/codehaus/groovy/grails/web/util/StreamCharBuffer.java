@@ -2033,7 +2033,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     public static final class EncodingTags implements Serializable {
         private static final long serialVersionUID = 1L;
         final Set<String> tags;
-        final Map<String,Encoder> encoders;
+        transient final Map<String,Encoder> encoders;
         
         public EncodingTags(Set<String> tags, Map<String,Encoder> encoders) {
             this.tags = tags;
