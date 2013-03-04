@@ -96,26 +96,26 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             if (target instanceof Encodeable) {
                 return ((Encodeable)target).encode(this);
             }
-            
-            String targetSrc = String.valueOf(target);
-            if(targetSrc.length() == 0) {
-                return "";
-            }
-            EncodingState encodingState=encodingStateLookup.lookup();
-            if(encodingState != null) {
-                Set<String> tags = encodingState.getEncodingTagsFor(targetSrc);
+
+            EncodingState encodingState=lookupEncodingState();
+            if(encodingState != null && target instanceof CharSequence) {
+                Set<String> tags = encodingState.getEncodingTagsFor((CharSequence)target);
                 if(tags != null && tags.contains(codecName)) {
-                    return targetSrc;
+                    return (CharSequence)target;
                 }
             }
-            String encoded = String.valueOf(callMethod(targetSrc));
-            if(encodingState != null)
-                encodingState.registerEncodedWith(codecName, encoded);
-            return encoded;
+            Object encoded = callMethod(target);
+            if(encodingState != null && encoded instanceof CharSequence)
+                encodingState.registerEncodedWith(codecName, (CharSequence)encoded);
+            return (CharSequence)encoded;
+        }
+
+        protected EncodingState lookupEncodingState() {
+            return encodingStateLookup != null ? encodingStateLookup.lookup() : null;
         }
 
         public void markEncoded(CharSequence string) {
-            EncodingState encodingState=encodingStateLookup.lookup();
+            EncodingState encodingState=lookupEncodingState();
             if(encodingState != null) {
                 encodingState.registerEncodedWith(codecName, string);
             }
