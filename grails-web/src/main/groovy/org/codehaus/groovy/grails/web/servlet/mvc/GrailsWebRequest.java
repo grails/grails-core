@@ -28,6 +28,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
+import org.codehaus.groovy.grails.commons.EncodingState;
+import org.codehaus.groovy.grails.commons.EncodingStateLookup;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
@@ -53,7 +56,7 @@ import org.springframework.web.util.UrlPathHelper;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback {
+public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback, EncodingState {
 
     private GrailsApplicationAttributes attributes;
     private GrailsParameterMap params;
@@ -361,7 +364,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         return identityHashCodes;
     }
 
-    public Set<String> getEncodingTagsFor(String string) {
+    public Set<String> getEncodingTagsFor(CharSequence string) {
         int identityHashCode = System.identityHashCode(string);
         Set<String> result=null;
         for(Map.Entry<String, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
@@ -379,11 +382,22 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         return result;
     }
     
-    public boolean isEncodedWith(String encoding, String string) {
+    public boolean isEncodedWith(String encoding, CharSequence string) {
         return getIdentityHashCodesForEncoding(encoding).contains(System.identityHashCode(string));
     }
 
-    public void registerEncodedWith(String encoding, String escaped) {
+    public void registerEncodedWith(String encoding, CharSequence escaped) {
         getIdentityHashCodesForEncoding(encoding).add(System.identityHashCode(escaped));
     }
+    
+    private static final class DefaultEncodingStateLookup implements EncodingStateLookup {
+        public EncodingState lookup() {
+            return GrailsWebRequest.lookup();
+        }
+    }
+    
+    static {
+        DefaultGrailsCodecClass.setEncodingStateLookup(new DefaultEncodingStateLookup());
+    }
+
 }
