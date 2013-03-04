@@ -14,7 +14,6 @@ class StreamCharBufferSpec extends Specification {
     StreamCharBuffer buffer
     CodecPrintWriter codecOut
     GrailsPrintWriter out
-    StreamCharBuffer.Encoder htmlEncoder
 
     def setup() {
         buffer=new StreamCharBuffer()
@@ -27,7 +26,6 @@ class StreamCharBufferSpec extends Specification {
         GrailsWebUtil.bindMockWebRequest()
         new CodecsGrailsPlugin().configureCodecMethods(codecClass)
         codecOut=new CodecPrintWriter(grailsApplication, out, HTMLCodec)
-        htmlEncoder = StreamCharBuffer.createEncoder(codecClass.name, codecClass.encodeMethod)
     }
 
     def "stream char buffer should support encoding"() {

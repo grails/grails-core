@@ -14,11 +14,7 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
-import java.util.Set;
-
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.util.HtmlUtils;
@@ -30,46 +26,9 @@ import org.springframework.web.util.HtmlUtils;
  * @since 1.1
  */
 public class HTMLCodec {
-    private static class HTMLEncoder implements StreamCharBuffer.Encoder {
-        public String getCodecName() {
-            return "HTML";
-        }
-
-        public Object encode(Object o) {
-            return HTMLCodec.encode(o);
-        }
-
-        public void markEncoded(String string) {
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if (webRequest != null) {
-                webRequest.registerEncodedWith("HTML", string);
-            }
-        }
-    }
-    
-    private static HTMLEncoder encoderInstance=new HTMLEncoder(); 
-
     public static CharSequence encode(Object target) {
         if (target != null) {
-            if (target instanceof StreamCharBuffer) {
-                return ((StreamCharBuffer)target).encodeToBuffer(encoderInstance);
-            }
-            
-            String targetSrc = String.valueOf(target);
-            if(targetSrc.length() == 0) {
-                return "";
-            }
-            GrailsWebRequest webRequest=GrailsWebRequest.lookup();
-            if(webRequest != null) {
-                Set<String> tags = webRequest.getEncodingTagsFor(targetSrc);
-                if(tags != null && tags.contains("HTML")) {
-                    return targetSrc;
-                }
-            }
-            String escaped = HtmlUtils.htmlEscape(targetSrc);
-            if(webRequest != null)
-                webRequest.registerEncodedWith("HTML", escaped);
-            return escaped;
+            return HtmlUtils.htmlEscape(target.toString());
         }
         return null;
     }
