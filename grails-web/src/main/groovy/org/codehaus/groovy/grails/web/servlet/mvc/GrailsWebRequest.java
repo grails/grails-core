@@ -65,7 +65,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private ApplicationContext applicationContext;
     private String baseUrl;
 
-	private Set<Integer> htmlEncodedIdentityHashCodes=new HashSet<Integer>();
+	private Map<String,Set<Integer>> encodingTagIdentityHashCodes=new HashMap<String, Set<Integer>>();
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
@@ -352,11 +352,38 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         return baseUrl;
     }
 
-    public boolean isHtmlEscaped(String string) {
-        return htmlEncodedIdentityHashCodes.contains(System.identityHashCode(string));
+    private Set<Integer> getIdentityHashCodesForEncoding(String encoding) {
+        Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoding);
+        if(identityHashCodes==null) {
+            identityHashCodes=new HashSet<Integer>();
+            encodingTagIdentityHashCodes.put(encoding, identityHashCodes);
+        }
+        return identityHashCodes;
     }
 
-    public void registerHtmlEscaped(String escaped) {
-        htmlEncodedIdentityHashCodes.add(System.identityHashCode(escaped));
+    public Set<String> getEncodingTagsFor(String string) {
+        int identityHashCode = System.identityHashCode(string);
+        Set<String> result=null;
+        for(Map.Entry<String, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
+            if(entry.getValue().contains(identityHashCode)) {
+                if(result==null) {
+                    result=Collections.singleton(entry.getKey());
+                } else {
+                    if (result.size()==1){
+                        result=new HashSet<String>(result);
+                    }   
+                    result.add(entry.getKey());
+                }
+            }
+        }
+        return result;
+    }
+    
+    public boolean isEncodedWith(String encoding, String string) {
+        return getIdentityHashCodesForEncoding(encoding).contains(System.identityHashCode(string));
+    }
+
+    public void registerEncodedWith(String encoding, String escaped) {
+        getIdentityHashCodesForEncoding(encoding).add(System.identityHashCode(escaped));
     }
 }

@@ -2149,8 +2149,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
             public void markEncoded(String string) {
                 GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-                if (webRequest != null && "HTML".equals(getCodecName())) {
-                    webRequest.registerHtmlEscaped(string);
+                if (webRequest != null) {
+                    webRequest.registerEncodedWith(getCodecName(), string);
                 }
             }
         };
