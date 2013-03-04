@@ -15,28 +15,50 @@
  */
 package org.codehaus.groovy.grails.test.support
 
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.springframework.context.ApplicationContext
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.DefaultTransactionDefinition
+import org.springframework.transaction.support.TransactionSynchronizationManager
 
 /**
  * Establishes a rollback only transaction for running a test in.
  */
 class GrailsTestTransactionInterceptor {
 
+
     static final String TRANSACTIONAL = "transactional"
 
     ApplicationContext applicationContext
-    protected final PlatformTransactionManager transactionManager
-    protected TransactionStatus transactionStatus
+    protected Map<String,TransactionStatus> transactionStatuses
+    protected Map<String,PlatformTransactionManager> transactionManagers
 
     GrailsTestTransactionInterceptor(ApplicationContext applicationContext) {
         this.applicationContext = applicationContext
+        this.transactionManagers = [:]
+        this.transactionStatuses = [:]
 
-        if (applicationContext.containsBean("transactionManager")) {
-            transactionManager = applicationContext.transactionManager
+        def datasourceNames = []
+
+        if (applicationContext.containsBean('dataSource')) {
+            datasourceNames << GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+        }
+
+        for (name in applicationContext.grailsApplication.config.keySet()) {
+            if (name.startsWith('dataSource_')) {
+                datasourceNames << name - 'dataSource_'
+            }
+        }
+
+        for (datasourceName in datasourceNames) {
+            boolean isDefault = datasourceName == GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+            String suffix = isDefault ? '' : '_' + datasourceName
+
+            if (applicationContext.containsBean("transactionManager$suffix")) {
+                transactionManagers[datasourceName] = applicationContext."transactionManager$suffix"
+            }
         }
     }
 
@@ -44,15 +66,13 @@ class GrailsTestTransactionInterceptor {
      * Establishes a transaction.
      */
     void init() {
-        if (!transactionManager) {
-            return
-        }
-
-        if (transactionStatus == null) {
-            transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition())
-        }
-        else {
-            throw new RuntimeException("init() called on test transaction interceptor during transaction")
+        TransactionSynchronizationManager.initSynchronization()
+        transactionManagers.each{ datasourceName, PlatformTransactionManager transactionManager ->
+            if ( transactionStatuses[datasourceName] == null ) {
+                transactionStatuses[datasourceName] = transactionManager.getTransaction(new DefaultTransactionDefinition())
+            } else {
+                throw new RuntimeException("init() called on test transaction interceptor during transaction for datasource $datasourceName")
+            }
         }
     }
 
@@ -60,14 +80,13 @@ class GrailsTestTransactionInterceptor {
      * Rolls back the current transaction.
      */
     void destroy() {
-        if (!transactionManager) {
-            return
+        transactionManagers.each{ datasourceName, PlatformTransactionManager transactionManager ->
+            if (transactionStatuses[datasourceName]) {
+                transactionManager.rollback(transactionStatuses[datasourceName])
+                transactionStatuses[datasourceName] = null
+            }
         }
-
-        if (transactionStatus) {
-            transactionManager.rollback(transactionStatus)
-            transactionStatus = null
-        }
+        TransactionSynchronizationManager.clearSynchronization()
     }
 
     /**
