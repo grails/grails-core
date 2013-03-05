@@ -155,7 +155,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     private Closure<?> getMethodOrClosureMethod(Class<?> clazz, String methodName, boolean encode) {
         Closure<?> closure = (Closure<?>) getPropertyOrStaticPropertyOrFieldValue(methodName, Closure.class);
         if (closure == null) {
-            Method method = ReflectionUtils.findMethod(clazz, methodName, null);
+            Method method = ReflectionUtils.findMethod(clazz, methodName, (Class<?>[])null);
             if(method != null) {
                 Object owner;
                 if(Modifier.isStatic(method.getModifiers())) {
