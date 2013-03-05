@@ -100,7 +100,7 @@ task sourcesJars(type: Sync) {
 
 task pluginsFromRepo {
     ext.plugins = [
-        resources: "1.1.6",
+        resources: "1.2",
         webxml: "1.4.1",
         jquery: "1.9.1",
         'database-migration': "1.3.2",
