@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.util
 
-import grails.util.GrailsWebUtil;
+import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -36,6 +36,15 @@ class StreamCharBufferSpec extends Specification {
         buffer.toString() == "Hello world &amp; hi"
     }
 
+    def "double encoding should be prevented"() {
+        when:
+        def hello="Hello world & hi".encodeAsHTML().encodeAsHTML()
+        codecOut << hello
+        then:
+        hello == "Hello world &amp; hi"
+        buffer.toString() == "Hello world &amp; hi"
+    }
+    
     def "prevent double encoding of joined buffers"() {
         when:
         def hello="Hello world & hi".encodeAsHTML()
@@ -62,4 +71,21 @@ class StreamCharBufferSpec extends Specification {
         buffer.toString() == "Hello world &amp; hi&lt;script&gt;"
     }
 
+    def "prevent double encoding of SCBs"() {
+        when:
+        def hello="Hello world & hi"
+        def buffer2=new StreamCharBuffer()
+        def writer = new GrailsPrintWriter(buffer2.writer)
+        writer << hello
+        writer.flush()
+        def buffer3=new StreamCharBuffer()
+        def helloEncoded = buffer2.encodeAsHTML().encodeAsHTML()
+        def writer2 = new GrailsPrintWriter(buffer3.writer)
+        writer2 << helloEncoded
+        writer2 << "<script>"
+        codecOut << buffer3
+        then:
+        helloEncoded.toString() == "Hello world &amp; hi"
+        buffer.toString() == "Hello world &amp; hi&lt;script&gt;"
+    }
 }

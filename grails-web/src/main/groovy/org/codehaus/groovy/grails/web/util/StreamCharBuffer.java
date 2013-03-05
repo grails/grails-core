@@ -849,7 +849,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if(b==null || len <= 0) {
                 return;
             }
-            if(currentTags==null || !currentTags.hasTag(encoder.getCodecName())) {
+            if(encoder != null && (currentTags==null || !currentTags.hasTag(encoder.getCodecName()))) {
                 EncodingTags newTags = (currentTags != null) ? currentTags.appendToNew(encoder) : EncodingTags.createNew(encoder);
                 String encoded = String.valueOf(encoder.encode(String.valueOf(b, off, len)));                
                 write(newTags, encoded, 0, encoded.length());
@@ -941,7 +941,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if(str==null || len <= 0) {
                 return;
             }
-            if(currentTags==null || !currentTags.hasTag(encoder.getCodecName())) {
+            if(encoder != null && (currentTags==null || !currentTags.hasTag(encoder.getCodecName()))) {
                 EncodingTags newTags = (currentTags != null) ? currentTags.appendToNew(encoder) : EncodingTags.createNew(encoder);
                 String source;
                 if(off==0 && len==str.length()) {
@@ -997,7 +997,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                 subBuffer.addParentBuffer(StreamCharBuffer.this);
             }
             else {
-                subBuffer.writeToImpl(this,false,false);
+                subBuffer.encodeTo(this,null);
             }
         }
 
@@ -2047,15 +2047,19 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         public EncodingTags appendToNew(Encoder encoder) {
-            Set<String> newTags=new LinkedHashSet<String>();
-            newTags.addAll(tags);
-            newTags.add(encoder.getCodecName());
-            Map<String,Encoder> allEncoders=new HashMap<String, Encoder>();
-            if(encoders != null) {
-                allEncoders.putAll(encoders);
+            if(encoder != null) {
+                Set<String> newTags=new LinkedHashSet<String>();
+                newTags.addAll(tags);
+                newTags.add(encoder.getCodecName());
+                Map<String,Encoder> allEncoders=new HashMap<String, Encoder>();
+                if(encoders != null) {
+                    allEncoders.putAll(encoders);
+                }
+                allEncoders.put(encoder.getCodecName(), encoder);
+                return new EncodingTags(newTags, allEncoders);
+            } else {
+                return new EncodingTags(tags, encoders);
             }
-            allEncoders.put(encoder.getCodecName(), encoder);
-            return new EncodingTags(newTags, allEncoders);
         }
         
         public EncodingTags appendToNew(String tag) {
