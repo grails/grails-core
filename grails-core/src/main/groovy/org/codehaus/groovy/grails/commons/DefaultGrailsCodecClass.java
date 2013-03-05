@@ -21,6 +21,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
+import org.codehaus.groovy.grails.support.encoding.Encodeable;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodingState;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateLookup;
 import org.springframework.util.ReflectionUtils;
 
 /**

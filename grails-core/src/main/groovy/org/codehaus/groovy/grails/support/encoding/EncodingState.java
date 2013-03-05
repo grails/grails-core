@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.commons;
+package org.codehaus.groovy.grails.support.encoding;
 
 import java.util.Set;
 

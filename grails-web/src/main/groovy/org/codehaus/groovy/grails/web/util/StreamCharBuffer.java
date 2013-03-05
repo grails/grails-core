@@ -39,8 +39,8 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.Encodeable;
-import org.codehaus.groovy.grails.commons.Encoder;
+import org.codehaus.groovy.grails.support.encoding.Encodeable;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
