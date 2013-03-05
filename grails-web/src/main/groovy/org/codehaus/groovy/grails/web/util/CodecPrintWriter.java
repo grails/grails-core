@@ -6,9 +6,9 @@ import groovy.lang.Writable;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.codehaus.groovy.grails.commons.Encoder;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsCodecClass;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.runtime.GStringImpl;
 
 public class CodecPrintWriter extends GrailsPrintWriter {
