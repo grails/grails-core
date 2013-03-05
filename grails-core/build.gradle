@@ -49,7 +49,7 @@ dependencies {
 
     runtime 'oro:oro:2.0.8'
     runtime 'cglib:cglib:2.2.2' // Used to generate proxies for classes via Spring AOP
-    runtime 'asm:asm:3.1'
+    runtime 'asm:asm:3.3.1'
     runtime 'aopalliance:aopalliance:1.0',
             "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
