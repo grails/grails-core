@@ -62,17 +62,8 @@ public final class GroovyPageOutputStack {
         return null;
     }
 
-    private static GrailsWebRequest getGrailsWebRequest() {
-        Object requestAttributes=RequestContextHolder.currentRequestAttributes();
-        if (requestAttributes instanceof GrailsWebRequest) {
-            return (GrailsWebRequest)requestAttributes;
-        }
-
-        return null;
-    }
-
     private static Writer defaultRequest() {
-        GrailsWebRequest webRequest=getGrailsWebRequest();
+        GrailsWebRequest webRequest=GrailsWebRequest.lookup();
         return defaultRequest(webRequest);
     }
 
@@ -214,7 +205,7 @@ public final class GroovyPageOutputStack {
     }
 
     private void    applyWriterThreadLocals(Writer writer) {
-        GrailsWebRequest webRequest = getGrailsWebRequest();
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         if (webRequest != null) {
             webRequest.setOut(writer);
         }
