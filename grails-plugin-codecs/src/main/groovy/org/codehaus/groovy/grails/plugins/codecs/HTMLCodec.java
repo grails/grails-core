@@ -14,9 +14,13 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
+import java.io.IOException;
+import java.io.Writer;
+
+import org.codehaus.groovy.grails.support.encoding.CodecFactory;
+import org.codehaus.groovy.grails.support.encoding.Decoder;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.springframework.web.util.HtmlUtils;
 
 /**
@@ -26,29 +30,59 @@ import org.springframework.web.util.HtmlUtils;
  * @since 1.1
  */
 public class HTMLCodec {
-    public static CharSequence encode(Object target) {
-        if (target != null) {
-            return HtmlUtils.htmlEscape(target.toString());
+    private static final class HTMLEncoder implements StreamingEncoder {
+        public String getCodecName() {
+            return CODEC_NAME;
         }
-        return null;
+
+        public CharSequence encode(Object o) {
+            if(o==null) return null;
+            return HtmlUtils.htmlEscape(String.valueOf(o));
+        }
+
+        public void markEncoded(CharSequence string) {
+            // no need to implement, wrapped automaticly
+        }
+
+        public void encodeToWriter(Object source, Writer writer) throws IOException {
+            
+        }
+
     }
 
-    public static boolean shouldEncode() {
-        final RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (attributes != null) {
-            Object codecName = attributes.getAttribute(GrailsApplicationAttributes.GSP_CODEC,
-                    RequestAttributes.SCOPE_REQUEST);
-            if (codecName != null && codecName.toString().equalsIgnoreCase("html")) {
-                return false;
-            }
+    private static final String CODEC_NAME="HTML";
+    
+    private static final class HTMLCodecFactory implements CodecFactory {
+        public Encoder getEncoder() {
+            return new HTMLEncoder();
         }
-        return true;
-    }
 
-    public static String decode(Object target) {
-        if (target != null) {
-            return HtmlUtils.htmlUnescape(target.toString());
+        public Decoder getDecoder() {
+            return new Decoder() {
+                public String getCodecName() {
+                    return CODEC_NAME;
+                }
+                
+                public Object decode(Object o) {
+                    if(o==null) return null;
+                    return HtmlUtils.htmlUnescape(String.valueOf(o));
+                }
+            };
         }
-        return null;
+    }
+    
+    private static final Encoder ENCODER_INSTANCE = getCodecFactory().getEncoder();
+    private static final Decoder DECODER_INSTANCE = getCodecFactory().getDecoder();
+    
+    public static CodecFactory getCodecFactory() {
+        return new HTMLCodecFactory();
+    }
+    
+    public static Object encode(Object target) {
+        return ENCODER_INSTANCE.encode(target);
+    }
+    
+    public static Object decode(Object target) {
+        return DECODER_INSTANCE.decode(target);
     }
 }

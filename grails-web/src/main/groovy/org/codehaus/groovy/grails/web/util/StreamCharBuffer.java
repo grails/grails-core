@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import groovy.lang.Closure;
 import groovy.lang.Writable;
 
 import java.io.EOFException;
@@ -41,7 +40,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * <p>
@@ -2135,25 +2133,6 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public void write(Encoder encoder, EncodingTags currentTags, char[] b, int off, int len) throws IOException;
         public void write(Encoder encoder, EncodingTags currentTags, String str, int off, int len) throws IOException;
         public void write(Encoder encoder, StreamCharBuffer subBuffer) throws IOException;
-    }
-    
-    public static Encoder createEncoder(final String codecName, final Closure<?> encodeClosure) {
-        return new Encoder() {
-            public String getCodecName() {
-                return codecName;
-            }
-
-            public CharSequence encode(Object o) {
-                return (CharSequence)encodeClosure.call(o);
-            }
-
-            public void markEncoded(CharSequence string) {
-                GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-                if (webRequest != null) {
-                    webRequest.registerEncodedWith(getCodecName(), string);
-                }
-            }
-        };
     }
     
     public EncodingTagsResolver getTagResolver() {
