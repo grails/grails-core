@@ -9,9 +9,9 @@ class PromiseSpec extends Specification {
 
     void "Test promise list handling"() {
         when:"A promise list is created "
-            def p1 = Promise.create { 1 + 1 }
-            def p2 = Promise.create { 2 + 2 }
-            def list = Promise.create(p1, p2)
+            def p1 = Promises.create { 1 + 1 }
+            def p2 = Promises.create { 2 + 2 }
+            def list = Promises.create(p1, p2)
 
             def result
             list.onComplete { List v ->
@@ -28,7 +28,7 @@ class PromiseSpec extends Specification {
     void "Test promise onComplete handling"() {
 
         when:"A promise is executed with an onComplete handler"
-            def promise = Promise.create { 1 + 1 }
+            def promise = Promises.create { 1 + 1 }
             def result
             def hasError = false
             promise.onComplete { val ->
@@ -49,7 +49,7 @@ class PromiseSpec extends Specification {
     void "Test promise onError handling"() {
 
         when:"A promise is executed with an onComplete handler"
-            def promise = Promise.create {
+            def promise = Promises.create {
                 throw new RuntimeException("bad")
             }
             def result
@@ -70,7 +70,7 @@ class PromiseSpec extends Specification {
 
     void "Test promise chaining"() {
         when:"A promise is chained"
-            def promise = Promise.create { 1 + 1 }
+            def promise = Promises.create { 1 + 1 }
             promise = promise.then { it * 2 } then { it + 6 }
             def val = promise.get()
 

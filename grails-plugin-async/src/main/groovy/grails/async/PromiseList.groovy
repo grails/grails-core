@@ -18,6 +18,8 @@ package grails.async
 import groovy.transform.CompileStatic
 import groovyx.gpars.dataflow.Dataflow
 
+import java.util.concurrent.TimeUnit
+
 /**
  * A list of promises
  *
@@ -25,7 +27,9 @@ import groovyx.gpars.dataflow.Dataflow
  * @since 2.3
  */
 @CompileStatic
-class PromiseList extends ArrayList<Promise> {
+class PromiseList implements Promise<List> {
+
+    protected def List<Promise> promises = []
 
     /**
      * Add a promise to the promise list
@@ -34,7 +38,18 @@ class PromiseList extends ArrayList<Promise> {
      * @return The promise list
      */
     PromiseList leftShift(Closure callable) {
-        this << Promise.create(callable)
+        promises << Promises.create(callable)
+        return this
+    }
+
+    /**
+     * Add a promise to the promise list
+     *
+     * @param callable The callable
+     * @return The promise list
+     */
+    PromiseList leftShift(Promise p) {
+        promises << p
         return this
     }
 
@@ -44,7 +59,16 @@ class PromiseList extends ArrayList<Promise> {
      * @return True if it was added
      */
     boolean add(Closure callable) {
-        return super.add(Promise.create(callable))
+        return promises.add(Promises.create(callable))
+    }
+
+    /**
+     * Implementation of add that takes a promise, adding it to the list
+     * @param callable The callable
+     * @return True if it was added
+     */
+    boolean add(Promise p) {
+        return promises.add(p)
     }
 
     /**
@@ -52,27 +76,33 @@ class PromiseList extends ArrayList<Promise> {
      *
      * @param callable The callable
      */
-    void onComplete(Closure callable ) {
-        if (Promise.GparsPromiseCreator.isGparsAvailable()) {
-            final gparsPromises = this.collect { (Promise.GparsPromiseCreator.GparsPromise) it }
-            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { Promise.GparsPromiseCreator.GparsPromise it -> it.internalPromise }, callable)
+    Promise onComplete(Closure callable ) {
+        if (Promises.GparsPromiseCreator.isGparsAvailable()) {
+            final gparsPromises = promises.collect { (Promises.GparsPromiseCreator.GparsPromise) it }
+            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { Promises.GparsPromiseCreator.GparsPromise it -> it.internalPromise }, callable)
+            return this
         }
         else {
             throw new IllegalStateException("Cannot register onComplete callback, no asynchronous library found on classpath (Example GPars).")
         }
     }
 
-    void onError(Closure callable) {
-        if (Promise.GparsPromiseCreator.isGparsAvailable()) {
-            final gparsPromises = this.collect { (Promise.GparsPromiseCreator.GparsPromise) it }
-            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { Promise.GparsPromiseCreator.GparsPromise it -> it.internalPromise }, {List l ->}, callable)
+    Promise onError(Closure callable) {
+        if (Promises.GparsPromiseCreator.isGparsAvailable()) {
+            final gparsPromises = promises.collect { (Promises.GparsPromiseCreator.GparsPromise) it }
+            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { Promises.GparsPromiseCreator.GparsPromise it -> it.internalPromise }, {List l ->}, callable)
+            return this
         }
         else {
             throw new IllegalStateException("Cannot register onError callback, no asynchronous library found on classpath (Example GPars).")
         }
     }
 
-    /**
+    @Override
+    Promise then(Closure callable) {
+        onComplete callable
+    }
+/**
      * Synchronously obtains all the values from all the promises
      * @return The values
      */
@@ -80,4 +110,8 @@ class PromiseList extends ArrayList<Promise> {
         this.iterator().collect { Promise p -> p.get() }
     }
 
+    @Override
+    List get(long timeout, TimeUnit units) throws Throwable {
+        this.iterator().collect { Promise p -> p.get(timeout, units) }
+    }
 }
