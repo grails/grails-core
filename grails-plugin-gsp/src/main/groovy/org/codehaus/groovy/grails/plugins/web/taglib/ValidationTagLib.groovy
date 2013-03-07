@@ -433,7 +433,7 @@ class ValidationTagLib {
         PropertyEditor editor = registry.findCustomEditor(value.getClass(), propertyPath)
         if (editor) {
             editor.setValue(value)
-            return (tagSyntaxCall || HTMLCodec.shouldEncode()) && !(value instanceof Number) ? editor.asText?.encodeAsHTML() : editor.asText
+            return !(value instanceof Number) ? editor.asText?.encodeAsHTML() : editor.asText
         }
 
         if (value instanceof Number) {
@@ -451,6 +451,6 @@ class ValidationTagLib {
             value = message(message: value)
         }
 
-        return (tagSyntaxCall || HTMLCodec.shouldEncode()) ? value.toString().encodeAsHTML() : value
+        return value.toString().encodeAsHTML()
     }
 }
