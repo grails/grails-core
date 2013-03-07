@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.util;
 
-import groovy.lang.Closure;
 import groovy.lang.Writable;
 
 import java.io.IOException;
@@ -8,10 +7,11 @@ import java.io.Writer;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsCodecClass;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.runtime.GStringImpl;
 
 public class CodecPrintWriter extends GrailsPrintWriter {
-    private Closure<?> encodeClosure;
+    private Encoder encoder;
 
     public CodecPrintWriter(GrailsApplication grailsApplication, Writer out, Class<?> codecClass) {
         super(out);
@@ -38,16 +38,16 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     private void initEncode(GrailsApplication grailsApplication, Class<?> codecClass) {
         if (grailsApplication != null && codecClass != null) {
             GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
-            encodeClosure = codecArtefact.getEncodeMethod();
+            encoder = codecArtefact.getEncoder();
         }
     }
 
     private Object encodeObject(Object o) {
-        if (encodeClosure == null) return o;
+        if (encoder == null) return o;
         try {
-            return encodeClosure.call(o);
+            return encoder.encode(o);
         } catch (Exception e) {
-            throw new RuntimeException("Problem calling encode method " + encodeClosure, e);
+            throw new RuntimeException("Problem calling encode method " + encoder, e);
         }
     }
 

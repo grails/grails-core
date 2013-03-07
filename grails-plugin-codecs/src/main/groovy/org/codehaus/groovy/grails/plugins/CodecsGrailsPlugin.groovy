@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins
 
 import grails.util.Environment
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic;
 
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
@@ -31,6 +32,8 @@ import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.junit.internal.runners.statements.InvokeMethod;
 
 /**
  * Configures pluggable codecs.
@@ -40,7 +43,7 @@ import org.codehaus.groovy.grails.plugins.codecs.URLCodec
  */
 class CodecsGrailsPlugin {
 
-    private static final Object[] EMPTY_ARGS = []
+    static final Object[] EMPTY_ARGS = []
 
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
@@ -72,19 +75,20 @@ class CodecsGrailsPlugin {
         }
     }
 
-    private configureCodecMethods(codecClass) {
+    @CompileStatic
+    private configureCodecMethods(GrailsCodecClass codecClass) {
         String codecName = codecClass.name
         String encodeMethodName = "encodeAs${codecName}"
         String decodeMethodName = "decode${codecName}"
 
-        def encoder
-        def decoder
+        Closure encoderClosure
+        Closure decoderClosure
         if (Environment.current == Environment.DEVELOPMENT) {
             // Resolve codecs in every call in case of a codec reload
-            encoder = { ->
-                def encodeMethod = codecClass.getEncodeMethod()
-                if (encodeMethod) {
-                    return encodeMethod(delegate)
+            encoderClosure = { ->
+                def encoder = codecClass.getEncoder()
+                if (encoder) {
+                    return encoder.encode(delegate)
                 }
 
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
@@ -93,10 +97,10 @@ class CodecsGrailsPlugin {
                 throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS)
             }
 
-            decoder = { ->
-                def decodeMethod = codecClass.getDecodeMethod()
-                if (decodeMethod) {
-                    return decodeMethod(delegate)
+            decoderClosure = { ->
+                def decoder = codecClass.getDecoder()
+                if (decoder) {
+                    return decoder.decode(delegate)
                 }
 
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
@@ -107,29 +111,25 @@ class CodecsGrailsPlugin {
         }
         else {
             // Resolve codec methods once only at startup
-            def encodeMethod = codecClass.encodeMethod
-            def decodeMethod = codecClass.decodeMethod
-            if (encodeMethod) {
-                encoder = { -> encodeMethod(delegate) }
+            def encoder = codecClass.getEncoder()
+            if (encoder) {
+                encoderClosure = { -> encoder.encode(delegate) }
+            } else {
+                encoderClosure = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }
-            else {
-                // note the call to delegate.getClass() instead of the more groovy delegate.class.
-                // this is because the delegate might be a Map, in which case delegate.class doesn't
-                // do what we want here...
-                encoder = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS) }
-            }
-            if (decodeMethod) {
-                decoder = { -> decodeMethod(delegate) }
-            }
-            else {
-                // note the call to delegate.getClass() instead of the more groovy delegate.class.
-                // this is because the delegate might be a Map, in which case delegate.class doesn't
-                // do what we want here...
-                decoder = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), EMPTY_ARGS) }
+            def decoder = codecClass.getDecoder()
+            if (decoder) {
+                decoderClosure = { -> decoder.decode(delegate) }
+            } else {
+                decoderClosure = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }
         }
 
-        Object.metaClass."${encodeMethodName}" << encoder
-        Object.metaClass."${decodeMethodName}" << decoder
+        addMetaMethod(encodeMethodName, encoderClosure)
+        addMetaMethod(decodeMethodName, decoderClosure)
+    }
+    
+    private def addMetaMethod(methodName, closure) {
+        Object.metaClass."${methodName}" << closure
     }
 }

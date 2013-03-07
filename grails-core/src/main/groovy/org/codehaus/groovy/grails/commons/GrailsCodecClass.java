@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
-import groovy.lang.Closure;
+import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 
 /**
  * Provides access to Codec classes. A Codec class one that ends in the convention
@@ -24,17 +24,6 @@ import groovy.lang.Closure;
  * @author Jeff Brown
  * @since 0.4
  */
-public interface GrailsCodecClass extends InjectableGrailsClass {
+public interface GrailsCodecClass extends InjectableGrailsClass, CodecFactory {
 
-    /**
-     * @return The encode closure
-     */
-    @SuppressWarnings("rawtypes")
-    Closure getEncodeMethod();
-
-    /**
-     * @return The decode closure
-     */
-    @SuppressWarnings("rawtypes")
-    Closure getDecodeMethod();
 }
