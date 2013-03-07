@@ -1,4 +1,5 @@
 dependencies {
+    compile 'org.codehaus.gpars:gpars:1.0.0'
     compile 'javax.servlet:javax.servlet-api:3.0.1'
     compile 'javax:javaee-web-api:6.0'
     compile project(':grails-plugin-controllers')
