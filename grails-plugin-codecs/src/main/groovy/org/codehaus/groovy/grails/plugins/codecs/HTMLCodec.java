@@ -104,10 +104,14 @@ public class HTMLCodec {
                   startPos=-1;
               }
             }
-            if(startPos > -1 && i-startPos > 0) {
-                sb.append(str, startPos, i);
+            if(sb != null) {
+                if(startPos > -1 && i-startPos > 0) {
+                    sb.append(str, startPos, i);
+                }
+                return sb.toString();
+            } else {
+                return str;
             }
-            return sb.toString();
         }
 
         public void markEncoded(CharSequence string) {
