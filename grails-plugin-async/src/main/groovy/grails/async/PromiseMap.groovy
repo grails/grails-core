@@ -179,7 +179,7 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
         return newMap
     }
 
-    Promise<Map<K, V>> onComplete(Closure<Map<K, V>> callable) {
+    Promise<Map<K, V>> onComplete(Closure callable) {
         if (Promises.GparsPromiseCreator.isGparsAvailable()) {
             def promises = promises.values()
             final gparsPromises = promises.collect { (Promises.GparsPromiseCreator.GparsPromise) it }
@@ -211,11 +211,11 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
         }
     }
 
-    Promise<Map<K, V>> then(Closure<Map<K, V>> callable) {
+    Promise<Map<K, V>> then(Closure callable) {
         onComplete callable
     }
 
-    Promise<Map<K, V>> leftShift(Closure<Map<K, V>> callable) {
+    Promise<Map<K, V>> leftShift(Closure callable) {
         onComplete callable
     }
 }

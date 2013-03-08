@@ -7,13 +7,33 @@ import spock.lang.Specification
  */
 class PromiseSpec extends Specification {
 
+    void "Test promise map handling"() {
+        when:"A promise map is created"
+            def map = Promises.create(one: { 1 }, two: { 1 + 1 }, four:{2 * 2})
+            def result = map.get()
+
+        then:"The map is valid"
+            result == [one: 1, two: 2, four: 4]
+    }
+
     void "Test promise list handling"() {
-        when:"A promise list is created "
+        when:"A promise list is created from two promises"
             def p1 = Promises.create { 1 + 1 }
             def p2 = Promises.create { 2 + 2 }
             def list = Promises.create(p1, p2)
 
             def result
+            list.onComplete { List v ->
+                result = v
+            }
+
+            sleep 200
+        then:"The result is correct"
+            result == [2,4]
+
+        when:"A promise list is created from two closures"
+            list = Promises.create({ 1 + 1 }, { 2 + 2 })
+
             list.onComplete { List v ->
                 result = v
             }

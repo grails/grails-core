@@ -29,15 +29,29 @@ import java.util.concurrent.TimeUnit
  */
 class Promises {
 
+
+    static<K,V> Promise<Map<K,V>> create(Map<K, Object> map) {
+        if (GparsPromiseCreator.isGparsAvailable()) {
+            return GparsPromiseCreator.createPromise( map )
+        }
+        else {
+            throw new IllegalStateException("Cannot create promise, no asynchronous library found on classpath (Example GPars).")
+        }
+    }
     /**
      * Creates a promise from a closure
      *
      * @param c The closure
      * @return The promise
      */
-    static<T> Promise<T> create(Closure<T> c) {
+    static<T> Promise<T> create(Closure<T>... c) {
         if (GparsPromiseCreator.isGparsAvailable()) {
-            return GparsPromiseCreator.createPromise( c )
+            if (c.length == 1) {
+                return GparsPromiseCreator.createPromise( c[0] )
+            }
+            else {
+                return (Promise<T>)GparsPromiseCreator.createPromises( c )
+            }
         }
         else {
             throw new IllegalStateException("Cannot create promise, no asynchronous library found on classpath (Example GPars).")
@@ -78,7 +92,30 @@ class Promises {
             return new GparsPromise(callable)
         }
 
+        static Promise createPromise(Map map) {
+            def promiseMap = new PromiseMap()
+
+            map.each { key, value ->
+                if (value instanceof Promise) {
+                    promiseMap.put(key, (Promise)value)
+                }
+                if (value instanceof Closure) {
+                    promiseMap.put(key, (Closure)value)
+                }
+            }
+            return promiseMap
+        }
+
         static PromiseList createPromises(Promise...promises) {
+            def promiseList = new PromiseList()
+            for(p in promises) {
+                promiseList << p
+            }
+
+            return promiseList
+        }
+
+        static PromiseList createPromises(Closure...promises) {
             def promiseList = new PromiseList()
             for(p in promises) {
                 promiseList << p
@@ -110,7 +147,7 @@ class Promises {
             }
 
             @Override
-            Promise<T> leftShift(Closure<T> callable) {
+            Promise<T> leftShift(Closure callable) {
                 then callable
             }
 

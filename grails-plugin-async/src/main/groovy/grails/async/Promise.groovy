@@ -50,7 +50,7 @@ interface Promise<T> {
      * @param callable
      * @return The Promise
      */
-    abstract Promise<T> onComplete(Closure<T> callable)
+    abstract Promise<T> onComplete(Closure callable)
 
     /**
      * Execute the given closure when an error occurs
@@ -58,16 +58,16 @@ interface Promise<T> {
      * @param callable
      * @return The Promise
      */
-    abstract Promise<T> onError(Closure<T> callable)
+    abstract Promise<T> onError(Closure callable)
 
     /**
      * Same as #onComplete
      */
-    abstract Promise<T> then(Closure<T> callable)
+    abstract Promise<T> then(Closure callable)
 
     /**
      * Same as #then
      */
-    Promise<T> leftShift(Closure<T> callable)
+    Promise<T> leftShift(Closure callable)
 
 }
