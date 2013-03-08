@@ -165,9 +165,8 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
             EncodingState encodingState=lookupEncodingState();
             if(encodingState != null && target instanceof CharSequence) {
-                Set<String> tags = encodingState.getEncodingTagsFor((CharSequence)target);
-                if(tags != null && tags.contains(getCodecName())) {
-                    return (CharSequence)target;
+                if(!encodingState.shouldEncodeWith(this, (CharSequence)target)) {
+                    return target;
                 }
             }
             Object encoded = delegate.encode(target);

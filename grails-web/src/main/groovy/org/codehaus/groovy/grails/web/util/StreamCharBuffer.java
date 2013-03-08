@@ -849,7 +849,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if(b==null || len <= 0) {
                 return;
             }
-            if(encoder != null && (currentTags==null || !currentTags.hasTag(encoder.getCodecName()))) {
+            if(encoder != null && (currentTags==null || currentTags.shouldEncodeWith(encoder))) {
                 EncodingTags newTags = (currentTags != null) ? currentTags.appendToNew(encoder) : EncodingTags.createNew(encoder);
                 String encoded = String.valueOf(encoder.encode(String.valueOf(b, off, len)));                
                 write(newTags, encoded, 0, encoded.length());
@@ -942,9 +942,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                 encodingState=DefaultGrailsCodecClass.getEncodingStateLookup().lookup();
             }
             if(encodingState != null) {
-                Set<String> tags=encodingState.getEncodingTagsFor(str);
+                Set<Encoder> tags=encodingState.getEncodersFor(str);
                 if(tags != null) {
-                    return new EncodingTags(tags, null);
+                    return new EncodingTags(tags);
                 }
             }
             return null;
@@ -954,7 +954,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if(str==null || len <= 0) {
                 return;
             }
-            if(encoder != null && (currentTags==null || !currentTags.hasTag(encoder.getCodecName()))) {
+            if(encoder != null && (currentTags==null || currentTags.shouldEncodeWith(encoder))) {
                 EncodingTags newTags = (currentTags != null) ? currentTags.appendToNew(encoder) : EncodingTags.createNew(encoder);
                 String source;
                 if(off==0 && len==str.length()) {
@@ -2045,61 +2045,47 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         allocBuffer.encodeTo(target, encoder);            
     }
 
-    public static final class EncodingTags implements Serializable {
-        private static final long serialVersionUID = 1L;
-        final Set<String> tags;
-        transient final Map<String,Encoder> encoders;
+    public static final class EncodingTags {
+        final Set<Encoder> encoders;
         
-        public EncodingTags(Set<String> tags, Map<String,Encoder> encoders) {
-            this.tags = tags;
+        public EncodingTags(Set<Encoder> encoders) {
             this.encoders = encoders;
         }
 
         public static EncodingTags createNew(Encoder encoder) {
-            return new EncodingTags(Collections.singleton(encoder.getCodecName()), Collections.singletonMap(encoder.getCodecName(), encoder));
+            return new EncodingTags(Collections.singleton(encoder));
         }
 
         public EncodingTags appendToNew(Encoder encoder) {
             if(encoder != null) {
-                Set<String> newTags=new LinkedHashSet<String>();
-                newTags.addAll(tags);
-                newTags.add(encoder.getCodecName());
-                Map<String,Encoder> allEncoders=new HashMap<String, Encoder>();
-                if(encoders != null) {
-                    allEncoders.putAll(encoders);
-                }
-                allEncoders.put(encoder.getCodecName(), encoder);
-                return new EncodingTags(newTags, allEncoders);
+                Set<Encoder> newEncoders=new LinkedHashSet<Encoder>();
+                newEncoders.addAll(encoders);
+                newEncoders.add(encoder);
+                return new EncodingTags(newEncoders);
             } else {
-                return new EncodingTags(tags, encoders);
+                return new EncodingTags(encoders);
             }
         }
         
-        public EncodingTags appendToNew(String tag) {
-            Set<String> newTags=new LinkedHashSet<String>();
-            newTags.addAll(tags);
-            newTags.add(tag);
-            return new EncodingTags(newTags, encoders);
-        }
-        
-        public boolean hasTag(String tag) {
-            return tags.contains(tag);
-        }
-        
-        public boolean matches(Set<String> otherTags) {
-            return tags.equals(otherTags);
-        }
-        
-        public Encoder getEncoder(String tag) {
+        public boolean shouldEncodeWith(Encoder encoderToApply) {
             if(encoders != null) {
-                return encoders.get(tag);
-            }
-            return null;
-        }
+                for(Encoder encoder : encoders) {
+                    if(isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
+                        return false;                            
+                    }
+                }
+            }            
+            return true;
+        }     
+        
+        private boolean isEncoderEquivalentToPrevious(Encoder encoderToApply, Encoder encoder) {
+            return encoder==encoderToApply || encoder.isPreventAllOthers() || encoder.getCodecName().equals(encoderToApply.getCodecName()) ||
+                    (encoder.getEquivalentCodecNames() != null && encoder.getEquivalentCodecNames().contains(encoderToApply.getCodecName()));
+        }        
         
         public Encoder getFirstEncoder() {
             if(encoders != null && encoders.size() > 0) {
-                return encoders.values().iterator().next();
+                return encoders.iterator().next();
             }
             return null;
         }
@@ -2108,7 +2094,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public int hashCode() {
             final int prime = 31;
             int result = 1;
-            result = prime * result + ((tags == null) ? 0 : tags.hashCode());
+            result = prime * result + ((encoders == null) ? 0 : encoders.hashCode());
             return result;
         }
 
@@ -2121,14 +2107,15 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if (getClass() != obj.getClass())
                 return false;
             EncodingTags other = (EncodingTags)obj;
-            if (tags == null) {
-                if (other.tags != null)
+            if (encoders == null) {
+                if (other.encoders != null)
                     return false;
             }
-            else if (!tags.equals(other.tags))
+            else if (!encoders.equals(other.encoders))
                 return false;
             return true;
         }
+
     }
     
     public static interface EncoderWriter {
