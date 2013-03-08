@@ -31,6 +31,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateLookup;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
@@ -56,7 +57,7 @@ import org.springframework.web.util.UrlPathHelper;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback, EncodingState {
+public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback {
 
     private GrailsApplicationAttributes attributes;
     private GrailsParameterMap params;
@@ -68,7 +69,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private ApplicationContext applicationContext;
     private String baseUrl;
 
-	private Map<String,Set<Integer>> encodingTagIdentityHashCodes=new HashMap<String, Set<Integer>>();
+	private EncodingState encodingState;
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
@@ -355,49 +356,64 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         return baseUrl;
     }
 
-    private Set<Integer> getIdentityHashCodesForEncoding(String encoding) {
-        Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoding);
-        if(identityHashCodes==null) {
-            identityHashCodes=new HashSet<Integer>();
-            encodingTagIdentityHashCodes.put(encoding, identityHashCodes);
+    public EncodingState getEncodingState() {
+        if(encodingState==null) {
+            encodingState=new DefaultEncodingState();
         }
-        return identityHashCodes;
+        return encodingState;
     }
 
-    public Set<String> getEncodingTagsFor(CharSequence string) {
-        int identityHashCode = System.identityHashCode(string);
-        Set<String> result=null;
-        for(Map.Entry<String, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
-            if(entry.getValue().contains(identityHashCode)) {
-                if(result==null) {
-                    result=Collections.singleton(entry.getKey());
-                } else {
-                    if (result.size()==1){
-                        result=new HashSet<String>(result);
-                    }   
-                    result.add(entry.getKey());
+    private static final class DefaultEncodingState implements EncodingState {
+        private Map<String,Set<Integer>> encodingTagIdentityHashCodes=new HashMap<String, Set<Integer>>();
+        
+        private Set<Integer> getIdentityHashCodesForEncoding(String encoding) {
+            Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoding);
+            if(identityHashCodes==null) {
+                identityHashCodes=new HashSet<Integer>();
+                encodingTagIdentityHashCodes.put(encoding, identityHashCodes);
+            }
+            return identityHashCodes;
+        }
+
+        public Set<String> getEncodingTagsFor(CharSequence string) {
+            int identityHashCode = System.identityHashCode(string);
+            Set<String> result=null;
+            for(Map.Entry<String, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
+                if(entry.getValue().contains(identityHashCode)) {
+                    if(result==null) {
+                        result=Collections.singleton(entry.getKey());
+                    } else {
+                        if (result.size()==1){
+                            result=new HashSet<String>(result);
+                        }   
+                        result.add(entry.getKey());
+                    }
                 }
             }
+            return result;
         }
-        return result;
-    }
-    
-    public boolean isEncodedWith(String encoding, CharSequence string) {
-        return getIdentityHashCodesForEncoding(encoding).contains(System.identityHashCode(string));
-    }
+        
+        public boolean isEncodedWith(Encoder encoder, CharSequence string) {
+            return getIdentityHashCodesForEncoding(encoder.getCodecName()).contains(System.identityHashCode(string));
+        }
 
-    public void registerEncodedWith(String encoding, CharSequence escaped) {
-        getIdentityHashCodesForEncoding(encoding).add(System.identityHashCode(escaped));
+        public void registerEncodedWith(Encoder encoder, CharSequence escaped) {
+            getIdentityHashCodesForEncoding(encoder.getCodecName()).add(System.identityHashCode(escaped));
+        }
     }
     
     private static final class DefaultEncodingStateLookup implements EncodingStateLookup {
         public EncodingState lookup() {
-            return GrailsWebRequest.lookup();
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if(webRequest != null) {
+                return webRequest.getEncodingState();
+            } else {
+                return null;
+            }
         }
     }
     
     static {
         DefaultGrailsCodecClass.setEncodingStateLookup(new DefaultEncodingStateLookup());
     }
-
 }
