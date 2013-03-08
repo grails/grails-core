@@ -14,14 +14,13 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.springframework.web.util.HtmlUtils;
@@ -49,7 +48,7 @@ public class HTMLCodec {
             // no need to implement, wrapped automaticly
         }
 
-        public void encodeToWriter(Object source, Writer writer) throws IOException {
+        public void encodeToStream(Object source, EncodedAppender appender) {
             
         }
 

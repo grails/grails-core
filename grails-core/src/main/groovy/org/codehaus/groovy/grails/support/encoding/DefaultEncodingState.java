@@ -47,8 +47,12 @@ public final class DefaultEncodingState implements EncodingState {
 
     public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string) {
         Set<Encoder> tags = getEncodersFor(string);
-        if(tags != null) {
-            for(Encoder encoder : tags) {
+        return shouldEncodeWith(encoderToApply, tags);
+    }
+
+    public static boolean shouldEncodeWith(Encoder encoderToApply, Set<Encoder> currentEncoders) {
+        if(currentEncoders != null) {
+            for(Encoder encoder : currentEncoders) {
                 if(isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
                     return false;                            
                 }
