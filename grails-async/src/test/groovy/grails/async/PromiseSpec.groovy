@@ -10,6 +10,23 @@ import java.util.concurrent.TimeoutException
  */
 class PromiseSpec extends Specification {
 
+    void cleanup() {
+        Promises.removeDecorators()
+    }
+    void "Test add promise decorator"() {
+        when:"A decorator is added"
+            def decorator = { Closure c ->
+                return { "*${c.call(*it)}*" }
+            } as Promise.Decorator
+            Promises.addDecorator(decorator)
+
+            def p = Promises.createPromise { 10 }
+            def result = p.get()
+
+        then:"The result is decorate"
+            result == "*10*"
+
+    }
     void "Test promise timeout handling"() {
         when:"a promise that takes a while is created"
             def p = Promises.createPromise { sleep 1000 }

@@ -70,4 +70,17 @@ interface Promise<T> {
      */
     Promise<T> leftShift(Closure callable)
 
+    /**
+     * An interface used to decorate any function execution potentially wrapping an asynchronous function execution in new functionality
+     */
+    interface Decorator {
+        /**
+         * Decorates the given closures, returning the decorated closure
+         *
+         * @param c The closure to decorate
+         * @return The decorated closure
+         */
+        Closure decorate(Closure c)
+    }
+
 }

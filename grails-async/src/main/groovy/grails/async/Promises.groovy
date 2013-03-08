@@ -29,6 +29,24 @@ import java.util.concurrent.TimeUnit
  */
 class Promises {
 
+    private static final List<Promise.Decorator> decorators = []
+
+    /**
+     * Adds a promise decorator
+     *
+     * @param decorator The decorator
+     */
+    static void addDecorator(Promise.Decorator decorator) {
+        decorators << decorator
+    }
+
+    /**
+     * Removes all decorators
+     */
+    static void removeDecorators() {
+        decorators.clear()
+    }
+
     /**
      * Creates a promise that returns a map. The passed argument should contain values that are either closures or Promise instances.
      *
@@ -50,6 +68,14 @@ class Promises {
      * @return The promise
      */
     static<T> Promise<T> createPromise(Closure<T>... c) {
+        if (decorators) {
+            c.eachWithIndex { Closure<T> closure, int i ->
+                for(d in decorators) {
+                    closure = d.decorate(closure)
+                }
+                c[i] = closure
+            }
+        }
         if (GparsPromiseCreator.isGparsAvailable()) {
             if (c.length == 1) {
                 return GparsPromiseCreator.createPromise( c[0] )
