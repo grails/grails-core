@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.plugins.codecs;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -67,29 +66,33 @@ public class HTMLCodec {
     private static final String CODEC_NAME="HTML";
     
     private static final class HTMLCodecFactory implements CodecFactory {
+        private Encoder encoder=new HTMLEncoder();
+        private Decoder decoder=new Decoder() {
+            public String getCodecName() {
+                return CODEC_NAME;
+            }
+            
+            public Object decode(Object o) {
+                if(o==null) return null;
+                return HtmlUtils.htmlUnescape(String.valueOf(o));
+            }
+        };
+        
         public Encoder getEncoder() {
-            return new HTMLEncoder();
+            return encoder;
         }
 
         public Decoder getDecoder() {
-            return new Decoder() {
-                public String getCodecName() {
-                    return CODEC_NAME;
-                }
-                
-                public Object decode(Object o) {
-                    if(o==null) return null;
-                    return HtmlUtils.htmlUnescape(String.valueOf(o));
-                }
-            };
+            return decoder;
         }
     }
-    
-    private static final Encoder ENCODER_INSTANCE = getCodecFactory().getEncoder();
-    private static final Decoder DECODER_INSTANCE = getCodecFactory().getDecoder();
+
+    private static final CodecFactory codecFactory=new HTMLCodecFactory();
+    private static final Encoder ENCODER_INSTANCE = codecFactory.getEncoder();
+    private static final Decoder DECODER_INSTANCE = codecFactory.getDecoder();
     
     public static CodecFactory getCodecFactory() {
-        return new HTMLCodecFactory();
+        return codecFactory;
     }
     
     public static Object encode(Object target) {
