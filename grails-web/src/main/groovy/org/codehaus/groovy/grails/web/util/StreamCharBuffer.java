@@ -40,8 +40,10 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.support.encoding.DefaultEncodingState;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
+import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
 
 /**
  * <p>
@@ -225,7 +227,7 @@ import org.codehaus.groovy.grails.support.encoding.EncodingState;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable {
+public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable {
     static final long serialVersionUID = 5486972234419632945L;
     private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
 
@@ -835,7 +837,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      *
      * @author Lari Hotari, Sagire Software Oy
      */
-    public final class StreamCharBufferWriter extends Writer implements EncoderWriter {
+    public final class StreamCharBufferWriter extends Writer implements EncodedAppender {
         boolean closed = false;
         int writerUsedCounter = 0;
         boolean increaseCounter = true;
@@ -845,17 +847,29 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             write(null, b, off, len);
         }
 
-        public void write(Encoder encoder, EncodingTags currentTags, char[] b, int off, int len) throws IOException {
+        public void append(Encoder encoder, Set<Encoder> currentEncoders, char[] b, int off, int len) throws IOException {
             if(b==null || len <= 0) {
                 return;
             }
-            if(encoder != null && (currentTags==null || currentTags.shouldEncodeWith(encoder))) {
-                EncodingTags newTags = (currentTags != null) ? currentTags.appendToNew(encoder) : EncodingTags.createNew(encoder);
+            if(encoder != null && (currentEncoders==null || DefaultEncodingState.shouldEncodeWith(encoder, currentEncoders))) {
+                Set<Encoder> newEncoders=appendEncoders(encoder, currentEncoders);
                 String encoded = String.valueOf(encoder.encode(String.valueOf(b, off, len)));                
-                write(newTags, encoded, 0, encoded.length());
+                write(new EncodingTags(newEncoders), encoded, 0, encoded.length());
             } else {
-                write(currentTags, b, off, len);
+                write(currentEncoders != null ? new EncodingTags(currentEncoders) : null, b, off, len);
             }
+        }
+        
+        private Set<Encoder> appendEncoders(Encoder encoder, Set<Encoder> currentEncoders) {
+            Set<Encoder> newEncoders;
+            if(currentEncoders==null) {
+                newEncoders=Collections.singleton(encoder);
+            } else {
+                newEncoders=new LinkedHashSet<Encoder>();
+                newEncoders.addAll(currentEncoders);
+                newEncoders.add(encoder);
+            }
+            return newEncoders;
         }
         
         private final void write(EncodingTags tags, final char[] b, final int off, final int len) throws IOException {
@@ -950,12 +964,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             return null;
         }
 
-        public void write(Encoder encoder, EncodingTags currentTags, String str, int off, int len) throws IOException {
+        public void append(Encoder encoder, Set<Encoder> currentEncoders, String str, int off, int len) throws IOException {
             if(str==null || len <= 0) {
                 return;
             }
-            if(encoder != null && (currentTags==null || currentTags.shouldEncodeWith(encoder))) {
-                EncodingTags newTags = (currentTags != null) ? currentTags.appendToNew(encoder) : EncodingTags.createNew(encoder);
+            if(encoder != null && (currentEncoders==null || DefaultEncodingState.shouldEncodeWith(encoder, currentEncoders))) {
+                Set<Encoder> newEncoders=appendEncoders(encoder, currentEncoders);
                 String source;
                 if(off==0 && len==str.length()) {
                     source = str;
@@ -965,10 +979,10 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                     source = String.valueOf(buff);
                 }
                 String encoded = String.valueOf(encoder.encode(source));                
-                write(newTags, encoded, 0, encoded.length());
+                write(new EncodingTags(newEncoders), encoded, 0, encoded.length());
             } else {
-                write(currentTags, str, off, len);
-            }
+                write(currentEncoders != null ? new EncodingTags(currentEncoders) : null, str, off, len);
+            }            
         }
 
         private final void write(EncodingTags tags, final String str, final int off, final int len) throws IOException {
@@ -1112,8 +1126,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             return StreamCharBuffer.this;
         }
 
-        public void write(Encoder encoder, StreamCharBuffer subBuffer) throws IOException {
-            subBuffer.encodeTo(this, encoder);
+        public void append(Encoder encoder, StreamEncodeable streamEncodeable) throws IOException {
+            streamEncodeable.encodeTo(this, encoder);
         }
     }
 
@@ -1276,7 +1290,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
     }
     
-    abstract class AbstractChunk {
+    abstract class AbstractChunk implements StreamEncodeable {
         AbstractChunk next;
         AbstractChunk prev;
         int writerUsedCounter;
@@ -1309,8 +1323,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public void setTags(EncodingTags tags) {
             this.tags = tags;
         }
+        
+        public Set<Encoder> getEncoders() {
+            return (tags != null) ? tags.getEncoders() : null;
+        }
 
-        public abstract void encodeTo(EncoderWriter target, Encoder encoder) throws IOException;
+        public abstract void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException;
         
     }
 
@@ -1426,14 +1444,18 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public EncodingTags getTags() {
             return tags;
         }
+        
+        public Set<Encoder> getEncoders() {
+            return (tags != null) ? tags.getEncoders() : null;
+        }
 
         public void setTags(EncodingTags tags) {
             this.tags = tags;
         }
 
-        public void encodeTo(EncoderWriter target, Encoder encoder) throws IOException {
+        public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
             if (used-chunkStart > 0) {
-                target.write(encoder, getTags(), buffer, chunkStart, used-chunkStart);
+                appender.append(encoder, getEncoders(), buffer, chunkStart, used-chunkStart);
             }
         }
 
@@ -1487,8 +1509,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         @Override
-        public void encodeTo(EncoderWriter target, Encoder encoder) throws IOException {
-            target.write(encoder, getTags(), buffer, offset, length);
+        public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
+            appender.append(encoder, getEncoders(), buffer, offset, length);
         }
     }
 
@@ -1606,8 +1628,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         @Override
-        public void encodeTo(EncoderWriter target, Encoder encoder) throws IOException {
-            target.write(encoder, getTags(), str, offset, length);
+        public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
+            appender.append(encoder, getEncoders(), str, offset, length);
         }
     }
 
@@ -1690,10 +1712,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             dynamicChunkMap.remove(streamCharBuffer.bufferKey);
         }
 
-        @Override
-        public void encodeTo(EncoderWriter target, Encoder encoder) throws IOException {
-            target.write(encoder, getSubBuffer());
-            
+        public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
+            appender.append(encoder, getSubBuffer());
         }
     }
 
@@ -2026,7 +2046,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     
     public StreamCharBuffer encodeToBuffer(Encoder encoder) {
         StreamCharBuffer coded = new StreamCharBuffer(Math.min(Math.max(totalChunkSize, chunkSize) * 12 / 10, maxChunkSize));
-        EncoderWriter codedWriter = (EncoderWriter)coded.getWriter();
+        EncodedAppender codedWriter = (EncodedAppender)coded.getWriter();
         try {
             encodeTo(codedWriter, encoder);
         } catch (IOException e) {
@@ -2036,13 +2056,13 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         return coded;
     }
     
-    public void encodeTo(EncoderWriter target, Encoder encoder) throws IOException {
+    public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
         AbstractChunk current = firstChunk;
         while (current != null) {
-            current.encodeTo(target, encoder);
+            current.encodeTo(appender, encoder);
             current = current.next;
         }
-        allocBuffer.encodeTo(target, encoder);            
+        allocBuffer.encodeTo(appender, encoder);            
     }
 
     public static final class EncodingTags {
@@ -2067,22 +2087,15 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             }
         }
         
-        public boolean shouldEncodeWith(Encoder encoderToApply) {
-            if(encoders != null) {
-                for(Encoder encoder : encoders) {
-                    if(DefaultEncodingState.isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
-                        return false;                            
-                    }
-                }
-            }            
-            return true;
-        }     
-        
         public Encoder getFirstEncoder() {
             if(encoders != null && encoders.size() > 0) {
                 return encoders.iterator().next();
             }
             return null;
+        }
+        
+        public Set<Encoder> getEncoders() {
+            return encoders;
         }
 
         @Override
@@ -2111,12 +2124,6 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             return true;
         }
 
-    }
-    
-    public static interface EncoderWriter {
-        public void write(Encoder encoder, EncodingTags currentTags, char[] b, int off, int len) throws IOException;
-        public void write(Encoder encoder, EncodingTags currentTags, String str, int off, int len) throws IOException;
-        public void write(Encoder encoder, StreamCharBuffer subBuffer) throws IOException;
     }
     
     public CharSequence encode(Encoder encoder) {
