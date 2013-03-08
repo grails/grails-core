@@ -172,7 +172,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             }
             Object encoded = delegate.encode(target);
             if(encodingState != null && encoded instanceof CharSequence)
-                encodingState.registerEncodedWith(getCodecName(), (CharSequence)encoded);
+                encodingState.registerEncodedWith(this, (CharSequence)encoded);
             return encoded;
         }
 
@@ -183,8 +183,16 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         public void markEncoded(CharSequence string) {
             EncodingState encodingState=lookupEncodingState();
             if(encodingState != null) {
-                encodingState.registerEncodedWith(getCodecName(), string);
+                encodingState.registerEncodedWith(this, string);
             }
+        }
+
+        public Set<String> getEquivalentCodecNames() {
+            return delegate.getEquivalentCodecNames();
+        }
+
+        public boolean isPreventAllOthers() {
+            return delegate.isPreventAllOthers();
         }        
     }    
     
@@ -223,6 +231,14 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
         public void markEncoded(CharSequence string) {
             
+        }
+
+        public Set<String> getEquivalentCodecNames() {
+            return null;
+        }
+
+        public boolean isPreventAllOthers() {
+            return false;
         }        
     }
     

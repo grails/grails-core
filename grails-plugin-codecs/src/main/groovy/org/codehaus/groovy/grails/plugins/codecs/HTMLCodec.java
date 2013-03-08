@@ -16,6 +16,10 @@ package org.codehaus.groovy.grails.plugins.codecs;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
@@ -31,6 +35,8 @@ import org.springframework.web.util.HtmlUtils;
  */
 public class HTMLCodec {
     private static final class HTMLEncoder implements StreamingEncoder {
+        private static final Set<String> equivalentCodecNames = new HashSet<String>(Arrays.asList(new String[]{"HTML4","XML"}));
+        
         public String getCodecName() {
             return CODEC_NAME;
         }
@@ -46,6 +52,14 @@ public class HTMLCodec {
 
         public void encodeToWriter(Object source, Writer writer) throws IOException {
             
+        }
+
+        public Set<String> getEquivalentCodecNames() {
+            return equivalentCodecNames;
+        }
+
+        public boolean isPreventAllOthers() {
+            return false;
         }
 
     }
