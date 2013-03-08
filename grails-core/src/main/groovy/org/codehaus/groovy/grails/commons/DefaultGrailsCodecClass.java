@@ -29,7 +29,8 @@ import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
-import org.codehaus.groovy.grails.support.encoding.EncodingStateLookup;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.springframework.util.ReflectionUtils;
 
@@ -39,16 +40,16 @@ import org.springframework.util.ReflectionUtils;
  */
 public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass implements GrailsCodecClass {
     public static final String CODEC = CodecArtefactHandler.TYPE;
-    private static EncodingStateLookup encodingStateLookup=null;
+    private static EncodingStateRegistryLookup encodingStateRegistryLookup=null;
     private Encoder encoder;
     private Decoder decoder;
     
-    public static void setEncodingStateLookup(EncodingStateLookup lookup) {
-        encodingStateLookup = lookup;
+    public static void setEncodingStateRegistryLookup(EncodingStateRegistryLookup lookup) {
+        encodingStateRegistryLookup = lookup;
     }
     
-    public static EncodingStateLookup getEncodingStateLookup() {
-        return encodingStateLookup;
+    public static EncodingStateRegistryLookup getEncodingStateRegistryLookup() {
+        return encodingStateRegistryLookup;
     }
 
     public DefaultGrailsCodecClass(Class<?> clazz) {
@@ -164,7 +165,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
                 return ((Encodeable)target).encode(this);
             }
 
-            EncodingState encodingState=lookupEncodingState();
+            EncodingStateRegistry encodingState=lookupEncodingState();
             if(encodingState != null && target instanceof CharSequence) {
                 if(!encodingState.shouldEncodeWith(this, (CharSequence)target)) {
                     return target;
@@ -176,12 +177,12 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             return encoded;
         }
 
-        protected EncodingState lookupEncodingState() {
-            return encodingStateLookup != null ? encodingStateLookup.lookup() : null;
+        protected EncodingStateRegistry lookupEncodingState() {
+            return encodingStateRegistryLookup != null ? encodingStateRegistryLookup.lookup() : null;
         }
 
         public void markEncoded(CharSequence string) {
-            EncodingState encodingState=lookupEncodingState();
+            EncodingStateRegistry encodingState=lookupEncodingState();
             if(encodingState != null) {
                 encodingState.registerEncodedWith(this, string);
             }
@@ -200,10 +201,11 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         private StreamingEncoder delegate;
         public StreamingStateAwareEncoderWrapper(StreamingEncoder delegate) {
             super(delegate);
+            this.delegate=delegate;
         }
-        
-        public void encodeToStream(Object source, EncodedAppender appender) {
-            delegate.encodeToStream(source, appender);
+        public void encodeToStream(CharSequence source, int offset, int len, EncodedAppender appender,
+                EncodingState encodingState) throws IOException {
+            delegate.encodeToStream(source, offset, len, appender, encodingState);
         }
     }
     

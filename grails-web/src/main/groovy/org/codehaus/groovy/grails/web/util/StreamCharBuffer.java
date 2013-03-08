@@ -38,12 +38,15 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
-import org.codehaus.groovy.grails.support.encoding.DefaultEncodingState;
+import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 
 /**
  * <p>
@@ -269,7 +272,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     int allocatedBufferIdSequence = 0;
     int readerCount = 0;
     boolean hasReaders = false;
-    private EncodingState encodingState=null;
+    private EncodingStateRegistry encodingStateRegistry=null;
 
     public StreamCharBuffer() {
         this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
@@ -564,22 +567,22 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         int initialReaderCount = readerCount;
-        Set<Encoder> encoders=null;
+        EncodingState encodingState=null;
         if(firstChunk != null) {
-            encoders=firstChunk.getEncoders();
+            encodingState=firstChunk.getEncodingState();
         } else {
-            encoders=allocBuffer.getEncoders();
+            encodingState=allocBuffer.getEncodingState();
         }
         String str=readAsString();
         if (initialReaderCount == 0) {
             // if there are no readers, the result can be cached
             reset();
             if (str.length() > 0) {
-                addChunk(new StringChunk(str, 0, str.length())).setEncoders(encoders);
+                addChunk(new StringChunk(str, 0, str.length())).setEncodingState(encodingState);
             }
         }
-        if(encoders != null && encoders.size() > 0) {
-            Encoder encoder=encoders.iterator().next();
+        if(encodingState != null && encodingState.getEncoders().size() > 0) {
+            Encoder encoder=encodingState.getEncoders().iterator().next();
             if(encoder != null)
                 encoder.markEncoded(str);
         }
@@ -636,18 +639,18 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         int initialReaderCount = readerCount;
-        Set<Encoder> encoders=null;
+        EncodingState encodingState=null;
         if(firstChunk != null) {
-            encoders=firstChunk.getEncoders();
+            encodingState=firstChunk.getEncodingState();
         } else {
-            encoders=allocBuffer.getEncoders();
+            encodingState=allocBuffer.getEncodingState();
         }
         char[] buf = readAsCharArray();
         if (initialReaderCount == 0) {
             // if there are no readers, the result can be cached
             reset();
             if (buf.length > 0) {
-                addChunk(new CharBufferChunk(-1, buf, 0, buf.length)).setEncoders(encoders);
+                addChunk(new CharBufferChunk(-1, buf, 0, buf.length)).setEncodingState(encodingState);
             }
         }
         return buf;
@@ -728,21 +731,21 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         return false;
     }
 
-    int allocateSpace(Set<Encoder> encoders) throws IOException {
-        int spaceLeft = allocBuffer.spaceLeft(encoders);
+    int allocateSpace(EncodingState encodingState) throws IOException {
+        int spaceLeft = allocBuffer.spaceLeft(encodingState);
         if (spaceLeft == 0) {
-            spaceLeft = appendCharBufferChunk(encoders, true, true);
+            spaceLeft = appendCharBufferChunk(encodingState, true, true);
         }
         return spaceLeft;
     }
 
-    private int appendCharBufferChunk(Set<Encoder> encoders, boolean flushInConnected, boolean allocate) throws IOException {
+    private int appendCharBufferChunk(EncodingState encodingState, boolean flushInConnected, boolean allocate) throws IOException {
         int spaceLeft = 0;
         if (flushInConnected && isConnectedMode()) {
             flushToConnected();
             if (!isChunkSizeResizeable()) {
-                allocBuffer.reuseBuffer(encoders);
-                spaceLeft = allocBuffer.spaceLeft(encoders);
+                allocBuffer.reuseBuffer(encodingState);
+                spaceLeft = allocBuffer.spaceLeft(encodingState);
             }
             else {
                 spaceLeft = 0;
@@ -752,20 +755,20 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if (allocBuffer.hasChunk()) {
                 addChunk(allocBuffer.createChunk());
             }
-            spaceLeft = allocBuffer.spaceLeft(encoders);
+            spaceLeft = allocBuffer.spaceLeft(encodingState);
         }
         if (allocate && spaceLeft == 0) {
             totalChunkSize += allocBuffer.chunkSize();
             resizeChunkSizeAsProcentageOfTotalSize();
             allocBuffer = new AllocatedBuffer(chunkSize);
-            spaceLeft = allocBuffer.spaceLeft(encoders);
+            spaceLeft = allocBuffer.spaceLeft(encodingState);
         }
         return spaceLeft;
     }
 
-    void appendStringChunk(Set<Encoder> encoders, String str, int off, int len) throws IOException {
-        appendCharBufferChunk(encoders, false, false);
-        addChunk(new StringChunk(str, off, len)).setEncoders(encoders);
+    void appendStringChunk(EncodingState encodingState, String str, int off, int len) throws IOException {
+        appendCharBufferChunk(encodingState, false, false);
+        addChunk(new StringChunk(str, off, len)).setEncodingState(encodingState);
     }
 
     public void appendStreamCharBufferChunk(StreamCharBuffer subBuffer) throws IOException {
@@ -847,32 +850,35 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             write(null, b, off, len);
         }
 
-        public void append(Encoder encoder, Set<Encoder> currentEncoders, char[] b, int off, int len) throws IOException {
+        public void append(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException {
             if(b==null || len <= 0) {
                 return;
             }
-            if(encoder != null && (currentEncoders==null || DefaultEncodingState.shouldEncodeWith(encoder, currentEncoders))) {
-                Set<Encoder> newEncoders=appendEncoders(encoder, currentEncoders);
-                String encoded = String.valueOf(encoder.encode(String.valueOf(b, off, len)));                
-                write(newEncoders, encoded, 0, encoded.length());
+            if(encoder != null && (encodingState==null || DefaultEncodingStateRegistry.shouldEncodeWith(encoder, encodingState))) {
+                EncodingState newEncoders=appendEncoders(encoder, encodingState);
+                if(encoder instanceof StreamingEncoder) {
+                    ((StreamingEncoder)encoder).encodeToStream(String.valueOf(b, off, len), 0, len, this, newEncoders);
+                } else {
+                    encodeAndWrite(encoder, newEncoders, String.valueOf(b, off, len));
+                }
             } else {
-                write(currentEncoders, b, off, len);
+                write(encodingState, b, off, len);
             }
         }
         
-        private Set<Encoder> appendEncoders(Encoder encoder, Set<Encoder> currentEncoders) {
+        private EncodingState appendEncoders(Encoder encoder, EncodingState encodingState) {
             Set<Encoder> newEncoders;
-            if(currentEncoders==null) {
+            if(encodingState==null || encodingState.getEncoders()==null) {
                 newEncoders=Collections.singleton(encoder);
             } else {
                 newEncoders=new LinkedHashSet<Encoder>();
-                newEncoders.addAll(currentEncoders);
+                newEncoders.addAll(encodingState.getEncoders());
                 newEncoders.add(encoder);
             }
-            return newEncoders;
+            return new EncodingStateImpl(newEncoders);
         }
         
-        private final void write(Set<Encoder> encoders, final char[] b, final int off, final int len) throws IOException {
+        private final void write(EncodingState encodingState, final char[] b, final int off, final int len) throws IOException {
             if (b == null) {
                 throw new NullPointerException();
             }
@@ -888,14 +894,14 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
             markUsed();
             if (shouldWriteDirectly(len)) {
-                appendCharBufferChunk(encoders,true,true);
+                appendCharBufferChunk(encodingState,true,true);
                 connectedWritersWriter.write(b, off, len);
             }
             else {
                 int charsLeft = len;
                 int currentOffset = off;
                 while (charsLeft > 0) {
-                    int spaceLeft = allocateSpace(encoders);
+                    int spaceLeft = allocateSpace(encodingState);
                     int writeChars = Math.min(spaceLeft, charsLeft);
                     allocBuffer.write(b, currentOffset, writeChars);
                     charsLeft -= writeChars;
@@ -940,63 +946,73 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         @Override
         public final void write(final String str) throws IOException {
-            write(resolveTags(str), str, 0, str.length());
+            write(resolveEncodingState(str), str, 0, str.length());
         }
 
         @Override
         public final void write(final String str, final int off, final int len) throws IOException {
-            Set<Encoder> encoders=null;
+            EncodingState encodingState=null;
             if(off==0 && len==str.length())
-                encoders = resolveTags(str);
-            write(encoders, str, off, len);
+                encodingState = resolveEncodingState(str);
+            write(encodingState, str, off, len);
         }
 
-        private Set<Encoder> resolveTags(String str) {
-            if(encodingState==null) {
-                encodingState=DefaultGrailsCodecClass.getEncodingStateLookup() != null ? DefaultGrailsCodecClass.getEncodingStateLookup().lookup() : null;
+        private EncodingState resolveEncodingState(String str) {
+            if(encodingStateRegistry==null) {
+                encodingStateRegistry=DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null;
             }
-            if(encodingState != null) {
-                return encodingState.getEncodersFor(str);
+            if(encodingStateRegistry != null) {
+                return encodingStateRegistry.getEncodingStateFor(str);
             }
             return null;
         }
 
-        public void append(Encoder encoder, Set<Encoder> currentEncoders, String str, int off, int len) throws IOException {
+        public void append(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len) throws IOException {
             if(str==null || len <= 0) {
                 return;
             }
-            if(encoder != null && (currentEncoders==null || DefaultEncodingState.shouldEncodeWith(encoder, currentEncoders))) {
-                Set<Encoder> newEncoders=appendEncoders(encoder, currentEncoders);
-                String source;
-                if(off==0 && len==str.length()) {
-                    source = str;
+            if(encoder != null && (encodingState==null || DefaultEncodingStateRegistry.shouldEncodeWith(encoder, encodingState))) {
+                EncodingState newEncoders=appendEncoders(encoder, encodingState);
+                if(encoder instanceof StreamingEncoder) {
+                    ((StreamingEncoder)encoder).encodeToStream(str, off, len, this, newEncoders);
                 } else {
-                    char[] buff=new char[len];
-                    str.getChars(off, off+len, buff, 0);
-                    source = String.valueOf(buff);
+                    CharSequence source;
+                    if(off==0 && len==str.length()) {
+                        source = String.valueOf(str);
+                    } else {
+                        source = str.subSequence(off, off+len);
+                    }
+                    encodeAndWrite(encoder, newEncoders, source);
                 }
-                String encoded = String.valueOf(encoder.encode(source));                
-                write(newEncoders, encoded, 0, encoded.length());
             } else {
-                write(currentEncoders, str, off, len);
+                appendCharSequence(encodingState, str, off, off+len);
             }            
         }
 
-        private final void write(Set<Encoder> encoders, final String str, final int off, final int len) throws IOException {
+        protected void encodeAndWrite(Encoder encoder, EncodingState newEncoders, CharSequence source)
+                throws IOException {
+            Object encoded = encoder.encode(source);     
+            if(encoded != null) {
+                String encodedStr = String.valueOf(encoded);
+                write(newEncoders, encodedStr, 0, encodedStr.length());
+            }
+        }
+
+        private final void write(EncodingState encodingState, final String str, final int off, final int len) throws IOException {
             if (len==0) return;
             markUsed();
             if (shouldWriteDirectly(len)) {
-                appendCharBufferChunk(encoders,true,false);
+                appendCharBufferChunk(encodingState,true,false);
                 connectedWritersWriter.write(str, off, len);
             }
             else if (len >= subStringChunkMinSize && isNextChunkBigEnough(len)) {
-                appendStringChunk(encoders, str, off, len);
+                appendStringChunk(encodingState, str, off, len);
             }
             else {
                 int charsLeft = len;
                 int currentOffset = off;
                 while (charsLeft > 0) {
-                    int spaceLeft = allocateSpace(encoders);
+                    int spaceLeft = allocateSpace(encodingState);
                     int writeChars = Math.min(spaceLeft, charsLeft);
                     allocBuffer.writeString(str, currentOffset, writeChars);
                     charsLeft -= writeChars;
@@ -1033,33 +1049,38 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                 write("null");
             }
             else {
-                if (csq instanceof String || csq instanceof StringBuffer || csq instanceof StringBuilder) {
-                    Set<Encoder> encoders=null;
-                    if(csq instanceof String && start==0 && end==csq.length())
-                        encoders = resolveTags((String)csq);
-                    int len = end-start;
-                    int charsLeft = len;
-                    int currentOffset = start;
-                    while (charsLeft > 0) {
-                        int spaceLeft = allocateSpace(encoders);
-                        int writeChars = Math.min(spaceLeft, charsLeft);
-                        if (csq instanceof String) {
-                            allocBuffer.writeString((String)csq, currentOffset, writeChars);
-                        }
-                        else if (csq instanceof StringBuffer) {
-                            allocBuffer.writeStringBuffer((StringBuffer)csq, currentOffset, writeChars);
-                        }
-                        else if (csq instanceof StringBuilder) {
-                            allocBuffer.writeStringBuilder((StringBuilder)csq, currentOffset, writeChars);
-                        }
-                        charsLeft -= writeChars;
-                        currentOffset += writeChars;
-                    }
-                } else {
-                    write(csq.subSequence(start, end).toString());
-                }
+                EncodingState encodingState=null;
+                if(csq instanceof String && start==0 && end==csq.length())
+                    encodingState = resolveEncodingState((String)csq);
+                appendCharSequence(encodingState, csq, start, end);
             }
             return this;
+        }
+
+        protected void appendCharSequence(final EncodingState encodingState, final CharSequence csq, final int start, final int end) throws IOException {
+            if (csq instanceof String || csq instanceof StringBuffer || csq instanceof StringBuilder) {
+                int len = end-start;
+                int charsLeft = len;
+                int currentOffset = start;
+                while (charsLeft > 0) {
+                    int spaceLeft = allocateSpace(encodingState);
+                    int writeChars = Math.min(spaceLeft, charsLeft);
+                    if (csq instanceof String) {
+                        allocBuffer.writeString((String)csq, currentOffset, writeChars);
+                    }
+                    else if (csq instanceof StringBuffer) {
+                        allocBuffer.writeStringBuffer((StringBuffer)csq, currentOffset, writeChars);
+                    }
+                    else if (csq instanceof StringBuilder) {
+                        allocBuffer.writeStringBuilder((StringBuilder)csq, currentOffset, writeChars);
+                    }
+                    charsLeft -= writeChars;
+                    currentOffset += writeChars;
+                }
+            } else {
+                String str=csq.subSequence(start, end).toString();
+                write(null, str, 0, str.length());
+            }
         }
 
         @Override
@@ -1291,7 +1312,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         AbstractChunk next;
         AbstractChunk prev;
         int writerUsedCounter;
-        Set<Encoder> encoders;
+        EncodingState encodingState;
 
         public AbstractChunk() {
             if (hasReaders) {
@@ -1312,16 +1333,16 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public void subtractFromTotalCount() {
             totalCharsInList -= size();
         }
-
-        public Set<Encoder> getEncoders() {
-            return encoders;
-        }
-
-        public void setEncoders(Set<Encoder> encoders) {
-            this.encoders = encoders;
-        }
         
         public abstract void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException;
+
+        public EncodingState getEncodingState() {
+            return encodingState;
+        }
+
+        public void setEncodingState(EncodingState encodingState) {
+            this.encodingState = encodingState;
+        }
         
     }
 
@@ -1340,8 +1361,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         private char[] buffer;
         private int used = 0;
         private int chunkStart = 0;
-        private Set<Encoder> encoders;
-        private Set<Encoder> nextEncoders;
+        private EncodingState encodingState;
+        private EncodingState nextEncoders;
  
         public AllocatedBuffer(int size) {
             this.size = size;
@@ -1358,33 +1379,33 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             }
         }
 
-        public void reuseBuffer(Set<Encoder> encoders) {
+        public void reuseBuffer(EncodingState encodingState) {
             used=0;
             chunkStart=0;
-            this.encoders=null;
-            this.nextEncoders=encoders;
+            this.encodingState=null;
+            this.nextEncoders=encodingState;
         }
 
         public int chunkSize() {
             return buffer.length;
         }
 
-        public int spaceLeft(Set<Encoder> encoders) {
-            if(this.encoders != null && (encoders == null || !this.encoders.equals(encoders))) {
+        public int spaceLeft(EncodingState encodingState) {
+            if(this.encodingState != null && (encodingState == null || !this.encodingState.equals(encodingState))) {
                 return 0;
             }
-            this.nextEncoders = encoders;
+            this.nextEncoders = encodingState;
             return size - used;
         }
         
         private final void applyEncoders() throws IOException {
-            if(encoders==nextEncoders) {
+            if(encodingState==nextEncoders) {
                 return ;
             }
-            if(encoders != null && (nextEncoders == null || !encoders.equals(nextEncoders))) {
+            if(encodingState != null && (nextEncoders == null || !encodingState.equals(nextEncoders))) {
                 throw new IOException("Illegal operation in AllocatedBuffer");
             }
-            encoders = nextEncoders;
+            encodingState = nextEncoders;
         }
 
         public boolean write(final char ch) throws IOException {
@@ -1428,7 +1449,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
          */
         public CharBufferChunk createChunk() {
             CharBufferChunk chunk=new CharBufferChunk(id, buffer, chunkStart, used-chunkStart);
-            chunk.setEncoders(encoders);
+            chunk.setEncodingState(encodingState);
             chunkStart=used;
             return chunk;
         }
@@ -1439,12 +1460,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
             if (used-chunkStart > 0) {
-                appender.append(encoder, encoders, buffer, chunkStart, used-chunkStart);
+                appender.append(encoder, encodingState, buffer, chunkStart, used-chunkStart);
             }
         }
 
-        public Set<Encoder> getEncoders() {
-            return encoders;
+        public EncodingState getEncodingState() {
+            return encodingState;
         }
 
     }
@@ -1498,7 +1519,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         @Override
         public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
-            appender.append(encoder, getEncoders(), buffer, offset, length);
+            appender.append(encoder, getEncodingState(), buffer, offset, length);
         }
     }
 
@@ -1617,7 +1638,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         @Override
         public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
-            appender.append(encoder, getEncoders(), str, offset, length);
+            appender.append(encoder, getEncodingState(), str, offset, length);
         }
     }
 

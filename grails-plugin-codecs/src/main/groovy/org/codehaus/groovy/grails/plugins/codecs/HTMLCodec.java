@@ -22,7 +22,6 @@ import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.springframework.web.util.HtmlUtils;
 
 /**
@@ -32,7 +31,7 @@ import org.springframework.web.util.HtmlUtils;
  * @since 1.1
  */
 public class HTMLCodec {
-    private static final class HTMLEncoder implements StreamingEncoder {
+    private static final class HTMLEncoder implements Encoder {
         private static final Set<String> equivalentCodecNames = new HashSet<String>(Arrays.asList(new String[]{"HTML4","XML"}));
         
         public String getCodecName() {
@@ -46,10 +45,6 @@ public class HTMLCodec {
 
         public void markEncoded(CharSequence string) {
             // no need to implement, wrapped automaticly
-        }
-
-        public void encodeToStream(Object source, EncodedAppender appender) {
-            
         }
 
         public Set<String> getEquivalentCodecNames() {
