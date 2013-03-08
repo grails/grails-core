@@ -17,11 +17,12 @@ package org.codehaus.groovy.grails.plugins
 
 import grails.util.Environment
 import grails.util.GrailsUtil
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
+import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.HexCodec
 import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
@@ -32,8 +33,8 @@ import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
-import org.codehaus.groovy.runtime.InvokerHelper;
-import org.junit.internal.runners.statements.InvokeMethod;
+
+import com.sun.xml.internal.ws.encoding.xml.XMLCodec
 
 /**
  * Configures pluggable codecs.
@@ -50,6 +51,8 @@ class CodecsGrailsPlugin {
     def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
     def providedArtefacts = [
         HTMLCodec,
+        HTML4Codec,
+        XMLCodec,
         JavaScriptCodec,
         URLCodec,
         Base64Codec,
