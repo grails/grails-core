@@ -7,6 +7,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 
 import spock.lang.Specification
 
@@ -20,11 +21,16 @@ class StreamCharBufferSpec extends Specification {
         out=new GrailsPrintWriter(buffer.writer)
 
         def grailsApplication = Mock(GrailsApplication)
-        GrailsCodecClass codecClass = new DefaultGrailsCodecClass(HTMLCodec)
-        grailsApplication.getArtefact("Codec", HTMLCodec.name) >> { codecClass }
-        grailsApplication.getCodecClasses() >> { [codecClass] }
+        GrailsCodecClass htmlCodecClass = new DefaultGrailsCodecClass(HTMLCodec)
+        grailsApplication.getArtefact("Codec", HTMLCodec.name) >> { htmlCodecClass }
+        GrailsCodecClass rawCodecClass = new DefaultGrailsCodecClass(RawCodec)
+        grailsApplication.getArtefact("Codec", RawCodec.name) >> { rawCodecClass }
+        grailsApplication.getCodecClasses() >> { [htmlCodecClass, rawCodecClass] }
         GrailsWebUtil.bindMockWebRequest()
-        new CodecsGrailsPlugin().configureCodecMethods(codecClass)
+        new CodecsGrailsPlugin().with {
+            configureCodecMethods(htmlCodecClass)
+            configureCodecMethods(rawCodecClass)
+        }
         codecOut=new CodecPrintWriter(grailsApplication, out, HTMLCodec)
     }
 
@@ -87,5 +93,23 @@ class StreamCharBufferSpec extends Specification {
         then:
         helloEncoded.toString() == "Hello world &amp; hi"
         buffer.toString() == "Hello world &amp; hi&lt;script&gt;"
+    }
+    
+    def "support raw codec"() {
+        when:
+        def hello="Hello world & hi"
+        def buffer2=new StreamCharBuffer()
+        def writer = new GrailsPrintWriter(buffer2.writer)
+        writer << hello
+        writer.flush()
+        def buffer3=new StreamCharBuffer()
+        def helloEncoded = buffer2.encodeAsRaw().encodeAsHTML()
+        def writer2 = new GrailsPrintWriter(buffer3.writer)
+        writer2 << helloEncoded
+        writer2 << "<script>"
+        codecOut << buffer3
+        then:
+        helloEncoded.toString() == "Hello world & hi"
+        buffer.toString() == "Hello world & hi&lt;script&gt;"
     }
 }
