@@ -11,7 +11,7 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
     private static final String ESCAPED_EQUAL = "&#" + ((int) '=')  + ";";
     private static final String ESCAPED_PLUS = "&#" + ((int) '+')  + ";";
     private static final String ESCAPED_APOS = "&#" + ((int) '\'')  + ";";
-    private static final String ESCAPED_QUOTE = "&#" + ((int) '"')  + ";";
+    private static final String ESCAPED_QUOTE = "&quot;";
     private static final String ESCAPED_GT = "&gt;";
     private static final String ESCAPED_LT = "&lt;";
     private static final String ESCAPED_AMP = "&amp;";
