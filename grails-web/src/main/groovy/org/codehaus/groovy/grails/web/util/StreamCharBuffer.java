@@ -978,7 +978,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                 } else {
                     CharSequence source;
                     if(off==0 && len==str.length()) {
-                        source = String.valueOf(str);
+                        source = str;
                     } else {
                         source = str.subSequence(off, off+len);
                     }
