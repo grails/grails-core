@@ -364,27 +364,27 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     private static final class DefaultEncodingState implements EncodingState {
-        private Map<String,Set<Integer>> encodingTagIdentityHashCodes=new HashMap<String, Set<Integer>>();
+        private Map<Encoder,Set<Integer>> encodingTagIdentityHashCodes=new HashMap<Encoder, Set<Integer>>();
         
-        private Set<Integer> getIdentityHashCodesForEncoding(String encoding) {
-            Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoding);
+        private Set<Integer> getIdentityHashCodesForEncoder(Encoder encoder) {
+            Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoder);
             if(identityHashCodes==null) {
                 identityHashCodes=new HashSet<Integer>();
-                encodingTagIdentityHashCodes.put(encoding, identityHashCodes);
+                encodingTagIdentityHashCodes.put(encoder, identityHashCodes);
             }
             return identityHashCodes;
         }
 
-        public Set<String> getEncodingTagsFor(CharSequence string) {
+        public Set<Encoder> getEncodersFor(CharSequence string) {
             int identityHashCode = System.identityHashCode(string);
-            Set<String> result=null;
-            for(Map.Entry<String, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
+            Set<Encoder> result=null;
+            for(Map.Entry<Encoder, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
                 if(entry.getValue().contains(identityHashCode)) {
                     if(result==null) {
                         result=Collections.singleton(entry.getKey());
                     } else {
                         if (result.size()==1){
-                            result=new HashSet<String>(result);
+                            result=new HashSet<Encoder>(result);
                         }   
                         result.add(entry.getKey());
                     }
@@ -394,11 +394,28 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         }
         
         public boolean isEncodedWith(Encoder encoder, CharSequence string) {
-            return getIdentityHashCodesForEncoding(encoder.getCodecName()).contains(System.identityHashCode(string));
+            return getIdentityHashCodesForEncoder(encoder).contains(System.identityHashCode(string));
         }
 
         public void registerEncodedWith(Encoder encoder, CharSequence escaped) {
-            getIdentityHashCodesForEncoding(encoder.getCodecName()).add(System.identityHashCode(escaped));
+            getIdentityHashCodesForEncoder(encoder).add(System.identityHashCode(escaped));
+        }
+
+        public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string) {
+            Set<Encoder> tags = getEncodersFor(string);
+            if(tags != null) {
+                for(Encoder encoder : tags) {
+                    if(isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
+                        return false;                            
+                    }
+                }
+            }            
+            return true;
+        }
+
+        public boolean isEncoderEquivalentToPrevious(Encoder encoderToApply, Encoder encoder) {
+            return encoder==encoderToApply || encoder.isPreventAllOthers() || encoder.getCodecName().equals(encoderToApply.getCodecName()) ||
+                    (encoder.getEquivalentCodecNames() != null && encoder.getEquivalentCodecNames().contains(encoderToApply.getCodecName()));
         }
     }
     
