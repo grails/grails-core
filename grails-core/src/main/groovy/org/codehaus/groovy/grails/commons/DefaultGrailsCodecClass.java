@@ -26,6 +26,7 @@ import java.util.Set;
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateLookup;
@@ -201,8 +202,8 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             super(delegate);
         }
         
-        public void encodeToWriter(Object source, Writer writer) throws IOException {
-            delegate.encodeToWriter(source, writer);
+        public void encodeToStream(Object source, EncodedAppender appender) {
+            delegate.encodeToStream(source, appender);
         }
     }
     
