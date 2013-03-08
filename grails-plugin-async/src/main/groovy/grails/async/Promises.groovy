@@ -29,8 +29,13 @@ import java.util.concurrent.TimeUnit
  */
 class Promises {
 
-
-    static<K,V> Promise<Map<K,V>> create(Map<K, Object> map) {
+    /**
+     * Creates a promise that returns a map. The passed argument should contain values that are either closures or Promise instances.
+     *
+     * @param map The map
+     * @return The promise
+     */
+    static<K,V> Promise<Map<K,V>> createPromise(Map<K, Object> map) {
         if (GparsPromiseCreator.isGparsAvailable()) {
             return GparsPromiseCreator.createPromise( map )
         }
@@ -44,7 +49,7 @@ class Promises {
      * @param c The closure
      * @return The promise
      */
-    static<T> Promise<T> create(Closure<T>... c) {
+    static<T> Promise<T> createPromise(Closure<T>... c) {
         if (GparsPromiseCreator.isGparsAvailable()) {
             if (c.length == 1) {
                 return GparsPromiseCreator.createPromise( c[0] )
@@ -64,7 +69,7 @@ class Promises {
      * @param promises The promises
      * @return The promise
      */
-    static PromiseList create(Promise...promises) {
+    static PromiseList createPromise(Promise...promises) {
         if (GparsPromiseCreator.isGparsAvailable()) {
             return GparsPromiseCreator.createPromises( promises )
         }

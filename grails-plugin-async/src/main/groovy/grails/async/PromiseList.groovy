@@ -38,7 +38,7 @@ class PromiseList implements Promise<List> {
      * @return The promise list
      */
     PromiseList leftShift(Closure callable) {
-        promises << Promises.create(callable)
+        promises << Promises.createPromise(callable)
         return this
     }
 
@@ -59,7 +59,7 @@ class PromiseList implements Promise<List> {
      * @return True if it was added
      */
     boolean add(Closure callable) {
-        return promises.add(Promises.create(callable))
+        return promises.add(Promises.createPromise(callable))
     }
 
     /**

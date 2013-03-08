@@ -86,7 +86,7 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
      * @return The previous promise
      */
     Promise put(K k, Closure callable) {
-        def promise = Promises.create(callable)
+        def promise = Promises.createPromise(callable)
         promisesKeys.put(promise, k)
         promises.put(k, promise)
     }

@@ -9,7 +9,7 @@ class PromiseSpec extends Specification {
 
     void "Test promise map handling"() {
         when:"A promise map is created"
-            def map = Promises.create(one: { 1 }, two: { 1 + 1 }, four:{2 * 2})
+            def map = Promises.createPromise(one: { 1 }, two: { 1 + 1 }, four:{2 * 2})
             def result = map.get()
 
         then:"The map is valid"
@@ -18,9 +18,9 @@ class PromiseSpec extends Specification {
 
     void "Test promise list handling"() {
         when:"A promise list is created from two promises"
-            def p1 = Promises.create { 1 + 1 }
-            def p2 = Promises.create { 2 + 2 }
-            def list = Promises.create(p1, p2)
+            def p1 = Promises.createPromise { 1 + 1 }
+            def p2 = Promises.createPromise { 2 + 2 }
+            def list = Promises.createPromise(p1, p2)
 
             def result
             list.onComplete { List v ->
@@ -32,7 +32,7 @@ class PromiseSpec extends Specification {
             result == [2,4]
 
         when:"A promise list is created from two closures"
-            list = Promises.create({ 1 + 1 }, { 2 + 2 })
+            list = Promises.createPromise({ 1 + 1 }, { 2 + 2 })
 
             list.onComplete { List v ->
                 result = v
@@ -48,7 +48,7 @@ class PromiseSpec extends Specification {
     void "Test promise onComplete handling"() {
 
         when:"A promise is executed with an onComplete handler"
-            def promise = Promises.create { 1 + 1 }
+            def promise = Promises.createPromise { 1 + 1 }
             def result
             def hasError = false
             promise.onComplete { val ->
@@ -69,7 +69,7 @@ class PromiseSpec extends Specification {
     void "Test promise onError handling"() {
 
         when:"A promise is executed with an onComplete handler"
-            def promise = Promises.create {
+            def promise = Promises.createPromise {
                 throw new RuntimeException("bad")
             }
             def result
@@ -90,7 +90,7 @@ class PromiseSpec extends Specification {
 
     void "Test promise chaining"() {
         when:"A promise is chained"
-            def promise = Promises.create { 1 + 1 }
+            def promise = Promises.createPromise { 1 + 1 }
             promise = promise.then { it * 2 } then { it + 6 }
             def val = promise.get()
 
