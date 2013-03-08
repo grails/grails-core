@@ -953,7 +953,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         private Set<Encoder> resolveTags(String str) {
             if(encodingState==null) {
-                encodingState=DefaultGrailsCodecClass.getEncodingStateLookup().lookup();
+                encodingState=DefaultGrailsCodecClass.getEncodingStateLookup() != null ? DefaultGrailsCodecClass.getEncodingStateLookup().lookup() : null;
             }
             if(encodingState != null) {
                 return encodingState.getEncodersFor(str);
