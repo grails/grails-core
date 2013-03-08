@@ -14,6 +14,7 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,6 +23,8 @@ import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodingState;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.springframework.web.util.HtmlUtils;
 
 /**
@@ -31,14 +34,14 @@ import org.springframework.web.util.HtmlUtils;
  * @since 1.1
  */
 public class HTMLCodec {
-    private static final class HTMLEncoder implements Encoder {
+    private static final class HTMLEncoder implements Encoder, StreamingEncoder {
         private static final Set<String> equivalentCodecNames = new HashSet<String>(Arrays.asList(new String[]{"HTML4","XML"}));
         
         public String getCodecName() {
             return CODEC_NAME;
         }
 
-        public CharSequence encode(Object o) {
+        public Object encode(Object o) {
             if(o==null) return null;
             return HtmlUtils.htmlEscape(String.valueOf(o));
         }
@@ -55,6 +58,23 @@ public class HTMLCodec {
             return false;
         }
 
+        public void encodeToStream(CharSequence str, int off, int len, EncodedAppender appender,
+                EncodingState encodingState) throws IOException {
+            if(str==null || len <= 0) {
+                return;
+            }
+            CharSequence source;
+            if(off==0 && len==str.length()) {
+                source = str;
+            } else {
+                source = str.subSequence(off, off+len);
+            }
+            String encoded=(String)encode(source);     
+            if(encoded != null) {
+                String encodedStr = String.valueOf(encoded);
+                appender.append(this, encodingState, encodedStr, 0, encodedStr.length()); 
+            }
+        }
     }
 
     private static final String CODEC_NAME="HTML";
