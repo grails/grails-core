@@ -1377,7 +1377,10 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             return size - used;
         }
         
-        private final void applyTags() throws IOException {
+        private final void applyEncoders() throws IOException {
+            if(encoders==nextEncoders) {
+                return ;
+            }
             if(encoders != null && (nextEncoders == null || !encoders.equals(nextEncoders))) {
                 throw new IOException("Illegal operation in AllocatedBuffer");
             }
@@ -1386,7 +1389,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         public boolean write(final char ch) throws IOException {
             if (used < size) {
-                applyTags();
+                applyEncoders();
                 buffer[used++] = ch;
                 return true;
             }
@@ -1395,25 +1398,25 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         public final void write(final char[] ch, final int off, final int len) throws IOException {
-            applyTags();
+            applyEncoders();
             arrayCopy(ch, off, buffer, used, len);
             used += len;
         }
 
         public final void writeString(final String str, final int off, final int len) throws IOException {
-            applyTags();
+            applyEncoders();
             str.getChars(off, off+len, buffer, used);
             used += len;
         }
 
         public final void writeStringBuilder(final StringBuilder stringBuilder, final int off, final int len) throws IOException {
-            applyTags();
+            applyEncoders();
             stringBuilder.getChars(off, off+len, buffer, used);
             used += len;
         }
 
         public final void writeStringBuffer(final StringBuffer stringBuffer, final int off, final int len) throws IOException {
-            applyTags();
+            applyEncoders();
             stringBuffer.getChars(off, off+len, buffer, used);
             used += len;
         }
