@@ -56,11 +56,26 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     }
     
     private void initializeCodec() {
-        CodecFactory codecFactory=(CodecFactory)getPropertyOrStaticPropertyOrFieldValue("codecFactory", CodecFactory.class);
-        if(codecFactory==null) {
-            codecFactory=new ClosureCodecFactory();
+        if(Encoder.class.isAssignableFrom(getClazz())) {
+            encoder = (Encoder)getReferenceInstance();
         }
-        encoder=codecFactory.getEncoder();
+        if(Decoder.class.isAssignableFrom(getClazz())) {
+            decoder = (Decoder)getReferenceInstance();
+        }
+        if(encoder==null && decoder==null) {
+            CodecFactory codecFactory=null;
+            if(CodecFactory.class.isAssignableFrom(getClazz())) {
+                codecFactory=(CodecFactory)getReferenceInstance();
+            }
+            if(codecFactory==null) {
+                codecFactory=(CodecFactory)getPropertyOrStaticPropertyOrFieldValue("codecFactory", CodecFactory.class);
+            }
+            if(codecFactory==null) {
+                codecFactory=new ClosureCodecFactory();
+            }
+            encoder=codecFactory.getEncoder();
+            decoder=codecFactory.getDecoder();
+        }
         if(encoder != null) {
             if(encoder instanceof StreamingEncoder) {
                 encoder=new StreamingStateAwareEncoderWrapper((StreamingEncoder)encoder);
@@ -68,7 +83,6 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
                 encoder=new StateAwareEncoderWrapper(encoder);
             }
         }
-        decoder=codecFactory.getDecoder();
     }
 
     private class ClosureCodecFactory implements CodecFactory {
