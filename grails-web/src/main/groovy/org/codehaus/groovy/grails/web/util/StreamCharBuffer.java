@@ -38,8 +38,10 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodingState;
 
 /**
  * <p>
@@ -265,7 +267,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     int allocatedBufferIdSequence = 0;
     int readerCount = 0;
     boolean hasReaders = false;
-    private EncodingTagsResolver tagsResolver=DefaultEncodingTagsResolver.getInstance();
+    private EncodingState encodingState=null;
 
     public StreamCharBuffer() {
         this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
@@ -933,6 +935,19 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if(off==0 && len==str.length())
                 tags = resolveTags(str);
             write(tags, str, off, len);
+        }
+
+        private EncodingTags resolveTags(String str) {
+            if(encodingState==null) {
+                encodingState=DefaultGrailsCodecClass.getEncodingStateLookup().lookup();
+            }
+            if(encodingState != null) {
+                Set<String> tags=encodingState.getEncodingTagsFor(str);
+                if(tags != null) {
+                    return new EncodingTags(tags, null);
+                }
+            }
+            return null;
         }
 
         public void write(Encoder encoder, EncodingTags currentTags, String str, int off, int len) throws IOException {
@@ -2116,33 +2131,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
     }
     
-    EncodingTags resolveTags(String string) {
-        if(tagsResolver==null) return null;
-        Set<String> tags=tagsResolver.getTags(string);
-        if(tags != null) {
-            return new EncodingTags(tags, null);
-        }
-        return null;
-    }
-    
-    public static interface EncodingTagsResolver {
-        public Set<String> getTags(String string);
-    }
-    
     public static interface EncoderWriter {
         public void write(Encoder encoder, EncodingTags currentTags, char[] b, int off, int len) throws IOException;
         public void write(Encoder encoder, EncodingTags currentTags, String str, int off, int len) throws IOException;
         public void write(Encoder encoder, StreamCharBuffer subBuffer) throws IOException;
     }
     
-    public EncodingTagsResolver getTagResolver() {
-        return tagsResolver;
-    }
-
-    public void setTagResolver(EncodingTagsResolver tagResolver) {
-        this.tagsResolver = tagResolver;
-    }
-
     public CharSequence encode(Encoder encoder) {
         return encodeToBuffer(encoder);
     }
