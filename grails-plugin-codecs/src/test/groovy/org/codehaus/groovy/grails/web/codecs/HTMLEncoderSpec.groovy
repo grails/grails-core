@@ -1,29 +1,28 @@
 package org.codehaus.groovy.grails.web.codecs;
 
+import org.codehaus.groovy.grails.plugins.codecs.HTML4Encoder
 import org.codehaus.groovy.grails.plugins.codecs.HTMLEncoder
-import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
-import org.codehaus.groovy.grails.support.encoding.EncodingState;
-import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.codehaus.groovy.grails.plugins.codecs.XMLEncoder
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender
+import org.codehaus.groovy.grails.support.encoding.EncodingState
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder
 
 import spock.lang.Specification
+import spock.lang.Unroll
 
 class HTMLEncoderSpec extends Specification {
-    def encoder;
-    
-    def setup() {
-        encoder=new HTMLEncoder()
-    }
-    
     def "html encoding should support streaming interface"() {
+        given:
+            def encoder=new HTMLEncoder()
         expect:
             encoder instanceof StreamingEncoder
     }
 
-    def "streaming should encode longest part at a time"() {
+    @Unroll
+    def "streaming should encode longest part at a time for #streamingEncoder.codecName codec"(StreamingEncoder streamingEncoder) {
         given:
              EncodedAppender appender=Mock(EncodedAppender)
              EncodingState encodingState=Mock(EncodingState)
-             StreamingEncoder streamingEncoder=encoder
              def hello="Hello <script>alert('hi!')</script> World!"
         when:
             streamingEncoder.encodeToStream(hello, 0, hello.length(), appender, encodingState)
@@ -54,5 +53,7 @@ class HTMLEncoderSpec extends Specification {
         then:
             1 * appender.append(streamingEncoder, encodingState, hello, 35, 7)
             0 * _
+        where:
+            streamingEncoder << [new HTMLEncoder(), new HTML4Encoder(), new XMLEncoder()]
     }
 }
