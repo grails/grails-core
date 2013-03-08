@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public final class DefaultEncodingState implements EncodingState {
+public final class DefaultEncodingStateRegistry implements EncodingStateRegistry {
     private Map<Encoder,Set<Integer>> encodingTagIdentityHashCodes=new HashMap<Encoder, Set<Integer>>();
     
     private Set<Integer> getIdentityHashCodesForEncoder(Encoder encoder) {
@@ -19,7 +19,7 @@ public final class DefaultEncodingState implements EncodingState {
         return identityHashCodes;
     }
 
-    public Set<Encoder> getEncodersFor(CharSequence string) {
+    public EncodingState getEncodingStateFor(CharSequence string) {
         int identityHashCode = System.identityHashCode(string);
         Set<Encoder> result=null;
         for(Map.Entry<Encoder, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
@@ -34,7 +34,7 @@ public final class DefaultEncodingState implements EncodingState {
                 }
             }
         }
-        return result;
+        return new EncodingStateImpl(result);
     }
     
     public boolean isEncodedWith(Encoder encoder, CharSequence string) {
@@ -46,13 +46,13 @@ public final class DefaultEncodingState implements EncodingState {
     }
 
     public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string) {
-        Set<Encoder> tags = getEncodersFor(string);
-        return shouldEncodeWith(encoderToApply, tags);
+        EncodingState encodingState = getEncodingStateFor(string);
+        return shouldEncodeWith(encoderToApply, encodingState);
     }
 
-    public static boolean shouldEncodeWith(Encoder encoderToApply, Set<Encoder> currentEncoders) {
-        if(currentEncoders != null) {
-            for(Encoder encoder : currentEncoders) {
+    public static boolean shouldEncodeWith(Encoder encoderToApply, EncodingState currentEncoders) {
+        if(currentEncoders != null && currentEncoders.getEncoders() != null) {
+            for(Encoder encoder : currentEncoders.getEncoders()) {
                 if(isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
                     return false;                            
                 }
