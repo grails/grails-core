@@ -35,6 +35,34 @@ import org.springframework.web.util.HtmlUtils;
  */
 public class HTMLCodec {
     private static final class HTMLEncoder implements Encoder, StreamingEncoder {
+        private static final String ESCAPED_BACKTICK = "&#" + ((int) '`')  + ";";
+        private static final String ESCAPED_AT = "&#" + ((int) '@')  + ";";
+        private static final String ESCAPED_EQUAL = "&#" + ((int) '=')  + ";";
+        private static final String ESCAPED_PLUS = "&#" + ((int) '+')  + ";";
+        private static final String ESCAPED_APOS = "&#" + ((int) '\'')  + ";";
+        private static final String ESCAPED_QUOTE = "&#" + ((int) '"')  + ";";
+        private static final String ESCAPED_GT = "&gt;";
+        private static final String ESCAPED_LT = "&lt;";
+        private static final String ESCAPED_AMP = "&amp;";
+
+        private String escapeCharacter(char ch) {
+          if(ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r') {
+              return "";
+          }
+          switch(ch) {
+              case '&': return ESCAPED_AMP;
+              case '<': return ESCAPED_LT;          
+              case '>': return ESCAPED_GT;          
+              case '"': return ESCAPED_QUOTE;
+              case '\'': return  ESCAPED_APOS;
+              case '+': return ESCAPED_PLUS;
+              case '=': return ESCAPED_EQUAL;
+              case '@': return ESCAPED_AT;
+              case '`': return ESCAPED_BACKTICK;
+          }
+          return null;
+        }
+        
         private static final Set<String> equivalentCodecNames = new HashSet<String>(Arrays.asList(new String[]{"HTML4","XML"}));
         
         public String getCodecName() {
@@ -43,7 +71,43 @@ public class HTMLCodec {
 
         public Object encode(Object o) {
             if(o==null) return null;
-            return HtmlUtils.htmlEscape(String.valueOf(o));
+            CharSequence str=null;
+            if(o instanceof CharSequence) {
+                str=(CharSequence)o;
+            } else {
+                str=String.valueOf(o);
+            }
+            
+            if(str.length()==0) {
+                return str;
+            }
+            
+            StringBuilder sb=null;
+            int n = str.length(), i;
+            int startPos=-1;
+            for (i = 0; i < n; i++) {
+              char ch = str.charAt(i);
+              if(startPos==-1) {
+                  startPos=i;
+              }
+              String escaped=escapeCharacter(ch);
+              if(escaped != null) {
+                  if(sb==null) {
+                      sb=new StringBuilder(str.length() * 110 / 100);
+                  }
+                  if(i-startPos > 0) {
+                      sb.append(str, startPos, i);
+                  }
+                  if(escaped.length() > 0) {
+                      sb.append(escaped);
+                  }
+                  startPos=-1;
+              }
+            }
+            if(startPos > -1 && i-startPos > 0) {
+                sb.append(str, startPos, i);
+            }
+            return sb.toString();
         }
 
         public void markEncoded(CharSequence string) {
@@ -63,16 +127,27 @@ public class HTMLCodec {
             if(str==null || len <= 0) {
                 return;
             }
-            CharSequence source;
-            if(off==0 && len==str.length()) {
-                source = str;
-            } else {
-                source = str.subSequence(off, off+len);
+            int n = Math.min(str.length(), off+len); 
+            int i;
+            int startPos=-1;
+            for (i = off; i < n; i++) {
+              char ch = str.charAt(i);
+              if(startPos==-1) {
+                  startPos=i;
+              }
+              String escaped=escapeCharacter(ch);
+              if(escaped != null) {
+                  if(i-startPos > 0) {
+                      appender.append(this, encodingState, str, startPos, i-startPos);
+                  }
+                  if(escaped.length() > 0) {
+                      appender.append(this, encodingState, escaped, 0, escaped.length());
+                  }
+                  startPos=-1;
+              }
             }
-            String encoded=(String)encode(source);     
-            if(encoded != null) {
-                String encodedStr = String.valueOf(encoded);
-                appender.append(this, encodingState, encodedStr, 0, encodedStr.length()); 
+            if(startPos > -1 && i-startPos > 0) {
+                appender.append(this, encodingState, str, startPos, i-startPos);
             }
         }
     }
