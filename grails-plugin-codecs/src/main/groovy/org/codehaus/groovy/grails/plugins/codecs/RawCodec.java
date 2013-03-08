@@ -1,11 +1,15 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import java.io.IOException;
 import java.util.Set;
 
 import org.codehaus.groovy.grails.support.encoding.Decoder;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodingState;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 
-public class RawCodec implements Encoder, Decoder {
+public class RawCodec implements Encoder, Decoder, StreamingEncoder {
     public Object decode(Object o) {
         return o;
     }
@@ -28,5 +32,10 @@ public class RawCodec implements Encoder, Decoder {
 
     public void markEncoded(CharSequence string) {
         
+    }
+
+    public void encodeToStream(CharSequence source, int offset, int len, EncodedAppender appender,
+            EncodingState encodingState) throws IOException {
+        appender.append(this, encodingState, source, offset, len);
     }
 }
