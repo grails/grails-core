@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Reader;
-import java.io.Serializable;
 import java.io.Writer;
 import java.lang.ref.SoftReference;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ import java.util.Set;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
+import org.codehaus.groovy.grails.support.encoding.DefaultEncodingState;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
@@ -2070,18 +2070,13 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public boolean shouldEncodeWith(Encoder encoderToApply) {
             if(encoders != null) {
                 for(Encoder encoder : encoders) {
-                    if(isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
+                    if(DefaultEncodingState.isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
                         return false;                            
                     }
                 }
             }            
             return true;
         }     
-        
-        private boolean isEncoderEquivalentToPrevious(Encoder encoderToApply, Encoder encoder) {
-            return encoder==encoderToApply || encoder.isPreventAllOthers() || encoder.getCodecName().equals(encoderToApply.getCodecName()) ||
-                    (encoder.getEquivalentCodecNames() != null && encoder.getEquivalentCodecNames().contains(encoderToApply.getCodecName()));
-        }        
         
         public Encoder getFirstEncoder() {
             if(encoders != null && encoders.size() > 0) {
