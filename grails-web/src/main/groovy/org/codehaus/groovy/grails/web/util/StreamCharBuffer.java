@@ -581,7 +581,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                 addChunk(new StringChunk(str, 0, str.length())).setEncodingState(encodingState);
             }
         }
-        if(encodingState != null && encodingState.getEncoders().size() > 0) {
+        if(encodingState != null && encodingState.getEncoders() != null && encodingState.getEncoders().size() > 0) {
             Encoder encoder=encodingState.getEncoders().iterator().next();
             if(encoder != null)
                 encoder.markEncoded(str);
