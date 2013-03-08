@@ -31,7 +31,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.DefaultEncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateLookup;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
@@ -68,8 +68,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private final UrlPathHelper urlHelper = new UrlPathHelper();
     private ApplicationContext applicationContext;
     private String baseUrl;
-
-	private EncodingState encodingState;
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
@@ -363,62 +361,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         return encodingState;
     }
 
-    private static final class DefaultEncodingState implements EncodingState {
-        private Map<Encoder,Set<Integer>> encodingTagIdentityHashCodes=new HashMap<Encoder, Set<Integer>>();
-        
-        private Set<Integer> getIdentityHashCodesForEncoder(Encoder encoder) {
-            Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoder);
-            if(identityHashCodes==null) {
-                identityHashCodes=new HashSet<Integer>();
-                encodingTagIdentityHashCodes.put(encoder, identityHashCodes);
-            }
-            return identityHashCodes;
-        }
-
-        public Set<Encoder> getEncodersFor(CharSequence string) {
-            int identityHashCode = System.identityHashCode(string);
-            Set<Encoder> result=null;
-            for(Map.Entry<Encoder, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
-                if(entry.getValue().contains(identityHashCode)) {
-                    if(result==null) {
-                        result=Collections.singleton(entry.getKey());
-                    } else {
-                        if (result.size()==1){
-                            result=new HashSet<Encoder>(result);
-                        }   
-                        result.add(entry.getKey());
-                    }
-                }
-            }
-            return result;
-        }
-        
-        public boolean isEncodedWith(Encoder encoder, CharSequence string) {
-            return getIdentityHashCodesForEncoder(encoder).contains(System.identityHashCode(string));
-        }
-
-        public void registerEncodedWith(Encoder encoder, CharSequence escaped) {
-            getIdentityHashCodesForEncoder(encoder).add(System.identityHashCode(escaped));
-        }
-
-        public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string) {
-            Set<Encoder> tags = getEncodersFor(string);
-            if(tags != null) {
-                for(Encoder encoder : tags) {
-                    if(isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
-                        return false;                            
-                    }
-                }
-            }            
-            return true;
-        }
-
-        public boolean isEncoderEquivalentToPrevious(Encoder encoderToApply, Encoder encoder) {
-            return encoder==encoderToApply || encoder.isPreventAllOthers() || encoder.getCodecName().equals(encoderToApply.getCodecName()) ||
-                    (encoder.getEquivalentCodecNames() != null && encoder.getEquivalentCodecNames().contains(encoderToApply.getCodecName()));
-        }
-    }
-    
     private static final class DefaultEncodingStateLookup implements EncodingStateLookup {
         public EncodingState lookup() {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
@@ -433,4 +375,5 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     static {
         DefaultGrailsCodecClass.setEncodingStateLookup(new DefaultEncodingStateLookup());
     }
+
 }
