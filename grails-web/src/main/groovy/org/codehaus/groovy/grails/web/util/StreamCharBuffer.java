@@ -469,7 +469,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      */
     public Writer writeTo(Writer target) throws IOException {
         writeTo(target, false, false);
-        return getWriter();
+        return target;
     }
 
     /**
