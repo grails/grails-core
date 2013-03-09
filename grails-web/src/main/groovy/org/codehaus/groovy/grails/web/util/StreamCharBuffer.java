@@ -48,6 +48,7 @@ import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * <p>
@@ -947,25 +948,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         @Override
         public final void write(final String str) throws IOException {
-            write(resolveEncodingState(str), str, 0, str.length());
+            write(null, str, 0, str.length());
         }
 
         @Override
         public final void write(final String str, final int off, final int len) throws IOException {
-            EncodingState encodingState=null;
-            if(off==0 && len==str.length())
-                encodingState = resolveEncodingState(str);
-            write(encodingState, str, off, len);
-        }
-
-        private EncodingState resolveEncodingState(String str) {
-            if(encodingStateRegistry==null) {
-                encodingStateRegistry=DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null;
-            }
-            if(encodingStateRegistry != null) {
-                return encodingStateRegistry.getEncodingStateFor(str);
-            }
-            return null;
+            write(null, str, off, len);
         }
 
         public void append(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len) throws IOException {
@@ -1050,10 +1038,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                 write("null");
             }
             else {
-                EncodingState encodingState=null;
-                if(csq instanceof String && start==0 && end==csq.length())
-                    encodingState = resolveEncodingState((String)csq);
-                appendCharSequence(encodingState, csq, start, end);
+                appendCharSequence(null, csq, start, end);
             }
             return this;
         }
@@ -2085,7 +2070,36 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         return encodeToBuffer(encoder);
     }
     
+    public Writer getWriterForEncoder() {
+        return getWriterForEncoder(null);
+    }
+    
+    public Writer getWriterForEncoder(Encoder encoder) {
+        return getWriterForEncoder(encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null);
+    }
+    
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
-        return new EncodedAppenderWriter((EncodedAppender)getWriter(), encoder, encodingStateRegistry);
+        return new StreamCharBufferEncodedAppenderWriter(getWriter(), encoder, encodingStateRegistry);
+    }
+    
+    private static final class StreamCharBufferEncodedAppenderWriter extends EncodedAppenderWriter implements GrailsWrappedWriter {
+        private Writer writer;
+        
+        public StreamCharBufferEncodedAppenderWriter(Writer writer, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
+            super((EncodedAppender)writer, encoder, encodingStateRegistry);
+            this.writer=writer;
+        }
+        
+        public boolean isAllowUnwrappingOut() {
+            return encoder==null;
+        }
+
+        public Writer unwrap() {
+            return writer;
+        }
+
+        public void markUsed() {
+            
+        }
     }
 }
