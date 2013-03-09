@@ -13,7 +13,6 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
-import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.codehaus.groovy.runtime.GStringImpl;
 
 public class CodecPrintWriter extends GrailsPrintWriter {
@@ -80,8 +79,8 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         }
         return encodingStateRegistry;
     }    
-
-    private void encodeAndPrint(final Object obj) {
+    
+    private final void encodeAndPrint(final Object obj) {
         if (trouble || obj == null) {
             usageFlag = true;
             return;
@@ -169,7 +168,11 @@ public class CodecPrintWriter extends GrailsPrintWriter {
      */
     @Override
     public void write(final int c) {
-        encodeAndPrint(c);
+        if(encoder==null) {
+            super.write(c);
+        } else {
+            encodeAndPrint(c);
+        }
     }
 
     /**
@@ -180,7 +183,11 @@ public class CodecPrintWriter extends GrailsPrintWriter {
      */
     @Override
     public void write(final char buf[], final int off, final int len) {
-        encodeAndPrint(new String(buf, off, len));
+        if(encoder==null) {
+            super.write(buf, off, len);
+        } else {
+            encodeAndPrint(new String(buf, off, len));
+        }
     }
 
     /**
@@ -191,12 +198,24 @@ public class CodecPrintWriter extends GrailsPrintWriter {
      */
     @Override
     public void write(final String s, final int off, final int len) {
-        encodeAndPrint(s.substring(off, off+len));
+        if(encoder==null) {
+            super.write(s, off, len);
+        } else {
+            if(off==0 && len==s.length()) {
+                encodeAndPrint(s);    
+            } else {
+                encodeAndPrint(s.substring(off, off+len));
+            }
+        }
     }
 
     @Override
     public void write(final char buf[]) {
-        encodeAndPrint(new String(buf));
+        if(encoder==null) {
+            super.write(buf);
+        } else {
+            encodeAndPrint(new String(buf));
+        }
     }
 
     @Override
@@ -213,7 +232,7 @@ public class CodecPrintWriter extends GrailsPrintWriter {
 
     @Override
     public GrailsPrintWriter append(final Object obj) {
-        print(obj);
+        encodeAndPrint(obj);
         return this;
     }
 
