@@ -6,6 +6,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
+import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 
@@ -23,12 +24,15 @@ class StreamCharBufferSpec extends Specification {
         def grailsApplication = Mock(GrailsApplication)
         GrailsCodecClass htmlCodecClass = new DefaultGrailsCodecClass(HTMLCodec)
         grailsApplication.getArtefact("Codec", HTMLCodec.name) >> { htmlCodecClass }
+        GrailsCodecClass html4CodecClass = new DefaultGrailsCodecClass(HTML4Codec)
+        grailsApplication.getArtefact("Codec", HTML4Codec.name) >> { html4CodecClass }
         GrailsCodecClass rawCodecClass = new DefaultGrailsCodecClass(RawCodec)
         grailsApplication.getArtefact("Codec", RawCodec.name) >> { rawCodecClass }
-        grailsApplication.getCodecClasses() >> { [htmlCodecClass, rawCodecClass] }
+        grailsApplication.getCodecClasses() >> { [htmlCodecClass, html4CodecClass, rawCodecClass] }
         GrailsWebUtil.bindMockWebRequest()
         new CodecsGrailsPlugin().with {
             configureCodecMethods(htmlCodecClass)
+            configureCodecMethods(html4CodecClass)
             configureCodecMethods(rawCodecClass)
         }
         codecOut=new CodecPrintWriter(grailsApplication, out, HTMLCodec)
@@ -111,5 +115,14 @@ class StreamCharBufferSpec extends Specification {
         then:
         helloEncoded.toString() == "Hello world & hi"
         buffer.toString() == "Hello world & hi&lt;script&gt;"
+    }
+    
+    def "single quotes must be escaped"() {
+        when:
+            def hello="Hello 'Grails'".encodeAsHTML4()
+            def hello2="Hello 'Grails'".encodeAsHTML()
+        then:
+            hello.toString()=="Hello &#39;Grails&#39;"
+            hello2.toString()=="Hello &#39;Grails&#39;"
     }
 }
