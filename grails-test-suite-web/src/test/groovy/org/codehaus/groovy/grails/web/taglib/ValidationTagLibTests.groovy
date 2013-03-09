@@ -215,7 +215,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         // And then with French.
         webRequest.currentRequest.addPreferredLocale(Locale.FRENCH)
 
-        assertOutputEquals '<input type="text" name="usPrice" value="1&nbsp;045,99" id="usPrice" />',
+        assertOutputEquals '<input type="text" name="usPrice" value="1&#160;045,99" id="usPrice" />',
                 template, [book:b]
     }
 
