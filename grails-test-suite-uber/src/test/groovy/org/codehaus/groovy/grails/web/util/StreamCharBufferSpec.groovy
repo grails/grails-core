@@ -19,7 +19,7 @@ class StreamCharBufferSpec extends Specification {
 
     def setup() {
         buffer=new StreamCharBuffer()
-        out=new GrailsPrintWriter(buffer.writer)
+        out=new GrailsPrintWriter(buffer.writerForEncoder)
 
         def grailsApplication = Mock(GrailsApplication)
         GrailsCodecClass htmlCodecClass = new DefaultGrailsCodecClass(HTMLCodec)
@@ -59,8 +59,8 @@ class StreamCharBufferSpec extends Specification {
         when:
         def hello="Hello world & hi".encodeAsHTML()
         def buffer2=new StreamCharBuffer()
-        buffer2.writer << hello
-        buffer2.writer << "<script>"
+        buffer2.writerForEncoder << hello
+        buffer2.writerForEncoder << "<script>"
         codecOut << buffer2
         then:
         buffer.toString() == "Hello world &amp; hi&lt;script&gt;"
@@ -70,12 +70,12 @@ class StreamCharBufferSpec extends Specification {
         when:
         def hello="Hello world & hi"
         def buffer2=new StreamCharBuffer()
-        buffer2.writer << hello
-        buffer2.writer.flush()
+        buffer2.writerForEncoder << hello
+        buffer2.writerForEncoder.flush()
         def buffer3=new StreamCharBuffer()
         def helloEncoded = buffer2.encodeAsHTML().toString()
-        buffer3.writer << helloEncoded
-        buffer3.writer << "<script>"
+        buffer3.writerForEncoder << helloEncoded
+        buffer3.writerForEncoder << "<script>"
         codecOut << buffer3
         then:
         buffer.toString() == "Hello world &amp; hi&lt;script&gt;"
@@ -85,12 +85,12 @@ class StreamCharBufferSpec extends Specification {
         when:
         def hello="Hello world & hi"
         def buffer2=new StreamCharBuffer()
-        def writer = new GrailsPrintWriter(buffer2.writer)
+        def writer = new GrailsPrintWriter(buffer2.writerForEncoder)
         writer << hello
         writer.flush()
         def buffer3=new StreamCharBuffer()
         def helloEncoded = buffer2.encodeAsHTML().encodeAsHTML()
-        def writer2 = new GrailsPrintWriter(buffer3.writer)
+        def writer2 = new GrailsPrintWriter(buffer3.writerForEncoder)
         writer2 << helloEncoded
         writer2 << "<script>"
         codecOut << buffer3
@@ -103,12 +103,12 @@ class StreamCharBufferSpec extends Specification {
         when:
         def hello="Hello world & hi"
         def buffer2=new StreamCharBuffer()
-        def writer = new GrailsPrintWriter(buffer2.writer)
+        def writer = new GrailsPrintWriter(buffer2.writerForEncoder)
         writer << hello
         writer.flush()
         def buffer3=new StreamCharBuffer()
         def helloEncoded = buffer2.encodeAsRaw().encodeAsHTML()
-        def writer2 = new GrailsPrintWriter(buffer3.writer)
+        def writer2 = new GrailsPrintWriter(buffer3.writerForEncoder)
         writer2 << helloEncoded
         writer2 << "<script>"
         codecOut << buffer3
