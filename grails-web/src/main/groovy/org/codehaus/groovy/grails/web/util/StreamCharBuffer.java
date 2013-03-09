@@ -41,6 +41,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriter;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
@@ -1147,6 +1148,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public void append(Encoder encoder, StreamEncodeable streamEncodeable) throws IOException {
             streamEncodeable.encodeTo(this, encoder);
         }
+
+        public void append(Encoder encoder, char character) throws IOException {
+            markUsed();
+            allocateSpace(new EncodingStateImpl(Collections.singleton(encoder)));
+            allocBuffer.write(character);
+        }
     }
 
     /**
@@ -2076,5 +2083,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
     public CharSequence encode(Encoder encoder) {
         return encodeToBuffer(encoder);
+    }
+    
+    public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
+        return new EncodedAppenderWriter((EncodedAppender)getWriter(), encoder, encodingStateRegistry);
     }
 }
