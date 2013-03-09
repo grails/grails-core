@@ -5,9 +5,15 @@ import groovy.lang.Writable;
 import java.io.IOException;
 import java.io.Writer;
 
+import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsCodecClass;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodingState;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
+import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 import org.codehaus.groovy.runtime.GStringImpl;
 
 public class CodecPrintWriter extends GrailsPrintWriter {
@@ -65,11 +71,46 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     public void print(final Object obj) {
         encodeAndPrint(obj);
     }
+    
+    private EncodingStateRegistry encodingStateRegistry=null;
+    
+    private EncodingStateRegistry lookupEncodingStateRegistry() {
+        if(encodingStateRegistry==null) {
+            encodingStateRegistry=DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null;
+        }
+        return encodingStateRegistry;
+    }    
 
     private void encodeAndPrint(final Object obj) {
         if (trouble || obj == null) {
             usageFlag = true;
             return;
+        }
+        Writer writer=findStreamCharBufferTarget(true);
+        if(writer instanceof EncodedAppender) {
+            EncodedAppender appender=(EncodedAppender)writer;
+            Class<?> clazz = obj.getClass();
+            try {
+                if(clazz == StreamCharBuffer.class) {
+                    ((StreamEncodeable)obj).encodeTo(appender, encoder);
+                    return;
+                } else if (clazz == GStringImpl.class || clazz == String.class || obj instanceof CharSequence) {
+                    CharSequence source=(CharSequence)obj;
+                    EncodingStateRegistry encodingStateRegistry=lookupEncodingStateRegistry();
+                    EncodingState encodingState=null;
+                    if(encodingStateRegistry != null) {
+                        encodingState=encodingStateRegistry.getEncodingStateFor(source);
+                    }
+                    appender.append(encoder, encodingState, source, 0, source.length());
+                    return;
+                } else if (obj instanceof StreamEncodeable) {
+                    ((StreamEncodeable)obj).encodeTo(appender, encoder);
+                    return;
+                }
+            } catch (IOException e) {
+                handleIOException(e);
+                return;
+            }
         }
         Object encoded = encodeObject(obj);
         if (encoded == null) return;
