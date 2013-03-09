@@ -16,9 +16,17 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
 
     public Object encode(Object o) {
         if(o==null) return null;
+        
         CharSequence str=null;
         if(o instanceof CharSequence) {
             str=(CharSequence)o;
+        } else if (o instanceof Character) {
+            String escaped=escapeCharacter((Character)o);
+            if(escaped != null) {
+                return escaped;
+            } else {
+                return o;
+            }
         } else {
             str=String.valueOf(o);
         }
