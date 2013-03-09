@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.Writer;
 
 public class EncodedAppenderWriter extends Writer {
-    private EncodedAppender encodedAppender;
-    private Encoder encoder;
-    private EncodingStateRegistry encodingStateRegistry;
+    protected EncodedAppender encodedAppender;
+    protected Encoder encoder;
+    protected EncodingStateRegistry encodingStateRegistry;
     
     public EncodedAppenderWriter(EncodedAppender encodedAppender, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         this.encodedAppender=encodedAppender;
