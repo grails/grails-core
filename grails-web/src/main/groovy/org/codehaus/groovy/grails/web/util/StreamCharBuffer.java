@@ -48,7 +48,6 @@ import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * <p>
@@ -490,6 +489,23 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             }
             ((StreamCharBufferWriter)target).write(this);
             return;
+        } else if (target instanceof EncodedAppenderWriter) {
+            EncodedAppenderWriter eaw=(EncodedAppenderWriter)target;
+            if (eaw.getEncodedAppender() == writer) {
+                throw new IllegalArgumentException("Cannot write buffer to itself.");
+            }
+            if(eaw.getEncoder()==null && eaw.getEncodedAppender().getClass()==StreamCharBufferWriter.class) {
+                writeTo((Writer)eaw.getEncodedAppender(), flushTarget, emptyAfter);
+            } else {
+                encodeTo(eaw.getEncodedAppender(), eaw.getEncoder());
+                if (emptyAfter) {
+                    emptyAfterReading();
+                }
+                if (flushTarget) {
+                    target.flush();
+                }
+            }
+            return;
         }
         writeToImpl(target, flushTarget, emptyAfter);
     }
@@ -500,21 +516,23 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             current.writeTo(target);
             current = current.next;
         }
-        if (emptyAfter) {
-            firstChunk = null;
-            lastChunk = null;
-            totalCharsInList = 0;
-            totalCharsInDynamicChunks = -1;
-            sizeAtLeast = -1;
-            dynamicChunkMap.clear();
-        }
         allocBuffer.writeTo(target);
         if (emptyAfter) {
-            allocBuffer.reuseBuffer(null);
+            emptyAfterReading();
         }
         if (flushTarget) {
             target.flush();
         }
+    }
+
+    protected void emptyAfterReading() {
+        firstChunk = null;
+        lastChunk = null;
+        totalCharsInList = 0;
+        totalCharsInDynamicChunks = -1;
+        sizeAtLeast = -1;
+        dynamicChunkMap.clear();
+        allocBuffer.reuseBuffer(null);
     }
 
     /**
@@ -2079,27 +2097,6 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     }
     
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
-        return new StreamCharBufferEncodedAppenderWriter(getWriter(), encoder, encodingStateRegistry);
-    }
-    
-    private static final class StreamCharBufferEncodedAppenderWriter extends EncodedAppenderWriter implements GrailsWrappedWriter {
-        private Writer writer;
-        
-        public StreamCharBufferEncodedAppenderWriter(Writer writer, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
-            super((EncodedAppender)writer, encoder, encodingStateRegistry);
-            this.writer=writer;
-        }
-        
-        public boolean isAllowUnwrappingOut() {
-            return encoder==null;
-        }
-
-        public Writer unwrap() {
-            return writer;
-        }
-
-        public void markUsed() {
-            
-        }
+        return new EncodedAppenderWriter((EncodedAppender)getWriter(), encoder, encodingStateRegistry);
     }
 }

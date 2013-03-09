@@ -56,4 +56,12 @@ public class EncodedAppenderWriter extends Writer {
         encodedAppender.append(encoder, c);
         return this;
     }
+
+    public EncodedAppender getEncodedAppender() {
+        return encodedAppender;
+    }
+
+    public Encoder getEncoder() {
+        return encoder;
+    }
 }
