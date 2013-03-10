@@ -5,24 +5,23 @@ import groovy.lang.Writable;
 import java.io.IOException;
 import java.io.Writer;
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAware;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
 import org.codehaus.groovy.runtime.GStringImpl;
 
-public class CodecPrintWriter extends GrailsPrintWriter {
+public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware {
     private Encoder encoder;
-
-    public CodecPrintWriter(GrailsApplication grailsApplication, Writer out, Class<?> codecClass) {
+    private EncodingStateRegistry encodingStateRegistry=null;
+    
+    public CodecPrintWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         super(out);
         allowUnwrappingOut = false;
-
-        initEncode(grailsApplication, codecClass);
+        this.encoder = encoder;
+        this.encodingStateRegistry = encodingStateRegistry;
     }
 
     @Override
@@ -38,13 +37,6 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     @Override
     protected Writer findStreamCharBufferTarget(boolean markUsed) {
         return unwrapWriter(getOut());
-    }
-
-    private void initEncode(GrailsApplication grailsApplication, Class<?> codecClass) {
-        if (grailsApplication != null && codecClass != null) {
-            GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
-            encoder = codecArtefact.getEncoder();
-        }
     }
 
     private Object encodeObject(Object o) {
@@ -71,15 +63,6 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         encodeAndPrint(obj);
     }
     
-    private EncodingStateRegistry encodingStateRegistry=null;
-    
-    private EncodingStateRegistry lookupEncodingStateRegistry() {
-        if(encodingStateRegistry==null) {
-            encodingStateRegistry=DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null;
-        }
-        return encodingStateRegistry;
-    }    
-    
     private final void encodeAndPrint(final Object obj) {
         if (trouble || obj == null) {
             usageFlag = true;
@@ -95,7 +78,6 @@ public class CodecPrintWriter extends GrailsPrintWriter {
                     return;
                 } else if (clazz == GStringImpl.class || clazz == String.class || obj instanceof CharSequence) {
                     CharSequence source=(CharSequence)obj;
-                    EncodingStateRegistry encodingStateRegistry=lookupEncodingStateRegistry();
                     EncodingState encodingState=null;
                     if(encodingStateRegistry != null) {
                         encodingState=encodingStateRegistry.getEncodingStateFor(source);
@@ -281,5 +263,17 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         catch (IOException e) {
             handleIOException(e);
         }
+    }
+
+    public Encoder getEncoder() {
+        return encoder;
+    }
+
+    public void setEncoder(Encoder encoder) {
+        this.encoder = encoder;
+    }
+
+    public boolean isEncoderAware() {
+        return true;
     }
 }
