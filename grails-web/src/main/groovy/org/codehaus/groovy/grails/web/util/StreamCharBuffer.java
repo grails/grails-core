@@ -43,6 +43,7 @@ import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriter;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
@@ -231,7 +232,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable {
+public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable, EncoderAwareWriterFactory {
     static final long serialVersionUID = 5486972234419632945L;
     private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
 
@@ -860,7 +861,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      *
      * @author Lari Hotari, Sagire Software Oy
      */
-    public final class StreamCharBufferWriter extends Writer implements EncodedAppender {
+    public final class StreamCharBufferWriter extends Writer implements EncodedAppender, EncoderAwareWriterFactory {
         boolean closed = false;
         int writerUsedCounter = 0;
         boolean increaseCounter = true;
@@ -1156,6 +1157,10 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             markUsed();
             allocateSpace(new EncodingStateImpl(Collections.singleton(encoder)));
             allocBuffer.write(character);
+        }
+
+        public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
+            return StreamCharBuffer.this.getWriterForEncoder(encoder, encodingStateRegistry);
         }
     }
 

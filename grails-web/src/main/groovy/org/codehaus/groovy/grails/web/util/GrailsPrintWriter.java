@@ -23,6 +23,10 @@ import java.io.Writer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAware;
+import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 import org.codehaus.groovy.runtime.GStringImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -34,7 +38,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
+public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, EncoderAwareWriterFactory {
     protected static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
     protected static final char CRLF[] = { '\r', '\n' };
     protected boolean trouble = false;
@@ -578,5 +582,24 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
 
     public PrintWriter asPrintWriter() {
         return new GrailsPrintWriterAdapter(this);
+    }
+
+    public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
+        Writer target = null;
+        if(this instanceof EncoderAware) {
+            target=getOut();
+            if(target instanceof GrailsWrappedWriter) {
+                target=((GrailsWrappedWriter)target).unwrap();
+            }
+        } else {
+            target = findStreamCharBufferTarget(false);
+        }
+        if (target instanceof EncoderAwareWriterFactory) {
+            return ((EncoderAwareWriterFactory)target).getWriterForEncoder(encoder, encodingStateRegistry);
+        } else if (target != null) {
+            return new CodecPrintWriter(target, encoder, encodingStateRegistry);
+        } else {
+            return null;
+        }
     }
 }

@@ -32,7 +32,12 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsCodecClass;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTag;
@@ -47,6 +52,7 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
+import org.codehaus.groovy.grails.web.util.GrailsWrappedWriter;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
@@ -193,11 +199,35 @@ public abstract class GroovyPage extends Script {
             request = grailsWebRequest.getCurrentRequest();
         }
         setVariableDirectly(OUT, out);
-        if (codecClass != null) {
-            codecOut = new CodecPrintWriter(grailsApplication, out, codecClass);
-        } else {
-            codecOut = out;
+        
+        Encoder encoder=null;
+        if (grailsApplication != null && codecClass != null) {
+            GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
+            encoder = codecArtefact.getEncoder();
         }
+        
+        Writer realTarget = target;
+        while (realTarget instanceof GrailsWrappedWriter) {
+            GrailsWrappedWriter gpr = ((GrailsWrappedWriter)realTarget);
+            if (gpr.isAllowUnwrappingOut()) {
+                realTarget = gpr.unwrap();
+            } else {
+                break;
+            }
+        }
+        
+        EncodingStateRegistry encodingStateRegistry = DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null;
+        if(realTarget instanceof EncoderAwareWriterFactory) {
+            Writer codecWriter = ((EncoderAwareWriterFactory)realTarget).getWriterForEncoder(encoder, encodingStateRegistry);
+            if(codecWriter instanceof GrailsPrintWriter) {
+                codecOut=(GrailsPrintWriter)codecWriter;
+            } else if (codecWriter != null) {
+                codecOut=new GrailsPrintWriter(codecWriter);
+            }
+        } else {
+            codecOut=new CodecPrintWriter(realTarget, encoder, encodingStateRegistry);
+        }
+        
         setVariableDirectly(CODEC_OUT, codecOut);
     }
 
