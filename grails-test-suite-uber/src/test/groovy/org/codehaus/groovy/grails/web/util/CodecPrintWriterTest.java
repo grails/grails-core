@@ -13,9 +13,13 @@ import org.codehaus.groovy.grails.commons.ArtefactInfo;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec;
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest;
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse;
+import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -26,11 +30,21 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.context.request.RequestContextHolder;
 
 public class CodecPrintWriterTest {
+    EncodingStateRegistry registry=new DefaultEncodingStateRegistry();
+    
+    private Encoder getEncoder(GrailsApplication grailsApplication, Class<?> codecClass) {
+        Encoder encoder=null;
+        if (grailsApplication != null && codecClass != null) {
+            GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
+            encoder = codecArtefact.getEncoder();
+        }
+        return encoder;
+    }
 
     @Test
     public void testPrintString() {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, HTMLCodec.class);
+        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry);
         writer.print("&&");
         assertEquals("&amp;&amp;", stringwriter.getValue());
     }
@@ -38,7 +52,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStringWithClosure() {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, CodecWithClosureProperties.class);
+        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
         writer.print("hello");
         assertEquals("-> hello <-", stringwriter.getValue());
     }
@@ -46,7 +60,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStreamCharBuffer() throws IOException {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, HTMLCodec.class);
+        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry);
         StreamCharBuffer buf=new StreamCharBuffer();
         buf.getWriter().write("&&");
         writer.write(buf);
@@ -56,7 +70,7 @@ public class CodecPrintWriterTest {
     @Test
     public void testPrintStreamCharBufferWithClosure() throws IOException {
         FastStringWriter stringwriter=new FastStringWriter();
-        CodecPrintWriter writer=new CodecPrintWriter(new MockGrailsApplication(), stringwriter, CodecWithClosureProperties.class);
+        CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
         StreamCharBuffer buf=new StreamCharBuffer();
         buf.getWriter().write("hola");
         writer.write(buf);
@@ -73,7 +87,7 @@ public class CodecPrintWriterTest {
         GroovyPageOutputStack outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
         GrailsPrintWriter out = outputStack.getProxyWriter();
         webRequest.setOut(out);
-        GrailsPrintWriter codecOut = new CodecPrintWriter(new MockGrailsApplication(), out, CodecWithClosureProperties.class);
+        GrailsPrintWriter codecOut = new CodecPrintWriter(out, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
 
         // print some output
         codecOut.print("hola");

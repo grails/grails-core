@@ -9,6 +9,8 @@ import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
+import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest.DefaultEncodingStateRegistryLookup;
 
 import spock.lang.Specification
 
@@ -35,7 +37,7 @@ class StreamCharBufferSpec extends Specification {
             configureCodecMethods(html4CodecClass)
             configureCodecMethods(rawCodecClass)
         }
-        codecOut=new CodecPrintWriter(grailsApplication, out, HTMLCodec)
+        codecOut=new CodecPrintWriter(out, htmlCodecClass.encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup())
     }
 
     def "stream char buffer should support encoding"() {
