@@ -765,18 +765,14 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             flushToConnected();
             if (!isChunkSizeResizeable()) {
                 allocBuffer.reuseBuffer(encodingState);
-                spaceLeft = allocBuffer.spaceLeft(encodingState);
-            }
-            else {
-                spaceLeft = 0;
             }
         }
         else {
             if (allocBuffer.hasChunk()) {
                 addChunk(allocBuffer.createChunk());
             }
-            spaceLeft = allocBuffer.spaceLeft(encodingState);
         }
+        spaceLeft = allocBuffer.spaceLeft(encodingState);        
         if (allocate && spaceLeft == 0) {
             totalChunkSize += allocBuffer.chunkSize();
             resizeChunkSizeAsProcentageOfTotalSize();
