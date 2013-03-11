@@ -16,6 +16,7 @@
 package grails.async
 
 import groovy.transform.CompileStatic
+import org.grails.async.factory.SynchronousPromiseFactory
 import org.grails.async.factory.gpars.GparsPromiseFactory
 
 /**
@@ -34,8 +35,7 @@ class Promises {
             promiseFactory = new GparsPromiseFactory()
         }
         else {
-            // TODO: synchronous factory
-            throw new IllegalStateException("no asynchronous library found on classpath (Example GPars).")
+            promiseFactory = new SynchronousPromiseFactory()
         }
     }
 
@@ -56,13 +56,13 @@ class Promises {
     /**
      * @see PromiseFactory#onComplete(java.util.List, groovy.lang.Closure)
      */
-    static<T> void onComplete(List<T> promises, Closure callable ) {
+    static<T> void onComplete(List<Promise<T>> promises, Closure callable ) {
         promiseFactory.onComplete(promises, callable)
     }
     /**
      * @see PromiseFactory#onError(java.util.List, groovy.lang.Closure)
      */
-    static<T> void onError(List<T> promises, Closure callable ) {
+    static<T> void onError(List<Promise<T>> promises, Closure callable ) {
         promiseFactory.onError(promises, callable)
     }
     /**

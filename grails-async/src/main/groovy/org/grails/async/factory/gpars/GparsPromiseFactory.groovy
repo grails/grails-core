@@ -59,12 +59,12 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
         }
     }
 
-    def <T> void onComplete(List<T> promises, Closure callable) {
+    def <T> void onComplete(List<Promise<T>> promises, Closure callable) {
         final gparsPromises = promises.collect { (GparsPromise) it }
         Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, callable)
     }
 
-    def <T> void onError(List<T> promises, Closure callable) {
+    def <T> void onError(List<Promise<T>> promises, Closure callable) {
         final gparsPromises = promises.collect { (GparsPromise) it }
         Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, {List l ->}, callable)
     }

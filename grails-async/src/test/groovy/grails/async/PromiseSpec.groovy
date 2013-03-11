@@ -126,5 +126,16 @@ class PromiseSpec extends Specification {
         then:'the chain is executed'
             val == 10
     }
+
+    void "Test promise chaining with exception"() {
+        when:"A promise is chained"
+            def promise = Promises.createPromise { 1 + 1 }
+            promise = promise.then { it * 2 } then { throw new RuntimeException("bad")} then { it + 6 }
+            def val = promise.get()
+
+        then:'the chain is executed'
+            thrown RuntimeException
+            val == null
+    }
 }
 

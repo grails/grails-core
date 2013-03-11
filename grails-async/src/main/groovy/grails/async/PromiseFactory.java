@@ -85,12 +85,12 @@ public interface PromiseFactory {
      * @param promises The promises
      * @param callable The callback to execute
      */
-    <T> void onComplete(List<T> promises, Closure callable );
+    <T> void onComplete(List<Promise<T>> promises, Closure callable );
     /**
      * Executes the given callback if an error occurs for the list of promises
      *
      * @param promises The promises The promises
      * @param callable The error callback to execute
      */
-    <T> void onError(List<T> promises, Closure callable );
+    <T> void onError(List<Promise<T>> promises, Closure callable );
 }

@@ -15,10 +15,7 @@
  */
 package org.grails.async.factory;
 
-import grails.async.Promise;
-import grails.async.PromiseFactory;
-import grails.async.PromiseList;
-import grails.async.PromiseMap;
+import grails.async.*;
 import groovy.lang.Closure;
 
 import java.util.ArrayList;
@@ -83,8 +80,11 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
             if (value instanceof Promise) {
                 promiseMap.put(key, (Promise)value);
             }
-            if (value instanceof Closure) {
+            else if (value instanceof Closure) {
                 promiseMap.put(key, (Closure)value);
+            }
+            else {
+                promiseMap.put(key, new BoundPromise<V>((V)value));
             }
         }
 
