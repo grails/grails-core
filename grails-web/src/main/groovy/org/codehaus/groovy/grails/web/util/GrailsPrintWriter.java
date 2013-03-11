@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
 import groovy.lang.Writable;
 
 import java.io.IOException;
@@ -38,7 +40,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, EncoderAwareWriterFactory {
+public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, EncoderAwareWriterFactory, GroovyObject {
     protected static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
     protected static final char CRLF[] = { '\r', '\n' };
     protected boolean trouble = false;
@@ -49,6 +51,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
     protected Writer previousOut = null;
 
     public GrailsPrintWriter(Writer out) {
+        this.metaClass = InvokerHelper.getMetaClass(this.getClass());
         setOut(out);
     }
 
@@ -601,5 +604,31 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
         } else {
             return null;
         }
+    }
+
+    // GroovyObject interface implementation to speed up metaclass operations
+    private transient MetaClass metaClass;
+
+    public Object getProperty(String property) {
+        return getMetaClass().getProperty(this, property);
+    }
+
+    public void setProperty(String property, Object newValue) {
+        getMetaClass().setProperty(this, property, newValue);
+    }
+
+    public Object invokeMethod(String name, Object args) {
+        return getMetaClass().invokeMethod(this, name, args);
+    }
+
+    public MetaClass getMetaClass() {
+        if (metaClass == null) {
+            metaClass = InvokerHelper.getMetaClass(getClass());
+        }
+        return metaClass;
+    }
+
+    public void setMetaClass(MetaClass metaClass) {
+        this.metaClass = metaClass;
     }
 }
