@@ -16,7 +16,6 @@
 package grails.async
 
 import groovy.transform.CompileStatic
-import groovyx.gpars.dataflow.Dataflow
 
 import java.util.concurrent.TimeUnit
 
@@ -180,10 +179,8 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
     }
 
     Promise<Map<K, V>> onComplete(Closure callable) {
-        if (Promises.GparsPromiseCreator.isGparsAvailable()) {
-            def promises = promises.values()
-            final gparsPromises = promises.collect { (Promises.GparsPromiseCreator.GparsPromise) it }
-            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { Promises.GparsPromiseCreator.GparsPromise it -> it.internalPromise }) { List values ->
+            def promises = promises.values().toList()
+            Promises.onComplete(promises) { List values ->
                 Map<K,V> newMap = [:]
                 values.eachWithIndex { V value, int i ->
                     def p = promises[i]
@@ -194,21 +191,10 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
                 callable.call(newMap)
             }
             return this
-        }
-        else {
-            throw new IllegalStateException("Cannot register onComplete callback, no asynchronous library found on classpath (Example GPars).")
-        }
     }
 
     Promise<Map<K, V>> onError(Closure callable) {
-        if (Promises.GparsPromiseCreator.isGparsAvailable()) {
-            final gparsPromises = promises.values().collect { (Promises.GparsPromiseCreator.GparsPromise) it }
-            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { Promises.GparsPromiseCreator.GparsPromise it -> it.internalPromise }, {List l ->}, callable)
-            return this
-        }
-        else {
-            throw new IllegalStateException("Cannot register onError callback, no asynchronous library found on classpath (Example GPars).")
-        }
+        Promises.onError(promises.values().toList(), callable)
     }
 
     Promise<Map<K, V>> then(Closure callable) {

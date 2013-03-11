@@ -11,14 +11,14 @@ import java.util.concurrent.TimeoutException
 class PromiseSpec extends Specification {
 
     void cleanup() {
-        Promises.removeDecorators()
+        Promises.promiseFactory.removeDecorators()
     }
     void "Test add promise decorator"() {
         when:"A decorator is added"
             def decorator = { Closure c ->
                 return { "*${c.call(*it)}*" }
             } as Promise.Decorator
-            Promises.addDecorator(decorator)
+            Promises.promiseFactory.addDecorator(decorator)
 
             def p = Promises.createPromise { 10 }
             def result = p.get()

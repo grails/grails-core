@@ -16,7 +16,6 @@
 package grails.async
 
 import groovy.transform.CompileStatic
-import groovyx.gpars.dataflow.Dataflow
 
 import java.util.concurrent.TimeUnit
 
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeUnit
  * @since 2.3
  */
 @CompileStatic
-class PromiseList implements Promise<List> {
+class PromiseList<T> implements Promise<List<T>> {
 
     protected def List<Promise> promises = []
 
@@ -77,32 +76,18 @@ class PromiseList implements Promise<List> {
      * @param callable The callable
      */
     Promise onComplete(Closure callable ) {
-        if (Promises.GparsPromiseCreator.isGparsAvailable()) {
-            final gparsPromises = promises.collect { (Promises.GparsPromiseCreator.GparsPromise) it }
-            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { Promises.GparsPromiseCreator.GparsPromise it -> it.internalPromise }, callable)
-            return this
-        }
-        else {
-            throw new IllegalStateException("Cannot register onComplete callback, no asynchronous library found on classpath (Example GPars).")
-        }
+        Promises.onComplete(promises, callable)
     }
 
     Promise onError(Closure callable) {
-        if (Promises.GparsPromiseCreator.isGparsAvailable()) {
-            final gparsPromises = promises.collect { (Promises.GparsPromiseCreator.GparsPromise) it }
-            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { Promises.GparsPromiseCreator.GparsPromise it -> it.internalPromise }, {List l ->}, callable)
-            return this
-        }
-        else {
-            throw new IllegalStateException("Cannot register onError callback, no asynchronous library found on classpath (Example GPars).")
-        }
+        Promises.onError(promises, callable)
     }
 
     @Override
     Promise then(Closure callable) {
         onComplete callable
     }
-/**
+    /**
      * Synchronously obtains all the values from all the promises
      * @return The values
      */
