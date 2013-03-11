@@ -1406,8 +1406,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         public int spaceLeft(EncodingState encodingState) {
-            if(this.encodingState != null && (encodingState == null || !this.encodingState.equals(encodingState))) {
-                return 0;
+            if(this.encodingState != null && (encodingState == null || !this.encodingState.equals(encodingState)) && hasChunk()) {
+                addChunk(allocBuffer.createChunk());
+                this.encodingState = null;                
             }
             this.nextEncoders = encodingState;
             return size - used;
