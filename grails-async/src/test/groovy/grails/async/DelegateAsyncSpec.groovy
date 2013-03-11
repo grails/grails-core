@@ -1,6 +1,5 @@
 package grails.async
 
-import grails.async.transform.DelegateAsync
 import spock.lang.Specification
 
 /**

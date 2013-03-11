@@ -34,7 +34,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implementation of {@link grails.async.transform.DelegateAsync} transformation
+ * Implementation of {@link grails.async.DelegateAsync} transformation
  *
  * @author Graeme Rocher
  * @since 2.3

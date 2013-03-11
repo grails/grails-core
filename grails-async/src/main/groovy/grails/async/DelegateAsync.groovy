@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.async.transform
+package grails.async
 
 import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
