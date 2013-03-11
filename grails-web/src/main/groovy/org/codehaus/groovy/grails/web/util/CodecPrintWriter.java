@@ -33,10 +33,15 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware 
     public boolean isUsed() {
         return usageFlag;
     }
+    
+    @Override
+    protected Writer unwrapWriter(Writer writer) {
+        return writer;
+    }
 
     @Override
     protected Writer findStreamCharBufferTarget(boolean markUsed) {
-        return unwrapWriter(getOut());
+        return getOut();
     }
 
     private Object encodeObject(Object o) {
