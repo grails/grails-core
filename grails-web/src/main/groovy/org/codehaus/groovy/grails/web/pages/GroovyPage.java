@@ -30,7 +30,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
@@ -54,7 +53,6 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
-import org.codehaus.groovy.grails.web.util.GrailsWrappedWriter;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
