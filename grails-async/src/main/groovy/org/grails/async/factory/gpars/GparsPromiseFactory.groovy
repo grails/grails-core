@@ -59,14 +59,27 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
         }
     }
 
-    def <T> void onComplete(List<Promise<T>> promises, Closure callable) {
+    @Override
+    def <T> List<T> waitAll(List<Promise<T>> promises) {
         final gparsPromises = promises.collect { (GparsPromise) it }
-        Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, callable)
+        final List<groovyx.gpars.dataflow.Promise<T>> dataflowPromises = gparsPromises.collect() { GparsPromise it -> it.internalPromise }
+        final groovyx.gpars.dataflow.Promise<List<T>> promise = Dataflow.whenAllBound(dataflowPromises, { List<T> values -> values })
+        return promise.get()
     }
 
-    def <T> void onError(List<Promise<T>> promises, Closure callable) {
+    def <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure callable) {
         final gparsPromises = promises.collect { (GparsPromise) it }
-        Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, {List l ->}, callable)
+        new GparsPromise<List<T>>(
+                Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, callable)
+        )
+
+    }
+
+    def <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable) {
+        final gparsPromises = promises.collect { (GparsPromise) it }
+        new GparsPromise<List<T>>(
+            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, {List l ->}, callable)
+        )
     }
 
 

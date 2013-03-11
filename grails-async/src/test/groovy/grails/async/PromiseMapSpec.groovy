@@ -54,4 +54,18 @@ class PromiseMapSpec extends Specification{
             err.message == "bad"
 
     }
+
+    void "Test PromiseMap with then chaining"() {
+        when:"A promise map is used with then chaining"
+            def map = new PromiseMap<String, Integer>()
+            map["one"] = { 1 }
+            def promise = map.then { it['four'] = 4; it }.then { it['eight'] = 8; it }
+            def result = promise.get()
+        then:"An appropriately populated map is returned to the onComplete event"
+            result != null
+            result["one"] == 1
+            result["four"] == 4
+            result["eight"] == 8
+
+    }
 }

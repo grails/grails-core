@@ -8,8 +8,8 @@ import spock.lang.Specification
 class PromiseListSpec extends Specification{
 
 
-    void "Test promise chaining"() {
-        when:"A promise is chained"
+    void "Test promise list handling"() {
+        when:"A list of promises is created"
             def list = new PromiseList()
             list << { 1 }
             list << { 2 }
@@ -20,12 +20,23 @@ class PromiseListSpec extends Specification{
             }
             sleep 500
 
-        then:'the chain is executed'
+        then:'then the result from onComplete is correct'
             res == [1,2,3]
     }
 
-    void "Test promise chaining with an exception"() {
-        when:"A promise is chained"
+    void "Test promise list with then chaining"() {
+        when:"A promise list is used with then chaining"
+            def list = new PromiseList<Integer>()
+            list << { 1 }
+            def promise = list.then { it << 2; it }.then { it << 3; it}
+            def result = promise.get()
+        then:"An appropriately populated list is produced"
+            result == [1,2,3]
+
+    }
+
+    void "Test promise list with an exception"() {
+        when:"A promise list with a promise that throws an exception"
             def list = new PromiseList()
             list << { 1 }
             list << { throw new RuntimeException("bad") }
@@ -40,7 +51,7 @@ class PromiseListSpec extends Specification{
             }
             sleep 500
 
-        then:'the chain is executed'
+        then:'the onError handler is invoked with the exception'
             err != null
             err.message == "bad"
             res == null

@@ -77,22 +77,24 @@ class PromiseList<T> implements Promise<List<T>> {
      */
     Promise onComplete(Closure callable ) {
         Promises.onComplete(promises, callable)
+        return this
     }
 
     Promise onError(Closure callable) {
         Promises.onError(promises, callable)
+        return this
     }
 
     @Override
     Promise then(Closure callable) {
-        onComplete callable
+        Promises.onComplete(promises, { List values -> values}).then(callable)
     }
     /**
      * Synchronously obtains all the values from all the promises
      * @return The values
      */
     List get() {
-        this.iterator().collect { Promise p -> p.get() }
+        Promises.waitAll(promises)
     }
 
     @Override

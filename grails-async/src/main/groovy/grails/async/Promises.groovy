@@ -56,13 +56,13 @@ class Promises {
     /**
      * @see PromiseFactory#onComplete(java.util.List, groovy.lang.Closure)
      */
-    static<T> void onComplete(List<Promise<T>> promises, Closure callable ) {
+    static<T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure callable ) {
         promiseFactory.onComplete(promises, callable)
     }
     /**
      * @see PromiseFactory#onError(java.util.List, groovy.lang.Closure)
      */
-    static<T> void onError(List<Promise<T>> promises, Closure callable ) {
+    static<T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable ) {
         promiseFactory.onError(promises, callable)
     }
     /**

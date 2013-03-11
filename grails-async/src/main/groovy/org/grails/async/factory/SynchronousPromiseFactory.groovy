@@ -48,20 +48,32 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
         }
     }
 
-    def <T> void onComplete(List<Promise<T>> promises, Closure callable) {
+    @Override
+    def <T> List<T> waitAll(List<Promise<T>> promises) {
+        return promises.collect() { Promise<T> p -> p.get() }
+    }
+
+    def <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure callable) {
         try {
             List<T> values = promises.collect { Promise<T> p -> p.get() }
-            callable.call(values)
+            try {
+                final result = callable.call(values)
+                return new BoundPromise(result)
+            } catch (Throwable e) {
+                return new BoundPromise(e)
+            }
         } catch (Throwable e) {
-            // ignore
+            return new BoundPromise(e)
         }
     }
 
-    def <T> void onError(List<Promise<T>> promises, Closure callable) {
+    def <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable) {
         try {
-            promises.each{ Promise<T> p -> p.get() }
+            final values = promises.collect() { Promise<T> p -> p.get() }
+            return new BoundPromise<List<T>>(values)
         } catch (Throwable e) {
             callable.call(e)
+            return new BoundPromise(e)
         }
     }
 }

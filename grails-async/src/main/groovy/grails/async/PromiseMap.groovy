@@ -179,29 +179,39 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
     }
 
     Promise<Map<K, V>> onComplete(Closure callable) {
-            def promises = promises.values().toList()
-            Promises.onComplete(promises) { List values ->
-                Map<K,V> newMap = [:]
-                values.eachWithIndex { V value, int i ->
-                    def p = promises[i]
-                    K key = promisesKeys.get(p)
-                    newMap.put(key, value)
-                }
-
-                callable.call(newMap)
+        def promises = promises.values().toList()
+        Promises.onComplete(promises) { List values ->
+            Map<K,V> newMap = [:]
+            values.eachWithIndex { V value, int i ->
+                def p = promises[i]
+                K key = promisesKeys.get(p)
+                newMap.put(key, value)
             }
-            return this
+
+            callable.call(newMap)
+        }
+        return this
     }
 
     Promise<Map<K, V>> onError(Closure callable) {
         Promises.onError(promises.values().toList(), callable)
+        return this
     }
 
     Promise<Map<K, V>> then(Closure callable) {
-        onComplete callable
+        def promises = promises.values().toList()
+        Promises.onComplete(promises, { List values -> values}).then { List values ->
+            Map<K,V> newMap = [:]
+            values.eachWithIndex { V value, int i ->
+                def p = promises[i]
+                K key = promisesKeys.get(p)
+                newMap.put(key, value)
+            }
+            callable.call(newMap)
+        }
     }
 
     Promise<Map<K, V>> leftShift(Closure callable) {
-        onComplete callable
+        then callable
     }
 }

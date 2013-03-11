@@ -19,6 +19,7 @@ import grails.async.*;
 import groovy.lang.Closure;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -91,21 +92,9 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
         return promiseMap;
     }
 
-    public <T> List<T> waitAll(List<Promise<T>> promises) {
-        PromiseList<T> promiseList = new PromiseList<T>();
-
-        for (Promise<T> promise : promises) {
-            promiseList.add(promise);
-        }
-        return promiseList.get();
-    }
+    public abstract  <T> List<T> waitAll(List<Promise<T>> promises);
 
     public <T> List<T> waitAll(Promise<T>... promises) {
-        PromiseList<T> promiseList = new PromiseList<T>();
-
-        for (Promise<T> promise : promises) {
-            promiseList.add(promise);
-        }
-        return promiseList.get();
+        return waitAll(Arrays.asList(promises));
     }
 }
