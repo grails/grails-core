@@ -274,7 +274,6 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     int allocatedBufferIdSequence = 0;
     int readerCount = 0;
     boolean hasReaders = false;
-    private EncodingStateRegistry encodingStateRegistry=null;
 
     public StreamCharBuffer() {
         this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
