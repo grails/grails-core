@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import java.io.Writer;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.io.output.NullWriter;
@@ -18,6 +20,11 @@ public final class GroovyPageOutputStack {
     public static final Log log = LogFactory.getLog(GroovyPageOutputStack.class);
 
     private static final String ATTRIBUTE_NAME_OUTPUT_STACK="org.codehaus.groovy.grails.GSP_OUTPUT_STACK";
+    
+    public static interface OutputChangeListener {
+        public void outputChanged(Writer newOut);
+    }
+    
 
     public static GroovyPageOutputStack currentStack() {
         return currentStack(true);
@@ -105,6 +112,7 @@ public final class GroovyPageOutputStack {
     private Stack<WriterPair> stack = new Stack<WriterPair>();
     private GroovyPageProxyWriter proxyWriter;
     private boolean autoSync;
+    private Set<OutputChangeListener> outputChangeListeners=new LinkedHashSet<OutputChangeListener>();
 
     private class WriterPair {
         Writer originalTarget;
@@ -124,6 +132,14 @@ public final class GroovyPageOutputStack {
         @SuppressWarnings("unused")
         public GroovyPageOutputStack getOutputStack() {
             return GroovyPageOutputStack.this;
+        }
+        
+        @Override
+        public void setOut(Writer newOut) {
+            super.setOut(newOut);
+            for(OutputChangeListener outputChangeListener : outputChangeListeners) {
+                outputChangeListener.outputChanged(getOut());
+            }            
         }
     }
 
@@ -171,9 +187,19 @@ public final class GroovyPageOutputStack {
         stack.push(new WriterPair(newWriter, unwrappedWriter));
 
         proxyWriter.setOut(newWriter);
+
+
         if (autoSync) {
             applyWriterThreadLocals(newWriter);
         }
+    }
+    
+    public void registerOutputChangeListener(OutputChangeListener outputChangeListener) {
+        outputChangeListeners.add(outputChangeListener);
+    }
+    
+    public void unregisterOutputChangeListener(OutputChangeListener outputChangeListener) {
+        outputChangeListeners.remove(outputChangeListener);
     }
 
     public void pop() {

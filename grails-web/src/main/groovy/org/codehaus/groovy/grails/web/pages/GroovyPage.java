@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
+import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack.OutputChangeListener;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTag;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTagLib;
@@ -66,7 +67,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
  * @author Graeme Rocher
  * @author Lari Hotari
  */
-public abstract class GroovyPage extends Script {
+public abstract class GroovyPage extends Script implements OutputChangeListener {
 
     private static final Log LOG = LogFactory.getLog(GroovyPage.class);
 
@@ -170,48 +171,6 @@ public abstract class GroovyPage extends Script {
         }
     }
     
-    
-    private final class BodyClosureWrapperClosure extends Closure {
-        private static final long serialVersionUID = 1L;
-        Closure<?> wrappedClosure;
-        
-        public BodyClosureWrapperClosure(Closure<?> wrappedClosure) {
-            super(wrappedClosure.getOwner(), wrappedClosure.getThisObject());
-            this.wrappedClosure = wrappedClosure;
-        }
-        
-        @Override
-        public int getMaximumNumberOfParameters() {
-            return wrappedClosure.getMaximumNumberOfParameters();
-        }
-
-        @Override
-        public Class[] getParameterTypes() {
-            return wrappedClosure.getParameterTypes();
-        }
-
-        public Object doCall(Object args) {
-            Writer previous=updateCodecOut();
-            try {
-                return wrappedClosure.call(args);
-            } finally {
-                codecOut.setOut(previous);
-            }
-        }
-
-        @Override
-        public Object call(Object args) {
-            return doCall(args);
-        }
-        
-        @Override
-        public Object call(Object... args) {
-            // TODO: fix this here and also in body capture closure
-            return doCall(args);
-        }
-    }
-    
-
     protected static final Closure<?> EMPTY_BODY_CLOSURE = new ConstantClosure(BLANK_STRING);
 
     public GroovyPage() {
@@ -237,6 +196,7 @@ public abstract class GroovyPage extends Script {
     @SuppressWarnings("rawtypes")
     public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GrailsApplication grailsApplication, Class codecClass) {
         outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
+        outputStack.registerOutputChangeListener(this);
         out = outputStack.getProxyWriter();
         this.webRequest = grailsWebRequest;
         if (grailsWebRequest != null) {
@@ -252,40 +212,29 @@ public abstract class GroovyPage extends Script {
         }
         encodingStateRegistry = DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null;
         
-        codecOut=new GrailsPrintWriter(new NullWriter()) {
+        codecOut=new GrailsPrintWriter(null) {
             @Override
             public boolean isAllowUnwrappingOut() {
-                return false;//encoder==null;
+                return encoder==null;
+            }
+
+            @Override
+            protected Writer unwrapWriter(Writer writer) {
+                return writer;
             }
         };
-        updateCodecOut();
+        outputChanged(((GrailsPrintWriter)out).getOut());
         setVariableDirectly(CODEC_OUT, codecOut);
     }
-
-    protected Writer updateCodecOut() {
-        Writer realTarget = out;
-        /*
-        while (realTarget instanceof GrailsWrappedWriter) {
-            GrailsWrappedWriter gpr = ((GrailsWrappedWriter)realTarget);
-            if (gpr.isAllowUnwrappingOut()) {
-                realTarget = gpr.unwrap();
-            } else {
-                break;
-            }
-        }
-        */
-        /*
+    
+    public void outputChanged(Writer newOut) {
         Writer codecTarget;
-        if(realTarget instanceof EncoderAwareWriterFactory) {
-            codecTarget = ((EncoderAwareWriterFactory)realTarget).getWriterForEncoder(encoder, encodingStateRegistry);
+        if(newOut instanceof EncoderAwareWriterFactory) {
+            codecTarget = ((EncoderAwareWriterFactory)newOut).getWriterForEncoder(encoder, encodingStateRegistry);
         } else {
-            codecTarget=new CodecPrintWriter(realTarget, encoder, encodingStateRegistry);
+            codecTarget=new CodecPrintWriter(newOut, encoder, encodingStateRegistry);
         }
-        */
-        Writer codecTarget=new CodecPrintWriter(realTarget, encoder, encodingStateRegistry);
-        Writer previousCodecTarget=codecOut.getOut();
         codecOut.setOut(codecTarget);
-        return previousCodecTarget;
     }
 
     @SuppressWarnings("unchecked")
@@ -308,6 +257,7 @@ public abstract class GroovyPage extends Script {
 
     public void cleanup() {
         outputStack.pop(true);
+        outputStack.unregisterOutputChangeListener(this);
     }
 
     public final void createClosureForHtmlPart(int partNumber, int bodyClosureIndex) {
@@ -318,9 +268,6 @@ public abstract class GroovyPage extends Script {
     public final void setBodyClosure(int index, Closure<?> bodyClosure) {
         while (index >= bodyClosures.size()) {
             bodyClosures.add(null);
-        }
-        if(!(bodyClosure instanceof ConstantClosure)) {
-            bodyClosure = new BodyClosureWrapperClosure(bodyClosure);
         }
         
         bodyClosures.set(index, bodyClosure);
