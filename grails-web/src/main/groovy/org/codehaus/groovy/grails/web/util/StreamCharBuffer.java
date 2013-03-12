@@ -823,7 +823,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     }
 
     protected boolean isChunkSizeResizeable() {
-        return (growProcent > 0);
+        return (growProcent > 0 && chunkSize < maxChunkSize);
     }
 
     protected void resizeChunkSizeAsProcentageOfTotalSize() {
