@@ -53,16 +53,20 @@ public interface PromiseFactory {
     <T> Promise<T> createPromise(Closure<T>... c);
 
     /**
-     * Adds a promise decorator to the factory
+     * Creates a promise from one or many closures
      *
-     * @param decorator The promise decorator
+     * @param c One or many closures
+     * @return A promise
      */
-    void addDecorator(Promise.Decorator decorator);
+    <T> Promise<T> createPromise(Closure<T> c, List<Promise.Decorator> decorators);
 
     /**
-     * Removes all registered decorators
+     * Creates a promise from one or many closures
+     *
+     * @param closures One or many closures
+     * @return A promise
      */
-    void removeDecorators();
+    <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<Promise.Decorator> decorators);
 
     /**
      * Synchronously waits for all promises to complete returning a list of values

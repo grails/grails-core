@@ -77,6 +77,19 @@ class Promises {
     static<T> Promise<T> createPromise(Closure<T>... c) {
         promiseFactory.createPromise(c)
     }
+
+    /**
+     * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
+     */
+    static<T> Promise<T> createPromise(Closure<T> c, List<Promise.Decorator> decorators) {
+        promiseFactory.createPromise(c, decorators)
+    }
+    /**
+     * @see PromiseFactory#createPromise(java.util.List, java.util.List)
+     */
+    static<T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<Promise.Decorator> decorators) {
+        promiseFactory.createPromise(closures, decorators)
+    }
     /**
      * @see PromiseFactory#createPromise(grails.async.Promise[])
      */

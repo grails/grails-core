@@ -46,7 +46,7 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     }
 
     @Override
-    def <T> Promise<T> createPromisesInternal(Closure<T>[] closures) {
+    def <T> Promise<T> createPromise(Closure<T>... closures) {
         if (closures.length == 1) {
             return new GparsPromise(closures[0])
         }

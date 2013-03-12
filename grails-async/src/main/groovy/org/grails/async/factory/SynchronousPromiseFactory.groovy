@@ -30,7 +30,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class SynchronousPromiseFactory extends AbstractPromiseFactory {
     @Override
-    protected def <T> Promise<T> createPromisesInternal(Closure<T>... closures) {
+    def <T> Promise<T> createPromise(Closure<T>... closures) {
         if (closures.length == 1) {
             try {
                 final value = closures[0].call()

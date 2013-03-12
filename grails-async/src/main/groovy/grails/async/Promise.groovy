@@ -76,7 +76,7 @@ interface Promise<T> {
          * @param c The closure to decorate
          * @return The decorated closure
          */
-        Closure decorate(Closure c)
+        public <D> Closure<D> decorate(Closure<D> c)
     }
 
 }
