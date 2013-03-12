@@ -42,10 +42,6 @@ public class GroovyPageTagWriter extends FastStringWriter implements EncoderAwar
         setOut(streamBuffer.getWriterForEncoder());
     }
 
-    public void setEncoder(Encoder encoder) {
-        ((EncoderAware)getOut()).setEncoder(encoder);
-    }
-
     public Encoder getEncoder() {
         return ((EncoderAware)getOut()).getEncoder();
     }
