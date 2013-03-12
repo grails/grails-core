@@ -49,7 +49,6 @@ class  GparsPromise<T> implements Promise<T> {
         internalPromise.get(timeout, units)
     }
 
-    @Override
     Promise<T> leftShift(Closure callable) {
         then callable
     }

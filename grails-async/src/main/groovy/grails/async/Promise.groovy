@@ -65,10 +65,6 @@ interface Promise<T> {
      */
     abstract Promise<T> then(Closure callable)
 
-    /**
-     * Same as #then
-     */
-    Promise<T> leftShift(Closure callable)
 
     /**
      * An interface used to decorate any function execution potentially wrapping an asynchronous function execution in new functionality
