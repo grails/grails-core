@@ -895,4 +895,35 @@ class NamedCriteriaTests extends AbstractGrailsHibernateTests {
         def pub = NamedCriteriaPublication.recentPublications.findWhere(title: 'Book Number 2')
         assertEquals 'Book Number 2', pub.title
     }
+
+    void testScrollWithNamedQuery() {
+        def now = new Date()
+        (1..5).each {num ->
+            assert new NamedCriteriaPublication(title: "Book Number ${num}",
+                datePublished: now).save()
+        }
+
+        def sr = NamedCriteriaPublication.recentPublications.scroll()
+        def res = []
+        while (sr.next()) {
+            res << sr.get(0)
+        }
+        sr.close()
+        assertEquals 5, res.size()
+
+        sr = NamedCriteriaPublication.recentPublications.scroll({
+            or{
+                eq 'title', 'Book Number 1'
+                eq 'title', 'Book Number 2'
+            }
+        })
+        res = []
+        while (sr.next()) {
+            res << sr.get(0)
+        }
+        sr.close()
+        assertEquals 2, res.size()
+        assertTrue 'Book Number 1' in res.title
+        assertFalse 'Book Number 3' in res.title
+    }
 }
