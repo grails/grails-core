@@ -31,35 +31,38 @@ import java.util.Map;
  */
 public abstract class AbstractPromiseFactory implements PromiseFactory{
 
-    private final List<Promise.Decorator> decorators = new ArrayList<grails.async.Promise.Decorator>();
-
-    public void addDecorator(Promise.Decorator decorator) {
-        decorators.add(decorator);
-    }
-
-    public void removeDecorators() {
-        decorators.clear();
-    }
-
-    /**
-     * @see PromiseFactory#createPromise(groovy.lang.Closure[])
-     */
-    public <T> Promise<T> createPromise(Closure<T>... c) {
+    @Override
+    public <T> Promise<T> createPromise(Closure<T> c, List<Promise.Decorator> decorators) {
         if (!decorators.isEmpty()) {
-            for (int i = 0; i < c.length; i++) {
-                Closure<T> closure = c[i];
-                for(grails.async.Promise.Decorator d : decorators) {
-                    closure = d.decorate(closure);
-                }
-                c[i] = closure;
-
+            for(grails.async.Promise.Decorator d : decorators) {
+                c = d.decorate(c);
             }
         }
 
-        return createPromisesInternal(c);
+        return createPromise(c);
     }
 
-    protected abstract  <T> Promise<T> createPromisesInternal(Closure<T> ... closures);
+    @Override
+    public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<Promise.Decorator> decorators) {
+
+        if(!decorators.isEmpty()) {
+            List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
+            for (Closure<T> closure : closures) {
+                for (Promise.Decorator decorator : decorators) {
+                    closure = decorator.decorate(closure);
+                }
+                newClosures.add(closure);
+            }
+            closures = newClosures;
+        }
+        PromiseList<T> promiseList = new PromiseList<T>();
+
+        for (Closure<T> closure : closures) {
+            promiseList.add(closure);
+        }
+        return promiseList;
+    }
+
     /**
      * @see PromiseFactory#createPromise(grails.async.Promise[])
      */
