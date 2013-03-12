@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
+import org.codehaus.groovy.runtime.GStringImpl
 
 /**
  * Configures pluggable codecs.
@@ -132,6 +133,6 @@ class CodecsGrailsPlugin {
     }
     
     private def addMetaMethod(methodName, closure) {
-        Object.metaClass."${methodName}" << closure
+        [String, GStringImpl, StringBuffer, StringBuilder, Object].each { it.metaClass."${methodName}" << closure }
     }
 }
