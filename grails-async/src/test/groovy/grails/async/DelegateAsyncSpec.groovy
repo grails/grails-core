@@ -40,6 +40,9 @@ class MathService {
     Integer sum(int n1, int n2) {
         n1 + n2
     }
+    void calculate() {
+        // no-op
+    }
 }
 @DelegateAsync(MathService)
 class AsyncMathService {}

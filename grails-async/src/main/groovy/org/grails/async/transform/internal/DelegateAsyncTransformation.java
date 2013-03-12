@@ -42,6 +42,7 @@ import java.util.List;
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class DelegateAsyncTransformation implements ASTTransformation {
     private static final ArgumentListExpression NO_ARGS = new ArgumentListExpression();
+    private static final String VOID = "void";
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
         if (nodes.length != 2 || !(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof AnnotatedNode)) {
@@ -83,7 +84,10 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                 MethodNode existingMethod = classNode.getMethod(m.getName(), m.getParameters());
                 if (existingMethod == null) {
                     ClassNode promiseNode = ClassHelper.make(Promise.class).getPlainNodeReference();
-                    promiseNode.setGenericsTypes( new GenericsType[]{ new GenericsType(m.getReturnType().getPlainNodeReference()) });
+                    ClassNode returnType = m.getReturnType().getPlainNodeReference();
+                    if(!returnType.getNameWithoutPackage().equals(VOID)) {
+                        promiseNode.setGenericsTypes( new GenericsType[]{ new GenericsType(returnType) });
+                    }
                     final BlockStatement methodBody = new BlockStatement();
                     final BlockStatement promiseBody = new BlockStatement();
 
