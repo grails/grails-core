@@ -70,6 +70,14 @@ public interface PromiseFactory {
     <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators);
 
     /**
+     * Creates a promise from one or many closures
+     *
+     * @param closures One or many closures
+     * @return A promise
+     */
+    <T> Promise<List<T>> createPromise(List<Closure<T>> closures);
+
+    /**
      * Synchronously waits for all promises to complete returning a list of values
      *
      * @param promises The promises

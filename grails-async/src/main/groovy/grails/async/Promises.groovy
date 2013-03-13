@@ -101,7 +101,7 @@ class Promises {
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
     static<T> Promise<List<T>> tasks(List<Closure<T>> closures) {
-        promiseFactory.createPromise(closures, Collections.emptyList())
+        promiseFactory.createPromise(closures)
     }
 
     /**

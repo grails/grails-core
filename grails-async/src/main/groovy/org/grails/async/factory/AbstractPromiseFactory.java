@@ -19,10 +19,7 @@ import grails.async.*;
 import groovy.lang.Closure;
 import org.grails.async.decorator.PromiseDecorator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Abstract implementation of the {@link grails.async.PromiseFactory} interface
@@ -44,9 +41,13 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
     }
 
     @Override
-    public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
+    public <T> Promise<List<T>> createPromise(List<Closure<T>> closures) {
+        return createPromise(closures,null);
+    }
 
-        if(!decorators.isEmpty()) {
+    @Override
+    public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
+        if(decorators != null && !decorators.isEmpty()) {
             List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
             for (Closure<T> closure : closures) {
                 for (PromiseDecorator decorator : decorators) {
