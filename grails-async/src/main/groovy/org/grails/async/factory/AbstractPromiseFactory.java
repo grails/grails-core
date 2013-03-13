@@ -17,6 +17,7 @@ package org.grails.async.factory;
 
 import grails.async.*;
 import groovy.lang.Closure;
+import org.grails.async.decorator.PromiseDecorator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,9 +33,9 @@ import java.util.Map;
 public abstract class AbstractPromiseFactory implements PromiseFactory{
 
     @Override
-    public <T> Promise<T> createPromise(Closure<T> c, List<Promise.Decorator> decorators) {
+    public <T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
         if (!decorators.isEmpty()) {
-            for(grails.async.Promise.Decorator d : decorators) {
+            for(PromiseDecorator d : decorators) {
                 c = d.decorate(c);
             }
         }
@@ -43,12 +44,12 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
     }
 
     @Override
-    public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<Promise.Decorator> decorators) {
+    public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
 
         if(!decorators.isEmpty()) {
             List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
             for (Closure<T> closure : closures) {
-                for (Promise.Decorator decorator : decorators) {
+                for (PromiseDecorator decorator : decorators) {
                     closure = decorator.decorate(closure);
                 }
                 newClosures.add(closure);

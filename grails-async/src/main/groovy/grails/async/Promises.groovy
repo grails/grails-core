@@ -16,6 +16,7 @@
 package grails.async
 
 import groovy.transform.CompileStatic
+import org.grails.async.decorator.PromiseDecorator
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.grails.async.factory.gpars.GparsPromiseFactory
 
@@ -81,13 +82,13 @@ class Promises {
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
      */
-    static<T> Promise<T> createPromise(Closure<T> c, List<Promise.Decorator> decorators) {
+    static<T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
         promiseFactory.createPromise(c, decorators)
     }
     /**
      * @see PromiseFactory#createPromise(java.util.List, java.util.List)
      */
-    static<T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<Promise.Decorator> decorators) {
+    static<T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
         promiseFactory.createPromise(closures, decorators)
     }
     /**

@@ -1,5 +1,6 @@
 package grails.async
 
+import org.grails.async.decorator.PromiseDecorator
 import spock.lang.Specification
 
 import java.util.concurrent.TimeUnit
@@ -14,7 +15,7 @@ class PromiseSpec extends Specification {
         when:"A decorator is added"
             def decorator = { Closure c ->
                 return { "*${c.call(*it)}*" }
-            } as Promise.Decorator
+            } as PromiseDecorator
 
             def p = Promises.createPromise( { 10 }, [decorator])
             def result = p.get()

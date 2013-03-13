@@ -1,5 +1,6 @@
 package grails.async
 
+import org.grails.async.decorator.PromiseDecorator
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.grails.async.factory.gpars.GparsPromiseFactory
 import spock.lang.Specification
@@ -21,7 +22,7 @@ class SynchronousPromiseFactorySpec extends Specification{
         when:"A decorator is added"
         def decorator = { Closure c ->
             return { "*${c.call(*it)}*" }
-        } as Promise.Decorator
+        } as PromiseDecorator
 
         def p = Promises.createPromise( { 10 }, [decorator] )
         def result = p.get()

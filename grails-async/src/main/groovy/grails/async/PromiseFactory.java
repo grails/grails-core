@@ -16,6 +16,7 @@
 package grails.async;
 
 import groovy.lang.Closure;
+import org.grails.async.decorator.PromiseDecorator;
 
 import java.util.List;
 import java.util.Map;
@@ -58,7 +59,7 @@ public interface PromiseFactory {
      * @param c One or many closures
      * @return A promise
      */
-    <T> Promise<T> createPromise(Closure<T> c, List<Promise.Decorator> decorators);
+    <T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators);
 
     /**
      * Creates a promise from one or many closures
@@ -66,7 +67,7 @@ public interface PromiseFactory {
      * @param closures One or many closures
      * @return A promise
      */
-    <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<Promise.Decorator> decorators);
+    <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators);
 
     /**
      * Synchronously waits for all promises to complete returning a list of values
