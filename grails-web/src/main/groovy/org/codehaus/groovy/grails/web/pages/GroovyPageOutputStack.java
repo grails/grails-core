@@ -60,7 +60,9 @@ public final class GroovyPageOutputStack {
         }
 
         if (attributes.isAllowCreate()) {
-            attributes.setTopWriter(lookupRequestWriter(attributes.getWebRequest()));
+            if(attributes.getTopWriter()==null) {
+                attributes.setTopWriter(lookupRequestWriter(attributes.getWebRequest()));
+            }
             return createNew(attributes);
         }
 
