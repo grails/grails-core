@@ -35,8 +35,5 @@ public class GroovyPageTagWriter extends FastStringWriter {
     public String getValue() {
         return super.toString();
     }
-    
-    protected void initOut() {
-        setOut(streamBuffer.getWriterForEncoder());
-    }
+
 }
