@@ -1365,6 +1365,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         servletVersion = getPropertyValue(SERVLET_VERSION, props, "2.5")
+        metadata.setServletVersion(servletVersion)
         compilerSourceLevel = getPropertyValue(COMPILER_SOURCE_LEVEL, props, "1.6")
         dependencyResolver = getPropertyValue(DEPENDENCY_RESOLVER, props, "ivy")
         compilerTargetLevel = getPropertyValue(COMPILER_TARGET_LEVEL, props, "1.6")

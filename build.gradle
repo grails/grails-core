@@ -28,7 +28,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.1"
     commonsLangVersion = "2.6"
-    datastoreVersion = "1.1.5.RELEASE"
+    datastoreVersion = "2.0.0.BUILD-SNAPSHOT"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "2.1.1"
@@ -87,16 +87,14 @@ if (jointBuildGroovyJarProperty) {
 allprojects {
     repositories {
         maven { url "http://repo.grails.org/grails/core" }
-        // TODO configure this as a remote for repo.grails.org so we don't need this here...
-        maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     configurations {
         all {
             resolutionStrategy {
-//                def cacheHours = isCiBuild ? 1 : 24
-//                cacheDynamicVersionsFor cacheHours, 'hours'
-//                cacheChangingModulesFor cacheHours, 'hours'
+                def cacheHours = isCiBuild ? 0 : 24
+                cacheDynamicVersionsFor cacheHours, 'hours'
+                cacheChangingModulesFor cacheHours, 'hours'
             }
         }
     }

@@ -255,7 +255,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                 def optionalPackage = "resolution:=optional"
                 def servletVersion = ''
                 def jspVersion = ''
-                switch (metadata.getServletVersion()) {
+                switch (grailsSettings.servletVersion) {
                     case '2.4': servletVersion='version="[2.4,3.0)"'; jspVersion = 'version="[2.0,3.0)"'; break
                     case '2.5': servletVersion='version="[2.5,3.0)"'; jspVersion = 'version="[2.1,3.0)"'; break
                     case '3.0': servletVersion='version="[3.0,4.0)"'; jspVersion = 'version="[2.2,3.0)"'; break
