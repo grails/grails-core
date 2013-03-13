@@ -16,6 +16,8 @@
 package org.codehaus.groovy.grails.plugins.web.async
 
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.plugins.web.async.mvc.AsyncActionResultTransformer
+
 import javax.servlet.http.HttpServletRequest
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -29,6 +31,11 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
  */
 class ControllersAsyncGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
+    def loadAfter = ['controllers']
+
+    def doWithSpring = {
+        asyncPromiseResponseActionResultTransformer(AsyncActionResultTransformer)
+    }
 
     def doWithDynamicMethods = {
         def original = HttpServletRequest.metaClass.getMetaMethod("startAsync", null)
