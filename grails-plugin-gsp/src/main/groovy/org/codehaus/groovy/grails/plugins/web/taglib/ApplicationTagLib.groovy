@@ -17,14 +17,23 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import grails.util.GrailsUtil
 import grails.util.Metadata
+import groovy.transform.CompileStatic
 
 import org.apache.commons.io.FilenameUtils
+import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
+import org.codehaus.groovy.grails.support.encoding.Encoder
+import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.util.CodecPrintWriter
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
@@ -40,7 +49,7 @@ import org.springframework.web.servlet.support.RequestDataValueProcessor
  */
 @Artefact("TagLibrary")
 class ApplicationTagLib implements ApplicationContextAware, InitializingBean, GrailsApplicationAware {
-    static returnObjectForTags = ['createLink', 'resource', 'createLinkTo', 'cookie', 'header', 'img', 'join', 'meta', 'set']
+    static returnObjectForTags = ['createLink', 'resource', 'createLinkTo', 'cookie', 'header', 'img', 'join', 'meta', 'set', 'applyCodec']
 
     ApplicationContext applicationContext
     GrailsPluginManager pluginManager
@@ -444,5 +453,9 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         }
 
         return requestDataValueProcessor.processUrl(request, link)
+    }
+    
+    Closure applyCodec = { Map attrs, Closure body ->
+        WithCodecHelper.createWithCodecClosure(getGrailsApplication())(attrs, body)
     }
 }

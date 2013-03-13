@@ -6,23 +6,24 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 public class GroovyPageOutputStackAttributes {
-    private Writer topWriter;
+    private final Writer topWriter;
     private final Encoder templateEncoder;
     private final Encoder pageEncoder;
     private final Encoder defaultEncoder;
     private final boolean allowCreate;
     private final boolean pushTop;
     private final boolean autoSync;
+    private final boolean inheritPreviousEncoders;
     private final GrailsWebRequest webRequest;
+
+    public boolean isInheritPreviousEncoders() {
+        return inheritPreviousEncoders;
+    }
 
     public Writer getTopWriter() {
         return topWriter;
     }
     
-    public void setTopWriter(Writer topWriter) {
-        this.topWriter = topWriter;
-    }
-
     public Encoder getTemplateEncoder() {
         return templateEncoder;
     }
@@ -60,6 +61,23 @@ public class GroovyPageOutputStackAttributes {
         private boolean pushTop;
         private boolean autoSync;
         private GrailsWebRequest webRequest;
+        private boolean inheritPreviousEncoders;
+        
+        public Builder() {
+            
+        }
+        
+        public Builder(GroovyPageOutputStackAttributes attributes) {
+            this.topWriter = attributes.topWriter;
+            this.templateEncoder = attributes.templateEncoder;
+            this.pageEncoder = attributes.pageEncoder;
+            this.defaultEncoder = attributes.defaultEncoder;
+            this.allowCreate = attributes.allowCreate;
+            this.pushTop = attributes.pushTop;
+            this.autoSync = attributes.autoSync;
+            this.webRequest = attributes.webRequest;
+            this.inheritPreviousEncoders = attributes.inheritPreviousEncoders;
+        }
 
         public Builder topWriter(Writer topWriter) {
             this.topWriter = topWriter;
@@ -96,6 +114,11 @@ public class GroovyPageOutputStackAttributes {
             return this;
         }
 
+        public Builder inheritPreviousEncoders(boolean inheritPreviousEncoders) {
+            this.inheritPreviousEncoders = inheritPreviousEncoders;
+            return this;
+        }
+        
         public Builder webRequest(GrailsWebRequest webRequest) {
             this.webRequest = webRequest;
             return this;
@@ -115,5 +138,6 @@ public class GroovyPageOutputStackAttributes {
         this.pushTop = builder.pushTop;
         this.autoSync = builder.autoSync;
         this.webRequest = builder.webRequest;
+        this.inheritPreviousEncoders = builder.inheritPreviousEncoders;
     }
 }

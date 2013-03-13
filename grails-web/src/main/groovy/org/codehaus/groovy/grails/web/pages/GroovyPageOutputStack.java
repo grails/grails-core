@@ -53,7 +53,7 @@ public final class GroovyPageOutputStack {
     public static GroovyPageOutputStack currentStack(GroovyPageOutputStackAttributes attributes) {
         GroovyPageOutputStack outputStack = lookupStack(attributes.getWebRequest());
         if (outputStack != null) {
-            if (attributes.isPushTop() && attributes.getTopWriter() != null) {
+            if (attributes.isPushTop()) {
                 outputStack.push(attributes, false);
             }
             return outputStack;
@@ -61,7 +61,7 @@ public final class GroovyPageOutputStack {
 
         if (attributes.isAllowCreate()) {
             if(attributes.getTopWriter()==null) {
-                attributes.setTopWriter(lookupRequestWriter(attributes.getWebRequest()));
+                attributes=new GroovyPageOutputStackAttributes.Builder(attributes).topWriter(lookupRequestWriter(attributes.getWebRequest())).build();
             }
             return createNew(attributes);
         }
@@ -171,38 +171,39 @@ public final class GroovyPageOutputStack {
     }
 
     public void push(final Writer newWriter, final boolean checkExisting) {
-        if(cloneStackIfSameWriter(newWriter)) {
-            return;
-        }
-        if(checkExisting) checkExistingStack(newWriter);
-        
         GroovyPageOutputStackAttributes.Builder attributesBuilder=new GroovyPageOutputStackAttributes.Builder();
-        if (stack.size() > 0) {
-            StackEntry stackEntry = stack.peek();
-            attributesBuilder.pageEncoder(stackEntry.pageEncoder);
-            attributesBuilder.templateEncoder(stackEntry.templateEncoder);
-            attributesBuilder.defaultEncoder(stackEntry.defaultEncoder);
-        }
+        attributesBuilder.inheritPreviousEncoders(true);
         attributesBuilder.topWriter(newWriter);
-        push(attributesBuilder.build(), false);
+        push(attributesBuilder.build(), checkExisting);
+    }
+    
+    public void push(final GroovyPageOutputStackAttributes attributes) {
+        push(attributes, false);
     }
 
     public void push(final GroovyPageOutputStackAttributes attributes, final boolean checkExisting) {
-        if(cloneStackIfSameWriter(attributes.getTopWriter())) {
-            return;
-        }
         if(checkExisting) checkExistingStack(attributes.getTopWriter());
 
-        Writer unwrappedWriter = unwrapTargetWriter(attributes.getTopWriter());
-        if (unwrappedWriter == pageWriter && stack.size() > 0) {
-            stack.push(stack.peek().clone());
-            return;
+        StackEntry previousStackEntry = null;
+        if (stack.size() > 0) {
+            previousStackEntry = stack.peek();
+        }
+        
+        Writer topWriter = attributes.getTopWriter();
+        Writer unwrappedWriter = null;
+        if(topWriter!=null) {
+            unwrappedWriter = unwrapTargetWriter(topWriter);
+        } else if (previousStackEntry != null) {
+            topWriter = previousStackEntry.originalTarget;
+            unwrappedWriter = previousStackEntry.unwrappedTarget;
+        } else {
+            throw new NullPointerException("attributes.getTopWriter() is null and there is no previous stack item");
         }
 
-        StackEntry stackEntry = new StackEntry(attributes.getTopWriter(), unwrappedWriter);
-        stackEntry.pageEncoder = attributes.getPageEncoder();
-        stackEntry.templateEncoder = attributes.getTemplateEncoder();
-        stackEntry.defaultEncoder = attributes.getDefaultEncoder();
+        StackEntry stackEntry = new StackEntry(topWriter, unwrappedWriter);
+        stackEntry.pageEncoder = applyEncoder(attributes.getPageEncoder(), previousStackEntry != null ? previousStackEntry.pageEncoder : null, attributes.isInheritPreviousEncoders());
+        stackEntry.templateEncoder = applyEncoder(attributes.getTemplateEncoder(), previousStackEntry != null ? previousStackEntry.templateEncoder : null, attributes.isInheritPreviousEncoders());
+        stackEntry.defaultEncoder = applyEncoder(attributes.getDefaultEncoder(), previousStackEntry != null ? previousStackEntry.defaultEncoder : null, attributes.isInheritPreviousEncoders());
         stack.push(stackEntry);
 
         updateWriters(stackEntry);
@@ -211,22 +212,26 @@ public final class GroovyPageOutputStack {
             applyWriterThreadLocals(attributes.getTopWriter());
         }
     }
-
-    private void checkExistingStack(final Writer topWriter) {
-        for (StackEntry item : stack) {
-            if (item.originalTarget == topWriter) {
-                log.warn("Pushed a writer to stack a second time. Writer type " +
-                        topWriter.getClass().getName(), new Exception());
-            }
+    
+    private Encoder applyEncoder(Encoder newEncoder, Encoder previousEncoder, boolean allowInheriting) {
+        if(newEncoder != null) {
+            return newEncoder;
+        } else if (allowInheriting) {
+            return previousEncoder;
+        } else {
+            return null;
         }
     }
 
-    private boolean cloneStackIfSameWriter(final Writer topWriter) {
-        if (topWriter == pageWriter && stack.size() > 0) {
-            stack.push(stack.peek().clone());
-            return true;
+    private void checkExistingStack(final Writer topWriter) {
+        if(topWriter != null) {
+            for (StackEntry item : stack) {
+                if (item.originalTarget == topWriter) {
+                    log.warn("Pushed a writer to stack a second time. Writer type " +
+                            topWriter.getClass().getName(), new Exception());
+                }
+            }
         }
-        return false;
     }
 
     private void updateWriters(StackEntry stackEntry) {
