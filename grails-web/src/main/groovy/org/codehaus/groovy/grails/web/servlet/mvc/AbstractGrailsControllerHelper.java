@@ -21,10 +21,7 @@ import groovy.util.Proxy;
 
 import java.io.IOException;
 import java.security.AccessControlException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -72,6 +69,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
     private static final Log LOG = LogFactory.getLog(AbstractGrailsControllerHelper.class);
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
     private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
+    private Collection<ActionResultTransformer> actionResultTransformers = Collections.emptyList();
 
     public ServletContext getServletContext() {
         return servletContext;
@@ -215,6 +213,9 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             Object returnValue = null;
             try {
                 returnValue = handleAction(controller, action, request, response, params);
+                for (ActionResultTransformer actionResultTransformer : actionResultTransformers) {
+                    returnValue = actionResultTransformer.transformActionResult(webRequest,viewName,returnValue);
+                }
             }
             catch (Throwable t) {
                 String pluginName = GrailsPluginUtils.getPluginName(controller.getClass());
@@ -432,6 +433,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
+        this.actionResultTransformers = applicationContext.getBeansOfType(ActionResultTransformer.class).values();
     }
 
     public void setServletContext(ServletContext servletContext) {
