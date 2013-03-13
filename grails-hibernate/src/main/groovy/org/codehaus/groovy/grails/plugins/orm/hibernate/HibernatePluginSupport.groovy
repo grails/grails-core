@@ -379,16 +379,16 @@ Using Grails' default naming strategy: '${ImprovedNamingStrategy.name}'"""
                            proxyIfReloadEnabled = false
                        }
                     }
-    
-                    if(event.source instanceof Class) {
-                        GrailsDomainClass dc = application.getDomainClass(event.source.name)
-                        if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
-                            "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
-                                messageSource = ref("messageSource")
-                                domainClass = ref("${dc.fullName}DomainClass")
-                                sessionFactory = ref("sessionFactory$suffix")
-                                grailsApplication = ref("grailsApplication", true)
-                            }
+                }
+
+                if(event.source instanceof Class) {
+                    GrailsDomainClass dc = application.getDomainClass(event.source.name)
+                    if (!dc.abstract && GrailsHibernateUtil.usesDatasource(dc, datasourceName)) {
+                        "${dc.fullName}Validator$suffix"(HibernateDomainClassValidator) {
+                            messageSource = ref("messageSource")
+                            domainClass = ref("${dc.fullName}DomainClass")
+                            sessionFactory = ref("sessionFactory$suffix")
+                            grailsApplication = ref("grailsApplication", true)
                         }
                     }
                 }
