@@ -80,6 +80,31 @@ class Promises {
     }
 
     /**
+     * @see PromiseFactory#createPromise(java.util.Map)
+     */
+    static<K,V> Promise<Map<K,V>> tasks(Map<K, Object> map) {
+        promiseFactory.createPromise(map)
+    }
+    /**
+     * @see PromiseFactory#createPromise(groovy.lang.Closure[])
+     */
+    static<T> Promise<T> task(Closure<T> c) {
+        promiseFactory.createPromise(c)
+    }
+    /**
+     * @see PromiseFactory#createPromise(groovy.lang.Closure[])
+     */
+    static<T> Promise<T> tasks(Closure<T>... c) {
+        promiseFactory.createPromise(c)
+    }
+    /**
+     * @see PromiseFactory#createPromise(groovy.lang.Closure[])
+     */
+    static<T> Promise<List<T>> tasks(List<Closure<T>> closures) {
+        promiseFactory.createPromise(closures, Collections.emptyList())
+    }
+
+    /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
      */
     static<T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
