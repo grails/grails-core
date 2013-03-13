@@ -7,13 +7,12 @@ import java.io.Writer;
 
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.support.encoding.EncoderAware;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
 import org.codehaus.groovy.runtime.GStringImpl;
 
-public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware {
+public class CodecPrintWriter extends GrailsPrintWriter {
     private Encoder encoder;
     private EncodingStateRegistry encodingStateRegistry=null;
     
@@ -272,13 +271,5 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware 
 
     public Encoder getEncoder() {
         return encoder;
-    }
-
-    public void setEncoder(Encoder encoder) {
-        this.encoder = encoder;
-    }
-
-    public boolean isEncoderAware() {
-        return true;
     }
 }

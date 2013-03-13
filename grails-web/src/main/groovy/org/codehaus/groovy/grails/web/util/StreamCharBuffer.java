@@ -43,7 +43,7 @@ import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriter;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
@@ -232,7 +232,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable, EncoderAwareWriterFactory {
+public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable, EncodedAppenderWriterFactory {
     static final long serialVersionUID = 5486972234419632945L;
     private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
 
@@ -482,9 +482,15 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      * @param emptyAfter empties the buffer if true
      * @throws IOException
      */
+    @SuppressWarnings("resource")
     public void writeTo(Writer target, boolean flushTarget, boolean emptyAfter) throws IOException {
         if (target instanceof GrailsWrappedWriter) {
-            target = ((GrailsWrappedWriter)target).unwrap();
+            GrailsWrappedWriter wrappedWriter = ((GrailsWrappedWriter)target);
+            if(wrappedWriter.isAllowUnwrappingOut()) {
+                target = wrappedWriter.unwrap();
+            } else if (target instanceof GrailsPrintWriter && ((GrailsPrintWriter)target).getOut() instanceof EncodedAppenderWriter) {
+                target = ((GrailsPrintWriter)target).getOut();
+            }
         }
         if (target instanceof StreamCharBufferWriter) {
             if (target == writer) {
@@ -862,7 +868,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      *
      * @author Lari Hotari, Sagire Software Oy
      */
-    public final class StreamCharBufferWriter extends Writer implements EncodedAppender, EncoderAwareWriterFactory {
+    public final class StreamCharBufferWriter extends Writer implements EncodedAppender, EncodedAppenderWriterFactory {
         boolean closed = false;
         int writerUsedCounter = 0;
         boolean increaseCounter = true;

@@ -8,7 +8,7 @@ import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.support.encoding.Encoder
-import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes;
