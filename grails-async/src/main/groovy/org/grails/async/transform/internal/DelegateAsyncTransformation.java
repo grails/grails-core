@@ -19,6 +19,7 @@ package org.grails.async.transform.internal;
 import grails.async.Promise;
 import grails.async.Promises;
 import groovy.lang.Closure;
+import groovy.lang.GroovyObjectSupport;
 import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
@@ -48,6 +49,7 @@ import java.util.List;
 public class DelegateAsyncTransformation implements ASTTransformation {
     private static final ArgumentListExpression NO_ARGS = new ArgumentListExpression();
     private static final String VOID = "void";
+    public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
         if (nodes.length != 2 || !(nodes[0] instanceof AnnotationNode) || !(nodes[1] instanceof AnnotatedNode)) {
@@ -140,10 +142,13 @@ public class DelegateAsyncTransformation implements ASTTransformation {
     }
 
     private static boolean isCandidateMethod(MethodNode declaredMethod) {
+        ClassNode groovyMethods = GROOVY_OBJECT_CLASS_NODE;
+        String methodName = declaredMethod.getName();
         return !declaredMethod.isSynthetic() &&
-                !declaredMethod.getName().contains("$")&&
-                Modifier.isPublic(declaredMethod.getModifiers()) &&
-                !Modifier.isAbstract(declaredMethod.getModifiers());
+            !methodName.contains("$") &&
+            Modifier.isPublic(declaredMethod.getModifiers()) &&
+            !Modifier.isAbstract(declaredMethod.getModifiers()) &&
+            !groovyMethods.hasMethod(declaredMethod.getName(), declaredMethod.getParameters());
     }
 
     private static Parameter[] copyParameters(Parameter[] parameterTypes) {
