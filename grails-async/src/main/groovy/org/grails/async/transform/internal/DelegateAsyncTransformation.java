@@ -147,7 +147,6 @@ public class DelegateAsyncTransformation implements ASTTransformation {
         return !declaredMethod.isSynthetic() &&
             !methodName.contains("$") &&
             Modifier.isPublic(declaredMethod.getModifiers()) &&
-            !Modifier.isAbstract(declaredMethod.getModifiers()) &&
             !groovyMethods.hasMethod(declaredMethod.getName(), declaredMethod.getParameters());
     }
 
