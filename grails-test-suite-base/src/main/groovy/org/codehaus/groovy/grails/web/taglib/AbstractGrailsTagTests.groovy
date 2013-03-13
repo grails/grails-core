@@ -133,28 +133,32 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                 go.applicationContext = appCtx
             }
 
-            GroovyPageOutputStack stack=GroovyPageOutputStack.createNew(out)
-
-            println "calling tag '${tagName}'"
-            def tag = go.getProperty(tagName)
-
-            def tagWrapper = { Object[] args ->
-                // the first or second arg may be a Map
-                // wrap Map args in GroovyPageAttributes
-                def newArgs = []
-                if (args?.length > 0) {
-                    args.each {arg ->
-                        if (arg instanceof Map && (!(arg instanceof GroovyPageAttributes))) {
-                            newArgs << new GroovyPageAttributes(arg)
-                        }
-                        else {
-                            newArgs << arg
+            GroovyPageOutputStack stack=GroovyPageOutputStack.currentStack(webRequest, true)
+            stack.push(out)
+            try {
+                println "calling tag '${tagName}'"
+                def tag = go.getProperty(tagName)
+    
+                def tagWrapper = { Object[] args ->
+                    // the first or second arg may be a Map
+                    // wrap Map args in GroovyPageAttributes
+                    def newArgs = []
+                    if (args?.length > 0) {
+                        args.each {arg ->
+                            if (arg instanceof Map && (!(arg instanceof GroovyPageAttributes))) {
+                                newArgs << new GroovyPageAttributes(arg)
+                            }
+                            else {
+                                newArgs << arg
+                            }
                         }
                     }
+                    tag.call(*newArgs)
                 }
-                tag.call(*newArgs)
+                result = callable.call(tagWrapper)
+            } finally {
+                stack.pop()
             }
-            result = callable.call(tagWrapper)
         }
         return result
     }
