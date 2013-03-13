@@ -429,29 +429,29 @@ public abstract class GroovyPage extends Script {
                     throw new GrailsTagException("Tag [" + tagName + "] does not exist. No tag library found for namespace: " + tagNamespace, getGroovyPageFileName(), lineNumber);
                 }
             } else {
-                out.append('<').append(tagNamespace).append(':').append(tagName);
+                templateOut.append('<').append(tagNamespace).append(':').append(tagName);
                 for (Object o : attrs.entrySet()) {
                     Map.Entry entry = (Map.Entry) o;
-                    out.append(' ');
-                    out.append(entry.getKey()).append('=');
+                    templateOut.append(' ');
+                    templateOut.append(entry.getKey()).append('=');
                     String value = String.valueOf(entry.getValue());
                     // handle attribute value quotes & possible escaping " -> &quot;
                     boolean containsQuotes = (value.indexOf('"') > -1);
                     boolean containsSingleQuote = (value.indexOf('\'') > -1);
                     if (containsQuotes && !containsSingleQuote) {
-                        out.append('\'').append(value).append('\'');
+                        templateOut.append('\'').append(value).append('\'');
                     } else if (containsQuotes & containsSingleQuote) {
-                        out.append('\"').append(value.replaceAll("\"", "&quot;")).append('\"');
+                        templateOut.append('\"').append(value.replaceAll("\"", "&quot;")).append('\"');
                     } else {
-                        out.append('\"').append(value).append('\"');
+                        templateOut.append('\"').append(value).append('\"');
                     }
                 }
-                out.append('>');
+                templateOut.append('>');
                 if (body != null) {
                     Object bodyOutput = body.call();
-                    if (bodyOutput != null) out.print(bodyOutput);
+                    if (bodyOutput != null) templateOut.print(bodyOutput);
                 }
-                out.append("</").append(tagNamespace).append(':').append(tagName).append('>');
+                templateOut.append("</").append(tagNamespace).append(':').append(tagName).append('>');
             }
         } catch (Throwable e) {
             if (LOG.isTraceEnabled()) {
@@ -593,7 +593,7 @@ public abstract class GroovyPage extends Script {
     }
 
     public final void printHtmlPart(final int partNumber) {
-        out.write(htmlParts[partNumber]);
+        templateOut.write(htmlParts[partNumber]);
     }
 
     /**
