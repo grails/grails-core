@@ -168,17 +168,8 @@ class GroovyPageWritable implements Writable {
                 previousGspCode = (String)request.getAttribute(GrailsApplicationAttributes.GSP_CODEC);
             }
 
-            if (metaInfo.getCodecClass() != null) {
-                if (hasRequest) {
-                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getCodecName());
-                }
-                binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getCodecClass());
-            } else {
-                if (hasRequest) {
-                    request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, GSP_NONE_CODEC_NAME);
-                }
-                binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
-            }
+            makeLegacyCodecVariablesAvailable(hasRequest, binding);
+            
             binding.setVariableDirectly(GroovyPage.RESPONSE, response);
             binding.setVariableDirectly(GroovyPage.REQUEST, request);
             // support development mode's evaluate (so that doesn't search for missing variable in parent bindings)
@@ -191,12 +182,8 @@ class GroovyPageWritable implements Writable {
             }
             page.setBinding(binding);
             binding.setOwner(page);
-            page.setJspTags(metaInfo.getJspTags());
-            page.setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
-            page.setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
-            page.setHtmlParts(metaInfo.getHtmlParts());
-            page.setPluginContextPath(metaInfo.getPluginPath());
-            page.initRun(out, webRequest, metaInfo.getGrailsApplication(), metaInfo.getCodecClass());
+            
+            page.initRun(out, webRequest, metaInfo);
 
             int debugId = 0;
             long debugStartTimeMs = 0;
@@ -238,6 +225,20 @@ class GroovyPageWritable implements Writable {
             }
         }
         return out;
+    }
+
+    private void makeLegacyCodecVariablesAvailable(boolean hasRequest, GroovyPageBinding binding) {
+        if (metaInfo.getDefaultCodec() != null) {
+            if (hasRequest) {
+                request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getDefaultCodec().getName());
+            }
+            binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getDefaultCodec().getEncoder());
+        } else {
+            if (hasRequest) {
+                request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, GSP_NONE_CODEC_NAME);
+            }
+            binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, gspNoneCodeInstance);
+        }
     }
 
     private static final GspNoneCodec gspNoneCodeInstance = new GspNoneCodec();

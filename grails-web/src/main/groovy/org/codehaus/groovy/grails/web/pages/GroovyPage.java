@@ -32,14 +32,13 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
-import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack.OutputChangeListener;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTag;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTagLib;
@@ -51,7 +50,6 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagBody;
 import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
-import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
@@ -65,7 +63,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
  * @author Graeme Rocher
  * @author Lari Hotari
  */
-public abstract class GroovyPage extends Script implements OutputChangeListener {
+public abstract class GroovyPage extends Script {
 
     private static final Log LOG = LogFactory.getLog(GroovyPage.class);
 
@@ -116,6 +114,7 @@ public abstract class GroovyPage extends Script implements OutputChangeListener 
     private TagLibraryLookup gspTagLibraryLookup;
     private String[] htmlParts;
     private GrailsPrintWriter out;
+    private GrailsPrintWriter templateOut;
     private GrailsPrintWriter codecOut;
     private GroovyPageOutputStack outputStack;
     private GrailsWebRequest webRequest;
@@ -192,49 +191,37 @@ public abstract class GroovyPage extends Script implements OutputChangeListener 
     }
 
     @SuppressWarnings("rawtypes")
-    public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GrailsApplication grailsApplication, Class codecClass) {
-        outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
-        outputStack.registerOutputChangeListener(this);
-        out = outputStack.getProxyWriter();
+    public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GroovyPageMetaInfo metaInfo) {
+        setJspTags(metaInfo.getJspTags());
+        setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
+        setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
+        setHtmlParts(metaInfo.getHtmlParts());
+        setPluginContextPath(metaInfo.getPluginPath());
+        
+        encodingStateRegistry = grailsWebRequest.getEncodingStateRegistry();
+
+        GroovyPageOutputStackAttributes.Builder attributesBuilder = new GroovyPageOutputStackAttributes.Builder();
+        attributesBuilder.pageEncoder(metaInfo.getPageEncoder());
+        attributesBuilder.templateEncoder(metaInfo.getTemplateEncoder());
+        attributesBuilder.defaultEncoder(metaInfo.getDefaultEncoder());
+        attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
+        attributesBuilder.webRequest(grailsWebRequest);
+        outputStack = GroovyPageOutputStack.currentStack(attributesBuilder.build());
+        
+        out = outputStack.getPageWriter();
+        templateOut = outputStack.getTemplateWriter();
+        codecOut = outputStack.getCodecWriter();
+        
         this.webRequest = grailsWebRequest;
         if (grailsWebRequest != null) {
             grailsWebRequest.setOut(out);
             request = grailsWebRequest.getCurrentRequest();
         }
+        
         setVariableDirectly(OUT, out);
-        
-        encoder=null;
-        if (grailsApplication != null && codecClass != null) {
-            GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
-            encoder = codecArtefact.getEncoder();
-        }
-        encodingStateRegistry = DefaultGrailsCodecClass.getEncodingStateRegistryLookup() != null ? DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup() : null;
-        
-        codecOut=new GrailsPrintWriter(null) {
-            @Override
-            public boolean isAllowUnwrappingOut() {
-                return encoder==null;
-            }
-
-            @Override
-            protected Writer unwrapWriter(Writer writer) {
-                return writer;
-            }
-        };
-        outputChanged(((GrailsPrintWriter)out).getOut());
         setVariableDirectly(CODEC_OUT, codecOut);
     }
     
-    public void outputChanged(Writer newOut) {
-        Writer codecTarget;
-        if(newOut instanceof EncoderAwareWriterFactory) {
-            codecTarget = ((EncoderAwareWriterFactory)newOut).getWriterForEncoder(encoder, encodingStateRegistry);
-        } else {
-            codecTarget=new CodecPrintWriter(newOut, encoder, encodingStateRegistry);
-        }
-        codecOut.setOut(codecTarget);
-    }
-
     @SuppressWarnings("unchecked")
     private void setVariableDirectly(String name, Object value) {
         Binding binding = getBinding();
@@ -255,7 +242,6 @@ public abstract class GroovyPage extends Script implements OutputChangeListener 
 
     public void cleanup() {
         outputStack.pop(true);
-        outputStack.unregisterOutputChangeListener(this);
     }
 
     public final void createClosureForHtmlPart(int partNumber, int bodyClosureIndex) {
