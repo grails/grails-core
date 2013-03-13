@@ -80,6 +80,8 @@ public class GroovyPageParser implements Tokens {
     public static final String CONSTANT_NAME_CONTENT_TYPE = "CONTENT_TYPE";
     public static final String CONSTANT_NAME_LAST_MODIFIED = "LAST_MODIFIED";
     public static final String CONSTANT_NAME_DEFAULT_CODEC = "DEFAULT_CODEC";
+    public static final String CONSTANT_NAME_TEMPLATE_CODEC = "TEMPLATE_CODEC";
+    public static final String CONSTANT_NAME_PAGE_CODEC = "PAGE_CODEC";
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     private static final String MULTILINE_GROOVY_STRING_DOUBLEQUOTES="\"\"\"";
@@ -142,6 +144,8 @@ public class GroovyPageParser implements Tokens {
     private static final String IMPORT_DIRECTIVE = "import";
     private static final String CONTENT_TYPE_DIRECTIVE = "contentType";
     private static final String DEFAULT_CODEC_DIRECTIVE = "defaultCodec";
+    private static final String TEMPLATE_CODEC_DIRECTIVE = "templateCodec";
+    private static final String PAGE_CODEC_DIRECTIVE = "pageCodec";
     private static final String SITEMESH_PREPROCESS_DIRECTIVE = "sitemeshPreprocess";
     private static final String PAGE_DIRECTIVE = "page";
 
@@ -154,6 +158,8 @@ public class GroovyPageParser implements Tokens {
     private boolean precompileMode;
     private boolean sitemeshPreprocessMode=false;
     private String defaultCodecDirectiveValue;
+    private String pageCodecDirectiveValue="raw";
+    private String templateCodecDirectiveValue="raw";
 
     private boolean enableSitemeshPreprocessing = true;
     private File keepGeneratedDirectory;
@@ -196,9 +202,10 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding) throws IOException {
+    public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding, String defaultCodecName) throws IOException {
         this.gspEncoding = encoding;
-
+        this.defaultCodecDirectiveValue = defaultCodecName;
+        
         if (filename != null && BuildSettingsHolder.getSettings() != null) {
             GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
             if (info != null) {
@@ -226,7 +233,7 @@ public class GroovyPageParser implements Tokens {
     }
 
     public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
-        this(name, uri, filename, in, "UTF-8");
+        this(name, uri, filename, in, "UTF-8", null);
     }
 
     public void setGspEncoding(String gspEncoding) {
@@ -445,6 +452,12 @@ public class GroovyPageParser implements Tokens {
             }
             if (name.equals(DEFAULT_CODEC_DIRECTIVE)) {
                 defaultCodecDirectiveValue = value.trim();
+            }
+            if (name.equals(TEMPLATE_CODEC_DIRECTIVE)) {
+                templateCodecDirectiveValue = value.trim();
+            }
+            if (name.equals(PAGE_CODEC_DIRECTIVE)) {
+                pageCodecDirectiveValue = value.trim();
             }
             ix = mat.end();
         }
@@ -827,14 +840,13 @@ public class GroovyPageParser implements Tokens {
             out.println("public static final long " +
                     CONSTANT_NAME_LAST_MODIFIED + " = " + lastModified + "L");
 
-            out.print("public static final String " +
-                    CONSTANT_NAME_DEFAULT_CODEC + " = ");
-            if (defaultCodecDirectiveValue != null && defaultCodecDirectiveValue.length() > 0) {
-                out.println("'" + escapeGroovy(defaultCodecDirectiveValue) + "'");
-            }
-            else {
-                out.println("null");
-            }
+            out.println("public static final String " +
+                    CONSTANT_NAME_DEFAULT_CODEC + " = '" + escapeGroovy(defaultCodecDirectiveValue) + "'");
+            out.println("public static final String " +
+                    CONSTANT_NAME_TEMPLATE_CODEC + " = '" + escapeGroovy(templateCodecDirectiveValue) + "'");
+            out.println("public static final String " +
+                    CONSTANT_NAME_PAGE_CODEC + " = '" + escapeGroovy(pageCodecDirectiveValue) + "'");
+            
             out.println("}");
 
             if (shouldAddLineNumbers()) {
@@ -1313,5 +1325,13 @@ public class GroovyPageParser implements Tokens {
 
     public String getPageName() {
         return pageName;
+    }
+
+    public String getPageCodecDirectiveValue() {
+        return pageCodecDirectiveValue;
+    }
+
+    public String getTemplateCodecDirectiveValue() {
+        return templateCodecDirectiveValue;
     }
 }
