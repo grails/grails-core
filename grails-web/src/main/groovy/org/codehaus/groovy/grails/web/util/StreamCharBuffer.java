@@ -257,7 +257,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
     private final StreamCharBufferWriter writer;
     private List<ConnectedWriter> connectedWriters;
-    private Writer connectedWritersWriter;
+    private ConnectedWritersWriter connectedWritersWriter;
+    private Boolean notConnectedToEncodeAwareWriters=null;
 
     boolean preferSubChunkWhenWritingToOtherBuffer=false;
 
@@ -356,6 +357,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     }
 
     private void initConnectedWritersWriter() {
+        notConnectedToEncodeAwareWriters = null;
         if (connectedWriters.size() > 1) {
             connectedWritersWriter = new MultiOutputWriter(connectedWriters);
         }
@@ -819,6 +821,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     }
 
     private void flushToConnected() throws IOException {
+        if(notConnectedToEncodeAwareWriters==null) {
+            notConnectedToEncodeAwareWriters = !connectedWritersWriter.isEncoderAware();
+        }
         writeTo(connectedWritersWriter, true, true);
     }
 
@@ -870,7 +875,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if(b==null || len <= 0) {
                 return;
             }
-            if(encoder != null && (encodingState==null || DefaultEncodingStateRegistry.shouldEncodeWith(encoder, encodingState))) {
+            if(shouldEncode(encoder, encodingState)) {
                 EncodingState newEncoders=appendEncoders(encoder, encodingState);
                 if(encoder instanceof StreamingEncoder) {
                     ((StreamingEncoder)encoder).encodeToStream(String.valueOf(b, off, len), 0, len, this, newEncoders);
@@ -974,7 +979,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if(str==null || len <= 0) {
                 return;
             }
-            if(encoder != null && (encodingState==null || DefaultEncodingStateRegistry.shouldEncodeWith(encoder, encodingState))) {
+            if(shouldEncode(encoder, encodingState)) {
                 EncodingState newEncoders=appendEncoders(encoder, encodingState);
                 if(encoder instanceof StreamingEncoder) {
                     ((StreamingEncoder)encoder).encodeToStream(str, off, len, this, newEncoders);
@@ -990,6 +995,10 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             } else {
                 appendCharSequence(encodingState, str, off, off+len);
             }            
+        }
+
+        private boolean shouldEncode(Encoder encoder, EncodingState encodingState) {
+            return encoder != null && (notConnectedToEncodeAwareWriters==null || !notConnectedToEncodeAwareWriters) && (encodingState==null || DefaultEncodingStateRegistry.shouldEncodeWith(encoder, encodingState));
         }
 
         protected void encodeAndWrite(Encoder encoder, EncodingState newEncoders, CharSequence source)
@@ -1150,7 +1159,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         public void append(Encoder encoder, char character) throws IOException {
             markUsed();
-            allocateSpace(new EncodingStateImpl(Collections.singleton(encoder)));
+            allocateSpace((notConnectedToEncodeAwareWriters != null && notConnectedToEncodeAwareWriters) ? null : new EncodingStateImpl(Collections.singleton(encoder)));
             allocBuffer.write(character);
         }
 
@@ -1877,20 +1886,31 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         Writer writer;
         LazyInitializingWriter lazyInitializingWriter;
         final boolean autoFlush;
-
+        Boolean encoderAware=null;
+        
         ConnectedWriter(final Writer writer, final boolean autoFlush) {
             this.writer = writer;
             this.autoFlush = autoFlush;
+            initEncoderAware();
         }
 
         ConnectedWriter(final LazyInitializingWriter lazyInitializingWriter, final boolean autoFlush) {
             this.lazyInitializingWriter = lazyInitializingWriter;
             this.autoFlush = autoFlush;
         }
+        
+        private void initEncoderAware() {
+            Writer target=writer;
+            if (target instanceof GrailsWrappedWriter) {
+                target = ((GrailsWrappedWriter)target).unwrap();
+            }
+            encoderAware = (target instanceof StreamCharBufferWriter || target instanceof EncodedAppenderWriter);
+        }
 
         Writer getWriter() throws IOException {
             if (writer == null && lazyInitializingWriter != null) {
                 writer = lazyInitializingWriter.getWriter();
+                initEncoderAware();
             }
             return writer;
         }
@@ -1904,9 +1924,16 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public boolean isAutoFlush() {
             return autoFlush;
         }
+        
+        public boolean isEncoderAware() throws IOException {
+            if(encoderAware==null) {
+                getWriter();
+            }
+            return encoderAware;
+        }
     }
 
-    static final class SingleOutputWriter extends Writer {
+    static final class SingleOutputWriter extends ConnectedWritersWriter implements GrailsWrappedWriter {
         private ConnectedWriter writer;
 
         public SingleOutputWriter(ConnectedWriter writer) {
@@ -1937,15 +1964,48 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         @Override
         public void write(String str, int off, int len) throws IOException {
-            StringCharArrayAccessor.writeStringAsCharArray(writer.getWriter(), str, off, len);
+            if(!writer.isEncoderAware()) {
+                StringCharArrayAccessor.writeStringAsCharArray(writer.getWriter(), str, off, len);
+            } else {
+                writer.getWriter().write(str, off, len);
+            }
         }
+        
+        public boolean isEncoderAware() throws IOException {
+            return writer.isEncoderAware();
+        }
+
+        public boolean isAllowUnwrappingOut() {
+            return true;
+        }
+
+        public Writer unwrap() {
+            try {
+                Writer target = writer.getWriter();
+                if (target instanceof GrailsWrappedWriter) {
+                    target = ((GrailsWrappedWriter)target).unwrap();
+                }
+                return target;
+            }
+            catch (IOException e) {
+                throw new RuntimeException("Exception in initializing writer", e);
+            }
+        }
+
+        public void markUsed() {
+            
+        }
+    }
+    
+    static abstract class ConnectedWritersWriter extends Writer {
+        public abstract boolean isEncoderAware() throws IOException;
     }
 
     /**
      * delegates to several writers, used in "connectTo" mode.
      *
      */
-    static final class MultiOutputWriter extends Writer {
+    static final class MultiOutputWriter extends ConnectedWritersWriter {
         final List<ConnectedWriter> writers;
 
         public MultiOutputWriter(final List<ConnectedWriter> writers) {
@@ -1983,9 +2043,27 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         @Override
         public void write(String str, int off, int len) throws IOException {
             for (ConnectedWriter writer : writers) {
-                StringCharArrayAccessor.writeStringAsCharArray(writer.getWriter(), str, off, len);
+                if(!writer.isEncoderAware()) {
+                    StringCharArrayAccessor.writeStringAsCharArray(writer.getWriter(), str, off, len);
+                } else {
+                    writer.getWriter().write(str, off, len);
+                }
             }
         }
+        
+        Boolean encoderAware=null;
+        public boolean isEncoderAware() throws IOException {
+            if(encoderAware==null) {
+                encoderAware = false;
+                for (ConnectedWriter writer : writers) {
+                    if(writer.isEncoderAware()) {
+                        encoderAware = true;
+                        break;
+                    }
+                }
+            }
+            return encoderAware;
+        }        
     }
 
     /* Compatibility methods so that StreamCharBuffer will behave more like java.lang.String in groovy code */
