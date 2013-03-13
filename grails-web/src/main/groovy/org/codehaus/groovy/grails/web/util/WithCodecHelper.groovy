@@ -28,7 +28,8 @@ public class WithCodecHelper {
                 builder.defaultEncoder(lookupEncoder(grailsApplication, defaultEncoderName?.toString()))
                 builder.templateEncoder(lookupEncoder(grailsApplication, codecInfoMap.templateEncoder?.toString()))
             } else {
-                builder.pageEncoder(lookupEncoder(grailsApplication, codecInfo.toString()))
+                Encoder encoder = lookupEncoder(grailsApplication, codecInfo.toString())
+                builder.pageEncoder(encoder).defaultEncoder(encoder)
             }
             GroovyPageOutputStack outputStack=GroovyPageOutputStack.currentStack();
             try {
