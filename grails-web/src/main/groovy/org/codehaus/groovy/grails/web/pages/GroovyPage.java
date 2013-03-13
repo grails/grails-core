@@ -120,8 +120,6 @@ public abstract class GroovyPage extends Script {
     private GrailsWebRequest webRequest;
     private String pluginContextPath;
     private HttpServletRequest request;
-    private Encoder encoder;
-    private EncodingStateRegistry encodingStateRegistry;
 
     private final List<Closure<?>> bodyClosures = new ArrayList<Closure<?>>(15);
 
@@ -192,18 +190,17 @@ public abstract class GroovyPage extends Script {
 
     @SuppressWarnings("rawtypes")
     public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GroovyPageMetaInfo metaInfo) {
-        setJspTags(metaInfo.getJspTags());
-        setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
-        setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
-        setHtmlParts(metaInfo.getHtmlParts());
-        setPluginContextPath(metaInfo.getPluginPath());
-        
-        encodingStateRegistry = grailsWebRequest.getEncodingStateRegistry();
-
-        GroovyPageOutputStackAttributes.Builder attributesBuilder = new GroovyPageOutputStackAttributes.Builder();
-        attributesBuilder.pageEncoder(metaInfo.getPageEncoder());
-        attributesBuilder.templateEncoder(metaInfo.getTemplateEncoder());
-        attributesBuilder.defaultEncoder(metaInfo.getDefaultEncoder());
+        GroovyPageOutputStackAttributes.Builder attributesBuilder = new GroovyPageOutputStackAttributes.Builder();        
+        if(metaInfo != null) {
+            setJspTags(metaInfo.getJspTags());
+            setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
+            setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
+            setHtmlParts(metaInfo.getHtmlParts());
+            setPluginContextPath(metaInfo.getPluginPath());
+            attributesBuilder.pageEncoder(metaInfo.getPageEncoder());
+            attributesBuilder.templateEncoder(metaInfo.getTemplateEncoder());
+            attributesBuilder.defaultEncoder(metaInfo.getDefaultEncoder());
+        }
         attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
         attributesBuilder.webRequest(grailsWebRequest);
         outputStack = GroovyPageOutputStack.currentStack(attributesBuilder.build());
