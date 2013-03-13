@@ -6,7 +6,7 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 public class GroovyPageOutputStackAttributes {
-    private final Writer topWriter;
+    private Writer topWriter;
     private final Encoder templateEncoder;
     private final Encoder pageEncoder;
     private final Encoder defaultEncoder;
@@ -17,6 +17,10 @@ public class GroovyPageOutputStackAttributes {
 
     public Writer getTopWriter() {
         return topWriter;
+    }
+    
+    public void setTopWriter(Writer topWriter) {
+        this.topWriter = topWriter;
     }
 
     public Encoder getTemplateEncoder() {

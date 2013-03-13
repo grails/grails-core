@@ -54,12 +54,13 @@ public final class GroovyPageOutputStack {
         GroovyPageOutputStack outputStack = lookupStack(attributes.getWebRequest());
         if (outputStack != null) {
             if (attributes.isPushTop() && attributes.getTopWriter() != null) {
-                outputStack.push( attributes.getTopWriter());
+                outputStack.push(attributes, false);
             }
             return outputStack;
         }
 
         if (attributes.isAllowCreate()) {
+            attributes.setTopWriter(lookupRequestWriter(attributes.getWebRequest()));
             return createNew(attributes);
         }
 
@@ -95,10 +96,10 @@ public final class GroovyPageOutputStack {
 
     private static Writer lookupRequestWriter() {
         GrailsWebRequest webRequest=GrailsWebRequest.lookup();
-        return defaultRequest(webRequest);
+        return lookupRequestWriter(webRequest);
     }
 
-    private static Writer defaultRequest(GrailsWebRequest webRequest) {
+    private static Writer lookupRequestWriter(GrailsWebRequest webRequest) {
         if (webRequest != null) {
             return webRequest.getOut();
         }
