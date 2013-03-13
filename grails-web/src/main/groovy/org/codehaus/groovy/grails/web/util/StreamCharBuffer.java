@@ -380,6 +380,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         if (connectedWriters != null) {
             connectedWriters.clear();
             connectedWritersWriter = null;
+            notConnectedToEncodeAwareWriters = null;
         }
     }
 
