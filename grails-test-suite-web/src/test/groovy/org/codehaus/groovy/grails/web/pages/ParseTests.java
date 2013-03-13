@@ -47,7 +47,10 @@ public class ParseTests extends TestCase {
             + "}\n"
             + "public static final String CONTENT_TYPE = 'text/html;charset=UTF-8'\n"
             + "public static final long LAST_MODIFIED = 0L\n"
-            + "public static final String DEFAULT_CODEC = null\n" + "}\n";
+            + "public static final String DEFAULT_CODEC = 'HTML'\n"
+            + "public static final String TEMPLATE_CODEC = 'raw'\n"
+            + "public static final String PAGE_CODEC = 'raw'\n" +
+            "}\n";
 
     protected String makeImports() {
         StringBuilder result = new StringBuilder();
@@ -189,7 +192,7 @@ public class ParseTests extends TestCase {
         }
 
         InputStream gspIn = new ByteArrayInputStream(gsp.getBytes(enc.toString()));
-        GroovyPageParser parse = new GroovyPageParser(uri, uri, uri, gspIn, enc.toString());
+        GroovyPageParser parse = new GroovyPageParser(uri, uri, uri, gspIn, enc.toString(), "HTML");
 
         InputStream in = parse.parse();
         ParsedResult result = new ParsedResult();

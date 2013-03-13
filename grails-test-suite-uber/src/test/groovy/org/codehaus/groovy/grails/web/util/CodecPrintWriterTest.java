@@ -85,7 +85,7 @@ public class CodecPrintWriterTest {
 
         // Initialize out and codecOut as it is done in GroovyPage.initRun
         GroovyPageOutputStack outputStack = GroovyPageOutputStack.currentStack(true, target, false, true);
-        GrailsPrintWriter out = outputStack.getProxyWriter();
+        GrailsPrintWriter out = outputStack.getPageWriter();
         webRequest.setOut(out);
         GrailsPrintWriter codecOut = new CodecPrintWriter(out, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
 

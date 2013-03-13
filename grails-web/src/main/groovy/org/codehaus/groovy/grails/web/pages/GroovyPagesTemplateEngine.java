@@ -34,6 +34,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.ivy.util.ConfigurationUtils;
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
@@ -42,6 +43,7 @@ import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
 import org.codehaus.groovy.grails.exceptions.DefaultErrorsPrinter;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource;
@@ -542,14 +544,20 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         String path = getPathForResource(res);
         try {
             String encoding = GroovyPageParser.DEFAULT_ENCODING;
+            String defaultCodecName = "none";
             if (grailsApplication != null) {
                 Map<String,Object> config = grailsApplication.getFlatConfig();
                 Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
                 if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
                     encoding = gspEnc.toString();
                 }
+                
+                Object defaultCodecConf = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
+                if (defaultCodecConf != null) {
+                    defaultCodecName = defaultCodecConf.toString().trim();
+                }
             }
-            parser = new GroovyPageParser(name, path, path, inputStream, encoding);
+            parser = new GroovyPageParser(name, path, path, inputStream, encoding, defaultCodecName);
 
             if (grailsApplication != null) {
                 Map<String,Object> config = grailsApplication.getFlatConfig();
@@ -677,7 +685,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         pageMeta.setContentType(parse.getContentType());
         pageMeta.setLineNumbers(parse.getLineNumberMatrix());
         pageMeta.setJspTags(parse.getJspTags());
-        pageMeta.setCodecName(parse.getDefaultCodecDirectiveValue());
+        pageMeta.setDefaultCodecName(parse.getDefaultCodecDirectiveValue());
         pageMeta.initialize();
         // just return groovy and don't compile if asked
         if (GrailsUtil.isDevelopmentEnv()) {
