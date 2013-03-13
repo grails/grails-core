@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -218,5 +219,9 @@ public class TagLibraryApi extends CommonWebApi {
             }
         }
         return tagLibraryLookup;
+    }
+    
+    public Closure<?> getWithCodec(Object instance) {
+        return WithCodecHelper.createWithCodecClosure(getGrailsApplication(null));
     }
 }
