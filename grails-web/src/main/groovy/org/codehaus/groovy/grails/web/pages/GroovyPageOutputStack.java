@@ -7,7 +7,7 @@ import org.apache.commons.io.output.NullWriter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
@@ -248,8 +248,8 @@ public final class GroovyPageOutputStack {
     
     private Writer createEncodingWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         Writer encodingWriter;
-        if(out instanceof EncoderAwareWriterFactory) {
-            encodingWriter=((EncoderAwareWriterFactory)out).getWriterForEncoder(encoder, encodingStateRegistry);
+        if(out instanceof EncodedAppenderWriterFactory) {
+            encodingWriter=((EncodedAppenderWriterFactory)out).getWriterForEncoder(encoder, encodingStateRegistry);
         } else {
             encodingWriter=new CodecPrintWriter(out, encoder, encodingStateRegistry);
         }

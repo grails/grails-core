@@ -26,7 +26,7 @@ import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.support.encoding.Encoder
-import org.codehaus.groovy.grails.support.encoding.EncoderAwareWriterFactory
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder

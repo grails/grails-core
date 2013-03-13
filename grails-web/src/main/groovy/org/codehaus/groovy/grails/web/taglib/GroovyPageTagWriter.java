@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.support.encoding.EncoderAware;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 
 /**
@@ -25,7 +23,7 @@ import org.codehaus.groovy.grails.web.pages.FastStringWriter;
  * @author Graeme Rocher
  * @since 0.5
  */
-public class GroovyPageTagWriter extends FastStringWriter implements EncoderAware {
+public class GroovyPageTagWriter extends FastStringWriter {
 
     private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("groovypagetagwriter.chunksize", 512);
 
@@ -40,13 +38,5 @@ public class GroovyPageTagWriter extends FastStringWriter implements EncoderAwar
     
     protected void initOut() {
         setOut(streamBuffer.getWriterForEncoder());
-    }
-
-    public Encoder getEncoder() {
-        return ((EncoderAware)getOut()).getEncoder();
-    }
-
-    public boolean isEncoderAware() {
-        return true;
     }
 }

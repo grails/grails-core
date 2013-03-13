@@ -36,7 +36,6 @@ class ApplyCodecTagSpec extends Specification {
             output=='&lt;script&gt;'
     }
     
-    @Ignore
     def "applyCodec tag should not re-apply codecs"() {
         when:
             def output=applyTemplate('<g:applyCodec name="html"><g:applyCodec name="html"><%= "<script>" %></g:applyCodec></g:applyCodec>')
