@@ -19,8 +19,11 @@ import groovy.lang.Closure;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -35,6 +38,7 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
     private Set<String> tags = new HashSet<String>();
     private String namespace = GrailsTagLibClass.DEFAULT_NAMESPACE;
     private Set<String> returnObjectForTagsSet = new HashSet<String>();
+    private Map<String, Object> encodeAsForTags = new HashMap<String, Object>();
 
     /**
      * Default contructor.
@@ -67,6 +71,15 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
                 returnObjectForTagsSet.add(String.valueOf(tagName));
             }
         }
+        
+        Map encodeAsForTagsMap = getStaticPropertyValue(ENCODE_AS_FOR_TAGS_FIELD_NAME, Map.class);
+        if(encodeAsForTagsMap != null) {
+            for (@SuppressWarnings("unchecked")
+            Iterator<Map.Entry> it = encodeAsForTagsMap.entrySet().iterator(); it.hasNext();) {
+                Map.Entry entry = it.next();
+                encodeAsForTags.put(entry.getKey().toString(), entry.getValue());
+            }
+        }
     }
 
     public boolean hasTag(String tagName) {
@@ -83,5 +96,9 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
 
     public Set<String> getTagNamesThatReturnObject() {
         return returnObjectForTagsSet;
+    }
+    
+    public Object getEncodeAsForTag(String tagName) {
+        return encodeAsForTags.get(tagName);
     }
 }

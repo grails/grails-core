@@ -28,6 +28,7 @@ public interface GrailsTagLibClass extends InjectableGrailsClass {
     String NAMESPACE_FIELD_NAME = "namespace";
 
     String RETURN_OBJECT_FOR_TAGS_FIELD_NAME = "returnObjectForTags";
+    String ENCODE_AS_FOR_TAGS_FIELD_NAME = "encodeAsForTags";
 
     /**
      * @param tagName The name of the tag
@@ -46,4 +47,6 @@ public interface GrailsTagLibClass extends InjectableGrailsClass {
      * @return the namespace that this taglib occupies.
      */
     String getNamespace();
+    
+    Object getEncodeAsForTag(String tagName);
 }

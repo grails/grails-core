@@ -282,7 +282,19 @@ public final class GroovyPageOutputStack {
     public GroovyPageProxyWriter getCodecWriter() {
         return codecWriter;
     }
+    
+    public Encoder getPageEncoder() {
+        return stack.size() > 0 ? stack.peek().pageEncoder : null;
+    }
 
+    public Encoder getTemplateEncoder() {
+        return stack.size() > 0 ? stack.peek().templateEncoder : null;
+    }
+
+    public Encoder getDefaultEncoder() {
+        return stack.size() > 0 ? stack.peek().defaultEncoder : null;
+    }
+    
     public Writer getCurrentOriginalWriter() {
         return stack.peek().originalTarget;
     }
