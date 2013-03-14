@@ -6,13 +6,16 @@ import java.io.IOException;
 import java.io.Writer;
 
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAware;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
+import org.codehaus.groovy.grails.support.encoding.WriterEncodedAppender;
 import org.codehaus.groovy.runtime.GStringImpl;
 
-public class CodecPrintWriter extends GrailsPrintWriter {
+public class CodecPrintWriter extends GrailsPrintWriter implements EncodedAppenderFactory, EncoderAware {
     private Encoder encoder;
     private EncodingStateRegistry encodingStateRegistry=null;
     
@@ -73,8 +76,8 @@ public class CodecPrintWriter extends GrailsPrintWriter {
             return;
         }
         Writer writer=findStreamCharBufferTarget(true);
-        if(writer instanceof EncodedAppender) {
-            EncodedAppender appender=(EncodedAppender)writer;
+        if(writer instanceof EncodedAppenderFactory) {
+            EncodedAppender appender=((EncodedAppenderFactory)writer).getEncodedAppender();
             Class<?> clazz = obj.getClass();
             try {
                 if(clazz == StreamCharBuffer.class) {
@@ -271,5 +274,9 @@ public class CodecPrintWriter extends GrailsPrintWriter {
 
     public Encoder getEncoder() {
         return encoder;
+    }
+
+    public EncodedAppender getEncodedAppender() {
+        return new WriterEncodedAppender(getOut());
     }
 }
