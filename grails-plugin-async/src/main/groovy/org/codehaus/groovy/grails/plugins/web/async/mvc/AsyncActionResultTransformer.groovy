@@ -48,7 +48,7 @@ class AsyncActionResultTransformer implements ActionResultTransformer {
                 p.onComplete {
                     if(it instanceof Map) {
                         def modelAndView = new ModelAndView(viewName, it)
-                        request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView);
+                        asyncContext.getRequest().setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView);
 
                         asyncContext.dispatch()
                     }
