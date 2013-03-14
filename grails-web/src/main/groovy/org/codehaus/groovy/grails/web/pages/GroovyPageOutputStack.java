@@ -136,8 +136,8 @@ public final class GroovyPageOutputStack {
         }
     }
 
-    private class GroovyPageProxyWriter extends GrailsPrintWriter {
-        public GroovyPageProxyWriter() {
+    public class GroovyPageProxyWriter extends GrailsPrintWriter {
+        GroovyPageProxyWriter() {
             super(new NullWriter());
         }
 

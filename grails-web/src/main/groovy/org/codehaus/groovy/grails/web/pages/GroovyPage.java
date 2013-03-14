@@ -524,16 +524,17 @@ public abstract class GroovyPage extends Script {
 
         Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest);
 
-        final GroovyPageTagWriter out = new GroovyPageTagWriter();
+        final GroovyPageTagWriter tagOutput = new GroovyPageTagWriter();
         GroovyPageOutputStack outputStack = null;
         try {
             outputStack = GroovyPageOutputStack.currentStack(webRequest, false);
             if (outputStack == null) {
-                outputStack = GroovyPageOutputStack.currentStack(webRequest, true, out, true, true);
+                outputStack = GroovyPageOutputStack.currentStack(webRequest, true, tagOutput, true, true);
             }
             GroovyPageOutputStackAttributes.Builder builder = WithCodecHelper.createOutputStackAttributesBuilder(attrs.get("encodeAs"), webRequest.getAttributes().getGrailsApplication());
-            builder.topWriter(out);
+            builder.topWriter(tagOutput);
             outputStack.push(builder.build());
+            GrailsPrintWriter out = outputStack.getPageWriter();            
             Object tagLibProp = tagLib.getProperty(tagName); // retrieve tag lib and create wrapper writer
             if (tagLibProp instanceof Closure) {
                 Closure tag = (Closure) ((Closure) tagLibProp).clone();
@@ -545,7 +546,11 @@ public abstract class GroovyPage extends Script {
                         if (actualBody != null && actualBody != EMPTY_BODY_CLOSURE) {
                             Object bodyResult2 = actualBody.call();
                             if (bodyResult2 != null) {
-                                out.print(bodyResult2);
+                                if(actualBody instanceof ConstantClosure) {
+                                    outputStack.getTemplateWriter().print(bodyResult2);
+                                } else {
+                                    out.print(bodyResult2);
+                                }
                             }
                         }
 
@@ -567,7 +572,7 @@ public abstract class GroovyPage extends Script {
                 }
 
                 // add some method to always return string, configurable?
-                return out.getBuffer();
+                return tagOutput.getBuffer();
             }
 
             throw new GrailsTagException("Tag [" + tagName + "] does not exist in tag library [" +
