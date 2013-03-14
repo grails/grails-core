@@ -456,10 +456,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     }
     
     Closure applyCodec = { Map attrs, Closure body ->
-        if(attrs.isGspTagSyntaxCall()) {
-            body()
-        } else {
-            WithCodecHelper.createWithCodecClosure(getGrailsApplication())(attrs, body)
-        }
+        // encoding is handled in GroovyPage.invokeTag and GroovyPage.captureTagOutput
+        body()
     }
 }

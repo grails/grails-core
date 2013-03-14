@@ -46,6 +46,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     protected Map<String, Map<String, Object>> tagNamespaces = new HashMap<String, Map<String, Object>>();
     protected Map<String, NamespacedTagDispatcher> namespaceDispatchers = new HashMap<String, NamespacedTagDispatcher>();
     protected Map<String, Set<String>> tagsThatReturnObjectForNamespace = new HashMap<String, Set<String>>();
+    protected Map<String, Map<String,Object>> encodeAsForTagNamespaces = new HashMap<String, Map<String,Object>>();
 
     public void afterPropertiesSet() throws Exception {
         if (grailsApplication == null || applicationContext == null) {
@@ -88,12 +89,26 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
             tags = new HashMap<String, Object>();
             tagNamespaces.put(namespace, tags);
         }
+        
         for (String tagName : taglib.getTagNames()) {
             putTagLib(tags, tagName, taglib);
             tagsThatReturnObject.remove(tagName);
         }
         for (String tagName : taglib.getTagNamesThatReturnObject()) {
             tagsThatReturnObject.add(tagName);
+        }
+        
+        
+        Map<String,Object> encodeAsForTagNamespace = encodeAsForTagNamespaces.get(namespace);
+        if (encodeAsForTagNamespace==null) {
+            encodeAsForTagNamespace = new HashMap<String, Object>();
+            encodeAsForTagNamespaces.put(namespace, encodeAsForTagNamespace);
+        }
+        for (String tagName : taglib.getTagNames()) {
+            Object codecInfo = taglib.getEncodeAsForTag(tagName);
+            if(codecInfo != null) {
+                encodeAsForTagNamespace.put(tagName, codecInfo);
+            }
         }
     }
 
@@ -119,6 +134,11 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     public boolean doesTagReturnObject(String namespace, String tagName) {
         Set<String> tagsThatReturnObject = tagsThatReturnObjectForNamespace.get(namespace);
         return tagsThatReturnObject != null && tagsThatReturnObject.contains(tagName);
+    }
+    
+    public Object getEncodeAsForTag(String namespace, String tagName) {
+        Map<String,Object> encodeAsForTagNamespace = encodeAsForTagNamespaces.get(namespace);
+        return encodeAsForTagNamespace != null ? encodeAsForTagNamespace.get(tagName) : null;
     }
 
     /**
