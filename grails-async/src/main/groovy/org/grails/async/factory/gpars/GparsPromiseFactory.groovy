@@ -53,11 +53,13 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     @Override
     def <T> Promise<T> createPromise(Closure<T>... closures) {
         if (closures.length == 1) {
-            return new GparsPromise(closures[0])
+            final callable = closures[0]
+            return new GparsPromise(applyDecorators(callable, null))
         }
         else {
             def promiseList = new PromiseList()
             for(p in closures) {
+                applyDecorators(p, null)
                 promiseList << p
             }
             return promiseList

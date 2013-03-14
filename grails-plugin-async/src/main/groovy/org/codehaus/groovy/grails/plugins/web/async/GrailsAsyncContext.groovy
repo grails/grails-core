@@ -69,10 +69,6 @@ class GrailsAsyncContext implements AsyncContext {
             }
             try {
                 runnable.run()
-
-                for (PersistenceContextInterceptor i in interceptors) {
-                    i.flush()
-                }
             } finally {
                 for (PersistenceContextInterceptor i in interceptors) {
                     i.destroy()

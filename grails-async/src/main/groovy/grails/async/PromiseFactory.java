@@ -17,6 +17,7 @@ package grails.async;
 
 import groovy.lang.Closure;
 import org.grails.async.decorator.PromiseDecorator;
+import org.grails.async.decorator.PromiseDecoratorLookupStrategy;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,13 @@ import java.util.Map;
  * @since 2.3
  */
 public interface PromiseFactory {
+
+    /**
+     * Adds a PromiseDecoratorLookupStrategy. The strategy implementation must be stateless, do not add a strategy that contains state
+     *
+     * @param lookupStrategy The lookup strategy
+     */
+    void addPromiseDecoratorLookupStrategy(PromiseDecoratorLookupStrategy lookupStrategy);
 
     /**
      * Creates a promise with a value pre-bound to it

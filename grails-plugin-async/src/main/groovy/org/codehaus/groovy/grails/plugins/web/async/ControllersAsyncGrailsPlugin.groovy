@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.async
 
+import grails.async.Promises
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.plugins.web.async.mvc.AsyncActionResultTransformer
 
@@ -38,6 +39,7 @@ class ControllersAsyncGrailsPlugin {
     }
 
     def doWithDynamicMethods = {
+        Promises.promiseFactory.addPromiseDecoratorLookupStrategy(new WebRequestPromiseDecoratorLookupStrategy())
         def original = HttpServletRequest.metaClass.getMetaMethod("startAsync", null)
         if (original == null) {
             return

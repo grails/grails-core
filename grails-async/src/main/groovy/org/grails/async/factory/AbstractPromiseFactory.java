@@ -18,8 +18,10 @@ package org.grails.async.factory;
 import grails.async.*;
 import groovy.lang.Closure;
 import org.grails.async.decorator.PromiseDecorator;
+import org.grails.async.decorator.PromiseDecoratorLookupStrategy;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Abstract implementation of the {@link grails.async.PromiseFactory} interface, subclasses should extend
@@ -29,6 +31,13 @@ import java.util.*;
  * @since 2.3
  */
 public abstract class AbstractPromiseFactory implements PromiseFactory{
+
+    protected Collection<PromiseDecoratorLookupStrategy> lookupStrategies = new ConcurrentLinkedQueue<PromiseDecoratorLookupStrategy>();
+
+    @Override
+    public void addPromiseDecoratorLookupStrategy(PromiseDecoratorLookupStrategy lookupStrategy) {
+        lookupStrategies.add(lookupStrategy);
+    }
 
     @Override
     public <T> Promise<T> createBoundPromise(T value) {
@@ -40,13 +49,22 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
      */
     @Override
     public <T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
-        if (!decorators.isEmpty()) {
-            for(PromiseDecorator d : decorators) {
+        c = applyDecorators(c, decorators);
+
+        return createPromise(c);
+    }
+
+    protected  Closure applyDecorators(Closure c, List<PromiseDecorator> decorators) {
+        List<PromiseDecorator> allDecorators = decorators != null ? new ArrayList<PromiseDecorator>(decorators): new ArrayList<PromiseDecorator>();
+        for (PromiseDecoratorLookupStrategy lookupStrategy : lookupStrategies) {
+            allDecorators.addAll(lookupStrategy.findDecorators());
+        }
+        if (!allDecorators.isEmpty()) {
+            for(PromiseDecorator d : allDecorators) {
                 c = d.decorate(c);
             }
         }
-
-        return createPromise(c);
+        return c;
     }
 
     /**
@@ -62,16 +80,12 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
      */
     @Override
     public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
-        if(decorators != null && !decorators.isEmpty()) {
-            List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
-            for (Closure<T> closure : closures) {
-                for (PromiseDecorator decorator : decorators) {
-                    closure = decorator.decorate(closure);
-                }
-                newClosures.add(closure);
-            }
-            closures = newClosures;
+
+        List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
+        for (Closure<T> closure : closures) {
+            newClosures.add( applyDecorators(closure, decorators));
         }
+        closures = newClosures;
         PromiseList<T> promiseList = new PromiseList<T>();
 
         for (Closure<T> closure : closures) {
