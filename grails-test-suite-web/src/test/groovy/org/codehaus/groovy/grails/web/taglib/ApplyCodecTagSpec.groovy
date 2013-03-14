@@ -43,6 +43,13 @@ class ApplyCodecTagSpec extends Specification {
             output=='&lt;script&gt;'
     }
     
+    def "applyCodec tag should support changing templateCodec"() {
+        when:
+            def output=applyTemplate('''<g:applyCodec templateCodec="html"><script></g:applyCodec>''')
+        then:
+            output=='&lt;script&gt;'
+    }
+    
     def "encodeAs attribute should escape values"() {
         when:
             def output=applyTemplate('<g:formatBoolean boolean="${true}" true="${"<script>"}" false="false" encodeAs="html"/>')

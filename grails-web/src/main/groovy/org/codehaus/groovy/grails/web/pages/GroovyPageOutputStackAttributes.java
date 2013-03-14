@@ -57,11 +57,11 @@ public class GroovyPageOutputStackAttributes {
         private Encoder templateEncoder;
         private Encoder pageEncoder;
         private Encoder defaultEncoder;
-        private boolean allowCreate;
-        private boolean pushTop;
-        private boolean autoSync;
+        private boolean allowCreate=true;
+        private boolean pushTop=true;
+        private boolean autoSync=true;
         private GrailsWebRequest webRequest;
-        private boolean inheritPreviousEncoders;
+        private boolean inheritPreviousEncoders=false;
         
         public Builder() {
             

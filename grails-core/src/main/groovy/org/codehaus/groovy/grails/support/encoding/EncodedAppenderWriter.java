@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.support.encoding;
 import java.io.IOException;
 import java.io.Writer;
 
-public class EncodedAppenderWriter extends Writer implements EncodedAppenderWriterFactory{
+public class EncodedAppenderWriter extends Writer implements EncodedAppenderWriterFactory, EncodedAppenderFactory, EncoderAware {
     protected EncodedAppender encodedAppender;
     protected Encoder encoder;
     protected EncodingStateRegistry encodingStateRegistry;
