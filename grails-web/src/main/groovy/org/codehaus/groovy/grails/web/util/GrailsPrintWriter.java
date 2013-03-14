@@ -25,9 +25,13 @@ import java.io.Writer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriter;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.WriterEncodedAppender;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 import org.codehaus.groovy.runtime.GStringImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -595,6 +599,9 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
         }
         if (target instanceof EncodedAppenderWriterFactory) {
             return ((EncodedAppenderWriterFactory)target).getWriterForEncoder(encoder, encodingStateRegistry);
+        } else if (target instanceof EncodedAppenderFactory) {
+            EncodedAppender encodedAppender=((EncodedAppenderFactory)target).getEncodedAppender();
+            return new EncodedAppenderWriter(encodedAppender, encoder, encodingStateRegistry);
         } else if (target != null) {
             return new CodecPrintWriter(target, encoder, encodingStateRegistry);
         } else {

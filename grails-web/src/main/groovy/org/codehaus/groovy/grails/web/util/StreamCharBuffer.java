@@ -1101,7 +1101,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         public void append(Encoder encoder, char character) throws IOException {
             markUsed();
-            allocateSpace((notConnectedToEncodeAwareWriters != null && notConnectedToEncodeAwareWriters) ? null : new EncodingStateImpl(Collections.singleton(encoder)));
+            allocateSpace(isNotConnectedToEncoderAwareWriters() ? null : new EncodingStateImpl(Collections.singleton(encoder)));
             allocBuffer.write(character);
         }
 
@@ -1115,6 +1115,10 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             }
             return encodedAppender;
         }
+    }
+    
+    private boolean isNotConnectedToEncoderAwareWriters() {
+        return notConnectedToEncodeAwareWriters != null && notConnectedToEncodeAwareWriters;
     }
     
     private final static class StreamCharBufferEncodedAppender extends AbstractEncodedAppender {
@@ -1396,7 +1400,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         public int spaceLeft(EncodingState encodingState) {
-            if(this.encodingState != null && (encodingState == null || !this.encodingState.equals(encodingState)) && hasChunk()) {
+            if(this.encodingState != null && (encodingState == null || !this.encodingState.equals(encodingState)) && hasChunk() && !isNotConnectedToEncoderAwareWriters()) {
                 addChunk(allocBuffer.createChunk());
                 this.encodingState = null;                
             }
@@ -1408,7 +1412,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if(encodingState==nextEncoders) {
                 return ;
             }
-            if(encodingState != null && (nextEncoders == null || !encodingState.equals(nextEncoders))) {
+            if(encodingState != null && !isNotConnectedToEncoderAwareWriters() && (nextEncoders == null || !encodingState.equals(nextEncoders))) {
                 throw new IOException("Illegal operation in AllocatedBuffer");
             }
             encodingState = nextEncoders;
@@ -1890,8 +1894,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if (target instanceof GrailsWrappedWriter) {
                 target = ((GrailsWrappedWriter)target).unwrap();
             }
-            // TODO: check this part
-            encoderAware = (target instanceof StreamCharBufferWriter || target instanceof EncodedAppenderWriter);
+            encoderAware = (target instanceof EncodedAppenderFactory || target instanceof EncodedAppenderWriterFactory);
         }
 
         Writer getWriter() throws IOException {
