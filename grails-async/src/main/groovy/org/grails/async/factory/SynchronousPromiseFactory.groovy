@@ -51,19 +51,19 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
         try {
             List<T> values = promises.collect { Promise<T> p -> p.get() }
             final result = callable.call(values)
-            return new DefaultBoundPromise(result)
+            return new BoundPromise(result)
         } catch (Throwable e) {
-            return new DefaultBoundPromise(e)
+            return new BoundPromise(e)
         }
     }
 
     def <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable) {
         try {
             final values = promises.collect() { Promise<T> p -> p.get() }
-            return new DefaultBoundPromise<List<T>>(values)
+            return new BoundPromise<List<T>>(values)
         } catch (Throwable e) {
             callable.call(e)
-            return new DefaultBoundPromise(e)
+            return new BoundPromise(e)
         }
     }
 }

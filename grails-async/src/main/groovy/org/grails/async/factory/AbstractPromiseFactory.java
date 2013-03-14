@@ -32,7 +32,7 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
 
     @Override
     public <T> Promise<T> createBoundPromise(T value) {
-        return new DefaultBoundPromise<T>(value);
+        return new BoundPromise<T>(value);
     }
 
     /**
@@ -106,7 +106,7 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
                 promiseMap.put(key, createPromise(c));
             }
             else {
-                promiseMap.put(key, new DefaultBoundPromise<V>((V)value));
+                promiseMap.put(key, new BoundPromise<V>((V)value));
             }
         }
 

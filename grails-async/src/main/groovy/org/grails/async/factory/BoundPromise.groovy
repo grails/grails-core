@@ -27,10 +27,10 @@ import java.util.concurrent.TimeUnit
  * @since 2.3
  */
 @CompileStatic
-class DefaultBoundPromise<T> implements Promise<T> {
+class BoundPromise<T> implements Promise<T> {
     def T value
 
-    DefaultBoundPromise(T value) {
+    BoundPromise(T value) {
         this.value = value
     }
 
@@ -64,9 +64,9 @@ class DefaultBoundPromise<T> implements Promise<T> {
         if (!(value instanceof Throwable)) {
             try {
                 final value = callable.call(value)
-                return new DefaultBoundPromise(value)
+                return new BoundPromise(value)
             } catch (Throwable e) {
-                return new DefaultBoundPromise(e)
+                return new BoundPromise(e)
             }
         }
         else {
