@@ -56,4 +56,11 @@ class ApplyCodecTagSpec extends Specification {
         then:
             output=='&lt;script&gt;'
     }
+    
+    def "encodeAs attribute in taglib function call should escape values"() {
+        when:
+            def output=applyTemplate('${g.formatBoolean(boolean:true, true:"<script>", false:"false", encodeAs:"html")}')
+        then:
+            output=='&lt;script&gt;'
+    }
 }
