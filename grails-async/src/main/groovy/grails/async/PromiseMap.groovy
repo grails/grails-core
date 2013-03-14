@@ -33,7 +33,23 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
     protected LinkedHashMap<K, Promise> promises = [:]
     protected LinkedHashMap<Promise, K> promisesKeys = [:]
 
-    /**
+    PromiseMap() {
+    }
+
+    PromiseMap(Map<K, Object> values) {
+        values.each {K key, value ->
+            if (value instanceof Promise) {
+                put(key, (Promise)value)
+            }
+            else if (value instanceof Closure) {
+                put(key, (Closure)value)
+            }
+            else {
+                put(key, value)
+            }
+        }
+    }
+/**
      * @return The size the map
      */
     int size() {
@@ -63,6 +79,16 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
      */
     Promise get(K o) {
         promises.get(o)
+    }
+
+    /**
+     * Put any value and return a promise for that value
+     * @param k The key
+     * @param value The value
+     * @return The promise
+     */
+    Promise put(K k, value) {
+        put(k, Promises.createBoundPromise(value))
     }
 
     /**
@@ -120,6 +146,17 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
      */
     Promise putAt(String k, Closure promise) {
         put((K)k, promise)
+    }
+
+    /**
+     * Adds a promise for the given key
+     *
+     * @param k The key
+     * @param promise The promise
+     * @return The previous promise
+     */
+    Promise putAt(String k, value) {
+        put((K)k, value)
     }
 
     /**

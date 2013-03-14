@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 SpringSource
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.async
 
+package org.grails.async.factory
+
+import grails.async.Promise
 import groovy.transform.CompileStatic
 
 import java.util.concurrent.TimeUnit
 
 /**
- * A bound promise is a promise which is already resolved and doesn't require any asynchronous processing to calculate the value
+ * A promise that executes synchronously, in the same thread as the creator
  *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
-class BoundPromise<T> implements Promise<T> {
-    def T value
+class SynchronousPromise<T> implements Promise<T> {
+    Closure<T> callable
+    def value
 
-    BoundPromise(T value) {
-        this.value = value
+    SynchronousPromise(Closure<T> callable) {
+        this.callable = callable
     }
 
     T get() throws Throwable {
+        if (value == null) {
+            try {
+                value = callable.call()
+            } catch (e) {
+                value = e
+            }
+        }
         if (value instanceof Throwable) {
             throw value
         }
@@ -45,32 +55,27 @@ class BoundPromise<T> implements Promise<T> {
     }
 
     Promise<T> onComplete(Closure callable) {
-        if (!(value instanceof Throwable)) {
+        try {
+            final value = get()
             callable.call(value)
+        } catch (e) {
+            // ignore
         }
         return this
     }
 
     Promise<T> onError(Closure callable) {
-        if (value instanceof Throwable) {
-            callable.call(value)
+        try {
+            get()
+        } catch (e) {
+            callable.call(e)
         }
         return this
-
     }
 
     Promise<T> then(Closure callable) {
-        if (!(value instanceof Throwable)) {
-            try {
-                final value = callable.call(value)
-                return new BoundPromise(value)
-            } catch (Throwable e) {
-                return new BoundPromise(e)
-            }
-        }
-        else {
-            return this
-        }
+        final value = get()
+        return new SynchronousPromise<T>(callable.curry(value))
     }
 
     Promise<T> leftShift(Closure callable) {

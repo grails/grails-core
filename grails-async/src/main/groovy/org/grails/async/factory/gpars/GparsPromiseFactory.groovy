@@ -16,14 +16,12 @@
 package org.grails.async.factory.gpars
 
 import grails.async.Promise
-import grails.async.PromiseFactory
 import grails.async.PromiseList
-import grails.async.Promises
 import groovy.transform.CompileStatic
 import groovyx.gpars.dataflow.Dataflow
+import groovyx.gpars.dataflow.DataflowVariable
 import org.grails.async.factory.AbstractPromiseFactory
 
-import java.util.concurrent.TimeUnit
 
 /**
  * GPars implementation of the {@link grails.async.PromiseFactory} interface
@@ -43,6 +41,13 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     }
     static boolean isGparsAvailable() {
         GPARS_PRESENT
+    }
+
+    @Override
+    def <T> Promise<T> createBoundPromise(T value) {
+        final variable = new DataflowVariable()
+        variable << value
+        return new GparsPromise<T>(variable)
     }
 
     @Override

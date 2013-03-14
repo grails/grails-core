@@ -123,4 +123,10 @@ class Promises {
         promiseFactory.createPromise(promises)
     }
 
+    /**
+     * @see PromiseFactory#createBoundPromise(java.lang.Object)
+     */
+    static<T> Promise<T> createBoundPromise(T value) {
+        promiseFactory.createBoundPromise(value)
+    }
 }

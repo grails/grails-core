@@ -42,6 +42,17 @@ class PromiseList<T> implements Promise<List<T>> {
     }
 
     /**
+     * Add a value as a bound promise to the list of values
+     *
+     * @param callable The callable
+     * @return The promise list
+     */
+    PromiseList leftShift(value) {
+        promises << Promises.createBoundPromise(value)
+        return this
+    }
+
+    /**
      * Add a promise to the promise list
      *
      * @param callable The callable
@@ -50,6 +61,15 @@ class PromiseList<T> implements Promise<List<T>> {
     PromiseList leftShift(Promise p) {
         promises << p
         return this
+    }
+
+    /**
+     * Implementation of add that adds any value as a bound promise
+     * @param callable The callable
+     * @return True if it was added
+     */
+    boolean add(value) {
+        return promises.add(Promises.createBoundPromise(value))
     }
 
     /**

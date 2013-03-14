@@ -15,7 +15,6 @@
  */
 package org.grails.async.factory
 
-import grails.async.BoundPromise
 import grails.async.Promise
 import grails.async.PromiseList
 import groovy.transform.CompileStatic
@@ -32,12 +31,7 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
     @Override
     def <T> Promise<T> createPromise(Closure<T>... closures) {
         if (closures.length == 1) {
-            try {
-                final value = closures[0].call()
-                return new BoundPromise<T>(value)
-            } catch (Throwable e) {
-                return new BoundPromise(e)
-            }
+            return new SynchronousPromise<T>(closures[0])
         }
         else {
             def promiseList = new PromiseList()
@@ -56,24 +50,20 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
     def <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure callable) {
         try {
             List<T> values = promises.collect { Promise<T> p -> p.get() }
-            try {
-                final result = callable.call(values)
-                return new BoundPromise(result)
-            } catch (Throwable e) {
-                return new BoundPromise(e)
-            }
+            final result = callable.call(values)
+            return new DefaultBoundPromise(result)
         } catch (Throwable e) {
-            return new BoundPromise(e)
+            return new DefaultBoundPromise(e)
         }
     }
 
     def <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable) {
         try {
             final values = promises.collect() { Promise<T> p -> p.get() }
-            return new BoundPromise<List<T>>(values)
+            return new DefaultBoundPromise<List<T>>(values)
         } catch (Throwable e) {
             callable.call(e)
-            return new BoundPromise(e)
+            return new DefaultBoundPromise(e)
         }
     }
 }

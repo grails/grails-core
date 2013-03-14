@@ -22,13 +22,22 @@ import org.grails.async.decorator.PromiseDecorator;
 import java.util.*;
 
 /**
- * Abstract implementation of the {@link grails.async.PromiseFactory} interface
+ * Abstract implementation of the {@link grails.async.PromiseFactory} interface, subclasses should extend
+ * this class to obtain common generic functionality
  *
  * @author Graeme Rocher
  * @since 2.3
  */
 public abstract class AbstractPromiseFactory implements PromiseFactory{
 
+    @Override
+    public <T> Promise<T> createBoundPromise(T value) {
+        return new DefaultBoundPromise<T>(value);
+    }
+
+    /**
+     * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
+     */
     @Override
     public <T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
         if (!decorators.isEmpty()) {
@@ -40,11 +49,17 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
         return createPromise(c);
     }
 
+    /**
+     * @see PromiseFactory#createPromise(java.util.List)
+     */
     @Override
     public <T> Promise<List<T>> createPromise(List<Closure<T>> closures) {
         return createPromise(closures,null);
     }
 
+    /**
+     * @see PromiseFactory#createPromise(java.util.List, java.util.List)
+     */
     @Override
     public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
         if(decorators != null && !decorators.isEmpty()) {
@@ -87,18 +102,20 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
                 promiseMap.put(key, (Promise)value);
             }
             else if (value instanceof Closure) {
-                promiseMap.put(key, (Closure)value);
+                Closure c = (Closure) value;
+                promiseMap.put(key, createPromise(c));
             }
             else {
-                promiseMap.put(key, new BoundPromise<V>((V)value));
+                promiseMap.put(key, new DefaultBoundPromise<V>((V)value));
             }
         }
 
         return promiseMap;
     }
 
-    public abstract  <T> List<T> waitAll(List<Promise<T>> promises);
-
+    /**
+     * @see PromiseFactory#waitAll(grails.async.Promise[])
+     */
     public <T> List<T> waitAll(Promise<T>... promises) {
         return waitAll(Arrays.asList(promises));
     }

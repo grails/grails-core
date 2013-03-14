@@ -24,6 +24,22 @@ class PromiseListSpec extends Specification{
             res == [1,2,3]
     }
 
+    void "Test promise list handling with some async operations and some values"() {
+        when:"A list of promises is created"
+            def list = new PromiseList()
+            list << { 1 }
+            list <<  2
+            list << { 3 }
+            def res
+            list.onComplete { List results ->
+                res = results
+            }
+            sleep 500
+
+        then:'then the result from onComplete is correct'
+            res == [1,2,3]
+    }
+
     void "Test promise list with then chaining"() {
         when:"A promise list is used with then chaining"
             def list = new PromiseList<Integer>()

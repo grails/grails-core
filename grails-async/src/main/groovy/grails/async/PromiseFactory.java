@@ -22,13 +22,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * An interface capable of creating {@link Promise} instances
+ * An interface capable of creating {@link Promise} instances. The {@link Promises} static methods use this
+ * interface to create promises. The default Promise creation mechanism can be overriden by setting {@link Promises#setPromiseFactory(PromiseFactory)}
  *
  * @author Graeme Rocher
  * @since 2.3
  */
 public interface PromiseFactory {
 
+    /**
+     * Creates a promise with a value pre-bound to it
+     * @param value The value
+     * @param <T> The type of the value
+     * @return A Promise
+     */
+    <T> Promise<T> createBoundPromise(T value);
     /**
      * Creates a promise from the given map where the values of the map are either closures or Promise instances
      *
