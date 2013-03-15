@@ -1,8 +1,5 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 public class XMLEncoder extends AbstractCharReplacementEncoder {
     static final String XML_CODEC_NAME="EscapedXML";
@@ -18,8 +15,6 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
     private static final String ESCAPED_BACKTICK = "&#" + ((int) '`')  + ";";
     private static final String ESCAPED_AT = "&#" + ((int) '@')  + ";"; // IE Javascript conditional compilation rules
     
-    private static final Set<String> equivalentCodecNames = new HashSet<String>(Arrays.asList(new String[]{"HTML4",HTMLCodec.CODEC_NAME}));
-
     @Override
     protected String escapeCharacter(char ch) {
       if(ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r') {
@@ -39,10 +34,6 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
       return null;
     }
     
-    public Set<String> getEquivalentCodecNames() {
-        return equivalentCodecNames;
-    }
-
     public String getCodecName() {
         return XML_CODEC_NAME;
     }

@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
 import java.io.IOException;
-import java.util.Set;
 
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
@@ -16,10 +15,6 @@ public class RawCodec implements Encoder, Decoder, StreamingEncoder {
 
     public String getCodecName() {
         return "Raw";
-    }
-
-    public Set<String> getEquivalentCodecNames() {
-        return null;
     }
 
     public boolean isSafe() {
