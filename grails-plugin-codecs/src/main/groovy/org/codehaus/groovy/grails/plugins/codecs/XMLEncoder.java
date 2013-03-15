@@ -16,7 +16,7 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
     private static final String ESCAPED_AT = "&#" + ((int) '@')  + ";"; // IE Javascript conditional compilation rules
     
     @Override
-    protected String escapeCharacter(char ch) {
+    protected String escapeCharacter(char ch, char previousChar) {
       if(ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r') {
           return "";
       }
