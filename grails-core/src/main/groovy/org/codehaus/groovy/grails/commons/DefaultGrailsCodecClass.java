@@ -192,8 +192,8 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             return delegate.getEquivalentCodecNames();
         }
 
-        public boolean isPreventAllOthers() {
-            return delegate.isPreventAllOthers();
+        public boolean isSafe() {
+            return delegate.isSafe();
         }        
     }    
     
@@ -239,7 +239,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             return null;
         }
 
-        public boolean isPreventAllOthers() {
+        public boolean isSafe() {
             return false;
         }        
     }

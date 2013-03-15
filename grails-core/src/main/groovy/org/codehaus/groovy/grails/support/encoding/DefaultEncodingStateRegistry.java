@@ -62,7 +62,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
     }
 
     public static boolean isEncoderEquivalentToPrevious(Encoder encoderToApply, Encoder encoder) {
-        return encoder==encoderToApply || encoder.isPreventAllOthers() || encoder.getCodecName().equals(encoderToApply.getCodecName()) ||
+        return encoder==encoderToApply || encoder.isSafe() || encoder.getCodecName().equals(encoderToApply.getCodecName()) ||
                 (encoder.getEquivalentCodecNames() != null && encoder.getEquivalentCodecNames().contains(encoderToApply.getCodecName()));
     }
 }
