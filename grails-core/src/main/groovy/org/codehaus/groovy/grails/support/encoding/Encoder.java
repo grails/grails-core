@@ -5,7 +5,7 @@ import java.util.Set;
 public interface Encoder {
     public String getCodecName();
     public Set<String> getEquivalentCodecNames();
-    public boolean isPreventAllOthers();
+    public boolean isSafe();
     public Object encode(Object o);
     public void markEncoded(CharSequence string);
 }

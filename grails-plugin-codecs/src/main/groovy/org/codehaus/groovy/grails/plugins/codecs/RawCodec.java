@@ -22,7 +22,7 @@ public class RawCodec implements Encoder, Decoder, StreamingEncoder {
         return null;
     }
 
-    public boolean isPreventAllOthers() {
+    public boolean isSafe() {
         return true;
     }
 
