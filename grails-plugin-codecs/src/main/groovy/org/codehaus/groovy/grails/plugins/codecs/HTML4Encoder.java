@@ -2,9 +2,6 @@ package org.codehaus.groovy.grails.plugins.codecs;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,7 +11,6 @@ import org.springframework.web.util.HtmlUtils;
 public class HTML4Encoder extends AbstractCharReplacementEncoder {
     private static final Log log=LogFactory.getLog(HTML4Encoder.class);
     static final String HTML4_CODEC_NAME="HTML4";
-    private static final Set<String> equivalentCodecNames = new HashSet<String>(Arrays.asList(new String[]{XMLEncoder.XML_CODEC_NAME,HTMLCodec.CODEC_NAME}));
 
     @Override
     protected String escapeCharacter(char ch) {
@@ -46,10 +42,6 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
                 return HtmlUtils.htmlEscape(String.valueOf(c));
             }
         }
-    }
-    
-    public Set<String> getEquivalentCodecNames() {
-        return equivalentCodecNames;
     }
 
     public String getCodecName() {

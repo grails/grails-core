@@ -53,7 +53,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
     public static boolean shouldEncodeWith(Encoder encoderToApply, EncodingState currentEncoders) {
         if(currentEncoders != null && currentEncoders.getEncoders() != null) {
             for(Encoder encoder : currentEncoders.getEncoders()) {
-                if(isEncoderEquivalentToPrevious(encoderToApply, encoder)) {
+                if(isPreviousEncoderSafeOrEqual(encoderToApply, encoder)) {
                     return false;                            
                 }
             }
@@ -61,8 +61,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
         return true;
     }
 
-    public static boolean isEncoderEquivalentToPrevious(Encoder encoderToApply, Encoder encoder) {
-        return encoder==encoderToApply || encoder.isSafe() || encoder.getCodecName().equals(encoderToApply.getCodecName()) ||
-                (encoder.getEquivalentCodecNames() != null && encoder.getEquivalentCodecNames().contains(encoderToApply.getCodecName()));
+    public static boolean isPreviousEncoderSafeOrEqual(Encoder encoderToApply, Encoder previousEncoder) {
+        return previousEncoder==encoderToApply || previousEncoder.isSafe() || previousEncoder.getCodecName().equals(encoderToApply.getCodecName());
     }
 }
