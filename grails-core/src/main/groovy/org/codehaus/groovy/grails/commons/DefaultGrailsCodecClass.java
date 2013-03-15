@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
+import org.codehaus.groovy.grails.support.encoding.CodecMetaClassSupport;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
@@ -271,5 +272,9 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
     public Decoder getDecoder() {
         return decoder;
+    }
+
+    public void configureCodecMethods() {
+        new CodecMetaClassSupport().configureCodecMethods(this);   
     }
 }
