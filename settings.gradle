@@ -8,14 +8,13 @@ include 'grails-bootstrap',
         'grails-web',
         'grails-test',
         'grails-docs',
-        'grails-webflow',
         'grails-crud',
         'grails-resources',
         'grails-scripts',
         'grails-logging',
         'grails-tomcat',
         'grails-wrapper',
-        
+
         // Plugins
         'grails-plugin-domain-class',
         'grails-plugin-hibernate',
