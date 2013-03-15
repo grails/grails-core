@@ -99,7 +99,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         // no need to implement, wrapped automaticly
     }
 
-    public boolean isPreventAllOthers() {
+    public boolean isSafe() {
         return false;
     }
 
