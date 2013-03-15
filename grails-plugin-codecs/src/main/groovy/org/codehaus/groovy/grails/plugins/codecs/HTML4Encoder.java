@@ -13,7 +13,7 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
     static final String HTML4_CODEC_NAME="HTML4";
 
     @Override
-    protected String escapeCharacter(char ch) {
+    protected String escapeCharacter(char ch, char previousChar) {
         return StreamingHTMLEncoderHelper.convertToReference(ch);
     }
     

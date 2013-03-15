@@ -24,7 +24,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         return codecName;
     }
     
-    protected abstract String escapeCharacter(char ch);
+    protected abstract String escapeCharacter(char ch, char previousChar);
 
     public Object encode(Object o) {
         if(o==null) return null;
@@ -33,7 +33,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         if(o instanceof CharSequence) {
             str=(CharSequence)o;
         } else if (o instanceof Character) {
-            String escaped=escapeCharacter((Character)o);
+            String escaped=escapeCharacter((Character)o, (char)0);
             if(escaped != null) {
                 return escaped;
             } else {
@@ -50,12 +50,13 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         StringBuilder sb=null;
         int n = str.length(), i;
         int startPos=-1;
+        char prevChar = (char)0;
         for (i = 0; i < n; i++) {
           char ch = str.charAt(i);
           if(startPos==-1) {
               startPos=i;
           }
-          String escaped=escapeCharacter(ch);
+          String escaped=escapeCharacter(ch, prevChar);
           if(escaped != null) {
               if(sb==null) {
                   sb=new StringBuilder(str.length() * 110 / 100);
@@ -68,6 +69,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
               }
               startPos=-1;
           }
+          prevChar = ch;
         }
         if(sb != null) {
             if(startPos > -1 && i-startPos > 0) {
@@ -86,12 +88,13 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         int n = Math.min(str.length(), off+len); 
         int i;
         int startPos=-1;
+        char prevChar = (char)0;
         for (i = off; i < n; i++) {
           char ch = str.charAt(i);
           if(startPos==-1) {
               startPos=i;
           }
-          String escaped=escapeCharacter(ch);
+          String escaped=escapeCharacter(ch, prevChar);
           if(escaped != null) {
               if(i-startPos > 0) {
                   appender.append(this, encodingState, str, startPos, i-startPos);
@@ -101,6 +104,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
               }
               startPos=-1;
           }
+          prevChar = ch;
         }
         if(startPos > -1 && i-startPos > 0) {
             appender.append(this, encodingState, str, startPos, i-startPos);
