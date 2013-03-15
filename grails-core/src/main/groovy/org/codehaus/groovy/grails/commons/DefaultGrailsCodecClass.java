@@ -18,10 +18,8 @@ package org.codehaus.groovy.grails.commons;
 import groovy.lang.Closure;
 
 import java.io.IOException;
-import java.io.Writer;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Set;
 
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
@@ -188,10 +186,6 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             }
         }
 
-        public Set<String> getEquivalentCodecNames() {
-            return delegate.getEquivalentCodecNames();
-        }
-
         public boolean isSafe() {
             return delegate.isSafe();
         }        
@@ -233,10 +227,6 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
         public void markEncoded(CharSequence string) {
             
-        }
-
-        public Set<String> getEquivalentCodecNames() {
-            return null;
         }
 
         public boolean isSafe() {
