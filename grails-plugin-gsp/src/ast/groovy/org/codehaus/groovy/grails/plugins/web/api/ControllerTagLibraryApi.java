@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.api;
 
 import grails.util.Environment;
+import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
@@ -30,6 +31,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -126,4 +128,8 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         }
         return tagLibraryLookup;
     }
+    
+    public Object withCodec(Object instance, Object codecInfo, Closure body) {
+        return WithCodecHelper.withCodec(getGrailsApplication(null), codecInfo, body);
+    }    
 }

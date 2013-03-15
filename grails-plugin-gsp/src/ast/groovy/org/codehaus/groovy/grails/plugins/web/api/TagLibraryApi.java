@@ -221,7 +221,7 @@ public class TagLibraryApi extends CommonWebApi {
         return tagLibraryLookup;
     }
     
-    public Closure<?> getWithCodec(Object instance) {
-        return WithCodecHelper.createWithCodecClosure(getGrailsApplication(null));
+    public Object withCodec(Object instance, Object codecInfo, Closure body) {
+        return WithCodecHelper.withCodec(getGrailsApplication(null), codecInfo, body);
     }
 }
