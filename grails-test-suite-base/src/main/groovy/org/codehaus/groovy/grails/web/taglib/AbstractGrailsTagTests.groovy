@@ -361,7 +361,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         GroovyPagesTemplateEngine engine = appCtx.groovyPagesTemplateEngine
 
-        printCompiledSource(template)
+        //printCompiledSource(template)
 
         assert engine
         def t = engine.createTemplate(template, filename ?: "test_"+ System.currentTimeMillis())
