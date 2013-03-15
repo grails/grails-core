@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.util;
 
+import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import groovy.transform.TypeChecked
 
@@ -12,17 +13,15 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
 
 @CompileStatic
 public class WithCodecHelper {
-    public static Closure<?> createWithCodecClosure(final GrailsApplication grailsApplication) {
-        return { Object codecInfo, Closure<?> closure ->
-            GroovyPageOutputStack outputStack=GroovyPageOutputStack.currentStack();
-            try {
-                outputStack.push(createOutputStackAttributesBuilder(codecInfo, grailsApplication).build(), false);
-                return closure.call();
-            } finally {
-                outputStack.pop();
-            }
-        }
-    }
+	public static withCodec(GrailsApplication grailsApplication, Object codecInfo, Closure closure) {
+		GroovyPageOutputStack outputStack=GroovyPageOutputStack.currentStack();
+		try {
+			outputStack.push(createOutputStackAttributesBuilder(codecInfo, grailsApplication).build(), false);
+			return closure.call();
+		} finally {
+			outputStack.pop();
+		}
+	}
 
 	public static org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes.Builder createOutputStackAttributesBuilder(Object codecInfo, GrailsApplication grailsApplication) {
 		GroovyPageOutputStackAttributes.Builder builder=new GroovyPageOutputStackAttributes.Builder()
@@ -30,11 +29,21 @@ public class WithCodecHelper {
         if(codecInfo != null) {
     		if(codecInfo instanceof Map) {
     			Map codecInfoMap = (Map)codecInfo
-    			def pageEncoderName = codecInfoMap.pageCodec ?: codecInfoMap.name
-    			builder.pageEncoder(lookupEncoder(grailsApplication, pageEncoderName?.toString()))
-    			def defaultEncoderName = codecInfoMap.defaultCodec ?: codecInfoMap.name
-    			builder.defaultEncoder(lookupEncoder(grailsApplication, defaultEncoderName?.toString()))
-    			builder.templateEncoder(lookupEncoder(grailsApplication, codecInfoMap.templateCodec?.toString()))
+                Map<String, Encoder> encoders = [:]
+                
+                codecInfoMap.each { k, v ->
+                    String codecName=v.toString()
+                    if(!encoders.containsKey(codecName)) {
+                        encoders[codecName] = lookupEncoder(grailsApplication, codecName)
+                    }        
+                }
+                
+    			def pageEncoderName = codecInfoMap.pageCodec ?: codecInfoMap.name ?: codecInfoMap.all
+    			builder.pageEncoder(lookupEncoderFromMap(encoders, pageEncoderName?.toString()))
+    			def defaultEncoderName = codecInfoMap.defaultCodec ?: codecInfoMap.name ?: codecInfoMap.all
+    			builder.defaultEncoder(lookupEncoderFromMap(encoders, defaultEncoderName?.toString()))
+                def templateEncoderName = codecInfoMap.templateCodec ?: codecInfoMap.all                
+    			builder.templateEncoder(lookupEncoderFromMap(encoders, templateEncoderName?.toString()))
     		} else {
     			Encoder encoder = lookupEncoder(grailsApplication, codecInfo.toString())
     			builder.pageEncoder(encoder).defaultEncoder(encoder)
@@ -42,6 +51,10 @@ public class WithCodecHelper {
         }
 		return builder
 	}
+    
+    private static Encoder lookupEncoderFromMap(Map<String, Encoder> encoders, String codecName) {
+        codecName != null ? encoders[codecName] : null
+    }
 
     public static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
         GrailsCodecClass codecArtefact = null;
@@ -50,6 +63,8 @@ public class WithCodecHelper {
                 codecName="HTML";
             } else if (codecName.equalsIgnoreCase("html4")) {
                 codecName="HTML4";
+            } else {
+                codecName=GrailsNameUtils.getPropertyNameRepresentation(codecName)
             }
             codecArtefact = (GrailsCodecClass) grailsApplication.getArtefactByLogicalPropertyName(CodecArtefactHandler.TYPE, codecName);
             if(codecArtefact==null) {
