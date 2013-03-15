@@ -23,7 +23,6 @@ class ControllerDomainTransformerSpec extends Specification {
 
     void setup() {
         GrailsWebUtil.bindMockWebRequest(applicationContext)
-
     }
 
     void cleanup() {
@@ -35,7 +34,7 @@ class ControllerDomainTransformerSpec extends Specification {
             def cls = getTestClass()
 
         when:
-           def test = cls.newInstance(age:"10")
+            def test = cls.newInstance(age:"10")
 
         then:
             test.age == 10
@@ -46,12 +45,11 @@ class ControllerDomainTransformerSpec extends Specification {
             def cls = getTestClass()
 
         when:
-           def test = cls.newInstance()
-           test.properties = [age:"10"]
+            def test = cls.newInstance()
+            test.properties = [age:"10"]
 
         then:
             test.age == 10
-
     }
 
     void "Test getProperties method added via AST"() {
@@ -59,24 +57,24 @@ class ControllerDomainTransformerSpec extends Specification {
             def cls = getTestClass()
 
         when:
-           def test = cls.newInstance()
-           test.properties['age', 'name'] = [age:"10"]
+            def test = cls.newInstance()
+            test.properties['age', 'name'] = [age:"10"]
 
         then:
             test.age == 10
     }
 
     void "Test transforming a @grails.persistence.Entity marked class doesn't generate duplication methods"() {
-          when:
-              def cls = classLoader.parseClass('''
+        when:
+            def cls = classLoader.parseClass('''
 @grails.persistence.Entity
 class TestEntity {
     Long id
 }
   ''')
 
-          then:
-             cls
+        then:
+            cls
     }
 
     Class getTestClass() {

@@ -22,7 +22,8 @@
  * @since 0.4
  */
 
-import org.codehaus.groovy.grails.cli.interactive.*
+import org.codehaus.groovy.grails.project.ui.GrailsProjectConsole
+import grails.ui.console.GrailsSwingConsole
 
 includeTargets << grailsScript("_GrailsBootstrap")
 
@@ -30,12 +31,13 @@ target ('default': "Load the Grails interactive Swing console") {
     depends(checkVersion, configureProxy, enableExpandoMetaClass, classpath, console)
 }
 
-projectConsole = new org.codehaus.groovy.grails.project.ui.GrailsProjectConsole(projectLoader)
+projectConsole = new GrailsProjectConsole(projectLoader)
+
 target(console:"The console implementation target") {
 
     def forkSettings = grailsSettings.forkSettings
     def forkConfig = forkSettings?.console
-    if(forkConfig == false) {
+    if (forkConfig == false) {
         try {
             projectConsole.run()
         } catch (Exception e) {
@@ -43,26 +45,22 @@ target(console:"The console implementation target") {
         }        
     }
     else {
-        def forkedConsole = new grails.ui.console.GrailsSwingConsole(grailsSettings)
-        if(forkConfig instanceof Map) {
+        def forkedConsole = new GrailsSwingConsole(grailsSettings)
+        if (forkConfig instanceof Map) {
             forkedConsole.configure(forkConfig)
         }
-        if(InteractiveMode.active) {
+        if (InteractiveMode.active) {
             grailsConsole.addStatus "Running Grails Console..."
             Thread.start {
-
                 forkedConsole.fork()        
             }
         }
         else {
             forkedConsole.fork()
         }
-        
     }
-
 }
 
 createConsole = {
     projectConsole.createConsole()
 }
-

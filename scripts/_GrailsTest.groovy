@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import org.codehaus.groovy.grails.test.runner.*
-import org.codehaus.groovy.grails.test.runner.phase.*
-import org.codehaus.groovy.grails.support.*
-import org.codehaus.groovy.grails.cli.fork.testing.*
+import org.codehaus.groovy.grails.cli.fork.testing.ForkedGrailsTestRunner
+import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
+import org.codehaus.groovy.grails.test.runner.GrailsProjectTestRunner
+import org.codehaus.groovy.grails.test.runner.phase.FunctionalTestPhaseConfigurer
+import org.codehaus.groovy.grails.test.runner.phase.IntegrationTestPhaseConfigurer
+
 /**
  * Gant script that runs the Grails unit tests
  *
@@ -28,8 +30,6 @@ import org.codehaus.groovy.grails.cli.fork.testing.*
 includeTargets << grailsScript("_GrailsBootstrap")
 includeTargets << grailsScript("_GrailsRun")
 includeTargets << grailsScript("_GrailsClean")
-
-
 
 projectTestRunner = new GrailsProjectTestRunner(projectPackager)
 projectTestRunner.testExecutionContext = binding
@@ -94,7 +94,6 @@ target(allTests: "Runs the project's tests.") {
     else {
         projectTestRunner.runAllTests(argsMap, false)
     }    
-    
 }
 
 /**
@@ -170,5 +169,3 @@ otherTestPhaseCleanUp = {}
 target(packageTests: "Puts some useful things on the classpath for integration tests.") {
     projectTestRunner.projectTestCompiler.packageTests(false)
 }
-
-

@@ -15,7 +15,8 @@
  */
 
 import groovy.xml.MarkupBuilder
-import org.apache.commons.io.*
+
+import org.apache.commons.io.FilenameUtils
 
 /**
  * Refreshes application dependencies, installing any necessary plugins as necessary

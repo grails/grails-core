@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.compiler.support.*
 import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
@@ -188,7 +187,7 @@ eachRepository = { Closure callable ->
     if(dependencyManager instanceof IvyDependencyManager) {
         for (resolver in dependencyManager.chainResolver.resolvers) {
             if (resolver instanceof GrailsRepoResolver) {
-                pluginsList = resolver.getPluginList(new File("${grailsWorkDir}/plugins-list-${resolver.name}.xml"))
+                pluginsList = resolver.getPluginList(new File(grailsWorkDir, "plugins-list-${resolver.name}.xml"))
                 if (pluginsList != null) {
                     callable(resolver.name, resolver.repositoryRoot)
                 } else {

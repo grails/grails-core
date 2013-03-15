@@ -51,9 +51,9 @@ target(cachePlugin:"Implementation target") {
 target(installDefaultPluginSet:"Installs the default plugin set used by Grails") {
     for (plugin in grailsSettings.defaultPluginMap) {
         def zipName = "grails-${plugin.key}-${plugin.value}"
-        def pluginZip = new File("${grailsSettings.grailsHome}/plugins/${zipName}.zip")
+        def pluginZip = new File(grailsSettings.grailsHome, "plugins/${zipName}.zip")
         if (!pluginZip.exists()) {
-            pluginZip = new File("${grailsSettings.grailsWorkDir}/plugins/${zipName}.zip")
+            pluginZip = new File(grailsSettings.grailsWorkDir, "plugins/${zipName}.zip")
         }
         if (pluginZip.exists()) {
             doInstallPluginZip pluginZip
