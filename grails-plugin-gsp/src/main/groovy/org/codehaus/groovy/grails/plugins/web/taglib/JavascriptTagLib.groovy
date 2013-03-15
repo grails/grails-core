@@ -125,7 +125,10 @@ class JavascriptTagLib implements ApplicationContextAware {
                 out << r.script(Collections.EMPTY_MAP, body)
             } else {
                 out.println '<script type="text/javascript">'
-                out.println body()
+                withCodec(defaultCodec:"JavaScript") {
+                    out << body()
+                }
+                out.println()
                 out.println '</script>'
             }
         }
@@ -410,26 +413,16 @@ a 'params' key to the [url] attribute instead.""")
      * &lt;g:escapeJavascript&gt;This is some "text" to be escaped&lt;/g:escapeJavascript&gt;
      */
     Closure escapeJavascript = { attrs, body ->
-        def js = ''
-        if (body instanceof Closure) {
-            def tmp = out
-            def sw = new FastStringWriter()
-            out = sw
-            // invoke body
-            out << body()
-            // restore out
-            out = tmp
-            js = sw.toString()
+        
+        
+        withCodec(all:"JavaScript") {
+            if (body) {
+                out << body()
+            }
+            else if (attrs.value) {
+                out << attrs.value
+            }
         }
-        else if (body instanceof CharSequence) {
-            js = body.toString()
-        }
-        else if (attrs instanceof CharSequence) {
-            js = attrs.toString()
-        }
-        out << js.replaceAll(/\r\n|\n|\r/, '\\\\n')
-                 .replaceAll('"','\\\\"')
-                 .replaceAll("'","\\\\'")
     }
 
     Closure setProvider = { attrs, body ->
