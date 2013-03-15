@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.web.codecs
 
-import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
+import org.codehaus.groovy.grails.plugins.codecs.JavaScriptEncoder
 
 class JavaScriptCodecTests extends GroovyTestCase {
 
-    def codec = new JavaScriptCodec()
+    def codec = new JavaScriptEncoder()
 
     void testEncode() {
         assertEquals('\\"\\"', codec.encode('""'))

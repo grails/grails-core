@@ -38,27 +38,4 @@ public class HTMLCodec implements CodecFactory {
     public Decoder getDecoder() {
         return decoder;
     }
-
-
-    /**
-     * HTML encode target
-     * preserved for backwards compatibility
-     * @param target
-     * @return encoded string
-     * @deprecated
-     */
-    public static Object encode(Object target) {
-        return encoder.encode(target);
-    }
-    
-    /**
-     * HTML decode target
-     * preserved for backwards compatibility 
-     * @param target
-     * @return decoded string
-     * @deprecated
-     */
-    public static Object decode(Object target) {
-        return decoder.decode(target);
-    }
 }
