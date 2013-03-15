@@ -15,9 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins
 
-import grails.util.Environment
 import grails.util.GrailsUtil
-import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
@@ -34,7 +32,6 @@ import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
-import org.codehaus.groovy.runtime.GStringImpl
 
 /**
  * Configures pluggable codecs.
@@ -43,9 +40,6 @@ import org.codehaus.groovy.runtime.GStringImpl
  * @since 0.4
  */
 class CodecsGrailsPlugin {
-
-    static final Object[] EMPTY_ARGS = []
-
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core:version]
     def watchedResources = "file:./grails-app/utils/**/*Codec.groovy"
@@ -68,71 +62,13 @@ class CodecsGrailsPlugin {
     def onChange = { event ->
         if (application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {
             def codecClass = application.addArtefact(CodecArtefactHandler.TYPE, event.source)
-            configureCodecMethods codecClass
+            codecClass.configureCodecMethods()
         }
     }
 
     def doWithDynamicMethods = { applicationContext ->
         for (GrailsCodecClass c in application.codecClasses) {
-            configureCodecMethods c
+            c.configureCodecMethods()
         }
-    }
-
-    @CompileStatic
-    private configureCodecMethods(GrailsCodecClass codecClass) {
-        String codecName = codecClass.name
-        String encodeMethodName = "encodeAs${codecName}"
-        String decodeMethodName = "decode${codecName}"
-
-        Closure encoderClosure
-        Closure decoderClosure
-        if (Environment.current == Environment.DEVELOPMENT) {
-            // Resolve codecs in every call in case of a codec reload
-            encoderClosure = { ->
-                def encoder = codecClass.getEncoder()
-                if (encoder) {
-                    return encoder.encode(delegate)
-                }
-
-                // note the call to delegate.getClass() instead of the more groovy delegate.class.
-                // this is because the delegate might be a Map, in which case delegate.class doesn't
-                // do what we want here...
-                throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS)
-            }
-
-            decoderClosure = { ->
-                def decoder = codecClass.getDecoder()
-                if (decoder) {
-                    return decoder.decode(delegate)
-                }
-
-                // note the call to delegate.getClass() instead of the more groovy delegate.class.
-                // this is because the delegate might be a Map, in which case delegate.class doesn't
-                // do what we want here...
-                throw new MissingMethodException(decodeMethodName, delegate.getClass(), EMPTY_ARGS)
-            }
-        }
-        else {
-            // Resolve codec methods once only at startup
-            def encoder = codecClass.getEncoder()
-            if (encoder) {
-                encoderClosure = { -> encoder.encode(delegate) }
-            } else {
-                encoderClosure = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS) }
-            }
-            def decoder = codecClass.getDecoder()
-            if (decoder) {
-                decoderClosure = { -> decoder.decode(delegate) }
-            } else {
-                decoderClosure = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), EMPTY_ARGS) }
-            }
-        }
-
-        addMetaMethod(encodeMethodName, encoderClosure)
-        addMetaMethod(decodeMethodName, decoderClosure)
-    }
-    
-    private def addMetaMethod(methodName, closure) {
-        [String, GStringImpl, StringBuffer, StringBuilder, Object].each { it.metaClass."${methodName}" << closure }
     }
 }

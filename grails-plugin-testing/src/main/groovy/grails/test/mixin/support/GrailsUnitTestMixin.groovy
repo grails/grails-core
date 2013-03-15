@@ -24,11 +24,14 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import junit.framework.AssertionFailedError
 
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
@@ -39,12 +42,10 @@ import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.BeforeClass
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
-import org.springframework.context.support.StaticMessageSource
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.springframework.context.MessageSource
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.springframework.beans.CachedIntrospectionResults
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+import org.springframework.context.MessageSource
+import org.springframework.context.support.StaticMessageSource
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -219,12 +220,10 @@ class GrailsUnitTestMixin {
         loadedCodecs << codecClass
 
         // Instantiate the codec so we can use it.
-        final codec = codecClass.newInstance()
+        final grailsCodecClass = new DefaultGrailsCodecClass(codecClass)
 
         // Add the encode and decode methods.
-        def codecName = GrailsNameUtils.getLogicalName(codecClass, "Codec")
-        Object.metaClass."encodeAs$codecName" = { -> codec.encode(delegate) }
-        Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
+        grailsCodecClass.configureCodecMethods()
     }
 
     @AfterClass
