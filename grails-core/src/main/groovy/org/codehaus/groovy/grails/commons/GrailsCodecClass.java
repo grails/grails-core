@@ -25,5 +25,5 @@ import org.codehaus.groovy.grails.support.encoding.CodecFactory;
  * @since 0.4
  */
 public interface GrailsCodecClass extends InjectableGrailsClass, CodecFactory {
-
+    public void configureCodecMethods();
 }
