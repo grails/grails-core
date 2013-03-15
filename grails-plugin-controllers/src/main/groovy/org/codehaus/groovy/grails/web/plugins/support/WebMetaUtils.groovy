@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.plugins.support
 
 import grails.artefact.Enhanced
 import grails.validation.ValidationErrors
+import groovy.transform.CompileStatic
 
 import java.lang.reflect.Method
 
@@ -29,6 +30,7 @@ import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
@@ -270,21 +272,23 @@ class WebMetaUtils {
         }
     }
 
-    static registerMethodMissingForTags(MetaClass mc, TagLibraryLookup gspTagLibraryLookup, String namespace, String name) {
-        mc."$name" = {Map attrs, Closure body ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, RCH.currentRequestAttributes())
+    @CompileStatic
+    static registerMethodMissingForTags(MetaClass metaClass, TagLibraryLookup gspTagLibraryLookup, String namespace, String name) {
+        GroovyObject mc = (GroovyObject)metaClass;
+        mc.setProperty(name) {Map attrs, Closure body ->
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, GrailsWebRequest.lookup())
         }
-        mc."$name" = {Map attrs, CharSequence body ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, new GroovyPage.ConstantClosure(body), RCH.currentRequestAttributes())
+        mc.setProperty(name) {Map attrs, CharSequence body ->
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, new GroovyPage.ConstantClosure(body), GrailsWebRequest.lookup())
         }
-        mc."$name" = {Map attrs ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, RCH.currentRequestAttributes())
+        mc.setProperty(name) {Map attrs ->
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, GrailsWebRequest.lookup())
         }
-        mc."$name" = {Closure body ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, RCH.currentRequestAttributes())
+        mc.setProperty(name) {Closure body ->
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, GrailsWebRequest.lookup())
         }
-        mc."$name" = {->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, RCH.currentRequestAttributes())
+        mc.setProperty(name) {->
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, GrailsWebRequest.lookup())
         }
     }
 
