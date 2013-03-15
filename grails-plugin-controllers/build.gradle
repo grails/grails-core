@@ -5,6 +5,7 @@ dependencies {
     }
     compile project(":grails-core"),
             project(":grails-web"),
+            project(":grails-async"),
             project(':grails-plugin-converters'),
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-domain-class'),

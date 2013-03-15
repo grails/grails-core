@@ -252,7 +252,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
                 }
             }
 
-            if (request.getAttribute(FORWARD_CALLED) == null) {
+            if (request.getAttribute(FORWARD_CALLED) == null && request.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) == null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Action [" + actionName + "] executed with result [" + returnValue + "] and view name [" + viewName + "]");
                 }
