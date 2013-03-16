@@ -33,7 +33,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
@@ -154,7 +157,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
             }
 
-
             if (arguments[arguments.length - 1] instanceof Closure) {
                 Closure callable = (Closure) arguments[arguments.length - 1];
                 if (BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)) {
@@ -256,8 +258,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             try {
                 if (!renderView) {
-                    if(out!= null)
+                    if (out != null) {
                         out.flush();
+                    }
                 }
             }
             catch (IOException e) {
@@ -398,13 +401,13 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     protected Collection<ActionResultTransformer> getActionResultTransformers(GrailsWebRequest webRequest) {
-        if(actionResultTransformers == null) {
+        if (actionResultTransformers == null) {
 
             ApplicationContext applicationContext = webRequest.getApplicationContext();
-            if(applicationContext != null) {
+            if (applicationContext != null) {
                 actionResultTransformers = applicationContext.getBeansOfType(ActionResultTransformer.class).values();
             }
-            if(actionResultTransformers == null) {
+            if (actionResultTransformers == null) {
                 actionResultTransformers = Collections.emptyList();
             }
         }
@@ -502,16 +505,15 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         String viewName = argMap.get(ARGUMENT_VIEW).toString();
         String viewUri = webRequest.getAttributes().getNoSuffixViewURI((GroovyObject) target, viewName);
         Object modelObject = argMap.get(ARGUMENT_MODEL);
-        if(modelObject != null) {
+        if (modelObject != null) {
             modelObject = argMap.get(ARGUMENT_MODEL);
             boolean isPromise = modelObject instanceof Promise;
             Collection<ActionResultTransformer> resultTransformers = getActionResultTransformers(webRequest);
             for (ActionResultTransformer resultTransformer : resultTransformers) {
                 modelObject = resultTransformer.transformActionResult(webRequest,viewUri, modelObject);
             }
-            if(isPromise) return;
+            if (isPromise) return;
         }
-
 
         Map model;
         if (modelObject instanceof Map) {

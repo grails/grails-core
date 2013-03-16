@@ -126,8 +126,8 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
             Validator validator = registerDomainClassValidator(domain)
             simpleDatastore.mappingContext.addEntityValidator(entity, validator)
-
         }
+
         def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
         simpleDatastore.mappingContext.initialize()
         enhancer.enhance()

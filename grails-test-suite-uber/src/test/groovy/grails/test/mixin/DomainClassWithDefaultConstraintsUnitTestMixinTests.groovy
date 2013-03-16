@@ -29,7 +29,4 @@ class DomainClassWithDefaultConstraintsUnitTestMixinTests {
 class DomainWithDefaultConstraints {
     String name
     String value
-    static constraints = {
-    }
 }
-

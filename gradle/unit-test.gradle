@@ -67,14 +67,10 @@ createTestTask("packagePlugins", ["org/codehaus/groovy/grails/cli/PackagePluginT
 createTestTask("installTemplates", ["org/codehaus/groovy/grails/cli/InstallTemplatesTests.class"], [])
 createTestTask("generateAll", ["org/codehaus/groovy/grails/cli/GenerateAllTests.class"], [])
 createTestTask("cli", ["org/codehaus/groovy/grails/cli/**/*Tests.class"], ["org/codehaus/groovy/grails/cli/**/*Tests.class", "**/PackagePluginTests", "**/InstallTemplatesTests"])
-createTestTask("hibernate", ["**/orm/hibernate/*Tests.class",
-        "**/orm/hibernate/binding/*Tests.class",
-        "**/orm/hibernate/cfg/*Tests.class",
-        "**/orm/hibernate/validation/*Tests.class"], ["**/Abstract*", "**/UniqueConstraint*"])
 createTestTask("uniqueConstraints", ["**/UniqueConstraintTests.class"], [])
 createTestTask("taglib", ["**/web/taglib/**/*Tests.class"], ["**/Abstract*"])
 createTestTask("other", ["**/*Tests.class"], ["**/Abstract*", "**/TransactionalServiceReloadTests*",
-        "**/ContentFormatControllerTests*", "**/orm/hibernate/**", "**/web/taglib/**", "**/cli/**Tests.class"])
+        "**/ContentFormatControllerTests*", "**/web/taglib/**", "**/cli/**Tests.class"])
 
 def createTestTask(name, includes, excludes) {
     createTestTaskWithoutSuffix("${name}Test", includes, excludes)

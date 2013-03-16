@@ -35,16 +35,15 @@ class  GparsPromise<T> implements Promise<T> {
     GparsPromise(groovyx.gpars.dataflow.Promise internalPromise) {
         this.internalPromise = internalPromise
     }
+
     GparsPromise(Closure callable) {
         internalPromise = Dataflow.task(callable)
     }
 
-    @Override
     T get() {
         internalPromise.get()
     }
 
-    @Override
     T get(long timeout, TimeUnit units) throws Throwable {
         internalPromise.get(timeout, units)
     }
@@ -53,27 +52,27 @@ class  GparsPromise<T> implements Promise<T> {
         then callable
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
     Promise onComplete(Closure callable) {
         internalPromise.whenBound { val ->
-            if ( !(val instanceof Throwable)) {
+            if (!(val instanceof Throwable)) {
                 callable.call(val)
             }
         }
         return this
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
     Promise onError(Closure callable) {
         internalPromise.whenBound { val ->
-            if ( val instanceof Throwable) {
+            if (val instanceof Throwable) {
                 callable.call(val)
             }
         }
         return this
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
     Promise then(Closure callable) {
         return new GparsPromise(internalPromise.then(callable))
     }

@@ -15,13 +15,21 @@
  */
 package org.grails.async.factory;
 
-import grails.async.*;
+import grails.async.Promise;
+import grails.async.PromiseFactory;
+import grails.async.PromiseList;
+import grails.async.PromiseMap;
 import groovy.lang.Closure;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.grails.async.decorator.PromiseDecorator;
 import org.grails.async.decorator.PromiseDecoratorLookupStrategy;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Abstract implementation of the {@link grails.async.PromiseFactory} interface, subclasses should extend
@@ -30,16 +38,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * @author Graeme Rocher
  * @since 2.3
  */
-public abstract class AbstractPromiseFactory implements PromiseFactory{
+public abstract class AbstractPromiseFactory implements PromiseFactory {
 
     protected Collection<PromiseDecoratorLookupStrategy> lookupStrategies = new ConcurrentLinkedQueue<PromiseDecoratorLookupStrategy>();
 
-    @Override
     public void addPromiseDecoratorLookupStrategy(PromiseDecoratorLookupStrategy lookupStrategy) {
         lookupStrategies.add(lookupStrategy);
     }
 
-    @Override
     public <T> Promise<T> createBoundPromise(T value) {
         return new BoundPromise<T>(value);
     }
@@ -47,14 +53,15 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
      */
-    @Override
+    @SuppressWarnings("unchecked")
     public <T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
         c = applyDecorators(c, decorators);
 
         return createPromise(c);
     }
 
-    protected  Closure applyDecorators(Closure c, List<PromiseDecorator> decorators) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected Closure applyDecorators(Closure c, List<PromiseDecorator> decorators) {
         List<PromiseDecorator> allDecorators = decorators != null ? new ArrayList<PromiseDecorator>(decorators): new ArrayList<PromiseDecorator>();
         for (PromiseDecoratorLookupStrategy lookupStrategy : lookupStrategies) {
             allDecorators.addAll(lookupStrategy.findDecorators());
@@ -70,7 +77,6 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
     /**
      * @see PromiseFactory#createPromise(java.util.List)
      */
-    @Override
     public <T> Promise<List<T>> createPromise(List<Closure<T>> closures) {
         return createPromise(closures,null);
     }
@@ -78,12 +84,12 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
     /**
      * @see PromiseFactory#createPromise(java.util.List, java.util.List)
      */
-    @Override
+    @SuppressWarnings("unchecked")
     public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
 
         List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
         for (Closure<T> closure : closures) {
-            newClosures.add( applyDecorators(closure, decorators));
+            newClosures.add(applyDecorators(closure, decorators));
         }
         closures = newClosures;
         PromiseList<T> promiseList = new PromiseList<T>();
@@ -99,24 +105,26 @@ public abstract class AbstractPromiseFactory implements PromiseFactory{
      */
     public <T> Promise<List<T>> createPromise(Promise<T>... promises) {
         PromiseList<T> promiseList = new PromiseList<T>();
-        for(Promise p : promises) {
+        for(Promise<T> p : promises) {
             promiseList.add(p);
         }
         return promiseList;
     }
+
     /**
      * @see PromiseFactory#createPromise(java.util.Map)
      */
+    @SuppressWarnings("unchecked")
     public <K, V> Promise<Map<K, V>> createPromise(Map<K, Object> map) {
         PromiseMap<K,V> promiseMap = new PromiseMap<K,V>();
         for (Map.Entry<K, Object> entry : map.entrySet()) {
             K key = entry.getKey();
             Object value = entry.getValue();
             if (value instanceof Promise) {
-                promiseMap.put(key, (Promise)value);
+                promiseMap.put(key, (Promise<?>)value);
             }
             else if (value instanceof Closure) {
-                Closure c = (Closure) value;
+                Closure<?> c = (Closure<?>) value;
                 promiseMap.put(key, createPromise(c));
             }
             else {

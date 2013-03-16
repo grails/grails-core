@@ -42,7 +42,7 @@ interface Promise<T> {
      * @return The value
      * @throws Throwable
      */
-    abstract T get(final long timeout, final TimeUnit units) throws Throwable;
+    abstract T get(final long timeout, final TimeUnit units) throws Throwable
 
     /**
      * Execute the given closure when the promise completes

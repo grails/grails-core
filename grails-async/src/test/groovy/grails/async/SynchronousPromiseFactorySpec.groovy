@@ -10,14 +10,16 @@ import java.util.concurrent.TimeoutException
 
 /**
  */
-class SynchronousPromiseFactorySpec extends Specification{
+class SynchronousPromiseFactorySpec extends Specification {
 
     void setup() {
         Promises.promiseFactory = new SynchronousPromiseFactory()
     }
+
     void cleanup() {
         Promises.promiseFactory = new GparsPromiseFactory()
     }
+
     void "Test add promise decorator"() {
         when:"A decorator is added"
         def decorator = { Closure c ->
@@ -29,7 +31,6 @@ class SynchronousPromiseFactorySpec extends Specification{
 
         then:"The result is decorate"
         result == "*10*"
-
     }
 
     void "Test promise map handling"() {
@@ -66,8 +67,6 @@ class SynchronousPromiseFactorySpec extends Specification{
         sleep 200
         then:"The result is correct"
         result == [2,4]
-
-
     }
 
     void "Test promise onComplete handling"() {
@@ -87,8 +86,6 @@ class SynchronousPromiseFactorySpec extends Specification{
         then:"The onComplete handler is invoked and the onError handler is ignored"
         result == 2
         hasError == false
-
-
     }
 
     void "Test promise onError handling"() {

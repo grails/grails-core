@@ -25,7 +25,6 @@ import java.util.concurrent.TimeUnit
  *
  * @author Graeme Rocher
  * @since 2.3
- *
  */
 @CompileStatic
 class PromiseMap<K,V> implements Promise<Map<K,V>> {
@@ -49,7 +48,8 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
             }
         }
     }
-/**
+
+    /**
      * @return The size the map
      */
     int size() {

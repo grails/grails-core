@@ -20,8 +20,8 @@ import grails.async.PromiseList
 import groovy.transform.CompileStatic
 import groovyx.gpars.dataflow.Dataflow
 import groovyx.gpars.dataflow.DataflowVariable
-import org.grails.async.factory.AbstractPromiseFactory
 
+import org.grails.async.factory.AbstractPromiseFactory
 
 /**
  * GPars implementation of the {@link grails.async.PromiseFactory} interface
@@ -56,14 +56,13 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
             final callable = closures[0]
             return new GparsPromise(applyDecorators(callable, null))
         }
-        else {
-            def promiseList = new PromiseList()
-            for(p in closures) {
-                applyDecorators(p, null)
-                promiseList << p
-            }
-            return promiseList
+
+        def promiseList = new PromiseList()
+        for (p in closures) {
+            applyDecorators(p, null)
+            promiseList << p
         }
+        return promiseList
     }
 
     @Override
@@ -77,9 +76,8 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     def <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure callable) {
         final gparsPromises = promises.collect { (GparsPromise) it }
         new GparsPromise<List<T>>(
-                Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, callable)
+            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, callable)
         )
-
     }
 
     def <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable) {
@@ -88,6 +86,4 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
             Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, {List l ->}, callable)
         )
     }
-
-
 }

@@ -59,7 +59,7 @@ public interface PromiseFactory {
      * @param promises The promises
      * @return The promise
      */
-    <T> Promise<java.util.List<T>> createPromise(Promise<T>...promises);
+    <T> Promise<List<T>> createPromise(Promise<T>...promises);
 
     /**
      * Creates a promise from one or many closures
@@ -114,12 +114,12 @@ public interface PromiseFactory {
      * @param promises The promises
      * @param callable The callback to execute
      */
-    <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure callable );
+    <T> Promise<List<T>> onComplete(List<Promise<T>> promises, @SuppressWarnings("rawtypes") Closure callable);
     /**
      * Executes the given callback if an error occurs for the list of promises
      *
      * @param promises The promises The promises
      * @param callable The error callback to execute
      */
-    <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable );
+    <T> Promise<List<T>> onError(List<Promise<T>> promises, @SuppressWarnings("rawtypes") Closure callable);
 }

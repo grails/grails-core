@@ -16,17 +16,17 @@
 package org.grails.async.decorator
 
 /**
- * An interface used to decorate any function execution potentially wrapping an asynchronous function execution in new functionality
+ * Decorates any function execution potentially wrapping an asynchronous function execution in new functionality.
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface PromiseDecorator {
+interface PromiseDecorator {
     /**
      * Decorates the given closures, returning the decorated closure
      *
      * @param c The closure to decorate
      * @return The decorated closure
      */
-    public <D> Closure<D> decorate(Closure<D> c)
+    def <D> Closure<D> decorate(Closure<D> c)
 }

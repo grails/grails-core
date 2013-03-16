@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit
 @CompileStatic
 class PromiseList<T> implements Promise<List<T>> {
 
-    protected def List<Promise> promises = []
+    protected List<Promise> promises = []
 
     /**
      * Add a promise to the promise list
@@ -86,7 +86,7 @@ class PromiseList<T> implements Promise<List<T>> {
      * @param callable The callable
      * @return True if it was added
      */
-    boolean add(Promise p) {
+    boolean add(Promise<T> p) {
         return promises.add(p)
     }
 
@@ -95,20 +95,23 @@ class PromiseList<T> implements Promise<List<T>> {
      *
      * @param callable The callable
      */
+    @SuppressWarnings("unchecked")
     Promise onComplete(Closure callable ) {
         Promises.onComplete(promises, callable)
         return this
     }
 
+    @SuppressWarnings("unchecked")
     Promise onError(Closure callable) {
         Promises.onError(promises, callable)
         return this
     }
 
-    @Override
+    @SuppressWarnings("unchecked")
     Promise then(Closure callable) {
         Promises.onComplete(promises, { List values -> values}).then(callable)
     }
+
     /**
      * Synchronously obtains all the values from all the promises
      * @return The values
@@ -119,6 +122,6 @@ class PromiseList<T> implements Promise<List<T>> {
 
     @Override
     List get(long timeout, TimeUnit units) throws Throwable {
-        this.iterator().collect { Promise p -> p.get(timeout, units) }
+        iterator().collect { Promise p -> p.get(timeout, units) }
     }
 }

@@ -33,13 +33,12 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
         if (closures.length == 1) {
             return new SynchronousPromise<T>(closures[0])
         }
-        else {
-            def promiseList = new PromiseList()
-            for(p in closures) {
-                promiseList << p
-            }
-            return promiseList
+
+        def promiseList = new PromiseList()
+        for(p in closures) {
+            promiseList << p
         }
+        return promiseList
     }
 
     @Override
