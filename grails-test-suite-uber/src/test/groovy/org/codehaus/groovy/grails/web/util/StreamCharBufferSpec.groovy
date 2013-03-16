@@ -30,13 +30,10 @@ class StreamCharBufferSpec extends Specification {
         grailsApplication.getArtefact("Codec", HTML4Codec.name) >> { html4CodecClass }
         GrailsCodecClass rawCodecClass = new DefaultGrailsCodecClass(RawCodec)
         grailsApplication.getArtefact("Codec", RawCodec.name) >> { rawCodecClass }
-        grailsApplication.getCodecClasses() >> { [htmlCodecClass, html4CodecClass, rawCodecClass] }
+        def codecClasses = [htmlCodecClass, html4CodecClass, rawCodecClass]
+        grailsApplication.getCodecClasses() >> { codecClasses }
         GrailsWebUtil.bindMockWebRequest()
-        new CodecsGrailsPlugin().with {
-            configureCodecMethods(htmlCodecClass)
-            configureCodecMethods(html4CodecClass)
-            configureCodecMethods(rawCodecClass)
-        }
+        codecClasses*.configureCodecMethods()
         codecOut=new CodecPrintWriter(out, htmlCodecClass.encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup())
     }
 
