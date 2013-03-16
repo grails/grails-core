@@ -49,12 +49,12 @@ test {
      maxParallelForks = 4
      forkEvery = 100
      maxHeapSize = '1024m'
-     excludes = ["**/*TestCase.class","**/DataSourceGrailsPluginTests","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class"]
+     excludes = ["**/*TestCase.class","**/DataSourceGrailsPluginTests","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class","**/SetupTeardownInvokeTests.class","**/TestMixinSetupTeardownInvokeTests.class","**/UrlMappingsTestMixinTests.class"]
 }
 
 task isolatedTestsOne(type:Test) {
     includes = [
-                "**/DataSourceGrailsPluginTests.class","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class"]
+                "**/DataSourceGrailsPluginTests.class","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class","**/SetupTeardownInvokeTests.class","**/TestMixinSetupTeardownInvokeTests.class","**/UrlMappingsTestMixinTests.class"]
 }
 
 test.dependsOn isolatedTestsOne
