@@ -216,7 +216,7 @@ class GrailsConventionGroovyPageLocatorSpec extends Specification {
         def descriptor = new BinaryGrailsPluginDescriptor(resource, xml)
         resource.relativesResources['static/css/main.css'] = new ByteArrayResource(''.bytes)
         def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
-        GroovyPageParser gpp = new GroovyPageParser("binaryView","/test/binaryView.gsp","/test/binaryView.gsp",new ByteArrayInputStream("hello world".bytes), "UTF-8")
+        GroovyPageParser gpp = new GroovyPageParser("binaryView","/test/binaryView.gsp","/test/binaryView.gsp",new ByteArrayInputStream("hello world".bytes), "UTF-8", "HTML")
         gpp.packageName = "foo.bar"
         gpp.className = "test_binary_view"
         gpp.lastModified = System.currentTimeMillis()
