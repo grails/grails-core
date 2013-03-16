@@ -20,6 +20,7 @@ class WebUtilsTests extends GroovyTestCase {
 
     def config
     protected void setUp() {
+        RequestContextHolder.setRequestAttributes null
         config = new ConfigSlurper().parse("""
 grails.mime.file.extensions=false
 grails.mime.types = [ html: ['text/html','application/xhtml+xml'],
