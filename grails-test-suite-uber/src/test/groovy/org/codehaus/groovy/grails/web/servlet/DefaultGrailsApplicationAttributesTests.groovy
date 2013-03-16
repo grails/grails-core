@@ -30,7 +30,7 @@ class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
 
     void testGetTemplateUriWithStreamCharBufferRepresentingRelativePath() {
         def scb = new StreamCharBuffer()
-        scb.appendStringChunk ('bar', 0, 3)
+        scb.writer.write('bar')
         def templateUri = grailsApplicationAttributes.getTemplateUri(scb, request)
         assertEquals 'wrong template uri', '/mycontroller/_bar.gsp', templateUri
     }
@@ -42,7 +42,7 @@ class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
 
     void testGetTemplateUriWithStreamCharBufferRepresentingAbsoluteNestedPath() {
         def scb = new StreamCharBuffer()
-        scb.appendStringChunk ('/uno/dos/tres', 0, 13)
+        scb.writer.write('/uno/dos/tres')
         def templateUri = grailsApplicationAttributes.getTemplateUri(scb, request)
         assertEquals 'wrong template uri', '/uno/dos/_tres.gsp', templateUri
     }
@@ -54,7 +54,7 @@ class DefaultGrailsApplicationAttributesTests extends GroovyTestCase {
 
     void testGetTemplateUriWithStreamCharBufferRepresentingAbsolutePath() {
         def scb = new StreamCharBuffer()
-        scb.appendStringChunk ('/mytemplate', 0, 11)
+        scb.writer.write('/mytemplate')
         def templateUri = grailsApplicationAttributes.getTemplateUri(scb, request)
         assertEquals 'wrong template uri', '/_mytemplate.gsp', templateUri
     }
