@@ -40,7 +40,22 @@ class Promises {
         }
     }
 
-    /**
+    static PromiseFactory getPromiseFactory() {
+        if (promiseFactory == null) {
+            if (GparsPromiseFactory.isGparsAvailable()) {
+                promiseFactory = new GparsPromiseFactory()
+            }
+            else {
+                promiseFactory = new SynchronousPromiseFactory()
+            }
+        }
+        return promiseFactory
+    }
+
+    static void setPromiseFactory(PromiseFactory promiseFactory) {
+        Promises.promiseFactory = promiseFactory
+    }
+/**
      * @see PromiseFactory#waitAll(grails.async.Promise[])
      */
     static<T> List<T> waitAll(Promise<T>...promises) {
