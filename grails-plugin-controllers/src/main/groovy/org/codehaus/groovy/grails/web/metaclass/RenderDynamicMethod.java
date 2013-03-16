@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import grails.async.Promise;
 import grails.converters.JSON;
 import grails.util.GrailsWebUtil;
 import grails.web.JSONBuilder;
@@ -32,9 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletResponse;
@@ -56,6 +55,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
+import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
@@ -100,6 +100,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String ARGUMENT_FILE = "file";
     private static final String ARGUMENT_FILE_NAME = "fileName";
     private MimeUtility mimeUtility;
+    private Collection<ActionResultTransformer> actionResultTransformers;
 
     public RenderDynamicMethod() {
         super(METHOD_PATTERN);
@@ -132,23 +133,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         else if (arguments[0] instanceof Map) {
             Map argMap = (Map) arguments[0];
-            Writer out;
             boolean hasContentType = argMap.containsKey(ARGUMENT_CONTENT_TYPE);
-            String contentType = hasContentType ? argMap.get(ARGUMENT_CONTENT_TYPE).toString() : null;
-            if (hasContentType && argMap.containsKey(ARGUMENT_ENCODING)) {
-                String encoding = argMap.get(ARGUMENT_ENCODING).toString();
-                setContentType(response, contentType, encoding);
-                out = GSPResponseWriter.getInstance(response);
-            }
-            else if (hasContentType) {
-                setContentType(response, contentType, DEFAULT_ENCODING);
-                out = GSPResponseWriter.getInstance(response);
-            }
-            else {
-                setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
-                out = GSPResponseWriter.getInstance(response);
-            }
-
+            Writer out = null;
             if (argMap.containsKey(ARGUMENT_LAYOUT)) {
                 webRequest.getCurrentRequest().setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, argMap.get(ARGUMENT_LAYOUT));
             }
@@ -168,7 +154,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
             }
 
-            webRequest.setOut(out);
 
             if (arguments[arguments.length - 1] instanceof Closure) {
                 Closure callable = (Closure) arguments[arguments.length - 1];
@@ -180,10 +165,16 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
             }
             else if (arguments[arguments.length - 1] instanceof CharSequence) {
+                out = getWriterForConfiguredContentType(response, argMap, hasContentType);
+                webRequest.setOut(out);
+
                 CharSequence text = (CharSequence) arguments[arguments.length - 1];
                 renderView = renderText(text, out);
             }
             else if (argMap.containsKey(ARGUMENT_TEXT)) {
+                out = getWriterForConfiguredContentType(response, argMap, hasContentType);
+                webRequest.setOut(out);
+
                 Object textArg = argMap.get(ARGUMENT_TEXT);
                 CharSequence text = (textArg instanceof CharSequence) ? ((CharSequence)textArg) : textArg.toString();
                 renderView = renderText(text, out);
@@ -192,6 +183,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 renderView(webRequest, argMap, target, controller);
             }
             else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
+                out = getWriterForConfiguredContentType(response, argMap, hasContentType);
+                webRequest.setOut(out);
+
                 renderView = renderTemplate(target, controller, webRequest, argMap, out);
             }
             else if (argMap.containsKey(ARGUMENT_FILE)) {
@@ -254,12 +248,16 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                     renderView = renderJSON((JSONElement)object, response);
                 }
                 else{
+                    out = getWriterForConfiguredContentType(response, argMap, hasContentType);
+                    webRequest.setOut(out);
+
                     renderView = renderObject(object, out);
                 }
             }
             try {
                 if (!renderView) {
-                    out.flush();
+                    if(out!= null)
+                        out.flush();
                 }
             }
             catch (IOException e) {
@@ -272,6 +270,25 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         webRequest.setRenderView(renderView);
         return null;
+    }
+
+    private Writer getWriterForConfiguredContentType(HttpServletResponse response, Map argMap, boolean hasContentType) {
+        Writer out;
+        String contentType = hasContentType ? argMap.get(ARGUMENT_CONTENT_TYPE).toString() : null;
+        if (hasContentType && argMap.containsKey(ARGUMENT_ENCODING)) {
+            String encoding = argMap.get(ARGUMENT_ENCODING).toString();
+            setContentType(response, contentType, encoding);
+            out = GSPResponseWriter.getInstance(response);
+        }
+        else if (hasContentType) {
+            setContentType(response, contentType, DEFAULT_ENCODING);
+            out = GSPResponseWriter.getInstance(response);
+        }
+        else {
+            setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
+            out = GSPResponseWriter.getInstance(response);
+        }
+        return out;
     }
 
     private boolean renderJSON(JSONElement object, HttpServletResponse response) {
@@ -310,6 +327,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             Map argMap, Writer out) {
 
         boolean renderView;
+        boolean hasModel = argMap.containsKey(ARGUMENT_MODEL);
+        Object modelObject = null;
         String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
         String contextPath = getContextPath(webRequest, argMap);
 
@@ -341,8 +360,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
             if (argMap.containsKey(ARGUMENT_BEAN)) {
                 Object bean = argMap.get(ARGUMENT_BEAN);
-                if (argMap.containsKey(ARGUMENT_MODEL)) {
-                    Object modelObject = argMap.get(ARGUMENT_MODEL);
+                if (hasModel) {
                     if (modelObject instanceof Map) {
                         setTemplateModel(webRequest, binding, (Map) modelObject);
                     }
@@ -351,16 +369,14 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             else if (argMap.containsKey(ARGUMENT_COLLECTION)) {
                 Object colObject = argMap.get(ARGUMENT_COLLECTION);
-                if (argMap.containsKey(ARGUMENT_MODEL)) {
-                    Object modelObject = argMap.get(ARGUMENT_MODEL);
+                if (hasModel) {
                     if (modelObject instanceof Map) {
                         setTemplateModel(webRequest, binding, (Map)modelObject);
                     }
                 }
                 renderTemplateForCollection(t, binding, colObject, var, out);
             }
-            else if (argMap.containsKey(ARGUMENT_MODEL)) {
-                Object modelObject = argMap.get(ARGUMENT_MODEL);
+            else if (hasModel) {
                 if (modelObject instanceof Map) {
                     setTemplateModel(webRequest, binding, (Map)modelObject);
                 }
@@ -379,6 +395,21 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             throw new ControllerExecutionException("I/O error executing render method for arguments [" + argMap + "]: " + ioex.getMessage(), ioex);
         }
         return renderView;
+    }
+
+    protected Collection<ActionResultTransformer> getActionResultTransformers(GrailsWebRequest webRequest) {
+        if(actionResultTransformers == null) {
+
+            ApplicationContext applicationContext = webRequest.getApplicationContext();
+            if(applicationContext != null) {
+                actionResultTransformers = applicationContext.getBeansOfType(ActionResultTransformer.class).values();
+            }
+            if(actionResultTransformers == null) {
+                actionResultTransformers = Collections.emptyList();
+            }
+        }
+
+        return actionResultTransformers;
     }
 
     private void setTemplateModel(GrailsWebRequest webRequest, Map binding, Map modelObject) {
@@ -469,9 +500,19 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
     private void renderView(GrailsWebRequest webRequest, Map argMap, Object target, GroovyObject controller) {
         String viewName = argMap.get(ARGUMENT_VIEW).toString();
-        Object modelObject = argMap.get(ARGUMENT_MODEL);
-
         String viewUri = webRequest.getAttributes().getNoSuffixViewURI((GroovyObject) target, viewName);
+        Object modelObject = argMap.get(ARGUMENT_MODEL);
+        if(modelObject != null) {
+            modelObject = argMap.get(ARGUMENT_MODEL);
+            boolean isPromise = modelObject instanceof Promise;
+            Collection<ActionResultTransformer> resultTransformers = getActionResultTransformers(webRequest);
+            for (ActionResultTransformer resultTransformer : resultTransformers) {
+                modelObject = resultTransformer.transformActionResult(webRequest,viewUri, modelObject);
+            }
+            if(isPromise) return;
+        }
+
+
         Map model;
         if (modelObject instanceof Map) {
             model = (Map) modelObject;

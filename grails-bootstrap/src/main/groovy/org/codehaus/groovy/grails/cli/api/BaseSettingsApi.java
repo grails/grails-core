@@ -89,6 +89,7 @@ public class BaseSettingsApi {
         metadataFile = new File(buildSettings.getBaseDir(), "application.properties");
 
         metadata = metadataFile.exists() ? Metadata.getInstance(metadataFile) : Metadata.getCurrent();
+        metadata.setServletVersion(buildSettings.getServletVersion());
 
         metadataFile = metadata.getMetadataFile();
         enableProfile = Boolean.valueOf(getPropertyValue("grails.script.profile", false).toString());

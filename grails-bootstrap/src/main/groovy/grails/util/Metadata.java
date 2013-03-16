@@ -50,6 +50,7 @@ public class Metadata extends Properties {
 
     private File metadataFile;
     private boolean warDeployed;
+    private String servletVersion = DEFAULT_SERVLET_VERSION;
 
     private Metadata() {
         loadFromDefault();
@@ -164,6 +165,20 @@ public class Metadata extends Properties {
      * @return A Metadata object
      */
     public static Metadata getInstance(File file) {
+        Reference<Metadata> ref = holder.get();
+        if(ref != null) {
+            Metadata metadata = ref.get();
+            if(metadata != null && metadata.getMetadataFile() != null && metadata.getMetadataFile().equals(file)) {
+                return metadata;
+            }
+            else {
+                createAndBindNew(file);
+            }
+        }
+        return createAndBindNew(file);
+    }
+
+    private static Metadata createAndBindNew(File file) {
         Metadata m = new Metadata(file);
         holder.set(new FinalReference<Metadata>(m));
         return m;
@@ -233,10 +248,15 @@ public class Metadata extends Properties {
     public String getServletVersion() {
         String servletVersion = (String) get(SERVLET_VERSION);
         if (servletVersion == null) {
-            servletVersion = System.getProperty(SERVLET_VERSION) != null ? System.getProperty(SERVLET_VERSION) : DEFAULT_SERVLET_VERSION;
+            servletVersion = System.getProperty(SERVLET_VERSION) != null ? System.getProperty(SERVLET_VERSION) : this.servletVersion;
             return servletVersion;
         }
         return servletVersion;
+    }
+
+
+    public void setServletVersion(String servletVersion) {
+        this.servletVersion = servletVersion;
     }
 
     /**

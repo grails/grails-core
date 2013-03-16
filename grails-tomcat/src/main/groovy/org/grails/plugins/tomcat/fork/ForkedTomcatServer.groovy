@@ -120,7 +120,11 @@ class ForkedTomcatServer extends ForkedGrailsProcess implements EmbeddableServer
         def t = new Thread( {
             final process = fork()
             Runtime.addShutdownHook {
-                process.destroy()
+                try {
+                    process.destroy()
+                } catch (e) {
+                    // ignore, nothing we can do
+                }
             }
         } )
 

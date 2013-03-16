@@ -85,16 +85,14 @@ if (jointBuildGroovyJarProperty) {
 allprojects {
     repositories {
         maven { url "http://repo.grails.org/grails/core" }
-        // TODO configure this as a remote for repo.grails.org so we don't need this here...
-        maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     configurations {
         all {
             resolutionStrategy {
-//                def cacheHours = isCiBuild ? 1 : 24
-//                cacheDynamicVersionsFor cacheHours, 'hours'
-//                cacheChangingModulesFor cacheHours, 'hours'
+                def cacheHours = isCiBuild ? 0 : 24
+                cacheDynamicVersionsFor cacheHours, 'hours'
+                cacheChangingModulesFor cacheHours, 'hours'
             }
         }
     }

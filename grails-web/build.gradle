@@ -6,7 +6,7 @@ configurations {
 dependencies {
     jsp21 'javax.servlet.jsp:jsp-api:2.1'
 
-    compile project(":grails-core"), project(":grails-spring")
+    compile project(":grails-core"), project(":grails-spring"), project(":grails-async")
     compile('commons-el:commons-el:1.0') {
         exclude module:'commons-logging'
     }
@@ -30,6 +30,7 @@ dependencies {
     // Required for JSP support
     compile 'javax.servlet:jsp-api:2.0', {
         ext.notInPom = true
+        exclude group: 'javax.servlet', module:'servlet-api'
     }
     compile 'xpp3:xpp3_min:1.1.4c'
     runtime 'taglibs:standard:1.1.2'

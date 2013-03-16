@@ -98,7 +98,8 @@ public class GrailsCoreDependencies {
         );
 
         if (GrailsVersionUtils.isValidVersion(servletVersion, "3.0 > *")) {
-            compileDependencies.add(  new Dependency("org.grails", "grails-plugin-async", grailsVersion, true) );
+            compileDependencies = new ArrayList<Dependency>(compileDependencies);
+            compileDependencies.add(  new Dependency("org.grails", "grails-plugin-async", grailsVersion, true, "javax:javaee-web-api") );
         }
 
         testDependencies = Arrays.asList(
@@ -116,6 +117,7 @@ public class GrailsCoreDependencies {
         );
 
         if (java5compatible) {
+            compileDependencies = new ArrayList<Dependency>(compileDependencies);
             runtimeDependencies.add(new Dependency("javax.xml", "jaxb-api", jaxbVersion, true) );
         }
     }
