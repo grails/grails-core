@@ -34,6 +34,7 @@ target
 
 /.idea/
 /grails-aether/bin/
+/grails-async/bin/
 /grails-bootstrap/bin/
 /grails-core/bin/
 /grails-crud/bin/
@@ -73,4 +74,3 @@ target
 /grails-plugin-log4j/bin/
 /grails-plugin-logging/bin/
 /grails-logging/bin/
-
