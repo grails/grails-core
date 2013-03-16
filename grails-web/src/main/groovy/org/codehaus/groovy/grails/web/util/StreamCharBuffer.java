@@ -503,8 +503,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if (eaw.getEncodedAppender() == writer.getEncodedAppender()) {
                 throw new IllegalArgumentException("Cannot write buffer to itself.");
             }
-            if(eaw.getClass()==StreamCharBufferWriter.class) {
-                writeTo((StreamCharBufferWriter)eaw, flushTarget, emptyAfter);
+            if(eaw.getEncodedAppender().getClass()==StreamCharBufferEncodedAppender.class) {
+                ((StreamCharBufferEncodedAppender)eaw.getEncodedAppender()).getWriter().write(this);
                 return;
             } else if (target instanceof EncoderAware) {
                 encodeTo(eaw.getEncodedAppender(), ((EncoderAware)eaw).getEncoder());
@@ -1127,7 +1127,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             this.writer=writer;
         }
         
-        public Writer getWriter() {
+        public StreamCharBufferWriter getWriter() {
             return writer;
         }
 
