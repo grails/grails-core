@@ -16,14 +16,14 @@ class DefaultGrailsCodecClassTests extends GroovyTestCase {
 
     void testCodecWithClosures() {
         def codecClass = new DefaultGrailsCodecClass(CodecWithClosuresCodec)
-        assertEquals "encoded", codecClass.getEncodeMethod().call("stuff")
-        assertEquals "decoded", codecClass.getDecodeMethod().call("stuff")
+        assertEquals "encoded", codecClass.encoder.encode("stuff")
+        assertEquals "decoded", codecClass.decoder.decode("stuff")
     }
 
     void testCodecWithMethods() {
         def codecClass = new DefaultGrailsCodecClass(CodecWithMethodsCodec)
-        assertEquals "encoded", codecClass.encodeMethod.call("stuff")
-        assertEquals "decoded", codecClass.decodeMethod.call("stuff")
+        assertEquals "encoded", codecClass.encoder.encode("stuff")
+        assertEquals "decoded", codecClass.decoder.decode("stuff")
     }
 }
 
