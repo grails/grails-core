@@ -751,38 +751,39 @@ class MockUtils {
     private static void addDynamicInstanceMethods(Class clazz, List testInstances) {
         // Add save() method.
         clazz.metaClass.save = { Map args = [:] ->
-            if (validate()) {
-
-                def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
-                def mapping = evaluateMapping(clazz)
-
-                boolean isInsert
-                if (mapping?.id?.generator == "assigned") {
-                    isInsert = !testInstances.contains(delegate)
-                } else {
-                    isInsert = !delegate.id
+            if (!validate()) {
+                if (args.failOnError) {
+                    throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
                 }
-
-                if (isInsert) {
-                    triggerEvent delegate, 'beforeInsert'
-                    if (!testInstances.contains(delegate)) {
-                        testInstances << delegate
-                        setId delegate, clazz
-                    }
-                    setTimestamp delegate, 'dateCreated', properties, mapping
-                    setTimestamp delegate, 'lastUpdated', properties, mapping
-                    triggerEvent delegate, 'afterInsert'
-                } else {
-                    triggerEvent delegate, 'beforeUpdate'
-                    setTimestamp delegate, 'lastUpdated', properties, mapping
-                    triggerEvent delegate, 'afterUpdate'
-                }
-
-                return delegate
-            } else if (args.failOnError) {
-                throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
+                return null
             }
-            return null
+
+            def properties = Introspector.getBeanInfo(clazz).propertyDescriptors
+            def mapping = evaluateMapping(clazz)
+
+            boolean isInsert
+            if (mapping?.id?.generator == "assigned") {
+                isInsert = !testInstances.contains(delegate)
+            } else {
+                isInsert = !delegate.id
+            }
+
+            if (isInsert) {
+                triggerEvent delegate, 'beforeInsert'
+                if (!testInstances.contains(delegate)) {
+                    testInstances << delegate
+                    setId delegate, clazz
+                }
+                setTimestamp delegate, 'dateCreated', properties, mapping
+                setTimestamp delegate, 'lastUpdated', properties, mapping
+                triggerEvent delegate, 'afterInsert'
+            } else {
+                triggerEvent delegate, 'beforeUpdate'
+                setTimestamp delegate, 'lastUpdated', properties, mapping
+                triggerEvent delegate, 'afterUpdate'
+            }
+
+            return delegate
         }
 
         // Add delete() method.

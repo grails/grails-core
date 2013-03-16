@@ -195,7 +195,8 @@ class PluginInstallEngine {
         def parentDir = zipFile.canonicalFile.parentFile
         final currentDependencyManager = resolveEngine.dependencyManager
         final ivySettings = currentDependencyManager.ivySettings
-        IvyDependencyManager dependencyManager = new IvyDependencyManager(currentDependencyManager.applicationName, currentDependencyManager.applicationVersion, settings, Metadata.current, ivySettings)
+        IvyDependencyManager dependencyManager = new IvyDependencyManager(currentDependencyManager.applicationName,
+            currentDependencyManager.applicationVersion, settings, Metadata.current, ivySettings)
         dependencyManager.chainResolver = new ChainResolver(name: "chain", settings: ivySettings)
         dependencyManager.parseDependencies {
             log "warn"

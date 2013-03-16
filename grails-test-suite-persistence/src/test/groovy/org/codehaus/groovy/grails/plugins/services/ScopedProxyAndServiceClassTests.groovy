@@ -1,11 +1,11 @@
 package org.codehaus.groovy.grails.plugins.services
 
-import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import grails.spring.WebBeanBuilder
-import org.springframework.web.context.support.WebApplicationContextUtils
 import grails.util.GrailsWebUtil
-import org.springframework.web.context.request.RequestContextHolder
+
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
+import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.springframework.web.context.request.RequestContextHolder
 
 class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
 
