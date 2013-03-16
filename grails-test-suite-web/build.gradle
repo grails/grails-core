@@ -15,8 +15,7 @@ dependencies {
                 project(':grails-plugin-async'),
                 project(':grails-plugin-log4j'),
                 project(':grails-plugin-url-mappings'),
-                project(':grails-plugin-services'),
-                project(':grails-hibernate')
+                project(':grails-plugin-services')
 }
 test {
     maxParallelForks = 4

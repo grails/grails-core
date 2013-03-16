@@ -1,8 +1,6 @@
-// dependencies
 dependencies {
 
-    compile project(':grails-hibernate'),
-            project(':grails-test-suite-base'),
+    compile project(':grails-test-suite-base'),
             project(':grails-plugin-testing')
 
     testRuntime 'javax.servlet.jsp:jsp-api:2.1'

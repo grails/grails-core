@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.reload
 
+import org.codehaus.groovy.grails.plugins.scaffolding.MockHibernateGrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
 
 /**
@@ -72,7 +73,7 @@ dataSource {
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.i18n.I18nGrailsPlugin")
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin")
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.datasource.DataSourceGrailsPlugin")
-       pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.orm.hibernate.MockHibernateGrailsPlugin")
+       pluginsToLoad << MockHibernateGrailsPlugin
        pluginsToLoad << gcl.loadClass("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin")
     }
 }

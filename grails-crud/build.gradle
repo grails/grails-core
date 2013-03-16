@@ -1,3 +1,6 @@
 dependencies {
-    compile project(':grails-hibernate')
+    compile project(":grails-core"),
+            project(":grails-spring"),
+            project(":grails-web"),
+            project(":grails-plugin-domain-class")
 }

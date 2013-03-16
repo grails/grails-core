@@ -7,7 +7,6 @@ dependencies {
     compile "junit:junit:${junitVersion}"
 
     scripts project(":grails-web"),
-            project(':grails-hibernate'),
             project(':grails-docs'),
             project(':grails-crud'),
             project(':grails-plugin-controllers'),

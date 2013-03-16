@@ -18,7 +18,6 @@ dependencies {
                 project(':grails-plugin-services'),
                 project(':grails-plugin-scaffolding'),
                 project(':grails-plugin-controllers'),
-                project(':grails-hibernate'),
                 project(':grails-bootstrap'),
                 project(':grails-crud'),
                 project(':grails-plugin-log4j')

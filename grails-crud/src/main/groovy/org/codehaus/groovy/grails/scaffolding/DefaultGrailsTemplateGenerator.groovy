@@ -82,7 +82,8 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     def renderEditor = { property ->
         def domainClass = property.domainClass
         def cp
-        if (pluginManager?.hasGrailsPlugin('hibernate')) {
+        boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate') || pluginManager?.hasGrailsPlugin('hibernate4')
+        if (hasHibernate) {
             cp = domainClass.constrainedProperties[property.name]
         }
 
@@ -214,7 +215,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
             def t = engine.createTemplate(templateText)
             def multiPart = domainClass.properties.find {it.type == ([] as Byte[]).class || it.type == ([] as byte[]).class}
 
-            boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate')
+            boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate') || pluginManager?.hasGrailsPlugin('hibernate4')
             def packageName = domainClass.packageName ? "<%@ page import=\"${domainClass.fullName}\" %>" : ""
             def binding = [pluginManager: pluginManager,
                     packageName: packageName,
@@ -232,7 +233,7 @@ class DefaultGrailsTemplateGenerator implements GrailsTemplateGenerator, Resourc
     void generateController(GrailsDomainClass domainClass, Writer out) {
         def templateText = getTemplateText("Controller.groovy")
 
-        boolean hasHibernate =pluginManager?.hasGrailsPlugin('hibernate')
+        boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate') || pluginManager?.hasGrailsPlugin('hibernate4')
         def binding = [pluginManager: pluginManager,
                        packageName: domainClass.packageName,
                        domainClass: domainClass,

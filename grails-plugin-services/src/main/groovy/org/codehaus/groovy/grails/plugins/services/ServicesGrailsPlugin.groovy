@@ -36,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional
 class ServicesGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
-    def loadAfter = ['hibernate']
+    def loadAfter = ['hibernate', 'hibernate4']
 
     def watchedResources = ["file:./grails-app/services/**/*Service.groovy",
                             "file:./plugins/*/grails-app/services/**/*Service.groovy"]

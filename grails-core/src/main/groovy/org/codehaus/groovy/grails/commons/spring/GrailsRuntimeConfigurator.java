@@ -247,6 +247,9 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         if (pluginManager.hasGrailsPlugin("hibernate")) {
             pluginManager.doRuntimeConfiguration("hibernate", springConfig);
         }
+        else if (pluginManager.hasGrailsPlugin("hibernate4")) {
+            pluginManager.doRuntimeConfiguration("hibernate4", springConfig);
+        }
 
         WebApplicationContext ctx = (WebApplicationContext) springConfig.getApplicationContext();
 

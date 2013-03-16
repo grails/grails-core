@@ -7,14 +7,12 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.scaffolding.DefaultGrailsTemplateGenerator
-import org.codehaus.groovy.grails.scaffolding.Test
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.mock.web.MockServletContext
-import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 
 /**
  * @author Graeme Rocher
@@ -63,4 +61,10 @@ class TestScaffoldingViewResolver extends ScaffoldingViewResolver {
         }
         return null
     }
+}
+
+class Test {
+    Long id
+    Long version
+    String name
 }

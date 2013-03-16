@@ -25,7 +25,6 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.orm.hibernate.metaclass.BeforeValidateHelper
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
@@ -1004,8 +1003,6 @@ class MockUtils {
         }
         clazz.metaClass.clearErrors = {-> clearErrorsFor(errorsMap, delegate) }
 
-        final beforeValidateHelper = new BeforeValidateHelper()
-
         // Finally add the "validate()" method, which can simply be
         // used to test the constraints or used from code under test.
         clazz.metaClass.validate = { Map args ->
@@ -1057,10 +1054,19 @@ class MockUtils {
             return !errors.hasErrors()
         }
 
+        def beforeValidateHelper
+        try {
+            def helperClass = Thread.currentThread().contextClassLoader.loadClass('org.codehaus.groovy.grails.orm.hibernate.metaclass.BeforeValidateHelper')
+            beforeValidateHelper = helperClass.newInstance()
+        }
+        catch (ignored) {
+            // Hibernate isn't installed
+        }
+
         // add no-arg attributes validator, just to be inline with what HibernatePluginSupport.addValidationMethods does.
         // It works lke validate(Map) with empty map
         clazz.metaClass.validate = { ->
-            beforeValidateHelper.invokeBeforeValidate delegate, null
+            beforeValidateHelper?.invokeBeforeValidate delegate, null
             validate([:])
         }
 
@@ -1073,7 +1079,7 @@ class MockUtils {
         // add validator that validates only fields that names are passed in input list of fieldsToValdate.
         // All errors for the other fields are removed.
         clazz.metaClass.validate = { List fieldsToValidate ->
-            beforeValidateHelper.invokeBeforeValidate delegate, fieldsToValidate
+            beforeValidateHelper?.invokeBeforeValidate delegate, fieldsToValidate
             if (!validate([:]) && fieldsToValidate != null && !fieldsToValidate.isEmpty()) {
                 def result = new GrailsMockErrors(delegate)
                 for (e in errors.allErrors) {

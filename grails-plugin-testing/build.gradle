@@ -9,8 +9,7 @@ dependencies {
             project(':grails-plugin-mimetypes'),
             project(':grails-plugin-converters'),
             project(':grails-logging'),
-            project(':grails-test'),
-            project(':grails-hibernate')
+            project(':grails-test')
 
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {

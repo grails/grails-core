@@ -29,7 +29,7 @@ import org.springframework.validation.Errors
 class ValidationGrailsPlugin {
 
     def version = GrailsUtil.getGrailsVersion()
-    def loadAfter = ['hibernate', 'controllers']
+    def loadAfter = ['hibernate', 'hibernate4', 'controllers']
 
     static final ThreadLocal PROPERTY_INSTANCE_MAP = new SoftThreadLocalMap()
 

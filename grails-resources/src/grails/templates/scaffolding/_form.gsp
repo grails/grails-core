@@ -3,7 +3,7 @@
 
 <%  excludedProps = Event.allEvents.toList() << 'version' << 'dateCreated' << 'lastUpdated'
 	persistentPropNames = domainClass.persistentProperties*.name
-	boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate')
+	boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate') || pluginManager?.hasGrailsPlugin('hibernate4')
 	if (hasHibernate && org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsDomainBinder.getMapping(domainClass)?.identity?.generator == 'assigned') {
 		persistentPropNames << domainClass.identifier.name
 	}
@@ -25,7 +25,7 @@
 	}
 
 private renderFieldForProperty(p, owningClass, prefix = "") {
-	boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate')
+	boolean hasHibernate = pluginManager?.hasGrailsPlugin('hibernate') || pluginManager?.hasGrailsPlugin('hibernate4')
 	boolean display = true
 	boolean required = false
 	if (hasHibernate) {

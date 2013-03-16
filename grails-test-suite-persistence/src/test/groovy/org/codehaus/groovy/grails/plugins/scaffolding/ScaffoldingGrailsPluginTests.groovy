@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.plugins.scaffolding
 
 import grails.util.GrailsUtil
 
+import org.apache.commons.dbcp.BasicDataSource
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
@@ -9,8 +10,8 @@ import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginMetaManager
-import org.codehaus.groovy.grails.plugins.orm.hibernate.HibernatePluginSupport
 import org.springframework.core.io.Resource
+import org.springframework.jdbc.datasource.DataSourceTransactionManager
 
 class ScaffoldingGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -77,8 +78,6 @@ class TestTagLib {
         ga.mainContext = appCtx
         dependentPlugins*.doWithDynamicMethods(appCtx)
         assert appCtx.containsBean("dataSource")
-        assert appCtx.containsBean("sessionFactory")
-        assert appCtx.containsBean("openSessionInViewInterceptor")
         assert appCtx.containsBean("TestValidator")
 
         // Check that the plugin does not blow up if a TagLib is modified,
@@ -99,6 +98,14 @@ class MockHibernateGrailsPlugin {
 
     def artefacts = [new AnnotationDomainClassArtefactHandler()]
     def loadAfter = ['controllers']
-    def doWithSpring = HibernatePluginSupport.doWithSpring
-    def doWithDynamicMethods = HibernatePluginSupport.doWithDynamicMethods
+    def doWithSpring = {
+        dataSource(BasicDataSource) {
+            driverClassName = 'org.h2.Driver'
+            url = 'jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000'
+            username = 'sa'
+            password = ''
+        }
+
+        transactionManager(DataSourceTransactionManager, ref('dataSource'))
+    }
 }

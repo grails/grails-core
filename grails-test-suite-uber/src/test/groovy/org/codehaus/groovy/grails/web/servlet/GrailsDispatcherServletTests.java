@@ -29,10 +29,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockServletConfig;
 import org.springframework.mock.web.MockServletContext;
-import org.springframework.orm.hibernate3.support.OpenSessionInViewInterceptor;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.HandlerExecutionChain;
-import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 
 /**
@@ -50,7 +48,6 @@ public class GrailsDispatcherServletTests extends TestCase {
         try {
             System.setProperty("grails.env", "development");
             appCtx.registerMockBean("localeInterceptor", new LocaleChangeInterceptor());
-            appCtx.registerMockBean("openSessionInView", new OpenSessionInViewInterceptor());
             appCtx.registerMockBean("grailsUrlConverter", new HyphenatedUrlConverter());
 
             SimpleGrailsController controller = new SimpleGrailsController();
@@ -89,10 +86,9 @@ public class GrailsDispatcherServletTests extends TestCase {
             HandlerExecutionChain executionChain = dispatcherServlet.getHandler(request);
 
             assertNotNull(executionChain);
-            assertEquals(2, executionChain.getInterceptors().length);
+            assertEquals(1, executionChain.getInterceptors().length);
             for (int i = 0; i < executionChain.getInterceptors().length; i++) {
-                HandlerInterceptor interceptor = executionChain.getInterceptors()[i];
-                assertNotNull(interceptor);
+                assertNotNull(executionChain.getInterceptors()[i]);
             }
 
             request = new MockHttpServletRequest("GET", "/test/action/1");
