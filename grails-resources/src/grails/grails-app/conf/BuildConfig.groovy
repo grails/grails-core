@@ -2,7 +2,7 @@ grails.servlet.version = "3.0" // Change depending on target container complianc
 grails.project.class.dir = "target/classes"
 grails.project.test.class.dir = "target/test-classes"
 grails.project.test.reports.dir = "target/test-reports"
-grails.project.work.dir="target/work"
+grails.project.work.dir = "target/work"
 grails.project.target.level = 1.6
 grails.project.source.level = 1.6
 //grails.project.war.file = "target/${appName}-${appVersion}.war"
@@ -47,10 +47,10 @@ grails.project.dependency.resolution = {
         // runtime 'mysql:mysql-connector-java:5.1.22'
 
         build "org.grails:grails-plugin-tomcat:$grailsVersion"
-        runtime "org.grails:grails-plugin-hibernate:3.6.10"
     }
 
     plugins {
+        runtime ":hibernate:3.6.10"
         runtime ":jquery:1.9.1"
         runtime ":resources:1.2"
 
