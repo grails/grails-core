@@ -219,11 +219,7 @@ class GrailsUnitTestMixin {
 
         loadedCodecs << codecClass
 
-        // Instantiate the codec so we can use it.
-        final grailsCodecClass = new DefaultGrailsCodecClass(codecClass)
-
-        // Add the encode and decode methods.
-        grailsCodecClass.configureCodecMethods()
+        new DefaultGrailsCodecClass(codecClass).configureCodecMethods()
     }
 
     @AfterClass

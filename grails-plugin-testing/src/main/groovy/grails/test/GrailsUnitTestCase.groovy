@@ -215,13 +215,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
 
         loadedCodecs << codecClass
 
-        // Instantiate the codec so we can use it.
-        final codec = codecClass.newInstance()
-
-        // Add the encode and decode methods.
-        def codecName = GrailsNameUtils.getLogicalName(codecClass, "Codec")
-        Object.metaClass."encodeAs$codecName" = { -> codec.encode(delegate) }
-        Object.metaClass."decode$codecName" = { -> codec.decode(delegate) }
+        new DefaultGrailsCodecClass(codecClass).configureCodecMethods()
     }
 
     protected void addConverters(Class clazz, boolean register = true) {
