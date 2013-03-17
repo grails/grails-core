@@ -1,8 +1,0 @@
-
-dependencies {
-
-    compile project(":grails-tomcat")
-    compile project(":grails-core"), {
-        ext.notInPom = true
-    }
-}

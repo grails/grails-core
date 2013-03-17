@@ -45,12 +45,11 @@ grails.project.dependency.resolution = {
     dependencies {
         // specify dependencies here under either 'build', 'compile', 'runtime', 'test' or 'provided' scopes e.g.
         // runtime 'mysql:mysql-connector-java:5.1.22'
-
-        build "org.grails:grails-plugin-tomcat:$grailsVersion"
     }
 
     plugins {
         runtime ":hibernate:3.6.10"
+        build ":tomcat:7.0.37"
         runtime ":jquery:1.9.1"
         runtime ":resources:1.2"
 

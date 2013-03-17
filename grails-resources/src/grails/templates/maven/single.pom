@@ -43,7 +43,7 @@
         <dependency>
             <groupId>org.grails.plugins</groupId>
             <artifactId>tomcat</artifactId>
-            <version>${grails.version}</version>
+            <version>7.0.37</version>
             <scope>provided</scope>
             <type>zip</type>
         </dependency>
