@@ -422,11 +422,19 @@ class MockUtils {
      *
      * @deprecated Use {@link #mockDomain(Class, Map, List)}
      */
+    static GrailsDomainClass mockDomain(GrailsDomainClass dc, Class clazz, List testInstances) {
+        mockDomain(dc, clazz, errorsObjects.get(), testInstances)
+    }
+
     static GrailsDomainClass mockDomain(Class clazz, List testInstances) {
-        mockDomain(clazz, errorsObjects.get(), testInstances)
+        mockDomain(null, clazz, testInstances)
     }
 
     static TEST_INSTANCES = [:]
+
+    static GrailsDomainClass mockDomain(Class clazz, Map errorsMap, List testInstances = []) {
+        mockDomain null, clazz, errorsMap, testInstances
+    }
 
     /**
      * <p>Call this to mock the given domain class. It adds mock versions
@@ -436,6 +444,7 @@ class MockUtils {
      * and other query methods return the instances in the same order as
      * they appear in the list <code>testInstances</code>. This makes
      * testing much easier as you can rely on this ordering.</p>
+     * @param dc The optional GrailsDomainClass
      * @param clazz The domain class to mock.
      * @param errorsMap A map that Errors instances will be stored in.
      * Each Errors object will be stored against the domain instance it
@@ -445,8 +454,10 @@ class MockUtils {
      * or of anything that can act as that type, such as a map with keys
      * that match the domain class's fields.
      */
-    static GrailsDomainClass mockDomain(Class clazz, Map errorsMap, List testInstances = []) {
-        def dc = new DefaultGrailsDomainClass(clazz)
+    static GrailsDomainClass mockDomain(GrailsDomainClass dc, Class clazz, Map errorsMap, List testInstances = []) {
+        if (!dc) {
+            dc = new DefaultGrailsDomainClass(clazz)
+        }
 
         def rootInstances = testInstances.findAll { clazz.isInstance(it) }
         def childInstances = testInstances.findAll { clazz.isInstance(it) && it.class != clazz }.groupBy { it.class }
@@ -942,7 +953,7 @@ class MockUtils {
                 // as a linked list. The list starts with the ultimate base class
                 // and ends with "clazz".
                 LinkedList classChain = new LinkedList()
-                while (clazz != Object.class) {
+                while (clazz != Object) {
                     classChain.addFirst(clazz)
                     clazz = clazz.getSuperclass()
                 }
@@ -960,7 +971,7 @@ class MockUtils {
                         try {
                             c.call()
                         } finally {
-                        c.delegate = null
+                            c.delegate = null
                         }
                     }
                 }

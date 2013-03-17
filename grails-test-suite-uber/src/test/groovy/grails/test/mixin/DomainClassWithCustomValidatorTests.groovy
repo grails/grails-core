@@ -3,7 +3,9 @@ package grails.test.mixin
 import grails.persistence.Entity
 
 @TestFor(Uniqueable)
+@Mock(Uniqueable)
 class DomainClassWithCustomValidatorTests {
+
     void testThereCanBeOnlyOneSomething() {
         def uni = new Uniqueable()
         assert uni.save(flush:true)

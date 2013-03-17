@@ -2,10 +2,11 @@ package org.codehaus.groovy.grails.web.converters
 
 import grails.artefact.Artefact
 import grails.converters.JSON
+import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.hibernate.proxy.HibernateProxy
-import org.hibernate.proxy.LazyInitializer
+import org.codehaus.groovy.grails.web.servlet.mvc.HibernateProxy
+import org.codehaus.groovy.grails.web.servlet.mvc.LazyInitializer
 import org.springframework.core.JdkVersion
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
@@ -67,8 +68,8 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
 
         def hibernateInitializer = [getImplementation:{obj}] as LazyInitializer
         def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
-
         c.params.b = proxy
+
         c.testProxy()
 
         // @todo this test is fragile and depends on runtime environment because
@@ -137,11 +138,10 @@ class JSONConverterController {
     }
 }
 
-@grails.persistence.Entity
+@Entity
 class Book {
    Long id
    Long version
    String title
    String author
-
 }

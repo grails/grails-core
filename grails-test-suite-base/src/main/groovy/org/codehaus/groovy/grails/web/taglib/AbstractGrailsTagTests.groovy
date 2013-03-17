@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import grails.test.MockUtils
 import grails.util.GrailsWebUtil
 import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
@@ -11,14 +12,24 @@ import javax.xml.xpath.XPath
 import javax.xml.xpath.XPathConstants
 import javax.xml.xpath.XPathFactory
 
-import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
-import org.codehaus.groovy.grails.web.pages.*
+import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
+import org.codehaus.groovy.grails.web.pages.FastStringWriter
+import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
+import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
+import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
+import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
@@ -61,7 +72,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     boolean enableProfile = false
 
     GrailsApplication grailsApplication
-    StaticMessageSource messageSource
+    MessageSource messageSource
 
     DocumentBuilder domBuilder
     XPath xpath
@@ -181,7 +192,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         messageSource = new StaticMessageSource()
         ctx.registerMockBean("manager", mockManager)
         ctx.registerMockBean("messageSource", messageSource)
-        ctx.registerMockBean("grailsApplication",grailsApplication)
+        ctx.registerMockBean("grailsApplication", grailsApplication)
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
         onInitMockBeans()
@@ -199,22 +210,20 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         def dependentPlugins = dependantPluginClasses.collect { new DefaultGrailsPlugin(it, grailsApplication)}
 
-        dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
+        dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
         mockManager.registerProvidedArtefacts(grailsApplication)
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
 
         webRequest = GrailsWebUtil.bindMockWebRequest(ctx)
         onInit()
-        JstlUtils.exposeLocalizationContext webRequest.getRequest(),null
+        JstlUtils.exposeLocalizationContext webRequest.getRequest(), null
 
-        servletContext =  webRequest.servletContext
+        servletContext = webRequest.servletContext
         ServletContextHolder.servletContext = servletContext
 
         springConfig.servletContext = servletContext
 
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
-
-        springConfig.addSingletonBean("messageSource", StaticMessageSource)
 
         appCtx = springConfig.getApplicationContext()
 
@@ -226,17 +235,19 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(String)
         GroovySystem.metaClassRegistry.removeMetaClass(Object)
 
-        // Why are the TagLibClasses removed?
-        //grailsApplication.tagLibClasses.each { tc -> GroovySystem.metaClassRegistry.removeMetaClass(tc.clazz)}
-
         mockManager.doDynamicMethods()
         request = webRequest.currentRequest
         initThemeSource(request, messageSource)
         request.characterEncoding = "utf-8"
         response = webRequest.currentResponse
+
+        ga.domainClasses.each { dc ->
+            MockUtils.mockDomain dc, dc.clazz, []
+            dc.validator.messageSource = messageSource
+        }
     }
 
-    private def initThemeSource(request, StaticMessageSource messageSource) {
+    private void initThemeSource(request, MessageSource messageSource) {
         request.setAttribute(DispatcherServlet.THEME_SOURCE_ATTRIBUTE, new MockThemeSource(messageSource))
         request.setAttribute(DispatcherServlet.THEME_RESOLVER_ATTRIBUTE, new SessionThemeResolver())
     }

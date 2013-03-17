@@ -1,8 +1,8 @@
 dependencies {
-
     compile project(':grails-bootstrap'),
             project(':grails-core'),
             project(':grails-spring'),
             project(':grails-web'),
-            project(':grails-test')
+            project(':grails-test'),
+            project(':grails-plugin-testing')
 }

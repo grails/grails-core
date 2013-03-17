@@ -1,11 +1,13 @@
 package org.codehaus.groovy.grails.web.converters
 
+import grails.artefact.Artefact
 import grails.converters.XML
+import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.converters.marshaller.ProxyUnwrappingMarshaller
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.hibernate.proxy.HibernateProxy
-import org.hibernate.proxy.LazyInitializer
+import org.codehaus.groovy.grails.web.servlet.mvc.HibernateProxy
+import org.codehaus.groovy.grails.web.servlet.mvc.LazyInitializer
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -31,8 +33,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         def c = new RestController()
         c.test()
 
-        // @todo this test is fragile and depends on runtime environment because
-        // of hash key ordering variations
+        // @todo this test is fragile and depends on runtime environment because of hash key ordering variations
         assertEquals '''<?xml version="1.0" encoding="UTF-8"?><xmlConverterTestBook><author>Stephen King</author><publisher /><title>The Stand</title></xmlConverterTestBook>''', response.contentAsString
     }
 
@@ -70,8 +71,8 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
 
         def hibernateInitializer = [getImplementation:{obj}] as LazyInitializer
         def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
-
         c.params.b = proxy
+
         c.testProxy()
 
         def pum = new ProxyUnwrappingMarshaller()
@@ -87,9 +88,6 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
         def obj = new XmlConverterTestPublisher()
         obj.name = "Apress"
         obj.id = 1L
-
-        def hibernateInitializer = [getImplementation:{obj},getPersistentClass:{obj.getClass()}] as LazyInitializer
-        def proxy = [getHibernateLazyInitializer:{hibernateInitializer}] as HibernateProxy
 
         def book = new XmlConverterTestBook()
         book.title = "The Stand"
@@ -109,7 +107,7 @@ class XMLConverterTests extends AbstractGrailsControllerTests {
     }
 }
 
-@grails.artefact.Artefact("Controller")
+@Artefact("Controller")
 class RestController {
     def test = {
         def b = new XmlConverterTestBook(title:'The Stand', author:'Stephen King')
@@ -130,10 +128,9 @@ class RestController {
         b.validate()
         render b.errors as XML
     }
-
 }
 
-@grails.persistence.Entity
+@Entity
 class XmlConverterTestBook {
     Long id
     Long version
@@ -141,15 +138,16 @@ class XmlConverterTestBook {
     String author
 
     XmlConverterTestPublisher publisher
-
 }
-@grails.persistence.Entity
+
+@Entity
 class XmlConverterTestPublisher {
     Long id
     Long version
     String name
 }
-@grails.persistence.Entity
+
+@Entity
 class XmlConverterTestBookData {
     Long id
     Long version

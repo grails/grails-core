@@ -6,7 +6,7 @@ import spock.lang.Specification
 /**
  * Tests the usage of unique contstraint in unit tests
  */
-@TestFor(Group)
+@Mock(Group)
 class DomainClassWithUniqueConstraintSpec extends Specification {
 
     void "Test that unique constraint is enforced"() {

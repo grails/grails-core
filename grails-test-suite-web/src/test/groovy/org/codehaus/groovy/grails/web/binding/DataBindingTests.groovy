@@ -47,13 +47,6 @@ class Author {
     static constraints = {
         name(nullable:true)
     }
-
-    static get(Serializable id) {
-       def result = Author.newInstance()
-            result.id = id
-            result.name = "Mocked ${id}"
-            result
-    }
 }
 @Entity
 class City {
@@ -73,7 +66,7 @@ class Pet {
     Map detailMap
     Person owner
 }
-        ''')
+''')
     }
 
     void testBindingMapValue() {
@@ -109,7 +102,6 @@ class Pet {
         person.properties = params
         assertEquals 'Douglas Adams', person.name
         assertNull person.birthDate
-
     }
 
     void testNamedBinding() {
@@ -261,6 +253,13 @@ class Pet {
 
         def authorClass = ga.getDomainClass("databindingtests.Author").getClazz()
 
+        authorClass.metaClass.static.get = { Serializable id ->
+            def result = authorClass.newInstance()
+            result.id = id
+            result.name = "Mocked ${id}"
+            result
+        }
+    
         request.addParameter("title", "The Stand")
         request.addParameter("author.id", "5")
 
@@ -271,7 +270,7 @@ class Pet {
         b.properties = params
 
         assertEquals "Wrong 'title' property", "The Stand", b.title
-        assertNotNull "Association 'author' should be binded", b.author
+        assertNotNull "Association 'author' should be bound", b.author
         assertEquals 5, b.author.id
         assertEquals "Mocked 5", b.author.name
     }

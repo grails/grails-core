@@ -1,13 +1,15 @@
 package grails.test.mixin
 
 import grails.persistence.Entity
+import grails.test.MockUtils
 import spock.lang.Specification
-/**
- */
+
 @TestFor(Company)
-class CascadeValidationForEmbeddedSpec extends Specification{
+@Mock([Company, CompanyAddress])
+class CascadeValidationForEmbeddedSpec extends Specification {
 
     void "Test that validation cascades to embedded entities"() {
+
         when:"An entity with an invalid embedded entity is created"
             def company = new Company()
             company.address = new CompanyAddress()
