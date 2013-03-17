@@ -161,49 +161,57 @@ public class TestForTransformation extends TestMixinTransformation {
         if (value instanceof ClassExpression) {
             ce = (ClassExpression) value;
             testFor(classNode, ce);
+            return;
         }
-        else {
-            if (!junit3Test) {
-                List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
-                if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
-                // no explicit class specified try by convention
-                String fileName = source.getName();
-                String className = GrailsResourceUtils.getClassName(new org.codehaus.groovy.grails.io.support.FileSystemResource(fileName));
-                if (className != null) {
-                    String targetClassName = null;
 
-                    if (className.endsWith("Tests")) {
-                        targetClassName = className.substring(0, className.indexOf("Tests"));
-                    }
-                    else if (className.endsWith("Test")) {
-                        targetClassName = className.substring(0, className.indexOf("Test"));
-                    }
-                    else if (className.endsWith("Spec")) {
-                        targetClassName = className.substring(0, className.indexOf("Spec"));
-                    }
+        if (junit3Test) {
+            return;
+        }
 
-                    if (targetClassName != null) {
-                        Resource targetResource = getResourceLocator().findResourceForClassName(targetClassName);
-                        if (targetResource != null) {
-                            try {
-                                if (GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
-                                    testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
-                                }
-                                else {
-                                    for (String artefactType : artefactTypeToTestMap.keySet()) {
-                                        if (targetClassName.endsWith(artefactType)) {
-                                            testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
-                                            break;
-                                        }
-                                    }
-                                }
-                            } catch (IOException e) {
-                                // ignore
-                            }
-                        }
+        List<AnnotationNode> annotations = classNode.getAnnotations(MY_TYPE);
+        if (annotations.size()>0) return; // bail out, in this case it was already applied as a local transform
+        // no explicit class specified try by convention
+        String fileName = source.getName();
+        String className = GrailsResourceUtils.getClassName(new org.codehaus.groovy.grails.io.support.FileSystemResource(fileName));
+        if (className == null) {
+            return;
+        }
+
+        String targetClassName = null;
+
+        if (className.endsWith("Tests")) {
+            targetClassName = className.substring(0, className.indexOf("Tests"));
+        }
+        else if (className.endsWith("Test")) {
+            targetClassName = className.substring(0, className.indexOf("Test"));
+        }
+        else if (className.endsWith("Spec")) {
+            targetClassName = className.substring(0, className.indexOf("Spec"));
+        }
+
+        if (targetClassName == null) {
+            return;
+        }
+
+        Resource targetResource = getResourceLocator().findResourceForClassName(targetClassName);
+        if (targetResource == null) {
+            return;
+        }
+
+        try {
+            if (GrailsResourceUtils.isDomainClass(targetResource.getURL())) {
+                testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
+            }
+            else {
+                for (String artefactType : artefactTypeToTestMap.keySet()) {
+                    if (targetClassName.endsWith(artefactType)) {
+                        testFor(classNode, new ClassExpression(new ClassNode(targetClassName, 0, ClassHelper.OBJECT_TYPE)));
+                        break;
                     }
                 }
             }
+        } catch (IOException e) {
+            // ignore
         }
     }
 

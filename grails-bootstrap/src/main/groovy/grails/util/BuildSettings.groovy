@@ -112,8 +112,7 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String GLOBAL_PLUGINS_DIR = "grails.global.plugins.dir"
 
     /**
-     * The name of the system property for {@link #
-     }.
+     * The name of the system property for {@link #}.
      */
     public static final String PROJECT_RESOURCES_DIR = "grails.project.resource.dir"
 
@@ -810,7 +809,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
 
         // If 'grailsHome' is set, add the JAR file dependencies.
-        defaultPluginMap = [tomcat: grailsVersion]
+        defaultPluginMap = [:]
         defaultPluginSet = defaultPluginMap.keySet()
 
         // Update the base directory. This triggers some extra config.

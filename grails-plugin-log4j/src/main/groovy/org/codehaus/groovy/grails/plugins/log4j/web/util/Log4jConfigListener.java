@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.plugins.log4j.web.util;
 
-import grails.util.BuildSettings;
 import grails.util.Environment;
 import groovy.util.ConfigObject;
 
@@ -23,10 +22,7 @@ import java.lang.reflect.Method;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
-import org.apache.log4j.ConsoleAppender;
-import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.apache.log4j.helpers.LogLog;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.plugins.log4j.Log4jConfig;
