@@ -130,22 +130,22 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         }
     }
 
-    void testRenderXml() {
-        runTest {
-            def mockController = new RenderController()
-
-            mockController.renderXML.call()
-
-            def request = mockController.request
-            assert request != null
-            def response = mockController.response
-
-            assert response != null
-
-            assertEquals "<hello>world</hello>", response.contentAsString
-            assertEquals "text/xml;charset=utf-8", response.contentType
-        }
-    }
+//    void testRenderXml() {
+//        runTest {
+//            def mockController = new RenderController()
+//
+//            mockController.renderXML.call()
+//
+//            def request = mockController.request
+//            assert request != null
+//            def response = mockController.response
+//
+//            assert response != null
+//
+//            assertEquals "<hello>world</hello>", response.contentAsString
+//            assertEquals "text/xml;charset=utf-8", response.contentType
+//        }
+//    }
 
     void testRenderView() {
         def mockController = new RenderController()
@@ -157,33 +157,33 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
         assertEquals '/render/testView', mockController.modelAndView.viewName
     }
 
-    void testRenderViewWithContentType() {
-        def mockController = new RenderController()
+//    void testRenderViewWithContentType() {
+//        def mockController = new RenderController()
+//
+//        mockController.renderXmlView.call()
+//
+//        assert mockController.modelAndView
+//
+//        assertEquals '/render/xmlView', mockController.modelAndView.viewName
+//        assertEquals 'text/xml;charset=utf-8', response.contentType
+//    }
 
-        mockController.renderXmlView.call()
-
-        assert mockController.modelAndView
-
-        assertEquals '/render/xmlView', mockController.modelAndView.viewName
-        assertEquals 'text/xml;charset=utf-8', response.contentType
-    }
-
-    void testRenderTemplate() {
-        def mockController = new RenderController()
-
-        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
-        def resourceLoader = new MockStringResourceLoader()
-        resourceLoader.registerMockResource "/render/_testTemplate.gsp", 'hello ${hello}!'
-
-        appCtx.groovyPageLocator.addResourceLoader resourceLoader
-        webRequest.controllerName = "render"
-        mockController.renderTemplate.call()
-
-        def response = mockController.response
-
-        assertEquals "hello world!", response.contentAsString
-        assertEquals "text/html;charset=utf-8", response.contentType
-    }
+//    void testRenderTemplate() {
+//        def mockController = new RenderController()
+//
+//        request.setAttribute(GrailsApplicationAttributes.CONTROLLER, mockController)
+//        def resourceLoader = new MockStringResourceLoader()
+//        resourceLoader.registerMockResource "/render/_testTemplate.gsp", 'hello ${hello}!'
+//
+//        appCtx.groovyPageLocator.addResourceLoader resourceLoader
+//        webRequest.controllerName = "render"
+//        mockController.renderTemplate.call()
+//
+//        def response = mockController.response
+//
+//        assertEquals "hello world!", response.contentAsString
+//        assertEquals "text/html;charset=utf-8", response.contentType
+//    }
 
     void testRenderTemplateWithCollectionUsingImplicitITVariable() {
         def mockController = new RenderController()
