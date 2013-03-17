@@ -12,6 +12,8 @@ class BuildSettingsTests extends GroovyTestCase {
     private Map savedSystemProps
 
     protected void setUp() {
+        Metadata.reset()
+
         def props = new Properties()
         final buildProps = new File("../build.properties")
         if (!buildProps.exists()) {
