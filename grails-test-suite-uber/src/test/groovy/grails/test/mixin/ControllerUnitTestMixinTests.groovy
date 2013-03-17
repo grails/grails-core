@@ -67,15 +67,15 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert "Great" == controller.response.xml.@title.text()
     }
 
-//    void testRenderJson() {
-//
-//        def controller = getMockController()
-//
-//        controller.renderJson()
-//
-//        assert '{"book":"Great"}' == controller.response.contentAsString
-//        assert "Great" == controller.response.json.book
-//    }
+    void testRenderJson() {
+
+        def controller = getMockController()
+
+        controller.renderJson()
+
+        assert '{"book":"Great"}' == controller.response.contentAsString
+        assert "Great" == controller.response.json.book
+    }
 
     void testRenderAsJson() {
 

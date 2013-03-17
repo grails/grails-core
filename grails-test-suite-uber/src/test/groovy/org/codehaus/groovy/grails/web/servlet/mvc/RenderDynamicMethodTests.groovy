@@ -26,12 +26,12 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         assertEquals "foo", response.contentAsString
         assert "bar" == request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE)
     }
-//    void testRenderView() {
-//        testCtrl.renderView()
-//
-//        assertEquals '/renderDynamicMethodTest/foo', testCtrl.modelAndView.viewName
-//        assertEquals 'text/html;charset=utf-8', response.contentType
-//    }
+    void testRenderView() {
+        testCtrl.renderView()
+
+        assertEquals '/renderDynamicMethodTest/foo', testCtrl.modelAndView.viewName
+        assertEquals 'text/html;charset=utf-8', response.contentType
+    }
 
     void testRenderText() {
         testCtrl.renderText()
@@ -63,23 +63,23 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         assertEquals "<foo>bar</foo>", response.contentAsString
     }
 
-//    void testRenderXml() {
-//        testCtrl.renderXml()
-//        assertEquals "text/xml;charset=utf-8", response.contentType
-//        assertEquals "<foo><bar>hello</bar></foo>", response.contentAsString
-//    }
+    void testRenderXml() {
+        testCtrl.renderXml()
+        assertEquals "text/xml;charset=utf-8", response.contentType
+        assertEquals "<foo><bar>hello</bar></foo>", response.contentAsString
+    }
 
-//    void testRenderNonAsciiXml() {
-//        testCtrl.renderNonAsciiXml()
-//        assertEquals "text/xml;charset=utf-8", response.contentType
-//        assertEquals "<foo><bar>hello öäåÖÄÅ</bar></foo>", response.contentAsString
-//    }
+    void testRenderNonAsciiXml() {
+        testCtrl.renderNonAsciiXml()
+        assertEquals "text/xml;charset=utf-8", response.contentType
+        assertEquals "<foo><bar>hello öäåÖÄÅ</bar></foo>", response.contentAsString
+    }
 
-//    void testRenderJSON() {
-//        testCtrl.renderJSON()
-//        assertEquals "application/json;charset=UTF-8", response.contentType
-//        assertEquals '{"foo":[{"bar":"hello"}]}', response.contentAsString
-//    }
+    void testRenderJSON() {
+        testCtrl.renderJSON()
+        assertEquals "application/json;charset=UTF-8", response.contentType
+        assertEquals '{"foo":[{"bar":"hello"}]}', response.contentAsString
+    }
 
     void testStatusAndText() {
         testCtrl.renderStatusAndText()
