@@ -8,7 +8,7 @@ import java.util.Set;
 public abstract class AbstractEncodedAppender implements EncodedAppender {
     protected abstract void write(EncodingState encodingState, char[] b, int off, int len) throws IOException;
     protected abstract void write(EncodingState encodingState, String str, int off, int len) throws IOException;    
-    protected abstract void appendCharSequence(EncodingState encodingState, CharSequence str, int off, int i) throws IOException;
+    protected abstract void appendCharSequence(EncodingState encodingState, CharSequence str, int start, int end) throws IOException;
     public abstract void append(Encoder encoder, char character) throws IOException;
     
     public void append(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException {
@@ -76,5 +76,9 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
    
     public void append(Encoder encoder, StreamEncodeable streamEncodeable) throws IOException {
         streamEncodeable.encodeTo(this, encoder);
+    }
+    
+    public void flush() throws IOException {
+        
     }
 }

@@ -3,7 +3,9 @@ package org.codehaus.groovy.grails.support.encoding;
 import java.util.Set;
 
 public class EncodingStateImpl implements EncodingState {
-    private Set<Encoder> encoders;
+    public static final EncodingState UNDEFINED_ENCODING_STATE = new EncodingStateImpl(null);
+    
+    private final Set<Encoder> encoders;
     
     public EncodingStateImpl(Set<Encoder> encoders) {
         this.encoders=encoders;
@@ -11,10 +13,6 @@ public class EncodingStateImpl implements EncodingState {
 
     public Set<Encoder> getEncoders() {
         return encoders;
-    }
-
-    public void setEncoders(Set<Encoder> encoders) {
-        this.encoders = encoders;
     }
 
     @Override
@@ -35,7 +33,7 @@ public class EncodingStateImpl implements EncodingState {
             return false;
         EncodingStateImpl other = (EncodingStateImpl)obj;
         if (encoders == null) {
-            if (other.encoders != null)
+            if (other.encoders != null && other.encoders.size() > 0)
                 return false;
         }
         else if (!encoders.equals(other.encoders))
