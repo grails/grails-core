@@ -137,7 +137,12 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         else if (arguments[0] instanceof Map) {
             Map argMap = (Map) arguments[0];
             boolean hasContentType = argMap.containsKey(ARGUMENT_CONTENT_TYPE);
+
             Writer out = null;
+            if(hasContentType) {
+                out = getWriterForConfiguredContentType(response,argMap, hasContentType);
+                webRequest.setOut(out);
+            }
             if (argMap.containsKey(ARGUMENT_LAYOUT)) {
                 webRequest.getCurrentRequest().setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, argMap.get(ARGUMENT_LAYOUT));
             }
@@ -167,26 +172,32 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
             }
             else if (arguments[arguments.length - 1] instanceof CharSequence) {
-                out = getWriterForConfiguredContentType(response, argMap, hasContentType);
-                webRequest.setOut(out);
+                if(out == null)  {
+                    out = getWriterForConfiguredContentType(response, argMap, hasContentType);
+                    webRequest.setOut(out);
+                }
 
                 CharSequence text = (CharSequence) arguments[arguments.length - 1];
                 renderView = renderText(text, out);
             }
             else if (argMap.containsKey(ARGUMENT_TEXT)) {
-                out = getWriterForConfiguredContentType(response, argMap, hasContentType);
-                webRequest.setOut(out);
+                if(out == null)   {
+                    out = getWriterForConfiguredContentType(response, argMap, hasContentType);
+                    webRequest.setOut(out);
+                }
 
                 Object textArg = argMap.get(ARGUMENT_TEXT);
                 CharSequence text = (textArg instanceof CharSequence) ? ((CharSequence)textArg) : textArg.toString();
                 renderView = renderText(text, out);
             }
             else if (argMap.containsKey(ARGUMENT_VIEW)) {
-                renderView(webRequest, argMap, target, controller);
+                renderView(webRequest, argMap, target, controller, hasContentType);
             }
             else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
-                out = getWriterForConfiguredContentType(response, argMap, hasContentType);
-                webRequest.setOut(out);
+                if(out == null) {
+                    out = getWriterForConfiguredContentType(response, argMap, hasContentType);
+                    webRequest.setOut(out);
+                }
 
                 renderView = renderTemplate(target, controller, webRequest, argMap, out);
             }
@@ -332,6 +343,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         boolean renderView;
         boolean hasModel = argMap.containsKey(ARGUMENT_MODEL);
         Object modelObject = null;
+        if(hasModel) {
+            modelObject = argMap.get(ARGUMENT_MODEL);
+        }
         String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
         String contextPath = getContextPath(webRequest, argMap);
 
@@ -501,7 +515,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         template.make(binding).writeTo(out);
     }
 
-    private void renderView(GrailsWebRequest webRequest, Map argMap, Object target, GroovyObject controller) {
+    private void renderView(GrailsWebRequest webRequest, Map argMap, Object target, GroovyObject controller, boolean hasContentType) {
         String viewName = argMap.get(ARGUMENT_VIEW).toString();
         String viewUri = webRequest.getAttributes().getNoSuffixViewURI((GroovyObject) target, viewName);
         Object modelObject = argMap.get(ARGUMENT_MODEL);
@@ -514,6 +528,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             if (isPromise) return;
         }
+
+
+        getWriterForConfiguredContentType(webRequest.getResponse(),argMap,hasContentType);
 
         Map model;
         if (modelObject instanceof Map) {

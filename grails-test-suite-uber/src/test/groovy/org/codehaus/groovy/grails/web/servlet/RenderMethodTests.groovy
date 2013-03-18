@@ -181,8 +181,8 @@ class RenderMethodTests extends AbstractGrailsControllerTests {
 
         def response = mockController.response
 
-        assertEquals "hello world!", response.contentAsString
         assertEquals "text/html;charset=utf-8", response.contentType
+        assertEquals "hello world!", response.contentAsString
     }
 
     void testRenderTemplateWithCollectionUsingImplicitITVariable() {
