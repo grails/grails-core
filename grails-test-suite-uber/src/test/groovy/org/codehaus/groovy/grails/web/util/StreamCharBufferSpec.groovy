@@ -5,24 +5,18 @@ import grails.util.GrailsWebUtil
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
-import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
-import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest.DefaultEncodingStateRegistryLookup;
 
 import spock.lang.Specification
 
 class StreamCharBufferSpec extends Specification {
     StreamCharBuffer buffer
-    CodecPrintWriter codecOut
+    GrailsPrintWriter codecOut
     GrailsPrintWriter out
 
     def setup() {
-        buffer=new StreamCharBuffer()
-        out=new GrailsPrintWriter(buffer.writerForEncoder)
-
         def grailsApplication = Mock(GrailsApplication)
         GrailsCodecClass htmlCodecClass = new DefaultGrailsCodecClass(HTMLCodec)
         grailsApplication.getArtefact("Codec", HTMLCodec.name) >> { htmlCodecClass }
@@ -33,8 +27,12 @@ class StreamCharBufferSpec extends Specification {
         def codecClasses = [htmlCodecClass, html4CodecClass, rawCodecClass]
         grailsApplication.getCodecClasses() >> { codecClasses }
         GrailsWebUtil.bindMockWebRequest()
+        
+        buffer=new StreamCharBuffer()
+        out=new GrailsPrintWriter(buffer.writerForEncoder)
+        
         codecClasses*.configureCodecMethods()
-        codecOut=new CodecPrintWriter(out, htmlCodecClass.encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup())
+        codecOut=new GrailsPrintWriter(out.getWriterForEncoder(htmlCodecClass.encoder, DefaultGrailsCodecClass.getEncodingStateRegistryLookup().lookup()))
     }
 
     def "stream char buffer should support encoding"() {
@@ -58,8 +56,9 @@ class StreamCharBufferSpec extends Specification {
         when:
         def hello="Hello world & hi".encodeAsHTML()
         def buffer2=new StreamCharBuffer()
-        buffer2.writerForEncoder << hello
-        buffer2.writerForEncoder << "<script>"
+        def out2=new GrailsPrintWriter(buffer2.writerForEncoder)
+        out2 << hello
+        out2 << "<script>"
         codecOut << buffer2
         then:
         buffer.toString() == "Hello world &amp; hi&lt;script&gt;"
@@ -123,5 +122,57 @@ class StreamCharBufferSpec extends Specification {
         then:
             hello.toString()=="Hello &#39;Grails&#39;"
             hello2.toString()=="Hello &#39;Grails&#39;"
+    }
+    
+    def "toString should keep encoding state"() {
+        when:
+        codecOut << "<script>".encodeAsHTML()
+        codecOut << "Hello world & hi".encodeAsHTML()
+        then:
+        buffer.encodeAsHTML().toString() == "&lt;script&gt;Hello world &amp; hi"
+        buffer.toString() == "&lt;script&gt;Hello world &amp; hi"
+        buffer.toString() == "&lt;script&gt;Hello world &amp; hi"
+        buffer.toString().encodeAsHTML().toString() == "&lt;script&gt;Hello world &amp; hi"
+        buffer.toString().encodeAsHTML().encodeAsHTML().toString() == "&lt;script&gt;Hello world &amp; hi"
+    }
+    
+    def "encodeAsRaw should prevent other encodings"() {
+        when:
+        out << "<script>"
+        out << "Hello world & hi".encodeAsRaw()
+        then:
+        buffer.encodeAsHTML().toString() == "&lt;script&gt;Hello world & hi"
+    }
+
+    def "toString should keep encoding state when no codec"() {
+        when:
+        out << "<script>"
+        out << "Hello world & hi".encodeAsRaw()
+        then:
+        buffer.encodeAsHTML().toString() == "&lt;script&gt;Hello world & hi"
+        buffer.encodeAsHTML().encodeAsHTML().toString() == "&lt;script&gt;Hello world & hi"
+        buffer.toString() == "<script>Hello world & hi"
+        buffer.toString() == "<script>Hello world & hi"
+        buffer.encodeAsHTML().toString() == "&lt;script&gt;Hello world & hi"
+        buffer.encodeAsHTML().encodeAsHTML().toString() == "&lt;script&gt;Hello world & hi"
+    }
+        
+    def "serialization should keep encoding state"() {
+        when:
+        codecOut << "Hello world & hi".encodeAsRaw()
+        codecOut << "<script>"
+        then:
+        buffer.toString() == "Hello world & hi&lt;script&gt;"
+        when:
+        ByteArrayOutputStream bos = new ByteArrayOutputStream()
+        ObjectOutputStream out = new ObjectOutputStream(bos)
+        out.writeObject(buffer)
+        out.close()
+        byte[] bytes = bos.toByteArray()
+        ObjectInputStream inp = new ObjectInputStream(new ByteArrayInputStream(bytes))
+        StreamCharBuffer bufferUnserialized = (StreamCharBuffer) inp.readObject()
+        StreamCharBuffer bufferUnserializedHtml = bufferUnserialized.encodeAsHTML()
+        then:
+        bufferUnserializedHtml.toString() == "Hello world & hi&lt;script&gt;"
     }
 }
