@@ -20,8 +20,12 @@ import groovy.lang.Writable;
 import java.io.EOFException;
 import java.io.Externalizable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.lang.ref.SoftReference;
@@ -30,6 +34,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +54,7 @@ import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
+import org.springframework.jca.cci.connection.NotSupportedRecordFactory;
 
 /**
  * <p>
@@ -233,7 +239,8 @@ import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
  * @author Lari Hotari, Sagire Software Oy
  */
 public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable, EncodedAppenderWriterFactory {
-    static final long serialVersionUID = 5486972234419632945L;
+    private static final int EXTERNALIZABLE_VERSION = 2;
+    static final long serialVersionUID = (long)EXTERNALIZABLE_VERSION;
     private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
 
     private static final int DEFAULT_CHUNK_SIZE = Integer.getInteger("streamcharbuffer.chunksize", 512);
@@ -275,7 +282,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     int allocatedBufferIdSequence = 0;
     int readerCount = 0;
     boolean hasReaders = false;
-
+    
     public StreamCharBuffer() {
         this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
     }
@@ -503,10 +510,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             if (eaw.getEncodedAppender() == writer.getEncodedAppender()) {
                 throw new IllegalArgumentException("Cannot write buffer to itself.");
             }
-            if(eaw.getEncodedAppender().getClass()==StreamCharBufferEncodedAppender.class) {
-                ((StreamCharBufferEncodedAppender)eaw.getEncodedAppender()).getWriter().write(this);
-                return;
-            } else if (target instanceof EncoderAware) {
+            if (target instanceof EncoderAware) {
                 encodeTo(eaw.getEncodedAppender(), ((EncoderAware)eaw).getEncoder());
                 if (emptyAfter) {
                     emptyAfterReading();
@@ -549,35 +553,20 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      * Reads the buffer to a char[].
      *
      * @return the chars
+     * @deprecated use toCharArray() directly
      */
     public char[] readAsCharArray() {
-        int currentSize = size();
-        if (currentSize == 0) {
-            return new char[0];
-        }
-
-        FixedCharArrayWriter target=new FixedCharArrayWriter(currentSize);
-        try {
-            writeTo(target);
-        }
-        catch (IOException e) {
-            throw new RuntimeException("Unexpected IOException", e);
-        }
-        return target.getCharArray();
+        return toCharArray();
     }
 
     /**
      * Reads the buffer to a String.
      *
      * @return the String
+     * @deprecated Use toString() directly
      */
     public String readAsString() {
-        char[] buf = readAsCharArray();
-        if (buf.length > 0) {
-            return StringCharArrayAccessor.createString(buf);
-        }
-
-        return "";
+        return toString();
     }
 
     /**
@@ -590,33 +579,54 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      */
     @Override
     public String toString() {
+        StringChunk stringChunk = readToSingleStringChunk(true);
+        if(stringChunk != null) {
+            return stringChunk.str;
+        } else {
+            return "";
+        }
+    }
+
+    public StringChunk readToSingleStringChunk(boolean registerEncodingState) {
         if (firstChunk == lastChunk && firstChunk instanceof StringChunk && allocBuffer.charsUsed() == 0 &&
                 ((StringChunk)firstChunk).isSingleBuffer()) {
-            StringChunk strChunk = ((StringChunk)firstChunk);
-            return strChunk.str;
+            StringChunk chunk = ((StringChunk)firstChunk);
+            if(registerEncodingState) {
+                markEncoded(chunk);
+            }
+            return chunk;
         }
-
+        
         int initialReaderCount = readerCount;
-        EncodingState encodingState=null;
-        if(firstChunk != null) {
-            encodingState=firstChunk.getEncodingState();
-        } else {
-            encodingState=allocBuffer.getEncodingState();
-        }
-        String str=readAsString();
+        MultipartCharBufferChunk chunk = readToSingleChunk();
+        MultipartStringChunk stringChunk = (chunk != null) ? chunk.asStringChunk() : null;
         if (initialReaderCount == 0) {
             // if there are no readers, the result can be cached
             reset();
-            if (str.length() > 0) {
-                addChunk(new StringChunk(str, 0, str.length())).setEncodingState(encodingState);
+            if (stringChunk != null) {
+                addChunk(stringChunk);
             }
         }
-        if(encodingState != null && encodingState.getEncoders() != null && encodingState.getEncoders().size() > 0) {
-            Encoder encoder=encodingState.getEncoders().iterator().next();
-            if(encoder != null)
-                encoder.markEncoded(str);
+        
+        if(registerEncodingState) {
+            markEncoded(stringChunk);
         }
-        return str;
+        
+        return stringChunk;
+    }
+
+    public void markEncoded(StringChunk strChunk) {
+        if(strChunk instanceof MultipartStringChunk) {
+            MultipartStringChunk stringChunk = (MultipartStringChunk)strChunk;
+            if(stringChunk.isSingleEncoding()) {
+                EncodingState encodingState = stringChunk.firstPart.encodingState;                
+                if(encodingState != null && encodingState.getEncoders() != null && encodingState.getEncoders().size() > 0) { 
+                    Encoder encoder=encodingState.getEncoders().iterator().next();
+                    if(encoder != null)
+                        encoder.markEncoded(stringChunk.str);
+                }
+            }
+        }
     }
 
     /**
@@ -669,21 +679,32 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         int initialReaderCount = readerCount;
-        EncodingState encodingState=null;
-        if(firstChunk != null) {
-            encodingState=firstChunk.getEncodingState();
-        } else {
-            encodingState=allocBuffer.getEncodingState();
-        }
-        char[] buf = readAsCharArray();
+        MultipartCharBufferChunk chunk = readToSingleChunk();
         if (initialReaderCount == 0) {
             // if there are no readers, the result can be cached
             reset();
-            if (buf.length > 0) {
-                addChunk(new CharBufferChunk(-1, buf, 0, buf.length)).setEncodingState(encodingState);
+            if (chunk != null) {
+                addChunk(chunk);
             }
         }
-        return buf;
+        return chunk.buffer;
+    }
+    
+    private MultipartCharBufferChunk readToSingleChunk() {
+        int currentSize = size();
+        if (currentSize == 0) {
+            return null;
+        }
+
+        FixedCharArrayEncodedAppender appender=new FixedCharArrayEncodedAppender(currentSize);
+        try {
+            encodeTo(appender, null);
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Unexpected IOException", e);
+        }
+        appender.close();
+        return appender.chunk;
     }
 
     public int size() {
@@ -1101,7 +1122,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
         public void append(Encoder encoder, char character) throws IOException {
             markUsed();
-            allocateSpace(isNotConnectedToEncoderAwareWriters() ? null : new EncodingStateImpl(Collections.singleton(encoder)));
+            allocateSpace(isNotConnectedToEncoderAwareWriters() ? EncodingStateImpl.UNDEFINED_ENCODING_STATE : new EncodingStateImpl(Collections.singleton(encoder)));
             allocBuffer.write(character);
         }
 
@@ -1147,9 +1168,9 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         @Override
-        protected void appendCharSequence(EncodingState encodingState, CharSequence str, int off, int i)
+        protected void appendCharSequence(EncodingState encodingState, CharSequence str, int start, int end)
                 throws IOException {
-            writer.appendCharSequence(encodingState, str, off, i);
+            writer.appendCharSequence(encodingState, str, start, end);
         }
 
         @Override
@@ -1492,7 +1513,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      * @author Lari Hotari
      *
      */
-    final class CharBufferChunk extends AbstractChunk {
+    class CharBufferChunk extends AbstractChunk {
         int allocatedBufferId;
         char[] buffer;
         int offset;
@@ -1532,6 +1553,84 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             appender.append(encoder, getEncodingState(), buffer, offset, length);
         }
     }
+    
+    class MultipartStringChunk extends StringChunk {
+        EncodingStatePart firstPart=null;
+        EncodingStatePart lastPart=null;
+        
+        public MultipartStringChunk(String str) {
+            super(str, 0, str.length());
+        }
+
+        @Override
+        public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
+            if(firstPart != null) {
+                EncodingStatePart current = firstPart;
+                int offset = 0;
+                char[] buf=StringCharArrayAccessor.getValue(str);
+                while (current != null) {
+                    appender.append(encoder, current.encodingState, buf, offset, current.len);
+                    offset += current.len;
+                    current = current.next;
+                }
+            } else {
+                super.encodeTo(appender, encoder);
+            }
+        }
+        
+        public boolean isSingleEncoding() {
+            return (firstPart==lastPart);
+        }
+        
+        public int partCount() {
+            int partCount=0;
+            EncodingStatePart current = firstPart;            
+            while (current != null) {
+                partCount++;
+                current = current.next;
+            }
+            return partCount;
+        }
+    }    
+    
+    class MultipartCharBufferChunk extends CharBufferChunk {
+        EncodingStatePart firstPart=null;
+        EncodingStatePart lastPart=null;
+        
+        public MultipartCharBufferChunk(char[] buffer) {
+            super(-1, buffer, 0, buffer.length);
+        }
+
+        @Override
+        public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException {
+            if(firstPart != null) {
+                EncodingStatePart current = firstPart;
+                int offset = 0;
+                while (current != null) {
+                    appender.append(encoder, current.encodingState, buffer, offset, current.len);
+                    offset += current.len;
+                    current = current.next;
+                }
+            } else {
+                super.encodeTo(appender, encoder);
+            }
+        }
+        
+        public MultipartStringChunk asStringChunk() {
+            String str = StringCharArrayAccessor.createString(buffer);
+            MultipartStringChunk chunk = new MultipartStringChunk(str);
+            chunk.firstPart = firstPart;
+            chunk.lastPart = lastPart;
+            return chunk;
+        }
+    }
+    
+    static final class EncodingStatePart {
+        EncodingStatePart next;
+        EncodingState encodingState;
+        int len=-1;
+    }
+    
 
     abstract class AbstractChunkReader extends ChunkReader {
         private AbstractChunk parentChunk;
@@ -1614,7 +1713,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
      * @author Lari Hotari
      *
      */
-    final class StringChunk extends AbstractChunk {
+    class StringChunk extends AbstractChunk {
         String str;
         int offset;
         int lastposition;
@@ -1805,55 +1904,91 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
     }
 
-    /**
-     * Simplified version of a CharArrayWriter used internally in readAsCharArray method.
-     *
-     * Doesn't do any bound checks since size shouldn't change during writing in readAsCharArray.
-     */
-    private static final class FixedCharArrayWriter extends Writer {
+    private final class FixedCharArrayEncodedAppender extends AbstractEncodedAppender {
         char buf[];
         int count = 0;
-
-        public FixedCharArrayWriter(int fixedSize) {
+        int currentStart = 0;
+        EncodingState currentState = null;
+        MultipartCharBufferChunk chunk;
+        
+        public FixedCharArrayEncodedAppender(int fixedSize) {
             buf = new char[fixedSize];
+            chunk = new MultipartCharBufferChunk(buf);
         }
+        
+        private void checkEncodingChange(EncodingState encodingState) {
+            if(currentState != null && (encodingState == null || !currentState.equals(encodingState))) {
+                addPart();
+            }
+            if(currentState==null) {
+                currentState = encodingState;
+            }
+        }
+        
+        public void close() {
+            addPart();
+        }
+        
+        private void addPart() {
+            if(count - currentStart > 0) {
+                EncodingStatePart newPart = new EncodingStatePart();
+                newPart.encodingState = currentState;
+                newPart.len = count - currentStart;
+                if(chunk.lastPart==null) {
+                    chunk.firstPart = newPart;
+                    chunk.lastPart = newPart;
+                } else {
+                    chunk.lastPart.next = newPart;
+                    chunk.lastPart = newPart;
+                }
+                currentState = null;
+                currentStart = count;
+            }
+        }        
 
         @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
-            arrayCopy(cbuf, off, buf, count, len);
+        protected void write(EncodingState encodingState, char[] b, int off, int len) throws IOException {
+            checkEncodingChange(encodingState);
+            arrayCopy(b, off, buf, count, len);
             count += len;
         }
 
         @Override
-        public void write(char[] cbuf) throws IOException {
-            write(cbuf, 0, cbuf.length);
-        }
-
-        @Override
-        public void write(String str, int off, int len) throws IOException {
+        protected void write(EncodingState encodingState, String str, int off, int len) throws IOException {
+            checkEncodingChange(encodingState);
             str.getChars(off, off + len, buf, count);
             count += len;
         }
 
         @Override
-        public void write(String str) throws IOException {
-            write(str, 0, str.length());
+        protected void appendCharSequence(EncodingState encodingState, CharSequence csq, int start, int end)
+                throws IOException {
+            checkEncodingChange(encodingState);
+            if (csq instanceof String) {
+                write(encodingState, (String)csq, start, end-start);
+            }
+            else if (csq instanceof StringBuffer) {
+                ((StringBuffer)csq).getChars(start, end, buf, count);
+                count += end-start;
+            }
+            else if (csq instanceof StringBuilder) {
+                ((StringBuilder)csq).getChars(start, end, buf, count);
+                count += end-start;
+            } 
+            else {
+                String str=csq.subSequence(start, end).toString();
+                write(encodingState, str, 0, str.length());
+            }
         }
 
         @Override
-        public void close() throws IOException {
-            // do nothing
-        }
-
-        @Override
-        public void flush() throws IOException {
-            // do nothing
-        }
-
-        public char[] getCharArray() {
-            return buf;
+        public void append(Encoder encoder, char character) throws IOException {
+            EncodingState encodingState = new EncodingStateImpl(encoder!=null ? Collections.singleton(encoder) : null);
+            checkEncodingChange(encodingState);
+            buf[count++]=character;            
         }
     }
+    
 
     /**
      * Interface for a Writer that gets initialized if it is used
@@ -2120,16 +2255,104 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
 
     public void readExternal(ObjectInput in) throws IOException,
             ClassNotFoundException {
-        String str=in.readUTF();
+        int version = in.readInt();
+        if(version != EXTERNALIZABLE_VERSION) {
+            throw new IOException("Uncompatible version in serialization stream.");
+        }
         reset();
-        if (str.length() > 0) {
-            addChunk(new StringChunk(str, 0, str.length()));
+        int len = in.readInt();
+        if(len > 0) {
+            char[] buf=new char[len];
+            Reader reader = new InputStreamReader((InputStream)in, "UTF-8");
+            reader.read(buf);
+            String str=StringCharArrayAccessor.createString(buf);
+            MultipartStringChunk mpStringChunk=new MultipartStringChunk(str);
+            int partCount = in.readInt();
+            for(int i=0;i < partCount;i++) {
+                EncodingStatePart current = new EncodingStatePart();
+                if(mpStringChunk.firstPart==null) {
+                    mpStringChunk.firstPart = current;
+                    mpStringChunk.lastPart = current;
+                } else {
+                    mpStringChunk.lastPart.next = current;
+                    mpStringChunk.lastPart = current;
+                }
+                current.len = in.readInt();
+                int encodersSize = in.readInt();
+                Set<Encoder> encoders = null;
+                if(encodersSize > 0) {
+                    encoders = new LinkedHashSet<Encoder>();
+                    for (int j=0;j < encodersSize;j++) {
+                        String codecName=in.readUTF();
+                        boolean safe=in.readBoolean();
+                        encoders.add(new SavedEncoder(codecName, safe));
+                    }
+                }
+                current.encodingState = new EncodingStateImpl(encoders);
+            }
+            addChunk(mpStringChunk);
         }
     }
+    
+    private static final class SavedEncoder implements Encoder {
+        private String codecName;
+        private boolean safe;
+        
+        public SavedEncoder(String codecName, boolean safe) {
+            this.codecName=codecName;
+            this.safe=safe;
+        }
 
+        public String getCodecName() {
+            return codecName;
+        }
+
+        public boolean isSafe() {
+            return safe;
+        }
+
+        public Object encode(Object o) {
+            throw new UnsupportedOperationException("encode isn't supported for SavedEncoder");
+        }
+
+        public void markEncoded(CharSequence string) {
+            throw new UnsupportedOperationException("markEncoded isn't supported for SavedEncoder");
+        }
+    }
+    
     public void writeExternal(ObjectOutput out) throws IOException {
-        String str=toString();
-        out.writeUTF(str);
+        out.writeInt(EXTERNALIZABLE_VERSION);
+        StringChunk stringChunk = readToSingleStringChunk(false);
+        if(stringChunk != null && stringChunk.str.length() > 0) {
+            char[] buf = StringCharArrayAccessor.getValue(stringChunk.str);        
+            out.writeInt(buf.length);
+            Writer writer = new OutputStreamWriter((OutputStream)out, "UTF-8");
+            writer.write(buf);
+            writer.flush();
+            if(stringChunk instanceof MultipartStringChunk) {
+                MultipartStringChunk mpStringChunk = (MultipartStringChunk)stringChunk;
+                out.writeInt(mpStringChunk.partCount());
+                EncodingStatePart current = mpStringChunk.firstPart;            
+                while (current != null) {
+                    out.writeInt(current.len);
+                    if(current.encodingState != null && current.encodingState.getEncoders() != null && current.encodingState.getEncoders().size() > 0) {
+                        out.writeInt(current.encodingState.getEncoders().size());
+                        for(Encoder encoder : current.encodingState.getEncoders()) {
+                            out.writeUTF(encoder.getCodecName());
+                            out.writeBoolean(encoder.isSafe());
+                        }
+                    } else {
+                        out.writeInt(0);
+                    }
+                    current = current.next;
+                }
+           
+            } else {
+                out.writeInt(0);
+            }
+        } else {        
+            out.writeInt(0);
+        }
     }
     
     public StreamCharBuffer encodeToBuffer(Encoder encoder) {

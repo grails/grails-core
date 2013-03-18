@@ -34,7 +34,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
                 }
             }
         }
-        return new EncodingStateImpl(result);
+        return result != null ? new EncodingStateImpl(result) : EncodingStateImpl.UNDEFINED_ENCODING_STATE;
     }
     
     public boolean isEncodedWith(Encoder encoder, CharSequence string) {
