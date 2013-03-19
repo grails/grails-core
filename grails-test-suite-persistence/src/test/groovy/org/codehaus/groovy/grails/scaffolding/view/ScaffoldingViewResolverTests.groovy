@@ -13,6 +13,7 @@ import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPage
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.core.io.DefaultResourceLoader
 import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
 
 /**
  * @author Graeme Rocher
@@ -51,6 +52,11 @@ class ScaffoldingViewResolverTests extends GroovyTestCase {
         view.render(model, webRequest.currentRequest, webRequest.currentResponse)
 
         assertEquals "successbar", webRequest.currentResponse.contentAsString
+    }
+
+    protected void tearDown() {
+        super.tearDown()
+        RequestContextHolder.resetRequestAttributes()
     }
 }
 

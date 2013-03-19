@@ -5,6 +5,7 @@ import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareAspectJAwareAdvisorAutoProxyCreator
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.springframework.aop.scope.ScopedProxyFactoryBean
 import org.springframework.web.context.request.RequestContextHolder
 
 class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
@@ -21,7 +22,7 @@ class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
                 bean.scope = "session"
 
             }
-            testScopeProxy(org.springframework.aop.scope.ScopedProxyFactoryBean) {
+            testScopeProxy(ScopedProxyFactoryBean) {
                 targetBeanName="testService"
                 proxyTargetClass=true
             }
@@ -35,8 +36,10 @@ class ScopedProxyAndServiceClassTests extends AbstractGrailsMockTests {
         assert "foo" == testService.myProperty
         assert "bar" == testService.serviceMethod()
         assert "bar" == testService.indirectServiceMethod()
+    }
 
-        RequestContextHolder.setRequestAttributes null
+    protected void onTearDown() {
+        RequestContextHolder.resetRequestAttributes()
     }
 }
 

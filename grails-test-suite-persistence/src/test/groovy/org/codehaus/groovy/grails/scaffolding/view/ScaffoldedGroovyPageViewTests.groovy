@@ -1,11 +1,11 @@
 package org.codehaus.groovy.grails.scaffolding.view
 
+import grails.util.GrailsWebUtil
+
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
-
-import grails.util.GrailsWebUtil
 
 class ScaffoldedGroovyPageViewTests extends GroovyTestCase {
 
@@ -30,7 +30,8 @@ class ScaffoldedGroovyPageViewTests extends GroovyTestCase {
         assertEquals "successbar", webRequest.currentResponse.contentAsString
     }
 
-    void tearDown() {
-        RequestContextHolder.setRequestAttributes(null)
+    protected void tearDown() {
+        super.tearDown()
+        RequestContextHolder.resetRequestAttributes()
     }
 }
