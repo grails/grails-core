@@ -244,7 +244,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     private static boolean isWindows() {
-        return System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
+        return System.getProperty("os.name").toLowerCase().indexOf("windows") != -1
     }
 
     @CompileStatic
@@ -380,8 +380,8 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     static Collection<File> findTomcatJars(BuildSettings buildSettings) {
-        return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") && !it.name.contains("grails-plugin-tomcat") } +
-            buildSettings.providedDependencies.findAll { File it -> it.name.contains("tomcat") && !it.name.contains("grails-plugin-tomcat") }
+        return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") } +
+            buildSettings.providedDependencies.findAll { File it -> it.name.contains("tomcat") }
     }
 
     @CompileStatic

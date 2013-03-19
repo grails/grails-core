@@ -24,7 +24,12 @@ import java.util.regex.Pattern
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
 import org.codehaus.groovy.grails.io.support.IOUtils
-import org.codehaus.groovy.grails.resolve.*
+import org.codehaus.groovy.grails.resolve.DependencyManager
+import org.codehaus.groovy.grails.resolve.DependencyManagerConfigurer
+import org.codehaus.groovy.grails.resolve.DependencyReport
+import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
+import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.runtime.StackTraceUtils
 
 /**
@@ -53,11 +58,11 @@ class BuildSettings extends AbstractBuildSettings {
     static final String PROVIDED_SCOPE_DESC = "Dependencies needed at development time, but not during deployment"
 
     static final Map<String, String> SCOPE_TO_DESC = [
-        (BuildSettings.BUILD_SCOPE): BuildSettings.BUILD_SCOPE_DESC,
-        (BuildSettings.PROVIDED_SCOPE): BuildSettings.PROVIDED_SCOPE_DESC,
-        (BuildSettings.COMPILE_SCOPE): BuildSettings.COMPILE_SCOPE_DESC,
-        (BuildSettings.RUNTIME_SCOPE): BuildSettings.RUNTIME_SCOPE_DESC,
-        (BuildSettings.TEST_SCOPE): BuildSettings.TEST_SCOPE_DESC
+        (BUILD_SCOPE): BUILD_SCOPE_DESC,
+        (PROVIDED_SCOPE): PROVIDED_SCOPE_DESC,
+        (COMPILE_SCOPE): COMPILE_SCOPE_DESC,
+        (RUNTIME_SCOPE): RUNTIME_SCOPE_DESC,
+        (TEST_SCOPE): TEST_SCOPE_DESC
     ]
 
     static final Pattern JAR_PATTERN = ~/^\S+\.jar$/
@@ -854,11 +859,6 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     /**
-     * Returns the current base directory of this project.
-     */
-    File getBaseDir() { baseDir }
-
-    /**
      * <p>Changes the base directory, making sure that everything that
      * depends on it gets refreshed too. If you have have previously
      * loaded a configuration file, you should load it again after
@@ -890,42 +890,30 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
-    File getGrailsWorkDir() { grailsWorkDir }
-
     void setGrailsWorkDir(File dir) {
         grailsWorkDir = dir
         grailsWorkDirSet = true
     }
-
-    File getProjectWorkDir() { projectWorkDir }
 
     void setProjectWorkDir(File dir) {
         projectWorkDir = dir
         projectWorkDirSet = true
     }
 
-    File getProjectTargetDir() { projectTargetDir }
-
     void setProjectTargetDir(File dir) {
         projectTargetDir = dir
         projectTargetDirSet = true
     }
-
-    File getProjectWarFile() { projectWarFile }
 
     void setProjectWarFile(File file) {
         projectWarFile = file
         projectWarFileSet = true
     }
 
-    File getProjectWarExplodedDir() { projectWarExplodedDir }
-
     void setProjectWarExplodedDir(File dir) {
         projectWarExplodedDir = dir
         projectWarExplodedDirSet = true
     }
-
-    boolean getConvertClosuresArtefacts() { convertClosuresArtefacts }
 
     void setConvertClosuresArtefacts(boolean convert) {
         convertClosuresArtefacts = convert
@@ -937,70 +925,50 @@ class BuildSettings extends AbstractBuildSettings {
         logScriptTimingSet = true
     }
 
-    boolean getProjectWarOsgiHeaders() { projectWarOsgiHeaders }
-
     void setProjectWarOsgiHeaders(boolean flag) {
         projectWarOsgiHeaders = flag
         projectWarOsgiHeadersSet = true
     }
-
-    File getClassesDir() { classesDir }
 
     void setClassesDir(File dir) {
         classesDir = dir
         classesDirSet = true
     }
 
-    File getTestClassesDir() { testClassesDir }
-
     void setTestClassesDir(File dir) {
         testClassesDir = dir
         testClassesDirSet = true
     }
-
-    File getPluginClassesDir() { pluginClassesDir }
 
     void setPluginClassesDir(File dir) {
         pluginClassesDir = dir
         pluginClassesDirSet = true
     }
 
-    File getPluginBuildClassesDir() { pluginBuildClassesDir }
-
     void setPluginBuildClassesDir(File dir) {
         pluginBuildClassesDir = dir
         pluginBuildClassesDirSet = true
     }
-
-    File getPluginProvidedClassesDir() { pluginProvidedClassesDir }
 
     void setPluginProvidedClassesDir(File dir) {
         pluginProvidedClassesDir = dir
         pluginProvidedClassesDirSet = true
     }
 
-    File getResourcesDir() { resourcesDir }
-
     void setResourcesDir(File dir) {
         resourcesDir = dir
         resourcesDirSet = true
     }
-
-    File getSourceDir() { sourceDir }
 
     void setSourceDir(File dir) {
         sourceDir = dir
         sourceDirSet = true
     }
 
-    File getTestReportsDir() { testReportsDir }
-
     void setTestReportsDir(File dir) {
         testReportsDir = dir
         testReportsDirSet = true
     }
-
-    File getTestSourceDir() { testSourceDir }
 
     void setTestSourceDir(File dir) {
         testSourceDir = dir
