@@ -32,7 +32,7 @@ interface Promise<T> {
      *
      * @return The result
      */
-    abstract T get() throws Throwable
+    T get() throws Throwable
 
     /**
      * Retrieves the result, blocking until the value is available or the timeout is reached
@@ -42,7 +42,7 @@ interface Promise<T> {
      * @return The value
      * @throws Throwable
      */
-    abstract T get(final long timeout, final TimeUnit units) throws Throwable
+    T get(final long timeout, final TimeUnit units) throws Throwable
 
     /**
      * Execute the given closure when the promise completes
@@ -50,7 +50,7 @@ interface Promise<T> {
      * @param callable
      * @return The Promise
      */
-    abstract Promise<T> onComplete(Closure callable)
+    Promise<T> onComplete(Closure callable)
 
     /**
      * Execute the given closure when an error occurs
@@ -58,11 +58,10 @@ interface Promise<T> {
      * @param callable
      * @return The Promise
      */
-    abstract Promise<T> onError(Closure callable)
+    Promise<T> onError(Closure callable)
 
     /**
      * Same as #onComplete
      */
-    abstract Promise<T> then(Closure callable)
-
+    Promise<T> then(Closure callable)
 }
