@@ -19,26 +19,55 @@ import groovy.transform.CompileStatic
 import org.springframework.context.ApplicationContext
 
 /**
+ * Executes persistence context interceptors phases.
+ *
+ *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
 class PersistenceContextInterceptorExecutor {
 
+    Collection<PersistenceContextInterceptor> persistenceContextInterceptors
+
+    PersistenceContextInterceptorExecutor(Collection<PersistenceContextInterceptor> persistenceContextInterceptors) {
+        this.persistenceContextInterceptors = persistenceContextInterceptors
+    }
+
+    void initPersistenceContext() {
+        initPersistenceContextInternal(persistenceContextInterceptors)
+    }
+
+    void destroyPersistenceContext() {
+        destroyPersistenceContextInternal(persistenceContextInterceptors)
+    }
+
+
     static void initPersistenceContext(ApplicationContext appCtx) {
         if (appCtx) {
-            for(PersistenceContextInterceptor i in appCtx.getBeansOfType(PersistenceContextInterceptor).values()) {
-                i.init()
-            }
+            final interceptors = appCtx.getBeansOfType(PersistenceContextInterceptor).values()
+            initPersistenceContextInternal(interceptors)
+        }
+    }
+
+    private static void initPersistenceContextInternal(Collection<PersistenceContextInterceptor> interceptors) {
+        for (PersistenceContextInterceptor i in interceptors) {
+            i.init()
         }
     }
 
     static void destroyPersistenceContext(ApplicationContext appCtx) {
         if (appCtx) {
-            for(PersistenceContextInterceptor i in appCtx.getBeansOfType(PersistenceContextInterceptor).values()) {
-                i.destroy()
-            }
+            final interceptors = appCtx.getBeansOfType(PersistenceContextInterceptor).values()
+            destroyPersistenceContextInternal(interceptors)
         }
     }
+
+    private static void destroyPersistenceContextInternal(Collection<PersistenceContextInterceptor> interceptors) {
+        for (PersistenceContextInterceptor i in interceptors) {
+            i.destroy()
+        }
+    }
+
 
 }

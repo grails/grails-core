@@ -25,6 +25,9 @@ class DomainClassUnitTestMixinTests {
         mockDomain Writer
         def bodyInvoked = false
 
+        def w = new Writer(name: "Stephen King")
+        w.save(flush:true)
+
         Writer.withTransaction {
             bodyInvoked = true
         }

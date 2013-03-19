@@ -25,14 +25,10 @@ import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
-import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.syntax.Token;
-import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.grails.async.decorator.PromiseDecoratorProvider;
 
 import java.beans.Introspector;
 import java.lang.reflect.Modifier;
@@ -85,12 +81,13 @@ public class DelegateAsyncTransformation implements ASTTransformation {
     }
 
     private void applyDelegateAsyncTransform(ClassNode classNode, ClassNode targetApi, String fieldName) {
+
         List<MethodNode> methods = targetApi.getAllDeclaredMethods();
 
         ClassNode promisesClass = ClassHelper.make(Promises.class).getPlainNodeReference();
-        MethodNode createPromiseMethodTarget = promisesClass.getDeclaredMethod("createPromise", new Parameter[]{new Parameter(new ClassNode(Closure.class), "c")});
         MethodNode createPromiseMethodTargetWithDecorators = promisesClass.getDeclaredMethod("createPromise", new Parameter[]{new Parameter(new ClassNode(Closure.class), "c"), new Parameter(new ClassNode(List.class), "c")});
 
+        DelegateAsyncTransactionalMethodTransformer delegateAsyncTransactionalMethodTransformer = lookupAsyncTransactionalMethodTransformer();
         for(MethodNode m : methods) {
             if (isCandidateMethod(m)) {
                 MethodNode existingMethod = classNode.getMethod(m.getName(), m.getParameters());
@@ -107,21 +104,22 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                     final ClosureExpression closureExpression = new ClosureExpression(new Parameter[0], promiseBody);
                     VariableScope variableScope = new VariableScope();
                     closureExpression.setVariableScope(variableScope);
-                    MethodCallExpression createPromise = new MethodCallExpression(new ClassExpression(promisesClass), "createPromise",new ArgumentListExpression( closureExpression ));
-                    if(createPromiseMethodTarget != null) {
-                        createPromise.setMethodTarget(createPromiseMethodTarget);
-                    }
                     VariableExpression thisObject = new VariableExpression("this");
-                    MethodCallExpression createPromiseWithDecorators = new MethodCallExpression(new ClassExpression(promisesClass), "createPromise",new ArgumentListExpression( closureExpression, new MethodCallExpression(thisObject, "getDecorators", new ArgumentListExpression()) ));
+                    ClassNode delegateAsyncUtilsClassNode = new ClassNode(DelegateAsyncUtils.class);
+
+                    MethodNode getPromiseDecoratorsMethodNode = delegateAsyncUtilsClassNode.getDeclaredMethods("getPromiseDecorators").get(0);
+                    ListExpression promiseDecorators = new ListExpression();
+                    ArgumentListExpression getPromiseDecoratorsArguments = new ArgumentListExpression(thisObject, promiseDecorators);
+                    delegateAsyncTransactionalMethodTransformer.transformTransactionalMethod(classNode, targetApi, m, promiseDecorators);
+
+                    MethodCallExpression getDecoratorsMethodCall = new MethodCallExpression(new ClassExpression(delegateAsyncUtilsClassNode), "getPromiseDecorators", getPromiseDecoratorsArguments);
+                    getDecoratorsMethodCall.setMethodTarget(getPromiseDecoratorsMethodNode);
+
+                    MethodCallExpression createPromiseWithDecorators = new MethodCallExpression(new ClassExpression(promisesClass), "createPromise",new ArgumentListExpression( closureExpression, getDecoratorsMethodCall));
                     if(createPromiseMethodTargetWithDecorators != null) {
                         createPromiseWithDecorators.setMethodTarget(createPromiseMethodTargetWithDecorators);
                     }
-                    if(createPromiseMethodTarget != null) {
-                        createPromise.setMethodTarget(createPromiseMethodTarget);
-                    }
-                    BinaryExpression instanceofCheck = new BinaryExpression(thisObject, Token.newSymbol(Types.KEYWORD_INSTANCEOF, -1, -1), new ClassExpression(new ClassNode(PromiseDecoratorProvider.class).getPlainNodeReference()));
-                    IfStatement ifStatement = new IfStatement(new BooleanExpression(instanceofCheck),new ExpressionStatement(createPromiseWithDecorators),new ExpressionStatement(createPromise));
-                    methodBody.addStatement(ifStatement);
+                    methodBody.addStatement(new ExpressionStatement(createPromiseWithDecorators));
 
                     final ArgumentListExpression arguments = new ArgumentListExpression();
                     Parameter[] parameters = copyParameters(m.getParameters());
@@ -139,6 +137,16 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                 }
             }
         }
+    }
+
+    protected DelegateAsyncTransactionalMethodTransformer lookupAsyncTransactionalMethodTransformer() {
+        try {
+            Class transformerClass = getClass().getClassLoader().loadClass("org.grails.async.transform.internal.DefaultDelegateAsyncTransactionalMethodTransformer");
+            return (DelegateAsyncTransactionalMethodTransformer) transformerClass.newInstance();
+        } catch (Throwable e) {
+            // ignore
+        }
+        return new NoopDelegateAsyncTransactionalMethodTransformer();
     }
 
     private static boolean isCandidateMethod(MethodNode declaredMethod) {
@@ -162,4 +170,11 @@ public class DelegateAsyncTransformation implements ASTTransformation {
     }
 
 
+    private class NoopDelegateAsyncTransactionalMethodTransformer implements DelegateAsyncTransactionalMethodTransformer {
+        @Override
+        public void transformTransactionalMethod(ClassNode classNode,ClassNode delegateClassNode, MethodNode methodNode, ListExpression promiseDecoratorLookupArguments) {
+            // noop
+        }
+
+    }
 }
