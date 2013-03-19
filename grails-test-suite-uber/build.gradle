@@ -17,6 +17,8 @@ dependencies {
                 project(":grails-plugin-services"),
                 project(":grails-plugin-i18n"),
                 project(":grails-plugin-log4j")
+
+    testCompile "org.grails:grails-datastore-gorm-hibernate:$datastoreVersion"
 }
 
 test {

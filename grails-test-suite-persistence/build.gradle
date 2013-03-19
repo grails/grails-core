@@ -17,7 +17,10 @@ dependencies {
                 project(':grails-bootstrap'),
                 project(':grails-crud'),
                 project(':grails-plugin-log4j')
+
+    testCompile "org.grails:grails-datastore-gorm-hibernate:$datastoreVersion"
 }
+
 test {
     maxParallelForks = 2
     forkEvery = 100
