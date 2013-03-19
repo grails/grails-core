@@ -136,7 +136,7 @@ class AetherDependencyManagerSpec extends Specification {
             def report = dependencyManager.resolve()
         then:"The resolve is successful"
             report != null
-            report.files.find { it.name.contains 'ehcache' }
+            report.files.find { it.name.contains 'spring-tx' }
     }
 
     void "Test dependencies inherited from framework can be excluded"() {
