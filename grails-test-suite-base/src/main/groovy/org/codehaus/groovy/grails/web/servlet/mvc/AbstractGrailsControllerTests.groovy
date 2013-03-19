@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import grails.test.MockUtils
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import grails.util.Metadata
@@ -108,13 +107,11 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ga.setApplicationContext(ctx)
         controllerClasses.each { cc -> ga.addArtefact 'Controller', cc }
         domainClasses.each { c -> ga.addArtefact 'Domain', c }
-        ga.domainClasses.each { dc -> MockUtils.mockDomain dc.clazz }
 
         ctx.registerMockBean("pluginManager", mockManager)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         ctx.registerMockBean("messageSource", new StaticMessageSource())
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
-        ctx.registerMockBean('mockHibernateProxyHandler', new MockHibernateProxyHandler())
 
         def springConfig = new WebRuntimeSpringConfiguration(ctx)
         servletContext = ctx.getServletContext()

@@ -16,6 +16,8 @@ dependencies {
                 project(':grails-plugin-log4j'),
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-services')
+
+    testCompile "org.grails:grails-datastore-gorm-hibernate:$datastoreVersion"
 }
 test {
     maxParallelForks = 4
@@ -54,3 +56,11 @@ task isolatedTestsSix(type:Test) {
     includes = ["**/NestedXmlBindingTests.class"]
 }
 test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix
+
+
+/*
+test {
+	jvmArgs '-Xmx1024m', '-Xdebug', '-Xnoagent', '-Dgrails.full.stacktrace=true', '-Djava.compiler=NONE',
+	        '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+}
+*/
