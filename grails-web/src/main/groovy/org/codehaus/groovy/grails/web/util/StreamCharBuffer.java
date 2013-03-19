@@ -1591,6 +1591,16 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             }
             return partCount;
         }
+
+        public void appendEncodingStatePart(EncodingStatePart current) {
+            if(firstPart==null) {
+                firstPart = current;
+                lastPart = current;
+            } else {
+                lastPart.next = current;
+                lastPart = current;
+            }
+        }
     }    
     
     class MultipartCharBufferChunk extends CharBufferChunk {
@@ -2270,13 +2280,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             int partCount = in.readInt();
             for(int i=0;i < partCount;i++) {
                 EncodingStatePart current = new EncodingStatePart();
-                if(mpStringChunk.firstPart==null) {
-                    mpStringChunk.firstPart = current;
-                    mpStringChunk.lastPart = current;
-                } else {
-                    mpStringChunk.lastPart.next = current;
-                    mpStringChunk.lastPart = current;
-                }
+                mpStringChunk.appendEncodingStatePart(current);
                 current.len = in.readInt();
                 int encodersSize = in.readInt();
                 Set<Encoder> encoders = null;
@@ -2293,7 +2297,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
             addChunk(mpStringChunk);
         }
     }
-    
+
     private static final class SavedEncoder implements Encoder {
         private String codecName;
         private boolean safe;
