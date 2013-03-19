@@ -185,7 +185,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         new PathMatchingResourcePatternResolver().getResources(pattern)
     }
 
-    protected creategGrailsApplication() {
+    protected createGrailsApplication() {
         def app = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         def mainContext = new MockApplicationContext()
         mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()

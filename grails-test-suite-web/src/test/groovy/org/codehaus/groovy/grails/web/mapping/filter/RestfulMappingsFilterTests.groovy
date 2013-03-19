@@ -4,7 +4,7 @@ import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.springframework.mock.web.MockFilterConfig
 import org.springframework.core.io.ByteArrayResource
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.springframework.web.context.WebApplicationContext
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
@@ -54,7 +54,7 @@ class BookController {
 
         gcl.parseClass(testController1)
 
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
         def controllerClass = app.getControllerClass('BookController')

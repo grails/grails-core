@@ -116,7 +116,7 @@ mappings {
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings))
 
         gcl.parseClass(testController1)
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
 
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
@@ -140,7 +140,7 @@ mappings {
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
 
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
         app.initialise()
         app.getControllerClass('blogs.BlogController').initialize()
 
@@ -169,7 +169,7 @@ mappings {
         gcl.parseClass(testController3)
         gcl.parseClass(testController4)
 
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
 
         app.initialise()
 
@@ -214,7 +214,7 @@ class IndexAndActionController {
 
         gcl.parseClass(testController5)
 
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
 
         app.initialise()
 
@@ -253,7 +253,7 @@ class IndexAndActionController {
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
 
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
 
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
@@ -306,7 +306,7 @@ class BlogController {
 
         gcl.parseClass(testController6)
 
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
 
         app.initialise()
 
@@ -330,7 +330,7 @@ class BlogController {
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings, ["/bo*"]))
         gcl.parseClass(testController1)
         gcl.parseClass(testController2)
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
 
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
@@ -354,7 +354,7 @@ mappings {
 
         def mappings = evaluator.evaluateMappings(new ByteArrayResource(script.bytes))
         appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings))
-        def app = creategGrailsApplication()
+        def app = createGrailsApplication()
 
         app.initialise()
         appCtx.registerMockBean("grailsApplication", app)
