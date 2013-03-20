@@ -46,7 +46,7 @@ class IvyGraphNode extends GraphNode {
             def graphNode = new GraphNode(new Dependency(id.organisation, id.name, id.revision))
             current.children << graphNode
 
-            final Collection<IvyNode> dependencies = node.getDependencies(confs[0], confs)
+            final Collection<IvyNode> dependencies = node.getDependencies(confs[0], confs, confs[0])
             if (dependencies) {
                 createGraph(graphNode, dependencies, confs)
             }

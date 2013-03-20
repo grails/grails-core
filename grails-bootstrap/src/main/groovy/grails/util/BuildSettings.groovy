@@ -514,7 +514,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
         scopePluginDependencies.addAll(pluginZips)
         resolveCache[scope] = jarFiles
-        jarFiles = jarFiles.findAll { File it -> it.name.endsWith(".jar") }
+        jarFiles = jarFiles.findAll { File it -> !it.name.endsWith(".zip") }
         return jarFiles
     }
 
