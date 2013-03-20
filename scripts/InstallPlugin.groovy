@@ -22,7 +22,19 @@
  *
  * @since 0.4
  */
+import org.codehaus.groovy.grails.resolve.PluginResolveEngine
+
 includeTargets << grailsScript("_GrailsPlugins")
+
+def displayPluginInfo = { pluginName ->
+
+    def settings = grailsSettings
+    def pluginResolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
+    def sw = new StringWriter()
+    pluginXml = pluginResolveEngine.renderInstallInfo(pluginName, sw)
+    grailsConsole.warn sw.toString()
+}
+
 
 target(installPlugin:"Installs a plug-in for the given URL or name and version") {
     depends(checkVersion, parseArguments, configureProxy)
@@ -47,19 +59,30 @@ See http://grails.org/doc/2.2.x/guide/conf.html#pluginDependencies.'
             def pluginFile = new File(pluginArgs[0])
             def urlPattern = ~"^[a-zA-Z][a-zA-Z0-9\\-\\.\\+]*://"
             if (pluginArgs[0] =~ urlPattern) {
-                def url = new URL(pluginArgs[0])
-                installed = doInstallPluginFromURL(url)
+                grailsConsole.warn """
+Since Grails 2.3, it is no longer possible to install plugins directly via a URL. 
+
+Upload the plugin to a Maven-compatible repository and declare the dependency in grails-app/conf/BuildConfig.groovy.
+                """
             }
             else if (pluginFile.exists() && pluginFile.name.startsWith("grails-") && pluginFile.name.endsWith(".zip")) {
-                installed = doInstallPluginZip(pluginFile)
+                grailsConsole.warn """
+Since Grails 2.3, it is no longer possible to install plugins directly from the file sytem. 
+
+If you wish to use local plugins then run 'maven-install' in the plugin directory to install the plugin into your local Maven cache.
+
+Then inside your application's grails-app/conf/BuildConfig.groovy file declare the dependency and it will be resolved from you Maven cache.
+
+If you make a change to the plugin simply run 'maven-install' in the directory of the plugin project again and the change will be picked up by the application (if the plugin version ends with -SNAPSHOT)
+                """
+
             }
             else {
                 // The first argument is the plugin name, the second
                 // (if provided) is the plugin version.
-                installed = doInstallPlugin(pluginArgs[0], pluginArgs[1])
+                displayPluginInfo(pluginArgs[0])
             }
 
-            event("StatusFinal", [installed ? "Plugin installed." : 'Plugin not installed.'])
         }
         else {
             event("StatusError", [ ERROR_MESSAGE])

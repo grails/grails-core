@@ -47,6 +47,23 @@ final class PluginResolveEngine {
         dependencyManager.createCopy(settings)
     }
 
+    void renderInstallInfo(String pluginName, Writer writer) {
+        final text = new URL("http://grails.org/api/v1.0/plugin/$pluginName?format=xml").getText(connectTimeout: 500, readTimeout: 3000)
+        def xml = new XmlSlurper().parseText(text)
+
+        writer << """
+Since Grails 2.3, it is no longer possible to install plugins using the install-plugin command.
+Plugins must be declared in the grails-app/conf/BuildConfig.groovy file.
+
+Example:
+grails.project.dependency.resolution = {
+  ...
+  plugins {
+      compile ":$pluginName:${xml.version.text()}"
+  }
+}
+"""
+    }
     /**
      * Renders plugin info to the target writer
      *

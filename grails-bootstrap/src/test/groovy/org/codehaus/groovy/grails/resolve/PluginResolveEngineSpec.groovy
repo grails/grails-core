@@ -4,9 +4,32 @@ import grails.util.BuildSettings
 import spock.lang.Ignore
 import spock.lang.Specification
 
-@Ignore
+//@Ignore
 class PluginResolveEngineSpec extends Specification {
 
+    def "Test install-plugin no longer valid message"() {
+        given:"An instance of the resolve engine"
+         def resolveEngine = systemUnderTest()
+
+        when:"We resolve the 'feeds' plugin"
+            def sw = new StringWriter()
+            resolveEngine.renderInstallInfo("feeds", sw)
+            def info = sw.toString()
+
+        then:"The correct metadata is obtained"
+            info == '''
+Since Grails 2.3, it is no longer possible to install plugins using the install-plugin command.
+Plugins must be declared in the grails-app/conf/BuildConfig.groovy file.
+
+Example:
+grails.project.dependency.resolution = {
+  ...
+  plugins {
+      compile ":feeds:1.5"
+  }
+}
+'''
+    }
     def "Test that plugin-info obtains relevant plugin information in a plugin exists"() {
         given:"An instance of the resolve engine"
             def resolveEngine = systemUnderTest()
