@@ -41,6 +41,7 @@ dependencies {
 
     compile("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
+        ext.notInPom = true
     }
 
     compile("org.springframework:spring-web:${springVersion}") {

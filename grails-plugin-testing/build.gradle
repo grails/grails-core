@@ -14,9 +14,11 @@ dependencies {
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
         transitive = false
+        exclude group: 'org.grails', module:'grails-datastore-core'
         exclude group: 'org.grails', module:'grails-bootstrap'
         exclude group: 'org.grails', module:'grails-core'
         exclude group: 'org.grails', module:'grails-test'
+        exclude group: 'org.grails', module:'grails-async'
         exclude group: 'org.slf4j', module:'jcl-over-slf4j'
         exclude group: 'org.slf4j', module:'jul-to-slf4j'
         exclude group: 'org.slf4j', module:'slf4j-api'
@@ -36,6 +38,7 @@ dependencies {
         exclude group: 'org.grails', module:'grails-bootstrap'
         exclude group: 'org.grails', module:'grails-core'
         exclude group: 'org.grails', module:'grails-test'
+        exclude group: 'org.grails', module:'grails-async'
         exclude group: 'commons-collections', module:'commons-collections'
         exclude group: 'commons-lang', module:'commons-lang'
         exclude group: 'javassit', module:'javassist'

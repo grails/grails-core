@@ -92,7 +92,7 @@ task populateDependencies(type: Sync, dependsOn: configurePopulateDependencies) 
 // Can't use sync task here because this directory contains other things as well.
 task sourcesJars(type: Sync) {
     into homeSrcDir
-    from subprojects*.sourcesJar*.outputs*.files
+    from subprojects.findAll { !it.name.startsWith('grails-test-suite') }.sourcesJar*.outputs*.files
 
     // sourcesFor comes from GrailsBuildPlugin
     from { sourcesFor(libsConfigurations*.copyRecursive { it.name.startsWith('grails-datastore') }.collect { it.transitive = false; it }) }
@@ -176,7 +176,7 @@ task installResources(type: Copy) {
     }
 }
 
-task install(dependsOn: [populateDependencies, installResources] + subprojects*.install)
+task install(dependsOn: [populateDependencies, installResources] + subprojects.findAll { !it.name.startsWith('grails-test-suite') }*.install)
 
 task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
     destinationDir = "${buildDir}/distributions" as File
