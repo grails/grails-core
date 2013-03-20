@@ -47,6 +47,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
@@ -105,6 +106,16 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     protected void initFrameworkServlet() throws ServletException, BeansException {
         super.initFrameworkServlet();
         initMultipartResolver();
+    }
+
+    @Override
+    protected ServletRequestAttributes buildRequestAttributes(HttpServletRequest request, HttpServletResponse response, RequestAttributes previousAttributes) {
+        if(previousAttributes instanceof GrailsWebRequest) {
+            return null;
+        }
+        else {
+            return super.buildRequestAttributes(request, response, previousAttributes);
+        }
     }
 
     /**

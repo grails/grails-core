@@ -19,8 +19,9 @@ import grails.validation.DeferredBindingActions;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.security.Principal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -37,8 +38,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecution
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
-import org.springframework.mock.web.portlet.MockClientDataRequest;
-import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
@@ -54,7 +53,7 @@ import org.springframework.web.util.UrlPathHelper;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class GrailsWebRequest implements ParameterInitializationCallback, NativeWebRequest,RequestAttributes {
+public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback {
 
     private GrailsApplicationAttributes attributes;
     private GrailsParameterMap params;
@@ -67,11 +66,8 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
     private ApplicationContext applicationContext;
     private String baseUrl;
 
-    private DispatcherServletWebRequest targetWebRequest;
-    private boolean active;
-
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
-        targetWebRequest = new DispatcherServletWebRequest(request, response);
+        super(request);
         attributes = new DefaultGrailsApplicationAttributes(servletContext);
         this.response = response;
     }
@@ -81,35 +77,12 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
         this.applicationContext = applicationContext;
     }
 
-    public String getHeader(String headerName) {
-        return targetWebRequest.getHeader(headerName);
-    }
-
-    public String[] getHeaderValues(String headerName) {
-        return targetWebRequest.getHeaderValues(headerName);
-    }
-
-    public Iterator<String> getHeaderNames() {
-        return targetWebRequest.getHeaderNames();
-    }
-
-    public String getParameter(String paramName) {
-        return targetWebRequest.getParameter(paramName);
-    }
-
-    public String[] getParameterValues(String paramName) {
-        return targetWebRequest.getParameterValues(paramName);
-    }
-
-    public Iterator<String> getParameterNames() {
-        return targetWebRequest.getParameterNames();
-    }
-
     /**
      * Overriden to return the GrailsParameterMap instance,
      *
      * @return An instance of GrailsParameterMap
      */
+    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map getParameterMap() {
         if (params == null) {
@@ -118,13 +91,9 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
         return params;
     }
 
-    public Locale getLocale() {
-        return targetWebRequest.getLocale();
-    }
-
+    @Override
     public void requestCompleted() {
-        this.active = false;
-        targetWebRequest.requestCompleted();
+        super.requestCompleted();
         DeferredBindingActions.clear();
     }
 
@@ -148,7 +117,7 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
      * @return true if it is
      */
     public boolean isActive() {
-        return active;
+        return super.isRequestActive();
     }
 
     /**
@@ -169,6 +138,7 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
      * Returns the context path of the request.
      * @return the path
      */
+    @Override
     public String getContextPath() {
         final HttpServletRequest request = getCurrentRequest();
         String appUri = (String) request.getAttribute(GrailsApplicationAttributes.APP_URI_ATTRIBUTE);
@@ -178,54 +148,22 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
         return appUri;
     }
 
-    public String getRemoteUser() {
-        return targetWebRequest.getRemoteUser();
-    }
-
-    public Principal getUserPrincipal() {
-        return targetWebRequest.getUserPrincipal();
-    }
-
-    public boolean isUserInRole(String role) {
-        return targetWebRequest.isUserInRole(role);
-    }
-
-    public boolean isSecure() {
-        return targetWebRequest.isSecure();
-    }
-
-    public boolean checkNotModified(long lastModifiedTimestamp) {
-        return targetWebRequest.checkNotModified(lastModifiedTimestamp);
-    }
-
-    public boolean checkNotModified(String eTag) {
-        return targetWebRequest.checkNotModified(eTag);
-    }
-
-    public String getDescription(boolean includeClientInfo) {
-        return targetWebRequest.getDescription(includeClientInfo);
-    }
-
     /**
      * @return The FlashScope instance for the current request
      */
     public FlashScope getFlashScope() {
-        return attributes.getFlashScope(targetWebRequest.getRequest());
+        return attributes.getFlashScope(getRequest());
     }
 
     /**
      * @return The currently executing request
      */
     public HttpServletRequest getCurrentRequest() {
-        return targetWebRequest.getRequest();
+        return getRequest();
     }
 
     public HttpServletResponse getCurrentResponse() {
-        return targetWebRequest.getResponse();
-    }
-
-    public HttpServletResponse getResponse() {
-        return targetWebRequest.getResponse();
+        return response;
     }
 
     /**
@@ -412,57 +350,5 @@ public class GrailsWebRequest implements ParameterInitializationCallback, Native
             baseUrl = sb.toString();
         }
         return baseUrl;
-    }
-
-    public Object getNativeRequest() {
-        return targetWebRequest.getNativeRequest();
-    }
-
-    public Object getNativeResponse() {
-        return targetWebRequest.getNativeResponse();
-    }
-
-    public <T> T getNativeRequest(Class<T> requiredType) {
-        return targetWebRequest.getNativeRequest(requiredType);
-    }
-
-    public <T> T getNativeResponse(Class<T> requiredType) {
-        return targetWebRequest.getNativeResponse(requiredType);
-    }
-
-    public Object getAttribute(String name, int scope) {
-        return targetWebRequest.getAttribute(name, scope);
-    }
-
-    public void setAttribute(String name, Object value, int scope) {
-        targetWebRequest.setAttribute(name, value, scope);
-    }
-
-    public void removeAttribute(String name, int scope) {
-        targetWebRequest.removeAttribute(name, scope);
-    }
-
-    public String[] getAttributeNames(int scope) {
-        return targetWebRequest.getAttributeNames(scope);
-    }
-
-    public void registerDestructionCallback(String name, Runnable callback, int scope) {
-        targetWebRequest.registerDestructionCallback(name, callback, scope);
-    }
-
-    public Object resolveReference(String key) {
-        return targetWebRequest.resolveReference(key);
-    }
-
-    public String getSessionId() {
-        return targetWebRequest.getSessionId();
-    }
-
-    public Object getSessionMutex() {
-        return targetWebRequest.getSessionMutex();
-    }
-
-    public HttpServletRequest getRequest() {
-        return targetWebRequest.getRequest();
     }
 }
