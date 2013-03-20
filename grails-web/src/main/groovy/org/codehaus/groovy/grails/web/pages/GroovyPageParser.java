@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.BuildSettingsHolder;
 import grails.util.Environment;
+import grails.util.Holders;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -140,6 +141,10 @@ public class GroovyPageParser implements Tokens {
     public static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
     public static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
     public static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
+    
+    private static final String DEFAULT_DEFAULTCODEC = "none";
+    private static final String DEFAULT_TEMPLATECODEC = "none";
+    private static final String DEFAULT_PAGECODEC = "none";
 
     private static final String IMPORT_DIRECTIVE = "import";
     private static final String CONTENT_TYPE_DIRECTIVE = "contentType";
@@ -158,9 +163,9 @@ public class GroovyPageParser implements Tokens {
     private boolean precompileMode;
     private boolean sitemeshPreprocessMode=false;
     private String defaultCodecDirectiveValue;
-    private String pageCodecDirectiveValue="raw";
-    private String templateCodecDirectiveValue="raw";
-
+    private String pageCodecDirectiveValue=DEFAULT_PAGECODEC;
+    private String templateCodecDirectiveValue=DEFAULT_TEMPLATECODEC;
+    
     private boolean enableSitemeshPreprocessing = true;
     private File keepGeneratedDirectory;
 
@@ -205,6 +210,18 @@ public class GroovyPageParser implements Tokens {
     public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding, String defaultCodecName) throws IOException {
         this.gspEncoding = encoding;
         this.defaultCodecDirectiveValue = defaultCodecName;
+        if(defaultCodecDirectiveValue==null) {
+            Map<?, ?> config = Holders.getFlatConfig();
+            if (config != null) {
+                Object o = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
+                if (o != null) {
+                    defaultCodecDirectiveValue = o.toString();
+                }
+            }
+            if(defaultCodecDirectiveValue==null) {
+                defaultCodecDirectiveValue = DEFAULT_DEFAULTCODEC;
+            }
+        }
         
         if (filename != null && BuildSettingsHolder.getSettings() != null) {
             GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
