@@ -1068,7 +1068,7 @@ class MockUtils {
 
         def beforeValidateHelper
         try {
-            def helperClass = Thread.currentThread().contextClassLoader.loadClass('org.grails.datastore.gorm.validation.BeforeValidateHelper')
+            def helperClass = Thread.currentThread().contextClassLoader.loadClass('org.grails.datastore.gorm.support.BeforeValidateHelper')
             beforeValidateHelper = helperClass.newInstance()
         }
         catch (ignored) {
