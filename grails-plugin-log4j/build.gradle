@@ -2,7 +2,7 @@ dependencies {
     compile ("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-    compile 'log4j:log4j:1.2.16'
+    compile 'log4j:log4j:1.2.17'
     compile "org.slf4j:jul-to-slf4j:$slf4jVersion"
 
     compile project(':grails-logging')
