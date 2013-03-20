@@ -1068,7 +1068,7 @@ class MockUtils {
 
         def beforeValidateHelper
         try {
-            def helperClass = Thread.currentThread().contextClassLoader.loadClass('org.codehaus.groovy.grails.orm.hibernate.metaclass.BeforeValidateHelper')
+            def helperClass = Thread.currentThread().contextClassLoader.loadClass('org.grails.datastore.gorm.validation.BeforeValidateHelper')
             beforeValidateHelper = helperClass.newInstance()
         }
         catch (ignored) {
