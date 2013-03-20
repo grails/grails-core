@@ -57,7 +57,6 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 
     private GrailsApplicationAttributes attributes;
     private GrailsParameterMap params;
-    private final HttpServletResponse response;
     private GrailsHttpSession session;
     private boolean renderView = true;
     public static final String ID_PARAMETER = "id";
@@ -67,9 +66,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private String baseUrl;
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
-        super(request);
+        super(request, response);
         attributes = new DefaultGrailsApplicationAttributes(servletContext);
-        this.response = response;
     }
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext, ApplicationContext applicationContext) {
@@ -163,7 +161,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     public HttpServletResponse getCurrentResponse() {
-        return response;
+        return getResponse();
     }
 
     /**
