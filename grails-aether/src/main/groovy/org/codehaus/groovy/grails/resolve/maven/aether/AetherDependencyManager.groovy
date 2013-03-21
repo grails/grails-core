@@ -408,8 +408,7 @@ class AetherDependencyManager implements DependencyManager {
     }
 
     void addDependency(Dependency dependency) {
-        Artifact artifact = dependency.artifact
-        final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
+        org.codehaus.groovy.grails.resolve.Dependency grailsDependency = createGrailsDependency(dependency)
         grailsDependencies << grailsDependency
         grailsDependenciesByScope[dependency.scope] << grailsDependency
         final aetherDependencies = dependencies
@@ -418,6 +417,15 @@ class AetherDependencyManager implements DependencyManager {
             grailsPluginDependencies << grailsDependency
             grailsPluginDependenciesByScope[dependency.scope] << grailsDependency
         }
+    }
+
+    protected org.codehaus.groovy.grails.resolve.Dependency createGrailsDependency(Dependency dependency) {
+        Artifact artifact = dependency.artifact
+        final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
+        for(Exclusion e in dependency.exclusions) {
+            grailsDependency.exclude(e.groupId, e.artifactId)
+        }
+        return grailsDependency
     }
 
     protected void includeJavadocAndSourceIfNecessary(List<Dependency> aetherDependencies, Dependency dependency) {
@@ -448,8 +456,7 @@ class AetherDependencyManager implements DependencyManager {
     }
 
     void addBuildDependency(Dependency dependency) {
-        Artifact artifact = dependency.artifact
-        final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
+        final grailsDependency = createGrailsDependency(dependency)
         grailsDependencies << grailsDependency
         grailsDependenciesByScope["build"] << grailsDependency
         buildDependencies << dependency

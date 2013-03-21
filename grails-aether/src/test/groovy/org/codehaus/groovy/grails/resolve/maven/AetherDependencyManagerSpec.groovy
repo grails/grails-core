@@ -10,6 +10,24 @@ import spock.lang.Specification
 
 class AetherDependencyManagerSpec extends Specification {
 
+    void "Test grails dependency exclusions"() {
+        given:"A dependency manager with a dependency that contains exclusions"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                dependencies {
+                    compile("org.apache.maven:maven-ant-tasks:2.1.3") {
+                        excludes "commons-logging", "xml-apis", "groovy"
+                    }
+                }
+            }
+        when:"The grails dependencies are obtained"
+            Dependency dependency = dependencyManager.applicationDependencies.find { Dependency d -> d.name == "maven-ant-tasks" }
+
+        then:"The exclusions are present"
+            dependency != null
+            dependency.excludes.size() == 3
+    }
+
     void "Test resolve with source and javadocs"() {
         given: "A dependency manager instance"
             def dependencyManager = new AetherDependencyManager()
