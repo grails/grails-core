@@ -14,7 +14,10 @@
  */
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
+import grails.build.logging.GrailsConsole
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 
 import java.util.regex.Pattern
 
@@ -35,6 +38,9 @@ class DependenciesConfiguration {
     public static final String SCOPE_PROVIDED = "provided"
     public static final String SCOPE_OPTIONAL = "optional"
     public static final String SCOPE_TEST = "test"
+    public static final String SCOPE_BUILD = "build"
+    public static final String ALL_SCOPES = [SCOPE_COMPILE, SCOPE_RUNTIME, SCOPE_PROVIDED, SCOPE_TEST, SCOPE_OPTIONAL,SCOPE_BUILD]
+
 
     AetherDependencyManager dependencyManager
     ExclusionDependencySelector exclusionDependencySelector
@@ -132,6 +138,56 @@ class DependenciesConfiguration {
     void test(Map<String, String> properties, Closure customizer = null) {
         addDependency properties, SCOPE_TEST, customizer
     }
+
+    def methodMissing(String name, args) {
+        final console = GrailsConsole.getInstance()
+        if (args == null || !ALL_SCOPES.contains(name)) {
+            console.error("WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..")
+            return null
+        }
+
+        def argsList = Arrays.asList((Object[])args)
+        if (!argsList) {
+            console.error("WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..")
+            return null
+        }
+
+
+
+        if (isOnlyStrings(argsList)) {
+            invokeForString(name, argsList)
+        }
+        else if (isStringsAndConfigurer(argsList)) {
+            invokeForString(name, argsList[0..-2], (Closure) argsList[-1] )
+        }
+        else {
+            console.error("WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..")
+        }
+    }
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    void invokeForString(String scope, List<Object> objects, Closure configurer = null) {
+        for(o in objects) {
+            "$scope"(o.toString(), configurer)
+        }
+    }
+
+    private boolean isOnlyStrings(List<Object> args) {
+        for (Object arg in args) {
+            if (!(arg instanceof CharSequence)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private boolean isStringsAndConfigurer(List<Object> args) {
+        if (args.size() == 1) {
+            return false
+        }
+        return isOnlyStrings(args[0..-2]) && args[-1] instanceof Closure
+    }
+
 
     protected Map extractDependencyProperties(String pattern) {
         def matcher = DEPENDENCY_PATTERN.matcher(pattern)
