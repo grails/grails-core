@@ -83,6 +83,10 @@ class DependencyConfiguration {
         dependency = dependency.setScope(s)
     }
 
+    void setExport(boolean e) {
+        exported = e
+    }
+
     void setOtional(boolean b) {
         dependency = dependency.setOptional(b)
     }
