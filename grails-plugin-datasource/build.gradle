@@ -13,7 +13,7 @@ dependencies {
         ext.notInPom = true
     }
 
-    runtime 'com.h2database:h2:1.3.164', {
+    runtime 'com.h2database:h2:1.3.170', {
         ext.notInPom = true
     }
 
