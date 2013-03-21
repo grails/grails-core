@@ -20,6 +20,7 @@ import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
 
@@ -30,7 +31,7 @@ import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
  * @since 2.3
  */
 @CompileStatic
-abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
+abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
 
     ForkedGrailsProjectClassExecutor(BuildSettings buildSettings) {
         executionContext = createExecutionContext()
@@ -38,9 +39,8 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
     }
 
     protected ExecutionContext createExecutionContext() {
-        new ExecutionContext()
+        new ExecutionContext(this)
     }
-
 
     protected ForkedGrailsProjectClassExecutor() {
         executionContext = readExecutionContext()
@@ -48,7 +48,6 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
             throw new IllegalStateException("Forked process created without first creating execution context and calling fork()")
         }
     }
-
 
     protected final void run() {
 
@@ -80,11 +79,9 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
         projectClassInstance
     }
 
-
     protected Object createInstance(Class projectComponentClass, BuildSettings buildSettings) {
         projectComponentClass.newInstance(buildSettings)
     }
-
 
     protected GrailsBuildEventListener createEventListener(Binding executionContext) {
         GrailsBuildEventListener eventListener = (GrailsBuildEventListener) executionContext.getVariable("eventListener")
@@ -118,7 +115,5 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess{
 
     protected abstract String getProjectClassType()
 
-    abstract void runInstance(def instance)
-
-
+    abstract void runInstance(instance)
 }

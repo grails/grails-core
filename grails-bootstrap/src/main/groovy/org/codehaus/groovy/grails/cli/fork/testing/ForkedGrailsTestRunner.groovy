@@ -131,7 +131,7 @@ class TestExecutionContext extends ExecutionContext {
     protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         final classpath = super.buildMinimalIsolatedClasspath(buildSettings)
         classpath << buildSettings.testDependencies.find { File f -> f.name.startsWith('junit') }
-        classpath.addAll ForkedGrailsProcess.findTomcatJars(buildSettings)
+        classpath.addAll process.findSystemClasspathJars(buildSettings)
         return classpath
     }
 }

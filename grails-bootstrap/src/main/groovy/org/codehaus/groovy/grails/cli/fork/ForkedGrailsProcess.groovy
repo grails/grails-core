@@ -73,7 +73,7 @@ abstract class ForkedGrailsProcess {
     /**
      * @return Whether this process is a reserve process. A reserve process is an additional JVM, bootstrapped and idle that can resume execution at a later date
      */
-    static boolean isReserveProcess() {
+    protected boolean isReserveProcess() {
         System.getProperty("grails.fork.reserve")!=null
     }
 
@@ -191,13 +191,13 @@ abstract class ForkedGrailsProcess {
             .directory(executionContext.getBaseDir())
             .redirectErrorStream(false)
             .command(cmd)
+
         Thread.start {
 
             sleep 2000
             final p2 = builder.start()
 
             attachOutputListener(p2)
-
         }
     }
 
@@ -210,7 +210,6 @@ abstract class ForkedGrailsProcess {
         t1.start()
         t2.start()
 
-
         def callable = {
             int result = process.waitFor()
             if (result == 1) {
@@ -222,12 +221,14 @@ abstract class ForkedGrailsProcess {
                 throw new RuntimeException("Forked Grails VM exited with error")
             }
         }
+
         if (async) {
             Thread.start callable
         }
         else {
             callable.call()
         }
+
         return process
     }
 
@@ -238,12 +239,11 @@ abstract class ForkedGrailsProcess {
             cp << file << File.pathSeparator
         }
 
-        final classpathString = cp.toString()
-        classpathString
+        cp.toString()
     }
 
     @CompileStatic
-    private static boolean isWindows() {
+    protected boolean isWindows() {
         return System.getProperty("os.name").toLowerCase().indexOf("windows") != -1
     }
 
@@ -259,7 +259,9 @@ abstract class ForkedGrailsProcess {
         else {
             javaCommand = "java" // assume it is correctly configured using PATH
         }
-        List<String> cmd = [javaCommand, "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(), "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true", "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
+        List<String> cmd = [javaCommand, "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(),
+                            "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true",
+                            "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
         if (debug && !isReserve) {
             cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", debugArgs])
         }
@@ -314,20 +316,19 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    static List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
+    protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         List<File> buildDependencies = []
 
         File groovyJar = buildSettings.compileDependencies.find { File f -> f.name.contains "groovy-all" }
         File toolsJar = findToolsJar()
 
-
         if (toolsJar?.exists()) {
             buildDependencies.add(toolsJar)
         }
 
-        if (!groovyJar)
+        if (!groovyJar) {
             groovyJar = findJarFile(GroovySystem)
-
+        }
 
         buildDependencies.add groovyJar
         buildDependencies.add findJarFile(Log)
@@ -357,7 +358,7 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    protected static File findToolsJar() {
+    protected File findToolsJar() {
         final javaHome = System.getenv("JAVA_HOME")
         File toolsJar = javaHome ? new File(javaHome, "lib/tools.jar") : null
         if (!toolsJar?.exists()) {
@@ -372,14 +373,14 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    static File findJarFile(Class targetClass) {
+    protected File findJarFile(Class targetClass) {
         def absolutePath = targetClass.getResource('/' + targetClass.name.replace(".", "/") + ".class").getPath()
         final jarPath = absolutePath.substring("file:".length(), absolutePath.lastIndexOf("!"))
         new File(jarPath)
     }
 
     @CompileStatic
-    static Collection<File> findTomcatJars(BuildSettings buildSettings) {
+    Collection<File> findSystemClasspathJars(BuildSettings buildSettings) {
         return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") } +
             buildSettings.providedDependencies.findAll { File it -> it.name.contains("tomcat") }
     }
@@ -490,6 +491,12 @@ class ExecutionContext implements Serializable {
     File grailsHome
     Map argsMap = new LinkedHashMap()
 
+    ForkedGrailsProcess process
+
+    ExecutionContext(ForkedGrailsProcess process) {
+        this.process = process
+    }
+
     void initialize(BuildSettings settings) {
         List<File> isolatedBuildDependencies = buildMinimalIsolatedClasspath(settings)
 
@@ -509,6 +516,6 @@ class ExecutionContext implements Serializable {
 
     @CompileStatic
     protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
-        return ForkedGrailsProcess.buildMinimalIsolatedClasspath(buildSettings)
+        return process.buildMinimalIsolatedClasspath(buildSettings)
     }
 }
