@@ -118,4 +118,9 @@ public interface DependencyManager {
      * @return All application dependencies
      */
     Collection<Dependency> getAllDependencies(String scope);
+
+    /**
+     * @return Returns the exclude resolver for this dependency manager
+     */
+    ExcludeResolver getExcludeResolver();
 }
