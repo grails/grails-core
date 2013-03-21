@@ -107,6 +107,16 @@ class BuildSettings extends AbstractBuildSettings {
     public static final String PROJECT_WAR_EXPLODED_DIR = "grails.project.war.exploded.dir"
 
     /**
+     * The name of the system property for {@link #pluginStagingDir}.
+     */
+    public static final String PLUGIN_STAGING_DIR = "grails.project.plugin.staging.dir"
+
+    /**
+     * The name of the system property for {@link #pluginIncludeSource}.
+     */
+    public static final String PLUGIN_INCLUDE_SOURCE = "grails.project.plugin.includeSource"
+
+    /**
      * The name of the system property for {@link #projectPluginsDir}.
      */
     public static final String PLUGINS_DIR = "grails.project.plugins.dir"
@@ -293,6 +303,12 @@ class BuildSettings extends AbstractBuildSettings {
 
     /** The location of the Grails WAR directory where exploded WAR is built.  */
     File projectWarExplodedDir
+
+    /** The location of the temporary directory where plugins are staged before being bundled into a ZIP or JAR file.  */
+    File pluginStagingDir
+
+    /** Whether to include the source in binary plugin JAR files.  */
+    Boolean pluginIncludeSource
 
     /**
      * The WAR file of the project
@@ -766,6 +782,8 @@ class BuildSettings extends AbstractBuildSettings {
     private boolean projectWorkDirSet
     private boolean projectTargetDirSet
     private boolean projectWarExplodedDirSet
+    private boolean pluginStagingDirSet
+    private boolean pluginIncludeSourceSet
     private boolean classesDirSet
     private boolean testClassesDirSet
     private boolean pluginClassesDirSet
@@ -913,6 +931,16 @@ class BuildSettings extends AbstractBuildSettings {
     void setProjectWarExplodedDir(File dir) {
         projectWarExplodedDir = dir
         projectWarExplodedDirSet = true
+    }
+
+    void setPluginStagingDir(File dir) {
+        pluginStagingDir = dir
+        pluginStagingDirSet = true
+    }
+
+    void setPluginIncludeSource(boolean include) {
+        pluginIncludeSource = include
+        pluginIncludeSourceSet = true
     }
 
     void setConvertClosuresArtefacts(boolean convert) {
@@ -1359,6 +1387,14 @@ class BuildSettings extends AbstractBuildSettings {
 
         if (!projectWarExplodedDirSet) {
             projectWarExplodedDir = new File(getPropertyValue(PROJECT_WAR_EXPLODED_DIR, props, "${projectWorkDir}/stage"))
+        }
+
+        if (!pluginStagingDirSet) {
+            pluginStagingDir = new File(getPropertyValue(PLUGIN_STAGING_DIR, props, "${projectWorkDir}/plugin_stage"))
+        }
+
+        if (!pluginIncludeSourceSet) {
+            pluginIncludeSource = getPropertyValue(PLUGIN_INCLUDE_SOURCE, props, 'true').toBoolean()
         }
 
         if (!convertClosuresArtefactsSet) {

@@ -18,6 +18,7 @@ import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.publishing.PluginPackager
+import org.codehaus.groovy.grails.resolve.AbstractIvyDependencyManager
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
@@ -50,10 +51,11 @@ target(packagePlugin: "Implementation target") {
     def pluginBaseDir = pluginFile.parentFile.absolutePath
     def resourceList = pluginSettings.getArtefactResourcesForOne(pluginBaseDir)
     pluginInfo = pluginSettings.getPluginInfo(pluginBaseDir)
-    def packager = new PluginPackager(grailsSettings, pluginInfo, resourceList, new File(projectWorkDir))
+    def packager = new PluginPackager(grailsSettings, pluginInfo, resourceList, new File(projectWorkDir), eventListener, grailsSettings)
     packager.ant = ant
     packager.resourcesDir = new File(resourcesDirPath)
-    packager.hasApplicationDependencies = grailsSettings.dependencyManager.hasApplicationDependencies()
+    packager.hasApplicationDependencies = (grailsSettings.dependencyManager instanceof AbstractIvyDependencyManager) &&
+        grailsSettings.dependencyManager.hasApplicationDependencies()
 
     def descriptor = pluginSettings.getBasePluginDescriptor()
     plugin = packager.generatePluginXml(descriptor.file)

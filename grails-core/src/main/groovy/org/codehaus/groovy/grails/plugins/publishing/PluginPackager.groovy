@@ -20,6 +20,7 @@ import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.util.GrailsUtil
 
+import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.io.support.FileSystemResource
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
@@ -75,15 +76,21 @@ class PluginPackager {
     List<File> jarFiles = []
     boolean hasApplicationDependencies
 
-    PluginPackager(BuildSettings buildSettings, pluginInfo, Resource[] resourceList, File projectWorkDir) {
+    GrailsBuildEventListener eventListener
+    BuildSettings grailsSettings
+
+    PluginPackager(BuildSettings buildSettings, pluginInfo, Resource[] resourceList, File projectWorkDir,
+                   GrailsBuildEventListener eventListener, BuildSettings grailsSettings) {
         this.pluginInfo = pluginInfo
         this.resourceList = resourceList
         this.projectWorkDir = projectWorkDir
         this.buildSettings = buildSettings
+        this.eventListener = eventListener
+        this.grailsSettings = grailsSettings
     }
 
     File getResourcesDir() {
-        if (this.resourcesDir == null) resourcesDir = basedir
+        if (resourcesDir == null) resourcesDir = basedir
         return resourcesDir
     }
 
@@ -132,7 +139,6 @@ class PluginPackager {
     }
 
     def packagePlugin(String pluginName, File classesDir, File targetDir) {
-        generateDependencyDescriptor()
         if (!pluginInfo.packaging || pluginInfo.packaging == 'source') {
             return packageSource(pluginName, classesDir, targetDir)
         }
@@ -141,46 +147,60 @@ class PluginPackager {
 
     String packageSource(String pluginName, File classesDir, File targetDir) {
         def pluginProps = pluginInfo
-        generateDependencyDescriptor()
 
         // Package plugin's zip distribution
         def pluginZip = "${basedir}/grails-${pluginName}-${pluginInfo.version}.zip"
         ant.delete(file:pluginZip)
 
-        def pluginExcludes = EXCLUDED_RESOURCES
-        def pluginIncludes = INCLUDED_RESOURCES
-        def pluginGrailsVersion = "${GrailsUtil.grailsVersion} > *"
+        def stagingDir
+        try {
+           stagingDir = grailsSettings.pluginStagingDir
+           ant.delete(dir: stagingDir, failonerror:true)
+           ant.mkdir(dir:stagingDir)
 
-        if (pluginProps?.pluginExcludes) {
-            pluginExcludes.addAll(pluginInfo?.pluginExcludes)
+           if (hasApplicationDependencies) {
+               ant.copy(file: "${pluginInfo.pluginDir.file}/grails-app/conf/BuildConfig.groovy",
+                        tofile: "$stagingDir/dependencies.groovy", failonerror:false)
+           }
+
+           runResourcesClosure stagingDir
+
+           def (includesList, excludesList) = findIncludesAndExcludes(pluginProps)
+           ant.copy(todir: stagingDir, preservelastmodified:true) {
+               fileset(dir: basedir, includes: includesList.join(","), excludes: excludesList.join(","))
+           }
+
+           if (jarFiles) {
+               ant.mkdir(dir: "$stagingDir/lib")
+               for (File file in jarFiles) {
+                   ant.copy(file: file, todir: "$stagingDir/lib", preservelastmodified: true)
+               }
+           }
+
+           eventListener.triggerEvent 'CreatePluginArchiveStart', stagingDir
+
+           ant.zip(destfile:pluginZip, filesonly:true) {
+               fileset(dir: stagingDir)
+           }
+
+           eventListener.triggerEvent 'CreatePluginArchiveEnd', stagingDir
         }
-
-        def includesList = pluginIncludes.join(",")
-        def excludesList = pluginExcludes.join(",")
-        def libsDir = new File("${projectWorkDir}/tmp-libs")
-        ant.delete(dir:libsDir, failonerror:false)
-
-        if (jarFiles) {
-            ant.mkdir(dir:"${libsDir}/lib")
-            ant.copy(todir:"${libsDir}/lib") {
-                for (File file in jarFiles) {
-                    fileset(dir:file.parentFile, includes:file.name)
-                }
-            }
-        }
-
-        def dependencyInfoDir = new File("$projectWorkDir/plugin-info")
-        ant.zip(destfile:pluginZip, filesonly:true) {
-            fileset(dir:basedir, includes:includesList, excludes:excludesList)
-            if (dependencyInfoDir.exists()) {
-                fileset(dir:dependencyInfoDir)
-            }
-            if (libsDir.exists()) {
-                fileset(dir:libsDir)
+        finally {
+            if (stagingDir?.exists()) {
+                ant.delete(dir: stagingDir, failonerror:true)
             }
         }
 
         return pluginZip
+    }
+
+    protected findIncludesAndExcludes(pluginProps) {
+        def pluginExcludes = EXCLUDED_RESOURCES
+        if (pluginProps?.pluginExcludes) {
+            pluginExcludes.addAll(pluginInfo?.pluginExcludes)
+        }
+
+        [INCLUDED_RESOURCES, pluginExcludes]
     }
 
     private boolean matchesExcludes(excludes, path) {
@@ -268,14 +288,16 @@ class PluginPackager {
         }
 
         def destinationFile = "${targetDir}/grails-plugin-${pluginName}-${pluginProps.version}.jar"
+
         ant.sequential {
             mkdir(dir:metaInf)
             copy(file:"${basedir}/plugin.xml", tofile:"${metaInf}/grails-plugin.xml")
             move(file:"${classesDir}/gsp/views.properties", todir:metaInf, failonerror:false)
             mkdir(dir:"${metaInf}/grails-app/i18n")
-            if (new File("${resourcesDir}/grails-app/i18n").exists()) {
-                copy(todir:"${metaInf}/grails-app/i18n", includeEmptyDirs:false,failonerror:false) {
-                    fileset(dir:"${resourcesDir}/grails-app/i18n") {
+            File i18n = new File(resourcesDir, "grails-app/i18n")
+            if (i18n.exists()) {
+                copy(todir: "${metaInf}/grails-app/i18n", includeEmptyDirs:false,failonerror:false) {
+                    fileset(dir: i18n) {
                         extraExcludes(basedir, "grails-app/i18n", pluginProps?.pluginExcludes).each {
                             exclude name: it
                         }
@@ -313,23 +335,72 @@ class PluginPackager {
                 }
             }
 
-            jar(destfile:destinationFile) {
-                fileset(dir:classesDir, excludes:excludeList.join(','))
-                manifest {
-                    attribute name:"Implementation-Title", value:pluginProps.title
-                    attribute name:"Implementation-Version", value:pluginProps.version
+            def stagingDir
+            try {
+               stagingDir = grailsSettings.pluginStagingDir
+               delete(dir: stagingDir, failonerror:true)
+               stagingDir.mkdirs()
+               runResourcesClosure stagingDir
+
+               copy(todir: stagingDir, preservelastmodified:true) {
+                   fileset(dir:classesDir, excludes:excludeList.join(','))
+               }
+
+               if (grailsSettings.pluginIncludeSource) {
+                   def (includesList, excludesList) = findIncludesAndExcludes(pluginProps)
+                   excludesList << 'grails-app/i18n/**'
+                   excludesList << 'lib/**'
+                   excludesList << 'web-app/**'
+                   excludesList << 'application.properties'
+                   excludesList << 'plugin.xml'
+
+                   // copy src to the root of the jar; do this in steps so the exclusions are correct                   
+                   String tempSrcDir = "$stagingDir/TEMP_SRC"
+                   mkdir(dir: tempSrcDir)
+                   copy(todir: tempSrcDir, preservelastmodified:true, verbose: true) {
+                       fileset(dir: basedir, includes: 'src/java/**', excludes: excludesList.join(","))
+                       fileset(dir: basedir, includes: 'src/groovy/**', excludes: excludesList.join(","))
+                   }
+                   copy(todir: stagingDir, preservelastmodified:true) {
+                       fileset(dir: "$tempSrcDir/src/java")
+                       fileset(dir: "$tempSrcDir/src/groovy")
+                   }
+                   delete(dir: tempSrcDir, failonerror:true)
+
+                   copy(todir: stagingDir, preservelastmodified:true) {
+                       excludesList << 'src/**'
+                       fileset(dir: basedir, includes: includesList.join(","), excludes: excludesList.join(","))
+                   }
+               }
+
+               eventListener.triggerEvent 'CreatePluginArchiveStart', stagingDir
+
+               jar(destfile: destinationFile, filesonly: true) {
+                   fileset(dir: stagingDir)
+                   manifest {
+                       attribute name:"Implementation-Title", value:pluginProps.title
+                       attribute name:"Implementation-Version", value:pluginProps.version
+                   }
+               }
+
+               eventListener.triggerEvent 'CreatePluginArchiveEnd', stagingDir
+            }
+            finally {
+                if (stagingDir?.exists()) {
+                    ant.delete(dir: stagingDir, failonerror:true)
                 }
             }
         }
         return destinationFile
     }
 
-    protected generateDependencyDescriptor() {
-        ant.delete(dir:"$projectWorkDir/plugin-info", failonerror:false)
-        if (hasApplicationDependencies) {
-            ant.mkdir(dir:"$projectWorkDir/plugin-info")
-            ant.copy(file:"${pluginInfo.pluginDir.file}/grails-app/conf/BuildConfig.groovy",
-                     tofile:"$projectWorkDir/plugin-info/dependencies.groovy", failonerror:false)
+    protected void runResourcesClosure(File stagingDir) {
+        ConfigObject buildConfig = grailsSettings.config
+        if (buildConfig.grails.plugin.resources instanceof Closure) {
+            Closure callable = buildConfig.grails.plugin.resources
+            callable.delegate = ant
+            callable.resolveStrategy = Closure.DELEGATE_FIRST
+            callable(stagingDir)
         }
     }
 }
