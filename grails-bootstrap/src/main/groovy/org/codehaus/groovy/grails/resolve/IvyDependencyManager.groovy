@@ -434,9 +434,11 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     Set<Dependency> convertToGrailsDependencies(Set<DependencyDescriptor> descriptors) {
         Set<Dependency> dependencies = []
         for (DependencyDescriptor dd in descriptors) {
+            EnhancedDefaultDependencyDescriptor edd = (EnhancedDefaultDependencyDescriptor)dd
             final drid = dd.dependencyRevisionId
             def d = new Dependency(drid.organisation, drid.name, drid.revision)
             d.transitive = dd.transitive
+            d.exported = edd.exported
 
             dependencies << d
         }

@@ -20,6 +20,7 @@ class Dependency {
     String classifier
     boolean transitive = true
     boolean inherited = false
+    boolean exported = true
 
     Dependency(String group, String name, String version, String...exc) {
         this.group = group
