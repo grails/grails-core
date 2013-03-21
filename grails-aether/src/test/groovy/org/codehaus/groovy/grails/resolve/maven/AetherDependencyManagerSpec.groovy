@@ -10,6 +10,24 @@ import spock.lang.Specification
 
 class AetherDependencyManagerSpec extends Specification {
 
+    void "Test grails dependency transitive setting"() {
+        given:"A dependency manager with a dependency that contains exclusions"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                dependencies {
+                    compile("org.apache.maven:maven-ant-tasks:2.1.3") {
+                        transitive = false
+                    }
+                }
+            }
+        when:"The grails dependencies are obtained"
+            Dependency dependency = dependencyManager.applicationDependencies.find { Dependency d -> d.name == "maven-ant-tasks" }
+
+        then:"The exclusions are present"
+            dependency != null
+            dependency.transitive == false
+    }
+
     void "Test grails dependency exclusions"() {
         given:"A dependency manager with a dependency that contains exclusions"
             def dependencyManager = new AetherDependencyManager()

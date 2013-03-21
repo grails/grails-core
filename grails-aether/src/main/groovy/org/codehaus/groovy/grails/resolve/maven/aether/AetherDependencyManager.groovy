@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.resolve.DependencyManagerUtils
 import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.ExcludeResolver
 import org.codehaus.groovy.grails.resolve.maven.aether.config.AetherDsl
+import org.codehaus.groovy.grails.resolve.maven.aether.config.DependencyConfiguration
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
 import org.codehaus.plexus.DefaultPlexusContainer
@@ -407,8 +408,8 @@ class AetherDependencyManager implements DependencyManager {
         return proxy
     }
 
-    void addDependency(Dependency dependency) {
-        org.codehaus.groovy.grails.resolve.Dependency grailsDependency = createGrailsDependency(dependency)
+    void addDependency(Dependency dependency, DependencyConfiguration configuration = null) {
+        org.codehaus.groovy.grails.resolve.Dependency grailsDependency = createGrailsDependency(dependency, configuration)
         grailsDependencies << grailsDependency
         grailsDependenciesByScope[dependency.scope] << grailsDependency
         final aetherDependencies = dependencies
@@ -419,9 +420,13 @@ class AetherDependencyManager implements DependencyManager {
         }
     }
 
-    protected org.codehaus.groovy.grails.resolve.Dependency createGrailsDependency(Dependency dependency) {
+    protected org.codehaus.groovy.grails.resolve.Dependency createGrailsDependency(Dependency dependency, DependencyConfiguration configuration = null) {
         Artifact artifact = dependency.artifact
         final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
+        if (configuration) {
+            grailsDependency.transitive = configuration.transitive
+            grailsDependency.exported = configuration.exported
+        }
         for(Exclusion e in dependency.exclusions) {
             grailsDependency.exclude(e.groupId, e.artifactId)
         }
@@ -455,8 +460,9 @@ class AetherDependencyManager implements DependencyManager {
         }
     }
 
-    void addBuildDependency(Dependency dependency) {
-        final grailsDependency = createGrailsDependency(dependency)
+    void addBuildDependency(Dependency dependency, DependencyConfiguration configuration = null) {
+        final grailsDependency = createGrailsDependency(dependency,configuration
+        )
         grailsDependencies << grailsDependency
         grailsDependenciesByScope["build"] << grailsDependency
         buildDependencies << dependency

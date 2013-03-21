@@ -51,15 +51,16 @@ class DependenciesConfiguration {
 
     void addDependency(Dependency dependency, Closure customizer = null) {
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(dependency)) {
-            dependency = customizeDependency(customizer, dependency)
-            dependencyManager.addDependency dependency
+            final dependencyConfig = customizeDependency(customizer, dependency)
+            dependency = dependencyConfig.dependency
+            dependencyManager.addDependency dependency, dependencyConfig
         }
     }
 
     void addBuildDependency(Dependency dependency, Closure customizer = null) {
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(dependency)) {
-            dependency = customizeDependency(customizer, dependency)
-            dependencyManager.addBuildDependency dependency
+            final dependencyConfig = customizeDependency(customizer, dependency)
+            dependencyManager.addBuildDependency dependency, dependencyConfig
         }
     }
 
@@ -209,13 +210,14 @@ class DependenciesConfiguration {
     protected String getDefaultGroup() { "" }
     protected String getDefaultExtension() { null }
 
-    protected Dependency customizeDependency(Closure customizer, Dependency dependency) {
+    protected DependencyConfiguration customizeDependency(Closure customizer, Dependency dependency) {
+        def dc = new DependencyConfiguration(dependency)
         if (customizer) {
-            def dc = new DependencyConfiguration(dependency)
             customizer.setDelegate(dc)
+            customizer.setResolveStrategy(Closure.DELEGATE_ONLY)
             customizer.call()
             dependency = dc.dependency
         }
-        dependency
+        dc
     }
 }

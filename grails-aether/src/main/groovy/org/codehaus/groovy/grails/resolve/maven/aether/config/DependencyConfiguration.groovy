@@ -31,6 +31,8 @@ import org.sonatype.aether.graph.Exclusion
 class DependencyConfiguration {
 
     @Delegate Dependency dependency
+    boolean transitive = true
+    boolean exported = true
 
     DependencyConfiguration(Dependency dependency) {
         this.dependency = dependency
@@ -86,7 +88,7 @@ class DependencyConfiguration {
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    void setProperty(String name, value) {
+    void propertyMissing(String name, value) {
         dependency."$name" = value
     }
 
