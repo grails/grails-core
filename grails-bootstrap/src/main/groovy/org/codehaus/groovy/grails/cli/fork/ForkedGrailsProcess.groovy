@@ -259,9 +259,17 @@ abstract class ForkedGrailsProcess {
         else {
             javaCommand = "java" // assume it is correctly configured using PATH
         }
-        List<String> cmd = [javaCommand, "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(),
-                            "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true",
-                            "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
+        
+        List<String> cmd = [javaCommand]
+
+        if (jvmArgs) {
+            cmd.addAll(jvmArgs)
+        }
+
+        cmd.addAll(["-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(),
+            "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true",
+            "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString])
+
         if (debug && !isReserve) {
             cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", debugArgs])
         }
@@ -279,10 +287,9 @@ abstract class ForkedGrailsProcess {
         if (reloadingAgent != null) {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded=profile=grails"])
         }
+
         cmd << getClass().name
-        if (jvmArgs) {
-            cmd.addAll(jvmArgs)
-        }
+
         return cmd
     }
 
