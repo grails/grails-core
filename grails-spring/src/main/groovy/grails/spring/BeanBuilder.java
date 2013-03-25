@@ -74,11 +74,11 @@ import org.springframework.util.Assert;
  *
  * <pre>
  * import org.hibernate.SessionFactory
- * import org.apache.commons.dbcp.BasicDataSource
+ * import org.apache.tomcat.jdbc.pool.DataSource
  *
  * BeanBuilder builder = new BeanBuilder()
  * builder.beans {
- *   dataSource(BasicDataSource) {                  // <--- invokeMethod
+ *   dataSource(DataSource) {                  // <--- invokeMethod
  *      driverClassName = "org.h2.Driver"
  *      url = "jdbc:h2:mem:grailsDB"
  *      username = "sa"                            // <-- setProperty

@@ -1,13 +1,8 @@
 dependencies {
 
     compile "org.springframework:spring-jdbc:${springVersion}"
-    compile ('commons-pool:commons-pool:1.5.6') {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
-    compile ('commons-dbcp:commons-dbcp:1.4') {
-        exclude group: 'commons-logging', module:'commons-logging'
-        exclude group: 'commons-pool', module:'commons-pool'
-    }
+
+    compile 'org.apache.tomcat:tomcat-jdbc:7.0.37'
 
     runtime 'hsqldb:hsqldb:1.8.0.10', {
         ext.notInPom = true

@@ -20,14 +20,12 @@ import grails.util.GrailsUtil
 import grails.util.Metadata
 
 import java.sql.Connection
-import java.sql.Driver
-import java.sql.DriverManager
 
 import javax.sql.DataSource
 
-import org.apache.commons.dbcp.BasicDataSource
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
@@ -152,7 +150,7 @@ class DataSourceGrailsPlugin {
         String desc = isDefault ? 'data source' : "data source '$datasourceName'"
         log.info "[RuntimeConfiguration] Configuring $desc for environment: $Environment.current"
 
-        Class dsClass = pooled ? BasicDataSource : readOnly ? ReadOnlyDriverManagerDataSource : DriverManagerDataSource
+        Class dsClass = pooled ? TomcatDataSource : readOnly ? ReadOnlyDriverManagerDataSource : DriverManagerDataSource
 
         def bean = "$unproxiedName"(dsClass, parentConfig)
         if (pooled) {

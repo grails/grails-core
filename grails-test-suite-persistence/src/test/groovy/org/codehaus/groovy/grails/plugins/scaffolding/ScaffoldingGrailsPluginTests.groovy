@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins.scaffolding
 
 import grails.util.GrailsUtil
 
-import org.apache.commons.dbcp.BasicDataSource
+import org.apache.tomcat.jdbc.pool.DataSource
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
@@ -99,7 +99,7 @@ class MockHibernateGrailsPlugin {
     def artefacts = [new AnnotationDomainClassArtefactHandler()]
     def loadAfter = ['controllers']
     def doWithSpring = {
-        dataSource(BasicDataSource) {
+        dataSource(DataSource) {
             driverClassName = 'org.h2.Driver'
             url = 'jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000'
             username = 'sa'
