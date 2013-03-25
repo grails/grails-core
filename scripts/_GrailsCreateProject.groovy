@@ -31,9 +31,13 @@ includeTargets << grailsScript("IntegrateWith")
 
 grailsAppName = ""
 projectType = "app"
+boolean skipTemplates = false
 
 target(createApp: "Creates a Grails application for the given name") {
     depends(parseArguments, appName)
+
+    if (argsMap['skip-templates']) skipTemplates = true
+    
     initProject()
 
     // Create a message bundle to get the user started.
@@ -99,8 +103,8 @@ target(createPlugin: "The implementation target") {
 target(initProject: "Initialise an application or plugin project") {
     depends(createStructure, updateAppProperties)
 
-    grailsUnpack(dest: basedir, src: "grails-shared-files.jar")
-    grailsUnpack(dest: basedir, src: "grails-$projectType-files.jar")
+    grailsUnpack(dest: basedir, src: "grails-shared-files.jar", skipTemplates: skipTemplates)
+    grailsUnpack(dest: basedir, src: "grails-$projectType-files.jar", skipTemplates: skipTemplates)
     integrateEclipse()
 
     // make sure Grails central repo is prepped for default plugin set installation
