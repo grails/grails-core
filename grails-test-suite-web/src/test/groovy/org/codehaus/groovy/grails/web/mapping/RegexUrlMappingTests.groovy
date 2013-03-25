@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.springframework.core.io.*
 import grails.util.GrailsWebUtil
-import org.springframework.mock.web.MockServletContext
+
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException
+import org.springframework.core.io.ByteArrayResource
 
 class RegexUrlMappingTests extends AbstractGrailsMappingTests {
 
@@ -124,8 +124,8 @@ mappings {
         assertEquals "/blog/foo/2007", m.createURL(entry: "foo", year: 2007, null)
         assertEquals "/blog/foo", m.createURL(entry: "foo", "utf-8")
         assertEquals "/blog/foo", m.createURL(entry: "foo", null)
-        assertEquals '/blog/My%20$10', m.createURL(entry: 'My $10', "utf-8")
-        assertEquals '/blog/My%20$temp', m.createURL(entry: 'My $temp', "utf-8")
+        assertEquals '/blog/My%20%2410', m.createURL(entry: 'My $10', "utf-8")
+        assertEquals '/blog/My%20%24temp', m.createURL(entry: 'My $temp', "utf-8")
         assertEquals "/blog/foo?day=24", m.createURL(entry: "foo", day: 24, "utf-8")
         shouldFail { m.createURL([:], "utf-8") }
 
@@ -150,7 +150,6 @@ mappings {
             m.createURL(controller:"myFiles",action:"index", prefix:"source", "utf-8")
         }
     }
-
 
     void testCreateUrlWithFragment() {
         GrailsWebUtil.bindMockWebRequest()
@@ -186,7 +185,6 @@ mappings {
         def m8 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null, null, null, null, servletContext)
         def m9 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null, null, null, null, servletContext)
         def m10 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null, null, null, null, servletContext)
-
 
         assertTrue m1.compareTo(m2) > 0
         assertTrue m1.compareTo(m3) > 0

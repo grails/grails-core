@@ -418,4 +418,9 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         template = '<g:external uri="/images/icons/iphone-icon.png" type="appleicon"/>'
         assertOutputEquals '<link href="/images/icons/iphone-icon.png" rel="apple-touch-icon"/>\r\n', template
     }
+
+    void testGRAILS9742() {
+        def template = '<g:createLink controller="foo" action="bar" id="|prop:8888" />'
+        assertOutputEquals '/foo/bar/%7Cprop%3A8888?requestDataValueProcessorParamName=paramValue', template
+    }
 }
