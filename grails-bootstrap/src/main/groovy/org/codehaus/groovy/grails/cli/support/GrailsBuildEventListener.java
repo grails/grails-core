@@ -252,14 +252,12 @@ public class GrailsBuildEventListener implements BuildListener {
     }
 
     protected void addGrailsBuildListener(String listenerClassName) {
-        Class<?> listenerClass;
         try {
-            listenerClass = classLoader.loadClass(listenerClassName);
+            addGrailsBuildListener(classLoader.loadClass(listenerClassName));
         }
         catch (ClassNotFoundException e) {
             throw new RuntimeException("Could not load grails build listener class", e);
         }
-        addGrailsBuildListener(listenerClass);
     }
 
     @SuppressWarnings("rawtypes")

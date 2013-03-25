@@ -84,15 +84,16 @@ class GrailsProjectRunner extends BaseSettingsApi {
             return false
         }
     }
+
     @CompileStatic
     private void initialize(GrailsProjectPackager projectPackager, GrailsProjectWarCreator warCreator, ClassLoader classLoader) {
         this.projectPackager = projectPackager
         this.warCreator = warCreator
         this.eventListener = warCreator.eventListener
+        this.classLoader = classLoader
         webXmlFile = buildSettings.webXmlLocation
         basedir = buildSettings.baseDir.absolutePath
         warName = warCreator.configureWarName()
-        this.classLoader = classLoader
     }
 
     /**
@@ -130,13 +131,13 @@ class GrailsProjectRunner extends BaseSettingsApi {
     @CompileStatic
     private EmbeddableServerFactory loadServerFactory() {
         serverContextPath = projectPackager.configureServerContextPath()
-        this.config = projectPackager.createConfig()
+        config = projectPackager.createConfig()
 
         def load = { String name -> classLoader.loadClass(name).newInstance() }
 
         String defaultServer = "org.grails.plugins.tomcat.TomcatServerFactory"
         def containerClass = getPropertyValue("grails.server.factory", defaultServer)
-        EmbeddableServerFactory serverFactory = null
+        EmbeddableServerFactory serverFactory
         try {
             serverFactory = createServerFactory(load, containerClass, serverFactory)
         }
@@ -154,7 +155,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
     }
 
     private EmbeddableServerFactory createServerFactory(Closure<Object> load, containerClass, EmbeddableServerFactory serverFactory) {
-        serverFactory = (EmbeddableServerFactory) load(containerClass.toString())
+        serverFactory = load(containerClass.toString())
         if (serverFactory instanceof BuildSettingsAware) {
             ((BuildSettingsAware) serverFactory).buildSettings = buildSettings
         }
@@ -184,7 +185,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
      *   port - The network port the server is running on (used to display the URL) (required).
      *   scheme - The network scheme to display in the URL (optional; defaults to "http").
      */
-    EmbeddableServer runServer( Map args ) {
+    EmbeddableServer runServer(Map args) {
         try {
             eventListener.triggerEvent("StatusUpdate","Running Grails application")
             def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
