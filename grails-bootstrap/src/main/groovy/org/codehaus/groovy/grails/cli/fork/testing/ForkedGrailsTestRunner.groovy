@@ -46,7 +46,7 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
     @Override
     protected ExecutionContext createExecutionContext() {
-        return new TestExecutionContext()
+        return new TestExecutionContext(this)
     }
 
     @Override
@@ -126,6 +126,10 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
 class TestExecutionContext extends ExecutionContext {
     private static final long serialVersionUID = 1
+
+    TestExecutionContext(ForkedGrailsProcess process) {
+        super(process)
+    }
 
     @Override
     protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
