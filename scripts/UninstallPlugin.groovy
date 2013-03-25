@@ -21,29 +21,14 @@
  *
  * @since 1.1
  */
-includeTargets << grailsScript("_GrailsPlugins")
 
-includePluginJarsOnClasspath=false
+target(uninstallPlugin: "Uninstalls a plug-in for a given name") {
 
-target(uninstallPlugin:"Uninstalls a plug-in for a given name") {
-    depends(checkVersion, parseArguments, clean)
+    grailsConsole.warn """
+As of Grails 2.3 it is not possible to install or uninstall a plugin using a script.
 
-    if (argsMap['global']) {
-        globalInstall = true
-    }
-
-    def pluginArgs = argsMap['params']
-    if (pluginArgs) {
-
-        def pluginName = pluginArgs[0]
-        def pluginRelease = pluginArgs[1]
-
-        uninstallPluginForName(pluginName, pluginRelease)
-
-    }
-    else {
-        event("StatusError", ["You need to specify the plug-in name and (optional) version, e.g. \"grails uninstall-plugin feeds 1.0\""])
-    }
+To remove a plugin, delete it from BuildConfig.groovy and/or application.properties.
+"""
 }
 
 setDefaultTarget("uninstallPlugin")

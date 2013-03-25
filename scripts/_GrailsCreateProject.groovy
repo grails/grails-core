@@ -25,7 +25,9 @@ import grails.util.Metadata
  * @since 0.4
  */
 
-includeTargets << grailsScript("_GrailsPlugins")
+includeTargets << grailsScript("_GrailsClean")
+includeTargets << grailsScript("_GrailsPackage")
+includeTargets << grailsScript("_PluginDependencies")
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("IntegrateWith")
 

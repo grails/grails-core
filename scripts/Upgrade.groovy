@@ -25,7 +25,9 @@
 
 import grails.util.Metadata
 
-includeTargets << grailsScript("_GrailsPlugins")
+includeTargets << grailsScript("_GrailsClean")
+includeTargets << grailsScript("_GrailsPackage")
+includeTargets << grailsScript("_PluginDependencies")
 
 UNMODIFIED_CHECKSUMS = [indexgsp:['e9f4d3450ba02fe92d55f4ae4b53dee8', 'e9f4d3450ba02fe92d55f4ae4b53dee8', '77f5ed5c2fca586a9ff1dc8e7beeb85b', '5313f072b2ed10129a446d5f648d8b41'],
                         errorgsp:['473b673fb3f04a60412ace1b7bc12a8c', '473b673fb3f04a60412ace1b7bc12a8c', '473b673fb3f04a60412ace1b7bc12a8c', '473b673fb3f04a60412ace1b7bc12a8c'],

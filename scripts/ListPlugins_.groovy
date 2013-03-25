@@ -25,8 +25,9 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
  * @since 0.5.5
  */
 
-includeTargets << grailsScript("_GrailsPlugins")
-
+includeTargets << grailsScript("_GrailsClean")
+includeTargets << grailsScript("_GrailsPackage")
+includeTargets << grailsScript("_PluginDependencies")
 
 target(listPlugins: "Implementation target") {
     depends(parseArguments,configureProxy)
@@ -35,7 +36,7 @@ target(listPlugins: "Implementation target") {
         printInstalledPlugins()
     }
     else {
-        pluginsList = grailsSettings.dependencyManager.downloadPluginList(new File("$grailsWorkDir/plugins-list-grailsCentral.xml"))
+        pluginsList = grailsSettings.dependencyManager.downloadPluginList(new File(grailsWorkDir, "plugins-list-grailsCentral.xml"))
         printRemotePluginList("grailsCentral")
         printInstalledPlugins()
     }

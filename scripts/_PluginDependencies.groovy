@@ -15,8 +15,6 @@
  */
 
 import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
-import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
-import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 import org.codehaus.groovy.grails.resolve.PluginInstallEngine
 
 /**
@@ -35,12 +33,10 @@ includeTargets << grailsScript("_GrailsProxy")
 
 // Properties
 pluginsList = null
-globalInstall = false
-pluginsBase = "${grailsWorkDir}/plugins".toString().replaceAll('\\\\','/')
 
 // Targets
-target(resolveDependencies:"Resolve plugin dependencies") {
-    depends(parseArguments, initInplacePlugins)
+target(resolveDependencies: "Resolve plugin dependencies") {
+    depends(parseArguments, classpath)
     // we get the 'build' and 'test' dependencies because that is the scope that
     // includes all possible plugins in all scopes
     def pluginZips = grailsSettings.pluginTestDependencies + grailsSettings.pluginBuildDependencies
@@ -53,25 +49,7 @@ target(resolveDependencies:"Resolve plugin dependencies") {
     installEngine.checkPluginsToUninstall(pluginZips)
 }
 
-target(initInplacePlugins: "Generates the plugin.xml descriptors for inplace plugins.") {
-    depends(classpath)
-}
-
-/**
- * Generates the 'plugin.xml' file for a plugin. Returns an instance
- * of the plugin descriptor.
- */
-generatePluginXml = { File descriptor, boolean compilePlugin = true ->
-    projectPackager.generatePluginXml(descriptor, compilePlugin)
-}
-
-target(loadPluginsAsync:"Asynchronously loads plugins") {
-    Thread.start {
-        loadPlugins()
-    }
-}
-
-target(loadPlugins:"Loads Grails' plugins") {
+target(loadPlugins: "Loads Grails' plugins") {
     def pluginLoader = new GrailsProjectPluginLoader(grailsApp, classLoader, buildSettings, eventListener)
     pluginManager = pluginLoader.loadPlugins()
     grailsApp = pluginLoader.grailsApplication
@@ -94,30 +72,6 @@ runPluginScript = { File scriptFile, fullPluginName, msg ->
     catch(e) {
         grailsConsole.error "Error executing plugin $fullPluginName script: $scriptFile"
         exit 1
-    }
-}
-
-readMetadataFromZip = { String zipLocation, pluginFile=zipLocation ->
-    def installEngine = createPluginInstallEngine()
-    installEngine.readMetadataFromZip(zipLocation)
-}
-
-/**
- * Uninstalls a plugin for the given name and version
- */
-uninstallPluginForName = { name, version=null ->
-    def pluginInstallEngine = createPluginInstallEngine()
-    pluginInstallEngine.uninstallPlugin name, version
-}
-
-/**
- * Installs a plugin for the given name and optional version
- */
-installPluginForName = { String name, String version = null ->
-    PluginInstallEngine pluginInstallEngine = createPluginInstallEngine()
-    if (name) {
-        event("InstallPluginStart", ["$name-$version"])
-        pluginInstallEngine.installPlugin(name, version, globalInstall)
     }
 }
 
@@ -159,57 +113,4 @@ private PluginInstallEngine createPluginInstallEngine() {
 protected void resetClasspath() {
     classpathSet = false
     classpath()
-}
-
-doInstallPluginFromURL = { URL url ->
-    withPluginInstall {
-        def installEngine = createPluginInstallEngine()
-        installEngine.installPlugin url, globalInstall
-    }
-}
-
-doInstallPluginZip = { File file ->
-    withPluginInstall {
-        def installEngine = createPluginInstallEngine()
-        installEngine.installPlugin file, globalInstall, true
-    }
-}
-
-doInstallPlugin = { pluginName, pluginVersion = null ->
-    withPluginInstall {
-        def installEngine = createPluginInstallEngine()
-        installEngine.installPlugin pluginName, pluginVersion, globalInstall
-    }
-}
-
-eachRepository = { Closure callable ->
-    def dependencyManager = grailsSettings.dependencyManager
-    if(dependencyManager instanceof IvyDependencyManager) {
-        for (resolver in dependencyManager.chainResolver.resolvers) {
-            if (resolver instanceof GrailsRepoResolver) {
-                pluginsList = resolver.getPluginList(new File(grailsWorkDir, "plugins-list-${resolver.name}.xml"))
-                if (pluginsList != null) {
-                    callable(resolver.name, resolver.repositoryRoot)
-                } else {
-                    grailsConsole.error "An error occurred resolving plugin list from resolver [${resolver.name} - ${resolver.repositoryRoot}]."
-                }
-            }
-        }        
-    }
-    else {
-        dependencyManager.repositories.each { r ->
-            callable.call(r.id, r.url)
-        }
-    }
-
-}
-
-private withPluginInstall(Closure callable) {
-    try {
-        fullPluginName = callable.call()
-    }
-    catch (e) {
-        logError("Error installing plugin: ${e.message}", e)
-        exit(1)
-    }
 }
