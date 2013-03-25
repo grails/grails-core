@@ -30,5 +30,5 @@ class Identity {
     Class type = Long
     Map params = [:]
 
-    String toString() { "id[generator:$generator, column:$id, type:$type]" }
+    String toString() { "id[generator:$generator, column:$column, type:$type]" }
 }
