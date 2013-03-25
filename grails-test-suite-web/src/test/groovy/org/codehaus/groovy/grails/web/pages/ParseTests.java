@@ -48,8 +48,8 @@ public class ParseTests extends TestCase {
             + "public static final String CONTENT_TYPE = 'text/html;charset=UTF-8'\n"
             + "public static final long LAST_MODIFIED = 0L\n"
             + "public static final String DEFAULT_CODEC = 'HTML'\n"
-            + "public static final String TEMPLATE_CODEC = 'raw'\n"
-            + "public static final String PAGE_CODEC = 'raw'\n" +
+            + "public static final String TEMPLATE_CODEC = 'none'\n"
+            + "public static final String PAGE_CODEC = 'none'\n" +
             "}\n";
 
     protected String makeImports() {
