@@ -57,7 +57,7 @@ class AetherDependencyReport implements DependencyReport {
             }
         }
         jarFiles = jarFiles.findAll { File it -> !it.name.endsWith(".zip") }
-        return jarFiles
+        return jarFiles as List
     }
     String getClasspath() {
         resolveResult.getClassPath()
@@ -99,6 +99,6 @@ class AetherDependencyReport implements DependencyReport {
     }
 
     File[] getFiles() {
-        resolveResult.getFiles()
+        resolveResult.getFiles() as File[]
     }
 }
