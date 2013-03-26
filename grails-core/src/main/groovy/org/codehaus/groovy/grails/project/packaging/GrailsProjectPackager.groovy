@@ -378,8 +378,11 @@ class GrailsProjectPackager extends BaseSettingsApi {
         }
 
         def ant = new GrailsConsoleAntBuilder(ant.project)
-        ant.native2ascii(src: "$basedir/grails-app/i18n", dest: i18nDir,
-                         includes: "**/*.properties", encoding: "UTF-8")
+        File grailsAppI18n = new File(basedir, 'grails-app/i18n')
+        if (grailsAppI18n.exists()) {
+            ant.native2ascii(src: grailsAppI18n.path, dest: i18nDir,
+                             includes: "**/*.properties", encoding: "UTF-8")
+        }
 
         PluginBuildSettings settings = pluginSettings
         def i18nPluginDirs = settings.pluginI18nDirectories
