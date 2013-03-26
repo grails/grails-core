@@ -193,16 +193,8 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         touch(file: "${basedir}/grails-app/i18n/messages.properties")
     }
 
-    // Add the app name and Grails version to the metadata.
-    def newMetadata = ["app.name": "$grailsAppName", "app.grails.version": "$grailsVersion"]
-    for (pluginEntry in grailsSettings.defaultPluginMap) {
-        def pluginName = pluginEntry.key
-        def pluginKey = "plugins.$pluginName".toString()
-        if (metadata.containsKey(pluginKey)) {
-            newMetadata[pluginKey] = pluginEntry.value
-        }
-    }
-    updateMetadata(metadata, newMetadata)
+    Metadata.current.setGrailsVersion grailsVersion
+    Metadata.current.persist()
 
     // proceed with plugin-specific upgrade logic contained in 'scripts/_Upgrade.groovy' under every plugin's root
     def pluginDirs = pluginSettings.getPluginDirectories()

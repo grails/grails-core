@@ -166,14 +166,12 @@ public class Metadata extends Properties {
      */
     public static Metadata getInstance(File file) {
         Reference<Metadata> ref = holder.get();
-        if(ref != null) {
+        if (ref != null) {
             Metadata metadata = ref.get();
-            if(metadata != null && metadata.getMetadataFile() != null && metadata.getMetadataFile().equals(file)) {
+            if (metadata != null && metadata.getMetadataFile() != null && metadata.getMetadataFile().equals(file)) {
                 return metadata;
             }
-            else {
-                createAndBindNew(file);
-            }
+            createAndBindNew(file);
         }
         return createAndBindNew(file);
     }
@@ -209,6 +207,9 @@ public class Metadata extends Properties {
      */
     public String getGrailsVersion() {
         return (String) get(APPLICATION_GRAILS_VERSION);
+    }
+    public void setGrailsVersion(String version) {
+        put(APPLICATION_GRAILS_VERSION, version);
     }
 
     /**
@@ -264,23 +265,20 @@ public class Metadata extends Properties {
      */
     public void persist() {
 
-        if (propertiesHaveNotChanged()) {
+        if (propertiesHaveNotChanged() || metadataFile == null) {
             return;
         }
 
-        if (metadataFile != null) {
-            FileOutputStream out = null;
-
-            try {
-                out = new FileOutputStream(metadataFile);
-                store(out, "Grails Metadata file");
-            }
-            catch (Exception e) {
-                throw new RuntimeException("Error persisting metadata to file ["+metadataFile+"]: " + e.getMessage(), e);
-            }
-            finally {
-                closeQuietly(out);
-            }
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(metadataFile);
+            store(out, "Grails Metadata file");
+        }
+        catch (Exception e) {
+            throw new RuntimeException("Error persisting metadata to file [" + metadataFile + "]: " + e.getMessage(), e);
+        }
+        finally {
+            closeQuietly(out);
         }
     }
 
@@ -288,20 +286,14 @@ public class Metadata extends Properties {
      * @return Returns true if these properties have not changed since they were loaded
      */
     public boolean propertiesHaveNotChanged() {
-        Metadata transientMetadata = this;
-
         Metadata allStringValuesMetadata = new Metadata();
-        Map<Object,Object> transientMap = transientMetadata;
-        for (Map.Entry<Object, Object> entry : transientMap.entrySet()) {
+        for (Map.Entry<Object, Object> entry : entrySet()) {
             if (entry.getValue() != null) {
                 allStringValuesMetadata.put(entry.getKey().toString(), entry.getValue().toString());
             }
         }
 
-        Metadata persistedMetadata = Metadata.reload();
-        boolean result = allStringValuesMetadata.equals(persistedMetadata);
-        holder.set(new SoftReference<Metadata>(transientMetadata));
-        return result;
+        return allStringValuesMetadata.equals(new Metadata(metadataFile));
     }
 
     /**
