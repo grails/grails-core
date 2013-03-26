@@ -421,6 +421,6 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
     void testGRAILS9742() {
         def template = '<g:createLink controller="foo" action="bar" id="|prop:8888" />'
-        assertOutputEquals '/foo/bar/%7Cprop%3A8888?requestDataValueProcessorParamName=paramValue', template
+        assertOutputEquals '/foo/bar/%7Cprop%3A8888', template
     }
 }
