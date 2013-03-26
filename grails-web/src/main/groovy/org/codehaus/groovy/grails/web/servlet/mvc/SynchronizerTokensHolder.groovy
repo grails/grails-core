@@ -33,7 +33,12 @@ class SynchronizerTokensHolder implements Serializable {
     protected Map<String, Set<UUID>> currentTokens = [:]
 
     boolean isValid(String url, String token) {
-        getTokens(url).contains UUID.fromString(token)
+        try {
+            getTokens(url).contains UUID.fromString(token)
+        }
+        catch (IllegalArgumentException e) {
+            false
+        }
     }
 
     String generateToken(String url) {
@@ -49,7 +54,10 @@ class SynchronizerTokensHolder implements Serializable {
     void resetToken(String url, String token) {
         if (url && token) {
             final Set set = getTokens(url)
-            set.remove UUID.fromString(token)
+            try {
+                set.remove UUID.fromString(token)
+            }
+            catch (IllegalArgumentException ignored) {}
             if (set.isEmpty()) {
                 currentTokens.remove(url)
             }
