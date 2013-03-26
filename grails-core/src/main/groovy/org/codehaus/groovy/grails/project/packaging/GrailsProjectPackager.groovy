@@ -31,7 +31,6 @@ import java.util.concurrent.Future
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.compiler.PackagingException
@@ -498,18 +497,6 @@ class GrailsProjectPackager extends BaseSettingsApi {
     void packageTlds() {
         // We don't know until runtime what servlet version to use, so install the relevant TLDs now
         copyGrailsResources("$basedir/web-app/WEB-INF/tld", "src/war/WEB-INF/tld/${servletVersion}/*", false)
-    }
-
-    void packageTemplates(scaffoldDir) {
-        ant.mkdir(dir:scaffoldDir)
-        if (new File(basedir, "src/templates/scaffolding").exists()) {
-            ant.copy(todir:scaffoldDir, overwrite:true) {
-                fileset(dir:"$basedir/src/templates/scaffolding", includes:"**")
-            }
-        }
-        else {
-            copyGrailsResources(scaffoldDir, "src/grails/templates/scaffolding/*")
-        }
     }
 
     /**

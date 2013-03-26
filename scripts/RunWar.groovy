@@ -29,8 +29,6 @@ scriptScope = BuildScope.WAR
 includeTargets << grailsScript("_GrailsWar")
 includeTargets << grailsScript("_GrailsRun")
 
-shouldPackageTemplates = true
-
 target ('default': "Runs a Grails application's WAR in an embedded web server") {
     depends(checkVersion, configureProxy, parseArguments)
 

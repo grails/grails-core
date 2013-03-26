@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.plugins.services
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.scaffolding.MockHibernateGrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockHibernateGrailsPlugin
 import org.springframework.context.ApplicationContext
 import org.springframework.transaction.NoTransactionException
 

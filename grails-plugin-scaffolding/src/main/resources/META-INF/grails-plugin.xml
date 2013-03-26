@@ -1,3 +1,0 @@
-<plugin name='scaffolding'>
-  <type>org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin</type>
-</plugin>

@@ -12,10 +12,8 @@ dependencies {
                 project(':grails-plugin-servlets'),
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-services'),
-                project(':grails-plugin-scaffolding'),
                 project(':grails-plugin-controllers'),
                 project(':grails-bootstrap'),
-                project(':grails-crud'),
                 project(':grails-plugin-log4j')
 
     testCompile "org.grails:grails-datastore-gorm-hibernate:$datastoreVersion", {

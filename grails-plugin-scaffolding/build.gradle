@@ -1,4 +1,0 @@
-dependencies {
-    compile project(":grails-crud")
-    runtime project(":grails-resources")
-}

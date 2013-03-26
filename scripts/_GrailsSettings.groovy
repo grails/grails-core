@@ -53,7 +53,6 @@ projectWatcher = null
 
 isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
 
-shouldPackageTemplates = false
 config = new ConfigObject()
 
 // Pattern that matches artefacts in the 'grails-app' directory.

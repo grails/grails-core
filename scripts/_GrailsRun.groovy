@@ -15,7 +15,7 @@
  */
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
-import org.codehaus.groovy.grails.project.container.GrailsProjectRunner;
+import org.codehaus.groovy.grails.project.container.GrailsProjectRunner
 
 /**
  * Executes Grails using an embedded server.
@@ -48,8 +48,6 @@ recompileFrequency = recompileFrequency ? recompileFrequency.toInteger() : 3
 // Should the reloading agent be enabled? By default, yes...
 isReloading = System.getProperty("grails.reload.enabled")
 isReloading = isReloading != null ? isReloading.toBoolean() : true
-
-shouldPackageTemplates = true
 
 // This isn't used within this script but may come in handy for scripts
 // that depend on this one.

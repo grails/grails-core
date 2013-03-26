@@ -1,0 +1,27 @@
+package org.codehaus.groovy.grails.plugins
+
+import grails.util.GrailsUtil
+
+import org.apache.tomcat.jdbc.pool.DataSource
+import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
+import org.springframework.jdbc.datasource.DataSourceTransactionManager
+
+class MockHibernateGrailsPlugin {
+    
+    def version = GrailsUtil.grailsVersion
+    def dependsOn = [dataSource: version, i18n: version, core: version, domainClass: version]
+    
+    def artefacts = [new AnnotationDomainClassArtefactHandler()]
+    def loadAfter = ['controllers']
+    def doWithSpring = {
+        dataSource(DataSource) {
+            driverClassName = 'org.h2.Driver'
+            url = 'jdbc:h2:mem:grailsDB;MVCC=TRUE;LOCK_TIMEOUT=10000'
+            username = 'sa'
+            password = ''
+        }
+
+        transactionManager(DataSourceTransactionManager, ref('dataSource'))
+    }
+}
+    

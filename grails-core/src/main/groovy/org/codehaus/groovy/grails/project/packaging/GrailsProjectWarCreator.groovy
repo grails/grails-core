@@ -189,9 +189,6 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                 fileset(dir:"${resourcesDirPath}", includes:"log4j.properties")
             }
 
-            def scaffoldDir = "${stagingDir}/WEB-INF/templates/scaffolding"
-            projectPackager.packageTemplates(scaffoldDir)
-
             // Copy the project's dependencies (JARs mainly) to the staging area.
             if (includeJars) {
                 ant.copy(todir:"${stagingDir}/WEB-INF/lib", preservelastmodified:true) {

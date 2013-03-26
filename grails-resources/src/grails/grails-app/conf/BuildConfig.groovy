@@ -52,6 +52,7 @@ grails.project.dependency.resolution = {
         build ":tomcat:7.0.37.BUILD-SNAPSHOT"
         runtime ":jquery:1.9.1"
         runtime ":resources:1.2"
+        compile ":scaffolding:1.0.BUILD-SNAPSHOT"
 
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0"
