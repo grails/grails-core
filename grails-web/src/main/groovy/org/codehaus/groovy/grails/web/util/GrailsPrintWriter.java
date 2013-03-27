@@ -31,7 +31,6 @@ import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriter;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
-import org.codehaus.groovy.grails.support.encoding.WriterEncodedAppender;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 import org.codehaus.groovy.runtime.GStringImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -507,6 +506,10 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
     }
 
     public void write(final Writable writable) {
+        writeWritable(writable);
+    }
+
+    protected void writeWritable(final Writable writable) {
         usageFlag = true;
         if (trouble)
             return;
@@ -520,20 +523,20 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
     }
 
     public void print(final Writable writable) {
-        write(writable);
+        writeWritable(writable);
     }
 
     public GrailsPrintWriter leftShift(final Writable writable) {
-        write(writable);
+        writeWritable(writable);
         return this;
     }
 
     public void print(final GStringImpl gstring) {
-        write(gstring);
+        writeWritable(gstring);
     }
 
     public GrailsPrintWriter leftShift(final GStringImpl gstring) {
-        write(gstring);
+        writeWritable(gstring);
         return this;
     }
 
