@@ -25,7 +25,8 @@ import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
 
 /**
- * Base class that deals with the setup logic needed in order to run a Grails build system component (GrailsProjectCompiler, GrailsProjectLoader, GrailsProjectRunner etc.) in a forked process
+ * Base class that deals with the setup logic needed to run a Grails build system component
+ * (GrailsProjectCompiler, GrailsProjectLoader, GrailsProjectRunner etc.) in a forked process.
  *
  * @author Graeme Rocher
  * @since 2.3
@@ -106,7 +107,7 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
 
     protected Binding createExecutionContext(BuildSettings buildSettings, PluginBuildSettings pluginSettings) {
         final scriptBinding = new Binding()
-        ScriptBindingInitializer.initBinding(scriptBinding, buildSettings, (URLClassLoader) forkedClassLoader, GrailsConsole.getInstance())
+        ScriptBindingInitializer.initBinding(scriptBinding, buildSettings, (URLClassLoader) forkedClassLoader, GrailsConsole.getInstance(), false)
         scriptBinding.setVariable("pluginSettings", pluginSettings)
         scriptBinding.setVariable(ScriptBindingInitializer.GRAILS_SETTINGS, buildSettings)
         scriptBinding.setVariable(ScriptBindingInitializer.ARGS_MAP, executionContext.argsMap)

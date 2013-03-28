@@ -64,29 +64,32 @@ public class ScriptBindingInitializer {
     private PluginPathDiscoverySupport pluginPathSupport;
     private CommandLine commandLine;
     private URLClassLoader classLoader;
+    private boolean interactive;
 
-    public ScriptBindingInitializer(CommandLine commandLine, URLClassLoader classLoader, BuildSettings settings, PluginPathDiscoverySupport pluginPathSupport, boolean interactive) {
+    public ScriptBindingInitializer(CommandLine commandLine, URLClassLoader classLoader, BuildSettings settings,
+            PluginPathDiscoverySupport pluginPathSupport, boolean interactive) {
         this.commandLine = commandLine;
         this.settings = settings;
         this.pluginPathSupport = pluginPathSupport;
         this.classLoader = classLoader;
+        this.interactive = interactive;
     }
 
     /**
-      * Prep the binding. We add the location of GRAILS_HOME under
-      * the variable name "grailsHome". We also add a closure that
-      * should be used with "includeTargets <<" - it takes a string
-      * and returns either a file containing the named Grails script
-      * or the script class.
-      *
-      * So, this:
-      *
-      *   includeTargets << grailsScript("Init")
-      *
-      * will load the "Init" script from $GRAILS_HOME/scripts if it
-      * exists there; otherwise it will load the Init class.
-      */
-     @SuppressWarnings("unchecked")
+     * Prep the binding. We add the location of GRAILS_HOME under
+     * the variable name "grailsHome". We also add a closure that
+     * should be used with "includeTargets <<" - it takes a string
+     * and returns either a file containing the named Grails script
+     * or the script class.
+     *
+     * So, this:
+     *
+     *   includeTargets << grailsScript("Init")
+     *
+     * will load the "Init" script from $GRAILS_HOME/scripts if it
+     * exists there; otherwise it will load the Init class.
+     */
+    @SuppressWarnings("unchecked")
     public GantBinding initBinding(final GantBinding binding, String scriptName) {
          BuildSettings buildSettings = settings;
          Closure<?> c = buildSettings.getGrailsScriptClosure();
@@ -101,13 +104,12 @@ public class ScriptBindingInitializer {
          final GrailsConsole grailsConsole = GrailsConsole.getInstance();
          final File basedir = buildSettings.getBaseDir();
 
-         BaseSettingsApi cla = initBinding(binding, buildSettings, classLoader, grailsConsole);
+         BaseSettingsApi cla = initBinding(binding, buildSettings, classLoader, grailsConsole, interactive);
 
          // Enable UAA for run-app because it is likely that the container will be running long enough to report useful info
          if (scriptName.equals("RunApp")) {
              cla.enableUaa();
          }
-
 
          // setup Ant alias for older scripts
          binding.setVariable("Ant", binding.getVariable("ant"));
@@ -157,7 +159,8 @@ public class ScriptBindingInitializer {
          return binding;
      }
 
-    public static BaseSettingsApi initBinding(Binding binding, BuildSettings buildSettings, URLClassLoader classLoader, GrailsConsole grailsConsole) {
+    public static BaseSettingsApi initBinding(Binding binding, BuildSettings buildSettings, URLClassLoader classLoader,
+            GrailsConsole grailsConsole, boolean interactive) {
         binding.setVariable(GRAILS_CONSOLE, grailsConsole);
         binding.setVariable(GRAILS_SETTINGS, buildSettings);
 
@@ -202,7 +205,7 @@ public class ScriptBindingInitializer {
             ((GantBinding)binding).addBuildListener(buildEventListener);
         }
 
-        final BaseSettingsApi cla = new BaseSettingsApi(buildSettings, buildEventListener, false);
+        final BaseSettingsApi cla = new BaseSettingsApi(buildSettings, buildEventListener, interactive);
 
         cla.makeApiAvailableToScripts(binding, cla);
         cla.makeApiAvailableToScripts(binding, cla.getPluginSettings());
