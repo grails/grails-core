@@ -53,7 +53,7 @@ class IvyDependencyReport implements DependencyReport {
             }
         }
         jarFiles = jarFiles.findAll { File it -> it.name.endsWith(".jar") }
-        return jarFiles
+        return jarFiles as List
     }
 
     List<ResolvedArtifactReport> getResolvedArtifacts() {
