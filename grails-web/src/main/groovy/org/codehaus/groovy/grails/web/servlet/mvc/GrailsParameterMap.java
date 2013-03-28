@@ -49,7 +49,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
  * @since Oct 24, 2005
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class GrailsParameterMap extends TypeConvertingMap {
+public class GrailsParameterMap extends TypeConvertingMap  implements Cloneable {
 
     private static final Log LOG = LogFactory.getLog(GrailsParameterMap.class);
     private static final Map<String, String> CACHED_DATE_FORMATS  = new ConcurrentHashMap<String, String>();
