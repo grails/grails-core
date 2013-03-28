@@ -30,6 +30,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Stack;
 
 import jline.ConsoleReader;
@@ -738,6 +739,10 @@ public class GrailsConsole {
                 .fg(DEFAULT);
     }
 
+    public String userInput(String message, List<String> validResponses) {
+        return userInput(message, validResponses.toArray(new String[validResponses.size()]));
+    }
+
     /**
      * Replacement for AntBuilder.input() to eliminate dependency of
      * GrailsScriptRunner on the Ant libraries. Prints a message and
@@ -761,7 +766,7 @@ public class GrailsConsole {
         String question = createQuestion(message, validResponses);
         String response = userInput(question);
         for (String validResponse : validResponses) {
-            if (response != null && response.equalsIgnoreCase(validResponse)) {
+            if (validResponse.equalsIgnoreCase(response)) {
                 return response;
             }
         }
