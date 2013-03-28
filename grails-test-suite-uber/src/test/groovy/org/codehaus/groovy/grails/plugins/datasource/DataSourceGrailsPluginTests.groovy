@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.plugins.datasource
 
 import grails.spring.BeanBuilder
 import grails.util.Holders
+import groovy.sql.Sql
 
 import javax.sql.DataSource
 
@@ -9,9 +10,9 @@ import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
 import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jndi.JndiObjectFactoryBean
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
 
@@ -299,6 +300,9 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         def beanDef = bb.getBeanDefinition('dataSource')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
+        beanDef = bb.getBeanDefinition('dataSourceLazy')
+        assertEquals LazyConnectionDataSourceProxy.name, beanDef.beanClassName
+
         beanDef = bb.getBeanDefinition('dataSourceUnproxied')
         assertEquals TomcatDataSource.name, beanDef.beanClassName
 
@@ -314,6 +318,9 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         // ds2
         beanDef = bb.getBeanDefinition('dataSource_ds2')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
+
+        beanDef = bb.getBeanDefinition('dataSourceLazy_ds2')
+        assertEquals LazyConnectionDataSourceProxy.name, beanDef.beanClassName
 
         beanDef = bb.getBeanDefinition('dataSourceUnproxied_ds2')
         assertEquals 'pooled false, readOnly true', ReadOnlyDriverManagerDataSource.name, beanDef.beanClassName
@@ -331,6 +338,9 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         beanDef = bb.getBeanDefinition('dataSource_ds3')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
 
+        beanDef = bb.getBeanDefinition('dataSourceLazy_ds3')
+        assertEquals LazyConnectionDataSourceProxy.name, beanDef.beanClassName
+
         beanDef = bb.getBeanDefinition('dataSourceUnproxied_ds3')
         assertEquals 'pooled default true, readOnly true', TomcatDataSource.name, beanDef.beanClassName
 
@@ -346,6 +356,9 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         // ds4
         beanDef = bb.getBeanDefinition('dataSource_ds4')
         assertEquals TransactionAwareDataSourceProxy.name, beanDef.beanClassName
+
+        beanDef = bb.getBeanDefinition('dataSourceLazy_ds4')
+        assertEquals LazyConnectionDataSourceProxy.name, beanDef.beanClassName
 
         beanDef = bb.getBeanDefinition('dataSourceUnproxied_ds4')
         assertEquals TomcatDataSource.name, beanDef.beanClassName
@@ -370,6 +383,53 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         assertEquals DataSource, beanDef.propertyValues.getPropertyValue('expectedType').value
     }
 
+    void testProxying() {
+
+        def config = new ConfigSlurper().parse('''
+              dataSource {
+                    pooled = true
+                    driverClassName = "org.h2.Driver"
+                    url = "jdbc:h2:mem:testDb1"
+                    username = "sa"
+                    password = ""
+              }
+              dataSource_ds2 {
+                    pooled = true
+                    driverClassName = "org.h2.Driver"
+                    url = "jdbc:h2:tcp://localhost:1234/~/test"
+                    username = "sa"
+                    password = ""
+              }
+        ''')
+
+        def ctx = createBeanBuilder(config).createApplicationContext()
+
+        def dataSource = ctx.dataSource
+        def dataSourceLazy = ctx.dataSourceLazy
+        def dataSourceUnproxied = ctx.dataSourceUnproxied
+        assert dataSource.targetDataSource.is(dataSourceLazy)
+        assert dataSourceLazy.targetDataSource.is(dataSourceUnproxied)
+
+        dataSource.getConnection().close()
+        Sql sql = new Sql(dataSource)
+        sql.execute('create table thing (foo int)')
+
+        def dataSource_ds2 = ctx.dataSource_ds2
+        def dataSourceLazy_ds2 = ctx.dataSourceLazy_ds2
+        def dataSourceUnproxied_ds2 = ctx.dataSourceUnproxied_ds2
+        assert dataSource_ds2.targetDataSource.is(dataSourceLazy_ds2)
+        assert dataSourceLazy_ds2.targetDataSource.is(dataSourceUnproxied_ds2)
+
+        // succeeds because no work is done
+        dataSource_ds2.getConnection().close()
+
+        String message = shouldFail() {
+            sql = new Sql(dataSource_ds2)
+            sql.execute('create table thing (foo int)')
+        }
+        assert message.contains('Connection is broken')
+    }
+        
     // doesn't actually test MVCC, mostly just that it's a valid URL
     void testMvccUrlOption() {
         def config = new ConfigSlurper().parse '''

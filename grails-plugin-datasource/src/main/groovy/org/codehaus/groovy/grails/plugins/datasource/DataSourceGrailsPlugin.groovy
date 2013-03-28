@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
 import org.springframework.beans.factory.BeanIsNotAFactoryException
 import org.springframework.context.ApplicationContext
 import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.util.ClassUtils
@@ -75,6 +76,7 @@ class DataSourceGrailsPlugin {
         boolean isDefault = datasourceName == 'dataSource'
         String suffix = isDefault ? '' : datasourceName[10..-1]
         String unproxiedName = "dataSourceUnproxied$suffix"
+        String lazyName = "dataSourceLazy$suffix"
 
         if (parentCtx?.containsBean(datasourceName)) {
             return
@@ -85,7 +87,8 @@ class DataSourceGrailsPlugin {
                 jndiName = ds.jndiName
                 expectedType = DataSource
             }
-            "$datasourceName"(TransactionAwareDataSourceProxy, ref(unproxiedName))
+            "$lazyName"(LazyConnectionDataSourceProxy, ref(unproxiedName))
+            "$datasourceName"(TransactionAwareDataSourceProxy, ref(lazyName))
             return
         }
 
@@ -96,7 +99,10 @@ class DataSourceGrailsPlugin {
 
         final String hsqldbDriver = "org.hsqldb.jdbcDriver"
         if (hsqldbDriver.equals(driver) && !ClassUtils.isPresent(hsqldbDriver, getClass().classLoader)) {
-            throw new GrailsConfigurationException("Database driver [$hsqldbDriver] for HSQLDB not found. Since Grails 2.0 H2 is now the default database. You need to either add the 'org.h2.Driver' class as your database driver and change the connect URL format (for example 'jdbc:h2:mem:devDb') in DataSource.groovy or add HSQLDB as a dependency of your application.")
+            throw new GrailsConfigurationException("Database driver [" + hsqldbDriver +
+                "] for HSQLDB not found. Since Grails 2.0 H2 is now the default database. You need to either " +
+                "add the 'org.h2.Driver' class as your database driver and change the connect URL format " +
+                "(for example 'jdbc:h2:mem:devDb') in DataSource.groovy or add HSQLDB as a dependency of your application.")
         }
 
         boolean defaultDriver = (driver == "org.h2.Driver")
@@ -157,7 +163,8 @@ class DataSourceGrailsPlugin {
             bean.destroyMethod = "close"
         }
 
-        "$datasourceName"(TransactionAwareDataSourceProxy, ref(unproxiedName))
+        "$lazyName"(LazyConnectionDataSourceProxy, ref(unproxiedName))
+        "$datasourceName"(TransactionAwareDataSourceProxy, ref(lazyName))
     }
 
     String resolvePassword(ds, application) {
