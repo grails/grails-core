@@ -421,14 +421,19 @@ class GrailsProjectPackager extends BaseSettingsApi {
     protected void packageJspFiles() {
         def logic = {
             def ant = new GrailsConsoleAntBuilder(ant.project)
+            File viewsDir = new File(basedir, 'grails-app/views')
+            if (!viewsDir.exists()) {
+                return
+            }
+
             def files = ant.fileScanner {
-                fileset(dir:"$basedir/grails-app/views", includes:"**/*.jsp")
+                fileset(dir: viewsDir, includes:"**/*.jsp")
             }
 
             if (files.iterator().hasNext()) {
                 ant.mkdir(dir:"$basedir/web-app/WEB-INF/grails-app/views")
                 ant.copy(todir:"$basedir/web-app/WEB-INF/grails-app/views") {
-                    fileset(dir:"$basedir/grails-app/views", includes:"**/*.jsp")
+                    fileset(dir: viewsDir, includes:"**/*.jsp")
                 }
             }
         }
