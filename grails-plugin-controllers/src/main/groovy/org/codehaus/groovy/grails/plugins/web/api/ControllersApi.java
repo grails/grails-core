@@ -64,7 +64,7 @@ public class ControllersApi extends CommonWebApi {
     protected transient RenderDynamicMethod render;
     protected transient BindDynamicMethod bind;
     protected transient WithFormMethod withFormMethod;
-    protected transient ForwardMethod forwardMethod = new ForwardMethod();
+    protected transient ForwardMethod forwardMethod;
 
     public ControllersApi() {
         this(null);
@@ -72,6 +72,11 @@ public class ControllersApi extends CommonWebApi {
 
     public ControllersApi(GrailsPluginManager pluginManager) {
         super(pluginManager);
+        redirect = new RedirectDynamicMethod();
+        render = new RenderDynamicMethod();
+        bind = new BindDynamicMethod();
+        withFormMethod = new WithFormMethod();
+        forwardMethod = new ForwardMethod();
     }
 
     public static ApplicationContext getStaticApplicationContext() {
@@ -84,19 +89,19 @@ public class ControllersApi extends CommonWebApi {
     }
 
     public void setGspEncoding(String gspEncoding) {
-        getRenderMethod().setGspEncoding(gspEncoding);
+        render.setGspEncoding(gspEncoding);
     }
 
     public void setRedirectListeners(Collection<RedirectEventListener> redirectListeners) {
-        getRedirectMethod().setRedirectListeners(redirectListeners);
+        redirect.setRedirectListeners(redirectListeners);
     }
 
     public void setUseJessionId(boolean useJessionId) {
-        getRedirectMethod().setUseJessionId(useJessionId);
+        redirect.setUseJessionId(useJessionId);
     }
 
     public void setLinkGenerator(LinkGenerator linkGenerator) {
-        getRedirectMethod().setLinkGenerator(linkGenerator);
+        redirect.setLinkGenerator(linkGenerator);
     }
 
     /**
@@ -219,7 +224,7 @@ public class ControllersApi extends CommonWebApi {
      * @return null
      */
     public Object redirect(Object instance,Map args) {
-        return getRedirectMethod().invoke(instance, "redirect", new Object[]{ args });
+        return redirect.invoke(instance, "redirect", new Object[]{ args });
     }
 
     /**
@@ -255,7 +260,7 @@ public class ControllersApi extends CommonWebApi {
     }
 
     protected Object invokeRender(Object instance, Object... args) {
-        return getRenderMethod().invoke(instance, RENDER_METHOD_NAME, args);
+        return render.invoke(instance, RENDER_METHOD_NAME, args);
     }
 
     // the bindData method
@@ -284,7 +289,7 @@ public class ControllersApi extends CommonWebApi {
     }
 
     protected Object invokeBindData(Object instance, Object... args) {
-        return getBindMethod().invoke(instance, BIND_DATA_METHOD, args);
+        return bind.invoke(instance, BIND_DATA_METHOD, args);
     }
 
     /**
@@ -313,7 +318,7 @@ public class ControllersApi extends CommonWebApi {
      * @return The result of the closure execution
      */
     public Object withForm(Object instance, Closure callable) {
-        return getWithFormMethod().withForm(getWebRequest(instance), callable);
+        return withFormMethod.withForm(getWebRequest(instance), callable);
     }
 
     /**
@@ -324,41 +329,6 @@ public class ControllersApi extends CommonWebApi {
      * @return The forwarded URL
      */
     public String forward(Object instance, Map params) {
-        return getForwardMethod().forward(getRequest(instance), getResponse(instance), params);
-    }
-
-    protected RedirectDynamicMethod getRedirectMethod() {
-        if (redirect == null) {
-            redirect = new RedirectDynamicMethod();
-        }
-        return redirect;
-    }
-
-    protected RenderDynamicMethod getRenderMethod() {
-        if (render == null) {
-            render = new RenderDynamicMethod();
-        }
-        return render;
-    }
-
-    protected BindDynamicMethod getBindMethod() {
-        if (bind == null) {
-            bind = new BindDynamicMethod();
-        }
-        return bind;
-    }
-
-    protected WithFormMethod getWithFormMethod() {
-        if (withFormMethod == null) {
-            withFormMethod = new WithFormMethod();
-        }
-        return withFormMethod;
-    }
-
-    protected ForwardMethod getForwardMethod() {
-        if (forwardMethod == null) {
-            forwardMethod = new ForwardMethod();
-        }
-        return forwardMethod;
+        return forwardMethod.forward(getRequest(instance), getResponse(instance), params);
     }
 }
