@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
  * @since 1.2
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class GroovyPageAttributes extends TypeConvertingMap {
+public class GroovyPageAttributes extends TypeConvertingMap implements Cloneable {
     boolean gspTagSyntaxCall = true;
 
     public GroovyPageAttributes() {
