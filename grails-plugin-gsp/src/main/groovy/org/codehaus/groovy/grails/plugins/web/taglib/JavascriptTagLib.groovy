@@ -125,7 +125,7 @@ class JavascriptTagLib implements ApplicationContextAware {
                 out << r.script(Collections.EMPTY_MAP, body)
             } else {
                 out.println '<script type="text/javascript">'
-                withCodec(defaultCodec:"JavaScript") {
+                withCodec(expressionCodec:"JavaScript") {
                     out << body()
                 }
                 out.println()
