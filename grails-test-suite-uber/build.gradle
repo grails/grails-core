@@ -54,7 +54,12 @@ test {
 
 task isolatedTestsOne(type:Test) {
     includes = [
-                "**/DataSourceGrailsPluginTests.class","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class","**/SetupTeardownInvokeTests.class","**/TestMixinSetupTeardownInvokeTests.class","**/UrlMappingsTestMixinTests.class"]
+                "**/DataSourceGrailsPluginTests.class","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class","**/SetupTeardownInvokeTests.class","**/TestMixinSetupTeardownInvokeTests.class"]
 }
 
-test.dependsOn isolatedTestsOne
+task isolatedTestsTwo(type:Test) {
+    includes = [
+                "**/UrlMappingsTestMixinTests.class"]
+}
+
+test.dependsOn isolatedTestsOne, isolatedTestsTwo
