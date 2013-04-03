@@ -22,8 +22,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
+import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.CodecMetaClassSupport;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
+import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
@@ -131,16 +133,16 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     }
     
     private static class ClosureDecoder implements Decoder {
-        private String codecName;
+        private CodecIdentifier codecIdentifier;
         private Closure<Object> closure;
         
         public ClosureDecoder(String codecName, Closure<Object> closure) {
-            this.codecName=codecName;
+            this.codecIdentifier=new DefaultCodecIdentifier(codecName);
             this.closure=closure;
         }
         
-        public String getCodecName() {
-            return codecName;
+        public CodecIdentifier getCodecIdentifier() {
+            return codecIdentifier;
         }
 
         public Object decode(Object o) {
@@ -155,8 +157,8 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             this.delegate=delegate;
         }
         
-        public String getCodecName() {
-            return delegate.getCodecName();
+        public CodecIdentifier getCodecIdentifier() {
+            return delegate.getCodecIdentifier();
         }
 
         public Object encode(Object target) {
@@ -205,16 +207,16 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     }
     
     private static class ClosureEncoder implements Encoder {
-        private String codecName;
+        private CodecIdentifier codecIdentifier;
         private Closure<Object> closure;
         
         public ClosureEncoder(String codecName, Closure<Object> closure) {
-            this.codecName=codecName;
+            this.codecIdentifier=new DefaultCodecIdentifier(codecName);
             this.closure=closure;
         }
         
-        public String getCodecName() {
-            return codecName;
+        public CodecIdentifier getCodecIdentifier() {
+            return codecIdentifier;
         }
 
         public CharSequence encode(Object target) {

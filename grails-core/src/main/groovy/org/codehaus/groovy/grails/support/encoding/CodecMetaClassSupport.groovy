@@ -9,11 +9,22 @@ import org.codehaus.groovy.runtime.GStringImpl
 class CodecMetaClassSupport {
     static final Object[] EMPTY_ARGS = []
     
+    static final String ENCODE_AS_PREFIX="encodeAs"
+    static final String DECODE_PREFIX="decode"
+    
     @CompileStatic
     public void configureCodecMethods(GrailsCodecClass codecClass) {
-        String codecName = codecClass.name
-        String encodeMethodName = "encodeAs${codecName}"
-        String decodeMethodName = "decode${codecName}"
+        if(codecClass==null) {
+            throw new NullPointerException("Jee")
+        }
+        
+        
+        //String codecName = codecClass.name
+        Closure<String> encodeMethodNameClosure = { String codecName -> "${ENCODE_AS_PREFIX}${codecName}".toString() }
+        Closure<String> decodeMethodNameClosure = { String codecName -> "${DECODE_PREFIX}${codecName}".toString() }
+        
+        String encodeMethodName = encodeMethodNameClosure(codecClass.name)
+        String decodeMethodName = decodeMethodNameClosure(codecClass.name)
 
         Closure encoderClosure
         Closure decoderClosure
@@ -60,7 +71,21 @@ class CodecMetaClassSupport {
         }
 
         addMetaMethod(encodeMethodName, encoderClosure)
+        if(codecClass.encoder) {
+            addAliasMetaMethods(codecClass.encoder.codecIdentifier.codecAliases, encodeMethodNameClosure, encoderClosure)
+        }
+
         addMetaMethod(decodeMethodName, decoderClosure)
+        if(codecClass.decoder) {
+            addAliasMetaMethods(codecClass.decoder.codecIdentifier.codecAliases, decodeMethodNameClosure, decoderClosure)
+        }
+    }
+
+    @CompileStatic
+    private addAliasMetaMethods(Set<String> aliases, Closure<String> methodNameClosure, Closure methodClosure) {
+        aliases?.each { String aliasName ->
+            addMetaMethod(methodNameClosure(aliasName), methodClosure)
+        }
     }
     
     protected void addMetaMethod(String methodName, Closure closure) {

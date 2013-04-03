@@ -1,7 +1,15 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
-public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
+import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
+import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 
+public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
+    public static final CodecIdentifier JAVASCRIPT_CODEC_IDENTIFIER=new DefaultCodecIdentifier("JavaScript", "JSON", "Json", "Js");
+
+    public JavaScriptEncoder() {
+        super(JAVASCRIPT_CODEC_IDENTIFIER);
+    }
+    
     @Override
     protected String escapeCharacter(char ch, char previousChar) {
         switch (ch) {
