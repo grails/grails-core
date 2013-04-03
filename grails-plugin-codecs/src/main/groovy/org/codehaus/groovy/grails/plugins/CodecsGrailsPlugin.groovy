@@ -20,7 +20,7 @@ import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
-import org.codehaus.groovy.grails.plugins.codecs.EscapedXMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.XMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.HexCodec
@@ -46,7 +46,7 @@ class CodecsGrailsPlugin {
     def providedArtefacts = [
         HTMLCodec,
         HTML4Codec,
-        EscapedXMLCodec,
+        XMLCodec,
         JavaScriptCodec,
         URLCodec,
         Base64Codec,

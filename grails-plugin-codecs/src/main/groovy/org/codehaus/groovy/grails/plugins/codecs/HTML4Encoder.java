@@ -5,13 +5,20 @@ import java.lang.reflect.Method;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
+import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 import org.springframework.util.ReflectionUtils;
 import org.springframework.web.util.HtmlUtils;
 
 public class HTML4Encoder extends AbstractCharReplacementEncoder {
     private static final Log log=LogFactory.getLog(HTML4Encoder.class);
     static final String HTML4_CODEC_NAME="HTML4";
+    static final CodecIdentifier HTML4_CODEC_IDENTIFIER=new DefaultCodecIdentifier(HTML4_CODEC_NAME);
 
+    public HTML4Encoder() {
+        super(HTML4_CODEC_IDENTIFIER);
+    }
+    
     @Override
     protected String escapeCharacter(char ch, char previousChar) {
         return StreamingHTMLEncoderHelper.convertToReference(ch);
@@ -42,9 +49,5 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
                 return HtmlUtils.htmlEscape(String.valueOf(c));
             }
         }
-    }
-
-    public String getCodecName() {
-        return HTML4_CODEC_NAME;
     }
 }

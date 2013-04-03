@@ -43,6 +43,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
+import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
@@ -2299,16 +2301,16 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     }
 
     private static final class SavedEncoder implements Encoder {
-        private String codecName;
+        private CodecIdentifier codecIdentifier;
         private boolean safe;
         
         public SavedEncoder(String codecName, boolean safe) {
-            this.codecName=codecName;
+            this.codecIdentifier=new DefaultCodecIdentifier(codecName);
             this.safe=safe;
         }
 
-        public String getCodecName() {
-            return codecName;
+        public CodecIdentifier getCodecIdentifier() {
+            return codecIdentifier;
         }
 
         public boolean isSafe() {
@@ -2342,7 +2344,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                     if(current.encodingState != null && current.encodingState.getEncoders() != null && current.encodingState.getEncoders().size() > 0) {
                         out.writeInt(current.encodingState.getEncoders().size());
                         for(Encoder encoder : current.encodingState.getEncoders()) {
-                            out.writeUTF(encoder.getCodecName());
+                            out.writeUTF(encoder.getCodecIdentifier().getCodecName());
                             out.writeBoolean(encoder.isSafe());
                         }
                     } else {

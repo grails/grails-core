@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
+import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
+
 
 public class XMLEncoder extends AbstractCharReplacementEncoder {
-    static final String XML_CODEC_NAME="EscapedXML";
     private static final String ESCAPED_APOS = "&#" + ((int) '\'')  + ";"; // html doesn't have apos, so use numeric entity
     private static final String ESCAPED_QUOTE = "&quot;";
     private static final String ESCAPED_GT = "&gt;";
@@ -14,7 +16,16 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
     private static final String ESCAPED_NON_BREAKING_SPACE = "&#" + ((int) NBSP)  + ";";
     private static final String ESCAPED_BACKTICK = "&#" + ((int) '`')  + ";";
     private static final String ESCAPED_AT = "&#" + ((int) '@')  + ";"; // IE Javascript conditional compilation rules
+    public static final CodecIdentifier XML_CODEC_IDENTIFIER=new DefaultCodecIdentifier("XML");
     
+    public XMLEncoder() {
+        super(XML_CODEC_IDENTIFIER);
+    }
+
+    protected XMLEncoder(CodecIdentifier codecIdentifier) {
+        super(codecIdentifier);
+    }
+
     @Override
     protected String escapeCharacter(char ch, char previousChar) {
       if(ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r') {
@@ -32,9 +43,5 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
           case NBSP: return ESCAPED_NON_BREAKING_SPACE;
       }
       return null;
-    }
-    
-    public String getCodecName() {
-        return XML_CODEC_NAME;
     }
 }
