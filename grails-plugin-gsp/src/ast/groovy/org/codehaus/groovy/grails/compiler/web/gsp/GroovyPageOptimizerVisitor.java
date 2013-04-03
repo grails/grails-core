@@ -33,7 +33,7 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
     private static final String THISOBJECT = "thisObject";
     private static final String OUT_RECEIVER = "out";
     private static final String PRINT_METHOD = "print";
-    private static final String CODECOUT_RECEIVER = "codecOut";
+    private static final String EXPRESSIONOUT_RECEIVER = "expressionOut";
 
     private Stack<ClosureExpression> innerClosures = new Stack<ClosureExpression>();
     private ClassNode targetGroovyPageNode;
@@ -96,7 +96,7 @@ class GroovyPageOptimizerVisitor extends CodeVisitorSupport {
 
     private boolean isCallFromOutOrCodecOut(MethodCallExpression expression) {
         return (expression.getObjectExpression().getText().equals(OUT_RECEIVER)
-                || expression.getObjectExpression().getText().equals(CODECOUT_RECEIVER))
+                || expression.getObjectExpression().getText().equals(EXPRESSIONOUT_RECEIVER))
                 && expression.getMethodAsString().equals(PRINT_METHOD);
     }
 

@@ -52,6 +52,7 @@ import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 /**
  * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/).
  *
@@ -80,9 +81,9 @@ public class GroovyPageParser implements Tokens {
     public static final String CONSTANT_NAME_JSP_TAGS = "JSP_TAGS";
     public static final String CONSTANT_NAME_CONTENT_TYPE = "CONTENT_TYPE";
     public static final String CONSTANT_NAME_LAST_MODIFIED = "LAST_MODIFIED";
-    public static final String CONSTANT_NAME_DEFAULT_CODEC = "DEFAULT_CODEC";
+    public static final String CONSTANT_NAME_EXPRESSION_CODEC = "EXPRESSION_CODEC";
     public static final String CONSTANT_NAME_TEMPLATE_CODEC = "TEMPLATE_CODEC";
-    public static final String CONSTANT_NAME_PAGE_CODEC = "PAGE_CODEC";
+    public static final String CONSTANT_NAME_OUT_CODEC = "OUT_CODEC";
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     private static final String MULTILINE_GROOVY_STRING_DOUBLEQUOTES="\"\"\"";
@@ -142,15 +143,16 @@ public class GroovyPageParser implements Tokens {
     public static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
     public static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
     
-    private static final String DEFAULT_DEFAULTCODEC = "none";
+    private static final String DEFAULT_EXPRESSIONCODEC = "none";
     private static final String DEFAULT_TEMPLATECODEC = "none";
-    private static final String DEFAULT_PAGECODEC = "none";
+    private static final String DEFAULT_OUTCODEC = "none";
 
     private static final String IMPORT_DIRECTIVE = "import";
     private static final String CONTENT_TYPE_DIRECTIVE = "contentType";
-    private static final String DEFAULT_CODEC_DIRECTIVE = "defaultCodec";
-    private static final String TEMPLATE_CODEC_DIRECTIVE = "templateCodec";
-    private static final String PAGE_CODEC_DIRECTIVE = "pageCodec";
+    private static final String EXPRESSION_CODEC_DIRECTIVE = WithCodecHelper.EXPRESSION_CODEC_NAME;
+    private static final String EXPRESSION_CODEC_DIRECTIVE_ALIAS = WithCodecHelper.EXPRESSION_CODEC_NAME_ALIAS;
+    private static final String TEMPLATE_CODEC_DIRECTIVE = WithCodecHelper.TEMPLATE_CODEC_NAME;
+    private static final String OUT_CODEC_DIRECTIVE = WithCodecHelper.OUT_CODEC_NAME;
     private static final String SITEMESH_PREPROCESS_DIRECTIVE = "sitemeshPreprocess";
     private static final String PAGE_DIRECTIVE = "page";
 
@@ -162,8 +164,8 @@ public class GroovyPageParser implements Tokens {
     private long lastModified;
     private boolean precompileMode;
     private boolean sitemeshPreprocessMode=false;
-    private String defaultCodecDirectiveValue;
-    private String pageCodecDirectiveValue=DEFAULT_PAGECODEC;
+    private String expressionCodecDirectiveValue;
+    private String outCodecDirectiveValue=DEFAULT_OUTCODEC;
     private String templateCodecDirectiveValue=DEFAULT_TEMPLATECODEC;
     
     private boolean enableSitemeshPreprocessing = true;
@@ -207,19 +209,19 @@ public class GroovyPageParser implements Tokens {
         }
     }
 
-    public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding, String defaultCodecName) throws IOException {
+    public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding, String expressionCodecName) throws IOException {
         this.gspEncoding = encoding;
-        this.defaultCodecDirectiveValue = defaultCodecName;
-        if(defaultCodecDirectiveValue==null) {
+        this.expressionCodecDirectiveValue = expressionCodecName;
+        if(expressionCodecDirectiveValue==null) {
             Map<?, ?> config = Holders.getFlatConfig();
             if (config != null) {
                 Object o = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
                 if (o != null) {
-                    defaultCodecDirectiveValue = o.toString();
+                    expressionCodecDirectiveValue = o.toString();
                 }
             }
-            if(defaultCodecDirectiveValue==null) {
-                defaultCodecDirectiveValue = DEFAULT_DEFAULTCODEC;
+            if(expressionCodecDirectiveValue==null) {
+                expressionCodecDirectiveValue = DEFAULT_EXPRESSIONCODEC;
             }
         }
         
@@ -467,14 +469,17 @@ public class GroovyPageParser implements Tokens {
             if (name.equals(CONTENT_TYPE_DIRECTIVE)) {
                 contentType(value);
             }
-            if (name.equals(DEFAULT_CODEC_DIRECTIVE)) {
-                defaultCodecDirectiveValue = value.trim();
+            if (name.equals(EXPRESSION_CODEC_DIRECTIVE)) {
+                expressionCodecDirectiveValue = value.trim();
+            }
+            if (name.equals(EXPRESSION_CODEC_DIRECTIVE_ALIAS)) {
+                expressionCodecDirectiveValue = value.trim();
             }
             if (name.equals(TEMPLATE_CODEC_DIRECTIVE)) {
                 templateCodecDirectiveValue = value.trim();
             }
-            if (name.equals(PAGE_CODEC_DIRECTIVE)) {
-                pageCodecDirectiveValue = value.trim();
+            if (name.equals(OUT_CODEC_DIRECTIVE)) {
+                outCodecDirectiveValue = value.trim();
             }
             ix = mat.end();
         }
@@ -524,9 +529,9 @@ public class GroovyPageParser implements Tokens {
         String text = scan.getToken().trim();
         text = getExpressionText(text);
         if (text != null && text.length() > 2 && text.startsWith("(") && text.endsWith(")")) {
-            out.printlnToResponse(GroovyPage.CODEC_OUT_STATEMENT, text.substring(1,text.length()-1));
+            out.printlnToResponse(GroovyPage.EXPRESSION_OUT_STATEMENT, text.substring(1,text.length()-1));
         } else {
-            out.printlnToResponse(GroovyPage.CODEC_OUT_STATEMENT, text);
+            out.printlnToResponse(GroovyPage.EXPRESSION_OUT_STATEMENT, text);
         }
     }
 
@@ -761,8 +766,8 @@ public class GroovyPageParser implements Tokens {
             out.println("def flash = binding.flash");
             out.println("def response = binding.response");
             */
-            out.println("Writer out = getOut()");
-            out.println("Writer codecOut = getCodecOut()");
+            out.println("Writer " + GroovyPage.OUT + " = getOut()");
+            out.println("Writer " + GroovyPage.EXPRESSION_OUT + " = getExpressionOut()");
             //out.println("JspTagLib jspTag");
             if (sitemeshPreprocessMode) {
                 out.println("registerSitemeshPreprocessMode()");
@@ -858,11 +863,11 @@ public class GroovyPageParser implements Tokens {
                     CONSTANT_NAME_LAST_MODIFIED + " = " + lastModified + "L");
 
             out.println("public static final String " +
-                    CONSTANT_NAME_DEFAULT_CODEC + " = '" + escapeGroovy(defaultCodecDirectiveValue) + "'");
+                    CONSTANT_NAME_EXPRESSION_CODEC + " = '" + escapeGroovy(expressionCodecDirectiveValue) + "'");
             out.println("public static final String " +
                     CONSTANT_NAME_TEMPLATE_CODEC + " = '" + escapeGroovy(templateCodecDirectiveValue) + "'");
             out.println("public static final String " +
-                    CONSTANT_NAME_PAGE_CODEC + " = '" + escapeGroovy(pageCodecDirectiveValue) + "'");
+                    CONSTANT_NAME_OUT_CODEC + " = '" + escapeGroovy(outCodecDirectiveValue) + "'");
             
             out.println("}");
 
@@ -1336,16 +1341,16 @@ public class GroovyPageParser implements Tokens {
         return closureLevel > 0;
     }
 
-    public String getDefaultCodecDirectiveValue() {
-        return defaultCodecDirectiveValue;
+    public String getExpressionCodecDirectiveValue() {
+        return expressionCodecDirectiveValue;
     }
 
     public String getPageName() {
         return pageName;
     }
 
-    public String getPageCodecDirectiveValue() {
-        return pageCodecDirectiveValue;
+    public String getOutCodecDirectiveValue() {
+        return outCodecDirectiveValue;
     }
 
     public String getTemplateCodecDirectiveValue() {

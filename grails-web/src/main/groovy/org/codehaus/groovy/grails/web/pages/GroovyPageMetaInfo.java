@@ -68,12 +68,12 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     @SuppressWarnings("rawtypes")
     private Map jspTags = Collections.EMPTY_MAP;
     private GroovyPagesException compilationException;
-    private GrailsCodecClass defaultCodec;
+    private GrailsCodecClass expressionCodec;
     private GrailsCodecClass templateCodec;
-    private GrailsCodecClass pageCodec;
-    private String defaultCodecName;
+    private GrailsCodecClass outCodec;
+    private String expressionCodecName;
     private String templateCodecName;
-    private String pageCodecName;
+    private String outCodecName;
 
     public static final String HTML_DATA_POSTFIX = "_html.data";
     public static final String LINENUMBERS_DATA_POSTFIX = "_linenumbers.data";
@@ -100,9 +100,9 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         contentType = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_CONTENT_TYPE), null);
         jspTags = (Map)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_JSP_TAGS), null);
         lastModified = (Long)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_LAST_MODIFIED), null);
-        defaultCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_DEFAULT_CODEC), null);
+        expressionCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_EXPRESSION_CODEC), null);
         templateCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_TEMPLATE_CODEC), null);
-        pageCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_PAGE_CODEC), null);
+        outCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_OUT_CODEC), null);
 
         try {
             readHtmlData();
@@ -124,9 +124,9 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     @SuppressWarnings("rawtypes")
     public void initialize() {
-        defaultCodec = getCodec(defaultCodecName);
+        expressionCodec = getCodec(expressionCodecName);
         templateCodec = getCodec(templateCodecName);
-        pageCodec = getCodec(pageCodecName);
+        outCodec = getCodec(outCodecName);
 
         initializePluginPath();
 
@@ -443,43 +443,43 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         return pagePlugin;
     }
 
-    public GrailsCodecClass getDefaultCodec() {
-        return defaultCodec;
+    public GrailsCodecClass getExpressionCodec() {
+        return expressionCodec;
     }
 
     public GrailsCodecClass getTemplateCodec() {
         return templateCodec;
     }
 
-    public GrailsCodecClass getPageCodec() {
-        return pageCodec;
+    public GrailsCodecClass getOutCodec() {
+        return outCodec;
     }
     
-    public Encoder getPageEncoder() {
-        return returnEncoder(pageCodec);
+    public Encoder getOutEncoder() {
+        return returnEncoder(outCodec);
     }
 
     public Encoder getTemplateEncoder() {
         return returnEncoder(templateCodec);
     }
 
-    public Encoder getDefaultEncoder() {
-        return returnEncoder(defaultCodec);
+    public Encoder getExpressionEncoder() {
+        return returnEncoder(expressionCodec);
     }
     
     private Encoder returnEncoder(GrailsCodecClass codecClass) {
         return codecClass != null ? codecClass.getEncoder() : null;
     }
 
-    public void setDefaultCodecName(String defaultCodecName) {
-        this.defaultCodecName = defaultCodecName;
+    public void setExpressionCodecName(String expressionCodecName) {
+        this.expressionCodecName = expressionCodecName;
     }
 
     public void setTemplateCodecName(String templateCodecName) {
         this.templateCodecName = templateCodecName;
     }
 
-    public void setPageCodecName(String pageCodecName) {
-        this.pageCodecName = pageCodecName;
+    public void setOutCodecName(String pageCodecName) {
+        this.outCodecName = pageCodecName;
     }
 }

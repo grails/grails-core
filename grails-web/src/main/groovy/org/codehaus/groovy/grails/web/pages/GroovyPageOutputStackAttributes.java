@@ -8,8 +8,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 public class GroovyPageOutputStackAttributes {
     private final Writer topWriter;
     private final Encoder templateEncoder;
-    private final Encoder pageEncoder;
-    private final Encoder defaultEncoder;
+    private final Encoder outEncoder;
+    private final Encoder expressionEncoder;
     private final boolean allowCreate;
     private final boolean pushTop;
     private final boolean autoSync;
@@ -28,12 +28,12 @@ public class GroovyPageOutputStackAttributes {
         return templateEncoder;
     }
 
-    public Encoder getPageEncoder() {
-        return pageEncoder;
+    public Encoder getOutEncoder() {
+        return outEncoder;
     }
 
-    public Encoder getDefaultEncoder() {
-        return defaultEncoder;
+    public Encoder getExpressionEncoder() {
+        return expressionEncoder;
     }
 
     public boolean isAllowCreate() {
@@ -55,8 +55,8 @@ public class GroovyPageOutputStackAttributes {
     public static class Builder {
         private Writer topWriter;
         private Encoder templateEncoder;
-        private Encoder pageEncoder;
-        private Encoder defaultEncoder;
+        private Encoder outEncoder;
+        private Encoder expressionEncoder;
         private boolean allowCreate=true;
         private boolean pushTop=true;
         private boolean autoSync=true;
@@ -70,8 +70,8 @@ public class GroovyPageOutputStackAttributes {
         public Builder(GroovyPageOutputStackAttributes attributes) {
             this.topWriter = attributes.topWriter;
             this.templateEncoder = attributes.templateEncoder;
-            this.pageEncoder = attributes.pageEncoder;
-            this.defaultEncoder = attributes.defaultEncoder;
+            this.outEncoder = attributes.outEncoder;
+            this.expressionEncoder = attributes.expressionEncoder;
             this.allowCreate = attributes.allowCreate;
             this.pushTop = attributes.pushTop;
             this.autoSync = attributes.autoSync;
@@ -89,13 +89,13 @@ public class GroovyPageOutputStackAttributes {
             return this;
         }
 
-        public Builder pageEncoder(Encoder pageEncoder) {
-            this.pageEncoder = pageEncoder;
+        public Builder outEncoder(Encoder outEncoder) {
+            this.outEncoder = outEncoder;
             return this;
         }
 
-        public Builder defaultEncoder(Encoder defaultEncoder) {
-            this.defaultEncoder = defaultEncoder;
+        public Builder expressionEncoder(Encoder expressionEncoder) {
+            this.expressionEncoder = expressionEncoder;
             return this;
         }
 
@@ -132,8 +132,8 @@ public class GroovyPageOutputStackAttributes {
     private GroovyPageOutputStackAttributes(Builder builder) {
         this.topWriter = builder.topWriter;
         this.templateEncoder = builder.templateEncoder;
-        this.pageEncoder = builder.pageEncoder;
-        this.defaultEncoder = builder.defaultEncoder;
+        this.outEncoder = builder.outEncoder;
+        this.expressionEncoder = builder.expressionEncoder;
         this.allowCreate = builder.allowCreate;
         this.pushTop = builder.pushTop;
         this.autoSync = builder.autoSync;

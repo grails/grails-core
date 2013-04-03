@@ -683,7 +683,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         pageMeta.setContentType(parse.getContentType());
         pageMeta.setLineNumbers(parse.getLineNumberMatrix());
         pageMeta.setJspTags(parse.getJspTags());
-        pageMeta.setDefaultCodecName(parse.getDefaultCodecDirectiveValue());
+        pageMeta.setExpressionCodecName(parse.getExpressionCodecDirectiveValue());
         pageMeta.initialize();
         // just return groovy and don't compile if asked
         if (GrailsUtil.isDevelopmentEnv()) {

@@ -73,8 +73,8 @@ public abstract class GroovyPage extends Script {
     public static final String SERVLET_CONTEXT = "application";
     public static final String RESPONSE = "response";
     public static final String OUT = "out";
-    public static final String CODEC_OUT = "codecOut";
-    public static final String CODEC_OUT_STATEMENT = CODEC_OUT; // "getCodecOut()";
+    public static final String EXPRESSION_OUT = "expressionOut";
+    public static final String EXPRESSION_OUT_STATEMENT = EXPRESSION_OUT; // "getCodecOut()";
     public static final String OUT_STATEMENT = OUT; // "getOut()";
     public static final String CODEC_VARNAME = "Codec";
     public static final String ATTRIBUTES = "attributes";
@@ -98,7 +98,7 @@ public abstract class GroovyPage extends Script {
             SERVLET_CONTEXT,
             RESPONSE,
             OUT,
-            CODEC_OUT,
+            EXPRESSION_OUT,
             CODEC_VARNAME,
             ATTRIBUTES,
             APPLICATION_CONTEXT,
@@ -118,7 +118,7 @@ public abstract class GroovyPage extends Script {
     private Set<Integer> htmlPartsSet;
     private GrailsPrintWriter out;
     private GrailsPrintWriter templateOut;
-    private GrailsPrintWriter codecOut;
+    private GrailsPrintWriter expressionOut;
     private GroovyPageOutputStack outputStack;
     private GrailsWebRequest webRequest;
     private String pluginContextPath;
@@ -183,8 +183,8 @@ public abstract class GroovyPage extends Script {
         return out;
     }
 
-    public final Writer getCodecOut() {
-        return codecOut;
+    public final Writer getExpressionOut() {
+        return expressionOut;
     }
 
     public void setOut(Writer newWriter) {
@@ -200,17 +200,17 @@ public abstract class GroovyPage extends Script {
             setGspTagLibraryLookup(metaInfo.getTagLibraryLookup());
             setHtmlParts(metaInfo.getHtmlParts());
             setPluginContextPath(metaInfo.getPluginPath());
-            attributesBuilder.pageEncoder(metaInfo.getPageEncoder());
+            attributesBuilder.outEncoder(metaInfo.getOutEncoder());
             attributesBuilder.templateEncoder(metaInfo.getTemplateEncoder());
-            attributesBuilder.defaultEncoder(metaInfo.getDefaultEncoder());
+            attributesBuilder.expressionEncoder(metaInfo.getExpressionEncoder());
         }
         attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
         attributesBuilder.webRequest(grailsWebRequest);
         outputStack = GroovyPageOutputStack.currentStack(attributesBuilder.build());
         
-        out = outputStack.getPageWriter();
+        out = outputStack.getOutWriter();
         templateOut = outputStack.getTemplateWriter();
-        codecOut = outputStack.getCodecWriter();
+        expressionOut = outputStack.getExpressionWriter();
         
         this.webRequest = grailsWebRequest;
         if (grailsWebRequest != null) {
@@ -219,7 +219,7 @@ public abstract class GroovyPage extends Script {
         }
         
         setVariableDirectly(OUT, out);
-        setVariableDirectly(CODEC_OUT, codecOut);
+        setVariableDirectly(EXPRESSION_OUT, expressionOut);
     }
     
     @SuppressWarnings("unchecked")
@@ -314,7 +314,7 @@ public abstract class GroovyPage extends Script {
     @Override
     public Object getProperty(String property) {
         if (OUT.equals(property)) return out;
-        if (CODEC_OUT.equals(property)) return codecOut;
+        if (EXPRESSION_OUT.equals(property)) return expressionOut;
         // in GSP we assume if a property doesn't exist that
         // it is null rather than throw an error this works nicely
         // with the Groovy Truth
@@ -563,7 +563,7 @@ public abstract class GroovyPage extends Script {
                                 if(actualBody instanceof ConstantClosure) {
                                     outputStack.getTemplateWriter().print(bodyResult2);
                                 } else {
-                                    outputStack.getPageWriter().print(bodyResult2);
+                                    outputStack.getOutWriter().print(bodyResult2);
                                 }
                             }
                         }
@@ -579,7 +579,7 @@ public abstract class GroovyPage extends Script {
 
                 }
                 
-                Encoder pageEncoder = outputStack.getPageEncoder(); 
+                Encoder pageEncoder = outputStack.getOutEncoder(); 
 
                 boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(namespace, tagName);
 
