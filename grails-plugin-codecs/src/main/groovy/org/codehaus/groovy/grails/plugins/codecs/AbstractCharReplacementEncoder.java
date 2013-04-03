@@ -1,27 +1,18 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
-import grails.util.GrailsNameUtils;
-
 import java.io.IOException;
 
+import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
 
 public abstract class AbstractCharReplacementEncoder implements Encoder, StreamingEncoder {
-    protected String codecName;
+    protected CodecIdentifier codecIdentifier;
     
-    public AbstractCharReplacementEncoder() {
-        super();
-    }
-    
-    protected void applyCodecName() {
-        codecName = GrailsNameUtils.getLogicalName(this.getClass(), "Encoder");
-    }
-
-    public String getCodecName() {
-        return codecName;
+    public AbstractCharReplacementEncoder(CodecIdentifier codecIdentifier) {
+        this.codecIdentifier = codecIdentifier;
     }
     
     protected abstract String escapeCharacter(char ch, char previousChar);
@@ -117,5 +108,9 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
 
     public boolean isSafe() {
         return true;
+    }
+    
+    public CodecIdentifier getCodecIdentifier() {
+        return codecIdentifier;
     }
 }
