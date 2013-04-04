@@ -25,7 +25,7 @@
 includeTargets << grailsScript('_GrailsInit')
 
 target(installAppTemplates: 'Installs app and plugin templates') {
-    depends(checkVersion, parseArguments)
+    depends(parseArguments)
 
     File destination = new File(grailsSettings.grailsWorkDir, 'app-templates')
     ant.mkdir dir: destination.path
@@ -41,9 +41,9 @@ target(installAppTemplates: 'Installs app and plugin templates') {
 void copyTemplateJar(String name, File destination) {
 
     File jar = new File(destination, "${name}.jar")
-//    if (jar.exists() && !confirmInput("Overwrite existing $name? [y/n]", "overwrite.templates-$name")) {
-//        return
-//    }
+    if (jar.exists() && !confirmInput("Overwrite existing $name? ", "overwrite.templates-$name")) {
+        return
+    }
 
     ant.copy(todir: destination) {
         javaresource(name: jar.name)
