@@ -18,12 +18,25 @@ import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.springframework.web.util.HtmlUtils;
 
+/**
+ * HTML4 decoder that uses's Spring's HtmlUtils.htmlUnescape to do the unescaping
+ *
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public class HTML4Decoder implements Decoder {
+    
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Decoder#decode(java.lang.Object)
+     */
     public Object decode(Object o) {
         if(o==null) return null;
         return HtmlUtils.htmlUnescape(String.valueOf(o));
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifierProvider#getCodecIdentifier()
+     */
     public CodecIdentifier getCodecIdentifier() {
         return HTML4Encoder.HTML4_CODEC_IDENTIFIER;
     }

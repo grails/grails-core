@@ -17,68 +17,114 @@ package org.codehaus.groovy.grails.support.encoding;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * A java.io.Writer implementation that writes to a {@link EncodedAppender} with a certain encoder
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public class EncodedAppenderWriter extends Writer implements EncodedAppenderWriterFactory, EncodedAppenderFactory, EncoderAware {
     protected EncodedAppender encodedAppender;
     protected Encoder encoder;
     protected EncodingStateRegistry encodingStateRegistry;
     
+    /**
+     * Default constructor
+     *
+     * @param encodedAppender the EncodedAppender destination 
+     * @param encoder the encoder to use
+     * @param encodingStateRegistry the {@link EncodingStateRegistry} to use to lookup encoding state of CharSequence instances
+     */
     public EncodedAppenderWriter(EncodedAppender encodedAppender, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         this.encodedAppender=encodedAppender;
         this.encoder=encoder;
         this.encodingStateRegistry=encodingStateRegistry;
     }
 
+    /* (non-Javadoc)
+     * @see java.io.Writer#write(char[], int, int)
+     */
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
         encodedAppender.append(encoder, null, cbuf, off, len);
     }
 
+    /* (non-Javadoc)
+     * @see java.io.Writer#flush()
+     */
     @Override
     public void flush() throws IOException {
         encodedAppender.flush();
     }
 
+    /* (non-Javadoc)
+     * @see java.io.Writer#close()
+     */
     @Override
     public void close() throws IOException {
         flush();
     }
 
+    /* (non-Javadoc)
+     * @see java.io.Writer#write(int)
+     */
     @Override
     public void write(int c) throws IOException {
         encodedAppender.append(encoder, (char)c); 
     }
 
+    /* (non-Javadoc)
+     * @see java.io.Writer#write(java.lang.String, int, int)
+     */
     @Override
     public void write(String str, int off, int len) throws IOException {
         encodedAppender.append(encoder, (encodingStateRegistry != null && off==0 && len==str.length()) ? encodingStateRegistry.getEncodingStateFor(str) : null, str, off, len);
     }
 
+    /* (non-Javadoc)
+     * @see java.io.Writer#append(java.lang.CharSequence)
+     */
     @Override
     public Writer append(CharSequence csq) throws IOException {
         encodedAppender.append(encoder, (encodingStateRegistry != null) ? encodingStateRegistry.getEncodingStateFor(csq) : null, csq, 0, csq.length());
         return this;
     }
 
+    /* (non-Javadoc)
+     * @see java.io.Writer#append(java.lang.CharSequence, int, int)
+     */
     @Override
     public Writer append(CharSequence csq, int start, int end) throws IOException {
         encodedAppender.append(encoder, null, csq, 0, end-start);
         return this;
     }
 
+    /* (non-Javadoc)
+     * @see java.io.Writer#append(char)
+     */
     @Override
     public Writer append(char c) throws IOException {
         encodedAppender.append(encoder, c);
         return this;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory#getEncodedAppender()
+     */
     public EncodedAppender getEncodedAppender() {
         return encodedAppender;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncoderAware#getEncoder()
+     */
     public Encoder getEncoder() {
         return encoder;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory#getWriterForEncoder(org.codehaus.groovy.grails.support.encoding.Encoder, org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry)
+     */
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         return new EncodedAppenderWriter(encodedAppender, encoder, encodingStateRegistry);
     }

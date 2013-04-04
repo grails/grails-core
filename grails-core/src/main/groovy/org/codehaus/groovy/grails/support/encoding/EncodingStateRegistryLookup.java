@@ -14,6 +14,19 @@
  */
 package org.codehaus.groovy.grails.support.encoding;
 
+/**
+ * This interface marks an instance capable of looking of the current 
+ * {@link EncodingStateRegistry} 
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public interface EncodingStateRegistryLookup {
+    
+    /**
+     * Lookup encoding state registry.
+     *
+     * @return the encoding state registry
+     */
     public EncodingStateRegistry lookup();
 }
