@@ -31,7 +31,7 @@ class CodecMetaClassSupport {
     static final Object[] EMPTY_ARGS = []
     static final String ENCODE_AS_PREFIX="encodeAs"
     static final String DECODE_PREFIX="decode"
-    
+
     /**
      * Adds "encodeAs*" and "decode*" metamethods for given codecClass
      *
@@ -41,7 +41,7 @@ class CodecMetaClassSupport {
     public void configureCodecMethods(GrailsCodecClass codecClass) {
         Closure<String> encodeMethodNameClosure = { String codecName -> "${ENCODE_AS_PREFIX}${codecName}".toString() }
         Closure<String> decodeMethodNameClosure = { String codecName -> "${DECODE_PREFIX}${codecName}".toString() }
-        
+
         String encodeMethodName = encodeMethodNameClosure(codecClass.name)
         String decodeMethodName = decodeMethodNameClosure(codecClass.name)
 
@@ -49,7 +49,8 @@ class CodecMetaClassSupport {
         Closure decoderClosure
         if (Environment.current == Environment.DEVELOPMENT) {
             // Resolve codecs in every call in case of a codec reload
-            encoderClosure = { ->
+            encoderClosure = {
+                ->
                 def encoder = codecClass.getEncoder()
                 if (encoder) {
                     return encoder.encode(delegate)
@@ -61,7 +62,8 @@ class CodecMetaClassSupport {
                 throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS)
             }
 
-            decoderClosure = { ->
+            decoderClosure = {
+                ->
                 def decoder = codecClass.getDecoder()
                 if (decoder) {
                     return decoder.decode(delegate)
@@ -106,8 +108,14 @@ class CodecMetaClassSupport {
             addMetaMethod(methodNameClosure(aliasName), methodClosure)
         }
     }
-    
+
     protected void addMetaMethod(String methodName, Closure closure) {
-        [String, GStringImpl, StringBuffer, StringBuilder, Object].each { it.getMetaClass()."${methodName}" << closure }
+        [
+            String,
+            GStringImpl,
+            StringBuffer,
+            StringBuilder,
+            Object
+        ].each { it.getMetaClass()."${methodName}" << closure }
     }
 }

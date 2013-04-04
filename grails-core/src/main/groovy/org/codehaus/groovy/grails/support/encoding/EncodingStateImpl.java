@@ -25,24 +25,28 @@ import java.util.Set;
 public class EncodingStateImpl implements EncodingState {
     public static final EncodingState UNDEFINED_ENCODING_STATE = new EncodingStateImpl(null);
     private final Set<Encoder> encoders;
-    
+
     /**
      * Default constructor
-     *
-     * @param encoders the encoders
+     * 
+     * @param encoders
+     *            the encoders
      */
     public EncodingStateImpl(Set<Encoder> encoders) {
-        this.encoders=encoders;
+        this.encoders = encoders;
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingState#getEncoders()
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.codehaus.groovy.grails.support.encoding.EncodingState#getEncoders()
      */
     public Set<Encoder> getEncoders() {
         return encoders;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -53,7 +57,8 @@ public class EncodingStateImpl implements EncodingState {
         return result;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override

@@ -78,7 +78,8 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
         /**
          * Convert to html reference.
          * 
-         * @param c     the character to convert
+         * @param c
+         *            the character to convert
          * @return the converted entity, returns null if the character doesn't
          *         have a replacement
          */

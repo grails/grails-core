@@ -23,10 +23,10 @@ import java.util.Set;
  * @since 2.3
  */
 public interface EncodingState {
-    
+
     /**
      * Gets the current encoding state (= encoder that have been applied)
-     *
+     * 
      * @return the encoders that have been applied
      */
     public Set<Encoder> getEncoders();

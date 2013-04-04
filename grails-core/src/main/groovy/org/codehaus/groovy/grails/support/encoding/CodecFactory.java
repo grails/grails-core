@@ -15,25 +15,25 @@
 package org.codehaus.groovy.grails.support.encoding;
 
 /**
- * This interface can be used to tell that a Grails Codec class
- * should use these methods for creating the encoder and decoder instances
- * instead of using conventional encode/decode methods.
+ * This interface can be used to tell that a Grails Codec class should use these
+ * methods for creating the encoder and decoder instances instead of using
+ * conventional encode/decode methods.
  * 
  * @author Lari Hotari
  * @since 2.3
  */
 public interface CodecFactory {
-    
+
     /**
      * Gets the encoder instance.
-     *
+     * 
      * @return the encoder
      */
     Encoder getEncoder();
-    
+
     /**
      * Gets the decoder instance.
-     *
+     * 
      * @return the decoder
      */
     Decoder getDecoder();

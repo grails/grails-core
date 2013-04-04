@@ -14,49 +14,56 @@
  */
 package org.codehaus.groovy.grails.support.encoding;
 
-
 /**
  * EncodingStateRegistry keeps encoding state of CharSequence instances.
- * 
- * Encoding state information is required for the solution that prevents double-encoding a value that is already encoded.
- * In the current implementation, a single EncodingStateRegistry instance is bound to a HTTP request life cycle.
+ * Encoding state information is required for the solution that prevents
+ * double-encoding a value that is already encoded. In the current
+ * implementation, a single EncodingStateRegistry instance is bound to a HTTP
+ * request life cycle.
  * 
  * @author Lari Hotari
  * @since 2.3
  */
 public interface EncodingStateRegistry {
-    
+
     /**
      * Gets the current encoding state for a CharSequence.
-     *
-     * @param string a CharSequence
+     * 
+     * @param string
+     *            a CharSequence
      * @return the encoding state for the CharSequence
      */
     public EncodingState getEncodingStateFor(CharSequence string);
-    
+
     /**
      * Checks if a encoder should be applied to a CharSequence
-     *
-     * @param encoderToApply the encoder to apply
-     * @param string a CharSequence
+     * 
+     * @param encoderToApply
+     *            the encoder to apply
+     * @param string
+     *            a CharSequence
      * @return true, if it should be applied
      */
     public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string);
-    
+
     /**
      * Checks if the CharSequence is encoded with encoder.
-     *
-     * @param encoder the encoder
-     * @param string a CharSequence
+     * 
+     * @param encoder
+     *            the encoder
+     * @param string
+     *            a CharSequence
      * @return true, if it is encoded with encoder
      */
     public boolean isEncodedWith(Encoder encoder, CharSequence string);
-    
+
     /**
      * Registers that the CharSequence has been encoded with encoder
-     *
-     * @param encoder the encoder
-     * @param escaped the CharSequence
+     * 
+     * @param encoder
+     *            the encoder
+     * @param escaped
+     *            the CharSequence
      */
     public void registerEncodedWith(Encoder encoder, CharSequence escaped);
 }
