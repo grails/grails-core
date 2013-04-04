@@ -17,20 +17,17 @@ package org.codehaus.groovy.grails.plugins.codecs;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 
-
 /**
- * HTMLEncoder implementation
- * currently this doesn't add any extra features to XMLEncoder
+ * HTMLEncoder implementation currently this doesn't add any extra features to
+ * XMLEncoder This encoder is for XML, XHTML and HTML5 documents.
  * 
- * This encoder is for XML, XHTML and HTML5 documents.
- *  
  * @see HTML4Encoder
  * @author Lari Hotari
  * @since 2.3
  */
 public class HTMLEncoder extends XMLEncoder {
-    public static final CodecIdentifier HTML_CODEC_IDENTIFIER=new DefaultCodecIdentifier("HTML");
-    
+    public static final CodecIdentifier HTML_CODEC_IDENTIFIER = new DefaultCodecIdentifier("HTML");
+
     public HTMLEncoder() {
         super(HTML_CODEC_IDENTIFIER);
     }

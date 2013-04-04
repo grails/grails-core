@@ -27,54 +27,66 @@ import java.util.Set;
  * @since 2.3
  */
 public final class DefaultEncodingStateRegistry implements EncodingStateRegistry {
-    private Map<Encoder,Set<Integer>> encodingTagIdentityHashCodes=new HashMap<Encoder, Set<Integer>>();
-    
+    private Map<Encoder, Set<Integer>> encodingTagIdentityHashCodes = new HashMap<Encoder, Set<Integer>>();
+
     private Set<Integer> getIdentityHashCodesForEncoder(Encoder encoder) {
         Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoder);
-        if(identityHashCodes==null) {
-            identityHashCodes=new HashSet<Integer>();
+        if (identityHashCodes == null) {
+            identityHashCodes = new HashSet<Integer>();
             encodingTagIdentityHashCodes.put(encoder, identityHashCodes);
         }
         return identityHashCodes;
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#getEncodingStateFor(java.lang.CharSequence)
+    /*
+     * (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#
+     * getEncodingStateFor(java.lang.CharSequence)
      */
     public EncodingState getEncodingStateFor(CharSequence string) {
         int identityHashCode = System.identityHashCode(string);
-        Set<Encoder> result=null;
-        for(Map.Entry<Encoder, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
-            if(entry.getValue().contains(identityHashCode)) {
-                if(result==null) {
-                    result=Collections.singleton(entry.getKey());
-                } else {
-                    if (result.size()==1){
-                        result=new HashSet<Encoder>(result);
-                    }   
+        Set<Encoder> result = null;
+        for (Map.Entry<Encoder, Set<Integer>> entry : encodingTagIdentityHashCodes.entrySet()) {
+            if (entry.getValue().contains(identityHashCode)) {
+                if (result == null) {
+                    result = Collections.singleton(entry.getKey());
+                }
+                else {
+                    if (result.size() == 1) {
+                        result = new HashSet<Encoder>(result);
+                    }
                     result.add(entry.getKey());
                 }
             }
         }
         return result != null ? new EncodingStateImpl(result) : EncodingStateImpl.UNDEFINED_ENCODING_STATE;
     }
-    
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#isEncodedWith(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence)
+
+    /*
+     * (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#
+     * isEncodedWith(org.codehaus.groovy.grails.support.encoding.Encoder,
+     * java.lang.CharSequence)
      */
     public boolean isEncodedWith(Encoder encoder, CharSequence string) {
         return getIdentityHashCodesForEncoder(encoder).contains(System.identityHashCode(string));
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#registerEncodedWith(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence)
+    /*
+     * (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#
+     * registerEncodedWith(org.codehaus.groovy.grails.support.encoding.Encoder,
+     * java.lang.CharSequence)
      */
     public void registerEncodedWith(Encoder encoder, CharSequence escaped) {
         getIdentityHashCodesForEncoder(encoder).add(System.identityHashCode(escaped));
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#shouldEncodeWith(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence)
+    /*
+     * (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#
+     * shouldEncodeWith(org.codehaus.groovy.grails.support.encoding.Encoder,
+     * java.lang.CharSequence)
      */
     public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string) {
         EncodingState encodingState = getEncodingStateFor(string);
@@ -83,30 +95,35 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
 
     /**
      * Checks if encoder should be applied to a input with given encoding state
-     *
-     * @param encoderToApply the encoder to apply
-     * @param currentEncodingState the current encoding state
+     * 
+     * @param encoderToApply
+     *            the encoder to apply
+     * @param currentEncodingState
+     *            the current encoding state
      * @return true, if should encode
      */
     public static boolean shouldEncodeWith(Encoder encoderToApply, EncodingState currentEncodingState) {
-        if(currentEncodingState != null && currentEncodingState.getEncoders() != null) {
-            for(Encoder encoder : currentEncodingState.getEncoders()) {
-                if(isPreviousEncoderSafeOrEqual(encoderToApply, encoder)) {
-                    return false;                            
+        if (currentEncodingState != null && currentEncodingState.getEncoders() != null) {
+            for (Encoder encoder : currentEncodingState.getEncoders()) {
+                if (isPreviousEncoderSafeOrEqual(encoderToApply, encoder)) {
+                    return false;
                 }
             }
-        }            
+        }
         return true;
     }
 
     /**
      * Checks if is previous encoder is already "safe", equal or equivalent
-     *
-     * @param encoderToApply the encoder to apply
-     * @param previousEncoder the previous encoder
+     * 
+     * @param encoderToApply
+     *            the encoder to apply
+     * @param previousEncoder
+     *            the previous encoder
      * @return true, if previous encoder is already "safe", equal or equivalent
      */
     public static boolean isPreviousEncoderSafeOrEqual(Encoder encoderToApply, Encoder previousEncoder) {
-        return previousEncoder==encoderToApply || previousEncoder.isSafe() || previousEncoder.getCodecIdentifier().isEquivalent(encoderToApply.getCodecIdentifier());
+        return previousEncoder == encoderToApply || previousEncoder.isSafe()
+                || previousEncoder.getCodecIdentifier().isEquivalent(encoderToApply.getCodecIdentifier());
     }
 }

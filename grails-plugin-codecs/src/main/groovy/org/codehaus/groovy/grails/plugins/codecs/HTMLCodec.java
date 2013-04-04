@@ -14,7 +14,6 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
-
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
@@ -22,22 +21,22 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
 
 /**
  * Encodes and decodes strings to and from HTML.
- *
+ * 
  * @author Graeme Rocher
  * @author Lari Hotari
  * @since 1.1
  */
 public class HTMLCodec implements CodecFactory {
-    static final String CODEC_NAME="HTML";
-    
-    private static Encoder encoder=new HTMLEncoder();
-    private static Decoder decoder=new HTML4Decoder() {
+    static final String CODEC_NAME = "HTML";
+
+    private static Encoder encoder = new HTMLEncoder();
+    private static Decoder decoder = new HTML4Decoder() {
         @Override
         public CodecIdentifier getCodecIdentifier() {
             return HTMLEncoder.HTML_CODEC_IDENTIFIER;
         }
     };
-    
+
     public Encoder getEncoder() {
         return encoder;
     }
