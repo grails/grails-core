@@ -20,20 +20,25 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.runtime.GStringImpl
 
+
+/**
+ * Helper methods for Codec metaclass operations.
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 class CodecMetaClassSupport {
     static final Object[] EMPTY_ARGS = []
-    
     static final String ENCODE_AS_PREFIX="encodeAs"
     static final String DECODE_PREFIX="decode"
     
+    /**
+     * Adds "encodeAs*" and "decode*" metamethods for given codecClass
+     *
+     * @param codecClass the codec class
+     */
     @CompileStatic
     public void configureCodecMethods(GrailsCodecClass codecClass) {
-        if(codecClass==null) {
-            throw new NullPointerException("Jee")
-        }
-        
-        
-        //String codecName = codecClass.name
         Closure<String> encodeMethodNameClosure = { String codecName -> "${ENCODE_AS_PREFIX}${codecName}".toString() }
         Closure<String> decodeMethodNameClosure = { String codecName -> "${DECODE_PREFIX}${codecName}".toString() }
         

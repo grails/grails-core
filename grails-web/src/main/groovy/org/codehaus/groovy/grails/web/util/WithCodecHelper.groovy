@@ -25,22 +25,51 @@ import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
 
+/**
+ * Helper methods for {@link #withCodec} feature 
+ *
+ * @author Lari Hotari
+ * @since 2.3
+ */
 @CompileStatic
 public class WithCodecHelper {
-    /**  escapes the static html parts coming from the GSP file to output */
+    /**  outCodec escapes the static html parts coming from the GSP file to output */
     public static String OUT_CODEC_NAME="outCodec"
-    /** escapes values inside ${} to output */
+    /** expressionCodec escapes values inside ${} to output */
     public static String EXPRESSION_CODEC_NAME="expressionCodec"
     public static String EXPRESSION_CODEC_NAME_ALIAS="defaultCodec"
-    /**  escapes the static html parts coming from the GSP file to output */
+    /**  templateCodec escapes the static html parts coming from the GSP file to output */
     public static String TEMPLATE_CODEC_NAME="templateCodec"
     
-    /** key to set all codecs at once */
+    /** all is the key to set all codecs at once */
     public static String ALL_CODECS_FALLBACK_KEY_NAME="all"
-    /** key to set out and expression codecs at once */
+    /** name is the key to set out and expression codecs at once */
     public static String OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME="name"
     
     
+	/**
+	 * Executes closure with given codecs
+	 * 
+	 * codecInfo parameter can be a single String value or a java.util.Map.
+	 * When it's a single String value, "outCodec" and "expressionCodec" get set with the given codec 
+	 * When it's a java.util.Map, these keys get used:
+	 * <ul>
+	 * <li>outCodec - escapes the static html parts coming from the GSP file to output</li>
+	 * <li>expressionCodec - escapes values inside ${} to output</li>
+	 * <li>templateCodec - escapes the static html parts coming from the GSP file to output</li>
+	 * </ul>
+	 * These keys set several codecs at once:
+	 * <ul>
+	 * <li>all - sets outCodec, expressionCodec and templateCodec</li>
+	 * <li>name - sets outCodec and expressionCodec</li>
+	 * </ul>
+	 * expressionCodec has an alias "defaultCodec".
+	 *
+	 * @param grailsApplication the grailsApplication instance
+	 * @param codecInfo this parameter is explained above
+	 * @param closure the closure to execute
+	 * @return the return value of the closure
+	 */
 	public static withCodec(GrailsApplication grailsApplication, Object codecInfo, Closure closure) {
 		GroovyPageOutputStack outputStack=GroovyPageOutputStack.currentStack();
 		try {
@@ -51,6 +80,13 @@ public class WithCodecHelper {
 		}
 	}
 
+	/**
+	 * Creates a builder for building a new {@link GroovyPageOutputStackAttributes} instance
+	 *
+	 * @param codecInfo the codec info, see {@link #withCodec} method for more info 
+	 * @param grailsApplication the grails application
+	 * @return the builder instance for building {@link GroovyPageOutputStackAttributes} instance
+	 */
 	public static org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes.Builder createOutputStackAttributesBuilder(Object codecInfo, GrailsApplication grailsApplication) {
 		GroovyPageOutputStackAttributes.Builder builder=new GroovyPageOutputStackAttributes.Builder()
 		builder.inheritPreviousEncoders(true)
@@ -84,6 +120,13 @@ public class WithCodecHelper {
         codecName != null ? encoders[codecName] : null
     }
 
+    /**
+     * Lookup encoder.
+     *
+     * @param grailsApplication the grailsApplication instance
+     * @param codecName the codec name
+     * @return the encoder instance
+     */
     public static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
         GrailsCodecClass codecArtefact = null;
         if(codecName != null && codecName.length() > 0 && !"none".equalsIgnoreCase(codecName)) {

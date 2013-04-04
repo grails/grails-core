@@ -14,6 +14,19 @@
  */
 package org.codehaus.groovy.grails.support.encoding;
 
+/**
+ * Marks a class capable of encoding itself with given Encoder 
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public interface Encodeable {
+    
+    /**
+     * Encode with given encoder.
+     *
+     * @param encoder the encoder
+     * @return the encoded result
+     */
     public CharSequence encode(Encoder encoder);
 }

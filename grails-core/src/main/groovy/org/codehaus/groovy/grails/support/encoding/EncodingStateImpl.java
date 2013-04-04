@@ -16,19 +16,35 @@ package org.codehaus.groovy.grails.support.encoding;
 
 import java.util.Set;
 
+/**
+ * Default implementation of {@link EncodingState}
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public class EncodingStateImpl implements EncodingState {
     public static final EncodingState UNDEFINED_ENCODING_STATE = new EncodingStateImpl(null);
-    
     private final Set<Encoder> encoders;
     
+    /**
+     * Default constructor
+     *
+     * @param encoders the encoders
+     */
     public EncodingStateImpl(Set<Encoder> encoders) {
         this.encoders=encoders;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingState#getEncoders()
+     */
     public Set<Encoder> getEncoders() {
         return encoders;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -37,6 +53,9 @@ public class EncodingStateImpl implements EncodingState {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)

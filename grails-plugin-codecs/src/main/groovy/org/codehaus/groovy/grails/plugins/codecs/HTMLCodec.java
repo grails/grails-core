@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
  * Encodes and decodes strings to and from HTML.
  *
  * @author Graeme Rocher
+ * @author Lari Hotari
  * @since 1.1
  */
 public class HTMLCodec implements CodecFactory {

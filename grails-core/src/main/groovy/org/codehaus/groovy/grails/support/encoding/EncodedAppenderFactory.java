@@ -14,6 +14,20 @@
  */
 package org.codehaus.groovy.grails.support.encoding;
 
+/**
+ * This interface marks an instance capable of getting a EncodedAppender instance that is 
+ * connected to it. For example a buffer provides it's EncodedAppender instance with this
+ * interface.
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public interface EncodedAppenderFactory {
+    
+    /**
+     * Gets the EncodedAppender that is connected to the instance of this implementation.
+     *
+     * @return the EncodedAppender
+     */
     public EncodedAppender getEncodedAppender();
 }
