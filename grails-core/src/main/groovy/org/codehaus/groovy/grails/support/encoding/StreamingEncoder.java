@@ -17,6 +17,29 @@ package org.codehaus.groovy.grails.support.encoding;
 import java.io.IOException;
 
 
+/**
+ * Streaming encoder interface that makes it possible to encode a portion of a CharSequence and 
+ * append it directly to the EncodedAppender instance.
+ * 
+ * This solution makes it possible to just check if the input is ok and only replace the characters in the
+ * input that have to be escaped.
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public interface StreamingEncoder extends Encoder {
+    /**
+     * Encode and append portion of source CharSequence to the appender.
+     *
+     * @param  source
+     *         The source CharSequence
+     * @param  off
+     *         Offset from which to start encoding characters
+     * @param  len
+     *         Number of characters to encode 
+     * @param appender the appender to write to
+     * @param encodingState the current encoding state
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     public void encodeToStream(CharSequence source, int offset, int len, EncodedAppender appender, EncodingState encodingState) throws IOException;
 }

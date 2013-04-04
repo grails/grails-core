@@ -21,6 +21,13 @@ import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 
 
+/**
+ * A codec that escapes some characters for inclusion in XML documents
+ * The decoder part can unescape XML entity references.   
+ *
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public class XMLCodec implements CodecFactory {
     private Encoder encoder=new XMLEncoder();
     private Decoder decoder=new Decoder() {
@@ -34,10 +41,16 @@ public class XMLCodec implements CodecFactory {
         }
     };
     
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecFactory#getEncoder()
+     */
     public Encoder getEncoder() {
         return encoder;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecFactory#getDecoder()
+     */
     public Decoder getDecoder() {
         return decoder;
     }

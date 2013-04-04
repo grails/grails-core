@@ -19,9 +19,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * default implementation of {@link CodecIdentifier}
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public class DefaultCodecIdentifier implements CodecIdentifier {
-    private String codecName;
-    private Set<String> codecAliases;
+    final private String codecName;
+    final private Set<String> codecAliases;
     
     public DefaultCodecIdentifier(String codecName) {
         this(codecName, (Set<String>)null);
@@ -36,14 +42,23 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         this.codecAliases = codecAliases != null ? Collections.unmodifiableSet(codecAliases) : null;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecName()
+     */
     public String getCodecName() {
         return codecName;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecAliases()
+     */
     public Set<String> getCodecAliases() {
         return codecAliases;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#hashCode()
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -53,6 +68,9 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         return result;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
@@ -77,11 +95,17 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         return true;
     }
 
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
     @Override
     public String toString() {
         return "DefaultCodecIdentifier [codecName=" + codecName + ", codecAliases=" + codecAliases + "]";
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#isEquivalent(org.codehaus.groovy.grails.support.encoding.CodecIdentifier)
+     */
     public boolean isEquivalent(CodecIdentifier other) {
         if(this.codecName.equals(other.getCodecName())) {
             return true;

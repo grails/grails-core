@@ -17,6 +17,14 @@ package org.codehaus.groovy.grails.plugins.codecs;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 
+/**
+ * Encoder that is used for making strings safe to be included in a SCRIPT tag
+ * besides normal Javascript escaping, possibly "unsafe" characters are escaped too 
+ * so that it's safe to include an escaped string in a HTML SCRIPT tag. 
+ *
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
     public static final CodecIdentifier JAVASCRIPT_CODEC_IDENTIFIER=new DefaultCodecIdentifier("JavaScript", "JSON", "Json", "Js");
 
@@ -24,6 +32,9 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
         super(JAVASCRIPT_CODEC_IDENTIFIER);
     }
     
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.plugins.codecs.AbstractCharReplacementEncoder#escapeCharacter(char, char)
+     */
     @Override
     protected String escapeCharacter(char ch, char previousChar) {
         switch (ch) {

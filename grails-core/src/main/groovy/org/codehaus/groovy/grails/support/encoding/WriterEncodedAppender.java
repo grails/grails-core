@@ -17,26 +17,50 @@ package org.codehaus.groovy.grails.support.encoding;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * An EncodedAppender implementation that writes to a java.io.Writer .
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public class WriterEncodedAppender extends AbstractEncodedAppender {
     private Writer target;
+    
+    /**
+     * Default constructor
+     *
+     * @param target the target writer
+     */
     public WriterEncodedAppender(Writer target) {
         this.target=target;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender#flush()
+     */
     public void flush() throws IOException {
         target.flush();
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender#write(org.codehaus.groovy.grails.support.encoding.EncodingState, char[], int, int)
+     */
     @Override
     protected void write(EncodingState encodingState, char[] b, int off, int len) throws IOException {
         target.write(b, off, len);
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender#write(org.codehaus.groovy.grails.support.encoding.EncodingState, java.lang.String, int, int)
+     */
     @Override
     protected void write(EncodingState encodingState, String str, int off, int len) throws IOException {
         target.write(str, off, len);        
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender#appendCharSequence(org.codehaus.groovy.grails.support.encoding.EncodingState, java.lang.CharSequence, int, int)
+     */
     @Override
     protected void appendCharSequence(EncodingState encodingState, CharSequence csq, int start, int end) throws IOException {
         if (csq instanceof String) {
@@ -62,6 +86,9 @@ public class WriterEncodedAppender extends AbstractEncodedAppender {
         }
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender#append(org.codehaus.groovy.grails.support.encoding.Encoder, char)
+     */
     @Override
     public void append(Encoder encoder, char character) throws IOException {
         target.write((int)character);

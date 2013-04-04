@@ -19,12 +19,62 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+/**
+ * Abstract base class for implementations of {@link EncodedAppender} interface
+ * 
+ * @author Lari Hotari
+ * @since 2.3
+ */
 public abstract class AbstractEncodedAppender implements EncodedAppender {
+    
+    /**
+     * Append a portion of a char array to the buffer and attach the encodingState information to it
+     *
+     * @param encodingState the new encoding state of the char array
+     * @param  b
+     *         a char array
+     * @param  off
+     *         Offset from which to start encoding characters
+     * @param  len
+     *         Number of characters to encode 
+
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     protected abstract void write(EncodingState encodingState, char[] b, int off, int len) throws IOException;
+    
+    /**
+     * Append a portion of a string to the buffer and attach the encodingState information to it
+     *
+     * @param encodingState the new encoding state of the string
+     * @param  str
+     *         A String
+     * @param  off
+     *         Offset from which to start encoding characters
+     * @param  len
+     *         Number of characters to encode 
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     protected abstract void write(EncodingState encodingState, String str, int off, int len) throws IOException;    
+    
+    /**
+     * Append a portion of a CharSequence to the buffer and attach the encodingState information to it
+     *
+     * @param encodingState the new encoding state of the CharSequence portion
+     * @param str a CharSequence
+     * @param   start   the start index, inclusive
+     * @param   end     the end index, exclusive
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
     protected abstract void appendCharSequence(EncodingState encodingState, CharSequence str, int start, int end) throws IOException;
+    
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodedAppender#append(org.codehaus.groovy.grails.support.encoding.Encoder, char)
+     */
     public abstract void append(Encoder encoder, char character) throws IOException;
     
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodedAppender#append(org.codehaus.groovy.grails.support.encoding.Encoder, org.codehaus.groovy.grails.support.encoding.EncodingState, char[], int, int)
+     */
     public void append(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException {
         if(b==null || len <= 0) {
             return;
@@ -53,6 +103,9 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
         return new EncodingStateImpl(newEncoders);
     }
     
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodedAppender#append(org.codehaus.groovy.grails.support.encoding.Encoder, org.codehaus.groovy.grails.support.encoding.EncodingState, java.lang.CharSequence, int, int)
+     */
     public void append(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len) throws IOException {
         if(str==null || len <= 0) {
             return;
@@ -75,23 +128,44 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
         }            
     }
 
-    protected boolean shouldEncode(Encoder encoder, EncodingState encodingState) {
-        return encoder != null && (encodingState==null || DefaultEncodingStateRegistry.shouldEncodeWith(encoder, encodingState));
+    /**
+     * Check if the encoder should be used to a input with certain encodingState
+     *
+     * @param encoderToApply the encoder to apply
+     * @param encodingState the current encoding state
+     * @return true, if should encode
+     */
+    protected boolean shouldEncode(Encoder encoderToApply, EncodingState encodingState) {
+        return encoderToApply != null && (encodingState==null || DefaultEncodingStateRegistry.shouldEncodeWith(encoderToApply, encodingState));
     }
 
-    protected void encodeAndWrite(Encoder encoder, EncodingState newEncoders, CharSequence source)
+    /**
+     * Encode and write input to buffer using a non-streaming encoder
+     *
+     * @param encoder the encoder to use
+     * @param newEncodingState the new encoding state after encoder has been applied
+     * @param input the input CharSequence
+     * @throws IOException Signals that an I/O exception has occurred.
+     */
+    protected void encodeAndWrite(Encoder encoder, EncodingState newEncodingState, CharSequence input)
             throws IOException {
-        Object encoded = encoder.encode(source);     
+        Object encoded = encoder.encode(input);     
         if(encoded != null) {
             String encodedStr = String.valueOf(encoded);
-            write(newEncoders, encodedStr, 0, encodedStr.length());
+            write(newEncodingState, encodedStr, 0, encodedStr.length());
         }
     }
    
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodedAppender#append(org.codehaus.groovy.grails.support.encoding.Encoder, org.codehaus.groovy.grails.support.encoding.StreamEncodeable)
+     */
     public void append(Encoder encoder, StreamEncodeable streamEncodeable) throws IOException {
         streamEncodeable.encodeTo(this, encoder);
     }
     
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodedAppender#flush()
+     */
     public void flush() throws IOException {
         
     }
