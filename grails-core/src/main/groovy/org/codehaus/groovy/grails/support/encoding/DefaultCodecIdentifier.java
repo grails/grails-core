@@ -28,11 +28,11 @@ import java.util.Set;
 public class DefaultCodecIdentifier implements CodecIdentifier {
     final private String codecName;
     final private Set<String> codecAliases;
-    
+
     public DefaultCodecIdentifier(String codecName) {
         this(codecName, (Set<String>)null);
     }
-    
+
     public DefaultCodecIdentifier(String codecName, String... codecAliases) {
         this(codecName, (Set<String>)(codecAliases != null ? new HashSet<String>(Arrays.asList(codecAliases)) : null));
     }
@@ -42,21 +42,28 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         this.codecAliases = codecAliases != null ? Collections.unmodifiableSet(codecAliases) : null;
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecName()
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecName
+     * ()
      */
     public String getCodecName() {
         return codecName;
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecAliases()
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecAliases
+     * ()
      */
     public Set<String> getCodecAliases() {
         return codecAliases;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -68,7 +75,8 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         return result;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -95,7 +103,8 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         return true;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
@@ -103,15 +112,20 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         return "DefaultCodecIdentifier [codecName=" + codecName + ", codecAliases=" + codecAliases + "]";
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#isEquivalent(org.codehaus.groovy.grails.support.encoding.CodecIdentifier)
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.codehaus.groovy.grails.support.encoding.CodecIdentifier#isEquivalent
+     * (org.codehaus.groovy.grails.support.encoding.CodecIdentifier)
      */
     public boolean isEquivalent(CodecIdentifier other) {
-        if(this.codecName.equals(other.getCodecName())) {
+        if (this.codecName.equals(other.getCodecName())) {
             return true;
-        } else if(this.codecAliases != null && this.codecAliases.contains(other.getCodecName())){
+        }
+        else if (this.codecAliases != null && this.codecAliases.contains(other.getCodecName())) {
             return true;
-        } else if(other.getCodecAliases() != null && other.getCodecAliases().contains(this.codecName)) {
+        }
+        else if (other.getCodecAliases() != null && other.getCodecAliases().contains(this.codecName)) {
             return true;
         }
         return false;

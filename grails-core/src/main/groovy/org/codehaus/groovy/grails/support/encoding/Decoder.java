@@ -21,11 +21,12 @@ package org.codehaus.groovy.grails.support.encoding;
  * @since 2.3
  */
 public interface Decoder extends CodecIdentifierProvider {
-    
+
     /**
      * Decode given input object
-     *
-     * @param o the input object
+     * 
+     * @param o
+     *            the input object
      * @return the decoded object
      */
     public Object decode(Object o);

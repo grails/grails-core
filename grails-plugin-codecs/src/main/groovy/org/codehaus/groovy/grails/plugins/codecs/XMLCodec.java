@@ -20,36 +20,40 @@ import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 
-
 /**
- * A codec that escapes some characters for inclusion in XML documents
- * The decoder part can unescape XML entity references.   
- *
+ * A codec that escapes some characters for inclusion in XML documents The
+ * decoder part can unescape XML entity references.
+ * 
  * @author Lari Hotari
  * @since 2.3
  */
 public class XMLCodec implements CodecFactory {
-    private Encoder encoder=new XMLEncoder();
-    private Decoder decoder=new Decoder() {
-        public CodecIdentifier getCodecIdentifier() { 
+    private Encoder encoder = new XMLEncoder();
+    private Decoder decoder = new Decoder() {
+        public CodecIdentifier getCodecIdentifier() {
             return XMLEncoder.XML_CODEC_IDENTIFIER;
         }
 
         public Object decode(Object o) {
-            if(o==null) return null;
+            if (o == null)
+                return null;
             return StringEscapeUtils.unescapeXml(String.valueOf(o));
         }
     };
-    
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.CodecFactory#getEncoder()
+
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.codehaus.groovy.grails.support.encoding.CodecFactory#getEncoder()
      */
     public Encoder getEncoder() {
         return encoder;
     }
 
-    /* (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.CodecFactory#getDecoder()
+    /*
+     * (non-Javadoc)
+     * @see
+     * org.codehaus.groovy.grails.support.encoding.CodecFactory#getDecoder()
      */
     public Decoder getDecoder() {
         return decoder;

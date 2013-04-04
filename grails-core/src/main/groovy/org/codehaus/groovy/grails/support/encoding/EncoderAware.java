@@ -15,17 +15,17 @@
 package org.codehaus.groovy.grails.support.encoding;
 
 /**
- * Marks a instance capable of providing information about the current encoder that is 
- * in use
+ * Marks a instance capable of providing information about the current encoder
+ * that is in use
  * 
  * @author Lari Hotari
  * @since 2.3
  */
 public interface EncoderAware {
-    
+
     /**
      * Gets the current encoder in use.
-     *
+     * 
      * @return the encoder
      */
     public Encoder getEncoder();
