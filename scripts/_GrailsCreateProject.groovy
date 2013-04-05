@@ -30,6 +30,7 @@ includeTargets << grailsScript("_GrailsPackage")
 includeTargets << grailsScript("_PluginDependencies")
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("IntegrateWith")
+includeTargets << grailsScript("_GrailsWrapper")
 
 grailsAppName = ""
 projectType = "app"
@@ -47,6 +48,13 @@ target(createApp: "Creates a Grails application for the given name") {
 
     // Set the default version number for the application
     updateMetadata("app.version": grailsAppVersion ?: "0.1")
+
+    if(!argsMap['skip-wrapper']) {
+        event 'StatusUpdate', ['Generating Wrapper']
+        generateWrapper()
+    } else {
+        event 'StatusUpdate', ['Skipping Wrapper Generation']
+    }
 
     event("StatusFinal", ["Created Grails Application at ${new File(basedir).canonicalPath}"])
 }
