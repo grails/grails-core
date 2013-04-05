@@ -51,7 +51,7 @@ target (generateWrapper: "Generates the Grails wrapper") {
     }
     ant.replace(dir: targetDir, includes: '*.properties', token: '@distributationUrl@', value: grailsDistUrl)
     ant.replace(dir: basedir, includes: 'grailsw*', token: '@wrapperDir@', value: grailsWrapperDir)
-    ant.chmod(file: 'grailsw', perm: 'u+x')
+    ant.chmod(file: "${basedir}/grailsw", perm: 'u+x')
 
     springloadedFiles = []
     new File("${grailsHome}/lib/org.springsource.springloaded/springloaded-core/jars/").eachFileMatch( groovy.io.FileType.FILES, { it ==~ /springloaded-core-.*/ }) {
