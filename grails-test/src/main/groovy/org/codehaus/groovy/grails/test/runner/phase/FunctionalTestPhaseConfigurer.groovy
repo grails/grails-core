@@ -50,7 +50,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
 
     FunctionalTestPhaseConfigurer(GrailsProjectRunner projectRunner) {
         this.projectRunner = projectRunner
-        this.buildSettings = projectRunner.buildSettings
+        buildSettings = projectRunner.buildSettings
         isForkedRun = buildSettings.forkSettings.run
     }
 
@@ -64,18 +64,19 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         packager.packageApplication()
         final isServerRunning = projectRunner.isServerRunning()
         if (!isServerRunning)  {
-            def grailsProjectPluginLoader = new GrailsProjectPluginLoader(null, packager.classLoader, packager.buildSettings, projectRunner.buildEventListener)
+            def grailsProjectPluginLoader = new GrailsProjectPluginLoader(null, packager.classLoader,
+                packager.buildSettings, projectRunner.buildEventListener)
             packager.generateWebXml(grailsProjectPluginLoader.loadPlugins())
         }
 
         registryCleaner = MetaClassRegistryCleaner.createAndRegister()
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
 
-
         if (baseUrl) {
             functionalBaseUrl = baseUrl
         } else {
-            functionalBaseUrl = (httpsBaseUrl ? 'https' : 'http') + "://${projectRunner.serverHost}:$projectRunner.serverPort$projectRunner.serverContextPath/"
+            functionalBaseUrl = (httpsBaseUrl ? 'https' : 'http') +
+                "://${projectRunner.serverHost}:$projectRunner.serverPort$projectRunner.serverContextPath/"
         }
 
         if (!isServerRunning) {
@@ -106,7 +107,9 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                     try {
                         def appCtx = Holders.applicationContext
                         PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
-                    } catch (IllegalStateException | IllegalArgumentException e) {
+                    } catch (IllegalStateException e) {
+                        // no appCtx configured, ignore
+                    } catch (IllegalArgumentException e) {
                         // no appCtx configured, ignore
                     }
                 }
@@ -125,7 +128,9 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             GrailsWebApplicationContext appCtx
             try {
                 appCtx = (GrailsWebApplicationContext)Holders.applicationContext
-            } catch (IllegalStateException | IllegalArgumentException e ) {
+            } catch (IllegalStateException e ) {
+                // no configured app ctx
+            } catch (IllegalArgumentException e ) {
                 // no configured app ctx
             }
             if (appCtx) {

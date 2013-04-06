@@ -16,7 +16,6 @@
 
 package org.codehaus.groovy.grails.resolve.maven.aether
 
-import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.ExcludeResolver
 import org.codehaus.groovy.grails.resolve.reporting.GraphNode
@@ -27,7 +26,7 @@ import org.codehaus.groovy.grails.resolve.reporting.GraphNode
  * @since 2.3
  * @author Graeme Rocher
  */
-class AetherExcludeResolver implements ExcludeResolver{
+class AetherExcludeResolver implements ExcludeResolver {
 
     AetherDependencyManager dependencyManager
 
@@ -41,7 +40,7 @@ class AetherExcludeResolver implements ExcludeResolver{
         Map<Dependency, List<Dependency>> excludeMap = [:]
         final applicationDependencies = dependencyManager.applicationDependencies
         AetherDependencyManager newDependencyManager = (AetherDependencyManager)dependencyManager.createCopy()
-        for(Dependency d in applicationDependencies) {
+        for (Dependency d in applicationDependencies) {
             newDependencyManager.parseDependencies {
                 delegate.dependencies {
                     compile "$d.group:$d.name:$d.version"
@@ -49,10 +48,10 @@ class AetherExcludeResolver implements ExcludeResolver{
             }
         }
         AetherGraphNode graphNode = newDependencyManager.resolveToGraphNode("compile")
-        for(GraphNode n in graphNode.children) {
+        for (GraphNode n in graphNode.children) {
             List<Dependency> transitives = []
             excludeMap[n.dependency] = transitives
-            for(GraphNode t in n.children) {
+            for (GraphNode t in n.children) {
                 transitives << t.dependency
             }
         }
