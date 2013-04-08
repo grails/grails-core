@@ -43,6 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.support.encoding.AbstractEncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.CharArrayAccessible;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Encodeable;
@@ -56,7 +57,6 @@ import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateImpl;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
-import org.springframework.jca.cci.connection.NotSupportedRecordFactory;
 
 /**
  * <p>
@@ -1036,7 +1036,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         }
 
         protected void appendCharSequence(final EncodingState encodingState, final CharSequence csq, final int start, final int end) throws IOException {
-            if (csq instanceof String || csq instanceof StringBuffer || csq instanceof StringBuilder) {
+            if (csq instanceof String || csq instanceof StringBuffer || csq instanceof StringBuilder || csq instanceof CharArrayAccessible) {
                 int len = end-start;
                 int charsLeft = len;
                 int currentOffset = start;
@@ -1052,12 +1052,15 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                     else if (csq instanceof StringBuilder) {
                         allocBuffer.writeStringBuilder((StringBuilder)csq, currentOffset, writeChars);
                     }
+                    else if (csq instanceof CharArrayAccessible) {
+                        allocBuffer.writeCharArrayAccessible((CharArrayAccessible)csq, currentOffset, writeChars);
+                    }
                     charsLeft -= writeChars;
                     currentOffset += writeChars;
                 }
             } else {
                 String str=csq.subSequence(start, end).toString();
-                write(null, str, 0, str.length());
+                write(encodingState, str, 0, str.length());
             }
         }
 
@@ -1472,6 +1475,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
         public final void writeStringBuffer(final StringBuffer stringBuffer, final int off, final int len) throws IOException {
             applyEncoders();
             stringBuffer.getChars(off, off+len, buffer, used);
+            used += len;
+        }
+        
+        public final void writeCharArrayAccessible(final CharArrayAccessible charArrayAccessible, final int off, final int len) throws IOException {
+            applyEncoders();
+            charArrayAccessible.getChars(off, off+len, buffer, used);
             used += len;
         }
 

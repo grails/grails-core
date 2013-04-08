@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.support.encoding;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
@@ -23,7 +25,7 @@ import java.util.Set;
  * @since 2.3
  */
 public class EncodingStateImpl implements EncodingState {
-    public static final EncodingState UNDEFINED_ENCODING_STATE = new EncodingStateImpl(null);
+    public static final EncodingState UNDEFINED_ENCODING_STATE = new EncodingStateImpl((Set<Encoder>)null);
     private final Set<Encoder> encoders;
 
     /**
@@ -34,6 +36,10 @@ public class EncodingStateImpl implements EncodingState {
      */
     public EncodingStateImpl(Set<Encoder> encoders) {
         this.encoders = encoders;
+    }
+    
+    public EncodingStateImpl(Encoder encoder) {
+        this.encoders = Collections.singleton(encoder);
     }
 
     /*
@@ -77,5 +83,19 @@ public class EncodingStateImpl implements EncodingState {
         else if (!encoders.equals(other.encoders))
             return false;
         return true;
+    }
+
+    public EncodingState appendEncoder(Encoder encoder) {
+        Set<Encoder> newEncoders;
+        if (encoders == null || encoders.size()==0) {
+            newEncoders = Collections.singleton(encoder);
+        } else if (encoders.size()==1 && encoders.contains(encoder)) {
+            return this;
+        } else {
+            newEncoders = new LinkedHashSet<Encoder>();
+            newEncoders.addAll(encoders);
+            newEncoders.add(encoder);
+        }
+        return new EncodingStateImpl(newEncoders);    
     }
 }

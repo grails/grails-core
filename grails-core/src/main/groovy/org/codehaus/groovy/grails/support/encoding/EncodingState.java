@@ -30,4 +30,6 @@ public interface EncodingState {
      * @return the encoders that have been applied
      */
     public Set<Encoder> getEncoders();
+    
+    public EncodingState appendEncoder(Encoder encoder);
 }
