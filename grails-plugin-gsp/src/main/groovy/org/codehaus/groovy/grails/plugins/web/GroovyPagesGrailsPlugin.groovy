@@ -43,7 +43,7 @@ import org.codehaus.groovy.grails.plugins.web.taglib.SitemeshTagLib
 import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
-import org.codehaus.groovy.grails.web.filters.JavascriptLibraryFilters
+import org.codehaus.groovy.grails.web.filters.JavascriptLibraryHandlerInterceptor
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
@@ -74,6 +74,7 @@ class GroovyPagesGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
     def dependsOn = [core: version, i18n: version]
     def observe = ['controllers']
+    def loadAfter = ['filters']
 
     def providedArtefacts = [
         ApplicationTagLib,
@@ -84,8 +85,7 @@ class GroovyPagesGrailsPlugin {
         RenderTagLib,
         ValidationTagLib,
         PluginTagLib,
-        SitemeshTagLib,
-        JavascriptLibraryFilters
+        SitemeshTagLib
     ]
 
     /**
@@ -93,6 +93,8 @@ class GroovyPagesGrailsPlugin {
      */
     def doWithApplicationContext = { ApplicationContext ctx ->
         ctx.groovyPagesTemplateEngine.clearPageCache()
+
+        ctx.filterInterceptor?.addHandler ctx.javascriptLibraryHandlerInterceptor
     }
 
     /**
@@ -240,6 +242,8 @@ class GroovyPagesGrailsPlugin {
         }
 
         errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
+
+        javascriptLibraryHandlerInterceptor(JavascriptLibraryHandlerInterceptor, ref('grailsApplication'))
     }
 
     static String transformToValidLocation(String location) {
