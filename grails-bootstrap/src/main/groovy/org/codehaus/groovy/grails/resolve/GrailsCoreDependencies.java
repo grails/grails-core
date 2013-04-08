@@ -84,7 +84,6 @@ public class GrailsCoreDependencies {
             new Dependency("org.grails", "grails-plugin-gsp", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-i18n", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-log4j", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-scaffolding", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-services", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-servlets", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-mimetypes", grailsVersion, true),
@@ -100,14 +99,13 @@ public class GrailsCoreDependencies {
         testDependencies = Arrays.asList(
             new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
             new Dependency("org.grails", "grails-test", grailsVersion, true)
-
         );
 
         String[] loggingExcludes = {"javax.mail:mail", "javax.jms:jms", "com.sun.jdmk:jmxtools", "com.sun.jmx:jmxri"};
         runtimeDependencies = Arrays.asList(
             new Dependency("com.h2database", "h2", h2Version, true),
-            new Dependency("log4j", "log4j", log4jVersion, true, loggingExcludes)
-
+            new Dependency("log4j", "log4j", log4jVersion, true, loggingExcludes),
+            new Dependency("org.grails", "grails-resources", grailsVersion, true)
         );
 
         if (java5compatible) {

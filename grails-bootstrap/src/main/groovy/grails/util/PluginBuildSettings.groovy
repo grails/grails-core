@@ -233,7 +233,7 @@ class PluginBuildSettings {
     /**
      * Returns an array of the inplace plugin locations.
      */
-    @CompileStatic
+    //@CompileStatic
     Resource[] getInlinePluginDirectories() {
         Resource[] locations = (Resource[])cache['inlinePluginLocations']
         if (locations == null) {
@@ -590,7 +590,7 @@ class PluginBuildSettings {
      *
      * @return An array of all artefact resources
      */
-    @CompileStatic
+    //@CompileStatic
     Resource[] getArtefactResourcesForCurrentEnvironment() {
         Resource[] artefactResources = (Resource[])cache['allArtefactResourcesForEnvironment']
         if (artefactResources == null) {
@@ -824,7 +824,7 @@ class PluginBuildSettings {
         return descriptor
     }
 
-    @CompileStatic
+    //@CompileStatic
     private Resource[] resolveResources(String key, boolean processExcludes, Closure c) {
         Resource[] resources = (Resource[])cache[key]
         if (!resources) {

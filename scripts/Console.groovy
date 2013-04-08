@@ -22,8 +22,10 @@
  * @since 0.4
  */
 
-import org.codehaus.groovy.grails.project.ui.GrailsProjectConsole
 import grails.ui.console.GrailsSwingConsole
+
+import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
+import org.codehaus.groovy.grails.project.ui.GrailsProjectConsole
 
 includeTargets << grailsScript("_GrailsBootstrap")
 

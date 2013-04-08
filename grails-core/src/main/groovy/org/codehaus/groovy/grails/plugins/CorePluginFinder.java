@@ -110,7 +110,6 @@ public class CorePluginFinder implements ParentApplicationContextAware {
         loadCorePlugin("org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.services.ServicesGrailsPlugin");
         loadCorePlugin("org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin");
-        loadCorePlugin("org.codehaus.groovy.grails.plugins.scaffolding.ScaffoldingGrailsPlugin");
     }
 
     @SuppressWarnings("rawtypes")

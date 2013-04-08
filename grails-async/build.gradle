@@ -1,3 +1,14 @@
 dependencies {
     compile 'org.codehaus.gpars:gpars:1.0.0'
 }
+
+eclipse {
+    classpath {
+       file {
+           whenMerged { classpath ->
+                // greclipse doesn't support ASTs and tests in same project
+                classpath.entries.removeAll { entry -> entry.kind == 'src' && entry.path == "src/test/groovy" }
+           }
+       }
+    }
+}

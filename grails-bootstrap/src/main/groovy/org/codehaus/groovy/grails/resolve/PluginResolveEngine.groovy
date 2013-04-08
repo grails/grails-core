@@ -47,23 +47,91 @@ final class PluginResolveEngine {
         dependencyManager.createCopy(settings)
     }
 
-    void renderInstallInfo(String pluginName, Writer writer) {
-        final text = new URL("http://grails.org/api/v1.0/plugin/$pluginName?format=xml").getText(connectTimeout: 500, readTimeout: 3000)
-        def xml = new XmlSlurper().parseText(text)
+    void renderInstallInfo(String pluginName, String version, Writer writer) {
 
         writer << """
 Since Grails 2.3, it is no longer possible to install plugins using the install-plugin command.
 Plugins must be declared in the grails-app/conf/BuildConfig.groovy file.
+"""
 
+        def pluginXml
+        if (dependencyManager instanceof IvyDependencyManager) {
+            pluginXml = resolvePluginMetadata(pluginName, version)
+            if (!version) {
+                version = pluginXml.@version.text()
+            }
+        }
+        else {
+            String url = "http://grails.org/api/v1.0/plugin/$pluginName"
+            if (version) {
+                url += "/$version"
+            }
+            try {
+                final String text = new URL("$url?format=xml").getText(connectTimeout: 500, readTimeout: 3000)
+                pluginXml = new XmlSlurper().parseText(text)
+                if (!version) {
+                    version = pluginXml.version.text()
+                }
+            }
+            catch (FileNotFoundException ignored) {}
+        }
+
+        if (!pluginXml) {
+            if (version) {
+                writer << """
+ERROR: Plugin '$pluginName' not found with version '$pluginVersion'
+"""
+            }
+            else {
+                writer << """
+ERROR: Plugin '$pluginName' not found
+"""
+            }
+            return
+        }
+
+        writer << """
 Example:
 grails.project.dependency.resolution = {
-  ...
-  plugins {
-      compile ":$pluginName:${xml.version.text()}"
-  }
+   ...
+   plugins {
+      compile ":$pluginName:$version"
+   }
 }
 """
+
+        def repos = []
+        def ignored = [
+            'http://plugins.grails.org',
+            'http://repo.grails.org/grails/plugins/',
+            'http://repo.grails.org/grails/core/',
+            'http://svn.codehaus.org/grails/trunk/grails-plugins']
+
+        if (pluginXml.repositories.children().size()) {
+            for (repo in pluginXml.repositories.repository) {
+                String url = repo.@url.text().trim()
+                if (url in ignored) {
+                    continue
+                }
+                if (url == 'http://repo1.maven.org/maven2/') {
+                    url = 'mavenCentral()'
+                }
+                repos << url
+            }
+        }
+
+        if (repos) {
+            writer << """
+Additionally, add these custom repositories to the "repositories" block:
+"""
+            for (repo in repos) {
+                writer << """\
+   $repo
+"""
+            }
+        }
     }
+
     /**
      * Renders plugin info to the target writer
      *
@@ -74,6 +142,7 @@ grails.project.dependency.resolution = {
     GPathResult renderPluginInfo(String pluginName, String pluginVersion, OutputStream outputStream) {
         renderPluginInfo(pluginName, pluginVersion, new OutputStreamWriter(outputStream))
     }
+
     /**
      * Renders plugin info to the target writer
      *
@@ -183,11 +252,7 @@ To get info about specific release of plugin 'grails plugin-info [NAME] [VERSION
 
 To get list of all plugins type 'grails list-plugins'
 
-To install latest version of plugin type 'grails install-plugin [NAME]'
-
-To install specific version of plugin type 'grails install-plugin [NAME] [VERSION]'
-
-For further info visit http://grails.org/Plugins
+For further info visit http://grails.org/plugins
 '''
     }
 

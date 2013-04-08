@@ -237,6 +237,13 @@ subprojects { project ->
             ant.copy(todir:homeDistDir, flatten:true, includeEmptyDirs:false) {
                 fileset dir:distInstallDir
             }
+            // This is a temporary hack.  Since https://github.com/grails/grails-core/commit/f7c5882057386853fdbf30c42b2212cfebad3c01
+            // the wrapper support jar is not being copied to the dist dir.  Pending a real solution, this should work.
+            if(project.name == 'grails-wrapper') {
+                ant.copy(todir: homeDistDir) {
+                    fileset dir: 'build/libs', includes: '*wrapper-support*'
+                }
+            }
         }
 
         uploadPublished {

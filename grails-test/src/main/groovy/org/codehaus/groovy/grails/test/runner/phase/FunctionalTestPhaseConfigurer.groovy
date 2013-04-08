@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.test.runner.phase
 import grails.util.BuildSettings
 import grails.util.Holders
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.project.container.GrailsProjectRunner
@@ -49,32 +50,33 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
 
     FunctionalTestPhaseConfigurer(GrailsProjectRunner projectRunner) {
         this.projectRunner = projectRunner
-        this.buildSettings = projectRunner.buildSettings
+        buildSettings = projectRunner.buildSettings
         isForkedRun = buildSettings.forkSettings.run
     }
 
     @Override
     void prepare(Binding testExecutionContext, Map<String, Object> testOptions) {
-        grails.util.Holders.pluginManager = null
-        grails.util.Holders.grailsApplication = null
+        Holders.pluginManager = null
+        Holders.grailsApplication = null
 
         warMode = testOptions.war ? true : false
         final packager = projectRunner.projectPackager
         packager.packageApplication()
         final isServerRunning = projectRunner.isServerRunning()
         if (!isServerRunning)  {
-
-            def grailsProjectPluginLoader = new GrailsProjectPluginLoader(null, packager.classLoader, packager.buildSettings, projectRunner.buildEventListener)
+            def grailsProjectPluginLoader = new GrailsProjectPluginLoader(null, packager.classLoader,
+                packager.buildSettings, projectRunner.buildEventListener)
             packager.generateWebXml(grailsProjectPluginLoader.loadPlugins())
         }
-        registryCleaner = org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner.createAndRegister()
-        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
 
+        registryCleaner = MetaClassRegistryCleaner.createAndRegister()
+        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
 
         if (baseUrl) {
             functionalBaseUrl = baseUrl
         } else {
-            functionalBaseUrl = (httpsBaseUrl ? 'https' : 'http') + "://${projectRunner.serverHost}:$projectRunner.serverPort$projectRunner.serverContextPath/"
+            functionalBaseUrl = (httpsBaseUrl ? 'https' : 'http') +
+                "://${projectRunner.serverHost}:$projectRunner.serverPort$projectRunner.serverContextPath/"
         }
 
         if (!isServerRunning) {
@@ -105,12 +107,13 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                     try {
                         def appCtx = Holders.applicationContext
                         PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
-                    } catch (IllegalStateException | IllegalArgumentException e) {
+                    } catch (IllegalStateException e) {
+                        // no appCtx configured, ignore
+                    } catch (IllegalArgumentException e) {
                         // no appCtx configured, ignore
                     }
                 }
             }
-
         }
         else {
             existingServer = true
@@ -125,7 +128,9 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             GrailsWebApplicationContext appCtx
             try {
                 appCtx = (GrailsWebApplicationContext)Holders.applicationContext
-            } catch (IllegalStateException | IllegalArgumentException e ) {
+            } catch (IllegalStateException e ) {
+                // no configured app ctx
+            } catch (IllegalArgumentException e ) {
                 // no configured app ctx
             }
             if (appCtx) {

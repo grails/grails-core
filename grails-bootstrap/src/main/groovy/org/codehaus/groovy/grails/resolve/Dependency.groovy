@@ -47,7 +47,7 @@ class Dependency {
      * Array of tokens for the group, name and version
      */
     String[] getTokens() {
-        [group, name, version]
+        [group, name, version] as String[]
     }
 
     String[] getExcludeArray() {

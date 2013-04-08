@@ -167,7 +167,6 @@ abstract class ForkedGrailsProcess {
             if (isForkingReserveEnabled()) {
                 List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
                 forkReserveProcess(reserveCmd, executionContext)
-
             }
 
             return attachOutputListener(process)
@@ -259,9 +258,17 @@ abstract class ForkedGrailsProcess {
         else {
             javaCommand = "java" // assume it is correctly configured using PATH
         }
-        List<String> cmd = [javaCommand, "-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(),
-                            "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true",
-                            "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString]
+        
+        List<String> cmd = [javaCommand]
+
+        if (jvmArgs) {
+            cmd.addAll(jvmArgs)
+        }
+
+        cmd.addAll(["-Xmx${maxMemory}M".toString(), "-Xms${minMemory}M".toString(),
+            "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true",
+            "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString])
+
         if (debug && !isReserve) {
             cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", debugArgs])
         }
@@ -279,10 +286,9 @@ abstract class ForkedGrailsProcess {
         if (reloadingAgent != null) {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded=profile=grails"])
         }
+
         cmd << getClass().name
-        if (jvmArgs) {
-            cmd.addAll(jvmArgs)
-        }
+
         return cmd
     }
 
@@ -293,8 +299,7 @@ abstract class ForkedGrailsProcess {
         tempFile.deleteOnExit()
 
         tempFile.withOutputStream { OutputStream fos ->
-            def oos = new ObjectOutputStream(fos)
-            oos.writeObject(executionContext)
+            new ObjectOutputStream(fos).writeObject(executionContext)
         }
         tempFile
     }
@@ -308,7 +313,9 @@ abstract class ForkedGrailsProcess {
             if (file.exists()) {
                 return (ExecutionContext)file.withInputStream { InputStream fis ->
                     def ois = new ObjectInputStream(fis)
-                    return (ExecutionContext)ois.readObject()
+                    ExecutionContext executionContext = (ExecutionContext)ois.readObject()
+                    executionContext.process = this
+                    return executionContext
                 }
             }
         }
@@ -491,7 +498,11 @@ class ExecutionContext implements Serializable {
     File grailsHome
     Map argsMap = new LinkedHashMap()
 
-    ForkedGrailsProcess process
+    transient ForkedGrailsProcess process
+
+    ExecutionContext() {
+        // empty constructor for deserialization
+    }
 
     ExecutionContext(ForkedGrailsProcess process) {
         this.process = process

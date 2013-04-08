@@ -39,7 +39,6 @@ else {
     ant.property(resource: "grails.build.properties")
 }
 
-
 // Set up various build settings. System properties take precedence
 // over those defined in BuildSettings, which in turn take precedence
 // over the defaults.
@@ -48,14 +47,12 @@ else {
 // uses the same PluginBuildSettings instance as the scripts.
 GrailsPluginUtils.pluginBuildSettings = pluginSettings
 
-
 // Other useful properties.
 grailsApp = null
 projectWatcher = null
 
 isPluginProject = baseFile.listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
 
-shouldPackageTemplates = false
 config = new ConfigObject()
 
 // Pattern that matches artefacts in the 'grails-app' directory.
@@ -95,7 +92,7 @@ ant.path(id: "core.classpath") {
 }
 
 // Closure for unpacking a JAR file that's on the classpath.
-grailsUnpack = {Map args ->
+grailsUnpack = { Map args ->
     def dir = args["dest"] ?: "."
     def src = args["src"]
     def overwriteOption = args["overwrite"] == null ? true : args["overwrite"]
@@ -103,8 +100,17 @@ grailsUnpack = {Map args ->
     // Can't unjar a file from within a JAR, so we copy it to
     // the destination directory first.
     try {
-        ant.copy(todir: dir) {
-            javaresource(name: src)
+        File templatesDir = new File(grailsSettings.grailsWorkDir, 'app-templates')
+        File jar = new File(templatesDir, src)
+        if (!args.skipTemplates && jar.exists()) {
+            // use the customized templates
+            ant.copy(todir: dir, file: jar)
+        }
+        else {
+            // extract from grails-resources-VERSION.jar
+            ant.copy(todir: dir) {
+                javaresource(name: src)
+            }
         }
 
         // Now unjar it, excluding the META-INF directory.
@@ -119,6 +125,3 @@ grailsUnpack = {Map args ->
         ant.delete(file: "${dir}/${src}", failonerror:false)
     }
 }
-
-
-

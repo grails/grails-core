@@ -1,6 +1,6 @@
-import org.apache.commons.dbcp.BasicDataSource
+import org.apache.tomcat.jdbc.pool.DataSource
 beans {
-	dataSource(BasicDataSource) {
+	dataSource(DataSource) {
 		driverClassName = "org.h2.Driver"
 		url = "jdbc:h2:mem:grailsDB"
 		username = "sa"

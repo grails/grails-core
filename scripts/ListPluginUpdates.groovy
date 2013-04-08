@@ -15,6 +15,9 @@
  */
 import groovy.xml.dom.DOMCategory
 
+import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
+import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("_PluginDependencies")
 
@@ -44,13 +47,33 @@ def getAvailablePluginVersions = {
     return plugins
 }
 
+eachRepository = { Closure callable ->
+    def dependencyManager = grailsSettings.dependencyManager
+    if (dependencyManager instanceof IvyDependencyManager) {
+        for (resolver in dependencyManager.chainResolver.resolvers) {
+            if (resolver instanceof GrailsRepoResolver) {
+                pluginsList = resolver.getPluginList(new File(grailsWorkDir, "plugins-list-${resolver.name}.xml"))
+                if (pluginsList != null) {
+                    callable(resolver.name, resolver.repositoryRoot)
+                } else {
+                    grailsConsole.error "An error occurred resolving plugin list from resolver [${resolver.name} - ${resolver.repositoryRoot}]."
+                }
+            }
+        }
+    }
+    else {
+        dependencyManager.repositories.each { r ->
+            callable.call(r.id, r.url)
+        }
+    }
+}
+
 def getInstalledPluginVersions = {
     def plugins = [:]
-    def pluginXmls = readAllPluginXmlMetadata()
-    for (p in pluginXmls) {
+    for (p in readAllPluginXmlMetadata()) {
         def name = p.@name.text()
         def version = p.@version.text()
-        plugins."$name" = version
+        plugins[name] = version
     }
     return plugins
 }

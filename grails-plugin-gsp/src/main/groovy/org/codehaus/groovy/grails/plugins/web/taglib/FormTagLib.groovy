@@ -46,6 +46,8 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
 
+    protected SimpleTypeConverter typeConverter = new SimpleTypeConverter()
+
     void afterPropertiesSet() {
         if (applicationContext.containsBean('requestDataValueProcessor')) {
             requestDataValueProcessor = applicationContext.getBean('requestDataValueProcessor', RequestDataValueProcessor)
@@ -917,69 +919,67 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         }
 
         // create options from list
-        if (from) {
-            from.eachWithIndex {el, i ->
-                def keyValue = null
-                writer << '<option '
-                if (keys) {
-                    keyValue = keys[i]
-                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
+        from.eachWithIndex {el, i ->
+            def keyValue
+            writer << '<option '
+            if (keys) {
+                keyValue = keys[i]
+                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
+            }
+            else if (optionKey) {
+                def keyValueObject
+                if (optionKey instanceof Closure) {
+                    keyValue = optionKey(el)
                 }
-                else if (optionKey) {
-                    def keyValueObject = null
-                    if (optionKey instanceof Closure) {
-                        keyValue = optionKey(el)
-                    }
-                    else if (el != null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
-                        keyValue = el.ident()
-                        keyValueObject = el
-                    }
-                    else {
-                        keyValue = el[optionKey]
-                        keyValueObject = el
-                    }
-                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, keyValueObject)
+                else if (el != null && optionKey == 'id' && grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, el.getClass().name)) {
+                    keyValue = el.ident()
+                    keyValueObject = el
                 }
                 else {
-                    keyValue = el
-                    writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
+                    keyValue = el[optionKey]
+                    keyValueObject = el
                 }
-                writer << '>'
-                if (optionValue) {
-                    if (optionValue instanceof Closure) {
-                        writer << optionValue(el).toString().encodeAsHTML()
-                    }
-                    else {
-                        writer << el[optionValue].toString().encodeAsHTML()
-                    }
+                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, keyValueObject)
+            }
+            else {
+                keyValue = el
+                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer)
+            }
+            writer << '>'
+            if (optionValue) {
+                if (optionValue instanceof Closure) {
+                    writer << optionValue(el).toString().encodeAsHTML()
                 }
-                else if (el instanceof MessageSourceResolvable) {
-                    writer << messageSource.getMessage(el, locale)
+                else {
+                    writer << el[optionValue].toString().encodeAsHTML()
                 }
-                else if (valueMessagePrefix) {
-                    def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
-                    if (message != null) {
-                        writer << message.encodeAsHTML()
-                    }
-                    else if (keyValue && keys) {
-                        def s = el.toString()
-                        if (s) writer << s.encodeAsHTML()
-                    }
-                    else if (keyValue) {
-                        writer << keyValue.encodeAsHTML()
-                    }
-                    else {
-                        def s = el.toString()
-                        if (s) writer << s.encodeAsHTML()
-                    }
+            }
+            else if (el instanceof MessageSourceResolvable) {
+                writer << messageSource.getMessage(el, locale)
+            }
+            else if (valueMessagePrefix) {
+                def message = messageSource.getMessage("${valueMessagePrefix}.${keyValue}", null, null, locale)
+                if (message != null) {
+                    writer << message.encodeAsHTML()
+                }
+                else if (keyValue && keys) {
+                    def s = el.toString()
+                    if (s) writer << s.encodeAsHTML()
+                }
+                else if (keyValue) {
+                    writer << keyValue.encodeAsHTML()
                 }
                 else {
                     def s = el.toString()
                     if (s) writer << s.encodeAsHTML()
                 }
-                writer << '</option>'
-                writer.println()
             }
+            else {
+                def s = el.toString()
+                if (s) writer << s.encodeAsHTML()
+            }
+            writer << '</option>'
+            writer.println()
         }
         // close tag
         writer << '</select>'
@@ -999,7 +999,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         else if (value instanceof Collection) {
             // first try keyValue
             selected = value.contains(keyValue)
-            if (! selected && el != null) {
+            if (!selected && el != null) {
                 selected = value.contains(el)
             }
         }
@@ -1010,9 +1010,8 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         }
         else if (keyClass && value != null) {
             try {
-                def typeConverter = new SimpleTypeConverter()
                 value = typeConverter.convertIfNecessary(value, keyClass)
-                selected = (keyValue == value)
+                selected = keyValue == value
             }
             catch (e) {
                 // ignore

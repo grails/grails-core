@@ -24,15 +24,15 @@
 
 includeTargets << grailsScript("_GrailsInit")
 
-target ('default': "Installs the artifact and scaffolding templates") {
+target (installTemplates: "Installs the artifact templates") {
     depends(checkVersion, parseArguments)
-    event 'InstallTemplatesStart', [ 'Installing Templates...' ]
+
     targetDir = "${basedir}/src/templates"
     overwrite = false
 
     // only if template dir already exists in, ask to overwrite templates
     if (new File(targetDir).exists()) {
-        if (!isInteractive || confirmInput("Overwrite existing templates? [y/n]","overwrite.templates")) {
+        if (!isInteractive || confirmInput("Overwrite existing templates? ","overwrite.templates")) {
             overwrite = true
         }
     }
@@ -41,11 +41,13 @@ target ('default': "Installs the artifact and scaffolding templates") {
     }
 
     copyGrailsResources("$targetDir/artifacts", "src/grails/templates/artifacts/*", overwrite)
-    copyGrailsResources("$targetDir/scaffolding", "src/grails/templates/scaffolding/*", overwrite)
     copyGrailsResources("$targetDir/testing", "src/grails/templates/testing/*", overwrite)
     ant.mkdir(dir:"${targetDir}/war")
     copyGrailsResource("${targetDir}/war/web.xml", grailsResource("src/war/WEB-INF/web${servletVersion}.template.xml"), overwrite)
 
-    event("StatusUpdate", [ "Templates installed successfully"])
-    event 'InstallTemplatesEnd', [ 'Finished Installing Templates.' ]
+    event 'InstallTemplates', [overwrite]
+
+    event("StatusUpdate", ["Templates installed successfully"])
 }
+
+setDefaultTarget 'installTemplates'

@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.reload
 
-import org.codehaus.groovy.grails.plugins.scaffolding.MockHibernateGrailsPlugin
+import org.codehaus.groovy.grails.plugins.MockHibernateGrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
 
 /**

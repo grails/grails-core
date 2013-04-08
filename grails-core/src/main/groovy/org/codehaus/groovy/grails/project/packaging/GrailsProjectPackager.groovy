@@ -31,7 +31,6 @@ import java.util.concurrent.Future
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.compiler.PackagingException
@@ -378,8 +377,11 @@ class GrailsProjectPackager extends BaseSettingsApi {
         }
 
         def ant = new GrailsConsoleAntBuilder(ant.project)
-        ant.native2ascii(src: "$basedir/grails-app/i18n", dest: i18nDir,
-                         includes: "**/*.properties", encoding: "UTF-8")
+        File grailsAppI18n = new File(basedir, 'grails-app/i18n')
+        if (grailsAppI18n.exists()) {
+            ant.native2ascii(src: grailsAppI18n.path, dest: i18nDir,
+                             includes: "**/*.properties", encoding: "UTF-8")
+        }
 
         PluginBuildSettings settings = pluginSettings
         def i18nPluginDirs = settings.pluginI18nDirectories
@@ -419,14 +421,19 @@ class GrailsProjectPackager extends BaseSettingsApi {
     protected void packageJspFiles() {
         def logic = {
             def ant = new GrailsConsoleAntBuilder(ant.project)
+            File viewsDir = new File(basedir, 'grails-app/views')
+            if (!viewsDir.exists()) {
+                return
+            }
+
             def files = ant.fileScanner {
-                fileset(dir:"$basedir/grails-app/views", includes:"**/*.jsp")
+                fileset(dir: viewsDir, includes:"**/*.jsp")
             }
 
             if (files.iterator().hasNext()) {
                 ant.mkdir(dir:"$basedir/web-app/WEB-INF/grails-app/views")
                 ant.copy(todir:"$basedir/web-app/WEB-INF/grails-app/views") {
-                    fileset(dir:"$basedir/grails-app/views", includes:"**/*.jsp")
+                    fileset(dir: viewsDir, includes:"**/*.jsp")
                 }
             }
         }
@@ -495,18 +502,6 @@ class GrailsProjectPackager extends BaseSettingsApi {
     void packageTlds() {
         // We don't know until runtime what servlet version to use, so install the relevant TLDs now
         copyGrailsResources("$basedir/web-app/WEB-INF/tld", "src/war/WEB-INF/tld/${servletVersion}/*", false)
-    }
-
-    void packageTemplates(scaffoldDir) {
-        ant.mkdir(dir:scaffoldDir)
-        if (new File(basedir, "src/templates/scaffolding").exists()) {
-            ant.copy(todir:scaffoldDir, overwrite:true) {
-                fileset(dir:"$basedir/src/templates/scaffolding", includes:"**")
-            }
-        }
-        else {
-            copyGrailsResources(scaffoldDir, "src/grails/templates/scaffolding/*")
-        }
     }
 
     /**

@@ -282,9 +282,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     }
 
     void printCompiledSource(template, params = [:]) {
-        def text =  getCompiledSource(template, params)
-        println "----- GSP SOURCE -----"
-        println text
+//        def text =  getCompiledSource(template, params)
+//        println "----- GSP SOURCE -----"
+//        println text
     }
 
     def getCompiledSource(template, params = [:]) {

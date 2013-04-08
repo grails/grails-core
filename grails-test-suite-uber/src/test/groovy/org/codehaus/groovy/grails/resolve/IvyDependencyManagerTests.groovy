@@ -642,8 +642,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         }
 
         assertTrue("all default dependencies should be inherited", manager.dependencyDescriptors.every { it.inherited == true })
-        assertEquals 16, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
-        assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
+        assertEquals 15, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 1, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
@@ -680,8 +680,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             defaultDependencyClosure()
         }
 
-        assertEquals 16, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
-        assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
+        assertEquals 15, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
+        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
         assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 1, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
@@ -931,12 +931,12 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             test "junit:junit:4.8.1"
 
             runtime "apache-taglibs:standard:1.1.2",
+                    "org.apache.tomcat:tomcat-jdbc:7.0.37",
                     "org.aspectj:aspectjweaver:1.6.2",
                     "org.aspectj:aspectjrt:1.6.2",
                     "cglib:cglib-nodep:2.1_3",
                     "commons-beanutils:commons-beanutils:1.8.0",
                     "commons-collections:commons-collections:3.2.1",
-                    "commons-dbcp:commons-dbcp:1.3",
                     "commons-fileupload:commons-fileupload:1.2.1",
                     "commons-io:commons-io:1.4",
                     "commons-lang:commons-lang:2.4",

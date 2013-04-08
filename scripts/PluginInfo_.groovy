@@ -15,6 +15,7 @@
  */
 
 import grails.util.BuildSettings
+
 import org.codehaus.groovy.grails.resolve.PluginResolveEngine
 
 /**
@@ -25,28 +26,20 @@ import org.codehaus.groovy.grails.resolve.PluginResolveEngine
  * @since 0.5.5
  */
 
-includeTargets << grailsScript("_GrailsPlugins")
-
-def displayPluginInfo = { pluginName, version ->
-
-    BuildSettings settings = grailsSettings
-    def pluginResolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
-    pluginXml = pluginResolveEngine.renderPluginInfo(pluginName, version, System.out)
-}
-
+includeTargets << grailsScript("_GrailsPackage")
 
 target(pluginInfo:"Implementation target") {
     depends(parseArguments)
 
-    if (argsMap.params) {
-        def pluginName = argsMap.params[0]
-        def version = argsMap.params.size() > 1 ? argsMap.params[1] : null
-
-        displayPluginInfo(pluginName, version)
-    }
-    else {
+    if (!argsMap.params) {
         event("StatusError", ["Usage: grails plugin-info <plugin-name> [version]"])
+        return
     }
+
+    def pluginName = argsMap.params[0]
+    def version = argsMap.params.size() > 1 ? argsMap.params[1] : null
+
+    new PluginResolveEngine(grailsSettings.dependencyManager, grailsSettings).renderPluginInfo(pluginName, version, System.out)
 }
 
 setDefaultTarget("pluginInfo")

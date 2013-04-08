@@ -74,10 +74,6 @@ target(generateWebXml : "Generates the web.xml file") {
     projectPackager.generateWebXml(pluginManager)
 }
 
-target(packageTemplates: "Packages templates into the app") {
-    projectPackager.packageTemplates(scaffoldDir)
-}
-
 target(packageTlds:"packages tld definitions for the correct servlet version") {
     projectPackager.packageTlds()
 }

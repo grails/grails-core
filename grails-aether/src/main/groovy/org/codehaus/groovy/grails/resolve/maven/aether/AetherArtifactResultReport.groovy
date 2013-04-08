@@ -61,11 +61,11 @@ class AetherArtifactResultReport implements DependencyReport {
     }
 
     List<File> getJarFiles() {
-        return allArtifacts.findAll { File f -> f.name.endsWith(".jar")}
+        return allArtifacts.findAll { File f -> f.name.endsWith(".jar")} as List
     }
 
     List<File> getPluginZips() {
-        return allArtifacts.findAll { File f -> f.name.endsWith(".zip")}
+        return allArtifacts.findAll { File f -> f.name.endsWith(".zip")} as List
     }
 
     File[] getFiles() {

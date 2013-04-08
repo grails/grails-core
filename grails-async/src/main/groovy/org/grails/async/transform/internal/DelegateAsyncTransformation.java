@@ -171,7 +171,6 @@ public class DelegateAsyncTransformation implements ASTTransformation {
 
 
     private class NoopDelegateAsyncTransactionalMethodTransformer implements DelegateAsyncTransactionalMethodTransformer {
-        @Override
         public void transformTransactionalMethod(ClassNode classNode,ClassNode delegateClassNode, MethodNode methodNode, ListExpression promiseDecoratorLookupArguments) {
             // noop
         }

@@ -36,9 +36,9 @@ class JavascriptTagLib implements ApplicationContextAware {
     /**
      * Mappings to the relevant files to be included for each library.
      */
-    static final INCLUDED_LIBRARIES = "org.codehaus.grails.INCLUDED_JS_LIBRARIES"
-    static final INCLUDED_JS = "org.codehaus.grails.INCLUDED_JS"
-    static final CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER"
+    public static final String INCLUDED_LIBRARIES = "org.codehaus.grails.INCLUDED_JS_LIBRARIES"
+    static final String INCLUDED_JS = "org.codehaus.grails.INCLUDED_JS"
+    static final String CONTROLLER = "org.codehaus.groovy.grails.CONTROLLER"
     static final LIBRARY_MAPPINGS = [:]
     static final PROVIDER_MAPPINGS = [:]
 

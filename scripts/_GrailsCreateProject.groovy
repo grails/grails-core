@@ -25,15 +25,22 @@ import grails.util.Metadata
  * @since 0.4
  */
 
-includeTargets << grailsScript("_GrailsPlugins")
+includeTargets << grailsScript("_GrailsClean")
+includeTargets << grailsScript("_GrailsPackage")
+includeTargets << grailsScript("_PluginDependencies")
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("IntegrateWith")
+includeTargets << grailsScript("_GrailsWrapper")
 
 grailsAppName = ""
 projectType = "app"
+boolean skipTemplates = false
 
 target(createApp: "Creates a Grails application for the given name") {
     depends(parseArguments, appName)
+
+    if (argsMap['skip-templates']) skipTemplates = true
+    
     initProject()
 
     // Create a message bundle to get the user started.
@@ -41,6 +48,13 @@ target(createApp: "Creates a Grails application for the given name") {
 
     // Set the default version number for the application
     updateMetadata("app.version": grailsAppVersion ?: "0.1")
+
+    if(!argsMap['skip-wrapper']) {
+        event 'StatusUpdate', ['Generating Wrapper']
+        generateWrapper()
+    } else {
+        event 'StatusUpdate', ['Skipping Wrapper Generation']
+    }
 
     event("StatusFinal", ["Created Grails Application at ${new File(basedir).canonicalPath}"])
 }
@@ -99,8 +113,8 @@ target(createPlugin: "The implementation target") {
 target(initProject: "Initialise an application or plugin project") {
     depends(createStructure, updateAppProperties)
 
-    grailsUnpack(dest: basedir, src: "grails-shared-files.jar")
-    grailsUnpack(dest: basedir, src: "grails-$projectType-files.jar")
+    grailsUnpack(dest: basedir, src: "grails-shared-files.jar", skipTemplates: skipTemplates)
+    grailsUnpack(dest: basedir, src: "grails-$projectType-files.jar", skipTemplates: skipTemplates)
     integrateEclipse()
 
     // make sure Grails central repo is prepped for default plugin set installation

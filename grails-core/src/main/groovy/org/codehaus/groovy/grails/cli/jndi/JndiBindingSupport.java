@@ -67,8 +67,8 @@ public class JndiBindingSupport {
         SimpleNamingContextBuilder builder = new SimpleNamingContextBuilder();
 
         if (jndiConfig != null) {
-            // ensure the commons-dbcp factory is used
-            System.setProperty("javax.sql.DataSource.Factory","org.apache.commons.dbcp.BasicDataSourceFactory");
+            // ensure the Tomcat Pool factory is used
+            System.setProperty("javax.sql.DataSource.Factory", "org.apache.tomcat.jdbc.pool.DataSourceFactory");
 
             for (Object o : jndiConfig.entrySet()) {
                 Map.Entry entry = (Map.Entry)o;
@@ -141,7 +141,9 @@ public class JndiBindingSupport {
         public void handleBinding(SimpleNamingContextBuilder builder,
                 String entryName, Map entryProperties) {
             try {
-                Object ds = BeanUtils.instantiate(Class.forName("org.apache.commons.dbcp.BasicDataSource",true, Thread.currentThread().getContextClassLoader()));
+                Object ds = BeanUtils.instantiate(
+                        Class.forName("org.apache.tomcat.jdbc.pool.DataSource", true,
+                                Thread.currentThread().getContextClassLoader()));
                 bindProperties(ds, entryProperties);
                 builder.bind(entryName, ds);
             }

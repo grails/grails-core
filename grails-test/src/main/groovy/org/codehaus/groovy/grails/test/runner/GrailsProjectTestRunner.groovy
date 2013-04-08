@@ -33,17 +33,16 @@ import org.codehaus.groovy.grails.test.runner.phase.TestPhaseConfigurer
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 
 /**
- *
- * The default test runner that runs Grails tests. By default configured to run only unit tests. To run other kinds of tests (functional, integration etc.) additional {@link TestPhaseConfigurer} instances need
+ * The default test runner that runs Grails tests. By default configured to run only unit tests. To run other
+ * kinds of tests (functional, integration etc.) additional {@link TestPhaseConfigurer} instances need
  * to be registered with the #testFeatureDiscovery property
- *
  *
  * TODO: Verify fitnesse, cucumber, guard, and clover plugins still work
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-class GrailsProjectTestRunner extends BaseSettingsApi{
+class GrailsProjectTestRunner extends BaseSettingsApi {
 
     private static final GrailsConsole CONSOLE = GrailsConsole.getInstance()
 
@@ -92,7 +91,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
     File junitReportStyleDir
     boolean createTestReports = true
     boolean testsFailed = false
-    GrailsProjectWatcher projectWatcher = null
+    GrailsProjectWatcher projectWatcher
     GrailsProjectPackager projectPackager
     AntBuilder ant
     GrailsProjectTestCompiler projectTestCompiler
@@ -103,15 +102,14 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
         super(projectPackager.buildSettings, projectPackager.buildEventListener, projectPackager.isInteractive)
 
         this.projectPackager = projectPackager
-        this.projectTestCompiler = new GrailsProjectTestCompiler(projectPackager.buildEventListener, projectPackager.pluginBuildSettings, projectPackager.classLoader)
-        this.ant = projectPackager.ant
+        projectTestCompiler = new GrailsProjectTestCompiler(projectPackager.buildEventListener, projectPackager.pluginBuildSettings, projectPackager.classLoader)
+        ant = projectPackager.ant
         // The 'styledir' argument to the 'junitreport' ant task (null == default provided by Ant)
         if (buildSettings.grailsHome) {
             junitReportStyleDir = new File(buildSettings.grailsHome, "src/resources/tests")
             if (!junitReportStyleDir.exists()) {
                 junitReportStyleDir = new File(buildSettings.grailsHome, "grails-resources/src/grails/home/tests")
             }
-
         }
 
         testReportsDir = buildSettings.testReportsDir
@@ -121,23 +119,20 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
         buildEventListener.addGrailsBuildListener(new JUnitReportProcessor())
         testEventPublisher = new GrailsTestEventPublisher(buildEventListener)
 
-        this.testNames = lookupTestPatterns()
+        testNames = lookupTestPatterns()
 
         // initialize the default binding
-        final context = testExecutionContext
-        initialiseContext(context)
+        initialiseContext(testExecutionContext)
     }
 
     @CompileStatic
     void initialiseContext(Binding context) {
-        context.setVariable("grailsSettings", this.projectPackager.buildSettings)
+        context.setVariable("grailsSettings", projectPackager.buildSettings)
         context.setVariable("testOptions", testOptions)
         context.setVariable("classLoader", Thread.currentThread().contextClassLoader)
-        context.setVariable("resolveResources", { String pattern ->
-            resolveResources(pattern)
-        })
-        context.setVariable("testReportsDir", this.testReportsDir)
-        context.setVariable("junitReportStyleDir", this.junitReportStyleDir)
+        context.setVariable("resolveResources", { String pattern -> resolveResources(pattern) })
+        context.setVariable("testReportsDir", testReportsDir)
+        context.setVariable("junitReportStyleDir", junitReportStyleDir)
         context.setVariable("reportFormats", reportFormats)
         context.setVariable("ant", ant)
         context.setVariable("unitTests", testFeatureDiscovery.unitTests)
@@ -153,7 +148,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
 
     @CompileStatic
     void runAllTests(Map<String, String> argsMap, boolean triggerEvents = true) {
-        testExecutionContext.setVariable("serverContextPath", this.projectPackager.configureServerContextPath())
+        testExecutionContext.setVariable("serverContextPath", projectPackager.configureServerContextPath())
 
         // The test targeting patterns
         List<String> testTargeters = []
@@ -224,7 +219,6 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
             new GrailsProjectCleaner(buildSettings, buildEventListener).cleanAll()
         }
 
-        ant.mkdir(dir: testReportsDir)
         ant.mkdir(dir: "${testReportsDir}/html")
         ant.mkdir(dir: "${testReportsDir}/plain")
 
@@ -265,8 +259,8 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
         }
 
         // Using targetPhasesAndTypes, filter down convertedPhases into filteredPhases
-        Map filteredPhases = null
-        if (targetPhasesAndTypes.size() == 0) {
+        Map filteredPhases
+        if (targetPhasesAndTypes.isEmpty()) {
             filteredPhases = convertedPhases // no type or phase targeting was applied
         }
         else {
@@ -334,8 +328,9 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
         }
 
         testsFailed ? 1 : 0
-        if (triggerEvents)
+        if (triggerEvents) {
             buildEventListener.triggerEvent("AllTestsEnd", testsFailed)
+        }
     }
 
     def getFailedTests() {
@@ -370,9 +365,9 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
 
         try {
             def relativePathToSource = type.relativeSourcePath
-            File dest = null
+            File dest
             if (relativePathToSource) {
-                def source = new File("${testSourceDir}", relativePathToSource)
+                def source = new File(testSourceDir, relativePathToSource)
                 if (!source.exists()) return // no source, no point continuing
 
                 dest = new File(buildSettings.testClassesDir, relativePathToSource)
@@ -387,36 +382,38 @@ class GrailsProjectTestRunner extends BaseSettingsApi{
 
     @CompileStatic
     void runTests(GrailsTestType type, File compiledClassesDir) {
-        def testCount = type.prepare(testTargetPatterns.toArray(new GrailsTestTargetPattern[testTargetPatterns.size()]), compiledClassesDir, testExecutionContext)
+        def testCount = type.prepare(testTargetPatterns.toArray(new GrailsTestTargetPattern[testTargetPatterns.size()]),
+            compiledClassesDir, testExecutionContext)
 
-        if (testCount) {
-            try {
-                buildEventListener.triggerEvent("TestSuiteStart", type.name)
-                CONSOLE.updateStatus "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
+        if (!testCount) {
+            return
+        }
 
-                def start = new Date()
-                def result = type.run(testEventPublisher)
-                def end = new Date()
+        try {
+            buildEventListener.triggerEvent("TestSuiteStart", type.name)
+            CONSOLE.updateStatus "Running ${testCount} $type.name test${testCount > 1 ? 's' : ''}..."
 
-                def delta = (end.time - start.time) / 1000
-                def minutes = (delta / 60).toInteger()
-                def seconds = (delta - minutes * 60).toInteger()
+            long start = System.currentTimeMillis()
+            def result = type.run(testEventPublisher)
+            long end = System.currentTimeMillis()
 
-                testCount = result.passCount + result.failCount
-                CONSOLE.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${minutes}m ${seconds}s"
-                CONSOLE.lastMessage = ""
+            def delta = (end - start) / 1000
+            def minutes = (delta / 60).toInteger()
+            def seconds = (delta - minutes * 60).toInteger()
 
-                if (result.failCount > 0) testsFailed = true
-                buildEventListener.triggerEvent("TestSuiteEnd", type.name)
+            testCount = result.passCount + result.failCount
+            CONSOLE.addStatus "Completed $testCount $type.name test${testCount > 1 ? 's' : ''}, ${result.failCount} failed in ${minutes}m ${seconds}s"
+            CONSOLE.lastMessage = ""
 
-            }
-            catch (Throwable e) {
-                CONSOLE.error "Error running $type.name tests: ${e.message}", e
-                testsFailed = true
-            }
-            finally {
-                type.cleanup()
-            }
+            if (result.failCount > 0) testsFailed = true
+            buildEventListener.triggerEvent("TestSuiteEnd", type.name)
+        }
+        catch (Throwable e) {
+            CONSOLE.error "Error running $type.name tests: ${e.message}", e
+            testsFailed = true
+        }
+        finally {
+            type.cleanup()
         }
     }
 }

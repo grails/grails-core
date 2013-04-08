@@ -44,13 +44,13 @@ public class JspRenderInputTag extends RequestContextAwareTag {
     protected int doStartTagInternal() throws Exception {
 
         if (StringUtils.isBlank(property)) {
-            throw new JspTagException("Tag [scaffold] missing required attribute [property]");
+            throw new JspTagException("Tag [renderInput] missing required attribute [property]");
         }
         if (StringUtils.isBlank(bean)) {
-            throw new JspTagException("Tag [scaffold] missing required attribute [bean]");
+            throw new JspTagException("Tag [renderInput] missing required attribute [bean]");
         }
         if (!ExpressionEvaluationUtils.isExpressionLanguage(bean)) {
-            throw new JspTagException("Attribute [bean] of tag [scaffold] must be a JSTL expression");
+            throw new JspTagException("Attribute [bean] of tag [renderInput] must be a JSTL expression");
         }
 
         @SuppressWarnings("unused")
@@ -58,7 +58,7 @@ public class JspRenderInputTag extends RequestContextAwareTag {
         try {
             Object beanInstance = ExpressionEvaluationUtils.evaluate("bean", bean, Object.class, pageContext);
             if (beanInstance == null) {
-                throw new JspTagException("Bean [" + bean + "] referenced by tag [scaffold] cannot be null");
+                throw new JspTagException("Bean [" + bean + "] referenced by tag [renderInput] cannot be null");
             }
 
             GrailsTagRegistry tagRegistry = GrailsTagRegistry.getInstance();
@@ -74,7 +74,7 @@ public class JspRenderInputTag extends RequestContextAwareTag {
         }
         catch (InvalidPropertyException ipe) {
             throw new JspException("Attribute [property] with value [" + property +
-                    "] is not a valid property of bean [" + bean + "] in tag [scaffold]", ipe);
+                    "] is not a valid property of bean [" + bean + "] in tag [renderInput]", ipe);
         }
         return SKIP_BODY;
     }

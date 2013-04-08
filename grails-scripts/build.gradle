@@ -8,7 +8,6 @@ dependencies {
 
     scripts project(":grails-web"),
             project(':grails-docs'),
-            project(':grails-crud'),
             project(':grails-plugin-controllers'),
             project(':grails-plugin-log4j'),
             project(":grails-test"),
