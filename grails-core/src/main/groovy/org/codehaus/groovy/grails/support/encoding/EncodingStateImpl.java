@@ -86,6 +86,7 @@ public class EncodingStateImpl implements EncodingState {
     }
 
     public EncodingState appendEncoder(Encoder encoder) {
+        if(encoder==null) return this;
         Set<Encoder> newEncoders;
         if (encoders == null || encoders.size()==0) {
             newEncoders = Collections.singleton(encoder);
