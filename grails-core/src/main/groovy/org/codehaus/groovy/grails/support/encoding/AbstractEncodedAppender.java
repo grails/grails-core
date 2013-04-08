@@ -150,6 +150,16 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
             appendCharSequence(encodingState, str, off, off + len);
         }
     }
+    
+    public void appendEncoded(Encoder encoder, EncodingState encodingState, char[] b, int off, int len)
+            throws IOException {
+        write(appendEncoders(encoder, encodingState), b, off, len);
+    }
+    
+    public void appendEncoded(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len)
+            throws IOException {
+        appendCharSequence(appendEncoders(encoder, encodingState), str, off, off + len);
+    }
 
     /**
      * Check if the encoder should be used to a input with certain encodingState

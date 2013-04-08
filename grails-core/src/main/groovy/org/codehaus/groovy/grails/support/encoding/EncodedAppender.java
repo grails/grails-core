@@ -42,6 +42,25 @@ public interface EncodedAppender {
      */
     public void append(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len)
             throws IOException;
+    
+    /**
+     * Appends an encoded portion of a string to the buffer
+     *
+     * @param encoder
+     *            the encoder that has been applied
+     * @param encodingState
+     *            the previous encoding state of the string
+     * @param str
+     *            A String
+     * @param off
+     *            Offset from which to start encoding characters
+     * @param len
+     *            Number of characters to encode
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
+    public void appendEncoded(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len)
+            throws IOException;
 
     /**
      * Encodes a portion of a char array and appends it to the buffer.
@@ -60,37 +79,48 @@ public interface EncodedAppender {
      *             Signals that an I/O exception has occurred.
      */
     public void append(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException;
-
+    
     /**
-     * Encodes a {@link StreamEncodeable} instance and appends it to the buffer
+     * Appends an encoded portion of a char array to the buffer.
      * 
      * @param encoder
-     *            the encoder to use
-     * @param streamEncodeable
-     *            the instance to encode
+     *            the encoder that has been applied
+     * @param encodingState
+     *            the previous encoding state of the char array
+     * @param b
+     *            a char array
+     * @param off
+     *            Offset from which to start encoding characters
+     * @param len
+     *            Number of characters to encode
      * @throws IOException
      *             Signals that an I/O exception has occurred.
+     */
+    public void appendEncoded(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException;
+
+    /**
+     * Encodes a {@link StreamEncodeable} instance and appends it to the buffer.
+     *
+     * @param encoder the encoder to use
+     * @param streamEncodeable the instance to encode
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     public void append(Encoder encoder, StreamEncodeable streamEncodeable) throws IOException;
 
     /**
-     * Encodes a single char and appends it to the buffer
-     * 
-     * @param encoder
-     *            the encoder to use
-     * @param ch
-     *            a char
-     * @throws IOException
-     *             Signals that an I/O exception has occurred.
+     * Encodes a single char and appends it to the buffer.
+     *
+     * @param encoder the encoder to use
+     * @param ch a char
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     public void append(Encoder encoder, char ch) throws IOException;
 
     /**
      * Flush the internal buffer and write the buffered input to a possible
-     * destination
-     * 
-     * @throws IOException
-     *             Signals that an I/O exception has occurred.
+     * destination.
+     *
+     * @throws IOException Signals that an I/O exception has occurred.
      */
     public void flush() throws IOException;
 }
