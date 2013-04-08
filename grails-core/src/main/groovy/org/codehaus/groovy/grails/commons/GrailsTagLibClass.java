@@ -29,6 +29,7 @@ public interface GrailsTagLibClass extends InjectableGrailsClass {
 
     String RETURN_OBJECT_FOR_TAGS_FIELD_NAME = "returnObjectForTags";
     String ENCODE_AS_FOR_TAGS_FIELD_NAME = "encodeAsForTags";
+    String DEFAULT_ENCODE_AS_FIELD_NAME = "defaultEncodeAs";
 
     /**
      * @param tagName The name of the tag
