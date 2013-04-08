@@ -261,18 +261,21 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                             // get rid of leading slash
                             v = v.substring(SLASH.length());
                         }
-                        uri.append(SLASH).append(new URI(null, null, v, null).toString());
+                        String[] segs = v.split(SLASH);
+                        for (String segment : segs) {
+                            uri.append(SLASH).append(encode(segment, encoding));
+                        } 
                     }
                     else if (v.length() > 0) {
                         // original behavior
-                        uri.append(SLASH).append(new URI(null, null, v, null).toString());
+                        uri.append(SLASH).append(encode(v, encoding));
                     }
                     else {
                         // Stop processing tokens once we hit an empty one.
                         break;
                     }
                 }
-                catch (URISyntaxException e) {
+                catch (UnsupportedEncodingException e) {
                     throw new ControllerExecutionException("Error creating URL for parameters [" +
                             paramValues + "], problem encoding URL part [" + buf + "]: " + e.getMessage(), e);
                 }
@@ -287,6 +290,10 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             LOG.debug("Created reverse URL mapping [" + uri.toString() + "] for parameters [" + paramValues + "]");
         }
         return uri.toString();
+    }
+
+    protected String encode(String s, String encoding) throws UnsupportedEncodingException {
+        return URLEncoder.encode(s, encoding).replaceAll("\\+", "%20");
     }
 
     public String createURL(Map paramValues, String encoding, String fragment) {

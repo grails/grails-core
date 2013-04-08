@@ -14,8 +14,9 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import javax.servlet.http.HttpSession
 import java.util.concurrent.CopyOnWriteArraySet
+
+import javax.servlet.http.HttpSession
 
 /**
  * A token used to handle double-submits.
@@ -26,20 +27,23 @@ import java.util.concurrent.CopyOnWriteArraySet
 class SynchronizerTokensHolder implements Serializable {
 
     public static final String HOLDER = "org.codehaus.groovy.grails.SYNCHRONIZER_TOKENS_HOLDER"
-
     public static final String TOKEN_KEY = "org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN"
     public static final String TOKEN_URI = "org.codehaus.groovy.grails.SYNCHRONIZER_URI"
 
     Map<String, Set<UUID>> currentTokens= [:].withDefault { new CopyOnWriteArraySet<UUID>() }
 
     boolean isValid(String url, String token) {
-        final uuid = UUID.fromString(token)
-        currentTokens[url]?.contains(uuid)
+        try {
+            getTokens(url).contains UUID.fromString(token)
+        }
+        catch (IllegalArgumentException e) {
+            false
+        }
     }
 
     String generateToken(String url) {
-        final uuid = UUID.randomUUID()
-        currentTokens[url].add(uuid)
+        final UUID uuid = UUID.randomUUID()
+        getTokens(url).add(uuid)
         return uuid
     }
 
@@ -49,8 +53,11 @@ class SynchronizerTokensHolder implements Serializable {
 
     void resetToken(String url, String token) {
         if (url && token) {
-            final set = currentTokens[url]
-            set.remove(UUID.fromString(token))
+            final Set set = getTokens(url)
+            try {
+                set.remove UUID.fromString(token)
+            }
+            catch (IllegalArgumentException ignored) {}
             if (set.isEmpty()) {
                 currentTokens.remove(url)
             }
@@ -59,6 +66,14 @@ class SynchronizerTokensHolder implements Serializable {
 
     boolean isEmpty() {
         return currentTokens.isEmpty() || currentTokens.every { String url, Set<UUID> uuids -> uuids.isEmpty() }
+    }
+
+    protected Set<UUID> getTokens(String url) {
+        if (!currentTokens.containsKey(url)) {
+            currentTokens[url] = new CopyOnWriteArraySet<UUID>()
+        }
+
+        currentTokens[url]
     }
 
     static SynchronizerTokensHolder store(HttpSession session) {

@@ -69,7 +69,7 @@ class GrailsProjectCompiler extends BaseSettingsApi{
 
     BuildSettings buildSettings
     PluginBuildSettings pluginSettings
-    List<String> compilerExtensions = ['groovy', 'java']
+    List<String> compilerExtensions = Collections.unmodifiableList(['groovy', 'java'])
 
     /**
      * Constructs a new GrailsProjectCompiler instance for the given PluginBuildSettings and optional classloader
