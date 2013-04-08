@@ -30,7 +30,7 @@ class SynchronizerTokensHolder implements Serializable {
     public static final String TOKEN_KEY = "org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN"
     public static final String TOKEN_URI = "org.codehaus.groovy.grails.SYNCHRONIZER_URI"
 
-    Map<String, Set<UUID>> currentTokens= [:].withDefault { new CopyOnWriteArraySet<UUID>() }
+    Map<String, Set<UUID>> currentTokens= [:]
 
     boolean isValid(String url, String token) {
         try {
