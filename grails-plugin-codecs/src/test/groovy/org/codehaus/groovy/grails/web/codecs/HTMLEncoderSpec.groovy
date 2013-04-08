@@ -41,31 +41,31 @@ class HTMLEncoderSpec extends Specification {
         when:
             streamingEncoder.encodeToStream(hello, 0, hello.length(), appender, encodingState)
         then:
-            1 * appender.append(streamingEncoder, encodingState, hello, 0, 6)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 0, 6)
         then:
-            1 * appender.append(streamingEncoder, encodingState, '&lt;', 0, 4)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, '&lt;', 0, 4)
         then:
-            1 * appender.append(streamingEncoder, encodingState, hello, 7, 6)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 7, 6)
         then:
-            1 * appender.append(streamingEncoder, encodingState, '&gt;', 0, 4)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, '&gt;', 0, 4)
         then:
-            1 * appender.append(streamingEncoder, encodingState, hello, 14, 6)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 14, 6)
         then:
-            1 * appender.append(streamingEncoder, encodingState, '&#39;', 0, 5)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, '&#39;', 0, 5)
         then:
-            1 * appender.append(streamingEncoder, encodingState, hello, 21, 3)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 21, 3)
         then:
-            1 * appender.append(streamingEncoder, encodingState, '&#39;', 0, 5)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, '&#39;', 0, 5)
         then:
-            1 * appender.append(streamingEncoder, encodingState, hello, 25, 1)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 25, 1)
         then:
-            1 * appender.append(streamingEncoder, encodingState, '&lt;', 0, 4)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, '&lt;', 0, 4)
         then:
-            1 * appender.append(streamingEncoder, encodingState, hello, 27, 7)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 27, 7)
         then:
-            1 * appender.append(streamingEncoder, encodingState, '&gt;', 0, 4)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, '&gt;', 0, 4)
         then:
-            1 * appender.append(streamingEncoder, encodingState, hello, 35, 7)
+            1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 35, 7)
             0 * _
         where:
             streamingEncoder << [new HTMLEncoder(), new HTML4Encoder(), new XMLEncoder()]

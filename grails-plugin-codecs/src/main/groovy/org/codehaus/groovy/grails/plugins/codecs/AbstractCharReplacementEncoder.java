@@ -139,17 +139,17 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
             String escaped = escapeCharacter(ch, prevChar);
             if (escaped != null) {
                 if (i - startPos > 0) {
-                    appender.append(this, encodingState, str, startPos, i - startPos);
+                    appender.appendEncoded(this, encodingState, str, startPos, i - startPos);
                 }
                 if (escaped.length() > 0) {
-                    appender.append(this, encodingState, escaped, 0, escaped.length());
+                    appender.appendEncoded(this, encodingState, escaped, 0, escaped.length());
                 }
                 startPos = -1;
             }
             prevChar = ch;
         }
         if (startPos > -1 && i - startPos > 0) {
-            appender.append(this, encodingState, str, startPos, i - startPos);
+            appender.appendEncoded(this, encodingState, str, startPos, i - startPos);
         }
     }
 

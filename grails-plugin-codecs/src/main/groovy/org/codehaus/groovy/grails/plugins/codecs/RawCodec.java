@@ -83,7 +83,7 @@ public class RawCodec implements Encoder, Decoder, StreamingEncoder {
      */
     public void encodeToStream(CharSequence source, int offset, int len, EncodedAppender appender,
             EncodingState encodingState) throws IOException {
-        appender.append(this, encodingState, source, offset, len);
+        appender.appendEncoded(this, encodingState, source, offset, len);
     }
 
     /*
