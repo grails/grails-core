@@ -119,14 +119,13 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
             packageWarOnly()
         }
         catch (e) {
-            if (e.cause.class.name.equals("org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException")) {
+            if (e.cause?.class?.name == "org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException") {
                 eventListener.triggerEvent("StatusError", "GSP Compilation error in file $e.cause.fileName at line $e.cause.lineNumber: $e.cause.message")
-                exit(1)
             }
             else {
-                eventListener.triggerEvent("StatusError", "Compilation error: ${e.cause?.message ?: e.message}")
-                exit(1)
+                eventListener.triggerEvent("StatusError", "WAR packaging error: ${e.cause?.message ?: e.message}")
             }
+            exit(1)
         }
     }
     void packageWarOnly() {
