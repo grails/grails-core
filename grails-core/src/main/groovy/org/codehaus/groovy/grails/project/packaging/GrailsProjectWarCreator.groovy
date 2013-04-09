@@ -113,7 +113,6 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
     }
 
     void packageWar() {
-        projectPackager.packageApplication()
         try {
             projectPackager.projectCompiler.compileGroovyPages(grailsAppName, grailsSettings.classesDir)
             packageWarOnly()
@@ -128,6 +127,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
             exit(1)
         }
     }
+
     void packageWarOnly() {
 
         def includeOsgiHeaders = grailsSettings.projectWarOsgiHeaders
