@@ -78,6 +78,16 @@ public class GrailsWebRequestFilter extends OncePerRequestFilter {
         }
     }
 
+    @Override
+    protected boolean shouldNotFilterAsyncDispatch() {
+        return false;
+    }
+
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+        return false;
+    }
+
     private void configureParameterCreationListeners(GrailsWebRequest webRequest) {
         if (paramListenerBeans != null) {
             for (ParameterCreationListener creationListenerBean : paramListenerBeans) {
