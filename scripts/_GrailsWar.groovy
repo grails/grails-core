@@ -38,7 +38,7 @@ target (configureRunningScript: "Sets the currently running script, in case call
 }
 
 target (war: "The implementation target") {
-    depends(parseArguments, configureRunningScript, cleanWarFile, packageApp, compilegsp, configureWarName)
+    depends(parseArguments, configureRunningScript, cleanWarFile, configureWarName)
     warCreator.includeJars = argsMap.nojars ? false : true
     warCreator.packageWar()
 }
