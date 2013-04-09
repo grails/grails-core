@@ -37,8 +37,9 @@ environments {
                numTestsPerEvictionRun=3
                testOnBorrow=true
                testWhileIdle=true
-               testOnReturn=true
+               testOnReturn=false
                validationQuery="SELECT 1"
+               jdbcInterceptors="ConnectionState"
             }
         }
     }
