@@ -59,7 +59,7 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies {
             // if the grails version ends in snapshot we need an extra repository in order for Grails to function. This is only used for development versions of Grails
             if (grailsVersion.endsWith("-SNAPSHOT")) {
                 dsl.repositories {
-                    RepositoryConfiguration repositoryConfiguration = (RepositoryConfiguration)getDelegate()
+                    RepositoriesConfiguration repositoryConfiguration = (RepositoriesConfiguration)getDelegate()
                     repositoryConfiguration.mavenRepo("http://repo.grails.org/grails/core")
                 }
             }

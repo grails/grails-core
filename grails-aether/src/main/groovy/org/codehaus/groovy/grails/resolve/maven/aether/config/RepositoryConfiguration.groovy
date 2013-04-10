@@ -1,4 +1,5 @@
-/* Copyright 2012 the original author or authors.
+/*
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,67 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
-
-import org.sonatype.aether.repository.ArtifactRepository
+import org.sonatype.aether.repository.Authentication
+import org.sonatype.aether.repository.Proxy
 import org.sonatype.aether.repository.RemoteRepository
 
 /**
+ * Allows configurations a repository's policy
+ *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
 class RepositoryConfiguration {
-    List<RemoteRepository> repositories = []
+    @Delegate RemoteRepository remoteRepository
 
-    void inherits(boolean b) {
-        // TODO
+    RepositoryConfiguration(RemoteRepository remoteRepository) {
+        this.remoteRepository = remoteRepository
     }
-    void grailsPlugins() {
-        // noop.. not supported
+
+    void updatePolicy(String updatePolicy) {
+        final policy = remoteRepository.getPolicy(true)
+
+        remoteRepository.setPolicy(true, policy.setUpdatePolicy(updatePolicy))
     }
-    void grailsHome() {
-        // noop.. not supported
-    }
-    void mavenLocal() {
-        // noop.. enabled by default
-    }
-    RemoteRepository mavenCentral() {
-        if (! repositories.find{ ArtifactRepository ar -> ar.id == "mavenCentral"} ) {
-            final repository = new RemoteRepository("mavenCentral", "default", "http://repo1.maven.org/maven2/")
-            repositories << repository
-            return repository
+
+    void checksumPolicy(String checksumPolicy) {
+        final policy = remoteRepository.getPolicy(true)
+
+        if (['ignore', 'warn', 'fail'].contains(checksumPolicy)) {
+            remoteRepository.setPolicy(true, policy.setChecksumPolicy(checksumPolicy))
         }
     }
 
-    RemoteRepository grailsCentral() {
-        if (! repositories.find{ ArtifactRepository ar -> ar.id == "grailsCentral"} ) {
-            final repository = new RemoteRepository("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
-            repositories << repository
-            return repository
-        }
+    Authentication authentication(Map<String, String> credentials) {
+        auth(credentials)
     }
 
-    RemoteRepository mavenRepo(String url) {
-        if (! repositories.find{ ArtifactRepository ar -> ar.id == url} ) {
-            final repository = new RemoteRepository(url, "default", url)
-            repositories << repository
-            return repository
+    Authentication auth(Map<String, String> credentials) {
+        Authentication auth
+        if (credentials.privateKeyFile) {
+            auth = new Authentication(credentials.username, credentials.password, credentials.privateKeyFile, credentials.passphrase)
         }
+        else {
+            auth = new Authentication(credentials.username, credentials.password)
+        }
+
+        remoteRepository.setAuthentication(auth)
+        return auth
     }
 
-    RemoteRepository mavenRepo(Map<String, String> properties) {
-        final url = properties.url
-        def id = properties.id ?: properties.name ?: url
-
-        if (id && properties.url) {
-            if (! repositories.find{ ArtifactRepository ar -> ar.id == url} ) {
-                final repository = new RemoteRepository(id, "default", url)
-                repositories << repository
-                return repository
-            }
-        }
+    void proxy(String type, String host, int port, Authentication auth = null) {
+        remoteRepository.setProxy(new Proxy(type, host, port, auth))
+    }
+    void proxy(String host, int port, Authentication auth = null) {
+        proxy(null, host, port, auth)
     }
 }

@@ -10,6 +10,28 @@ import spock.lang.Specification
 
 class AetherDependencyManagerSpec extends Specification {
 
+    void "Test customize repository policy"() {
+        given:"A dependency manager with a dependency that contains exclusions"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral {
+                        updatePolicy "interval:1"
+                        proxy "foo", 8080, auth(username:"bob", password:"builder")
+                    }
+                }
+            }
+
+        when:"The repository is obtained"
+            def repo = dependencyManager.repositories.find { RemoteRepository rr -> rr.id == 'mavenCentral'}
+
+        then:"It is configured correctly"
+            repo.getPolicy(true).updatePolicy == 'interval:1'
+            repo.proxy.host == 'foo'
+            repo.proxy.port == 8080
+            repo.proxy.authentication.username == 'bob'
+    }
+
     void "Test grails dependency transitive setting"() {
         given:"A dependency manager with a dependency that contains exclusions"
             def dependencyManager = new AetherDependencyManager()
