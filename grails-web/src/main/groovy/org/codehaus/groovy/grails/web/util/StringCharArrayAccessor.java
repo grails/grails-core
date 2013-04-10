@@ -15,9 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
@@ -40,9 +37,8 @@ import java.lang.reflect.Field;
  *
  */
 public class StringCharArrayAccessor {
-
-    private static final Log LOG  = LogFactory.getLog(StringCharArrayAccessor.class);
     static volatile boolean enabled = !Boolean.getBoolean("stringchararrayaccessor.disabled");
+    static volatile boolean jdk7_string = false;
 
     static Field valueField;
     static Field countField;
@@ -53,16 +49,26 @@ public class StringCharArrayAccessor {
             try {
                 valueField = String.class.getDeclaredField("value");
                 valueField.setAccessible(true);
-
+            }
+            catch (Exception e) {
+                enabled = false;
+                handleError(e);
+            }
+        }
+        if (enabled) {
+            try {
                 countField = String.class.getDeclaredField("count");
                 countField.setAccessible(true);
 
                 offsetField = String.class.getDeclaredField("offset");
                 offsetField.setAccessible(true);
             }
+            catch (NoSuchFieldException e) {
+                jdk7_string = true;
+            }
             catch (Exception e) {
                 enabled = false;
-                LOG.debug("Unable to use direct char[] access of java.lang.String",e);
+                handleError(e);
             }
         }
     }
@@ -108,10 +114,12 @@ public class StringCharArrayAccessor {
         }
 
         char[] value;
-        int internalOffset;
+        int internalOffset=0;
         try {
             value = (char[])valueField.get(str);
-            internalOffset = offsetField.getInt(str);
+            if(!jdk7_string) {
+                internalOffset = offsetField.getInt(str);
+            }
         }
         catch (Exception e) {
             handleError(e);
@@ -134,7 +142,9 @@ public class StringCharArrayAccessor {
         int internalOffset = 0;
         try {
             value = (char[])valueField.get(str);
-            internalOffset = offsetField.getInt(str);
+            if(!jdk7_string) {
+                internalOffset = offsetField.getInt(str);
+            }
         }
         catch (Exception e) {
             handleError(e);
@@ -168,7 +178,9 @@ public class StringCharArrayAccessor {
             // it was a bit unclear for me if this could ever happen in a single thread
             synchronized(str) {
                 valueField.set(str, charBuf);
-                countField.set(str, charBuf.length);
+                if(!jdk7_string) {
+                    countField.set(str, charBuf.length);
+                }
             }
             synchronized(str) {
                 // safety check, just to be sure that setting the final fields went ok
@@ -190,11 +202,9 @@ public class StringCharArrayAccessor {
 
     private static synchronized void handleError(Exception e) {
         enabled = false;
-        System.err.println("Unable to use direct char[] access of java.lang.String. Disabling this method.");
         valueField = null;
         countField = null;
         offsetField = null;
-        e.printStackTrace();
     }
 
     static public boolean isEnabled() {

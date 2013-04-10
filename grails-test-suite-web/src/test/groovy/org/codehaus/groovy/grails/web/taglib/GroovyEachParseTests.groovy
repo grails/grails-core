@@ -15,7 +15,7 @@ class myTest extends GroovyPage {
 public String getGroovyPageFileName() { "myTest" }
 public Object run() {
 Writer out = getOut()
-Writer codecOut = getCodecOut()
+Writer expressionOut = getExpressionOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
@@ -37,7 +37,7 @@ class myTest extends GroovyPage {
 public String getGroovyPageFileName() { "myTest" }
 public Object run() {
 Writer out = getOut()
-Writer codecOut = getCodecOut()
+Writer expressionOut = getExpressionOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)
@@ -59,7 +59,7 @@ class myTest2 extends GroovyPage {
 public String getGroovyPageFileName() { "myTest2" }
 public Object run() {
 Writer out = getOut()
-Writer codecOut = getCodecOut()
+Writer expressionOut = getExpressionOut()
 registerSitemeshPreprocessMode()
 
 printHtmlPart(0)

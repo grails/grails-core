@@ -1,5 +1,4 @@
-/*
- * Copyright 2004-2005 the original author or authors.
+/* Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.converters.codecs
+package org.codehaus.groovy.grails.support.encoding;
 
 /**
- * A Grails codec capable of converting an object to JSON.
- *
- * @author Siegfried Puchbauer
- * @since 0.6
+ * Marks a instance capable of providing information about the current encoder
+ * that is in use
+ * 
+ * @author Lari Hotari
+ * @since 2.3
  */
-import grails.converters.JSON
+public interface EncoderAware {
 
-class JSONCodec {
-    static encode = { target -> new JSON(target).toString() }
+    /**
+     * Gets the current encoder in use.
+     * 
+     * @return the encoder
+     */
+    public Encoder getEncoder();
 }

@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.GroovyObject;
+import groovy.lang.MetaClass;
 import groovy.lang.Writable;
 
 import java.io.IOException;
@@ -23,6 +25,12 @@ import java.io.Writer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriter;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 import org.codehaus.groovy.runtime.GStringImpl;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -34,7 +42,7 @@ import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
+public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, EncodedAppenderWriterFactory, GroovyObject {
     protected static final Log LOG = LogFactory.getLog(GrailsPrintWriter.class);
     protected static final char CRLF[] = { '\r', '\n' };
     protected boolean trouble = false;
@@ -45,6 +53,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     protected Writer previousOut = null;
 
     public GrailsPrintWriter(Writer out) {
+        this.metaClass = InvokerHelper.getMetaClass(this.getClass());
         setOut(out);
     }
 
@@ -497,6 +506,10 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     }
 
     public void write(final Writable writable) {
+        writeWritable(writable);
+    }
+
+    protected void writeWritable(final Writable writable) {
         usageFlag = true;
         if (trouble)
             return;
@@ -510,20 +523,20 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
     }
 
     public void print(final Writable writable) {
-        write(writable);
+        writeWritable(writable);
     }
 
     public GrailsPrintWriter leftShift(final Writable writable) {
-        write(writable);
+        writeWritable(writable);
         return this;
     }
 
     public void print(final GStringImpl gstring) {
-        write(gstring);
+        writeWritable(gstring);
     }
 
     public GrailsPrintWriter leftShift(final GStringImpl gstring) {
-        write(gstring);
+        writeWritable(gstring);
         return this;
     }
 
@@ -578,5 +591,50 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter {
 
     public PrintWriter asPrintWriter() {
         return new GrailsPrintWriterAdapter(this);
+    }
+
+    public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
+        Writer target = null;
+        if(getOut() instanceof EncodedAppenderWriterFactory) {
+            target = getOut();
+        } else {
+            target = findStreamCharBufferTarget(false);
+        }
+        if (target instanceof EncodedAppenderWriterFactory) {
+            return ((EncodedAppenderWriterFactory)target).getWriterForEncoder(encoder, encodingStateRegistry);
+        } else if (target instanceof EncodedAppenderFactory) {
+            EncodedAppender encodedAppender=((EncodedAppenderFactory)target).getEncodedAppender();
+            return new EncodedAppenderWriter(encodedAppender, encoder, encodingStateRegistry);
+        } else if (target != null) {
+            return new CodecPrintWriter(target, encoder, encodingStateRegistry);
+        } else {
+            return null;
+        }
+    }
+
+    // GroovyObject interface implementation to speed up metaclass operations
+    private transient MetaClass metaClass;
+
+    public Object getProperty(String property) {
+        return getMetaClass().getProperty(this, property);
+    }
+
+    public void setProperty(String property, Object newValue) {
+        getMetaClass().setProperty(this, property, newValue);
+    }
+
+    public Object invokeMethod(String name, Object args) {
+        return getMetaClass().invokeMethod(this, name, args);
+    }
+
+    public MetaClass getMetaClass() {
+        if (metaClass == null) {
+            metaClass = InvokerHelper.getMetaClass(getClass());
+        }
+        return metaClass;
+    }
+
+    public void setMetaClass(MetaClass metaClass) {
+        this.metaClass = metaClass;
     }
 }

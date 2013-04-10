@@ -28,8 +28,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
@@ -64,6 +68,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private final UrlPathHelper urlHelper = new UrlPathHelper();
     private ApplicationContext applicationContext;
     private String baseUrl;
+
+    private EncodingStateRegistry encodingStateRegistry;
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
@@ -349,4 +355,28 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         }
         return baseUrl;
     }
+
+    public EncodingStateRegistry getEncodingStateRegistry() {
+        if(encodingStateRegistry==null) {
+            encodingStateRegistry=new DefaultEncodingStateRegistry();
+        }
+        return encodingStateRegistry;
+    }
+
+    private static final class DefaultEncodingStateRegistryLookup implements EncodingStateRegistryLookup {
+        public EncodingStateRegistry lookup() {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if(webRequest != null) {
+                return webRequest.getEncodingStateRegistry();
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    static {
+        DefaultGrailsCodecClass.setEncodingStateRegistryLookup(new DefaultEncodingStateRegistryLookup());
+    }
+
+
 }

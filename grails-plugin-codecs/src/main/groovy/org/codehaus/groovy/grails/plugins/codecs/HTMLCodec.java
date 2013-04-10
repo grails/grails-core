@@ -14,46 +14,34 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
-import org.springframework.web.context.request.RequestAttributes;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.util.HtmlUtils;
+import org.codehaus.groovy.grails.support.encoding.CodecFactory;
+import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
+import org.codehaus.groovy.grails.support.encoding.Decoder;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
 
 /**
  * Encodes and decodes strings to and from HTML.
- *
+ * 
  * @author Graeme Rocher
+ * @author Lari Hotari
  * @since 1.1
  */
-public class HTMLCodec {
+public class HTMLCodec implements CodecFactory {
+    static final String CODEC_NAME = "HTML";
 
-    public static CharSequence encode(Object target) {
-        if (target != null) {
-            if (target instanceof StreamCharBuffer) {
-                return ((StreamCharBuffer)target).encodeAsHTML();
-            }
-            return HtmlUtils.htmlEscape(target.toString());
+    private static Encoder encoder = new HTMLEncoder();
+    private static Decoder decoder = new HTML4Decoder() {
+        @Override
+        public CodecIdentifier getCodecIdentifier() {
+            return HTMLEncoder.HTML_CODEC_IDENTIFIER;
         }
-        return null;
+    };
+
+    public Encoder getEncoder() {
+        return encoder;
     }
 
-    public static boolean shouldEncode() {
-        final RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
-        if (attributes != null) {
-            Object codecName = attributes.getAttribute(GrailsApplicationAttributes.GSP_CODEC,
-                    RequestAttributes.SCOPE_REQUEST);
-            if (codecName != null && codecName.toString().equalsIgnoreCase("html")) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static String decode(Object target) {
-        if (target != null) {
-            return HtmlUtils.htmlUnescape(target.toString());
-        }
-        return null;
+    public Decoder getDecoder() {
+        return decoder;
     }
 }

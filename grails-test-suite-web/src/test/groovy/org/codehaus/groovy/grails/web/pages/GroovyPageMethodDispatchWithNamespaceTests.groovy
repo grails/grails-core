@@ -63,7 +63,7 @@ class MyPage extends org.codehaus.groovy.grails.web.pages.GroovyPage {
                                 out: webRequest.out ,
                                 webRequest:webRequest)
             script.binding = b
-            script.initRun(webRequest.out, webRequest, ga, null)
+            script.initRun(webRequest.out, webRequest, null)
             script.run()
 
             assertEquals "printblahfoohellotest2",sw.toString()
