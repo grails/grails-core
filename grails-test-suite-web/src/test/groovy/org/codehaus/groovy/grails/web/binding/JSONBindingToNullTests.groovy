@@ -31,7 +31,7 @@ class JSONBindingToNullTests {
                     ]
 
     }
-
+    
     @Test
     void testJsonBindingToNull() {
 
