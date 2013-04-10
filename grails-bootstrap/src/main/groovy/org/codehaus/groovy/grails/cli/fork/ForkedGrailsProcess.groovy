@@ -438,6 +438,12 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected BuildSettings initializeBuildSettings(ExecutionContext ec) {
+        final sysProps = ec.systemProps
+        for(entry in sysProps.entrySet()) {
+            if (entry.value) {
+                System.setProperty(entry.key, entry.value)
+            }
+        }
         def buildSettings = new BuildSettings(ec.grailsHome, ec.baseDir)
         buildSettings.loadConfig()
 
@@ -496,6 +502,7 @@ class ExecutionContext implements Serializable {
 
     String env
     File grailsHome
+    Map<String, String> systemProps = [:]
     Map argsMap = new LinkedHashMap()
 
     transient ForkedGrailsProcess process
@@ -510,6 +517,14 @@ class ExecutionContext implements Serializable {
 
     void initialize(BuildSettings settings) {
         List<File> isolatedBuildDependencies = buildMinimalIsolatedClasspath(settings)
+        for( prop in System.properties.keySet() ) {
+            String p = prop.toString()
+            if(p.startsWith("grails.")) {
+                final value = System.properties.get(prop)
+                if (value)
+                    systemProps[p] = value
+            }
+        }
 
         buildDependencies = isolatedBuildDependencies
         runtimeDependencies = settings.runtimeDependencies
