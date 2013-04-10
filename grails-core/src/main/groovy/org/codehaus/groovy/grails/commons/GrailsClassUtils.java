@@ -47,7 +47,6 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.FatalBeanException;
-import org.springframework.core.JdkVersion;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -1073,22 +1072,10 @@ public class GrailsClassUtils {
      *
      * @param type The class to check
      * @return true if it is an enum
+     * @deprecated
      */
     public static boolean isJdk5Enum(Class<?> type) {
-        if (JdkVersion.getMajorJavaVersion() < JdkVersion.JAVA_15) {
-            return false;
-        }
-
-        Method m = BeanUtils.findMethod(type.getClass(),"isEnum");
-        if (m == null) return false;
-
-        try {
-            Object result = m.invoke(type);
-            return result instanceof Boolean && (Boolean)result;
-        }
-        catch (Exception e) {
-            return false;
-        }
+        return type.isEnum();
     }
 
     /**

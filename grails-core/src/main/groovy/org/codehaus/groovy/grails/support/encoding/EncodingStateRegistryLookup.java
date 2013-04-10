@@ -1,5 +1,4 @@
-/*
- * Copyright 2004-2005 the original author or authors.
+/* Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +12,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.plugins.converters.codecs
-
-import grails.converters.XML
+package org.codehaus.groovy.grails.support.encoding;
 
 /**
- * A Grails codec capable of converting an object to XML.
- *
- * @author Siegfried Puchbauer
- * @since 0.6
+ * This interface marks an instance capable of looking of the current
+ * {@link EncodingStateRegistry}
+ * 
+ * @author Lari Hotari
+ * @since 2.3
  */
-class XMLCodec {
-    static encode = { target -> new XML(target).toString() }
+public interface EncodingStateRegistryLookup {
+
+    /**
+     * Lookup encoding state registry.
+     * 
+     * @return the encoding state registry
+     */
+    public EncodingStateRegistry lookup();
 }

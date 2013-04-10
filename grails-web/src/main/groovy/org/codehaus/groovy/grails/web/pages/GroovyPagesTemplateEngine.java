@@ -542,14 +542,20 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         String path = getPathForResource(res);
         try {
             String encoding = GroovyPageParser.DEFAULT_ENCODING;
+            String defaultCodecName = "none";
             if (grailsApplication != null) {
                 Map<String,Object> config = grailsApplication.getFlatConfig();
                 Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
                 if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
                     encoding = gspEnc.toString();
                 }
+                
+                Object defaultCodecConf = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
+                if (defaultCodecConf != null) {
+                    defaultCodecName = defaultCodecConf.toString().trim();
+                }
             }
-            parser = new GroovyPageParser(name, path, path, inputStream, encoding);
+            parser = new GroovyPageParser(name, path, path, inputStream, encoding, defaultCodecName);
 
             if (grailsApplication != null) {
                 Map<String,Object> config = grailsApplication.getFlatConfig();
@@ -677,7 +683,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         pageMeta.setContentType(parse.getContentType());
         pageMeta.setLineNumbers(parse.getLineNumberMatrix());
         pageMeta.setJspTags(parse.getJspTags());
-        pageMeta.setCodecName(parse.getDefaultCodecDirectiveValue());
+        pageMeta.setExpressionCodecName(parse.getExpressionCodecDirectiveValue());
         pageMeta.initialize();
         // just return groovy and don't compile if asked
         if (GrailsUtil.isDevelopmentEnv()) {

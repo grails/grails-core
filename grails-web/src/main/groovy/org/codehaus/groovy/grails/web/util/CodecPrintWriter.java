@@ -1,23 +1,29 @@
 package org.codehaus.groovy.grails.web.util;
 
-import groovy.lang.Closure;
 import groovy.lang.Writable;
 
 import java.io.IOException;
 import java.io.Writer;
 
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsCodecClass;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAware;
+import org.codehaus.groovy.grails.support.encoding.EncodingState;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
+import org.codehaus.groovy.grails.support.encoding.WriterEncodedAppender;
 import org.codehaus.groovy.runtime.GStringImpl;
 
-public class CodecPrintWriter extends GrailsPrintWriter {
-    private Closure<?> encodeClosure;
-
-    public CodecPrintWriter(GrailsApplication grailsApplication, Writer out, Class<?> codecClass) {
+public class CodecPrintWriter extends GrailsPrintWriter implements EncodedAppenderFactory, EncoderAware {
+    private Encoder encoder;
+    private EncodingStateRegistry encodingStateRegistry=null;
+    
+    public CodecPrintWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         super(out);
         allowUnwrappingOut = false;
-
-        initEncode(grailsApplication, codecClass);
+        this.encoder = encoder;
+        this.encodingStateRegistry = encodingStateRegistry;
     }
 
     @Override
@@ -29,25 +35,23 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     public boolean isUsed() {
         return usageFlag;
     }
+    
+    @Override
+    protected Writer unwrapWriter(Writer writer) {
+        return writer;
+    }
 
     @Override
     protected Writer findStreamCharBufferTarget(boolean markUsed) {
-        return unwrapWriter(getOut());
-    }
-
-    private void initEncode(GrailsApplication grailsApplication, Class<?> codecClass) {
-        if (grailsApplication != null && codecClass != null) {
-            GrailsCodecClass codecArtefact = (GrailsCodecClass) grailsApplication.getArtefact("Codec", codecClass.getName());
-            encodeClosure = codecArtefact.getEncodeMethod();
-        }
+        return getOut();
     }
 
     private Object encodeObject(Object o) {
-        if (encodeClosure == null) return o;
+        if (encoder == null) return o;
         try {
-            return encodeClosure.call(o);
+            return encoder.encode(o);
         } catch (Exception e) {
-            throw new RuntimeException("Problem calling encode method " + encodeClosure, e);
+            throw new RuntimeException("Problem calling encode method " + encoder, e);
         }
     }
 
@@ -65,11 +69,36 @@ public class CodecPrintWriter extends GrailsPrintWriter {
     public void print(final Object obj) {
         encodeAndPrint(obj);
     }
-
-    private void encodeAndPrint(final Object obj) {
+    
+    private final void encodeAndPrint(final Object obj) {
         if (trouble || obj == null) {
             usageFlag = true;
             return;
+        }
+        Writer writer=findStreamCharBufferTarget(true);
+        if(writer instanceof EncodedAppenderFactory) {
+            EncodedAppender appender=((EncodedAppenderFactory)writer).getEncodedAppender();
+            Class<?> clazz = obj.getClass();
+            try {
+                if(clazz == StreamCharBuffer.class) {
+                    ((StreamEncodeable)obj).encodeTo(appender, encoder);
+                    return;
+                } else if (clazz == GStringImpl.class || clazz == String.class || obj instanceof CharSequence) {
+                    CharSequence source=(CharSequence)obj;
+                    EncodingState encodingState=null;
+                    if(encodingStateRegistry != null) {
+                        encodingState=encodingStateRegistry.getEncodingStateFor(source);
+                    }
+                    appender.append(encoder, encodingState, source, 0, source.length());
+                    return;
+                } else if (obj instanceof StreamEncodeable) {
+                    ((StreamEncodeable)obj).encodeTo(appender, encoder);
+                    return;
+                }
+            } catch (IOException e) {
+                handleIOException(e);
+                return;
+            }
         }
         Object encoded = encodeObject(obj);
         if (encoded == null) return;
@@ -128,7 +157,11 @@ public class CodecPrintWriter extends GrailsPrintWriter {
      */
     @Override
     public void write(final int c) {
-        encodeAndPrint(c);
+        if(encoder==null) {
+            super.write(c);
+        } else {
+            encodeAndPrint(c);
+        }
     }
 
     /**
@@ -139,7 +172,11 @@ public class CodecPrintWriter extends GrailsPrintWriter {
      */
     @Override
     public void write(final char buf[], final int off, final int len) {
-        encodeAndPrint(new String(buf, off, len));
+        if(encoder==null) {
+            super.write(buf, off, len);
+        } else {
+            encodeAndPrint(new String(buf, off, len));
+        }
     }
 
     /**
@@ -150,12 +187,24 @@ public class CodecPrintWriter extends GrailsPrintWriter {
      */
     @Override
     public void write(final String s, final int off, final int len) {
-        encodeAndPrint(s.substring(off, off+len));
+        if(encoder==null) {
+            super.write(s, off, len);
+        } else {
+            if(off==0 && len==s.length()) {
+                encodeAndPrint(s);    
+            } else {
+                encodeAndPrint(s.substring(off, off+len));
+            }
+        }
     }
 
     @Override
     public void write(final char buf[]) {
-        encodeAndPrint(new String(buf));
+        if(encoder==null) {
+            super.write(buf);
+        } else {
+            encodeAndPrint(new String(buf));
+        }
     }
 
     @Override
@@ -172,7 +221,7 @@ public class CodecPrintWriter extends GrailsPrintWriter {
 
     @Override
     public GrailsPrintWriter append(final Object obj) {
-        print(obj);
+        encodeAndPrint(obj);
         return this;
     }
 
@@ -221,5 +270,13 @@ public class CodecPrintWriter extends GrailsPrintWriter {
         catch (IOException e) {
             handleIOException(e);
         }
+    }
+
+    public Encoder getEncoder() {
+        return encoder;
+    }
+
+    public EncodedAppender getEncodedAppender() {
+        return new WriterEncodedAppender(getOut());
     }
 }

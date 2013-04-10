@@ -20,8 +20,6 @@ import grails.converters.XML
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
-import org.codehaus.groovy.grails.plugins.converters.codecs.JSONCodec
-import org.codehaus.groovy.grails.plugins.converters.codecs.XMLCodec
 import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -47,7 +45,6 @@ class ConvertersGrailsPlugin {
         The grails-converters plugin aims to give you the ability to convert your domain objects, maps and lists to JSON or XML very quickly, to ease development for AJAX based applications. The plugin leverages the the groovy "as" operator and extends the render method in grails controllers to directly send the result to the output stream. It also adds the Grails Codecs mechanism for XML and JSON.
     """
     def documentation = "http://grails.org/Converters+Plugin"
-    def providedArtefacts = [JSONCodec, XMLCodec]
     def observe = ["controllers"]
 
     def dependsOn = [controllers: version, domainClass: version]

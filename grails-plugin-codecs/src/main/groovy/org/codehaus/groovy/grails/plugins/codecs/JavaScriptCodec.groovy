@@ -15,7 +15,13 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs
 
-import org.springframework.web.util.JavaScriptUtils
+import groovy.transform.CompileStatic
+
+import org.apache.commons.lang.StringEscapeUtils
+import org.codehaus.groovy.grails.support.encoding.CodecFactory
+import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
+import org.codehaus.groovy.grails.support.encoding.Decoder
+import org.codehaus.groovy.grails.support.encoding.Encoder
 
 /**
  * A codec that encodes strings to Javascript
@@ -23,8 +29,24 @@ import org.springframework.web.util.JavaScriptUtils
  * @author Graeme Rocher
  * @since 0.5
  */
-class JavaScriptCodec {
-    static encode = { theTarget ->
-        JavaScriptUtils.javaScriptEscape(theTarget.toString())
+@CompileStatic
+class JavaScriptCodec implements CodecFactory {
+    static Encoder ENCODER = new JavaScriptEncoder();
+    private static Decoder DECODER = new Decoder() {
+        def decode(Object obj) {
+            obj != null ? StringEscapeUtils.unescapeJavaScript(obj.toString()) : null
+        }
+        
+        CodecIdentifier getCodecIdentifier() { 
+            JavaScriptEncoder.JAVASCRIPT_CODEC_IDENTIFIER
+        }
+    }
+    
+    public Encoder getEncoder() {
+        return ENCODER;
+    }
+
+    public Decoder getDecoder() {
+        return DECODER;
     }
 }
