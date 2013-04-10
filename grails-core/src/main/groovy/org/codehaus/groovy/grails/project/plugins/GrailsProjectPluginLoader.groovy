@@ -50,8 +50,10 @@ class GrailsProjectPluginLoader extends BaseSettingsApi {
             def pluginClasses = []
             profile("construct plugin manager with ${pluginFiles.inspect()}") {
                 for (Resource plugin in pluginFiles) {
-                    def className = plugin.file.name - '.groovy'
-                    pluginClasses << classLoader.loadClass(className)
+                    if (plugin && plugin.file) {
+                        def className = plugin.file.name - '.groovy'
+                        pluginClasses << classLoader.loadClass(className)
+                    }
                 }
 
                 profile("creating plugin manager with classes ${pluginClasses}") {
