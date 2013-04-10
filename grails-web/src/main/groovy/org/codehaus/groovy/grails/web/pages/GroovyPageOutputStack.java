@@ -110,7 +110,7 @@ public final class GroovyPageOutputStack {
 
     private Stack<StackEntry> stack = new Stack<StackEntry>();
     private GroovyPageProxyWriter outWriter;
-    private GroovyPageProxyWriter templateWriter;
+    private GroovyPageProxyWriter staticWriter;
     private GroovyPageProxyWriter expressionWriter;
     private boolean autoSync;
     private EncodingStateRegistry encodingStateRegistry;
@@ -118,7 +118,7 @@ public final class GroovyPageOutputStack {
     private static class StackEntry implements Cloneable {
         Writer originalTarget;
         Writer unwrappedTarget;
-        Encoder templateEncoder;
+        Encoder staticEncoder;
         Encoder outEncoder;
         Encoder expressionEncoder;
 
@@ -129,7 +129,7 @@ public final class GroovyPageOutputStack {
         
         public StackEntry clone() {
             StackEntry newEntry = new StackEntry(originalTarget, unwrappedTarget);
-            newEntry.templateEncoder = templateEncoder;
+            newEntry.staticEncoder = staticEncoder;
             newEntry.outEncoder = outEncoder;
             newEntry.expressionEncoder = expressionEncoder;
             return newEntry;
@@ -148,7 +148,7 @@ public final class GroovyPageOutputStack {
 
     private GroovyPageOutputStack(GroovyPageOutputStackAttributes attributes) {
         outWriter = new GroovyPageProxyWriter();
-        templateWriter = new GroovyPageProxyWriter();
+        staticWriter = new GroovyPageProxyWriter();
         expressionWriter = new GroovyPageProxyWriter();
         this.autoSync = attributes.isAutoSync();
         push(attributes, false);
@@ -201,7 +201,7 @@ public final class GroovyPageOutputStack {
 
         StackEntry stackEntry = new StackEntry(topWriter, unwrappedWriter);
         stackEntry.outEncoder = applyEncoder(attributes.getOutEncoder(), previousStackEntry != null ? previousStackEntry.outEncoder : null, attributes.isInheritPreviousEncoders());
-        stackEntry.templateEncoder = applyEncoder(attributes.getTemplateEncoder(), previousStackEntry != null ? previousStackEntry.templateEncoder : null, attributes.isInheritPreviousEncoders());
+        stackEntry.staticEncoder = applyEncoder(attributes.getStaticEncoder(), previousStackEntry != null ? previousStackEntry.staticEncoder : null, attributes.isInheritPreviousEncoders());
         stackEntry.expressionEncoder = applyEncoder(attributes.getExpressionEncoder(), previousStackEntry != null ? previousStackEntry.expressionEncoder : null, attributes.isInheritPreviousEncoders());
         stack.push(stackEntry);
 
@@ -235,13 +235,13 @@ public final class GroovyPageOutputStack {
 
     private void updateWriters(StackEntry stackEntry) {
         outWriter.setOut(createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.outEncoder, encodingStateRegistry));
-        Writer templateWriterTarget = null;
-        if(stackEntry.templateEncoder != null) {
-            templateWriterTarget = createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.templateEncoder, encodingStateRegistry);
+        Writer staticWriterTarget = null;
+        if(stackEntry.staticEncoder != null) {
+            staticWriterTarget = createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.staticEncoder, encodingStateRegistry);
         } else {
-            templateWriterTarget = stackEntry.unwrappedTarget;            
+            staticWriterTarget = stackEntry.unwrappedTarget;            
         }
-        templateWriter.setOut(templateWriterTarget);
+        staticWriter.setOut(staticWriterTarget);
         expressionWriter.setOut(createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.expressionEncoder, encodingStateRegistry));
     }
     
@@ -274,8 +274,8 @@ public final class GroovyPageOutputStack {
         return outWriter;
     }
     
-    public GroovyPageProxyWriter getTemplateWriter() {
-        return templateWriter;
+    public GroovyPageProxyWriter getStaticWriter() {
+        return staticWriter;
     }
 
     public GroovyPageProxyWriter getExpressionWriter() {
@@ -286,8 +286,8 @@ public final class GroovyPageOutputStack {
         return stack.size() > 0 ? stack.peek().outEncoder : null;
     }
 
-    public Encoder getTemplateEncoder() {
-        return stack.size() > 0 ? stack.peek().templateEncoder : null;
+    public Encoder getStaticEncoder() {
+        return stack.size() > 0 ? stack.peek().staticEncoder : null;
     }
 
     public Encoder getExpressionEncoder() {
