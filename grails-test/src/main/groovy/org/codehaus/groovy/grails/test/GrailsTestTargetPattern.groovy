@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.grails.test
 
+import groovy.transform.CompileStatic
 import org.springframework.util.AntPathMatcher
 import java.util.regex.Pattern
 
@@ -30,6 +31,7 @@ import java.util.regex.Pattern
  *
  * Note: the interpretation of a target pattern is largely the responsibility of a test type.
  */
+@CompileStatic
 class GrailsTestTargetPattern {
 
     /**
@@ -95,18 +97,18 @@ class GrailsTestTargetPattern {
 
     protected boolean matchesClassWithoutExtension(String className, String[] suffixes) {
         if (suffixes) {
-            def suffixesAsPattern = suffixes.collect { Pattern.quote(it) }.join('|')
+            def suffixesAsPattern = suffixes.collect { String it -> Pattern.quote(it) }.join('|')
             className = className.replaceAll("(${suffixesAsPattern})\$", "")
         }
         def classNameAsPath = className.replace('.', '/')
         new AntPathMatcher().match(filePattern, classNameAsPath)
     }
 
-    protected boolean containsMethodName(pattern) {
+    protected boolean containsMethodName(String pattern) {
         pattern.contains('.') && Character.isLowerCase(pattern.charAt(pattern.lastIndexOf('.') + 1))
     }
 
-    protected classPatternToFilePattern(pattern) {
+    protected classPatternToFilePattern(String pattern) {
         (pattern.indexOf('.') != -1) ? pattern.replace('.', '/') : "**/" + pattern
     }
 }

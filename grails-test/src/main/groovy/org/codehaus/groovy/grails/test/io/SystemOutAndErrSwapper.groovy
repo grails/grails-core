@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.grails.test.io
 
+import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
 
 /**
@@ -44,7 +45,10 @@ class SystemOutAndErrSwapper {
         this.echoErr = echoErr
     }
 
-    /**
+    boolean isSwapped() {
+        return swapped
+    }
+/**
      * Replaces System.out and System.err with PrintStream's wrapping outStream and errStream
      *
      * @return [outStream, errStream]

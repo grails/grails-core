@@ -40,6 +40,8 @@ class PerTestRunListener {
     private Integer runCount = 0
     private Integer failureCount = 0
     private Integer errorCount = 0
+    private OutputStream outStream
+    private OutputStream errStream
 
     private Map<Description,JUnit4TestCaseFacade> testsByDescription = [:]
 
@@ -53,7 +55,9 @@ class PerTestRunListener {
 
     void start() {
         eventPublisher.testCaseStart(name)
-        outAndErrSwapper.swapIn()
+        final streams = outAndErrSwapper.swapIn()
+        outStream = streams[0]
+        errStream = streams[1]
         reports.startTestSuite(testSuite)
         startTime = System.currentTimeMillis()
     }
@@ -74,7 +78,9 @@ class PerTestRunListener {
         def testName = description.methodName
         eventPublisher.testStart(testName)
         runCount++
-        [System.out, System.err]*.println("--Output from ${testName}--")
+        for(OutputStream os in [outStream, errStream]) {
+            new PrintStream(os).println("--Output from ${testName}--")
+        }
         reports.startTest(getTest(description))
     }
 
