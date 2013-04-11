@@ -31,7 +31,7 @@ class DependencyConfigurationConfigurer extends AbstractDependencyManagementConf
 
     boolean pluginMode = false
     boolean repositoryMode = false
-    boolean legacyResolve = true
+    boolean legacyResolve = false
 
     DependencyConfigurationConfigurer(DependencyConfigurationContext context) {
         super(context)
