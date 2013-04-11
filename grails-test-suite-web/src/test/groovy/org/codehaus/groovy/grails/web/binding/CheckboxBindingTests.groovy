@@ -59,7 +59,8 @@ class CheckboxBindingController {
 
         controller.params.name = "Capricciosa"
         controller.params."_delivery" = ""
-        controller.params.options = [_extraAnchovies: '', _stuffedCrust: '']
+        controller.params."options._extraAnchovies" = ""
+        controller.params."options._stuffedCrust" = ""
 
         def model = controller.save()
 

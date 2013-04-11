@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 public class GroovyPageOutputStackAttributes {
     private final Writer topWriter;
-    private final Encoder templateEncoder;
+    private final Encoder staticEncoder;
     private final Encoder outEncoder;
     private final Encoder expressionEncoder;
     private final boolean allowCreate;
@@ -38,8 +38,8 @@ public class GroovyPageOutputStackAttributes {
         return topWriter;
     }
     
-    public Encoder getTemplateEncoder() {
-        return templateEncoder;
+    public Encoder getStaticEncoder() {
+        return staticEncoder;
     }
 
     public Encoder getOutEncoder() {
@@ -68,7 +68,7 @@ public class GroovyPageOutputStackAttributes {
 
     public static class Builder {
         private Writer topWriter;
-        private Encoder templateEncoder;
+        private Encoder staticEncoder;
         private Encoder outEncoder;
         private Encoder expressionEncoder;
         private boolean allowCreate=true;
@@ -83,7 +83,7 @@ public class GroovyPageOutputStackAttributes {
         
         public Builder(GroovyPageOutputStackAttributes attributes) {
             this.topWriter = attributes.topWriter;
-            this.templateEncoder = attributes.templateEncoder;
+            this.staticEncoder = attributes.staticEncoder;
             this.outEncoder = attributes.outEncoder;
             this.expressionEncoder = attributes.expressionEncoder;
             this.allowCreate = attributes.allowCreate;
@@ -98,8 +98,8 @@ public class GroovyPageOutputStackAttributes {
             return this;
         }
 
-        public Builder templateEncoder(Encoder templateEncoder) {
-            this.templateEncoder = templateEncoder;
+        public Builder staticEncoder(Encoder staticEncoder) {
+            this.staticEncoder = staticEncoder;
             return this;
         }
 
@@ -145,7 +145,7 @@ public class GroovyPageOutputStackAttributes {
 
     private GroovyPageOutputStackAttributes(Builder builder) {
         this.topWriter = builder.topWriter;
-        this.templateEncoder = builder.templateEncoder;
+        this.staticEncoder = builder.staticEncoder;
         this.outEncoder = builder.outEncoder;
         this.expressionEncoder = builder.expressionEncoder;
         this.allowCreate = builder.allowCreate;
