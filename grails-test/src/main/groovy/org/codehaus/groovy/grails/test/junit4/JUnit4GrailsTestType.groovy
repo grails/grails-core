@@ -112,7 +112,6 @@ class JUnit4GrailsTestType extends GrailsTestTypeSupport {
         notifier
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
     protected GrailsTestTypeResult doRun(GrailsTestEventPublisher eventPublisher) {
         def notifier = createNotifier(eventPublisher)
         def result = new Result()

@@ -16,29 +16,34 @@
 
 package org.codehaus.groovy.grails.test.junit4.listener
 
+import groovy.transform.CompileStatic
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper
+import org.codehaus.groovy.grails.test.report.junit.JUnitReports
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
 
 import junit.framework.JUnit4TestCaseFacade
 import junit.framework.AssertionFailedError
 
+@CompileStatic
 class PerTestRunListener {
-    final name
+    final String name
 
-    private final eventPublisher
-    private final reports
-    private final outAndErrSwapper
-    private final testSuite
+    private final GrailsTestEventPublisher eventPublisher
+    private final JUnitReports reports
+    private final SystemOutAndErrSwapper outAndErrSwapper
+    private final JUnitTest testSuite
 
-    private startTime
-    private runCount = 0
-    private failureCount = 0
-    private errorCount = 0
+    private Long startTime
+    private Integer runCount = 0
+    private Integer failureCount = 0
+    private Integer errorCount = 0
 
-    private testsByDescription = [:]
+    private Map<Description,JUnit4TestCaseFacade> testsByDescription = [:]
 
-    PerTestRunListener(name, eventPublisher, reports, outAndErrSwapper) {
+    PerTestRunListener(String name, GrailsTestEventPublisher eventPublisher, JUnitReports reports, SystemOutAndErrSwapper outAndErrSwapper) {
         this.name = name
         this.eventPublisher = eventPublisher
         this.reports = reports
@@ -56,7 +61,9 @@ class PerTestRunListener {
     void finish() {
         testSuite.runTime = System.currentTimeMillis() - startTime
         testSuite.setCounts(runCount, failureCount, errorCount)
-        def (out, err) = outAndErrSwapper.swapOut()*.toString()
+        final outAndErr = outAndErrSwapper.swapOut().collect { OutputStream out -> out.toString() }
+        def out = outAndErr[0]
+        def err = outAndErr[1]
         reports.systemOutput = out
         reports.systemError = err
         reports.endTestSuite(testSuite)
@@ -95,22 +102,22 @@ class PerTestRunListener {
     // JUnitReports requires us to always pass the same Test instance
     // for a test, so we cache it; this scheme also works for the case
     // where testFailure() is invoked without a prior call to testStarted()
-    private getTest(description) {
-        def test = testsByDescription.get(description)
+    private JUnit4TestCaseFacade getTest(Description description) {
+        JUnit4TestCaseFacade test = testsByDescription.get(description)
         if (test == null) {
             test = createJUnit4TestCaseFacade(description)
             testsByDescription.put(description, test)
         }
-        test
+        return test
     }
 
-    private toAssertionFailedError(assertionError) {
+    private toAssertionFailedError(AssertionError assertionError) {
         def result = new AssertionFailedError(assertionError.toString())
-        result.stackTrace = assertionError.stackTrace
+        result.stackTrace = assertionError.getStackTrace()
         result
     }
 
-    static createJUnit4TestCaseFacade(Description description) {
+    static JUnit4TestCaseFacade createJUnit4TestCaseFacade(Description description) {
         def ctor = JUnit4TestCaseFacade.getDeclaredConstructor(Description)
         ctor.accessible = true
         ctor.newInstance(description)

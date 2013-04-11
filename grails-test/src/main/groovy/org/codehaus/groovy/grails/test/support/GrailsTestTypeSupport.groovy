@@ -112,6 +112,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      * Sets the current thread's contextClassLoader to the {@link #getTestClassLoader() test class loader},
      * calls {@link #doRun(GrailsTestEventPublisher)} and then restores the original contextClassLoader.
      */
+    @CompileStatic
     GrailsTestTypeResult run(GrailsTestEventPublisher eventPublisher) {
         def prevContextClassLoader = Thread.currentThread().contextClassLoader
         Thread.currentThread().contextClassLoader = getTestClassLoader()
