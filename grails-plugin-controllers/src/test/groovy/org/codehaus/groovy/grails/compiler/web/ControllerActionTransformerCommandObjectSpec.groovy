@@ -101,6 +101,10 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             def methodActionWithNonValidateableCommandObject(org.codehaus.groovy.grails.compiler.web.NonValidateableCommand co) {
                 [commandObject: co]
             }
+
+            def methodActionWithSomeCommand(SomeCommand co) {
+                [commandObject: co]
+            }
         }
 
         class PersonCommand {
@@ -115,6 +119,18 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                 bindable: false
                 city nullable: true, bindable: false
                 state nullable: true
+            }
+        }
+
+        class SomeCommand {
+            private String someFieldWithNoSetter
+
+            void setSomeValue(String val) {
+                someFieldWithNoSetter = val
+            }
+
+            String getSomeValue() {
+                someFieldWithNoSetter
             }
         }
 
@@ -203,6 +219,15 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             
         then:
             model.commandObject.name == "Spock's Beard"
+    }
+    
+    void 'Test binding to a command object setter property'() {
+        when:
+        testController.params.someValue = 'My Value'
+        def model = testController.methodActionWithSomeCommand()
+        
+        then:
+        model.commandObject.someValue == 'My Value'
     }
 
     void "Test binding to multiple command objects"() {
