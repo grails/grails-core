@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins.i18n
 
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.springframework.core.io.FileSystemResource
+
 import java.io.File
 
 import grails.util.BuildSettingsHolder
@@ -63,53 +66,7 @@ class I18nGrailsPlugin {
             messageResources = plugin.watchedResources
         }
 
-        if (messageResources) {
-            for (resource in messageResources) {
-				// Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
-				// Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
-				def isInlineResource = false
-				try {
-					isInlineResource = (resource instanceof ClassPathResource) ? false :
-						BuildSettingsHolder?.settings?.isInlinePluginLocation(new File(resource.file.getParent().minus("/grails-app/i18n")))
-				} catch(e) {
-					// Ignore the failed getFile/getRealPath on a non exploded resource. 
-				}
-				String path
-
-				// If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
-				// generate the path to the resource based on its relativity to the application.
-				if(isInlineResource) {
-					path = resource.file.path
-				} else {
-                    // Extract the file path of the file's parent directory
-                    // that comes after "grails-app/i18n".
-                    if (resource instanceof ContextResource) {
-                        path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
-                    } else {
-                        path = StringUtils.substringAfter(resource.path, baseDir)
-                    }
-                }
-
-                // look for an underscore in the file name (not the full path)
-                String fileName = resource.filename
-                int firstUnderscore = fileName.indexOf('_')
-
-                if (firstUnderscore > 0) {
-                    // grab everything up to but not including
-                    // the first underscore in the file name
-                    int numberOfCharsToRemove = fileName.length() - firstUnderscore
-                    int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
-                    path = path[0..lastCharacterToRetain]
-                }
-                else {
-                    // Lop off the extension - the "basenames" property in the
-                    // message source cannot have entries with an extension.
-                    path -= ".properties"
-                }
-
-                baseNames << (isInlineResource ? path : "WEB-INF/" + baseDir + path)
-            }
-        }
+        calculateBaseNamesFromMessageSources(messageResources, baseNames)
 
         LOG.debug "Creating messageSource with basenames: $baseNames"
 
@@ -133,7 +90,67 @@ class I18nGrailsPlugin {
 
         localeResolver(SessionLocaleResolver)
     }
-    
+
+    protected void calculateBaseNamesFromMessageSources(messageResources, Set baseNames) {
+        if (messageResources) {
+            for (resource in messageResources) {
+                // Check to see if the resource's parent directory (minus the "/grails-app/i18n" portion) is an "inline" plugin location
+                // Note that we skip ClassPathResource instances -- this is to allow the unit tests to pass.
+                def isInlinePluginResource = false
+                def isPluginResource = false
+                File parentDir
+                if (!(resource instanceof ClassPathResource) && !(resource instanceof ContextResource) && !Environment.isWarDeployed()) {
+
+                    parentDir = new File(resource.file.getParent().minus("/grails-app/i18n"))
+                    final pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings()
+                    if (pluginBuildSettings.isInlinePluginLocation(new FileSystemResource(parentDir))) {
+                        isInlinePluginResource = true
+                    }
+                    else if (pluginBuildSettings.getPluginInfo(parentDir.absolutePath)) {
+                        isPluginResource = true
+                    }
+                }
+                String path
+
+                // If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
+                // generate the path to the resource based on its relativity to the application.
+                if (isInlinePluginResource || isPluginResource) {
+                    final buildSettings = BuildSettingsHolder.settings
+                    final resourcesDir = buildSettings.resourcesDir
+                    final pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings()
+                    final pluginInfo = pluginBuildSettings.getPluginInfo(parentDir.absolutePath)
+                    path = new File(resourcesDir, "plugins/$pluginInfo.fullName/grails-app/i18n/$resource.file.name" ).absolutePath
+                } else {
+                    // Extract the file path of the file's parent directory
+                    // that comes after "grails-app/i18n".
+                    if (resource instanceof ContextResource) {
+                        path = StringUtils.substringAfter(resource.pathWithinContext, baseDir)
+                    } else {
+                        path = StringUtils.substringAfter(resource.path, baseDir)
+                    }
+                }
+
+                // look for an underscore in the file name (not the full path)
+                String fileName = resource.filename
+                int firstUnderscore = fileName.indexOf('_')
+
+                if (firstUnderscore > 0) {
+                    // grab everything up to but not including
+                    // the first underscore in the file name
+                    int numberOfCharsToRemove = fileName.length() - firstUnderscore
+                    int lastCharacterToRetain = -1 * (numberOfCharsToRemove + 1)
+                    path = path[0..lastCharacterToRetain]
+                } else {
+                    // Lop off the extension - the "basenames" property in the
+                    // message source cannot have entries with an extension.
+                    path -= ".properties"
+                }
+
+                baseNames << (isInlinePluginResource ? path : "WEB-INF/" + baseDir + path)
+            }
+        }
+    }
+
     def isChildOfFile(File child, File parent) {
         def currentFile = child.canonicalFile
         while(currentFile != null) {

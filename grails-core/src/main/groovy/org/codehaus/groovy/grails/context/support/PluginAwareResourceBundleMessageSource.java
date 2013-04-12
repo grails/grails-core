@@ -119,13 +119,20 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 			
 			// If the plugin is inline, use the absolute path to the internationalization files
 			// in order to convert to resources.  Otherwise, use the relative WEB-INF path.
-			if(isInlinePlugin(grailsPlugin)) {
-				basePath = getInlinePluginPath(grailsPlugin);
-			} else {
-				basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
-			}
-			
-            return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
+            if(!(grailsPlugin instanceof BinaryGrailsPlugin)) {
+
+                String inlinePath = getInlinePluginPath(grailsPlugin);
+                if(inlinePath != null) {
+                    basePath = "file:" + inlinePath;
+                } else {
+                    basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
+                }
+
+                return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
+            }
+            else {
+                return new Resource[0];
+            }
         }
         catch (Exception e) {
 			LOG.debug("Could not resolve any resources for plugin " + grailsPlugin.getFileSystemName(), e);
@@ -154,19 +161,10 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 		try {
 			final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
 			if(pluginInfo != null) {
-				String pluginDirPath = pluginInfo.getPluginDir().getFile().getPath();
-				if(pluginDirPath != null) {
-					// Remove the "/." added to the end of the plugin path by the PluginInfo class.  This is necessary
-					// so that the path matches the key used in the BuildSettings class for the stored inline plugins map.
-					if(pluginDirPath.endsWith("/.")) {
-						pluginDirPath = pluginDirPath.substring(0, pluginDirPath.length() - 2);
-					}
-					
-					// If the path to the plugin represents an inline plugin, use that path (minus the trailing "/.")
-					if(BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(pluginDirPath))) {
-						path = pluginDirPath;
-					}
-				}
+                BuildSettings buildSettings = pluginBuildSettings.getBuildSettings();
+                File resourcesDir = buildSettings.getResourcesDir();
+
+                path = new File(resourcesDir, "plugins/"+pluginInfo.getFullName()).getCanonicalPath();
 			}
 		} catch(final IOException e) {
 			LOG.debug("Unable to retrieve plugin directory for plugin " + grailsPlugin.getFileSystemShortName() + ".", e);
