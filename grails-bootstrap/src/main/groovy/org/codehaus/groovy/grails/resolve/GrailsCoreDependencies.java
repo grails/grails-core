@@ -122,6 +122,7 @@ public class GrailsCoreDependencies {
         return grailsVersion;
     }
 
+
     public boolean isJava5compatible() {
         return java5compatible;
     }

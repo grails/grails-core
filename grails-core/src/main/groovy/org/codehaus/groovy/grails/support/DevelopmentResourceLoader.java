@@ -79,6 +79,9 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
      */
     protected String getRealLocationInProject(String location) {
 
+        if(new File(location).exists()) {
+            return "file:" + location;
+        }
         if (!location.startsWith(SLASH)) location = SLASH + location;
 
         // don't mess with locations that are URLs (in other words, locations that have schemes)

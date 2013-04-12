@@ -117,16 +117,23 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      */
     protected Resource[] getPluginBundles(GrailsPlugin grailsPlugin) {
         try {
-            // If the plugin is inline, use the absolute path to the internationalization files
-            // in order to convert to resources.  Otherwise, use the relative WEB-INF path.
-            String basePath;
-            if (isInlinePlugin(grailsPlugin)) {
-                basePath = getInlinePluginPath(grailsPlugin);
-            } else {
-                basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
-            }
+			String basePath = null;
 
-            return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
+			// If the plugin is inline, use the absolute path to the internationalization files
+			// in order to convert to resources.  Otherwise, use the relative WEB-INF path.
+            if(!(grailsPlugin instanceof BinaryGrailsPlugin)) {
+
+                String inlinePath = getInlinePluginPath(grailsPlugin);
+                if(inlinePath != null) {
+                    basePath = "file:" + inlinePath;
+                } else {
+                    basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
+                }
+                return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
+            }
+            else {
+                return new Resource[0];
+            }
         }
         catch (Exception e) {
             LOG.debug("Could not resolve any resources for plugin " + grailsPlugin.getFileSystemName(), e);
@@ -150,30 +157,21 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      * @param grailsPlugin The Grails plugin.
      * @return The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
      */
-    protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
-        String path = null;
-        try {
-            final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
-            if (pluginInfo != null) {
-                String pluginDirPath = pluginInfo.getPluginDir().getFile().getPath();
-                if (pluginDirPath != null) {
-                    // Remove the "/." added to the end of the plugin path by the PluginInfo class.  This is necessary
-                    // so that the path matches the key used in the BuildSettings class for the stored inline plugins map.
-                    if (pluginDirPath.endsWith("/.")) {
-                        pluginDirPath = pluginDirPath.substring(0, pluginDirPath.length() - 2);
-                    }
+	protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
+		String path = null;
+		try {
+			final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
+			if(pluginInfo != null) {
+                BuildSettings buildSettings = pluginBuildSettings.getBuildSettings();
+                File resourcesDir = buildSettings.getResourcesDir();
 
-                    // If the path to the plugin represents an inline plugin, use that path (minus the trailing "/.")
-                    if (BuildSettingsHolder.getSettings().isInlinePluginLocation(new File(pluginDirPath))) {
-                        path = pluginDirPath;
-                    }
-                }
-            }
-        } catch(final IOException e) {
-            LOG.debug("Unable to retrieve plugin directory for plugin " + grailsPlugin.getFileSystemShortName() + ".", e);
-        }
-        return path;
-    }
+                path = new File(resourcesDir, "plugins/"+pluginInfo.getFullName()).getCanonicalPath();
+			}
+		} catch(final IOException e) {
+			LOG.debug("Unable to retrieve plugin directory for plugin " + grailsPlugin.getFileSystemShortName() + ".", e);
+		}
+		return path;
+	}
 
     @Override
     protected String resolveCodeWithoutArguments(String code, Locale locale) {
