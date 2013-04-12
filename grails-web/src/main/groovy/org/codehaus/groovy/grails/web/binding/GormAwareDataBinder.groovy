@@ -116,7 +116,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                             addElementToCollectionAt obj, descriptor.propertyName, collection, Integer.parseInt(descriptor.index), 'null' == idValue ? null : getPersistentInstance(referencedType, idValue)
                         } else if(Map.isAssignableFrom(metaProperty.type)) {
                             Map map = (Map)obj[descriptor.propertyName]
-                            if('null' == idValue) {
+                            if(idValue != 'null' && idValue != null && idValue != '') {
                                 if(map != null) {
                                     map.remove descriptor.index
                                 }
@@ -132,7 +132,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                     def metaProperty = obj.metaClass.getMetaProperty propName
                     if(metaProperty) {
                         def persistedInstance = null
-                        if(idValue != 'null') {
+                        if(idValue != 'null' && idValue != null && idValue != '') {
                             persistedInstance = getPersistentInstance(((MetaBeanProperty)metaProperty).field.type, idValue)
                             if(persistedInstance == null) {
                                 persistedInstance = ((MetaBeanProperty)metaProperty).field.type.newInstance()
