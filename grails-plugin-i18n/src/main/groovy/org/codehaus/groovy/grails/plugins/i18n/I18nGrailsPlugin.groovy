@@ -131,6 +131,9 @@ class I18nGrailsPlugin {
                     } else if (resource instanceof FileSystemResource) {
                         path = StringUtils.substringAfter(resource.getPath(), baseDir)
                     }
+                    else if (resource instanceof ClassPathResource) {
+                        path = StringUtils.substringAfter(resource.getPath(), baseDir)
+                    }
                 }
 
                 if (path) {
