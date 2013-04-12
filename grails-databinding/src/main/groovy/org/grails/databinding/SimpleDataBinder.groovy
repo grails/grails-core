@@ -128,7 +128,7 @@ class SimpleDataBinder implements DataBinder {
                 def propertyType = metaProperty.type
                 if(typeConverters.containsKey(propertyType)) {
                     def converter = typeConverters[propertyType]
-                    if(!(converter instanceof StructuredDataBindingHelper) || 'struct' == val) {
+                    if(!(converter instanceof StructuredDataBindingHelper) || ('struct' == val || 'date.struct' == val)) {
                         val = typeConverters[propertyType].getPropertyValue obj, propName, source
                     }
                 }

@@ -204,6 +204,35 @@ class SimpleDataBinderSpec extends Specification {
             sqlDate_month: '6',
             sqlDate_day: '14',
             sqlDate_year: '1937',
+            sqlDate: 'date.struct',
+            calendar: 'date.struct',
+            utilDate: 'date.struct'])
+        utilDate = obj.utilDate
+        calendar = obj.calendar
+        sqlDate = obj.sqlDate
+
+        then:
+        Calendar.NOVEMBER == utilDate.month
+        15 == utilDate.date
+        69 == utilDate.year
+        Calendar.JUNE == sqlDate.month
+        14 == sqlDate.date
+        37 == sqlDate.year
+        Calendar.APRIL == calendar.get(Calendar.MONTH)
+        21 == calendar.get(Calendar.DATE)
+        2049 == calendar.get(Calendar.YEAR)
+
+        when:
+        obj.utilDate = obj.calendar = obj.sqlDate = null
+        binder.bind(obj, [utilDate_month: '11',
+            utilDate_day: '15',
+            utilDate_year: '1969',
+            calendar_month: '4',
+            calendar_day: '21',
+            calendar_year: '2049',
+            sqlDate_month: '6',
+            sqlDate_day: '14',
+            sqlDate_year: '1937',
             sqlDate: 'struct',
             calendar: 'struct',
             utilDate: 'struct'], null, ['sqlDate', 'utilDate'])
