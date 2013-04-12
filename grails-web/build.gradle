@@ -6,7 +6,7 @@ configurations {
 dependencies {
     jsp21 'javax.servlet.jsp:jsp-api:2.1'
 
-    compile project(":grails-core"), project(":grails-spring"), project(":grails-async")
+    compile project(":grails-core"), project(":grails-spring"), project(":grails-async"), project(":grails-databinding")
     compile('commons-el:commons-el:1.0') {
         exclude module:'commons-logging'
     }

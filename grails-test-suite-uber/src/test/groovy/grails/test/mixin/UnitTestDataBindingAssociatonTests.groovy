@@ -19,7 +19,7 @@ class UnitTestDataBindingAssociatonTests {
         // TODO: This currently doesn't work. See GRAILS-9120
 //        params."pirate" = [id: pirate.id, name: 'new name']
         params."pirate.id" = pirate.id
-        params."pirate.name" ='new name'
+        params."pirate" = [name:'new name']
         params.id = ship.id
         controller.pirate()
 

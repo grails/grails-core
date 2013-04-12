@@ -351,6 +351,10 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                               hireDate_month: '1',
                               hireDate_day: '15',
                               hireDate_year: '2001',
+                              hireDate: 'struct',
+                              birthDate: 'struct',
+                              exitDate: 'struct',
+                              sqlDate: 'struct',
                               name: 'Jose']
             def hireDate = obj.hireDate
             def birthDate = obj.birthDate
