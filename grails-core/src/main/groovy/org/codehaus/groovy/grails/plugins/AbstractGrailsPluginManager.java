@@ -22,9 +22,16 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClassRegistry;
-import groovy.lang.Mixin;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
@@ -43,10 +50,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
-
-import java.io.File;
-import java.lang.annotation.Annotation;
-import java.util.*;
 
 /**
  * Abstract implementation of the GrailsPluginManager interface
@@ -360,10 +363,12 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             try {
                 c = configSlurper.parse(file.toURI().toURL());
                 application.getConfig().merge(c);
+                application.configChanged();
                 informPluginsOfConfigChange();
 
             } catch (Exception e) {
                 // ignore
+                LOG.debug("Error in changing Config", e);
             }
         }
         else {
