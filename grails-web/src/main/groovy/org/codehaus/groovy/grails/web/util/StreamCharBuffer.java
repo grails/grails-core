@@ -728,7 +728,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
             }
         }
         spaceLeft = allocBuffer.spaceLeft();
-        if (spaceLeft == 0) {
+        if (allocate && spaceLeft == 0) {
             totalChunkSize += allocBuffer.chunkSize();
             resizeChunkSizeAsProcentageOfTotalSize();
             allocBuffer = new AllocatedBuffer(chunkSize);
