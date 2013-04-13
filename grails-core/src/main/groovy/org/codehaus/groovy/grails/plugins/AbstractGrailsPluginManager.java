@@ -372,9 +372,11 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
             try {
                 c = configSlurper.parse(file.toURI().toURL());
                 application.getConfig().merge(c);
+                application.configChanged();
                 informPluginsOfConfigChange();
             } catch (Exception e) {
                 // ignore
+                LOG.debug("Error in changing Config", e);
             }
         }
         else {
