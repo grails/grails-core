@@ -113,7 +113,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertOutputEquals '', template, [book:b]
         assertOutputEquals '', template, [book:domain.newInstance()]
     }
-
+    
     void testFieldValueHtmlEscaping() {
         def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [title:"<script>alert('escape me')</script>"]
@@ -394,7 +394,61 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
             assertEquals "error found", sw.toString()
         }
     }
+    
+    void testMessageHtmlEscaping() {
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
+        b.properties = [title:"<script>alert('escape me')</script>"]
+        
+        messageSource.addMessage("default.show.label", Locale.ENGLISH, ">{0}<")
 
+        def template = '''<title><g:message code="default.show.label" args="[book.title]" /></title>'''
+        def htmlCodecDirective = '<%@page defaultCodec="HTML" %>'
+        def expected = "<title>>&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;<</title>"
+        assertOutputEquals(expected, template, [book:b])
+        assertOutputEquals(expected, htmlCodecDirective + template, [book:b])
+    }
+    
+    void testMessageHtmlEscapingWithFunctionSyntaxCall() {
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
+        b.properties = [title:"<script>alert('escape me')</script>"]
+        
+        messageSource.addMessage("default.show.label", Locale.ENGLISH, "{0}")
+
+        def template = '''<title>${g.message([code:"default.show.label", args:[book.title]])}</title>'''
+        def htmlCodecDirective = '<%@page defaultCodec="HTML" %>'
+        def expected = "<title>&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;</title>"
+        assertOutputEquals(expected, template, [book:b])
+        assertOutputEquals(expected, htmlCodecDirective + template, [book:b])
+    }
+
+    void testMessageHtmlEscapingDifferentEncodings() {
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
+        b.properties = [title:"<script>alert('escape me')</script>"]
+        
+        messageSource.addMessage("default.show.label", Locale.ENGLISH, "{0}")
+
+        def template = '''<title>${g.message([code:"default.show.label", args:[book.title]])}</title>'''
+        def htmlCodecDirective = '<%@page defaultCodec="HTML" %>'
+        def expected = "<title>&lt;script&gt;alert(&#39;escape me&#39;)&lt;/script&gt;</title>"
+        
+        def resourceLoader = new MockStringResourceLoader()
+        resourceLoader.registerMockResource('/_sometemplate.gsp', htmlCodecDirective + template)
+        resourceLoader.registerMockResource('/_sometemplate_nocodec.gsp', template)
+        appCtx.groovyPagesTemplateEngine.groovyPageLocator.addResourceLoader(resourceLoader)
+        
+        assertOutputEquals(expected, '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, template + '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, htmlCodecDirective + template + '<g:render template="/sometemplate" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, '<g:render template="/sometemplate" model="[book:book]" />' + template, [book:b])
+        assertOutputEquals(expected + expected, htmlCodecDirective + '<g:render template="/sometemplate" model="[book:book]" />' + template, [book:b])
+
+        assertOutputEquals(expected, '<g:render template="/sometemplate_nocodec" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, template + '<g:render template="/sometemplate_nocodec" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, htmlCodecDirective + template + '<g:render template="/sometemplate_nocodec" model="[book:book]" />', [book:b])
+        assertOutputEquals(expected + expected, '<g:render template="/sometemplate_nocodec" model="[book:book]" />' + template, [book:b])
+        assertOutputEquals(expected + expected, htmlCodecDirective + '<g:render template="/sometemplate_nocodec" model="[book:book]" />' + template, [book:b])
+    }
+    
     void testMessageTagWithError() {
         def error = new FieldError("foo", "bar",1, false, ["my.error.code"] as String[], null, "This is default")
         def template = '<g:message error="${error}" />'
