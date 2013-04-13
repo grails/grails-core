@@ -707,29 +707,25 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     int allocateSpace() throws IOException {
         int spaceLeft = allocBuffer.spaceLeft();
         if (spaceLeft == 0) {
-            spaceLeft = appendCharBufferChunk(true);
+            spaceLeft = appendCharBufferChunk(true, true);
         }
         return spaceLeft;
     }
 
-    private int appendCharBufferChunk(boolean flushInConnected) throws IOException {
+    private int appendCharBufferChunk(boolean flushInConnected, boolean allocate) throws IOException {
         int spaceLeft = 0;
         if (flushInConnected && isConnectedMode()) {
             flushToConnected();
             if (!isChunkSizeResizeable()) {
                 allocBuffer.reuseBuffer();
-                spaceLeft = allocBuffer.spaceLeft();
-            }
-            else {
-                spaceLeft = 0;
             }
         }
         else {
             if (allocBuffer.hasChunk()) {
                 addChunk(allocBuffer.createChunk());
             }
-            spaceLeft = allocBuffer.spaceLeft();
         }
+        spaceLeft = allocBuffer.spaceLeft();
         if (spaceLeft == 0) {
             totalChunkSize += allocBuffer.chunkSize();
             resizeChunkSizeAsProcentageOfTotalSize();
@@ -740,12 +736,12 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     void appendStringChunk(String str, int off, int len) throws IOException {
-        appendCharBufferChunk(false);
+        appendCharBufferChunk(false, false);
         addChunk(new StringChunk(str, off, len));
     }
 
     public void appendStreamCharBufferChunk(StreamCharBuffer subBuffer) throws IOException {
-        appendCharBufferChunk(false);
+        appendCharBufferChunk(false, false);
         addChunk(new StreamCharBufferSubChunk(subBuffer));
     }
 
@@ -779,7 +775,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
     }
 
     protected boolean isChunkSizeResizeable() {
-        return (growProcent > 0);
+        return (growProcent > 0 && chunkSize < maxChunkSize);
     }
 
     protected void resizeChunkSizeAsProcentageOfTotalSize() {
@@ -834,7 +830,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
 
             markUsed();
             if (shouldWriteDirectly(len)) {
-                appendCharBufferChunk(true);
+                appendCharBufferChunk(true, true);
                 connectedWritersWriter.write(b, off, len);
             }
             else {
@@ -894,7 +890,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
             if (len==0) return;
             markUsed();
             if (shouldWriteDirectly(len)) {
-                appendCharBufferChunk(true);
+                appendCharBufferChunk(true, false);
                 connectedWritersWriter.write(str, off, len);
             }
             else if (len >= subStringChunkMinSize && isNextChunkBigEnough(len)) {
@@ -917,7 +913,7 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable 
             markUsed();
             int directChunkMinSize = getDirectChunkMinSize();
             if (directChunkMinSize != -1 && subBuffer.isSizeLarger(directChunkMinSize)) {
-                appendCharBufferChunk(true);
+                appendCharBufferChunk(true, false);
                 subBuffer.writeToImpl(connectedWritersWriter,false,false);
             }
             else if (subBuffer.preferSubChunkWhenWritingToOtherBuffer ||
