@@ -14,21 +14,23 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
 import grails.artefact.Artefact
 import groovy.xml.MarkupBuilder
+
 import java.beans.PropertyEditor
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
+
 import org.apache.commons.lang.StringEscapeUtils
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
-import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes;
+import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
+import org.springframework.context.support.DefaultMessageSourceResolvable
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
  * Tags to handle validation and errors.
@@ -281,10 +283,14 @@ class ValidationTagLib {
     def messageImpl(attrs) {
         def messageSource = grailsAttributes.applicationContext.messageSource
         def locale = attrs.locale ?: RCU.getLocale(request)
+        def tagSyntaxCall = (attrs instanceof GroovyPageAttributes) ? attrs.isGspTagSyntaxCall() : false
 
         def text
         def error = attrs.error ?: attrs.message
         if (error) {
+            if (!attrs.encodeAs && error instanceof MessageSourceResolvable && error.arguments) {
+                error = new DefaultMessageSourceResolvable(error.codes, encodeArgsIfRequired(error.arguments, tagSyntaxCall) as Object[], error.defaultMessage)
+            }
             try {
                 text = messageSource.getMessage(error , locale)
             }
@@ -299,7 +305,10 @@ class ValidationTagLib {
         }
         else if (attrs.code) {
             def code = attrs.code
-            def args = attrs.args
+            def args = []
+            if(attrs.args) {
+                args = attrs.encodeAs ? attrs.args : encodeArgsIfRequired(attrs.args, tagSyntaxCall)
+            }
             def defaultMessage
             if (attrs.containsKey('default')) {
                 defaultMessage = attrs['default']
@@ -320,6 +329,20 @@ class ValidationTagLib {
             return attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text
         }
         ''
+    }
+    
+    private encodeArgsIfRequired(arguments, boolean tagSyntaxCall) {
+        if(arguments && (tagSyntaxCall || HTMLCodec.shouldEncode())) {
+            arguments.collect { value ->
+                if(value == null || value instanceof Number || value instanceof Date) {
+                    value      
+                } else {             
+                    value.toString().encodeAsHTML()
+                }
+            }
+        } else {
+            arguments
+        }
     }
 
     // Maps out how Grails contraints map to Apache commons validators
