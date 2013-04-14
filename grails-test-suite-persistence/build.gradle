@@ -26,19 +26,30 @@ dependencies {
 test {
     maxParallelForks = 2
     forkEvery = 200
-    jvmArgs = ['-Xmx1048M','-XX:MaxPermSize=256m']
-    excludes = ['**/GrailsDomainBinderTests.class', 
-                '**/ComponentValidationTests.class', 
-                '**/HibernateMappingUniqueConstraintTests.class']
+    jvmArgs = [
+        '-Xmx1048M',
+        '-XX:MaxPermSize=256m'
+    ]
+    excludes = [
+        '**/GrailsDomainBinderTests.class',
+        '**/ComponentValidationTests.class',
+        '**/HibernateMappingUniqueConstraintTests.class',
+        '**/InheritedUniqueConstraintTests.class',
+        '**/BidirectionalOneToOneWithProxyTests.class'
+    ]
 }
 
-task testGrailsDomainBinder(type: Test) {
-    includes = ['**/GrailsDomainBinderTests.class']
-}
+task testGrailsDomainBinder(type: Test) { includes = [
+        '**/GrailsDomainBinderTests.class'
+    ] }
 
 task testIsolatedPersistentOne(type: Test) {
-    includes = ['**/ComponentValidationTests.class']
-    includes = ['**/HibernateMappingUniqueConstraintTests.class']
+    includes = [
+        '**/ComponentValidationTests.class',
+        '**/HibernateMappingUniqueConstraintTests.class',
+        '**/InheritedUniqueConstraintTests.class',
+        '**/BidirectionalOneToOneWithProxyTests.class'
+    ]
 }
 
 test.dependsOn testGrailsDomainBinder, testIsolatedPersistentOne
