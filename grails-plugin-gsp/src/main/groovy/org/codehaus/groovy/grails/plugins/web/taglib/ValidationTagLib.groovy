@@ -290,7 +290,7 @@ class ValidationTagLib {
         def error = attrs.error ?: attrs.message
         if (error) {
             if (!attrs.encodeAs && error instanceof MessageSourceResolvable && error.arguments) {
-                error = new DefaultMessageSourceResolvable(error.codes, encodeArgsIfRequired(error.arguments, tagSyntaxCall) as Object[], error.defaultMessage)
+                error = new DefaultMessageSourceResolvable(error.codes, encodeArgsIfRequired(error.arguments) as Object[], error.defaultMessage)
             }
             try {
                 text = messageSource.getMessage(error , locale)
@@ -308,7 +308,7 @@ class ValidationTagLib {
             def code = attrs.code
             def args = []
             if(attrs.args) {
-                args = attrs.encodeAs ? attrs.args : encodeArgsIfRequired(attrs.args, tagSyntaxCall)
+                args = attrs.encodeAs ? attrs.args : encodeArgsIfRequired(attrs.args)
             }
             def defaultMessage
             if (attrs.containsKey('default')) {
@@ -327,22 +327,18 @@ class ValidationTagLib {
             }
         }
         if (text) {
-            return attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text
+            return attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text.encodeAsRaw()
         }
         ''
     }
     
-    private encodeArgsIfRequired(arguments, boolean tagSyntaxCall) {
-        if(arguments && (tagSyntaxCall || HTMLCodec.shouldEncode())) {
-            arguments.collect { value ->
-                if(value == null || value instanceof Number || value instanceof Date) {
-                    value      
-                } else {             
-                    value.toString().encodeAsHTML()
-                }
+    private encodeArgsIfRequired(arguments) {
+        arguments.collect { value ->
+            if(value == null || value instanceof Number || value instanceof Date) {
+                value      
+            } else {             
+                value.toString().encodeAsHTML()
             }
-        } else {
-            arguments
         }
     }
 
