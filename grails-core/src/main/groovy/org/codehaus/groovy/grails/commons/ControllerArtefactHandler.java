@@ -88,8 +88,10 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
         } else {
         	uri = featureId.toString();
         }
+        
+        String cacheKey = (pluginName != null ? pluginName : "") + ":" + uri;
 
-        GrailsClass controllerClass = uriToControllerClassCache.get(uri);
+        GrailsClass controllerClass = uriToControllerClassCache.get(cacheKey);
         if (controllerClass == null) {
             final ApplicationContext mainContext = grailsApplication.getMainContext();
             GrailsPluginManager grailsPluginManager = null;
@@ -125,7 +127,7 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
 
             // don't cache for dev environment
             if (Environment.getCurrent() != Environment.DEVELOPMENT) {
-                uriToControllerClassCache.put(uri, controllerClass);
+                uriToControllerClassCache.put(cacheKey, controllerClass);
             }
         }
 
