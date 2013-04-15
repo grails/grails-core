@@ -118,22 +118,28 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsControllerHelper#handleURI(java.lang.String, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, java.util.Map)
      */
     @SuppressWarnings("rawtypes")
-    public ModelAndView handleURI(String uri, GrailsWebRequest grailsWebRequest, Map params) {
-        Assert.notNull(uri, "Controller URI [" + uri + "] cannot be null!");
+    public ModelAndView handleURI(final String originalUri, GrailsWebRequest grailsWebRequest, Map params) {
+        Assert.notNull(originalUri, "Controller URI [" + originalUri + "] cannot be null!");
 
         HttpServletRequest request = grailsWebRequest.getCurrentRequest();
         HttpServletResponse response = grailsWebRequest.getCurrentResponse();
 
+        String uri = originalUri;
         if (uri.endsWith("/")) {
             uri = uri.substring(0, uri.length() - 1);
         }
 
         // Step 2: lookup the controller in the application.
-        GrailsControllerClass controllerClass;
+        GrailsControllerClass controllerClass=null;
         Object attribute = grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
         if (attribute instanceof GrailsControllerClass) {
+            String matchedUri = (String)grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_MATCHED_URI, WebRequest.SCOPE_REQUEST);
+            if(matchedUri != null && originalUri.equals(matchedUri)) {
             controllerClass = (GrailsControllerClass) attribute;
-        } else {
+            }
+        } 
+        
+        if (controllerClass == null) {
             controllerClass = getControllerClassByURI(uri);
         }
 
