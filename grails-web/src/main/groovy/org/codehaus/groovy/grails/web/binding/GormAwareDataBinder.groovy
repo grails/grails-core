@@ -99,7 +99,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
     }
 
     @Override
-    protected processProperty(obj, String propName, String prefix, val, Map source,  List whiteList, List blackList, DataBindingListener listener) {
+    protected processProperty(obj, String propName, val, Map source,  List whiteList, List blackList, DataBindingListener listener) {
         if(val instanceof Map && val.containsKey('id')) {
             def idValue = val['id']
             if(idValue instanceof GString) {
@@ -128,7 +128,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                     }
                 }
             } else {
-                if(isOkToBind(propName, prefix, whiteList, blackList)) {
+                if(isOkToBind(propName, whiteList, blackList)) {
                     def metaProperty = obj.metaClass.getMetaProperty propName
                     if(metaProperty) {
                         def persistedInstance = null
@@ -139,7 +139,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                             }
                         }
                         
-                        setPropertyValue obj, source, propName, prefix, persistedInstance, listener
+                        setPropertyValue obj, source, propName, persistedInstance, listener
                         if(persistedInstance != null) {
                             bind persistedInstance, val, listener
                         }
@@ -158,7 +158,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                 }
             }
             */
-            super.processProperty obj, propName, prefix, val, source, whiteList, blackList, listener
+            super.processProperty obj, propName, val, source, whiteList, blackList, listener
         }
     }
 
@@ -204,7 +204,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
     }
 
     @Override
-    protected setPropertyValue(obj, Map source, String propName, String prefix, propertyValue, DataBindingListener listener) {
+    protected setPropertyValue(obj, Map source, String propName, propertyValue, DataBindingListener listener) {
         boolean isSet = false
         if(grailsApplication != null) {
             def domainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
@@ -241,7 +241,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
             }
         }
         if(!isSet) {
-            super.setPropertyValue obj, source, propName, prefix, propertyValue, listener
+            super.setPropertyValue obj, source, propName, propertyValue, listener
         }
     }
 

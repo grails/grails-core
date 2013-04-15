@@ -35,11 +35,6 @@ public interface DataBinder {
 
     public abstract void bind(Object obj, Map<String, Object> source, DataBindingListener listener);
 
-    public abstract void bind(Object obj, String prefix, Map<String, Object> source);
-
     public abstract void bind(Object obj, Map<String, Object> source);
-
-    public abstract void bind(Object obj, String filter, String prefix,
-            Map<String, Object> source, List<String> whiteList, List<String> blackList, DataBindingListener listener);
 
 }
