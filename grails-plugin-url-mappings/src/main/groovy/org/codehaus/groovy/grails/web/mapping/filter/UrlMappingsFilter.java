@@ -195,6 +195,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                             webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
                             webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
+                            webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_MATCHED_URI, uri, WebRequest.SCOPE_REQUEST);
                         }
                     }
                     catch (Exception e) {
