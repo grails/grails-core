@@ -131,7 +131,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         // Step 2: lookup the controller in the application.
         GrailsControllerClass controllerClass;
         Object attribute = grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
-        if (attribute instanceof GrailsControllerClass && ((GrailsControllerClass)attribute).mapsToURI(uri)) {
+        if (attribute instanceof GrailsControllerClass) {
             controllerClass = (GrailsControllerClass) attribute;
         } else {
             controllerClass = getControllerClassByURI(uri);
