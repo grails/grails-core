@@ -46,7 +46,7 @@ class SimpleDataBinder implements DataBinder {
         registerTypeConverter(java.util.Calendar.class, new StructuredDateBindingHelper(java.util.Calendar))
     }
 
-    public registerTypeConverter(Class clazz, BindingHelper converter) {
+    void registerTypeConverter(Class clazz, BindingHelper converter) {
         typeConverters[clazz] = converter
     }
 
