@@ -24,7 +24,6 @@ import java.util.Map;
  * 
  *
  * @see BindUsing
- * @see SimpleDataBinder#registerStructuredEditor(Class, BindingHelper)
  */
 public interface BindingHelper {
     
