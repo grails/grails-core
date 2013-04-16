@@ -21,15 +21,8 @@ import groovy.util.slurpersupport.GPathResult
 import java.lang.reflect.ParameterizedType
 
 import org.apache.commons.collections.set.ListOrderedSet
-import org.grails.databinding.converters.BooleanConversionHelper
-import org.grails.databinding.converters.ByteConversionHelper
-import org.grails.databinding.converters.CharConversionHelper
+import org.grails.databinding.converters.ConversionService
 import org.grails.databinding.converters.DateConversionHelper
-import org.grails.databinding.converters.DoubleConversionHelper
-import org.grails.databinding.converters.FloatConversionHelper
-import org.grails.databinding.converters.IntegerConversionHelper
-import org.grails.databinding.converters.LongConversionHelper
-import org.grails.databinding.converters.ShortConversionHelper
 import org.grails.databinding.converters.StructuredDateBindingHelper
 import org.grails.databinding.converters.ValueConverter
 import org.grails.databinding.errors.SimpleBindingError
@@ -40,19 +33,12 @@ import org.grails.databinding.xml.GPathResultMap
 class SimpleDataBinder implements DataBinder {
 
     protected Map<Class, BindingHelper> typeConverters = new HashMap<Class, BindingHelper>()
+    ConversionService conversionService
     protected Map<Class, ValueConverter> conversionHelpers = new HashMap<Class, ValueConverter>()
 
     static final INDEXED_PROPERTY_REGEX = /(.*)\[\s*([^\s]*)\s*\]\s*$/
 
     SimpleDataBinder() {
-        conversionHelpers.put(Boolean.TYPE, new BooleanConversionHelper())
-        conversionHelpers.put(Byte.TYPE, new ByteConversionHelper())
-        conversionHelpers.put(Character.TYPE, new CharConversionHelper())
-        conversionHelpers.put(Short.TYPE, new ShortConversionHelper())
-        conversionHelpers.put(Integer.TYPE, new IntegerConversionHelper())
-        conversionHelpers.put(Long.TYPE, new LongConversionHelper())
-        conversionHelpers.put(Float.TYPE, new FloatConversionHelper())
-        conversionHelpers.put(Double.TYPE, new DoubleConversionHelper())
         conversionHelpers.put(Date, new DateConversionHelper())
 
         registerTypeConverter(java.util.Date.class, new StructuredDateBindingHelper(java.util.Date))
@@ -372,6 +358,8 @@ class SimpleDataBinder implements DataBinder {
     protected convert(Class typeToConvertTo, value) {
         if(conversionHelpers.containsKey(typeToConvertTo)) {
             return conversionHelpers.get(typeToConvertTo).convert(value)
+        } else if(conversionService?.canConvert(value.getClass(), typeToConvertTo)) {
+            return conversionService.convert(value, typeToConvertTo)
         } else if(Collection.isAssignableFrom(typeToConvertTo) && value instanceof String[]) {
             if(Set == typeToConvertTo) {
                 return value as Set

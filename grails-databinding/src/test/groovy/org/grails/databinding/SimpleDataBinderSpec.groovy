@@ -117,32 +117,6 @@ class SimpleDataBinderSpec extends Specification {
         'Child 3' in obj.widgetChildren
     }
 
-    void 'Test binding to primitives from Strings'() {
-        given:
-        def binder = new SimpleDataBinder()
-        def obj = new PrimitiveContainer()
-
-        when:
-        binder.bind(obj, [someBoolean: 'true',
-            someByte: '1',
-            someChar: 'a',
-            someShort: '2',
-            someInt: '3',
-            someLong: '4',
-            someFloat: '5.5',
-            someDouble: '6.6'])
-
-        then:
-        obj.someBoolean == true
-        obj.someByte == 1
-        obj.someChar == ('a' as char)
-        obj.someShort == 2
-        obj.someInt == 3
-        obj.someLong == 4
-        obj.someFloat == 5.5
-        obj.someDouble == 6.6
-    }
-
     void 'Test date binding'() {
         given:
         def binder = new SimpleDataBinder()
@@ -158,6 +132,35 @@ class SimpleDataBinderSpec extends Specification {
         obj.utilDate == nowUtilDate
         obj.sqlDate == nowSqlDate
         obj.calendar == nowCalendar
+    }
+    
+    void 'Test binding string to date'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new DateContainer()
+        
+        when:
+        binder.bind obj, [utilDate: '2013-04-15 21:26:31.973']
+        
+        then:
+        Calendar.APRIL == obj.utilDate.month
+        15 == obj.utilDate.date
+        113 == obj.utilDate.year
+        21 == obj.utilDate.hours
+        26 == obj.utilDate.minutes
+        31 == obj.utilDate.seconds
+        
+        when:
+        obj.utilDate = null
+        binder.bind obj, [utilDate: "2011-03-12T09:24:22Z"]
+        
+        then:
+        Calendar.MARCH == obj.utilDate.month
+        12 == obj.utilDate.date
+        111 == obj.utilDate.year
+        9 == obj.utilDate.hours
+        24 == obj.utilDate.minutes
+        22 == obj.utilDate.seconds
     }
 
     void 'Test structured date binding'() {
@@ -351,17 +354,6 @@ class Gadget extends Widget {
 class Fidget {
     def name
     Gadget gadget
-}
-
-class PrimitiveContainer {
-    boolean someBoolean
-    byte someByte
-    char someChar
-    short someShort
-    int someInt
-    long someLong
-    float someFloat
-    double someDouble
 }
 
 class DateContainer {

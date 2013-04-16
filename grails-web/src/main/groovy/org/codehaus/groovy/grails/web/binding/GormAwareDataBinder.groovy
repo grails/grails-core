@@ -20,7 +20,6 @@ import grails.validation.DeferredBindingActions
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
 
-import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 import java.util.concurrent.ConcurrentHashMap
 
@@ -42,6 +41,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
 
     GormAwareDataBinder(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication
+        this.conversionService = new SpringConversionServiceAdapter()
     }
     
     /**
@@ -274,10 +274,10 @@ class GormAwareDataBinder extends SimpleDataBinder {
         isSet
     }
     
-     protected convert(Class typeToConvertTo, value) {
-         if(value instanceof org.codehaus.groovy.grails.web.json.JSONObject.Null) {
-             return null
-         }
-         super.convert typeToConvertTo, value
-     }
+    protected convert(Class typeToConvertTo, value) {
+        if(value instanceof org.codehaus.groovy.grails.web.json.JSONObject.Null) {
+            return null
+        }
+        super.convert typeToConvertTo, value
+    }
 }

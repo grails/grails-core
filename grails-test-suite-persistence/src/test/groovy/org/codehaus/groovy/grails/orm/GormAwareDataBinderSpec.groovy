@@ -18,9 +18,37 @@ import grails.persistence.Entity
 
 import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
 
-@spock.lang.Ignore
-class GormAwareDataBinderSpec extends GormSpec {
+import spock.lang.Ignore
 
+class GormAwareDataBinderSpec extends spock.lang.Specification /*GormSpec */{
+    
+    void 'Test binding to primitives from Strings'() {
+        given:
+        def binder = new GormAwareDataBinder()
+        def obj = new PrimitiveContainer()
+
+        when:
+        binder.bind(obj, [someBoolean: 'true',
+            someByte: '1',
+            someChar: 'a',
+            someShort: '2',
+            someInt: '3',
+            someLong: '4',
+            someFloat: '5.5',
+            someDouble: '6.6'])
+
+        then:
+        obj.someBoolean == true
+        obj.someByte == 1
+        obj.someChar == ('a' as char)
+        obj.someShort == 2
+        obj.someInt == 3
+        obj.someLong == 4
+        obj.someFloat == 5.5
+        obj.someDouble == 6.6
+    }
+
+    @Ignore
     void 'Test id binding'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -57,6 +85,7 @@ class GormAwareDataBinderSpec extends GormSpec {
         
     }
 
+    @Ignore
     void 'Test binding to the one side of a one to many'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -81,6 +110,8 @@ class GormAwareDataBinderSpec extends GormSpec {
         pub.publisher.publications[0] == pub
         
     }
+    
+    @Ignore
     void 'Test binding to a hasMany List'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -103,6 +134,7 @@ class GormAwareDataBinderSpec extends GormSpec {
         publisher.publications[1].publisher == publisher
     }
 
+    @Ignore
     void 'Test bindable'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -116,10 +148,10 @@ class GormAwareDataBinderSpec extends GormSpec {
         widget.isNotBindable == null
     }
     
-    @Override
-    List getDomainClasses() {
-        [Publication, Author, Publisher, Widget]
-    }
+//    @Override
+//    List getDomainClasses() {
+//        [Publication, Author, Publisher, Widget]
+//    }
 }
 
 @Entity
@@ -149,4 +181,15 @@ class Widget {
     static constraints = {
         isNotBindable bindable: false
     }
+}
+
+class PrimitiveContainer {
+    boolean someBoolean
+    byte someByte
+    char someChar
+    short someShort
+    int someInt
+    long someLong
+    float someFloat
+    double someDouble
 }
