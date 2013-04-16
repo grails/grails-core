@@ -65,10 +65,10 @@ class Address {
     String city
 }
 
-class StructuredAddressBindingEditor implements StructuredBindingEditor {
+class StructuredAddressBindingEditor implements StructuredBindingEditor<Address> {
 
     @Override
-    public Object getPropertyValue(Object obj, String propertyName, Map<String, Object> source) {
+    public Address getPropertyValue(Object obj, String propertyName, Map<String, Object> source) {
         def address = new Address()
 
         address.state = source[propertyName + '_someState']

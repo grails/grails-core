@@ -18,14 +18,13 @@ import java.util.Map;
 
 /**
  * Classes which implement this interface may participate in the data binding
- * process.  Instances of this interface may be explicity registered with the
- * data binder by using the {@link SimpleDataBinder#registerStructuredEditor(Class, BindingHelper)}
- * method or by applying the {@link BindUsing} annotation to a class.
+ * process.  Instances of this interface may be registered with the
+ * data binder by applying the {@link BindUsing} annotation to a class.
  * 
  *
  * @see BindUsing
  */
-public interface BindingHelper {
+public interface BindingHelper<T> {
     
     /**
      * The value returned from this method will be bound to
@@ -36,6 +35,6 @@ public interface BindingHelper {
      * @param source The Map containing all of the values being bound to this object
      * @return The value which should be bound to propertyName
      */
-    Object getPropertyValue(Object obj, String propertyName,
+    T getPropertyValue(Object obj, String propertyName,
             Map<String, Object> source);
 }

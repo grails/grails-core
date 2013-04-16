@@ -59,9 +59,9 @@ class ClassWithBindUsing {
     Integer tripleIt
 }
 
-class MultiplyingBindingHelper implements BindingHelper {
+class MultiplyingBindingHelper implements BindingHelper<Integer> {
     @Override
-    public Object getPropertyValue(Object obj, String propertyName, Map<String, Object> source) {
+    public Integer getPropertyValue(Object obj, String propertyName, Map<String, Object> source) {
         def value = source[propertyName]
         def convertedValue = value
         switch(propertyName) {

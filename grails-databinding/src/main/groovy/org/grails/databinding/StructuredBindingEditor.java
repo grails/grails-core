@@ -49,7 +49,7 @@ assert resident.workAddress.city == null
  *
  * @see SimpleDataBinder#registerStructuredEditor(Class, StructuredBindingEditor)
  */
-public interface StructuredBindingEditor extends BindingHelper {
+public interface StructuredBindingEditor<T> extends BindingHelper<T> {
     /**
      * The value returned from this method will be bound to
      * the property specified by propertyName.
@@ -59,6 +59,6 @@ public interface StructuredBindingEditor extends BindingHelper {
      * @param source The Map containing all of the values being bound to this object
      * @return The value which should be bound to propertyName
      */
-    Object getPropertyValue(Object obj, String propertyName,
+    T getPropertyValue(Object obj, String propertyName,
             Map<String, Object> source);
 }

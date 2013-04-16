@@ -23,7 +23,9 @@ import java.lang.reflect.ParameterizedType
 import org.apache.commons.collections.set.ListOrderedSet
 import org.grails.databinding.converters.ConversionService
 import org.grails.databinding.converters.DateConversionHelper
-import org.grails.databinding.converters.StructuredDateBindingHelper
+import org.grails.databinding.converters.StructuredCalendarBindingEditor
+import org.grails.databinding.converters.StructuredDateBindingEditor
+import org.grails.databinding.converters.StructuredSqlDateBindingEditor
 import org.grails.databinding.converters.ValueConverter
 import org.grails.databinding.errors.SimpleBindingError
 import org.grails.databinding.events.DataBindingListener
@@ -41,9 +43,9 @@ class SimpleDataBinder implements DataBinder {
     SimpleDataBinder() {
         conversionHelpers.put(Date, new DateConversionHelper())
 
-        registerStructuredEditor(java.util.Date.class, new StructuredDateBindingHelper(java.util.Date))
-        registerStructuredEditor(java.sql.Date.class, new StructuredDateBindingHelper(java.sql.Date))
-        registerStructuredEditor(java.util.Calendar.class, new StructuredDateBindingHelper(java.util.Calendar))
+        registerStructuredEditor(java.util.Date.class, new StructuredDateBindingEditor())
+        registerStructuredEditor(java.sql.Date.class, new StructuredSqlDateBindingEditor())
+        registerStructuredEditor(java.util.Calendar.class, new StructuredCalendarBindingEditor())
     }
 
     void registerStructuredEditor(Class clazz, StructuredBindingEditor editor) {
