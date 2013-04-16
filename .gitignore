@@ -37,10 +37,8 @@ target
 /grails-async/bin/
 /grails-bootstrap/bin/
 /grails-core/bin/
-/grails-crud/bin/
 /grails-docs/bin/
 /grails-databinding/bin/
-/grails-hibernate/bin/
 /grails-plugin-async/bin/
 /grails-plugin-codecs/bin/
 /grails-plugin-controllers/bin/
@@ -49,15 +47,12 @@ target
 /grails-plugin-domain-class/bin/
 /grails-plugin-filters/bin/
 /grails-plugin-gsp/bin/
-/grails-plugin-hibernate/bin/
 /grails-plugin-i18n/bin/
 /grails-plugin-logging/bin/
 /grails-plugin-mimetypes/bin/
-/grails-plugin-scaffolding/bin/
 /grails-plugin-services/bin/
 /grails-plugin-servlets/bin/
 /grails-plugin-testing/bin/
-/grails-plugin-tomcat/bin/
 /grails-plugin-url-mappings/bin/
 /grails-plugin-validation/bin/
 /grails-scripts/bin/
@@ -68,9 +63,7 @@ target
 /grails-test-suite-uber/configured/
 /grails-test-suite-web/bin/
 /grails-test/bin/
-/grails-tomcat/bin/
 /grails-web/bin/
-/grails-webflow/bin/
 /grails-wrapper/bin/
 /grails-plugin-log4j/bin/
 /grails-plugin-logging/bin/
