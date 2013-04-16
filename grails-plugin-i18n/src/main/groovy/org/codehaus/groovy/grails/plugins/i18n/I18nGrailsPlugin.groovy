@@ -101,12 +101,13 @@ class I18nGrailsPlugin {
                 File parentDir
                 if (!(resource instanceof ClassPathResource) && !(resource instanceof ContextResource) && !Environment.isWarDeployed()) {
 
+                    final buildSettings = BuildSettingsHolder.settings
                     parentDir = new File(resource.file.getParent().minus("/grails-app/i18n"))
                     final pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings()
                     if (pluginBuildSettings.isInlinePluginLocation(new FileSystemResource(parentDir))) {
                         isInlinePluginResource = true
                     }
-                    else if (pluginBuildSettings.getPluginInfo(parentDir.absolutePath)) {
+                    else if (!parentDir.equals(buildSettings.baseDir) && pluginBuildSettings.getPluginInfo(parentDir.absolutePath)) {
                         isPluginResource = true
                     }
                 }
