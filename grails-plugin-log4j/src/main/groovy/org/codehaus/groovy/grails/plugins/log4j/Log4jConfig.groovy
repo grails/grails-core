@@ -21,8 +21,8 @@ import grails.util.Environment
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 
-import org.apache.commons.beanutils.BeanUtils
 import org.apache.log4j.Appender
+import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.ConsoleAppender
 import org.apache.log4j.FileAppender
 import org.apache.log4j.HTMLLayout
@@ -117,7 +117,7 @@ class Log4jConfig {
                 constructorArgs.layout = DEFAULT_PATTERN_LAYOUT
             }
             def appender = APPENDERS[name].newInstance()
-            BeanUtils.populate appender, constructorArgs
+            populate appender, constructorArgs
             if (!appender.name) {
                 LogLog.error "Appender of type $name doesn't define a name attribute, and hence is ignored."
             }
@@ -137,6 +137,22 @@ class Log4jConfig {
         }
 
         LogLog.error "Method missing when configuring log4j: $name"
+    }
+
+    @CompileStatic
+    void populate(Appender appender, Map args) {
+        final metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(appender.getClass())
+        for(key in args.keySet()) {
+            final value = args.get(key)
+            String prop = key.toString()
+            if (appender.hasProperty(prop)) {
+                try {
+                    metaClass.setProperty(appender, prop, value)
+                } catch (MissingPropertyException mpe) {
+                    // ignore
+                }
+            }
+        }
     }
 
     private boolean isCustomEnvironmentMethod(String name, args) {
