@@ -64,26 +64,59 @@ class SimpleDataBinder implements DataBinder {
         typeConverters[clazz] = converter
     }
 
+    /**
+     * @param obj the object to perform data binding on
+     * @param source a Map containg the values to be bound to obj
+     */
     void bind(obj, Map source) {
         bind obj, source, null, null, null, null
     }
 
+    /**
+     * @param obj the object to perform data binding on
+     * @param source a Map containg the values to be bound to obj
+     * @param listener will be notified of data binding events
+     */
     void bind(obj, Map source, DataBindingListener listener) {
         bind obj, source, null, null, null, listener
     }
 
+    /**
+     * @param obj the object to perform data binding on
+     * @param source a Map containg the values to be bound to obj
+     * @param whiteList A list of properties that are eligible for binding, if
+     * null all properties are eligible for binding
+     */
     void bind(obj, Map source, List whiteList) {
         bind obj, source, null, whiteList, null, null
     }
 
+    /**
+     * @param obj the object to perform data binding on
+     * @param source a Map containg the values to be bound to obj
+     * @param whiteList A list of properties that are eligible for binding, if
+     * null all properties are eligible for binding
+     * @param blackList A list of properties to exclude from binding
+     */
     void bind(obj, Map source, List whiteList, List blackList) {
         bind obj, source, null, whiteList, blackList, null
     }
-
+    
+    /**
+     * @param obj the object to perform data binding on
+     * @param gpath contains an XML representation of the data to be bound to obj
+     */
     void bind(obj, GPathResult gpath) {
         bind obj, new GPathResultMap(gpath)
     }
 
+    /**
+     * @param obj the object to perform data binding on
+     * @param source a Map containg the values to be bound to obj
+     * @param whiteList A list of properties that are eligible for binding, if
+     * null all properties are eligible for binding
+     * @param blackList A list of properties to exclude from binding
+     */
     void bind(obj, Map<String, Object> source, String filter, List whiteList, List blackList, DataBindingListener listener) {
         source.each {String propName, val ->
             if(filter && !propName.startsWith(filter + '.')) {

@@ -44,14 +44,27 @@ class GormAwareDataBinder extends SimpleDataBinder {
         this.grailsApplication = grailsApplication
     }
     
+    /**
+     * @param obj the object to perform data binding on
+     * @param source a Map containg the values to be bound to obj
+     */
     void bind(obj, Map source) {
         bind obj, source, null, getBindingIncludeList(obj), null, null
     }
 
+    /**
+     * @param obj the object to perform data binding on
+     * @param source a Map containg the values to be bound to obj
+     * @param listener will be notified of data binding events
+     */
     void bind(obj, Map source, DataBindingListener listener) {
         bind obj, source, null, getBindingIncludeList(obj), null, listener
     }
 
+    /**
+     * @param obj the object to perform data binding on
+     * @param gpath contains an XML representation of the data to be bound to obj
+     */
     void bind(obj, GPathResult gpath) {
         bind obj, new GPathResultMap(gpath), getBindingIncludeList(obj)
     }
