@@ -24,16 +24,16 @@ import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
 
-import javax.servlet.http.HttpServletResponse
-
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
+import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
 import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.HexCodec
 import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
 import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
+import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
@@ -223,14 +223,9 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
     @Before
     void bindGrailsWebRequest() {
-        mockCodec(Base64Codec)
-        mockCodec(HTMLCodec)
-        mockCodec(URLCodec)
-        mockCodec(JavaScriptCodec)
-        mockCodec(HexCodec)
-        mockCodec(MD5Codec)
-        mockCodec(SHA1Codec)
-        mockCodec(SHA256Codec)
+        new CodecsGrailsPlugin().providedArtefacts.each { 
+            mockCodec(it)
+        }
 
         if (webRequest != null) {
             return

@@ -21,6 +21,8 @@ import javax.servlet.http.HttpServletRequest
 
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener
+import org.grails.databinding.xml.GPathResultMap
 
 /**
  * Automatically parses an incoming XML request and populates the params object with
@@ -29,65 +31,20 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
  * @author Graeme Rocher
  * @since 1.0
  */
-class XMLParsingParameterCreationListener extends AbstractParsingParameterCreationListener {
+class XMLParsingParameterCreationListener implements ParameterCreationListener {
 
     static final LOG = LogFactory.getLog(this)
 
     void paramsCreated(GrailsParameterMap params) {
         HttpServletRequest request = params.getRequest()
-        if (request.format != 'xml') {
-            return
-        }
-
-        try {
-            GPathResult xml = XML.parse(request)
-            if (xml != null) {
-                def name =  xml.name()
-                def map = [:]
-                def id = xml.@id.text()
-                if (id) {
-                    map['id'] = id
-                }
-                params[name] = map
-                populateParamsFromXML(xml, map)
-                def target = [:]
-                super.createFlattenedKeys(map, map, target)
-                for (entry in target) {
-                    if (!map[entry.key]) {
-                        map[entry.key] = entry.value
-                    }
-                }
+        if (request.format == 'xml') {
+            try {
+                GPathResult xml = XML.parse(request)
+                def xmlMap = new GPathResultMap(xml)
+                params[xml.name()] = xmlMap
             }
-        }
-        catch (Exception e) {
-            LOG.error "Error parsing incoming XML request: ${e.message}", e
-        }
-    }
-
-    private populateParamsFromXML(xml, map, prefix ="") {
-        int i = 0
-        for (child in xml.children()) {
-            // one-to-ones have ids
-            if (child.@id.text()) {
-                map["$prefix${child.name()}.id"] = child.@id.text()
-                def childMap = [:]
-                map[child.name()] = childMap
-                populateParamsFromXML(child, childMap)
-            }
-            else {
-                if (child.childNodes()) {
-                    def childPrefix
-                    if (prefix) {
-                        childPrefix = "${prefix[0..-2]}[${i++}]."
-                    }
-                    else {
-                        childPrefix = "$prefix${child.name()}."
-                    }
-                    populateParamsFromXML(child, map, childPrefix)
-                }
-                else {
-                    map["$prefix${child.name()}"] = child.text()
-                }
+            catch (Exception e) {
+                LOG.error "Error parsing incoming XML request: ${e.message}", e
             }
         }
     }

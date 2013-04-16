@@ -31,13 +31,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.databinding.DataBinder;
+import org.grails.databinding.events.DataBindingListener;
 import org.springframework.beans.MutablePropertyValues;
+import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
@@ -183,32 +187,47 @@ public class DataBindingUtils {
     public static BindingResult bindObjectToDomainInstance(GrailsDomainClass domain, Object object,
             Object source, List include, List exclude, String filter) {
         BindingResult bindingResult = null;
-        if (source instanceof GrailsParameterMap) {
-            GrailsParameterMap parameterMap = (GrailsParameterMap)source;
-            HttpServletRequest request = parameterMap.getRequest();
-            GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
-            dataBinder.bind(parameterMap, filter);
-            bindingResult = dataBinder.getBindingResult();
+        // setting this inline temporarily here for now...
+        boolean useLegacyBinder = false;
+        final GrailsApplication grailsApplication = GrailsWebRequest.lookupApplication();
+        if(grailsApplication != null) {
+            if(Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.databinding.useLegacyBinder"))) {
+                useLegacyBinder = true;
+            }
         }
-        else if (source instanceof HttpServletRequest) {
-            HttpServletRequest request = (HttpServletRequest)source;
-            GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
-            performBindFromRequest(dataBinder, request,filter);
-            bindingResult = dataBinder.getBindingResult();
-        }
-        else if (source instanceof Map) {
-            Map propertyMap = (Map)source;
-            propertyMap = convertPotentialGStrings(propertyMap);
-            GrailsDataBinder binder = createDataBinder(object, include, exclude, null);
-            performBindFromPropertyValues(binder, new MutablePropertyValues(propertyMap),filter);
-            bindingResult = binder.getBindingResult();
-        }
-        else {
-            GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
-            if (webRequest != null) {
-                GrailsDataBinder binder = createDataBinder(object, include, exclude, webRequest.getCurrentRequest());
-                HttpServletRequest request = webRequest.getCurrentRequest();
-                performBindFromRequest(binder, request,filter);
+        if (!useLegacyBinder && source instanceof Map) {
+            final Map propertyMap = convertPotentialGStrings((Map) source);
+            final DataBinder gormAwareDataBinder = new GormAwareDataBinder(grailsApplication);
+            final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
+            final DataBindingListener listener = new GormAwareDataBindindingListener(tmpBindingResult, object);
+            gormAwareDataBinder.bind(object, propertyMap, filter, include, exclude, listener);
+            bindingResult = tmpBindingResult;
+        } else {
+            if (source instanceof GrailsParameterMap) {
+                GrailsParameterMap parameterMap = (GrailsParameterMap) source;
+                HttpServletRequest request = parameterMap.getRequest();
+                GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
+                dataBinder.bind(parameterMap, filter);
+                bindingResult = dataBinder.getBindingResult();
+            } else if (source instanceof HttpServletRequest) {
+                HttpServletRequest request = (HttpServletRequest) source;
+                GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
+                performBindFromRequest(dataBinder, request, filter);
+                bindingResult = dataBinder.getBindingResult();
+            } else if (source instanceof Map) {
+                Map propertyMap = convertPotentialGStrings((Map) source);
+                GrailsDataBinder binder = createDataBinder(object, include, exclude, null);
+                performBindFromPropertyValues(binder, new MutablePropertyValues(propertyMap), filter);
+                bindingResult = binder.getBindingResult();
+            }
+
+            else {
+                GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
+                if (webRequest != null) {
+                    GrailsDataBinder binder = createDataBinder(object, include, exclude, webRequest.getCurrentRequest());
+                    HttpServletRequest request = webRequest.getCurrentRequest();
+                    performBindFromRequest(binder, request, filter);
+                }
             }
         }
 

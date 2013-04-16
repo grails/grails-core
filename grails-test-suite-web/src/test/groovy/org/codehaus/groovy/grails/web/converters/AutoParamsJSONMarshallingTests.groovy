@@ -73,6 +73,10 @@ class AutoParamsJSONMarshallingBook {
 @Entity
 class AutoParamsJSONMarshallingAuthor {
     String name
+    
+    static constraints = {
+        id bindable: true
+    }
 
     // mocked get method
     static get(Serializable id) {

@@ -20,6 +20,7 @@ import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
+import org.codehaus.groovy.grails.plugins.codecs.RawCodec;
 import org.codehaus.groovy.grails.plugins.codecs.XMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
@@ -56,7 +57,8 @@ class CodecsGrailsPlugin {
         SHA1Codec,
         SHA1BytesCodec,
         SHA256Codec,
-        SHA256BytesCodec
+        SHA256BytesCodec,
+        RawCodec
     ]
 
     def onChange = { event ->
