@@ -251,20 +251,6 @@ class SimpleDataBinderSpec extends Specification {
         2049 == calendar.get(Calendar.YEAR)
     }
     
-    void 'Test custom data converter'() {
-        given:
-        def binder = new SimpleDataBinder()
-        def converter = new StringToGadgetBindingHelper()
-        binder.registerTypeConverter Gadget, converter
-        def obj = new Widget()
-        
-        when:
-        binder.bind obj, [nestedGadget: [gamma: 'Some Gamma']]
-        
-        then:
-        'SOME GAMMA' == obj.nestedGadget.gamma
-    }
-    
     void 'Test binding String to enum'() {
         given:
         def binder = new SimpleDataBinder()
@@ -320,16 +306,6 @@ class SimpleDataBinderSpec extends Specification {
         factory.widgets[1].beta == 'beta 2'
         factory.widgets[2].alpha == 'alpha 3'
         factory.widgets[2].beta == 'beta 3'
-    }
-}
-
-class StringToGadgetBindingHelper implements BindingHelper {
-
-    public Object getPropertyValue(Object obj, String propertyName,
-            Map<String, Object> source) {
-        def gammaValue = source[propertyName]['gamma']
-        
-        new Gadget(gamma: gammaValue?.toUpperCase())
     }
 }
 

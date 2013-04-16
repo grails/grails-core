@@ -15,10 +15,10 @@
 package org.grails.databinding.converters
 
 import org.apache.commons.lang.StringUtils
-import org.grails.databinding.StructuredDataBindingHelper
+import org.grails.databinding.StructuredBindingEditor
 import org.junit.Assert
 
-class StructuredDateBindingHelper implements StructuredDataBindingHelper {
+class StructuredDateBindingHelper implements StructuredBindingEditor {
 
     private final Class dateType
 

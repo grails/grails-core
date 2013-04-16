@@ -19,12 +19,12 @@ import java.util.Map;
 /**
  * Classes which implement this interface may participate in the data binding
  * process.  Instances of this interface may be explicity registered with the
- * data binder by using the {@link SimpleDataBinder#registerTypeConverter(Class, BindingHelper)}
+ * data binder by using the {@link SimpleDataBinder#registerStructuredEditor(Class, BindingHelper)}
  * method or by applying the {@link BindUsing} annotation to a class.
  * 
  *
  * @see BindUsing
- * @see SimpleDataBinder#registerTypeConverter(Class, BindingHelper)
+ * @see SimpleDataBinder#registerStructuredEditor(Class, BindingHelper)
  */
 public interface BindingHelper {
     

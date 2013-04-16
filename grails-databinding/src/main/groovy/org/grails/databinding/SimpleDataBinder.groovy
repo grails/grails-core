@@ -32,7 +32,7 @@ import org.grails.databinding.xml.GPathResultMap
 @CompileStatic
 class SimpleDataBinder implements DataBinder {
 
-    protected Map<Class, BindingHelper> typeConverters = new HashMap<Class, BindingHelper>()
+    protected Map<Class, StructuredBindingEditor> structuredEditors = new HashMap<Class, StructuredBindingEditor>()
     ConversionService conversionService
     protected Map<Class, ValueConverter> conversionHelpers = new HashMap<Class, ValueConverter>()
 
@@ -41,13 +41,13 @@ class SimpleDataBinder implements DataBinder {
     SimpleDataBinder() {
         conversionHelpers.put(Date, new DateConversionHelper())
 
-        registerTypeConverter(java.util.Date.class, new StructuredDateBindingHelper(java.util.Date))
-        registerTypeConverter(java.sql.Date.class, new StructuredDateBindingHelper(java.sql.Date))
-        registerTypeConverter(java.util.Calendar.class, new StructuredDateBindingHelper(java.util.Calendar))
+        registerStructuredEditor(java.util.Date.class, new StructuredDateBindingHelper(java.util.Date))
+        registerStructuredEditor(java.sql.Date.class, new StructuredDateBindingHelper(java.sql.Date))
+        registerStructuredEditor(java.util.Calendar.class, new StructuredDateBindingHelper(java.util.Calendar))
     }
 
-    void registerTypeConverter(Class clazz, BindingHelper converter) {
-        typeConverters[clazz] = converter
+    void registerStructuredEditor(Class clazz, StructuredBindingEditor editor) {
+        structuredEditors[clazz] = editor
     }
 
     /**
@@ -135,11 +135,9 @@ class SimpleDataBinder implements DataBinder {
         if(metaProperty) {
             if(isOkToBind(metaProperty.name, whiteList, blackList)) {
                 def propertyType = metaProperty.type
-                if(typeConverters.containsKey(propertyType)) {
-                    def converter = typeConverters[propertyType]
-                    if(!(converter instanceof StructuredDataBindingHelper) || ('struct' == val || 'date.struct' == val)) {
-                        val = typeConverters[propertyType].getPropertyValue obj, propName, source
-                    }
+                if(structuredEditors.containsKey(propertyType) && ('struct' == val || 'date.struct' == val)) {
+                    def structuredEditor = structuredEditors[propertyType]
+                    val = structuredEditor.getPropertyValue obj, propName, source
                 }
                 setPropertyValue obj, source, propName, val, listener
             }

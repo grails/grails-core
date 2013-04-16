@@ -21,7 +21,7 @@ class CustomTypeConverterSpec extends Specification {
     void 'Test custom type converter'() {
         given:
         def binder = new SimpleDataBinder()
-        binder.registerTypeConverter Address, new StructuredAddressBindingHelper()
+        binder.registerStructuredEditor Address, new StructuredAddressBindingEditor()
         def resident = new Resident()
         def bindingSource = [:]
         bindingSource.name = 'Scott'
@@ -65,7 +65,7 @@ class Address {
     String city
 }
 
-class StructuredAddressBindingHelper implements StructuredDataBindingHelper {
+class StructuredAddressBindingEditor implements StructuredBindingEditor {
 
     @Override
     public Object getPropertyValue(Object obj, String propertyName, Map<String, Object> source) {
