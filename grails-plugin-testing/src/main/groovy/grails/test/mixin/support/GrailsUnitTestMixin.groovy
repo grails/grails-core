@@ -59,6 +59,7 @@ class GrailsUnitTestMixin {
     }
 
     static GrailsWebApplicationContext applicationContext
+    static GrailsWebApplicationContext mainContext
     static GrailsApplication grailsApplication
     static ConfigObject config
     static MessageSource messageSource
@@ -98,8 +99,9 @@ class GrailsUnitTestMixin {
             applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
             messageSource = applicationContext.getBean("messageSource", MessageSource)
 
-            def mainContext = new MockApplicationContext()
-            mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
+            mainContext = new GrailsWebApplicationContext(applicationContext)
+            mainContext.registerSingleton UrlConverter.BEAN_NAME, CamelCaseUrlConverter
+            mainContext.refresh()
             grailsApplication.mainContext = mainContext
             grailsApplication.initialise()
 
