@@ -307,20 +307,24 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
                 // Determine handler for the current request.
                 mappedHandler = getHandler(processedRequest);
-                if (mappedHandler == null || mappedHandler.getHandler() == null) {
+                Object handler = mappedHandler.getHandler();
+                if (mappedHandler == null || handler == null) {
                     noHandlerFound(processedRequest, response);
                     return;
                 }
 
+                HandlerInterceptor[] interceptors = mappedHandler.getInterceptors();
+
                 // Apply preHandle methods of registered interceptors.
-                if (mappedHandler.getInterceptors() != null) {
-                    for (int i = 0; i < mappedHandler.getInterceptors().length; i++) {
-                        HandlerInterceptor interceptor = mappedHandler.getInterceptors()[i];
-                        if (!interceptor.preHandle(processedRequest, response, mappedHandler.getHandler())) {
+                if (interceptors != null) {
+                    int i = 0;
+                    for (HandlerInterceptor interceptor : interceptors) {
+                        if (!interceptor.preHandle(processedRequest, response, handler)) {
                             triggerAfterCompletion(mappedHandler, interceptorIndex, processedRequest, response, null);
                             return;
                         }
                         interceptorIndex = i;
+                        i++;
                     }
                 }
 
@@ -336,8 +340,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                     }
                 }else {
                     // Actually invoke the handler.
-                    HandlerAdapter ha = getHandlerAdapter(mappedHandler.getHandler());
-                    mv = ha.handle(processedRequest, response, mappedHandler.getHandler());
+                    HandlerAdapter ha = getHandlerAdapter(handler);
+                    mv = ha.handle(processedRequest, response, handler);
                     // if an async request was started simply return
                     if (processedRequest.getAttribute(GrailsApplicationAttributes.ASYNC_STARTED) != null) {
                         processedRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, mv);
@@ -351,10 +355,9 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
 
                 // Apply postHandle methods of registered interceptors.
-                if (mappedHandler.getInterceptors() != null) {
-                    for (int i = mappedHandler.getInterceptors().length - 1; i >= 0; i--) {
-                        HandlerInterceptor interceptor = mappedHandler.getInterceptors()[i];
-                        interceptor.postHandle(processedRequest, response, mappedHandler.getHandler(), mv);
+                if (interceptors != null) {
+                    for (int i = interceptors.length - 1; i >= 0; i--) {
+                        interceptors[i].postHandle(processedRequest, response, handler, mv);
                     }
                 }
             }
@@ -367,7 +370,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             }
             catch (Exception ex) {
                 handlerException = ex;
-                Object handler = (mappedHandler != null ? mappedHandler.getHandler() : null);
+                Object handler = mappedHandler == null ? null : mappedHandler.getHandler();
                 mv = processHandlerException(request, response, handler, ex);
                 errorView = (mv != null);
             }
