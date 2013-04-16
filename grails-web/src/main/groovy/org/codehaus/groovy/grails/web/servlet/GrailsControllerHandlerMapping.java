@@ -16,6 +16,8 @@ package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.Environment;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -110,7 +112,7 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
     @SuppressWarnings("rawtypes")
     @Override
     protected void extendInterceptors(List interceptors) {
-        setInterceptors(establishInterceptors(getWebApplicationContext()));
+        setInterceptors(establishInterceptors(getWebApplicationContext(), interceptors));
     }
 
     protected HandlerInterceptor[] lookupInterceptors(WebApplicationContext applicationContext) {
@@ -121,32 +123,39 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
         return getAdaptedInterceptors();
     }
 
+    protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
+        return establishInterceptors(webContext, Collections.emptyList());
+    }
+
     /**
      * Evalutes the given WebApplicationContext for all HandlerInterceptor and WebRequestInterceptor instances
      *
      * @param webContext The WebApplicationContext
      * @return An array of HandlerInterceptor instances
      */
-    protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext) {
+    protected HandlerInterceptor[] establishInterceptors(WebApplicationContext webContext, List<?> previousInterceptors) {
         String[] interceptorNames = webContext.getBeanNamesForType(HandlerInterceptor.class);
         String[] webRequestInterceptors = webContext.getBeanNamesForType(WebRequestInterceptor.class);
-        HandlerInterceptor[] interceptors = new HandlerInterceptor[interceptorNames.length + webRequestInterceptors.length];
+        List<HandlerInterceptor> interceptors = new ArrayList<HandlerInterceptor>();
 
-        // Merge the handler and web request interceptors into a single
-        // array. Note that we start with the web request interceptors
-        // to ensure that the OpenSessionInViewInterceptor (which is a
-        // web request interceptor) is invoked before the user-defined
-        // filters (which are attached to a handler interceptor). This
-        // should ensure that the Hibernate session is in the proper
+        // Merge the handler and web request interceptors into a single array. Note that we start with
+        // the web request interceptors to ensure that the OpenSessionInViewInterceptor (which is a
+        // web request interceptor) is invoked before the user-defined filters (which are attached to
+        // a handler interceptor). This should ensure that the Hibernate session is in the proper
         // state if and when users access the database within their filters.
-        int j = 0;
         for (String webRequestInterceptor : webRequestInterceptors) {
-            interceptors[j++] = new WebRequestHandlerInterceptorAdapter((WebRequestInterceptor) webContext.getBean(webRequestInterceptor));
+            WebRequestInterceptor interceptor = webContext.getBean(webRequestInterceptor, WebRequestInterceptor.class);
+            if (!previousInterceptors.contains(interceptor)) {
+                interceptors.add(new WebRequestHandlerInterceptorAdapter(interceptor));
+            }
         }
         for (String interceptorName : interceptorNames) {
-            interceptors[j++] = (HandlerInterceptor) webContext.getBean(interceptorName);
+            HandlerInterceptor interceptor = webContext.getBean(interceptorName, HandlerInterceptor.class);
+            if (!previousInterceptors.contains(interceptor)) {
+                interceptors.add(interceptor);
+            }
         }
-        return interceptors;
+        return interceptors.toArray(new HandlerInterceptor[interceptors.size()]);
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
