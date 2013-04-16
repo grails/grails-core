@@ -19,6 +19,7 @@ import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
 import grails.util.GrailsNameUtils
+import grails.util.Metadata
 import grails.validation.DeferredBindingActions
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
@@ -97,6 +98,7 @@ class GrailsUnitTestMixin {
             }
             applicationContext.refresh()
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
+            grailsApplication.metadata[Metadata.APPLICATION_NAME] =  GrailsUnitTestMixin.simpleName
             applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
             messageSource = applicationContext.getBean("messageSource", MessageSource)
 
