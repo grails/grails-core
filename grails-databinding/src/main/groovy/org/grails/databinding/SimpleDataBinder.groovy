@@ -18,7 +18,9 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
+import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
+import java.text.SimpleDateFormat
 
 import org.apache.commons.collections.set.ListOrderedSet
 import org.grails.databinding.converters.ConversionService
@@ -234,6 +236,25 @@ class SimpleDataBinder implements DataBinder {
         obj[propertyName]
     }
 
+    /**
+     * Get a ValueConverter for field
+     * 
+     * @param field The field to retrieve a converter for
+     * @param formattingValue The format that the converter will use
+     * @return a ValueConverter for field which uses formattingValue for its format
+     * @see BindingFormat
+     */
+    protected ValueConverter getFormattedConverter(Field field, String formattingValue) {
+        ValueConverter converter
+        if(Date.isAssignableFrom(field.type)) {
+            converter = { Map source ->
+                def value = source[field.name]
+                new SimpleDateFormat(formattingValue).parse((String)value)
+            } as ValueConverter 
+        }
+        converter
+    }
+    
     protected ValueConverter getValueConverterForField(obj, String propName) {
         def converter
         try {
@@ -245,6 +266,11 @@ class SimpleDataBinder implements DataBinder {
                     if(Closure.isAssignableFrom(valueClass)) {
                         Closure closure = (Closure)valueClass.newInstance(null, null)
                         converter = new ClosureValueConverter(converterClosure: closure.curry(obj))
+                    }
+                } else {
+                    annotation = field.getAnnotation BindingFormat
+                    if(annotation) {
+                        converter = getFormattedConverter field, annotation.value()
                     }
                 }
             }

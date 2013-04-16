@@ -140,7 +140,7 @@ class SimpleDataBinderSpec extends Specification {
         def obj = new DateContainer()
         
         when:
-        binder.bind obj, [utilDate: '2013-04-15 21:26:31.973']
+        binder.bind obj, [utilDate: '2013-04-15 21:26:31.973', formattedUtilDate: '11151969']
         
         then:
         Calendar.APRIL == obj.utilDate.month
@@ -149,6 +149,9 @@ class SimpleDataBinderSpec extends Specification {
         21 == obj.utilDate.hours
         26 == obj.utilDate.minutes
         31 == obj.utilDate.seconds
+        Calendar.NOVEMBER == obj.formattedUtilDate.month
+        15 == obj.formattedUtilDate.date
+        69 == obj.formattedUtilDate.year
         
         when:
         obj.utilDate = null
@@ -336,6 +339,9 @@ class DateContainer {
     java.util.Date utilDate
     java.sql.Date sqlDate
     java.util.Calendar calendar
+    
+    @BindingFormat('MMddyyyy')
+    java.util.Date formattedUtilDate
 }
 
 enum Role {
