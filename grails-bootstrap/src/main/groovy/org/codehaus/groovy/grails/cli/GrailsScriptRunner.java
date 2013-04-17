@@ -79,8 +79,7 @@ public class GrailsScriptRunner {
 
     private static PrintStream originalOut;
     @SuppressWarnings("rawtypes")
-    public static final
-    Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
+    public static final Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
         private static final long serialVersionUID = 1L;
         @Override public Object call(Object arguments) { return null; }
         @Override public Object call() { return null; }
