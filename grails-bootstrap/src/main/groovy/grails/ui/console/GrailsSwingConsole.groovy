@@ -40,6 +40,20 @@ class GrailsSwingConsole extends ForkedGrailsProjectClassExecutor{
     }
 
     @Override
+    protected URLClassLoader initializeClassLoader(BuildSettings buildSettings) {
+        final classLoader = (GroovyClassLoader)super.initializeClassLoader(buildSettings)
+        final existing = classLoader.URLs
+        for (File f in buildSettings.testDependencies) {
+            final jarURL = f.toURI().toURL()
+            if (!existing.contains(jarURL)) {
+                 classLoader.addURL(jarURL)
+            }
+        }
+
+        return classLoader
+    }
+
+    @Override
     protected String getProjectClassType() { "org.codehaus.groovy.grails.project.ui.GrailsProjectConsole" }
 
     @Override
