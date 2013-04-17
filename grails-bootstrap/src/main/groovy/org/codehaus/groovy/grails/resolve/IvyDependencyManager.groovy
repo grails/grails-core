@@ -470,9 +470,15 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     void produceReport(String scope) {
-        final desc = BuildSettings.SCOPE_TO_DESC[scope]
-        if (desc) {
-            reportOnScope(scope, desc)
+        if(scope) {
+
+            final desc = BuildSettings.SCOPE_TO_DESC[scope]
+            if (desc) {
+                reportOnScope(scope, desc)
+            }
+        }
+        else {
+            produceReport()
         }
     }
 
