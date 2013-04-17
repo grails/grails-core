@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import groovy.lang.GroovyObjectSupport;
 import groovy.lang.Writable;
 
 import java.io.EOFException;
@@ -240,7 +241,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable, EncodedAppenderWriterFactory, Cloneable {
+public class StreamCharBuffer extends GroovyObjectSupport implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable, EncodedAppenderWriterFactory, Cloneable {
     private static final int EXTERNALIZABLE_VERSION = 2;
     static final long serialVersionUID = (long)EXTERNALIZABLE_VERSION;
     private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
