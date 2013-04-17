@@ -240,7 +240,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamEncodeable;
  *
  * @author Lari Hotari, Sagire Software Oy
  */
-public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable, EncodedAppenderWriterFactory {
+public class StreamCharBuffer implements Writable, CharSequence, Externalizable, Encodeable, StreamEncodeable, EncodedAppenderWriterFactory, Cloneable {
     private static final int EXTERNALIZABLE_VERSION = 2;
     static final long serialVersionUID = (long)EXTERNALIZABLE_VERSION;
     private static final Log log=LogFactory.getLog(StreamCharBuffer.class);
@@ -284,6 +284,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     int allocatedBufferIdSequence = 0;
     int readerCount = 0;
     boolean hasReaders = false;
+    
+    boolean notifyParentBuffersEnabled = true; 
     
     public StreamCharBuffer() {
         this(DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_SIZE_GROW_PROCENT, DEFAULT_MAX_CHUNK_SIZE);
@@ -2233,6 +2235,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     /* methods for notifying child (sub) StreamCharBuffer changes to the parent StreamCharBuffer */
 
     void addParentBuffer(StreamCharBuffer parent) {
+        if(!notifyParentBuffersEnabled) return;
+        
         if (parentBuffers==null) {
             parentBuffers=new HashSet<SoftReference<StreamCharBufferKey>>();
         }
@@ -2256,6 +2260,8 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     }
 
     void notifyBufferChange() {
+        if(!notifyParentBuffersEnabled) return;
+        
         if (parentBuffers == null) {
             return;
         }
@@ -2272,6 +2278,15 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
                 i.remove();
             }
         }
+    }
+    
+    public StreamCharBuffer clone() {
+        StreamCharBuffer cloned=new StreamCharBuffer();
+        cloned.setNotifyParentBuffersEnabled(false);        
+        if(this.size() > 0) {
+            cloned.addChunk(readToSingleChunk());
+        }
+        return cloned;
     }
 
     public void readExternal(ObjectInput in) throws IOException,
@@ -2405,5 +2420,24 @@ public class StreamCharBuffer implements Writable, CharSequence, Externalizable,
     
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         return new EncodedAppenderWriter(writer.getEncodedAppender(), encoder, encodingStateRegistry);
+    }
+
+    public boolean isNotifyParentBuffersEnabled() {
+        return notifyParentBuffersEnabled;
+    }
+
+    /**
+     * By default the parent buffers (a buffer where this buffer has been appended to) get notified of changed to this buffer.
+     * 
+     * You can control the notification behavior with this property.
+     * Setting this property to false will also clear the references to parent buffers if there are any.
+     * 
+     * @param notifyParentBuffersEnabled
+     */
+    public void setNotifyParentBuffersEnabled(boolean notifyParentBuffersEnabled) {
+        this.notifyParentBuffersEnabled = notifyParentBuffersEnabled;
+        if(!notifyParentBuffersEnabled && parentBuffers != null) {
+            parentBuffers.clear();
+        }
     }
 }

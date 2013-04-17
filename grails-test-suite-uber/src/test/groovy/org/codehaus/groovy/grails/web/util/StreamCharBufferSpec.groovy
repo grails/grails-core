@@ -189,4 +189,18 @@ class StreamCharBufferSpec extends Specification {
         then:
         bufferUnserializedHtml.toString() == "Hello world & hi&lt;script&gt;"
     }
+    
+    def "clone should keep encoding state"() {
+        when:
+        codecOut << "Hello world & hi".encodeAsRaw()
+        codecOut << "<script>"
+        then:
+        buffer.toString() == "Hello world & hi&lt;script&gt;"
+        when:
+        StreamCharBuffer bufferCloned = buffer.clone()
+        StreamCharBuffer bufferClonedHtml = bufferCloned.encodeAsHTML()
+        then:
+        bufferClonedHtml.toString() == "Hello world & hi&lt;script&gt;"
+    }
+
 }
