@@ -402,8 +402,8 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private void preProcessMutablePropertyValues(MutablePropertyValues mpvs) {
-        checkStructuredProperties(mpvs);
         autoCreateIfPossible(mpvs);
+        checkStructuredProperties(mpvs);
         bindAssociations(mpvs);
     }
 
@@ -868,10 +868,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             String path = propertyName.replaceAll("\\[.+?\\]", "");
             if (path.indexOf(PATH_SEPARATOR) > -1) {
                 // transform x.y.z into value of x.y and path z
-                target = bean.getPropertyValue(StringUtils.substringBeforeLast(propertyName, "."));
+                String nestedProp = StringUtils.substringBeforeLast(propertyName, ".");
+                target = bean.getPropertyValue(nestedProp);
                 path = StringUtils.substringAfterLast(path, ".");
             }
-            type = getReferencedTypeForCollection(path, target);
+            if(target != null) {
+                type = getReferencedTypeForCollection(path, target);
+            }
         }
         return type;
     }
