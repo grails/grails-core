@@ -28,6 +28,8 @@ import org.codehaus.groovy.grails.commons.GrailsServiceClass
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
 import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
 
+import java.lang.reflect.Modifier
+
 /**
  * Configures services in the spring context.
  *
@@ -116,53 +118,60 @@ class ServicesGrailsPlugin {
             return
         }
 
-        def serviceClass = application.addArtefact(ServiceArtefactHandler.TYPE, event.source)
-        def serviceName = "${serviceClass.propertyName}"
-        def scope = serviceClass.getPropertyValue("scope")
+        if (event.source instanceof Class) {
 
-        String datasourceName = serviceClass.datasource
-        String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
+            Class javaClass = event.source
+            // do nothing for abstract classes
+            if (Modifier.isAbstract(javaClass.modifiers)) return
+            def serviceClass = application.addArtefact(ServiceArtefactHandler.TYPE, event.source)
+            def serviceName = "${serviceClass.propertyName}"
+            def scope = serviceClass.getPropertyValue("scope")
 
-        if (shouldCreateTransactionalProxy(serviceClass) && event.ctx.containsBean("transactionManager$suffix")) {
+            String datasourceName = serviceClass.datasource
+            String suffix = datasourceName == GrailsServiceClass.DEFAULT_DATA_SOURCE ? '' : "_$datasourceName"
 
-            def props = new Properties()
-            String attributes = 'PROPAGATION_REQUIRED'
-            if (application.config["dataSource$suffix"].readOnly) {
-                attributes += ',readOnly'
-            }
-            props."*" = attributes
+            if (shouldCreateTransactionalProxy(serviceClass) && event.ctx.containsBean("transactionManager$suffix")) {
 
-            def beans = beans {
-                "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
-                    targetObject = ref("grailsApplication", true)
-                    targetMethod = "getArtefact"
-                    arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
+                def props = new Properties()
+                String attributes = 'PROPAGATION_REQUIRED'
+                if (application.config["dataSource$suffix"].readOnly) {
+                    attributes += ',readOnly'
                 }
-                "${serviceName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
-                    if (scope) bean.scope = scope
-                    target = { innerBean ->
-                        innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
-                        innerBean.factoryMethod = "newInstance"
-                        innerBean.autowire = "byName"
-                        if (scope) innerBean.scope = scope
+                props."*" = attributes
+
+                def beans = beans {
+                    "${serviceClass.fullName}ServiceClass"(MethodInvokingFactoryBean) {
+                        targetObject = ref("grailsApplication", true)
+                        targetMethod = "getArtefact"
+                        arguments = [ServiceArtefactHandler.TYPE, serviceClass.fullName]
                     }
-                    proxyTargetClass = true
-                    transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
-                    transactionManager = ref("transactionManager$suffix")
-                }
-            }
-            beans.registerBeans(event.ctx)
-        }
-        else {
-            def beans = beans {
-                "$serviceName"(serviceClass.getClazz()) { bean ->
-                    bean.autowire =  true
-                    if (scope) {
-                        bean.scope = scope
+                    "${serviceName}"(TypeSpecifyableTransactionProxyFactoryBean, serviceClass.clazz) { bean ->
+                        if (scope) bean.scope = scope
+                        target = { innerBean ->
+                            innerBean.factoryBean = "${serviceClass.fullName}ServiceClass"
+                            innerBean.factoryMethod = "newInstance"
+                            innerBean.autowire = "byName"
+                            if (scope) innerBean.scope = scope
+                        }
+                        proxyTargetClass = true
+                        transactionAttributeSource = new GroovyAwareNamedTransactionAttributeSource(transactionalAttributes:props)
+                        transactionManager = ref("transactionManager$suffix")
                     }
                 }
+                beans.registerBeans(event.ctx)
             }
-            beans.registerBeans(event.ctx)
+            else {
+                def beans = beans {
+                    "$serviceName"(serviceClass.getClazz()) { bean ->
+                        bean.autowire =  true
+                        if (scope) {
+                            bean.scope = scope
+                        }
+                    }
+                }
+                beans.registerBeans(event.ctx)
+            }
+
         }
     }
 }
