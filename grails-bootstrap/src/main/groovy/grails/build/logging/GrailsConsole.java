@@ -106,6 +106,7 @@ public class GrailsConsole {
     Terminal terminal;
 
     PrintStream out;
+    OutputStream err;
 
     History history;
 
@@ -136,9 +137,10 @@ public class GrailsConsole {
         originalSystemOut = System.out;
         originalSystemErr = System.err;
         out = new PrintStream(ansiWrap(originalSystemOut));
+        err = ansiWrap(originalSystemErr);
 
         System.setOut(new GrailsConsolePrintStream(out));
-        System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(originalSystemErr)));
+        System.setErr(new GrailsConsoleErrorPrintStream(err));
 
         if (isInteractiveEnabled()) {
             reader = createConsoleReader();
@@ -238,6 +240,9 @@ public class GrailsConsole {
         instance = newConsole;
         if (!(System.out instanceof GrailsConsolePrintStream)) {
             System.setOut(new GrailsConsolePrintStream(instance.out));
+        }
+        if(!(System.err instanceof GrailsConsoleErrorPrintStream )) {
+            System.setErr(new GrailsConsoleErrorPrintStream(instance.err));
         }
     }
 

@@ -78,6 +78,8 @@ import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 
+import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.addDelegateInstanceMethod;
+
 /**
  * Helper methods for working with Groovy AST trees.
  *
@@ -237,7 +239,13 @@ public class GrailsASTUtils {
      * @return The added method node or null if it couldn't be added
      */
     public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod) {
-       return addDelegateInstanceMethod(classNode, delegate, declaredMethod, true);
+       return addDelegateInstanceMethod(classNode, delegate, declaredMethod, null, true);
+    }
+    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation) {
+        return addDelegateInstanceMethod(classNode, delegate, declaredMethod, markerAnnotation, true);
+    }
+    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, boolean thisAsFirstArgument) {
+        return addDelegateInstanceMethod(classNode,delegate,declaredMethod, null, thisAsFirstArgument);
     }
 
     /**
@@ -252,7 +260,7 @@ public class GrailsASTUtils {
      * @param thisAsFirstArgument Whether 'this' should be passed as the first argument to the method
      * @return The added method node or null if it couldn't be added
      */
-    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, boolean thisAsFirstArgument) {
+    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation, boolean thisAsFirstArgument) {
         Parameter[] parameterTypes = thisAsFirstArgument ? getRemainingParameterTypes(declaredMethod.getParameters()) : declaredMethod.getParameters();
         String methodName = declaredMethod.getName();
         if (classNode.hasDeclaredMethod(methodName, parameterTypes)) {
@@ -283,6 +291,9 @@ public class GrailsASTUtils {
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
         methodNode.addAnnotations(declaredMethod.getAnnotations());
+        if(markerAnnotation != null) {
+            methodNode.addAnnotation(markerAnnotation);
+        }
 
 
         classNode.addMethod(methodNode);
@@ -371,6 +382,19 @@ public class GrailsASTUtils {
      * @return The added method node or null if it couldn't be added
      */
     public static MethodNode addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode delegateMethod) {
+        return addDelegateStaticMethod(expression, classNode, delegateMethod, null);
+    }
+        /**
+         * Adds a static method to the given class node that delegates to the given method
+         * and resolves the object to invoke the method on from the given expression.
+         *
+         * @param expression The expression
+         * @param classNode The class node
+         * @param delegateMethod The delegate method
+         * @param markerAnnotation A marker annotation to be added to all methods
+         * @return The added method node or null if it couldn't be added
+         */
+    public static MethodNode addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode delegateMethod, AnnotationNode markerAnnotation) {
         Parameter[] parameterTypes = delegateMethod.getParameters();
         String declaredMethodName = delegateMethod.getName();
         if (classNode.hasDeclaredMethod(declaredMethodName, parameterTypes)) {
@@ -403,6 +427,9 @@ public class GrailsASTUtils {
                 returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
             methodNode.addAnnotations(delegateMethod.getAnnotations());
+            if(markerAnnotation != null) {
+                methodNode.addAnnotation(markerAnnotation);
+            }
 
             classNode.addMethod(methodNode);
         }
