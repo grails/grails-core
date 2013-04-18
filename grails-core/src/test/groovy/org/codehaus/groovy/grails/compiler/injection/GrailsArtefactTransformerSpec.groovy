@@ -1,7 +1,10 @@
 package org.codehaus.groovy.grails.compiler.injection
 
 import grails.artefact.Enhanced
+import grails.persistence.PersistenceMethod
 import grails.util.GrailsUtil
+import org.codehaus.groovy.ast.AnnotationNode
+import org.codehaus.groovy.ast.ClassNode
 import spock.lang.Specification
 
 class GrailsArtefactTransformerSpec extends Specification {
@@ -12,6 +15,21 @@ class GrailsArtefactTransformerSpec extends Specification {
         gcl = new GrailsAwareClassLoader()
         def transformer = new TestTransformer()
         gcl.classInjectors = [transformer]as ClassInjector[]
+    }
+
+    void "Test that a marker annotation can be added to weaved methods"() {
+         given:"An enhanced class"
+            def theClass = gcl.parseClass('''
+                class AnnotatedClass{}
+    ''')
+
+        when:"The marker annotation on added methods retrieved"
+            def theMethod = theClass.getDeclaredMethod("getSomePropertyDefinedInTestInstanceApi")
+            final theAnnotation = theMethod.getAnnotation(PersistenceMethod)
+
+        then:"The annotation is present"
+            theAnnotation != null
+
     }
 
     void 'Test instance property is available in all classes in the hierarcy'() {
@@ -149,6 +167,11 @@ class TestTransformer extends AbstractGrailsArtefactTransformer {
     boolean shouldInject(URL arg0) { true }
 
     protected boolean requiresAutowiring() { false }
+
+    @Override
+    protected AnnotationNode getMarkerAnnotation() {
+        return new AnnotationNode(new ClassNode(PersistenceMethod).getPlainNodeReference())
+    }
 }
 
 class TestInstanceApi {
