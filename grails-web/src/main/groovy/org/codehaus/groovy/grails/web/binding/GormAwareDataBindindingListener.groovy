@@ -26,13 +26,13 @@ class GormAwareDataBindindingListener extends
         public Boolean beforeBinding(Object obj, String propertyName, Object value) {
             if("".equals(value)) {
                 def cps = resolveConstrainedProperties(obj)
-                
-                ConstrainedProperty cp = cps[propertyName]
-                if(cp && cp.isNullable()) {
-                    obj[propertyName] = null
-                    return false;
+                if(cps != null) {
+                    ConstrainedProperty cp = cps[propertyName]
+                    if(cp && cp.isNullable()) {
+                        obj[propertyName] = null
+                        return false;
+                    }
                 }
- 
             }
             return true;
         }
