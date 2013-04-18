@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.binding
 
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
  /**
@@ -73,9 +75,45 @@ class Pet {
     Map detailMap
     Person owner
 }
+
+@Entity
+class WithEncoding {
+
+    EmbedDate eDate
+
+    static constraints = {
+    }
+
+    static embedded = ['eDate']
+}
+class EmbedDate {
+
+    Date aDate
+    byte[] aFile
+
+    static constraints = {
+    }
+}
+
         ''')
     }
 
+    void testBindEmbeddedWithMultipartFileAndDate() {
+        def withEncodingClass = ga.getDomainClass("databindingtests.WithEncoding")
+
+        def e = withEncodingClass.newInstance()
+        def multipartRequest = new GrailsMockHttpServletRequest()
+        multipartRequest.addFile(new GrailsMockMultipartFile("eDate.aFile", "foo".bytes))
+        multipartRequest.addParameter("eDate.aDate_year", "1980")
+        multipartRequest.addParameter("eDate.aDate_month", "02")
+        multipartRequest.addParameter("eDate.aDate_day", "03")
+
+        e.properties = multipartRequest
+
+        assert e.eDate.aFile != null
+        assert e.eDate.aDate != null
+
+    }
     void testBindingMapValue() {
         def petClass = ga.getDomainClass('databindingtests.Pet')
         def pet = petClass.newInstance()

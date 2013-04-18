@@ -21,6 +21,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
+import grails.persistence.PersistenceMethod;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -111,5 +113,10 @@ public class GormTransformer extends AbstractGrailsArtefactTransformer {
 
     public boolean shouldInject(URL url) {
         return GrailsResourceUtils.isDomainClass(url);
+    }
+
+    @Override
+    protected AnnotationNode getMarkerAnnotation() {
+        return new AnnotationNode(new ClassNode(PersistenceMethod.class).getPlainNodeReference());
     }
 }

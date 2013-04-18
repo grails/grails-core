@@ -121,7 +121,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                         GrailsASTUtils.addDelegateConstructor(classNode, declaredMethod);
                     }
                     else if (isCandidateInstanceMethod(classNode, declaredMethod)) {
-                        GrailsASTUtils.addDelegateInstanceMethod(classNode, apiInstance, declaredMethod);
+                        GrailsASTUtils.addDelegateInstanceMethod(classNode, apiInstance, declaredMethod, getMarkerAnnotation());
                     }
                 }
                 implementationNode = implementationNode.getSuperClass();
@@ -158,7 +158,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
             for (MethodNode declaredMethod : declaredMethods) {
                 if (isStaticCandidateMethod(classNode,declaredMethod)) {
-                    GrailsASTUtils.addDelegateStaticMethod(apiLookupMethod, classNode, declaredMethod);
+                    GrailsASTUtils.addDelegateStaticMethod(apiLookupMethod, classNode, declaredMethod, getMarkerAnnotation());
                 }
             }
         }
@@ -258,5 +258,14 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
+    }
+
+    /**
+     * A marker annotation to be applied to added methods, defaults to null
+     *
+     * @return The annotation node
+     */
+    protected AnnotationNode getMarkerAnnotation() {
+        return null;
     }
 }

@@ -63,6 +63,7 @@ public class GrailsConsole {
     public static final String STACKTRACE_FILTERED_MESSAGE = " (NOTE: Stack trace has been filtered. Use --verbose to see entire trace.)";
     public static final String STACKTRACE_MESSAGE = " (Use --stacktrace to see the full trace)";
     public static final Character SECURE_MASK_CHAR = new Character('*');
+    private final OutputStream err;
     private StringBuilder maxIndicatorString;
     private int cursorMove;
 
@@ -124,9 +125,10 @@ public class GrailsConsole {
     protected GrailsConsole() throws IOException {
         cursorMove = 1;
         out = new PrintStream(ansiWrap(System.out));
+        err = ansiWrap(System.err);
 
         System.setOut(new GrailsConsolePrintStream(out));
-        System.setErr(new GrailsConsoleErrorPrintStream(ansiWrap(System.err)));
+        System.setErr(new GrailsConsoleErrorPrintStream(err));
 
         if (isInteractiveEnabled()) {
             reader = createConsoleReader();
@@ -241,6 +243,9 @@ public class GrailsConsole {
 
         if (!(System.out instanceof GrailsConsolePrintStream)) {
             System.setOut(new GrailsConsolePrintStream(instance.out));
+        }
+        if(!(System.err instanceof GrailsConsoleErrorPrintStream )) {
+            System.setErr(new GrailsConsoleErrorPrintStream(instance.err));
         }
         return instance;
     }
