@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
 import grails.persistence.PersistenceMethod;
+import grails.web.controllers.ControllerMethod;
 import groovy.lang.GroovyObject;
 
 import java.beans.PropertyDescriptor;
@@ -47,8 +48,9 @@ public class GroovyBeanMarshaller implements ObjectMarshaller<JSON> {
                 String name = property.getName();
                 Method readMethod = property.getReadMethod();
 
-                if (readMethod != null && !(name.equals("metaClass"))) {
+                if (readMethod != null && !(name.equals("metaClass"))&& !(name.equals("class"))) {
                     if(readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
+                    if(readMethod.getAnnotation(ControllerMethod.class) != null) continue;
                     Object value = readMethod.invoke(o, (Object[]) null);
                     writer.key(name);
                     json.convertAnother(value);
