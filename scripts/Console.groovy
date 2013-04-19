@@ -39,12 +39,12 @@ target(console:"The console implementation target") {
 
     def forkSettings = grailsSettings.forkSettings
     def forkConfig = forkSettings?.console
-    if (forkConfig == false) {
+    if (forkConfig == false || forkConfig == 'false') {
         try {
             projectConsole.run()
         } catch (Exception e) {
             grailsConsole.error "Error starting console: ${e.message}", e
-        }        
+        }
     }
     else {
         def forkedConsole = new GrailsSwingConsole(grailsSettings)
@@ -54,7 +54,7 @@ target(console:"The console implementation target") {
         if (InteractiveMode.active) {
             grailsConsole.addStatus "Running Grails Console..."
             Thread.start {
-                forkedConsole.fork()        
+                forkedConsole.fork()
             }
         }
         else {

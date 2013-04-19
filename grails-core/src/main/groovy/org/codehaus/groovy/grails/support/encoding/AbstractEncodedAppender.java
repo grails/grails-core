@@ -18,7 +18,7 @@ import java.io.IOException;
 
 /**
  * Abstract base class for implementations of {@link EncodedAppender} interface
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -26,7 +26,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
     /**
      * Append a portion of a char array to the buffer and attach the
      * encodingState information to it
-     * 
+     *
      * @param encodingState
      *            the new encoding state of the char array
      * @param b
@@ -43,7 +43,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
     /**
      * Append a portion of a string to the buffer and attach the encodingState
      * information to it
-     * 
+     *
      * @param encodingState
      *            the new encoding state of the string
      * @param str
@@ -60,7 +60,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
     /**
      * Append a portion of a CharSequence to the buffer and attach the
      * encodingState information to it
-     * 
+     *
      * @param encodingState
      *            the new encoding state of the CharSequence portion
      * @param str
@@ -150,12 +150,12 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
             appendCharSequence(encodingState, str, off, off + len);
         }
     }
-    
+
     public void appendEncoded(Encoder encoder, EncodingState encodingState, char[] b, int off, int len)
             throws IOException {
         write(appendEncoders(encoder, encodingState), b, off, len);
     }
-    
+
     public void appendEncoded(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len)
             throws IOException {
         appendCharSequence(appendEncoders(encoder, encodingState), str, off, off + len);
@@ -163,7 +163,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
 
     /**
      * Check if the encoder should be used to a input with certain encodingState
-     * 
+     *
      * @param encoderToApply
      *            the encoder to apply
      * @param encodingState
@@ -178,7 +178,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
 
     /**
      * Encode and write input to buffer using a non-streaming encoder
-     * 
+     *
      * @param encoder
      *            the encoder to use
      * @param newEncodingState
@@ -221,10 +221,6 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
         private final int count;
         private final int start;
 
-        public CharArrayCharSequence(char[] chars) {
-            this(chars, 0, chars.length);
-        }
-
         public CharArrayCharSequence(char[] chars, int start, int count) {
             if (start + count > chars.length)
                 throw new StringIndexOutOfBoundsException(start);
@@ -256,6 +252,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
             return new CharArrayCharSequence(chars, this.start + start, end - start);
         }
 
+        @Override
         public String toString() {
             return new String(chars, start, count);
         }

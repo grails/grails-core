@@ -15,7 +15,7 @@
  */
 package org.grails.databinding
 
-import org.grails.databinding.converters.ValueConverter;
+import org.grails.databinding.converters.ValueConverter
 
 /**
  * @author Jeff Brown
@@ -26,7 +26,7 @@ class ClosureValueConverter implements ValueConverter {
     Closure converterClosure
     Class targetType
 
-    public Object convert(Object value) {
+    Object convert(value) {
         converterClosure value
     }
     

@@ -128,8 +128,8 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         }
         return tagLibraryLookup;
     }
-    
-    public Object withCodec(Object instance, Object codecInfo, Closure body) {
+
+    public Object withCodec(Object instance, Object codecInfo, Closure<?> body) {
         return WithCodecHelper.withCodec(getGrailsApplication(null), codecInfo, body);
-    }    
+    }
 }

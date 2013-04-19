@@ -44,7 +44,7 @@ class BoxBindingListener extends DataBindingListenerAdapter {
     def errors = []
 
     @Override
-    public void bindingError(BindingError error) {
+    void bindingError(BindingError error) {
         errors << error
     }
 }

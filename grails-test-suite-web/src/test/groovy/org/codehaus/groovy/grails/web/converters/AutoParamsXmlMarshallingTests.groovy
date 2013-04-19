@@ -127,7 +127,7 @@ class AutoParamsXmlMarshallingBookWithBindableId {
 @Entity
 class AutoParamsXmlMarshallingAuthor {
     String name
-    
+
     static constraints = {
         id bindable: true
     }

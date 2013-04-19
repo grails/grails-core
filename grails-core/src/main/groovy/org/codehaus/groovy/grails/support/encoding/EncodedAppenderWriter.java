@@ -20,19 +20,18 @@ import java.io.Writer;
 /**
  * A java.io.Writer implementation that writes to a {@link EncodedAppender} with
  * a certain encoder
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
-public class EncodedAppenderWriter extends Writer implements EncodedAppenderWriterFactory, EncodedAppenderFactory,
-        EncoderAware {
+public class EncodedAppenderWriter extends Writer implements EncodedAppenderWriterFactory, EncodedAppenderFactory, EncoderAware {
     protected EncodedAppender encodedAppender;
     protected Encoder encoder;
     protected EncodingStateRegistry encodingStateRegistry;
 
     /**
      * Default constructor
-     * 
+     *
      * @param encodedAppender
      *            the EncodedAppender destination
      * @param encoder

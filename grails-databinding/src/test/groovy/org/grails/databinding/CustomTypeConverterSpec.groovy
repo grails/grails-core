@@ -30,7 +30,7 @@ class CustomTypeConverterSpec extends Specification {
         bindingSource.workAddress_someState = "Scott's Work State"
         bindingSource.workAddress = 'struct'
         bindingSource.homeAddress = 'struct'
-        
+
         when:
         binder.bind resident, bindingSource
 
@@ -42,12 +42,12 @@ class CustomTypeConverterSpec extends Specification {
         resident.workAddress
         resident.workAddress.state == "Scott's Work State"
         resident.workAddress.city == null
-        
+
         // make sure the custome editor does not get in the way when the value being bound does not need to be converted
-        when: 
+        when:
         resident = new Resident()
         binder.bind resident, [homeAddress: new Address(state: 'Some State', city: 'Some City')]
-        
+
         then:
         resident.homeAddress.state == 'Some State'
         resident.homeAddress.city == 'Some City'
@@ -68,7 +68,7 @@ class Address {
 class StructuredAddressBindingEditor implements StructuredBindingEditor<Address> {
 
     @Override
-    public Address getPropertyValue(Object obj, String propertyName, Map<String, Object> source) {
+    Address getPropertyValue(Object obj, String propertyName, Map<String, Object> source) {
         def address = new Address()
 
         address.state = source[propertyName + '_someState']

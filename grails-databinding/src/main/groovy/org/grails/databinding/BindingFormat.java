@@ -23,9 +23,9 @@ import java.lang.annotation.Target;
 /**
  * Apply BindingFormat to a field to provide a format
  * to be used when binding a String to this field.
- * 
+ *
 <pre>
-class DateContainer {    
+class DateContainer {
     &#064;BindingFormat('MMddyyyy')
     Date someDate
 }

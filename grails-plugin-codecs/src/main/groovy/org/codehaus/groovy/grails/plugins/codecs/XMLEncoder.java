@@ -17,10 +17,9 @@ package org.codehaus.groovy.grails.plugins.codecs;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 
-
 /**
  * Encoder implementation that escapes some characters for inclusion in XML documents
- * 
+ *
  * Currently ', ", &lt;, &gt; and &amp; characters are replaced with XML entities.
  * Additionally backslash (/), non-breaking space, backtick (`) and @ are also replaced for visibility/additional security.
  *
@@ -40,7 +39,7 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
     private static final String ESCAPED_BACKTICK = "&#" + ((int) '`')  + ";";
     private static final String ESCAPED_AT = "&#" + ((int) '@')  + ";"; // IE Javascript conditional compilation rules
     public static final CodecIdentifier XML_CODEC_IDENTIFIER=new DefaultCodecIdentifier("XML");
-    
+
     public XMLEncoder() {
         super(XML_CODEC_IDENTIFIER);
     }
@@ -59,12 +58,12 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
       }
       switch(ch) {
           case '&': return ESCAPED_AMP;
-          case '<': return ESCAPED_LT;          
-          case '>': return ESCAPED_GT;          
+          case '<': return ESCAPED_LT;
+          case '>': return ESCAPED_GT;
           case '"': return ESCAPED_QUOTE;
           case '\'': return  ESCAPED_APOS;
           case '\\': return  ESCAPED_BACKSLASH;
-          case '@': return ESCAPED_AT; 
+          case '@': return ESCAPED_AT;
           case '`': return ESCAPED_BACKTICK;
           case NBSP: return ESCAPED_NON_BREAKING_SPACE;
       }

@@ -7,10 +7,10 @@ import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 
 class MockHibernateGrailsPlugin {
-    
+
     def version = GrailsUtil.grailsVersion
     def dependsOn = [dataSource: version, i18n: version, core: version, domainClass: version]
-    
+
     def artefacts = [new AnnotationDomainClassArtefactHandler()]
     def loadAfter = ['controllers']
     def doWithSpring = {
@@ -24,4 +24,3 @@ class MockHibernateGrailsPlugin {
         transactionManager(DataSourceTransactionManager, ref('dataSource'))
     }
 }
-    

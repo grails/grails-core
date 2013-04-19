@@ -18,7 +18,7 @@ import java.util.Set;
 
 /**
  * Information about the codec that identifies it and tells it's aliases.
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -26,26 +26,26 @@ public interface CodecIdentifier {
 
     /**
      * Gets the unique name of the codec.
-     * 
+     *
      * @return the codec name
      */
-    public String getCodecName();
+    String getCodecName();
 
     /**
      * Gets the aliases for this codec. Aliases are used in registering
      * "encodeAs*" and "decode*" metamethods in
      * {@link org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass}
-     * 
+     *
      * @return the codec aliases
      */
-    public Set<String> getCodecAliases();
+    Set<String> getCodecAliases();
 
     /**
      * Checks if this codec is equivalent to some other codec
-     * 
+     *
      * @param other
      *            the CodecIdentifier of the other codec
      * @return true, if is equivalent
      */
-    public boolean isEquivalent(CodecIdentifier other);
+    boolean isEquivalent(CodecIdentifier other);
 }

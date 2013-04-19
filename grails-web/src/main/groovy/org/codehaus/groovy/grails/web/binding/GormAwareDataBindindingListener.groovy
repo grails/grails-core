@@ -13,42 +13,41 @@ import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 
 @CompileStatic
-class GormAwareDataBindindingListener extends
-DataBindingListenerAdapter {
+class GormAwareDataBindindingListener extends DataBindingListenerAdapter {
     private final BindingResult tmpBindingResult
     private final Object object
 
-    GormAwareDataBindindingListener(BindingResult tmpBindingResult, Object object) {
+    GormAwareDataBindindingListener(BindingResult tmpBindingResult, object) {
         this.tmpBindingResult = tmpBindingResult
         this.object = object
     }
 
     @Override
-    public Boolean beforeBinding(Object obj, String propertyName, Object value) {
-        if("".equals(value)) {
+    Boolean beforeBinding(obj, String propertyName, value) {
+        if ("".equals(value)) {
             def cps = resolveConstrainedProperties(obj)
-            if(cps != null) {
+            if (cps != null) {
                 ConstrainedProperty cp = (ConstrainedProperty)cps[propertyName]
-                if(cp && cp.isNullable()) {
+                if (cp && cp.isNullable()) {
                     obj[propertyName] = null
                     return false
                 }
             }
         }
-        return true;
+        return true
     }
 
     @Override
-    public void bindingError(BindingError error) {
-        Object[] o = getArgumentsForBindError(object.getClass().getName(), error.getPropertyName());
+    void bindingError(BindingError error) {
+        Object[] o = getArgumentsForBindError(object.getClass().getName(), error.getPropertyName())
         def codes = ['typeMismatch']
         def cause = error.cause
         def defaultMessage = cause ? cause.message : 'Data Binding Failed'
-        def fieldError = new FieldError("", error.getPropertyName(), error.getRejectedValue(), true, codes.toArray(new String[0]), o, defaultMessage);
-        tmpBindingResult.addError(fieldError);
+        def fieldError = new FieldError("", error.getPropertyName(), error.getRejectedValue(), true, codes as String[], o, defaultMessage)
+        tmpBindingResult.addError(fieldError)
     }
 
-    private Map resolveConstrainedProperties(Object object) {
+    private Map resolveConstrainedProperties(object) {
         Map constrainedProperties = null
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass())
         MetaProperty metaProp = mc.getMetaProperty('constraints')
@@ -61,7 +60,7 @@ DataBindingListenerAdapter {
         constrainedProperties
     }
 
-    private Object getMetaPropertyValue(MetaProperty metaProperty, Object delegate) {
+    private getMetaPropertyValue(MetaProperty metaProperty, delegate) {
         if (metaProperty instanceof ThreadManagedMetaBeanProperty) {
             return ((ThreadManagedMetaBeanProperty)metaProperty).getGetter().invoke(delegate, MetaClassHelper.EMPTY_ARRAY)
         }

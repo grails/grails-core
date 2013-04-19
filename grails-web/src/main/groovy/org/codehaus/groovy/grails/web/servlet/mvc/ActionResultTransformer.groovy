@@ -22,7 +22,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface ActionResultTransformer {
+interface ActionResultTransformer {
 
     /**
      * Transforms an action result
@@ -32,5 +32,5 @@ public interface ActionResultTransformer {
      * @param actionResult The return value of an action
      * @return The transformed result
      */
-    def transformActionResult(GrailsWebRequest webRequest, String viewName, def actionResult)
+    def transformActionResult(GrailsWebRequest webRequest, String viewName, actionResult)
 }

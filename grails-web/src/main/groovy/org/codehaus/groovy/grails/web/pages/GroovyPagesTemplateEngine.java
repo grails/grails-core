@@ -549,7 +549,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
                 if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
                     encoding = gspEnc.toString();
                 }
-                
+
                 Object defaultCodecConf = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
                 if (defaultCodecConf != null) {
                     defaultCodecName = defaultCodecConf.toString().trim();

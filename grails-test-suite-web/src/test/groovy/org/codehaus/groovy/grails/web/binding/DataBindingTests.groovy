@@ -298,7 +298,7 @@ class EmbedDate {
             result.name = "Mocked ${id}"
             result
         }
-    
+
         request.addParameter("title", "The Stand")
         request.addParameter("author.id", "5")
 

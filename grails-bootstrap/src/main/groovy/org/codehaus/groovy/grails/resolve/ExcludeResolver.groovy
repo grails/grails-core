@@ -22,7 +22,7 @@ package org.codehaus.groovy.grails.resolve
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface ExcludeResolver {
+interface ExcludeResolver {
 
     /**
      * Resolves the excludes to be used for a {@link DependencyManager}

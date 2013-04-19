@@ -15,6 +15,7 @@
  */
 
 import groovy.xml.NamespaceBuilder
+
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 
 /**
@@ -58,7 +59,6 @@ target(dependencyReport:"Produces a dependency report for the current Grails app
     else {
         grailsSettings.dependencyManager.produceReport( args.trim() ?: null )
     }
-    
 }
 
 setDefaultTarget(dependencyReport)

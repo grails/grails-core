@@ -429,7 +429,7 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         }
         assert message.contains('Connection is broken')
     }
-        
+
     // doesn't actually test MVCC, mostly just that it's a valid URL
     void testMvccUrlOption() {
         def config = new ConfigSlurper().parse '''

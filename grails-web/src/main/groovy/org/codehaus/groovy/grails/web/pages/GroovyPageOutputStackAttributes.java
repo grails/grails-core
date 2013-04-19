@@ -37,7 +37,7 @@ public class GroovyPageOutputStackAttributes {
     public Writer getTopWriter() {
         return topWriter;
     }
-    
+
     public Encoder getStaticEncoder() {
         return staticEncoder;
     }
@@ -76,11 +76,10 @@ public class GroovyPageOutputStackAttributes {
         private boolean autoSync=true;
         private GrailsWebRequest webRequest;
         private boolean inheritPreviousEncoders=false;
-        
+
         public Builder() {
-            
         }
-        
+
         public Builder(GroovyPageOutputStackAttributes attributes) {
             this.topWriter = attributes.topWriter;
             this.staticEncoder = attributes.staticEncoder;
@@ -132,7 +131,7 @@ public class GroovyPageOutputStackAttributes {
             this.inheritPreviousEncoders = inheritPreviousEncoders;
             return this;
         }
-        
+
         public Builder webRequest(GrailsWebRequest webRequest) {
             this.webRequest = webRequest;
             return this;

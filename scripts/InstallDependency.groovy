@@ -28,7 +28,7 @@ import org.codehaus.groovy.grails.resolve.IvyDependencyManager
 includeTargets << grailsScript("_GrailsInit")
 includeTargets << grailsScript("_GrailsArgParsing")
 
-target(main:"Install a JAR dependency into a project") {
+target(installDependency:"Install a JAR dependency into a project") {
     depends(parseArguments)
 
     def dep
@@ -40,7 +40,7 @@ target(main:"Install a JAR dependency into a project") {
     }
 
     if (dep) {
-        def manager = grailsSettings.createNewDependencyManager() 
+        def manager = grailsSettings.createNewDependencyManager()
         manager.parseDependencies {
             repositories {
                 grailsPlugins()
@@ -83,4 +83,4 @@ Try passing a valid Maven repository with the --repository argument."""
     }
 }
 
-setDefaultTarget("main")
+setDefaultTarget("installDependency")

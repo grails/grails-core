@@ -31,7 +31,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -122,7 +121,6 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         }
     }
 
-    @SuppressWarnings("rawtypes")
     public void initialize() {
         expressionCodec = getCodec(expressionCodecName);
         staticCodec = getCodec(staticCodecName);
@@ -132,7 +130,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
         initialized = true;
     }
-    
+
     private GrailsCodecClass getCodec(String codecName) {
         GrailsCodecClass codecGrailsClass = null;
         if (codecName != null && grailsApplication != null && StringUtils.isNotBlank(codecName)) {
@@ -147,7 +145,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         if (codecGrailsClass == null && StringUtils.isNotBlank(codecName) && !"none".equalsIgnoreCase(codecName)) {
             LOG.warn("Couldn't initialize Codec by name '" + codecName + "' , pageClass=" + ((pageClass!=null)?pageClass.getName():null));
         }
-        
+
         return codecGrailsClass;
     }
 
@@ -454,7 +452,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     public GrailsCodecClass getOutCodec() {
         return outCodec;
     }
-    
+
     public Encoder getOutEncoder() {
         return returnEncoder(outCodec);
     }
@@ -466,7 +464,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     public Encoder getExpressionEncoder() {
         return returnEncoder(expressionCodec);
     }
-    
+
     private Encoder returnEncoder(GrailsCodecClass codecClass) {
         return codecClass != null ? codecClass.getEncoder() : null;
     }

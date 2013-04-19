@@ -42,7 +42,7 @@ target(installPlugin:"Installs a plug-in for the given URL or name and version")
         def urlPattern = ~"^[a-zA-Z][a-zA-Z0-9\\-\\.\\+]*://"
         if (pluginArgs[0] =~ urlPattern) {
             grailsConsole.warn """
-Since Grails 2.3, it is no longer possible to install plugins directly via a URL. 
+Since Grails 2.3, it is no longer possible to install plugins directly via a URL.
 
 Upload the plugin to a Maven-compatible repository and declare the dependency in grails-app/conf/BuildConfig.groovy.
 """
@@ -51,7 +51,7 @@ Upload the plugin to a Maven-compatible repository and declare the dependency in
 
         if (pluginFile.exists() && pluginFile.name.startsWith("grails-") && pluginFile.name.endsWith(".zip")) {
             grailsConsole.warn """
-Since Grails 2.3, it is no longer possible to install plugins directly from the file sytem. 
+Since Grails 2.3, it is no longer possible to install plugins directly from the file sytem.
 
 If you wish to use local plugins then run 'maven-install' in the plugin directory to install the plugin into your local Maven cache.
 

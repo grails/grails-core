@@ -18,7 +18,7 @@ import java.util.Set;
 
 /**
  * Holds the state of applied encodings
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -26,10 +26,10 @@ public interface EncodingState {
 
     /**
      * Gets the current encoding state (= encoder that have been applied)
-     * 
+     *
      * @return the encoders that have been applied
      */
-    public Set<Encoder> getEncoders();
-    
-    public EncodingState appendEncoder(Encoder encoder);
+    Set<Encoder> getEncoders();
+
+    EncodingState appendEncoder(Encoder encoder);
 }

@@ -17,7 +17,6 @@ dependencies {
                 project(':grails-plugin-url-mappings'),
                 project(':grails-plugin-services')
 
-    
     testCompile "org.grails:grails-datastore-gorm-hibernate:$datastoreVersion", {
         exclude group: 'org.grails', module:'grails-datastore-gorm'
         exclude group: 'org.grails', module:'grails-datastore-core'
@@ -40,7 +39,7 @@ dependencies {
         exclude group: 'commons-lang', module:'commons-lang'
         exclude group: 'javassit', module:'javassist'
         exclude group: 'java-persistence', module:'persistence-api'
-        exclude group: 'javassist', module: 'javassist'        
+        exclude group: 'javassist', module: 'javassist'
     }
 }
 test {

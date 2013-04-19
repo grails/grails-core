@@ -34,21 +34,21 @@ includeTargets << grailsScript("_GrailsClean")
 projectTestRunner = new GrailsProjectTestRunner(projectPackager)
 projectTestRunner.testExecutionContext = binding
 // Miscellaneous 'switches' that affect test operation
-testOptions = projectTestRunner.testOptions 
+testOptions = projectTestRunner.testOptions
 
 // The four test phases that we can run.
-unitTests = projectTestRunner.testFeatureDiscovery.unitTests 
-integrationTests = projectTestRunner.testFeatureDiscovery.integrationTests 
-functionalTests = projectTestRunner.testFeatureDiscovery.functionalTests 
-otherTests = projectTestRunner.testFeatureDiscovery.otherTests 
+unitTests = projectTestRunner.testFeatureDiscovery.unitTests
+integrationTests = projectTestRunner.testFeatureDiscovery.integrationTests
+functionalTests = projectTestRunner.testFeatureDiscovery.functionalTests
+otherTests = projectTestRunner.testFeatureDiscovery.otherTests
 
 // The potential phases for execution, modify this by responding to the TestPhasesStart event
-phasesToRun = projectTestRunner.phasesToRun 
+phasesToRun = projectTestRunner.phasesToRun
 
-TEST_PHASE_WILDCARD = GrailsProjectTestRunner.TEST_PHASE_WILDCARD 
+TEST_PHASE_WILDCARD = GrailsProjectTestRunner.TEST_PHASE_WILDCARD
 TEST_TYPE_WILDCARD = GrailsProjectTestRunner.TEST_TYPE_WILDCARD
 
-targetPhasesAndTypes = projectTestRunner.targetPhasesAndTypes // Passed to the test runners to facilitate event publishing 
+targetPhasesAndTypes = projectTestRunner.targetPhasesAndTypes // Passed to the test runners to facilitate event publishing
 testEventPublisher = projectTestRunner.testEventPublisher // Add a listener to generate our JUnit reports.
 
 // A list of test names. These can be of any of this forms:
@@ -93,7 +93,7 @@ target(allTests: "Runs the project's tests.") {
     }
     else {
         projectTestRunner.runAllTests(argsMap, false)
-    }    
+    }
 }
 
 /**

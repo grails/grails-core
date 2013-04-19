@@ -23,7 +23,6 @@ class StructuredDateBindingEditor extends AbstractStructuredDateBindingEditor<Da
 
     @Override
     Date getDate(Calendar c) {
-        c.time    
+        c.time
     }
-
 }

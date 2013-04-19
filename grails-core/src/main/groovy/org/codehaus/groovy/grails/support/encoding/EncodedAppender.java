@@ -19,14 +19,14 @@ import java.io.IOException;
 /**
  * This is the input interface to the streaming encoding solution. Methods in
  * this interface encode the given input and append it to the internal buffer
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
 public interface EncodedAppender {
     /**
      * Encodes a portion of a string and appends it to the buffer.
-     * 
+     *
      * @param encoder
      *            the encoder to use
      * @param encodingState
@@ -40,9 +40,8 @@ public interface EncodedAppender {
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
-    public void append(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len)
-            throws IOException;
-    
+    void append(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len) throws IOException;
+
     /**
      * Appends an encoded portion of a string to the buffer
      *
@@ -59,12 +58,12 @@ public interface EncodedAppender {
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
-    public void appendEncoded(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len)
+    void appendEncoded(Encoder encoder, EncodingState encodingState, CharSequence str, int off, int len)
             throws IOException;
 
     /**
      * Encodes a portion of a char array and appends it to the buffer.
-     * 
+     *
      * @param encoder
      *            the encoder to use
      * @param encodingState
@@ -78,11 +77,11 @@ public interface EncodedAppender {
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
-    public void append(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException;
-    
+    void append(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException;
+
     /**
      * Appends an encoded portion of a char array to the buffer.
-     * 
+     *
      * @param encoder
      *            the encoder that has been applied
      * @param encodingState
@@ -96,7 +95,7 @@ public interface EncodedAppender {
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
-    public void appendEncoded(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException;
+    void appendEncoded(Encoder encoder, EncodingState encodingState, char[] b, int off, int len) throws IOException;
 
     /**
      * Encodes a {@link StreamEncodeable} instance and appends it to the buffer.
@@ -105,7 +104,7 @@ public interface EncodedAppender {
      * @param streamEncodeable the instance to encode
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    public void append(Encoder encoder, StreamEncodeable streamEncodeable) throws IOException;
+    void append(Encoder encoder, StreamEncodeable streamEncodeable) throws IOException;
 
     /**
      * Encodes a single char and appends it to the buffer.
@@ -114,7 +113,7 @@ public interface EncodedAppender {
      * @param ch a char
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    public void append(Encoder encoder, char ch) throws IOException;
+    void append(Encoder encoder, char ch) throws IOException;
 
     /**
      * Flush the internal buffer and write the buffered input to a possible
@@ -122,5 +121,5 @@ public interface EncodedAppender {
      *
      * @throws IOException Signals that an I/O exception has occurred.
      */
-    public void flush() throws IOException;
+    void flush() throws IOException;
 }

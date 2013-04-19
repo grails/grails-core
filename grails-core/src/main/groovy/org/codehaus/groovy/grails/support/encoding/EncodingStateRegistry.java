@@ -20,7 +20,7 @@ package org.codehaus.groovy.grails.support.encoding;
  * double-encoding a value that is already encoded. In the current
  * implementation, a single EncodingStateRegistry instance is bound to a HTTP
  * request life cycle.
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -28,42 +28,42 @@ public interface EncodingStateRegistry {
 
     /**
      * Gets the current encoding state for a CharSequence.
-     * 
+     *
      * @param string
      *            a CharSequence
      * @return the encoding state for the CharSequence
      */
-    public EncodingState getEncodingStateFor(CharSequence string);
+    EncodingState getEncodingStateFor(CharSequence string);
 
     /**
      * Checks if a encoder should be applied to a CharSequence
-     * 
+     *
      * @param encoderToApply
      *            the encoder to apply
      * @param string
      *            a CharSequence
      * @return true, if it should be applied
      */
-    public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string);
+    boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string);
 
     /**
      * Checks if the CharSequence is encoded with encoder.
-     * 
+     *
      * @param encoder
      *            the encoder
      * @param string
      *            a CharSequence
      * @return true, if it is encoded with encoder
      */
-    public boolean isEncodedWith(Encoder encoder, CharSequence string);
+    boolean isEncodedWith(Encoder encoder, CharSequence string);
 
     /**
      * Registers that the CharSequence has been encoded with encoder
-     * 
+     *
      * @param encoder
      *            the encoder
      * @param escaped
      *            the CharSequence
      */
-    public void registerEncodedWith(Encoder encoder, CharSequence escaped);
+    void registerEncodedWith(Encoder encoder, CharSequence escaped);
 }

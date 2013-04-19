@@ -129,7 +129,7 @@ class SimpleDataBinder implements DataBinder {
     void bind(obj, Map source, List whiteList, List blackList) {
         bind obj, source, null, whiteList, blackList, null
     }
-    
+
     /**
      * @param obj the object to perform data binding on
      * @param gpath contains an XML representation of the data to be bound to obj
@@ -171,7 +171,7 @@ class SimpleDataBinder implements DataBinder {
         }
         descriptor
     }
-    
+
     protected processProperty(obj, String propName, val, Map source, List whiteList, List blackList, DataBindingListener listener) {
         def metaProperty = obj.metaClass.getMetaProperty propName
         if(metaProperty) {
@@ -224,7 +224,7 @@ class SimpleDataBinder implements DataBinder {
             } else if(propName.startsWith('_')) {
                 def restOfPropName = propName[1..-1]
                 metaProperty = obj.metaClass.getMetaProperty restOfPropName
-                if(metaProperty && 
+                if(metaProperty &&
                    (Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type) &&
                    !source.containsKey('restOfPropName')) {
                     setPropertyValue obj, source, restOfPropName, false, listener
@@ -261,7 +261,7 @@ class SimpleDataBinder implements DataBinder {
         }
         obj[propertyName]
     }
-    
+
     @CompileStatic(TypeCheckingMode.SKIP)
     protected Collection initializeCollection(obj, String propertyName, Class type) {
         if(obj[propertyName] == null) {
@@ -276,7 +276,7 @@ class SimpleDataBinder implements DataBinder {
 
     /**
      * Get a ValueConverter for field
-     * 
+     *
      * @param field The field to retrieve a converter for
      * @param formattingValue The format that the converter will use
      * @return a ValueConverter for field which uses formattingValue for its format
@@ -293,7 +293,7 @@ class SimpleDataBinder implements DataBinder {
         }
         converter
     }
-    
+
     protected ValueConverter getValueConverterForField(obj, String propName) {
         def converter
         try {
@@ -345,7 +345,7 @@ class SimpleDataBinder implements DataBinder {
         try {
             enumValue = enumClass.valueOf(value)
         } catch (IllegalArgumentException iae) {}
-        
+
         enumValue
     }
     protected setPropertyValue(obj, Map source, String propName, propertyValue, DataBindingListener listener) {
@@ -367,7 +367,7 @@ class SimpleDataBinder implements DataBinder {
 
             if(propertyValue == null || propertyType == Object || propertyType.isAssignableFrom(propertyValue.getClass())) {
                 obj[propName] = propertyValue
-            } else if(propertyValue instanceof List && 
+            } else if(propertyValue instanceof List &&
 //                      !propertyValue instanceof ListOrderedSet &&
                       Set.isAssignableFrom(propertyType) &&
                       !SortedSet.isAssignableFrom(propertyType)) {
@@ -377,7 +377,7 @@ class SimpleDataBinder implements DataBinder {
             } else {
                 try {
                     if(propertyValue instanceof Map) {
-                        if(Collection.isAssignableFrom(propertyType) && 
+                        if(Collection.isAssignableFrom(propertyType) &&
                             propertyValue.size() == 1 &&
                             ((Map)propertyValue)[propertyValue.keySet()[0]] instanceof List) {
                             def key = propertyValue.keySet()[0]

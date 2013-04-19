@@ -16,21 +16,21 @@ package org.codehaus.groovy.grails.support.encoding;
 
 /**
  * Marker interface for telling that the underlying char array is directly accessible
- * 
+ *
  * This interface is missing from the JVM although String, StringBuffer and StringBuilder all have this method.
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
 public interface CharArrayAccessible {
-    
+
     /**
-     * Characters are copied from this sequence into the 
-     * destination character array <code>dst</code>. The first character to 
-     * be copied is at index <code>srcBegin</code>; the last character to 
-     * be copied is at index <code>srcEnd-1</code>. The total number of 
-     * characters to be copied is <code>srcEnd-srcBegin</code>. The 
-     * characters are copied into the subarray of <code>dst</code> starting 
+     * Characters are copied from this sequence into the
+     * destination character array <code>dst</code>. The first character to
+     * be copied is at index <code>srcBegin</code>; the last character to
+     * be copied is at index <code>srcEnd-1</code>. The total number of
+     * characters to be copied is <code>srcEnd-srcBegin</code>. The
+     * characters are copied into the subarray of <code>dst</code> starting
      * at index <code>dstBegin</code> and ending at index:
      * <p><blockquote><pre>
      * dstbegin + (srcEnd-srcBegin) - 1
@@ -40,19 +40,19 @@ public interface CharArrayAccessible {
      * @param      srcEnd     stop copying at this offset.
      * @param      dst        the array to copy the data into.
      * @param      dstBegin   offset into <code>dst</code>.
-     * @throws     NullPointerException if <code>dst</code> is 
+     * @throws     NullPointerException if <code>dst</code> is
      *             <code>null</code>.
      * @throws     IndexOutOfBoundsException  if any of the following is true:
      *             <ul>
      *             <li><code>srcBegin</code> is negative
      *             <li><code>dstBegin</code> is negative
-     *             <li>the <code>srcBegin</code> argument is greater than 
+     *             <li>the <code>srcBegin</code> argument is greater than
      *             the <code>srcEnd</code> argument.
-     *             <li><code>srcEnd</code> is greater than 
+     *             <li><code>srcEnd</code> is greater than
      *             <code>this.length()</code>.
-     *             <li><code>dstBegin+srcEnd-srcBegin</code> is greater than 
+     *             <li><code>dstBegin+srcEnd-srcBegin</code> is greater than
      *             <code>dst.length</code>
      *             </ul>
      */
-    public void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin);
+    void getChars(int srcBegin, int srcEnd, char dst[], int dstBegin);
 }

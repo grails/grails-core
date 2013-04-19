@@ -258,7 +258,7 @@ abstract class ForkedGrailsProcess {
         else {
             javaCommand = "java" // assume it is correctly configured using PATH
         }
-        
+
         List<String> cmd = [javaCommand]
 
         if (jvmArgs) {

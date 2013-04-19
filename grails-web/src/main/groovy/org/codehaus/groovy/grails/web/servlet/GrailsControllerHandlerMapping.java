@@ -66,8 +66,8 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
             if(matchedUri == null || !matchedUri.equals(uri)) {
                 controllerAttribute = null;
             }
-        } 
-        
+        }
+
         if (controllerAttribute instanceof GrailsControllerClass) {
             controllerClass = (GrailsControllerClass) controllerAttribute;
         } else {

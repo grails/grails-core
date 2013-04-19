@@ -19,7 +19,6 @@ import groovy.transform.CompileStatic
 
 import org.apache.commons.lang.StringUtils
 import org.grails.databinding.StructuredBindingEditor
-import org.junit.Assert
 
 /**
  * @author Jeff Brown
@@ -27,25 +26,26 @@ import org.junit.Assert
  */
 @CompileStatic
 abstract class AbstractStructuredDateBindingEditor<T> implements StructuredBindingEditor<T> {
+
     public T assemble(String propertyName, Map fieldValues) throws IllegalArgumentException {
         final prefix = propertyName + '_'
-        Assert.assertTrue("Can't populate a date without a year", fieldValues.containsKey(prefix + "year"))
+        assert fieldValues.containsKey(prefix + "year"), "Can't populate a date without a year"
 
         def yearString = (String)fieldValues.get(prefix + "year")
         def monthString = (String) fieldValues.get(prefix + "month")
         def dayString = (String) fieldValues.get(prefix + "day")
         def hourString = (String) fieldValues.get(prefix + "hour")
         def minuteString = (String) fieldValues.get(prefix + "minute")
-        if (StringUtils.isBlank(yearString)
-        && StringUtils.isBlank(monthString)
-        && StringUtils.isBlank(dayString)
-        && StringUtils.isBlank(hourString)
-        && StringUtils.isBlank(minuteString)) {
+        if (StringUtils.isBlank(yearString) &&
+            StringUtils.isBlank(monthString) &&
+            StringUtils.isBlank(dayString) &&
+            StringUtils.isBlank(hourString) &&
+            StringUtils.isBlank(minuteString)) {
             return null
         }
         def year
         try {
-            Assert.assertTrue("Can't populate a date without a year", !StringUtils.isBlank(yearString))
+            assert !StringUtils.isBlank(yearString), "Can't populate a date without a year"
 
             year = Integer.parseInt(yearString)
 
@@ -61,17 +61,16 @@ abstract class AbstractStructuredDateBindingEditor<T> implements StructuredBindi
             throw new IllegalArgumentException("Unable to parse structured date from request for date [\"+propertyName+\"]\"")
         }
     }
-    
-    public List<String> getRequiredFields() {
+
+    List<String> getRequiredFields() {
         ['year']
     }
 
-    public List<String> getOptionalFields() {
+    List<String> getOptionalFields() {
         ['month', 'day', 'hour', 'minute']
     }
 
-    public T getPropertyValue(Object obj, String propertyName,
-            Map<String, Object> source) {
+    public T getPropertyValue(obj, String propertyName, Map<String, Object> source) {
         assemble(propertyName, source)
     }
 
@@ -81,6 +80,6 @@ abstract class AbstractStructuredDateBindingEditor<T> implements StructuredBindi
         }
         defaultValue
     }
-    
+
     abstract T getDate(Calendar c)
 }

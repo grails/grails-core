@@ -21,10 +21,10 @@ import java.sql.Date
  * @author Jeff Brown
  * @since 2.3
  */
-class StructuredSqlDateBindingEditor extends AbstractStructuredDateBindingEditor<java.sql.Date> {
+class StructuredSqlDateBindingEditor extends AbstractStructuredDateBindingEditor<Date> {
 
     @Override
-    public java.sql.Date getDate(Calendar c) {
-        return new java.sql.Date(c.time.time)
+    Date getDate(Calendar c) {
+        return new Date(c.time.time)
     }
 }

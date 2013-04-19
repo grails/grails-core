@@ -54,7 +54,7 @@ class NestedXmlBindingTests {
         assert p.location.shippingAddress == 'foo'
         assert p.location.billingAddress == 'bar'
     }
-    
+
     void testBindToArrayOfDomains() {
         request.xml = '''
 <person>
@@ -155,7 +155,7 @@ class Person {
 class Location {
     String shippingAddress
     String billingAddress
-    
+
     static constraints = {
         id bindable: true
     }
@@ -163,11 +163,8 @@ class Location {
 
 @Entity
 class Foo {
-
-    static belongsTo = [bar: Bar];
-
+    static belongsTo = [bar: Bar]
 }
+
 @Entity
-class Bar {
-
-}
+class Bar {}

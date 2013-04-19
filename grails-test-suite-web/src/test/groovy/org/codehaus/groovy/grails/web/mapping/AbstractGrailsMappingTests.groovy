@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
 abstract class AbstractGrailsMappingTests extends AbstractGrailsControllerTests {
     public UrlMappingEvaluator evaluator

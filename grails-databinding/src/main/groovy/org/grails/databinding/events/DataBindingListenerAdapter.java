@@ -24,7 +24,7 @@ import org.grails.databinding.errors.BindingError;
 public abstract class DataBindingListenerAdapter implements DataBindingListener {
 
     public Boolean beforeBinding(Object obj, String propertyName, Object value) {
-        return Boolean.TRUE;
+        return true;
     }
 
     public void afterBinding(Object obj, String propertyName) {

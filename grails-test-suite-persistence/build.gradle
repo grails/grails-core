@@ -38,7 +38,7 @@ dependencies {
         exclude group: 'commons-lang', module:'commons-lang'
         exclude group: 'javassit', module:'javassist'
         exclude group: 'java-persistence', module:'persistence-api'
-        exclude group: 'javassist', module: 'javassist'        
+        exclude group: 'javassist', module: 'javassist'
     }
 }
 
@@ -46,8 +46,8 @@ test {
     maxParallelForks = 2
     forkEvery = 100
     jvmArgs = ['-Xmx1048M','-XX:MaxPermSize=256m']
-    excludes = ['**/GrailsDomainBinderTests.class', 
-                '**/ComponentValidationTests.class', 
+    excludes = ['**/GrailsDomainBinderTests.class',
+                '**/ComponentValidationTests.class',
                 '**/HibernateMappingUniqueConstraintTests.class']
 }
 

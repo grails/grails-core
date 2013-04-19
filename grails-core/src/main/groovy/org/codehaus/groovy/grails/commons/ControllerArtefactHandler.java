@@ -89,7 +89,7 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
         } else {
             uri = featureId.toString();
         }
-        
+
         String cacheKey = (pluginName != null ? pluginName : "") + ":" + uri;
 
         GrailsClass controllerClass = uriToControllerClassCache.get(cacheKey);

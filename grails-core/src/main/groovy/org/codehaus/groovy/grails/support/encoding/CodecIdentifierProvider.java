@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.support.encoding;
 /**
  * Marker interface that tells that the instance has information about the Codec
  * {@link Encoder} and {@link Decoder} interfaces extend this interface.
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -25,8 +25,8 @@ public interface CodecIdentifierProvider {
 
     /**
      * Gets the codec identifier information.
-     * 
+     *
      * @return the codec identifier information
      */
-    public CodecIdentifier getCodecIdentifier();
+    CodecIdentifier getCodecIdentifier();
 }

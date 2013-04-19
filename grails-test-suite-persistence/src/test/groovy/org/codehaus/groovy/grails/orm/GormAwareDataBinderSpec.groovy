@@ -21,9 +21,11 @@ import grails.validation.DeferredBindingActions
 
 import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
 
+import spock.lang.Specification
+
 @TestMixin(DomainClassUnitTestMixin)
-class GormAwareDataBinderSpec extends spock.lang.Specification {
-    
+class GormAwareDataBinderSpec extends Specification {
+
     void 'Test binding to primitives from Strings'() {
         given:
         def binder = new GormAwareDataBinder()
@@ -63,10 +65,10 @@ class GormAwareDataBinderSpec extends spock.lang.Specification {
         then:
         publication.title == 'Infinite Jest'
         publication.author.name == 'David Foster Wallace'
-        
+
         when:
         binder.bind publication, [author: [id: 'null']]
-        
+
         then:
         publication.author == null
 
@@ -77,14 +79,13 @@ class GormAwareDataBinderSpec extends spock.lang.Specification {
         then:
         publication.title == 'Infinite Jest'
         publication.author == null
-        
+
         when:
         publication.author = null
         binder.bind publication, [title: 'Infinite Jest 2', author: [id: author.id]]
-        
+
         then:
         publication.author.name == 'David Foster Wallace'
-        
     }
 
     void 'Test binding to the one side of a one to many'() {
@@ -93,30 +94,29 @@ class GormAwareDataBinderSpec extends spock.lang.Specification {
         def binder = new GormAwareDataBinder(grailsApplication)
         def author = new Author(name: 'Graeme').save()
         def pub = new Publication(title: 'DGG', author: author)
-        
+
         when:
         binder.bind pub, [publisher: [name: 'Apress']]
-        
+
         // pending investigation...
         DeferredBindingActions.runActions()
-        
+
         def publisher = pub.publisher
-        
+
         then:
         publisher != null
-        
+
         when:
         publisher.save()
-        
+
         then:
         pub.publisher.name == 'Apress'
         pub.publisher.publications.size() == 1
-        
+
         // this is what we are really testing...
         pub.publisher.publications[0] == pub
-        
     }
-    
+
     void 'Test binding to a hasMany List'() {
         given:
         mockDomain Publisher
@@ -144,10 +144,10 @@ class GormAwareDataBinderSpec extends spock.lang.Specification {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def widget = new Widget()
-        
+
         when:
         binder.bind widget, [isBindable: 'Should Be Bound', isNotBindable: 'Should Not Be Bound']
-        
+
         then:
         widget.isBindable == 'Should Be Bound'
         widget.isNotBindable == null
@@ -209,7 +209,7 @@ class Author {
 class Widget {
     String isBindable
     String isNotBindable
-    
+
     static constraints = {
         isNotBindable bindable: false
     }

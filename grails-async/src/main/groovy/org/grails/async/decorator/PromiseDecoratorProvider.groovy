@@ -15,15 +15,13 @@
  */
 package org.grails.async.decorator
 
-import grails.async.Promise
-
 /**
  * Interface for classes that provide promise decorators to implement
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface PromiseDecoratorProvider {
+interface PromiseDecoratorProvider {
 
     /**
      * @return A list of decorators

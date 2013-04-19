@@ -17,7 +17,7 @@ package org.grails.databinding.xml
 import spock.lang.Specification
 
 class GPathResultMapSpec extends Specification {
-    
+
     void 'Test nested elements'() {
         given:
         def xml = new XmlSlurper().parseText('''
@@ -37,7 +37,7 @@ class GPathResultMapSpec extends Specification {
 ''')
         when:
         def person = new GPathResultMap(xml)
-        
+
         then:
         person.size() == 2
         person.name == 'John Doe'
@@ -142,14 +142,14 @@ class GPathResultMapSpec extends Specification {
 
         when:
         def map = new GPathResultMap(xml)
-        
+
         then:
         map.band.id == '4'
         map.band.name == 'Thin Lizzy'
-        
+
         when:
         def members = map.band.members
-        
+
         then:
         members instanceof Map
         members.size() == 1
@@ -163,30 +163,30 @@ class GPathResultMapSpec extends Specification {
         members.member[1].name == 'Scott'
         !members.member[2].containsKey('id')
         members.member[2].name == 'John'
-        
+
         when:
         def keys = members.member[0].keySet()
-        
+
         then:
         keys.size() == 2
         'id' in keys
         'name' in keys
-        
+
         when:
         keys = members.member[1].keySet()
-        
+
         then:
         keys.size() == 2
         'id' in keys
         'name' in keys
-        
+
         when:
         keys = members.member[2].keySet()
-        
+
         then:
         keys.size() == 1
         'name' in keys
-        
+
         when:
         xml = new XmlSlurper().parseText('''<person>
         <name>John Doe</name>
@@ -196,7 +196,7 @@ class GPathResultMapSpec extends Specification {
         </location>
         </person>''')
         map = new GPathResultMap(xml)
-        
+
         then:
         map.location.id == '1'
 
@@ -206,11 +206,11 @@ class GPathResultMapSpec extends Specification {
 </foo>
 ''')
         map = new GPathResultMap(xml)
-        
+
         then:
         map.bar.id == '1'
     }
-    
+
     void 'Test empty Map'() {
         given:
         def xml = new XmlSlurper().parseText('''

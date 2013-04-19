@@ -82,7 +82,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         // use the root web application context always
         setContextAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE);
     }
-    
+
     @Override
     protected ServletRequestAttributes buildRequestAttributes(HttpServletRequest request, HttpServletResponse response, RequestAttributes previousAttributes) {
         if(previousAttributes instanceof GrailsWebRequest) {
@@ -91,7 +91,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         else {
             return super.buildRequestAttributes(request, response, previousAttributes);
         }
-    }    
+    }
 
     /**
      * The size of the buffer used when formulating the response

@@ -37,6 +37,7 @@ class BindXmlWithAssociationTests {
         assert person.book.pages == 300
     }
 }
+
 class PersonController {
 
     def save = {
@@ -49,15 +50,12 @@ class PersonController {
         request.person = person
         render 'saved'
     }
-
 }
 
 @Entity
 class TargetPerson {
-
     String name
     Book book
-
 }
 
 @Entity
@@ -65,7 +63,7 @@ class Book {
 
     String title
     int pages
-    
+
     static constraints = {
         id bindable: true
     }

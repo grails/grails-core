@@ -18,7 +18,7 @@ import org.codehaus.groovy.runtime.GStringImpl;
 public class CodecPrintWriter extends GrailsPrintWriter implements EncodedAppenderFactory, EncoderAware {
     private Encoder encoder;
     private EncodingStateRegistry encodingStateRegistry=null;
-    
+
     public CodecPrintWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         super(out);
         allowUnwrappingOut = false;
@@ -35,7 +35,7 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncodedAppend
     public boolean isUsed() {
         return usageFlag;
     }
-    
+
     @Override
     protected Writer unwrapWriter(Writer writer) {
         return writer;
@@ -69,7 +69,7 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncodedAppend
     public void print(final Object obj) {
         encodeAndPrint(obj);
     }
-    
+
     private final void encodeAndPrint(final Object obj) {
         if (trouble || obj == null) {
             usageFlag = true;
@@ -191,7 +191,7 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncodedAppend
             super.write(s, off, len);
         } else {
             if(off==0 && len==s.length()) {
-                encodeAndPrint(s);    
+                encodeAndPrint(s);
             } else {
                 encodeAndPrint(s.substring(off, off+len));
             }

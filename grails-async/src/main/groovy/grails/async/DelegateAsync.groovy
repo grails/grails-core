@@ -15,12 +15,13 @@
  */
 package grails.async
 
-import org.codehaus.groovy.transform.GroovyASTTransformationClass
-
+import java.lang.annotation.Documented
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
+
+import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
 /**
  * An AST transformation that takes each method in the given class and adds a delegate method that returns a {@link grails.async.Promise} and executes the method asynchronously.
@@ -56,10 +57,10 @@ import java.lang.annotation.Target
  * @author Graeme Rocher
  * @since 2.3
  */
-@java.lang.annotation.Documented
+@Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target([ElementType.TYPE, ElementType.FIELD])
 @GroovyASTTransformationClass("org.grails.async.transform.internal.DelegateAsyncTransformation")
 public @interface DelegateAsync {
-    Class value() default DelegateAsync.class;
+    Class value() default DelegateAsync
 }

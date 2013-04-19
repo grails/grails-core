@@ -30,8 +30,7 @@ class GPathResultMap implements Map {
         this.@id = gpath.@id.text() ?: null
     }
 
-    @Override
-    public int size() {
+    int size() {
         def uniqueNames = [] as Set
         gpath.children().each { child ->
             uniqueNames << child.name()
@@ -39,16 +38,14 @@ class GPathResultMap implements Map {
         uniqueNames.size()
     }
 
-    @Override
-    public boolean containsKey(Object key) {
+    boolean containsKey(key) {
         if(key == 'id') {
             return this.@id != null
         }
         gpath[key].size()
     }
 
-    @Override
-    public Set entrySet() {
+    Set entrySet() {
         def entries = [] as Set
         def uniqueChildNames = [] as Set
         gpath.childNodes().each { childNode ->
@@ -64,8 +61,7 @@ class GPathResultMap implements Map {
         return entries
     }
 
-    @Override
-    public Object get(Object key) {
+    Object get(key) {
         if('id' == key && this.@id) {
             return this.@id
         }
@@ -76,7 +72,7 @@ class GPathResultMap implements Map {
                 def theId = it.@id.text()
                 if(!''.equals(theId)) {
                     def theMap = new GPathResultMap(it)
-                    list << theMap   
+                    list << theMap
                 } else {
                     if(it.children().size() > 0) {
                         def theMap = new GPathResultMap(it)
@@ -96,8 +92,7 @@ class GPathResultMap implements Map {
         new GPathResultMap(value)
     }
 
-    @Override
-    public Set keySet() {
+    Set keySet() {
         def keys = gpath.children().collect { it.name() } as Set
         if(this.@id != null) {
             keys << 'id'
@@ -105,38 +100,31 @@ class GPathResultMap implements Map {
         keys
     }
 
-    @Override
-    public void clear() {
+    void clear() {
         throw new UnsupportedOperationException()
     }
 
-    @Override
-    public boolean containsValue(Object value) {
+    boolean containsValue(value) {
         throw new UnsupportedOperationException()
     }
 
-    @Override
-    public boolean isEmpty() {
+    boolean isEmpty() {
         !size()
     }
 
-    @Override
-    public Object put(Object key, Object value) {
+    Object put(key, value) {
         throw new UnsupportedOperationException()
     }
 
-    @Override
-    public void putAll(Map m) {
+    void putAll(Map m) {
         throw new UnsupportedOperationException()
     }
 
-    @Override
-    public Object remove(Object key) {
+    Object remove(key) {
         throw new UnsupportedOperationException()
     }
 
-    @Override
-    public Collection values() {
+    Collection values() {
         throw new UnsupportedOperationException()
     }
 }

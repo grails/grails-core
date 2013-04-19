@@ -19,7 +19,6 @@ import grails.artefact.Artefact
 import javax.annotation.PostConstruct
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -413,8 +412,7 @@ a 'params' key to the [url] attribute instead.""")
      * &lt;g:escapeJavascript&gt;This is some "text" to be escaped&lt;/g:escapeJavascript&gt;
      */
     Closure escapeJavascript = { attrs, body ->
-        
-        
+
         withCodec(all:"JavaScript") {
             if (body) {
                 out << body()

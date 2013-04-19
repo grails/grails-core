@@ -373,10 +373,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
             }
         }
     }
-    
+
     static {
         DefaultGrailsCodecClass.setEncodingStateRegistryLookup(new DefaultEncodingStateRegistryLookup());
     }
-
-
 }

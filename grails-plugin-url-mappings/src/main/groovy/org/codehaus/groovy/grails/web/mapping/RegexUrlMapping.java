@@ -19,7 +19,6 @@ import groovy.lang.Closure;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Collections;
@@ -264,7 +263,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                         String[] segs = v.split(SLASH);
                         for (String segment : segs) {
                             uri.append(SLASH).append(encode(segment, encoding));
-                        } 
+                        }
                     }
                     else if (v.length() > 0) {
                         // original behavior

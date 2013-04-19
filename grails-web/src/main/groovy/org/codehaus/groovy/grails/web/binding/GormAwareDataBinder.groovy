@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.databinding.SimpleDataBinder
 import org.grails.databinding.converters.FormattedValueConverter
@@ -46,7 +47,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
         this.grailsApplication = grailsApplication
         this.conversionService = new SpringConversionServiceAdapter()
     }
-    
+
     /**
      * @param obj the object to perform data binding on
      * @param source a Map containg the values to be bound to obj
@@ -86,7 +87,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
         }
         referencedType ?: super.getReferencedTypeForCollection(name, target)
     }
-    
+
     @Override
     protected initializeProperty(obj, String propName, Class propertyType, Map<String, Object> source) {
         def isInitialized = false
@@ -105,7 +106,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
             super.initializeProperty obj, propName,  propertyType, source
         }
     }
-    
+
     protected getPersistentInstance(Class<?> type, id) {
         InvokerHelper.invokeStaticMethod type, 'get', id
     }
@@ -154,7 +155,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                                 persistedInstance = ((MetaBeanProperty)metaProperty).field.type.newInstance()
                             }
                         }
-                        
+
                         setPropertyValue obj, source, propName, persistedInstance, listener
                         if(persistedInstance != null) {
                             bind persistedInstance, val, listener
@@ -207,14 +208,16 @@ class GormAwareDataBinder extends SimpleDataBinder {
     protected addElementToCollectionAt(obj, String propertyName, Collection collection, index, val) {
         super.addElementToCollectionAt obj, propertyName, collection, index, val
 
-        if(grailsApplication != null) {
-            def domainClass = (GrailsDomainClass)grailsApplication.getArtefact('Domain', obj.getClass().name)
-            def property = domainClass.getPersistentProperty propertyName
-            if (property != null && property.isBidirectional()) {
-                def otherSide = property.otherSide
-                if (otherSide.isManyToOne()) {
-                    val[otherSide.name] = obj
-                }
+        if (grailsApplication == null) {
+            return
+        }
+
+        def domainClass = (GrailsDomainClass)grailsApplication.getArtefact('Domain', obj.getClass().name)
+        def property = domainClass.getPersistentProperty propertyName
+        if (property != null && property.isBidirectional()) {
+            def otherSide = property.otherSide
+            if (otherSide.isManyToOne()) {
+                val[otherSide.name] = obj
             }
         }
     }
@@ -239,19 +242,18 @@ class GormAwareDataBinder extends SimpleDataBinder {
                         }
                     }
                     def otherSide = property.getOtherSide()
-                    if (otherSide != null && List.class.isAssignableFrom(otherSide.getType()) && !property.isOptional()) {
-                        DeferredBindingActions.addBindingAction(
-                            new Runnable() {
-                                public void run() {
-                                    if (otherSide.isOneToMany()) {
-                                        Collection collection = GrailsMetaClassUtils.getPropertyIfExists(obj[propName], otherSide.name, Collection)
-                                        if (collection == null || !collection.contains(obj)) {
-                                            def methodName = 'addTo' + GrailsNameUtils.getClassName(otherSide.name)
-                                            GrailsMetaClassUtils.invokeMethodIfExists(obj[propName], methodName, [obj] as Object[])
-                                        }
+                    if (otherSide != null && List.isAssignableFrom(otherSide.getType()) && !property.isOptional()) {
+                        DeferredBindingActions.addBindingAction(new Runnable() {
+                            void run() {
+                                if (otherSide.isOneToMany()) {
+                                    Collection collection = GrailsMetaClassUtils.getPropertyIfExists(obj[propName], otherSide.name, Collection)
+                                    if (collection == null || !collection.contains(obj)) {
+                                        def methodName = 'addTo' + GrailsNameUtils.getClassName(otherSide.name)
+                                        GrailsMetaClassUtils.invokeMethodIfExists(obj[propName], methodName, [obj] as Object[])
                                     }
                                 }
-                            })
+                            }
+                        })
                     }
                 }
             }
@@ -291,21 +293,21 @@ class GormAwareDataBinder extends SimpleDataBinder {
     }
     
     @Autowired(required=false)
-    public void setValueConverters(ValueConverter[] converters) {
-        converters?.each { ValueConverter converter ->
+    void setValueConverters(ValueConverter[] converters) {
+        converters.each { ValueConverter converter ->
             registerConverter converter
         }
     }
     
     @Autowired(required=false)
-    public void setFormattedValueConverters(FormattedValueConverter[] converters) {
-        converters?.each { FormattedValueConverter converter ->
+    void setFormattedValueConverters(FormattedValueConverter[] converters) {
+        converters.each { FormattedValueConverter converter ->
             registerFormattedValueConverter converter
         }
     }
-    
+
     protected convert(Class typeToConvertTo, value) {
-        if(value instanceof org.codehaus.groovy.grails.web.json.JSONObject.Null) {
+        if (value instanceof JSONObject.Null) {
             return null
         }
         super.convert typeToConvertTo, value

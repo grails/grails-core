@@ -21,7 +21,11 @@ import groovy.util.Proxy;
 
 import java.io.IOException;
 import java.security.AccessControlException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -137,8 +141,8 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             if(matchedUri != null && originalUri.equals(matchedUri)) {
             controllerClass = (GrailsControllerClass) attribute;
             }
-        } 
-        
+        }
+
         if (controllerClass == null) {
             controllerClass = getControllerClassByURI(uri);
         }

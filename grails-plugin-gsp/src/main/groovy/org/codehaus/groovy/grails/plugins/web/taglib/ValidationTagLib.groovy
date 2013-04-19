@@ -22,7 +22,6 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
 import org.apache.commons.lang.StringEscapeUtils
-import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.context.MessageSourceResolvable
@@ -331,12 +330,12 @@ class ValidationTagLib {
         }
         ''
     }
-    
+
     private encodeArgsIfRequired(arguments) {
         arguments.collect { value ->
             if(value == null || value instanceof Number || value instanceof Date) {
-                value      
-            } else {             
+                value
+            } else {
                 value.toString().encodeAsHTML()
             }
         }

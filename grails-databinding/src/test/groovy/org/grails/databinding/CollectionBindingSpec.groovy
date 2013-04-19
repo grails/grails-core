@@ -14,7 +14,6 @@
  */
 package org.grails.databinding
 
-import spock.lang.Ignore
 import spock.lang.Specification
 
 class CollectionBindingSpec extends Specification {
@@ -104,18 +103,18 @@ class CollectionBindingSpec extends Specification {
         company.departments[2].name == 'Department Two'
         company.departments[2].numberOfEmployees == 99
     }
-    
+
     void 'Test binding to an untyped List'() {
         given:
         def binder = new SimpleDataBinder()
         def dept = new Department()
-        
+
         when:
-        binder.bind dept, ['listOfCodes[1]': 'Herman', 
+        binder.bind dept, ['listOfCodes[1]': 'Herman',
                            'listOfCodes[3]': 42,
                            'setOfCodes[0]': 2112,
                            'setOfCodes[1]': 'Rush']
-        
+
         then:
         dept.listOfCodes.size() == 4
         dept.listOfCodes[0] == null
@@ -126,15 +125,15 @@ class CollectionBindingSpec extends Specification {
         dept.setOfCodes[0] == 2112
         dept.setOfCodes[1] == 'Rush'
     }
-    
+
     void 'Test binding to an unitialized untyped Map'() {
         given:
         def binder = new SimpleDataBinder()
         def obj = new Store()
-        
+
         when:
         binder.bind obj, ['mapOfStuff[name]': 'Herman', 'mapOfStuff[show]': 'The Munsters']
-        
+
         then:
         obj.mapOfStuff.name == 'Herman'
         obj.mapOfStuff.show == 'The Munsters'

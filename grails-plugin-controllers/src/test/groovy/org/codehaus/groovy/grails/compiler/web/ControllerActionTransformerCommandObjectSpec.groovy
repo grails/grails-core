@@ -214,12 +214,12 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         then:
             model.commandObject.name == "Spock's Beard"
     }
-    
+
     void 'Test binding to a command object setter property'() {
         when:
         testController.params.someValue = 'My Value'
         def model = testController.methodActionWithSomeCommand()
-        
+
         then:
         model.commandObject.someValue == 'My Value'
     }

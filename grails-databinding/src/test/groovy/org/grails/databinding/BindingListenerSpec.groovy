@@ -91,7 +91,7 @@ class PersonBindingListener2 extends DataBindingListenerAdapter {
         } else if(value == 'two') {
             return null
         } else if(value == 'three') {
-            return Boolean.FALSE
+            return false
         } else {
             return false
         }
@@ -103,19 +103,19 @@ class PersonBindingListener extends DataBindingListenerAdapter {
     def valuesAfterBinding = [:]
 
     @Override
-    public void afterBinding(Object obj, String propertyName) {
+    void afterBinding(Object obj, String propertyName) {
         valuesAfterBinding[propertyName] = obj[propertyName]
     }
 }
 class EmployeeBindingListener extends DataBindingListenerAdapter {
 
     @Override
-    public Boolean beforeBinding(Object obj, String propertyName, Object value) {
+    Boolean beforeBinding(Object obj, String propertyName, Object value) {
         if('recipient' == propertyName && obj['recipient'] == null) {
             obj['recipient'] = new Employee()
-            return false;
+            return false
         }
-        return true;
+        return true
     }
 }
 class Person {

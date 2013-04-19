@@ -40,7 +40,7 @@ target(createApp: "Creates a Grails application for the given name") {
     depends(parseArguments, appName)
 
     if (argsMap['skip-templates']) skipTemplates = true
-    
+
     initProject()
 
     // Create a message bundle to get the user started.

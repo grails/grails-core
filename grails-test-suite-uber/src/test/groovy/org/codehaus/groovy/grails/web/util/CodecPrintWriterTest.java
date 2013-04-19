@@ -31,7 +31,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 
 public class CodecPrintWriterTest {
     EncodingStateRegistry registry=new DefaultEncodingStateRegistry();
-    
+
     private Encoder getEncoder(GrailsApplication grailsApplication, Class<?> codecClass) {
         Encoder encoder=null;
         if (grailsApplication != null && codecClass != null) {

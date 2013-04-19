@@ -142,7 +142,7 @@ public class GroovyPageParser implements Tokens {
     public static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
     public static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
     public static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
-    
+
     private static final String DEFAULT_EXPRESSIONCODEC = "none";
     private static final String DEFAULT_STATICCODEC = "none";
     private static final String DEFAULT_OUTCODEC = "none";
@@ -167,7 +167,7 @@ public class GroovyPageParser implements Tokens {
     private String expressionCodecDirectiveValue;
     private String outCodecDirectiveValue=DEFAULT_OUTCODEC;
     private String staticCodecDirectiveValue=DEFAULT_STATICCODEC;
-    
+
     private boolean enableSitemeshPreprocessing = true;
     private File keepGeneratedDirectory;
 
@@ -224,7 +224,7 @@ public class GroovyPageParser implements Tokens {
                 expressionCodecDirectiveValue = DEFAULT_EXPRESSIONCODEC;
             }
         }
-        
+
         if (filename != null && BuildSettingsHolder.getSettings() != null) {
             GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
             if (info != null) {
@@ -868,7 +868,7 @@ public class GroovyPageParser implements Tokens {
                     CONSTANT_NAME_STATIC_CODEC + " = '" + escapeGroovy(staticCodecDirectiveValue) + "'");
             out.println("public static final String " +
                     CONSTANT_NAME_OUT_CODEC + " = '" + escapeGroovy(outCodecDirectiveValue) + "'");
-            
+
             out.println("}");
 
             if (shouldAddLineNumbers()) {

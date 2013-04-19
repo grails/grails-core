@@ -22,7 +22,6 @@ package org.grails.async.decorator
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface PromiseDecoratorLookupStrategy {
-
+interface PromiseDecoratorLookupStrategy {
     List<PromiseDecorator> findDecorators()
 }

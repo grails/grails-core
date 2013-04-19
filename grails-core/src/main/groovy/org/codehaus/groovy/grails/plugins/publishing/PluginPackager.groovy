@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.plugins.publishing
 
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
-import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.io.support.FileSystemResource
@@ -354,7 +353,7 @@ class PluginPackager {
                    excludesList << 'application.properties'
                    excludesList << 'plugin.xml'
 
-                   // copy src to the root of the jar; do this in steps so the exclusions are correct                   
+                   // copy src to the root of the jar; do this in steps so the exclusions are correct
                    String tempSrcDir = "$stagingDir/TEMP_SRC"
                    mkdir(dir: tempSrcDir)
                    copy(todir: tempSrcDir, preservelastmodified:true, verbose: true) {

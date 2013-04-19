@@ -44,11 +44,11 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     private static EncodingStateRegistryLookup encodingStateRegistryLookup=null;
     private Encoder encoder;
     private Decoder decoder;
-    
+
     public static void setEncodingStateRegistryLookup(EncodingStateRegistryLookup lookup) {
         encodingStateRegistryLookup = lookup;
     }
-    
+
     public static EncodingStateRegistryLookup getEncodingStateRegistryLookup() {
         return encodingStateRegistryLookup;
     }
@@ -57,7 +57,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         super(clazz, CODEC);
         initializeCodec();
     }
-    
+
     private void initializeCodec() {
         if(Encoder.class.isAssignableFrom(getClazz())) {
             encoder = (Encoder)getReferenceInstance();
@@ -91,7 +91,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     private class ClosureCodecFactory implements CodecFactory {
         private Encoder encoder;
         private Decoder decoder;
-        
+
         ClosureCodecFactory() {
             Closure<Object> encoderClosure = getMethodOrClosureMethod(getClazz(), "encode");
             if(encoderClosure != null) {
@@ -110,7 +110,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         public Decoder getDecoder() {
             return decoder;
         }
-        
+
         private Closure<Object> getMethodOrClosureMethod(Class<?> clazz, String methodName) {
             @SuppressWarnings("unchecked")
             Closure<Object> closure = (Closure<Object>) getPropertyOrStaticPropertyOrFieldValue(methodName, Closure.class);
@@ -129,34 +129,34 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             } else {
                 return closure;
             }
-        }        
+        }
     }
-    
+
     private static class ClosureDecoder implements Decoder {
         private CodecIdentifier codecIdentifier;
         private Closure<Object> closure;
-        
+
         public ClosureDecoder(String codecName, Closure<Object> closure) {
             this.codecIdentifier=new DefaultCodecIdentifier(codecName);
             this.closure=closure;
         }
-        
+
         public CodecIdentifier getCodecIdentifier() {
             return codecIdentifier;
         }
 
         public Object decode(Object o) {
             return closure.call(o);
-        }        
+        }
     }
-    
+
     private static class StateAwareEncoderWrapper implements Encoder {
         private Encoder delegate;
-        
+
         public StateAwareEncoderWrapper(Encoder delegate) {
             this.delegate=delegate;
         }
-        
+
         public CodecIdentifier getCodecIdentifier() {
             return delegate.getCodecIdentifier();
         }
@@ -191,9 +191,9 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
         public boolean isSafe() {
             return delegate.isSafe();
-        }        
-    }    
-    
+        }
+    }
+
     private static class StreamingStateAwareEncoderWrapper extends StateAwareEncoderWrapper implements StreamingEncoder {
         private StreamingEncoder delegate;
         public StreamingStateAwareEncoderWrapper(StreamingEncoder delegate) {
@@ -205,16 +205,16 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             delegate.encodeToStream(source, offset, len, appender, encodingState);
         }
     }
-    
+
     private static class ClosureEncoder implements Encoder {
         private CodecIdentifier codecIdentifier;
         private Closure<Object> closure;
-        
+
         public ClosureEncoder(String codecName, Closure<Object> closure) {
             this.codecIdentifier=new DefaultCodecIdentifier(codecName);
             this.closure=closure;
         }
-        
+
         public CodecIdentifier getCodecIdentifier() {
             return codecIdentifier;
         }
@@ -229,25 +229,25 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         }
 
         public void markEncoded(CharSequence string) {
-            
+
         }
 
         public boolean isSafe() {
             return false;
-        }        
+        }
     }
-    
+
     private static class MethodCallingClosure extends Closure<Object> {
         private static final long serialVersionUID = 1L;
         private Method method;
-        
+
         public MethodCallingClosure(Object owner, Method method) {
             super(owner);
             maximumNumberOfParameters = 1;
             parameterTypes = new Class[]{Object.class};
             this.method=method;
         }
-        
+
         protected Object callMethod(Object argument) {
             return ReflectionUtils.invokeMethod(method, !Modifier.isStatic(method.getModifiers()) ? getOwner() : null, argument);
         }
@@ -277,6 +277,6 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     }
 
     public void configureCodecMethods() {
-        new CodecMetaClassSupport().configureCodecMethods(this);   
+        new CodecMetaClassSupport().configureCodecMethods(this);
     }
 }

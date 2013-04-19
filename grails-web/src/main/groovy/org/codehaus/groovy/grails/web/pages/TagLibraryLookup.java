@@ -89,7 +89,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
             tags = new HashMap<String, Object>();
             tagNamespaces.put(namespace, tags);
         }
-        
+
         for (String tagName : taglib.getTagNames()) {
             putTagLib(tags, tagName, taglib);
             tagsThatReturnObject.remove(tagName);
@@ -97,8 +97,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         for (String tagName : taglib.getTagNamesThatReturnObject()) {
             tagsThatReturnObject.add(tagName);
         }
-        
-        
+
         Map<String,Object> encodeAsForTagNamespace = encodeAsForTagNamespaces.get(namespace);
         if (encodeAsForTagNamespace==null) {
             encodeAsForTagNamespace = new HashMap<String, Object>();
@@ -135,7 +134,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         Set<String> tagsThatReturnObject = tagsThatReturnObjectForNamespace.get(namespace);
         return tagsThatReturnObject != null && tagsThatReturnObject.contains(tagName);
     }
-    
+
     public Object getEncodeAsForTag(String namespace, String tagName) {
         Map<String,Object> encodeAsForTagNamespace = encodeAsForTagNamespaces.get(namespace);
         return encodeAsForTagNamespace != null ? encodeAsForTagNamespace.get(tagName) : null;

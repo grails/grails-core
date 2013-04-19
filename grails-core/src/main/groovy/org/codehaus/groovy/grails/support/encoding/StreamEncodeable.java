@@ -19,7 +19,7 @@ import java.io.IOException;
 /**
  * Marks a class capable of encoding itself with given Encoder to given
  * EncodedAppender instance
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -30,7 +30,7 @@ public interface StreamEncodeable {
      * instance (itself) to the EncodedAppender. It is recommended that the
      * implementation checks if Encoder is a {@link StreamingEncoder} instance
      * and takes use of that interface.
-     * 
+     *
      * @param appender
      *            the EncodedAppender instance
      * @param encoder
@@ -38,5 +38,5 @@ public interface StreamEncodeable {
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
-    public void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException;
+    void encodeTo(EncodedAppender appender, Encoder encoder) throws IOException;
 }

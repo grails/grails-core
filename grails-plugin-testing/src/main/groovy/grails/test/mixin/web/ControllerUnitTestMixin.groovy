@@ -28,22 +28,17 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
-import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
-import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
-import org.codehaus.groovy.grails.plugins.codecs.HexCodec
-import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
-import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
-import org.codehaus.groovy.grails.plugins.codecs.RawCodec
-import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
-import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
-import org.codehaus.groovy.grails.plugins.codecs.URLCodec
 import org.codehaus.groovy.grails.plugins.converters.ConvertersGrailsPlugin
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.ServletsGrailsPluginSupport
-import org.codehaus.groovy.grails.plugins.web.api.*
+import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
+import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
+import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
+import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
+import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
@@ -223,7 +218,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
     @Before
     void bindGrailsWebRequest() {
-        new CodecsGrailsPlugin().providedArtefacts.each { 
+        new CodecsGrailsPlugin().providedArtefacts.each {
             mockCodec(it)
         }
 

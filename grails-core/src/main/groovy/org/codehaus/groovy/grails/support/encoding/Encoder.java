@@ -16,35 +16,35 @@ package org.codehaus.groovy.grails.support.encoding;
 
 /**
  * interface for encoding methods
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
 public interface Encoder extends CodecIdentifierProvider {
     /**
      * Encode given input object
-     * 
+     *
      * @param o
      *            the input object
      * @return the encoded object
      */
-    public Object encode(Object o);
+    Object encode(Object o);
 
     /**
      * Checks if this encoder is XSS "safe". This means that after appling this
      * encoder, the characters have been escaped and are XSS safe to be included
      * in HTML documents.
-     * 
+     *
      * @return true, if is safe
      */
-    public boolean isSafe();
+    boolean isSafe();
 
     /**
      * Mark this instance as encoded with this encoder in the current
      * {@link EncodingStateRegistry}
-     * 
+     *
      * @param string
      *            a CharSequence to mark as encoded
      */
-    public void markEncoded(CharSequence string);
+    void markEncoded(CharSequence string);
 }

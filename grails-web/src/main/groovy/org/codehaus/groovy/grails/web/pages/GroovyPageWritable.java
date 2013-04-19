@@ -169,7 +169,7 @@ class GroovyPageWritable implements Writable {
             }
 
             makeLegacyCodecVariablesAvailable(hasRequest, binding);
-            
+
             binding.setVariableDirectly(GroovyPage.RESPONSE, response);
             binding.setVariableDirectly(GroovyPage.REQUEST, request);
             // support development mode's evaluate (so that doesn't search for missing variable in parent bindings)
@@ -182,7 +182,7 @@ class GroovyPageWritable implements Writable {
             }
             page.setBinding(binding);
             binding.setOwner(page);
-            
+
             page.initRun(out, webRequest, metaInfo);
 
             int debugId = 0;

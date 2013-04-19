@@ -106,10 +106,10 @@ class SimpleDataBinderSpec extends Specification {
         given:
         def binder = new SimpleDataBinder()
         def obj = new Widget()
-        
+
         when:
         binder.bind obj, [widgetChildren: ['Child 1', 'Child 2', 'Child 3'] as String[]]
-        
+
         then:
         3 == obj.widgetChildren?.size()
         'Child 1' in obj.widgetChildren
@@ -133,15 +133,15 @@ class SimpleDataBinderSpec extends Specification {
         obj.sqlDate == nowSqlDate
         obj.calendar == nowCalendar
     }
-    
+
     void 'Test binding string to date'() {
         given:
         def binder = new SimpleDataBinder()
         def obj = new DateContainer()
-        
+
         when:
         binder.bind obj, [utilDate: '2013-04-15 21:26:31.973', formattedUtilDate: '11151969']
-        
+
         then:
         Calendar.APRIL == obj.utilDate.month
         15 == obj.utilDate.date
@@ -152,11 +152,11 @@ class SimpleDataBinderSpec extends Specification {
         Calendar.NOVEMBER == obj.formattedUtilDate.month
         15 == obj.formattedUtilDate.date
         69 == obj.formattedUtilDate.year
-        
+
         when:
         obj.utilDate = null
         binder.bind obj, [utilDate: "2011-03-12T09:24:22Z"]
-        
+
         then:
         Calendar.MARCH == obj.utilDate.month
         12 == obj.utilDate.date
@@ -253,50 +253,50 @@ class SimpleDataBinderSpec extends Specification {
         21 == calendar.get(Calendar.DATE)
         2049 == calendar.get(Calendar.YEAR)
     }
-    
+
     void 'Test binding String to enum'() {
         given:
         def binder = new SimpleDataBinder()
         def user = new SystemUser()
-        
+
         when:
         binder.bind user, [role: 'ADMIN']
-        
+
         then:
         user.role == Role.ADMIN
-        
+
         when:
         binder.bind user, [role: null]
-        
+
         then:
         user.role == null
-        
+
         when:
         binder.bind user, [role: 'BAD']
-        
+
         then:
         user.role == null
-        
+
         when:
         binder.bind user, [role: 'USER']
-        
+
         then:
         user.role == Role.USER
     }
-    
+
     void 'Test binding to a List with a combination of Map values and instances of the actual type contained in the List '() {
         given:
         def binder = new SimpleDataBinder()
         def bindingSource = [:]
         bindingSource.name = 'My Factory'
-        
+
         // this list contains Maps and a Widget instance.  The Maps should be transformed into Widget instances
         bindingSource.widgets = [widget:[[alpha: 'alpha 1', beta: 'beta 1'], new Widget(alpha: 'alpha 2', beta: 'beta 2'), [alpha: 'alpha 3', beta: 'beta 3']]]
         def factory = new Factory()
-        
+
         when:
         binder.bind factory, bindingSource
-        
+
         then:
         factory.name == 'My Factory'
         factory.widgets.size() == 3
@@ -363,12 +363,12 @@ class Fidget {
 }
 
 class DateContainer {
-    java.util.Date utilDate
+    Date utilDate
     java.sql.Date sqlDate
-    java.util.Calendar calendar
-    
+    Calendar calendar
+
     @BindingFormat('MMddyyyy')
-    java.util.Date formattedUtilDate
+    Date formattedUtilDate
 }
 
 enum Role {

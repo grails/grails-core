@@ -20,7 +20,7 @@ import java.util.Set;
 
 /**
  * Default implementation of {@link EncodingState}
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -30,14 +30,14 @@ public class EncodingStateImpl implements EncodingState {
 
     /**
      * Default constructor
-     * 
+     *
      * @param encoders
      *            the encoders
      */
     public EncodingStateImpl(Set<Encoder> encoders) {
         this.encoders = encoders;
     }
-    
+
     public EncodingStateImpl(Encoder encoder) {
         this.encoders = Collections.singleton(encoder);
     }
@@ -97,6 +97,6 @@ public class EncodingStateImpl implements EncodingState {
             newEncoders.addAll(encoders);
             newEncoders.add(encoder);
         }
-        return new EncodingStateImpl(newEncoders);    
+        return new EncodingStateImpl(newEncoders);
     }
 }
