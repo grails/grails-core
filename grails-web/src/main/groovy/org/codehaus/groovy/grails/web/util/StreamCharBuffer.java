@@ -376,6 +376,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         else {
             connectedWritersWriter = new SingleOutputWriter(connectedWriters.get(0));
         }
+        setNotifyParentBuffersEnabled(false); 
     }
 
     public final void connectTo(LazyInitializingWriter w) {
