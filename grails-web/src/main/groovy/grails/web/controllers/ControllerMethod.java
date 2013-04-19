@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.persistence;
+package grails.web.controllers;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,6 +27,6 @@ import java.lang.annotation.Target;
  * @since 2.1.5
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD})
-public @interface PersistenceMethod {
+@Target({ElementType.METHOD, ElementType.FIELD})
+public @interface ControllerMethod {
 }

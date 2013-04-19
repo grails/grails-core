@@ -262,13 +262,17 @@ public class GrailsASTUtils {
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
         methodNode.addAnnotations(declaredMethod.getAnnotations());
-        if(markerAnnotation != null) {
+        if(shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
             methodNode.addAnnotation(markerAnnotation);
         }
 
 
         classNode.addMethod(methodNode);
         return methodNode;
+    }
+
+    private static boolean shouldAddMarkerAnnotation(AnnotationNode markerAnnotation, MethodNode methodNode) {
+        return markerAnnotation != null && methodNode.getAnnotations(markerAnnotation.getClassNode()).isEmpty();
     }
 
     private static IfStatement createIfElseStatementForApiMethodCall(MethodCallExpression methodCallExpression, VariableExpression apiVar, ThrowStatement missingMethodException) {
@@ -398,7 +402,7 @@ public class GrailsASTUtils {
                 returnType, copyParameters(parameterTypes),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
             methodNode.addAnnotations(delegateMethod.getAnnotations());
-            if(markerAnnotation != null) {
+            if(shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
                 methodNode.addAnnotation(markerAnnotation);
             }
 

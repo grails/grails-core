@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
 import grails.persistence.PersistenceMethod;
+import grails.web.controllers.ControllerMethod;
 import groovy.lang.GroovyObject;
 
 import java.beans.PropertyDescriptor;
@@ -45,6 +46,7 @@ public class GroovyBeanMarshaller implements ObjectMarshaller<XML> {
                 Method readMethod = property.getReadMethod();
                 if (readMethod != null && !(name.equals("metaClass"))) {
                     if(readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
+                    if(readMethod.getAnnotation(ControllerMethod.class) != null) continue;
                     Object value = readMethod.invoke(o, (Object[]) null);
                     xml.startNode(name);
                     xml.convertAnother(value);

@@ -1,8 +1,12 @@
 package org.codehaus.groovy.grails.compiler.web.taglib;
 
+import java.lang.Override;
 import java.net.URL;
 import java.util.regex.Pattern;
 
+import grails.web.controllers.ControllerMethod;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
@@ -33,6 +37,12 @@ public class ControllerTagLibraryTransformer extends AbstractGrailsArtefactTrans
 
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
+    }
+
+
+    @Override
+    protected AnnotationNode getMarkerAnnotation() {
+        return new AnnotationNode(new ClassNode(ControllerMethod.class).getPlainNodeReference());
     }
 
     @Override

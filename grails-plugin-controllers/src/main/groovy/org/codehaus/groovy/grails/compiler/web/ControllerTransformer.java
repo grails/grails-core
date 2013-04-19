@@ -19,6 +19,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import grails.web.controllers.ControllerMethod;
+import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
@@ -67,6 +69,11 @@ public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
                 GrailsASTUtils.wrapMethodBodyInTryCatchDebugStatements(methodNode);
             }
         }
+    }
+
+    @Override
+    protected AnnotationNode getMarkerAnnotation() {
+        return new AnnotationNode(new ClassNode(ControllerMethod.class).getPlainNodeReference());
     }
 
     @Override

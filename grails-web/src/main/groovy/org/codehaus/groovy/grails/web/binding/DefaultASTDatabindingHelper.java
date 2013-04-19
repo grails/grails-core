@@ -12,10 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
+import grails.web.controllers.ControllerMethod;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.Expression;
@@ -85,6 +83,11 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
             @Override
             protected boolean requiresAutowiring() {
                 return false;
+            }
+
+            @Override
+            protected AnnotationNode getMarkerAnnotation() {
+                return new AnnotationNode(new ClassNode(ControllerMethod.class));
             }
         };
         classInjector.performInjection(source, context, classNode);
