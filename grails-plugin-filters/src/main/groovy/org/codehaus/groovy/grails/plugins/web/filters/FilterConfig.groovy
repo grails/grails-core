@@ -75,13 +75,24 @@ class FilterConfig extends ControllersApi {
      */
     def propertyMissing(String propertyName) {
         // Delegate to the parent definition if it has this property.
-        if (filtersDefinition.metaClass.hasProperty(filtersDefinition, propertyName)) {
+        if (wiredFiltersDefinition.metaClass.hasProperty(wiredFiltersDefinition, propertyName)) {
             def getterName = GrailsClassUtils.getGetterName(propertyName)
-            metaClass."$getterName" = {-> delegate.filtersDefinition.getProperty(propertyName) }
-            return filtersDefinition."$propertyName"
+            metaClass."$getterName" = {-> delegate.wiredFiltersDefinition.getProperty(propertyName) }
+            return wiredFiltersDefinition."$propertyName"
         }
 
         throw new MissingPropertyException(propertyName, filtersDefinition.getClass())
+    }
+
+    def getWiredFiltersDefinition() {
+        final webRequest = GrailsWebRequest.lookup()
+        final grailsFilter = webRequest ? grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.class.name) : null
+        if (grailsFilter) {
+            applicationContext.getBean(grailsFilter.fullName)
+        }
+        else {
+            return filtersDefinition
+        }
     }
 
     /**
@@ -106,12 +117,12 @@ class FilterConfig extends ControllersApi {
         // if it's in the initialisation phase, the MME gets swallowed somewhere.
         if (!initialised) {
             throw new IllegalStateException(
-                    "Invalid filter definition in ${filtersDefinition.getClass().name} - trying "
+                    "Invalid filter definition in ${wiredFiltersDefinition.getClass().name} - trying "
                     + "to call method '${methodName}' outside of an interceptor.")
         }
 
         // The required method was not found on the parent filter definition either.
-        throw new MissingMethodException(methodName, filtersDefinition.getClass(), args)
+        throw new MissingMethodException(methodName, wiredFiltersDefinition.getClass(), args)
     }
 
     String toString() {"FilterConfig[$name, scope=$scope]"}
