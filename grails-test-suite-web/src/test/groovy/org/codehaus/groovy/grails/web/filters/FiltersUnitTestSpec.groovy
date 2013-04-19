@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.filters
 
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+
 import javax.servlet.http.HttpServletResponse
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
@@ -10,7 +12,17 @@ import spock.lang.Specification
 @Mock(AuthenticationFilters)
 class FiltersUnitTestSpec extends Specification {
 
+    SecurityService securityServiceMock
+
     void "test filters are applied for a unit test"() {
+        given:"A mock for the injected security service"
+            securityServiceMock = Mock(SecurityService)
+            defineBeans {
+                securityService(MethodInvokingFactoryBean) {
+                    targetObject = this
+                    targetMethod = 'getSecurityServiceMock'
+                }
+            }
         when:"A filter is used around a controller"
             params.username = ''
             withFilters(action: "create") {
@@ -19,6 +31,7 @@ class FiltersUnitTestSpec extends Specification {
             }
         then:"Check that the filter logic is applied"
             400 == response.status
+            1 * securityServiceMock.isAuthorized() >> true
     }
 
     void "test filters relay exceptions"() {
@@ -84,9 +97,17 @@ class UserController {
 
 @Artefact("Filters")
 class AuthenticationFilters {
+
+    def securityService
+
     def filters = {
         create(controller: 'user', action: 'create') {
             before = {
+                if (!securityService.isAuthorized()) {
+                    render(status: HttpServletResponse.SC_UNAUTHORIZED)
+                    return false
+                }
+
                 if (params.username == '') {
                     render(status: HttpServletResponse.SC_BAD_REQUEST)
                     return false
@@ -107,5 +128,13 @@ class AuthenticationFilters {
                 request.testModel = model
             }
         }
+    }
+}
+
+@Artefact("Service")
+class SecurityService {
+
+    boolean isAuthorized() {
+        return true
     }
 }
