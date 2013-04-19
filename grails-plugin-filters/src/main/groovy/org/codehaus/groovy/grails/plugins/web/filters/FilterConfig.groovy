@@ -84,8 +84,14 @@ class FilterConfig extends ControllersApi {
     }
 
     def getWiredFiltersDefinition() {
-        final grailsFilter = grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.class.name)
-        applicationContext."${grailsFilter.fullName}"
+        final webRequest = GrailsWebRequest.lookup()
+        final grailsFilter = webRequest ? grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.class.name) : null
+        if (grailsFilter) {
+            applicationContext.getBean(grailsFilter.fullName)
+        }
+        else {
+            return filtersDefinition
+        }
     }
 
     /**
