@@ -86,10 +86,7 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
                 arguments = [FiltersConfigArtefactHandler.TYPE, grailsFilter.fullName]
 
             }
-            "$grailsFilter.fullName"(grailsFilter.clazz) { bean ->
-                bean.scope = 'prototype'
-                bean.autowire = true
-            }
+            "$grailsFilter.fullName"(grailsFilter.clazz)
         }
 
 

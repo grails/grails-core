@@ -1,16 +1,13 @@
 package grails.test.mixin
 
-import grails.test.GrailsMock
 import grails.test.mixin.web.FiltersUnitTestMixin
 import org.junit.Before
 import org.junit.Test
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
 @TestMixin(FiltersUnitTestMixin)
 class FiltersUnitTestMixinTests {
 
     AuthorController controller
-    GrailsMock autowiredServiceMock
 
     @Before
     void setUp() {
@@ -75,46 +72,6 @@ class FiltersUnitTestMixinTests {
         assert request.filterView == null
         assert request.exception != null
     }
-
-    @Test
-    void testFilterIsAutoWired() {
-        defineBeans {
-            autowiredService(MethodInvokingFactoryBean) {
-                targetObject = this
-                targetMethod = 'mockAutowiredService'
-            }
-        }
-        mockFilters(AutowiredFilters)
-
-        withFilters(action:"list") {
-            controller.list()
-        }
-
-        autowiredServiceMock.verify()
-    }
-
-    @Test
-    void testFilterIsAutoWiredWithBeansDefinedAfterMocking() {
-        mockFilters(AutowiredFilters)
-        defineBeans {
-            autowiredService(MethodInvokingFactoryBean) {
-                targetObject = this
-                targetMethod = 'mockAutowiredService'
-            }
-        }
-
-        withFilters(action:"list") {
-            controller.list()
-        }
-
-        autowiredServiceMock.verify()
-    }
-
-    AutowiredService mockAutowiredService() {
-        this.autowiredServiceMock = mockFor(AutowiredService)
-        this.autowiredServiceMock.demand.setupSession(1) {}
-        return this.autowiredServiceMock.createMock()
-    }
 }
 
 class AuthorController {
@@ -167,22 +124,4 @@ class ExceptionThrowingFilters {
             }
         }
     }
-}
-
-class AutowiredFilters {
-
-    def autowiredService
-
-    def filters = {
-        all(controller:"author", action:"list") {
-            before = {
-                autowiredService.setupSession()
-            }
-        }
-    }
-}
-
-class AutowiredService {
-
-    void setupSession() {}
 }

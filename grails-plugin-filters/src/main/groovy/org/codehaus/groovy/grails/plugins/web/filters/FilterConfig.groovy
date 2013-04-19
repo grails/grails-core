@@ -74,18 +74,13 @@ class FilterConfig extends ControllersApi {
      */
     def propertyMissing(String propertyName) {
         // Delegate to the parent definition if it has this property.
-        if (wiredFiltersDefinition.metaClass.hasProperty(wiredFiltersDefinition, propertyName)) {
+        if (filtersDefinition.metaClass.hasProperty(filtersDefinition, propertyName)) {
             def getterName = GrailsClassUtils.getGetterName(propertyName)
-            metaClass."$getterName" = {-> delegate.wiredFiltersDefinition.getProperty(propertyName) }
-            return wiredFiltersDefinition."$propertyName"
+            metaClass."$getterName" = {-> delegate.filtersDefinition.getProperty(propertyName) }
+            return filtersDefinition."$propertyName"
         }
 
         throw new MissingPropertyException(propertyName, filtersDefinition.getClass())
-    }
-
-    def getWiredFiltersDefinition() {
-        final grailsFilter = grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.class.name)
-        applicationContext."${grailsFilter.fullName}"
     }
 
     /**
@@ -94,7 +89,7 @@ class FilterConfig extends ControllersApi {
      */
     def methodMissing(String methodName, args) {
         // Delegate to the parent definition if it has this method.
-        List<MetaMethod> respondsTo = wiredFiltersDefinition.metaClass.respondsTo(wiredFiltersDefinition, methodName, args)
+        List<MetaMethod> respondsTo = filtersDefinition.metaClass.respondsTo(filtersDefinition, methodName, args)         
         if (respondsTo) {
             // Use DelegateMetaMethod to proxy calls to actual MetaMethod for subsequent calls to this method
             DelegateMetaMethod dmm=new DelegateMetaMethod(respondsTo[0], FilterConfigDelegateMetaMethodTargetStrategy.instance)
@@ -102,7 +97,7 @@ class FilterConfig extends ControllersApi {
             metaClass.registerInstanceMethod(dmm)
             
             // for this invocation we still have to make the call
-            return respondsTo[0].invoke(wiredFiltersDefinition, args)
+            return respondsTo[0].invoke(filtersDefinition, args)            
         }
 
         // Ideally, we would throw a MissingMethodException here
@@ -110,12 +105,12 @@ class FilterConfig extends ControllersApi {
         // if it's in the initialisation phase, the MME gets swallowed somewhere.
         if (!initialised) {
             throw new IllegalStateException(
-                    "Invalid filter definition in ${wiredFiltersDefinition.getClass().name} - trying "
+                    "Invalid filter definition in ${filtersDefinition.getClass().name} - trying "
                     + "to call method '${methodName}' outside of an interceptor.")
         }
 
         // The required method was not found on the parent filter definition either.
-        throw new MissingMethodException(methodName, wiredFiltersDefinition.getClass(), args)
+        throw new MissingMethodException(methodName, filtersDefinition.getClass(), args)
     }
     
     String toString() {"FilterConfig[$name, scope=$scope]"}
