@@ -71,7 +71,7 @@ public class EncodedAppenderWriter extends Writer implements EncodedAppenderWrit
      */
     @Override
     public void close() throws IOException {
-        flush();
+        encodedAppender.close();
     }
 
     /*

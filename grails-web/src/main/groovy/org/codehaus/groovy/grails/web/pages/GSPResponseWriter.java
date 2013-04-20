@@ -22,12 +22,17 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAware;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+import org.codehaus.groovy.grails.web.util.StreamCharBuffer.LazyInitializingWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
 
 import com.opensymphony.module.sitemesh.RequestConstants;
@@ -69,22 +74,54 @@ public class GSPResponseWriter extends GrailsPrintWriterAdapter {
      * @param max
      * @return  A GSPResponseWriter instance
      */
-    private static GSPResponseWriter getInstance(final ServletResponse response, int max) {
+    private static GSPResponseWriter getInstance(final ServletResponse response, final int max) {
         Writer target = null;
-        StreamCharBuffer streamBuffer = null;
-        BoundedCharsAsEncodedBytesCounter bytesCounter=null;
+        final BoundedCharsAsEncodedBytesCounter bytesCounter=new BoundedCharsAsEncodedBytesCounter();
 
         if (!(response instanceof GrailsContentBufferingResponse) && (BUFFERING_ENABLED || CONTENT_LENGTH_COUNTING_ENABLED)) {
-            streamBuffer = new StreamCharBuffer(max, 0, max);
+            final StreamCharBuffer streamBuffer = new StreamCharBuffer(max, 0, max);
             streamBuffer.setChunkMinSize(max/2);
             target = streamBuffer.getWriter();
-            if (CONTENT_LENGTH_COUNTING_ENABLED) {
-                bytesCounter = new BoundedCharsAsEncodedBytesCounter(max * 2, response.getCharacterEncoding());
-                streamBuffer.connectTo(bytesCounter.getCountingWriter(), AUTOFLUSH_ENABLED);
-            }
-            streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingWriter() {
+            
+            final StreamCharBuffer.LazyInitializingWriter lazyResponseWriter = new StreamCharBuffer.LazyInitializingWriter() {
                 public Writer getWriter() throws IOException {
                     return response.getWriter();
+                }
+            };
+            
+            
+            streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingMultipleWriter() {
+                public Writer getWriter() throws IOException {
+                    return null;
+                }
+
+                public LazyInitializingWriter[] initializeMultiple(boolean autoFlush) throws IOException {
+                    final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+                    final Encoder encoder = webRequest != null ? webRequest.lookupFilteringEncoder() : null;
+                    final StreamCharBuffer.LazyInitializingWriter[] lazyWriters;
+                    if (CONTENT_LENGTH_COUNTING_ENABLED) {
+                        lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {new StreamCharBuffer.LazyInitializingWriter() {
+                            public Writer getWriter() throws IOException {
+                                bytesCounter.setCapacity(max * 2);
+                                bytesCounter.setEncoding(response.getCharacterEncoding());
+                                return bytesCounter.getCountingWriter();
+                            }
+                        }, lazyResponseWriter};
+                    } else {
+                        lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {lazyResponseWriter};
+                    }
+                    if(encoder != null) {
+                        return new StreamCharBuffer.LazyInitializingWriter[] {streamBuffer.createEncodingInitializer(new EncoderAware() {
+                            public Encoder getEncoder() {
+                                return encoder;
+                            }
+                        }, new EncodingStateRegistryLookup() {
+                            public EncodingStateRegistry lookup() {
+                                return webRequest.getEncodingStateRegistry();
+                            } }, lazyWriters)};
+                    } else {
+                        return lazyWriters;
+                    }
                 }
             }, AUTOFLUSH_ENABLED);
         }
@@ -166,7 +203,7 @@ public class GSPResponseWriter extends GrailsPrintWriterAdapter {
     }
 
     private boolean canFlushContentLengthAwareResponse() {
-        return CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && response != null && !response.isCommitted() && !isTrouble();
+        return CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && bytesCounter.isWriterReferenced() && response != null && !response.isCommitted() && !isTrouble();
     }
 
     private void flushResponse() {

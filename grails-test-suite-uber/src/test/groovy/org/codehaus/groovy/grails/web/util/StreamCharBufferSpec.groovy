@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
+import org.codehaus.groovy.grails.support.encoding.EncoderAware;
 
 import spock.lang.Specification
 
@@ -29,10 +30,11 @@ class StreamCharBufferSpec extends Specification {
     StreamCharBuffer buffer
     GrailsPrintWriter codecOut
     GrailsPrintWriter out
+    GrailsCodecClass htmlCodecClass
 
     def setup() {
         def grailsApplication = Mock(GrailsApplication)
-        GrailsCodecClass htmlCodecClass = new DefaultGrailsCodecClass(HTMLCodec)
+        htmlCodecClass = new DefaultGrailsCodecClass(HTMLCodec)
         grailsApplication.getArtefact("Codec", HTMLCodec.name) >> { htmlCodecClass }
         GrailsCodecClass html4CodecClass = new DefaultGrailsCodecClass(HTML4Codec)
         grailsApplication.getArtefact("Codec", HTML4Codec.name) >> { html4CodecClass }
@@ -55,6 +57,30 @@ class StreamCharBufferSpec extends Specification {
         codecOut << hello
         then:
         buffer.toString() == "Hello world &amp; hi"
+    }
+    
+    def "stream char buffer should support connecting to writer"() {
+        given:
+        def connectedBuffer=new StreamCharBuffer()
+        buffer.connectTo(connectedBuffer.writer, true)
+        when:
+        def hello="Hello world & hi"
+        codecOut << hello
+        codecOut.flush()
+        then:
+        connectedBuffer.toString() == "Hello world &amp; hi"
+    }
+    
+    def "stream char buffer should support automaticly encoding to connected writer"() {
+        given:
+        def connectedBuffer=new StreamCharBuffer()
+        buffer.encodeInStreamingModeTo([getEncoder: { -> htmlCodecClass.encoder}] as EncoderAware, DefaultGrailsCodecClass.getEncodingStateRegistryLookup(), true, connectedBuffer.writer)
+        when:
+        def hello="Hello world & hi"
+        out << hello
+        out.flush()
+        then:
+        connectedBuffer.toString() == "Hello world &amp; hi"
     }
 
     def "double encoding should be prevented"() {

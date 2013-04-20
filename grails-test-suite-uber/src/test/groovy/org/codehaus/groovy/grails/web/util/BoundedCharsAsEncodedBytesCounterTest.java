@@ -8,6 +8,7 @@ public class BoundedCharsAsEncodedBytesCounterTest extends TestCase {
 
     public void testCalculation() throws Exception {
         BoundedCharsAsEncodedBytesCounter counter = new BoundedCharsAsEncodedBytesCounter(1024, "ISO-8859-1");
+        counter.getCountingWriter();
         counter.update(TEST_STRING);
         assertEquals(13, counter.size());
         assertEquals(13, TEST_STRING.getBytes("ISO-8859-1").length);

@@ -37,18 +37,20 @@ import java.nio.charset.CodingErrorAction;
  * @author Lari Hotari, Sagire Software Oy
  */
 public class BoundedCharsAsEncodedBytesCounter {
-
+    private String encoding;
+    private int capacity;
     private ByteBuffer bb;
-    private Charset charset;
     private CharsetEncoder ce;
     private boolean calculationActive = true;
-    private BoundedCharsAsEncodedBytesCounterWriter writer = new BoundedCharsAsEncodedBytesCounterWriter();
+    private BoundedCharsAsEncodedBytesCounterWriter writer;
 
+    public BoundedCharsAsEncodedBytesCounter() {
+        
+    }
+    
     public BoundedCharsAsEncodedBytesCounter(int capacity, String encoding) {
-        charset = Charset.forName(encoding);
-        ce = charset.newEncoder().onMalformedInput(CodingErrorAction.REPLACE)
-                .onUnmappableCharacter(CodingErrorAction.REPLACE);
-        bb = ByteBuffer.allocate(capacity);
+        this.capacity = capacity;
+        this.encoding = encoding;
     }
 
     public void update(String str) {
@@ -91,8 +93,10 @@ public class BoundedCharsAsEncodedBytesCounter {
 
     private void terminateCalculation() {
         calculationActive = false;
-        bb.clear();
-        bb = null;
+        if(bb != null) {
+            bb.clear();
+            bb = null;
+        }
     }
 
     public int size() {
@@ -103,7 +107,17 @@ public class BoundedCharsAsEncodedBytesCounter {
         return -1;
     }
 
+    public boolean isWriterReferenced() {
+        return writer != null;
+    }
+
     public Writer getCountingWriter() {
+        if(writer == null) {
+            ce = Charset.forName(encoding).newEncoder().onMalformedInput(CodingErrorAction.REPLACE)
+                    .onUnmappableCharacter(CodingErrorAction.REPLACE);
+            bb = ByteBuffer.allocate(capacity);
+            writer = new BoundedCharsAsEncodedBytesCounterWriter();
+        }
         return writer;
     }
 
@@ -183,5 +197,21 @@ public class BoundedCharsAsEncodedBytesCounter {
         public void flush() throws IOException {
             // do nothing
         }
+    }
+
+    public String getEncoding() {
+        return encoding;
+    }
+
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    public int getCapacity() {
+        return capacity;
+    }
+
+    public void setCapacity(int capacity) {
+        this.capacity = capacity;
     }
 }

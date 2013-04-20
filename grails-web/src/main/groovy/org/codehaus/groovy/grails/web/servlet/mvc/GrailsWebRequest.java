@@ -32,13 +32,16 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
+import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings;
 import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
@@ -63,6 +66,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private GrailsParameterMap params;
     private GrailsHttpSession session;
     private boolean renderView = true;
+    private boolean skipFilteringCodec = false;
+    private Encoder filteringEncoder;
     public static final String ID_PARAMETER = "id";
     private final List<ParameterCreationListener> parameterCreationListeners = new ArrayList<ParameterCreationListener>();
     private final UrlPathHelper urlHelper = new UrlPathHelper();
@@ -376,5 +381,37 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 
     static {
         DefaultGrailsCodecClass.setEncodingStateRegistryLookup(new DefaultEncodingStateRegistryLookup());
+    }
+    /**
+     * @return true if grails.views.filteringCodecForMimeType settings should be ignored for this request
+     */
+    public boolean isSkipFilteringCodec() {
+        return skipFilteringCodec;
+    }
+
+    public void setSkipFilteringCodec(boolean skipCodec) {
+        this.skipFilteringCodec = skipCodec;
+    }
+
+    public String getFilteringCodec() {
+        return filteringEncoder != null ? filteringEncoder.getCodecIdentifier().getCodecName() : null;
+    }
+    public void setFilteringCodec(String codecName) {
+        filteringEncoder=codecName != null ? WithCodecHelper.lookupEncoder(attributes.getGrailsApplication(), codecName) : null;
+    }
+    
+    public Encoder lookupFilteringEncoder() {
+        if(filteringEncoder == null && applicationContext != null && applicationContext.containsBean(FilteringCodecsByContentTypeSettings.BEAN_NAME)) {
+            filteringEncoder = applicationContext.getBean(FilteringCodecsByContentTypeSettings.BEAN_NAME, FilteringCodecsByContentTypeSettings.class).getEncoderForMimeType(getResponse().getContentType());
+        }
+        return filteringEncoder;
+    }
+
+    public Encoder getFilteringEncoder() {
+        return filteringEncoder;
+    }
+
+    public void setFilteringEncoder(Encoder filteringEncoder) {
+        this.filteringEncoder = filteringEncoder;
     }
 }
