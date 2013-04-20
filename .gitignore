@@ -43,6 +43,7 @@ target
 /grails-plugin-codecs/bin/
 /grails-plugin-controllers/bin/
 /grails-plugin-converters/bin/
+/grails-plugin-databinding/bin/
 /grails-plugin-datasource/bin/
 /grails-plugin-domain-class/bin/
 /grails-plugin-filters/bin/
