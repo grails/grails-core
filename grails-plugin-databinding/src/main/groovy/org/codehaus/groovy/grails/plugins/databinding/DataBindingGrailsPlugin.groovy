@@ -16,11 +16,14 @@ package org.codehaus.groovy.grails.plugins.databinding
 
 import grails.util.GrailsUtil
 
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
+
 class DataBindingGrailsPlugin {
     
     def version = GrailsUtil.getGrailsVersion()
 
     def doWithSpring = {
-        // TODO
+        "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GormAwareDataBinder, ref('grailsApplication'))
     }
 }
