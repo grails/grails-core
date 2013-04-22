@@ -31,8 +31,11 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.databinding.SimpleDataBinder
+import org.grails.databinding.converters.FormattedValueConverter
+import org.grails.databinding.converters.ValueConverter
 import org.grails.databinding.events.DataBindingListener
 import org.grails.databinding.xml.GPathResultMap
+import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic
 class GormAwareDataBinder extends SimpleDataBinder {
@@ -272,6 +275,20 @@ class GormAwareDataBinder extends SimpleDataBinder {
             }
         }
         isSet
+    }
+    
+    @Autowired(required=false)
+    public void setValueConverters(ValueConverter[] converters) {
+        converters?.each { ValueConverter converter ->
+            registerConverter converter.targetType, converter
+        }
+    }
+    
+    @Autowired(required=false)
+    public void setFormattedValueConverters(FormattedValueConverter[] converters) {
+        converters?.each { FormattedValueConverter converter ->
+            registerFormattedValueConverter converter.targetType, converter
+        }
     }
     
     protected convert(Class typeToConvertTo, value) {

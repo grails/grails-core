@@ -20,11 +20,12 @@ import groovy.util.slurpersupport.GPathResult
 
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
-import java.text.SimpleDateFormat
 
 import org.apache.commons.collections.set.ListOrderedSet
 import org.grails.databinding.converters.ConversionService
 import org.grails.databinding.converters.DateConversionHelper
+import org.grails.databinding.converters.FormattedDateValueConverter
+import org.grails.databinding.converters.FormattedValueConverter
 import org.grails.databinding.converters.StructuredCalendarBindingEditor
 import org.grails.databinding.converters.StructuredDateBindingEditor
 import org.grails.databinding.converters.StructuredSqlDateBindingEditor
@@ -39,19 +40,29 @@ class SimpleDataBinder implements DataBinder {
     protected Map<Class, StructuredBindingEditor> structuredEditors = new HashMap<Class, StructuredBindingEditor>()
     ConversionService conversionService
     protected Map<Class, ValueConverter> conversionHelpers = new HashMap<Class, ValueConverter>()
+    protected Map<Class, FormattedValueConverter> formattedValueConvertersionHelpers = new HashMap<Class, FormattedValueConverter>()
 
     static final INDEXED_PROPERTY_REGEX = /(.*)\[\s*([^\s]*)\s*\]\s*$/
 
     SimpleDataBinder() {
-        conversionHelpers.put(Date, new DateConversionHelper())
+        registerConverter Date, new DateConversionHelper()
 
-        registerStructuredEditor(java.util.Date.class, new StructuredDateBindingEditor())
-        registerStructuredEditor(java.sql.Date.class, new StructuredSqlDateBindingEditor())
-        registerStructuredEditor(java.util.Calendar.class, new StructuredCalendarBindingEditor())
+        registerStructuredEditor java.util.Date.class, new StructuredDateBindingEditor()
+        registerStructuredEditor java.sql.Date.class, new StructuredSqlDateBindingEditor()
+        registerStructuredEditor java.util.Calendar.class, new StructuredCalendarBindingEditor()
+        
+        registerFormattedValueConverter Date, new FormattedDateValueConverter()
     }
 
     void registerStructuredEditor(Class clazz, StructuredBindingEditor editor) {
         structuredEditors[clazz] = editor
+    }
+    
+    void registerConverter(Class clazz, ValueConverter converter) {
+        conversionHelpers[clazz] = converter
+    }
+    void registerFormattedValueConverter(Class clazz, FormattedValueConverter converter) {
+        formattedValueConvertersionHelpers[clazz] = converter
     }
 
     /**
@@ -245,12 +256,13 @@ class SimpleDataBinder implements DataBinder {
      * @see BindingFormat
      */
     protected ValueConverter getFormattedConverter(Field field, String formattingValue) {
-        ValueConverter converter
-        if(Date.isAssignableFrom(field.type)) {
+        def converter
+        def formattedConverter = formattedValueConvertersionHelpers[field.type]
+        if(formattedConverter) {
             converter = { Map source ->
                 def value = source[field.name]
-                new SimpleDateFormat(formattingValue).parse((String)value)
-            } as ValueConverter 
+                formattedConverter.convert (value, formattingValue)
+            } as ValueConverter
         }
         converter
     }
@@ -265,7 +277,7 @@ class SimpleDataBinder implements DataBinder {
                     def valueClass = annotation.value()
                     if(Closure.isAssignableFrom(valueClass)) {
                         Closure closure = (Closure)valueClass.newInstance(null, null)
-                        converter = new ClosureValueConverter(converterClosure: closure.curry(obj))
+                        converter = new ClosureValueConverter(converterClosure: closure.curry(obj), targetType: field.type)
                     }
                 } else {
                     annotation = field.getAnnotation BindingFormat
