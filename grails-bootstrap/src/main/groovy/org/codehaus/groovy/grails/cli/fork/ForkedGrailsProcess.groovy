@@ -406,6 +406,7 @@ abstract class ForkedGrailsProcess {
         classLoader.addURL(buildSettings.pluginClassesDir.toURI().toURL())
         classLoader.addURL(buildSettings.pluginBuildClassesDir.toURI().toURL())
         classLoader.addURL(buildSettings.pluginProvidedClassesDir.toURI().toURL())
+        classLoader.addURL(buildSettings.resourcesDir.toURI().toURL())
 
         def pluginSupport = new PluginPathDiscoverySupport(buildSettings)
 
