@@ -19,8 +19,13 @@ import org.grails.databinding.converters.ValueConverter;
 class ClosureValueConverter implements ValueConverter {
 
     Closure converterClosure
+    Class targetType
 
     public Object convert(Object value) {
         converterClosure value
+    }
+    
+    Class getTargetType() {
+        targetType
     }
 }

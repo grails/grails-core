@@ -16,4 +16,5 @@ package org.grails.databinding.converters;
 
 public interface ValueConverter {
     Object convert(Object value);
+    Class<?> getTargetType();
 }
