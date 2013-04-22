@@ -21,6 +21,7 @@ import java.util.Properties;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 /**
  * Uses Grails' ConfigObject for place holder values.
@@ -28,12 +29,15 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class GrailsPlaceholderConfigurer extends PropertyPlaceholderConfigurer {
+public class GrailsPlaceholderConfigurer extends PropertySourcesPlaceholderConfigurer {
 
     private GrailsApplication grailsApplication;
 
     public GrailsPlaceholderConfigurer(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+        GrailsConfig config = new GrailsConfig(grailsApplication);
+        setPlaceholderPrefix(config.get(GrailsConfig.SPRING_PLACEHOLDER_PREFIX, "${"));
+        setIgnoreUnresolvablePlaceholders(true);
     }
 
     @Override
