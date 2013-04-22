@@ -21,6 +21,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -34,6 +36,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  */
 public class Holders {
 
+    private static final Log LOG = LogFactory.getLog(Holders.class);
     private static final String APPLICATION_BEAN_NAME = "grailsApplication";
 
     private static Holder<GrailsResourceLoader> resourceLoaders = new Holder<GrailsResourceLoader>("ResourceLoader");
@@ -185,15 +188,15 @@ public class Holders {
         }
         catch (ClassNotFoundException e) {
             // shouldn't happen
-            throw new RuntimeException(e);
+            LOG.error("Error initializing servlet context holder", e);
         }
         catch (InstantiationException e) {
             // shouldn't happen
-            throw new RuntimeException(e);
+            LOG.error("Error initializing servlet context holder", e);
         }
         catch (IllegalAccessException e) {
             // shouldn't happen
-            throw new RuntimeException(e);
+            LOG.error("Error initializing servlet context holder", e);
         }
     }
 }
