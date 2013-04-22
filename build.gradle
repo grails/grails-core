@@ -217,22 +217,7 @@ subprojects { project ->
 
     uploadPublished {
       repositories {
-        final url = project.version.endsWith("SNAPSHOT") ? "http://repo.grails.org/grails/libs-snapshots-local" :
-                                                           "http://repo.grails.org/grails/libs-releases-local"
-
         repositories {
-            mavenDeployer {
-                repository(url: url) {
-                    final username = project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null
-                    final password = project.hasProperty("artifactoryPublishPassword") ? project.artifactoryPublishPassword : null
-
-                    if(username && password) {
-                        org.apache.ivy.util.url.CredentialsStore.INSTANCE.addCredentials("Artifactory Realm", "repo.grails.org", username, password);
-                    }
-
-                    authentication(userName: username, password: password)
-                }
-            }
             project.ext.deployer = mavenDeployer {
                 beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
 
