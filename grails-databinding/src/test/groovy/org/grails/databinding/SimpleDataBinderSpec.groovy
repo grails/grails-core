@@ -310,6 +310,32 @@ class SimpleDataBinderSpec extends Specification {
         factory.widgets[2].alpha == 'alpha 3'
         factory.widgets[2].beta == 'beta 3'
     }
+    
+    void 'Test binding to a Set of Integer'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+        
+        when:
+        binder.bind widget, [numbers: ['4', '5', '6']]
+        
+        then:
+        widget.numbers.size() == 3
+        widget.numbers.contains 4
+        widget.numbers.contains 5
+        widget.numbers.contains 6
+        
+        when:
+        widget.numbers = [1, 2, 3]
+        binder.bind widget, [numbers: ['4', '5', '6']]
+        
+        then:
+        widget.numbers.size() == 3
+        widget.numbers.contains 4
+        widget.numbers.contains 5
+        widget.numbers.contains 6
+
+    }
 }
 
 class Factory {
@@ -324,6 +350,7 @@ class Widget {
     Number epsilon
     Set<String> widgetChildren
     Gadget nestedGadget
+    Set<Integer> numbers
 }
 
 class Gadget extends Widget {

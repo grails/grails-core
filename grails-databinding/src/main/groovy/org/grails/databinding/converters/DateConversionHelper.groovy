@@ -43,4 +43,7 @@ class DateConversionHelper implements ValueConverter {
         dateValue
     }
 
+    Class<?> getTargetType() {
+        Date
+    }
 }

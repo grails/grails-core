@@ -1,0 +1,3 @@
+<plugin name='databinding'>
+  <type>org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin</type>
+</plugin>

@@ -12,20 +12,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding
+package org.codehaus.groovy.grails.plugins.databinding
 
-import org.grails.databinding.converters.ValueConverter;
+import grails.util.GrailsUtil
 
-class ClosureValueConverter implements ValueConverter {
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
 
-    Closure converterClosure
-    Class targetType
-
-    public Object convert(Object value) {
-        converterClosure value
-    }
+class DataBindingGrailsPlugin {
     
-    Class getTargetType() {
-        targetType
+    def version = GrailsUtil.getGrailsVersion()
+
+    def doWithSpring = {
+        "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GormAwareDataBinder, ref('grailsApplication'))
     }
 }

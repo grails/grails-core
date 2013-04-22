@@ -1,0 +1,3 @@
+dependencies {
+    compile project(':grails-core'), project(':grails-web')
+}

@@ -1,10 +1,12 @@
 package org.codehaus.groovy.grails.plugins.web.filters
 
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
-class DefaultGrailsFilterClassTests extends GroovyTestCase {
+class DefaultGrailsFilterClassTests extends AbstractGrailsControllerTests {
 
     GroovyClassLoader gcl = new GroovyClassLoader()
 

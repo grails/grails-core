@@ -80,6 +80,7 @@ public class GrailsCoreDependencies {
             new Dependency("org.grails", "grails-plugin-domain-class", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-converters", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-datasource", grailsVersion, true),
+            new Dependency("org.grails", "grails-plugin-databinding", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-filters", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-gsp", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-i18n", grailsVersion, true),

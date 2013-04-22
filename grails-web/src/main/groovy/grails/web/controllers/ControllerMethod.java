@@ -1,4 +1,5 @@
-/* Copyright 2013 the original author or authors.
+/*
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding
+package grails.web.controllers;
 
-import org.grails.databinding.converters.ValueConverter;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-class ClosureValueConverter implements ValueConverter {
-
-    Closure converterClosure
-    Class targetType
-
-    public Object convert(Object value) {
-        converterClosure value
-    }
-    
-    Class getTargetType() {
-        targetType
-    }
+/**
+ * A marker annotation for methods added to a class that are for persistence purposes
+ *
+ * @author Graeme Rocher
+ * @since 2.1.5
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.FIELD})
+public @interface ControllerMethod {
 }
