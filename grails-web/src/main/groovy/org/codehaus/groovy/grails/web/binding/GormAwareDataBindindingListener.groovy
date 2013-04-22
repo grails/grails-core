@@ -39,25 +39,11 @@ class GormAwareDataBindindingListener extends
  
         @Override
         public void bindingError(BindingError error) {
-            
-            // TODO
-            // This is obviously a temporary placeholder...
-            
             Object[] o = getArgumentsForBindError(object.getClass().getName(), error.getPropertyName());
             def codes = ['typeMismatch']
-            String defaultMessage = "Some Default Message";
-            if(error.getCause() instanceof MalformedURLException) {
-                defaultMessage = "Failed to convert property value of type '" + 
-                error.getRejectedValue().getClass().getName() + 
-                "' to required type 'java.net.URL' for property '" + 
-                error.getPropertyName() + 
-                "'; nested exception is java.lang.IllegalArgumentException: Could not retrieve URL for class path resource [" +
-                error.getRejectedValue() +
-                "]: class path resource [" +
-                error.getRejectedValue() +
-                "] cannot be resolved to URL because it does not exist";
-            }
-            ObjectError fieldError = new FieldError("", error.getPropertyName(), error.getRejectedValue(), true, codes.toArray(new String[0]), o, defaultMessage);
+            def cause = error.cause
+            def defaultMessage = cause ? cause.message : 'Data Binding Failed'
+            def fieldError = new FieldError("", error.getPropertyName(), error.getRejectedValue(), true, codes.toArray(new String[0]), o, defaultMessage);
             tmpBindingResult.addError(fieldError);
         }
         
