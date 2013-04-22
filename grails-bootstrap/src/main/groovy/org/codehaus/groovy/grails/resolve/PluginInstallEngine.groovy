@@ -93,6 +93,32 @@ class PluginInstallEngine {
     }
 
     @CompileStatic
+    void resolveAndInstallDepdendencies() {
+        // we get the 'build' and 'test' dependencies because that is the scope that
+        // includes all possible plugins in all scopes
+        def pluginZips = (settings.pluginTestDependencies + settings.pluginBuildDependencies)
+        installResolvePlugins(pluginZips)
+        checkPluginsToUninstall(pluginZips.toList())
+    }
+    @CompileStatic
+    void installedResolvedPlugins() {
+        def pluginZips = (settings.pluginTestDependencies + settings.pluginBuildDependencies)
+        installResolvePlugins(pluginZips)
+    }
+    @CompileStatic
+    protected void installResolvePlugins(Collection<File> pluginZips) {
+        for (zip in pluginZips) {
+            installResolvedPlugin(zip)
+        }
+    }
+
+    @CompileStatic
+    void checkPluginsToUninstall() {
+        def pluginZips = (settings.pluginTestDependencies + settings.pluginBuildDependencies).toList()
+        checkPluginsToUninstall(pluginZips)
+    }
+
+    @CompileStatic
     void checkPluginsToUninstall(List<File> pluginZips) {
 
         List<GrailsPluginInfo> resolvedPluginInfos = pluginZips.collect { File f -> readPluginInfoFromZip(f.absolutePath) }

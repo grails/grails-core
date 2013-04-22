@@ -37,16 +37,8 @@ pluginsList = null
 // Targets
 target(resolveDependencies: "Resolve plugin dependencies") {
     depends(parseArguments, classpath)
-    // we get the 'build' and 'test' dependencies because that is the scope that
-    // includes all possible plugins in all scopes
-    def pluginZips = grailsSettings.pluginTestDependencies + grailsSettings.pluginBuildDependencies
-
     def installEngine = createPluginInstallEngine()
-    for (zip in pluginZips) {
-        installEngine.installResolvedPlugin(zip)
-    }
-
-    installEngine.checkPluginsToUninstall(pluginZips)
+    installEngine.resolveAndInstallDepdendencies()
 }
 
 target(loadPlugins: "Loads Grails' plugins") {
