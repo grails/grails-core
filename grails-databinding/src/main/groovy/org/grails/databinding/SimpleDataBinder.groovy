@@ -344,7 +344,7 @@ class SimpleDataBinder implements DataBinder {
 //                      !propertyValue instanceof ListOrderedSet &&
                       Set.isAssignableFrom(propertyType) &&
                       !SortedSet.isAssignableFrom(propertyType)) {
-                addElementsToCollection(obj, propName, propertyValue)
+                addElementsToCollection(obj, propName, propertyValue, true)
             } else if(Enum.isAssignableFrom(propertyType) && propertyValue instanceof String) {
                 obj[propName] = convertStringToEnum(propertyType, propertyValue)
             } else {
@@ -376,10 +376,13 @@ class SimpleDataBinder implements DataBinder {
         listener?.afterBinding obj, propName
     }
 
-    private void addElementsToCollection(obj, String collectionPropertyName, Collection collection) {
+    private void addElementsToCollection(obj, String collectionPropertyName, Collection collection, boolean removeExistingElements = false) {
         Class propertyType = obj.metaClass.getMetaProperty(collectionPropertyName).type
         def referencedType = getReferencedTypeForCollection(collectionPropertyName, obj)
         def coll = initializeCollection(obj, collectionPropertyName, propertyType)
+        if(removeExistingElements == true) {
+            coll.clear()
+        }
         collection?.each { element ->
             if(referencedType.isAssignableFrom(element.getClass())) {
                 coll << element
