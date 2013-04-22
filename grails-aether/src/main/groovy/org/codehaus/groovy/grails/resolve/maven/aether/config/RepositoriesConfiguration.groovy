@@ -27,6 +27,9 @@ import org.sonatype.aether.repository.RemoteRepository
 class RepositoriesConfiguration {
     List<RemoteRepository> repositories = []
 
+    void inherit(boolean b) {
+        inherits(b)
+    }
     void inherits(boolean b) {
         // TODO
     }
