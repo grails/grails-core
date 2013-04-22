@@ -168,6 +168,16 @@ class GormAwareDataBinderSpec extends spock.lang.Specification {
         
         when:
         parent.child = null
+        binder.bind(parent,  [child: [someOtherIds: ['4', '5', '6']]])
+        
+        then:
+        parent.child.someOtherIds.size() == 3
+        parent.child.someOtherIds.contains(4)
+        parent.child.someOtherIds.contains(5)
+        parent.child.someOtherIds.contains(6)
+
+        when:
+        parent.child = null
         binder.bind(parent,  [child: [someOtherIds: 4]])
         
         then:
