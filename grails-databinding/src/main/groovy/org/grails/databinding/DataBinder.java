@@ -1,4 +1,5 @@
-/* Copyright 2013 the original author or authors.
+/*
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +22,10 @@ import java.util.Map;
 
 import org.grails.databinding.events.DataBindingListener;
 
+/**
+ * @author Jeff Brown
+ * @since 2.3
+ */
 public interface DataBinder {
 
     void bind(Object obj, Map<String, Object> source, String filter, List<String> whiteList,
