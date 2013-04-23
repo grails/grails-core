@@ -201,12 +201,18 @@ public class DataBindingUtils {
                 useSpringBinder = true;
             }
         }
-        if (!useSpringBinder && source instanceof Map) {
-            final Map propertyMap = convertPotentialGStrings((Map) source);
+        if (!useSpringBinder) {
+            Map bindingSource = null;
+            if(source instanceof HttpServletRequest) {
+                HttpServletRequest req = (HttpServletRequest)source;
+                bindingSource = new GrailsParameterMap(req);
+            } else {
+                bindingSource = convertPotentialGStrings((Map) source);
+            }
             final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
             final DataBindingListener listener = new GormAwareDataBindindingListener(tmpBindingResult, object);
-            gormAwareDataBinder.bind(object, propertyMap, filter, include, exclude, listener);
+            gormAwareDataBinder.bind(object, bindingSource, filter, include, exclude, listener);
             bindingResult = tmpBindingResult;
         } else {
             if (source instanceof GrailsParameterMap) {

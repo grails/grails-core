@@ -454,8 +454,7 @@ class SimpleDataBinder implements DataBinder {
 
     protected convert(Class typeToConvertTo, value) {
         if(conversionHelpers.containsKey(typeToConvertTo)) {
-            def converters = conversionHelpers.get(typeToConvertTo)
-            ValueConverter converter = converters?.find { ValueConverter c -> c.canConvert(value) }
+            ValueConverter converter = getConverter(typeToConvertTo, value)
             if(converter) {
                 return converter.convert(value)
             }
@@ -470,5 +469,11 @@ class SimpleDataBinder implements DataBinder {
             }
         }
         typeToConvertTo.newInstance value
+    }
+
+    protected ValueConverter getConverter(Class typeToConvertTo, value) {
+        def converters = conversionHelpers.get(typeToConvertTo)
+        ValueConverter converter = converters?.find { ValueConverter c -> c.canConvert(value) }
+        return converter
     }
 }

@@ -97,6 +97,7 @@ class EmbedDate {
         def e = withEncodingClass.newInstance()
         def multipartRequest = new GrailsMockHttpServletRequest()
         multipartRequest.addFile(new GrailsMockMultipartFile("eDate.aFile", "foo".bytes))
+        multipartRequest.addParameter("eDate.aDate", "struct")
         multipartRequest.addParameter("eDate.aDate_year", "1980")
         multipartRequest.addParameter("eDate.aDate_month", "02")
         multipartRequest.addParameter("eDate.aDate_day", "03")

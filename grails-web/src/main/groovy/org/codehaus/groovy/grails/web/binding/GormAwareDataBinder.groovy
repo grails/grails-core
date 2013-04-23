@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.codehaus.groovy.grails.web.binding.converters.ByteArrayMultipartFileValueConverter
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.grails.databinding.SimpleDataBinder
 import org.grails.databinding.converters.FormattedValueConverter
@@ -46,6 +47,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
     GormAwareDataBinder(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication
         this.conversionService = new SpringConversionServiceAdapter()
+        registerConverter new ByteArrayMultipartFileValueConverter()
     }
 
     /**
