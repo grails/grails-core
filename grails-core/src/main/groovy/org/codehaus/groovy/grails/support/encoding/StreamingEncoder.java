@@ -31,7 +31,7 @@ public interface StreamingEncoder extends Encoder {
      * 
      * @param source
      *            The source CharSequence
-     * @param off
+     * @param offset
      *            Offset from which to start encoding characters
      * @param len
      *            Number of characters to encode
