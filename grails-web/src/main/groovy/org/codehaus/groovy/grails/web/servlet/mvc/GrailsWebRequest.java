@@ -402,7 +402,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     
     public Encoder lookupFilteringEncoder() {
         if(filteringEncoder == null && applicationContext != null && applicationContext.containsBean(FilteringCodecsByContentTypeSettings.BEAN_NAME)) {
-            filteringEncoder = applicationContext.getBean(FilteringCodecsByContentTypeSettings.BEAN_NAME, FilteringCodecsByContentTypeSettings.class).getEncoderForMimeType(getResponse().getContentType());
+            filteringEncoder = applicationContext.getBean(FilteringCodecsByContentTypeSettings.BEAN_NAME, FilteringCodecsByContentTypeSettings.class).getEncoderForContentType(getResponse().getContentType());
         }
         return filteringEncoder;
     }
