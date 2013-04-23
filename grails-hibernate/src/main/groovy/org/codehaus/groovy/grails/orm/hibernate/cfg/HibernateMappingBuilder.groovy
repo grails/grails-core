@@ -483,6 +483,8 @@ class HibernateMappingBuilder {
                     join.name = joinArgs
                 }
                 else if (joinArgs instanceof Map) {
+                    if (joinArgs.schema) join.schema = joinArgs.remove('schema')
+                    if (joinArgs.catalog) join.catalog = joinArgs.remove('catalog')
                     if (joinArgs.name) join.name = joinArgs.remove('name')
                     if (joinArgs.key) {
                         join.key = new ColumnConfig(name:joinArgs.remove('key'))

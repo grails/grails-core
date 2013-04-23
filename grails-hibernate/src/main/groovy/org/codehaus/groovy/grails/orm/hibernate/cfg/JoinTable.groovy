@@ -9,6 +9,8 @@ package org.codehaus.groovy.grails.orm.hibernate.cfg
  */
 class JoinTable {
     String name
+    String catalog
+    String schema
     ColumnConfig key
     ColumnConfig column
 }
