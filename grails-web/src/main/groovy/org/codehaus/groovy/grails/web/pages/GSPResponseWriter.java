@@ -23,14 +23,9 @@ import javax.servlet.ServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.support.encoding.EncoderAware;
-import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
-import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.LazyInitializingWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
@@ -55,7 +50,7 @@ import com.opensymphony.module.sitemesh.RequestConstants;
  *
  * Date: Jan 10, 2004
  */
-public class GSPResponseWriter extends GrailsPrintWriterAdapter {
+public class GSPResponseWriter extends GrailsRoutablePrintWriter {
     protected static final Log LOG = LogFactory.getLog(GSPResponseWriter.class);
     private ServletResponse response;
     private BoundedCharsAsEncodedBytesCounter bytesCounter;
@@ -75,66 +70,52 @@ public class GSPResponseWriter extends GrailsPrintWriterAdapter {
      * @return  A GSPResponseWriter instance
      */
     private static GSPResponseWriter getInstance(final ServletResponse response, final int max) {
-        Writer target = null;
         final BoundedCharsAsEncodedBytesCounter bytesCounter=new BoundedCharsAsEncodedBytesCounter();
 
-        if (!(response instanceof GrailsContentBufferingResponse) && (BUFFERING_ENABLED || CONTENT_LENGTH_COUNTING_ENABLED)) {
-            final StreamCharBuffer streamBuffer = new StreamCharBuffer(max, 0, max);
-            streamBuffer.setChunkMinSize(max/2);
-            target = streamBuffer.getWriter();
+        final StreamCharBuffer streamBuffer = new StreamCharBuffer(max, 0, max);
+        streamBuffer.setChunkMinSize(max/2);
+        
+        final StreamCharBuffer.LazyInitializingWriter lazyResponseWriter = new StreamCharBuffer.LazyInitializingWriter() {
+            public Writer getWriter() throws IOException {
+                return response.getWriter();
+            }
+        };
             
-            final StreamCharBuffer.LazyInitializingWriter lazyResponseWriter = new StreamCharBuffer.LazyInitializingWriter() {
-                public Writer getWriter() throws IOException {
-                    return response.getWriter();
-                }
-            };
-            
-            
-            streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingMultipleWriter() {
-                public Writer getWriter() throws IOException {
-                    return null;
-                }
+        streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingMultipleWriter() {
+            public Writer getWriter() throws IOException {
+                return null;
+            }
 
-                public LazyInitializingWriter[] initializeMultiple(boolean autoFlush) throws IOException {
-                    final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-                    final Encoder encoder = webRequest != null ? webRequest.lookupFilteringEncoder() : null;
-                    final StreamCharBuffer.LazyInitializingWriter[] lazyWriters;
-                    if (CONTENT_LENGTH_COUNTING_ENABLED) {
-                        lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {new StreamCharBuffer.LazyInitializingWriter() {
-                            public Writer getWriter() throws IOException {
-                                bytesCounter.setCapacity(max * 2);
-                                bytesCounter.setEncoding(response.getCharacterEncoding());
-                                return bytesCounter.getCountingWriter();
-                            }
-                        }, lazyResponseWriter};
-                    } else {
-                        lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {lazyResponseWriter};
-                    }
-                    if(encoder != null) {
-                        return new StreamCharBuffer.LazyInitializingWriter[] {streamBuffer.createEncodingInitializer(new EncoderAware() {
-                            public Encoder getEncoder() {
-                                return encoder;
-                            }
-                        }, new EncodingStateRegistryLookup() {
-                            public EncodingStateRegistry lookup() {
-                                return webRequest.getEncodingStateRegistry();
-                            } }, lazyWriters)};
-                    } else {
-                        return lazyWriters;
-                    }
+            public LazyInitializingWriter[] initializeMultiple(StreamCharBuffer buffer, boolean autoFlush) throws IOException {
+                final StreamCharBuffer.LazyInitializingWriter[] lazyWriters;
+                if (CONTENT_LENGTH_COUNTING_ENABLED) {
+                    lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {new StreamCharBuffer.LazyInitializingWriter() {
+                        public Writer getWriter() throws IOException {
+                            bytesCounter.setCapacity(max * 2);
+                            bytesCounter.setEncoding(response.getCharacterEncoding());
+                            return bytesCounter.getCountingWriter();
+                        }
+                    }, lazyResponseWriter};
+                } else {
+                    lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {lazyResponseWriter};
                 }
-            }, AUTOFLUSH_ENABLED);
-        }
-        else {
-            try {
-                target = response.getWriter();
+                return lazyWriters;
             }
-            catch (IOException e) {
-                LOG.error("Problem getting writer from response",e);
-                throw new RuntimeException("Problem getting writer from response",e);
+        }, AUTOFLUSH_ENABLED);
+        
+        DestinationFactory lazyTargetFactory = new DestinationFactory() {
+            public Writer activateDestination() throws IOException {
+                final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+                final Encoder encoder = webRequest != null ? webRequest.lookupFilteringEncoder() : null;
+                if(encoder != null) {
+                    return streamBuffer.getWriterForEncoder(encoder, webRequest.getEncodingStateRegistry());
+                } else {
+                    return streamBuffer.getWriter();
+                }
             }
-        }
-        return new GSPResponseWriter(target, response, bytesCounter);
+        }; 
+        
+        return new GSPResponseWriter(lazyTargetFactory, response, bytesCounter);
     }
 
     /**
@@ -165,18 +146,23 @@ public class GSPResponseWriter extends GrailsPrintWriterAdapter {
      * @param streamBuffer StreamCharBuffer instance
      * @param bytesCounter    Keeps count of encoded bytes count
      */
-    private GSPResponseWriter(Writer activeWriter, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {
-        super(activeWriter);
+    private GSPResponseWriter(DestinationFactory destinationFactory, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {
+        super(destinationFactory);
         this.response = response;
         this.bytesCounter = bytesCounter;
+        setBlockFlush(false);
     }
 
     /**
      * Private constructor.  Use getInstance() instead.
      * @param activeWriter buffered writer
      */
-    private GSPResponseWriter(Writer activeWriter) {
-        super(activeWriter);
+    private GSPResponseWriter(final Writer activeWriter) {
+        this(new DestinationFactory() {
+            public Writer activateDestination() throws IOException {
+                return activeWriter;
+            }
+        }, null, null);
     }
 
     /**

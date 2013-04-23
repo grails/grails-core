@@ -25,17 +25,16 @@ import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 
 public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
-
-    private PrintWriter destination;
     private DestinationFactory factory;
-    private boolean blockFlush=true;
-    private boolean blockClose=true;
+    private boolean blockFlush = true;
+    private boolean blockClose = true;
+    private boolean destinationActivated = false;
 
     /**
      * Factory to lazily instantiate the destination.
      */
     public static interface DestinationFactory {
-        PrintWriter activateDestination() throws IOException;
+        Writer activateDestination() throws IOException;
     }
 
     public GrailsRoutablePrintWriter(DestinationFactory factory) {
@@ -43,202 +42,223 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
         this.factory = factory;
     }
 
-    /**
-     * tell others if getOut() can be called to "unwrap" the actual target writer
-     *
-     * if the destination hasn't been activated, don't allow it.
-     *
-     * @see org.codehaus.groovy.grails.web.util.GrailsPrintWriter#isAllowUnwrappingOut()
-     */
-    @Override
-    public boolean isAllowUnwrappingOut() {
-        return destination != null;
-    }
-
-    @Override
-    public Writer getOut() {
-        return getDestination();
-    }
-
-    private PrintWriter getDestination() {
-        if (destination == null) {
+    protected void activateDestination() {
+        if (!destinationActivated && factory != null) {
             try {
-                destination = factory.activateDestination();
+                super.setTarget(factory.activateDestination());
+                factory = null;
             }
             catch (IOException e) {
                 setError();
             }
-            super.out = destination;
-            super.setTarget(destination);
+            destinationActivated = true;
         }
-        return destination;
+    }
+
+    @Override
+    public boolean isAllowUnwrappingOut() {
+        return destinationActivated ? super.isAllowUnwrappingOut() : false;
+    }
+
+    @Override
+    public Writer unwrap() {
+        return destinationActivated ? super.unwrap() : this;
     }
 
     public void updateDestination(DestinationFactory f) {
-        destination = null;
-        super.out = destination;
+        setDestinationActivated(false);
         this.factory = f;
     }
 
     @Override
     public void close() {
         if (!isBlockClose()) {
-            getDestination().close();
+            activateDestination();
+            super.close();
         }
     }
 
     @Override
     public void println(Object x) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println(String x) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println(char x[]) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println(double x) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println(float x) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println(long x) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println(int x) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println(char x) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println(boolean x) {
-        getDestination().println(x);
+        activateDestination();
+        super.println(x);
     }
 
     @Override
     public void println() {
-        getDestination().println();
+        activateDestination();
+        super.println();
     }
 
     @Override
     public void print(Object obj) {
-        getDestination().print(obj);
+        activateDestination();
+        super.print(obj);
     }
 
     @Override
     public void print(String s) {
-        getDestination().print(s);
+        activateDestination();
+        super.print(s);
     }
 
     @Override
     public void print(char s[]) {
-        getDestination().print(s);
+        activateDestination();
+        super.print(s);
     }
 
     @Override
     public void print(double d) {
-        getDestination().print(d);
+        activateDestination();
+        super.print(d);
     }
 
     @Override
     public void print(float f) {
-        getDestination().print(f);
+        activateDestination();
+        super.print(f);
     }
 
     @Override
     public void print(long l) {
-        getDestination().print(l);
+        activateDestination();
+        super.print(l);
     }
 
     @Override
     public void print(int i) {
-        getDestination().print(i);
+        activateDestination();
+        super.print(i);
     }
 
     @Override
     public void print(char c) {
-        getDestination().print(c);
+        activateDestination();
+        super.print(c);
     }
 
     @Override
     public void print(boolean b) {
-        getDestination().print(b);
+        activateDestination();
+        super.print(b);
     }
 
     @Override
     public void write(String s) {
-        getDestination().write(s);
+        activateDestination();
+        super.write(s);
     }
 
     @Override
     public void write(String s, int off, int len) {
-        getDestination().write(s, off, len);
+        activateDestination();
+        super.write(s, off, len);
     }
 
     @Override
     public void write(char buf[]) {
-        getDestination().write(buf);
+        activateDestination();
+        super.write(buf);
     }
 
     @Override
     public void write(char buf[], int off, int len) {
-        getDestination().write(buf, off, len);
+        activateDestination();
+        super.write(buf, off, len);
     }
 
     @Override
     public void write(int c) {
-        getDestination().write(c);
+        activateDestination();
+        super.write(c);
     }
 
     @Override
     public boolean checkError() {
-        return getDestination().checkError();
+        activateDestination();
+        return super.checkError();
     }
 
     @Override
     public void flush() {
         if (!isBlockFlush()) {
-            getDestination().flush();
+            activateDestination();
+            super.flush();
         }
     }
 
     @Override
     public PrintWriter append(char c) {
-        return getDestination().append(c);
+        activateDestination();
+        return super.append(c);
     }
 
     @Override
     public PrintWriter append(CharSequence csq, int start, int end) {
-        return getDestination().append(csq, start, end);
+        activateDestination();
+        return super.append(csq, start, end);
     }
 
     @Override
     public PrintWriter append(CharSequence csq) {
-        return getDestination().append(csq);
+        activateDestination();
+        return super.append(csq);
     }
 
     /**
-     * Just to keep super constructor for PrintWriter happy - it's never actually used.
+     * Just to keep super constructor for PrintWriter happy - it's never
+     * actually used.
      */
     private static class NullWriter extends Writer {
-
         protected NullWriter() {
             super();
         }
@@ -287,19 +307,30 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
 
     @Override
     public GrailsPrintWriter leftShift(Object value) throws IOException {
-        getDestination();
+        activateDestination();
         return super.leftShift(value);
     }
 
     @Override
     public GrailsPrintWriter leftShift(StreamCharBuffer otherBuffer) {
-        getDestination();
+        activateDestination();
         return super.leftShift(otherBuffer);
     }
 
     @Override
     public GrailsPrintWriter leftShift(Writable writable) {
-        getDestination();
+        activateDestination();
         return super.leftShift(writable);
+    }
+
+    public boolean isDestinationActivated() {
+        return destinationActivated;
+    }
+
+    public void setDestinationActivated(boolean destinationActivated) {
+        this.destinationActivated = destinationActivated;
+        if (!this.destinationActivated) {
+            super.setTarget(new NullWriter());
+        }
     }
 }

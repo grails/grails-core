@@ -381,6 +381,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         LazyInitializingWriter encodingWriterInitializer = createEncodingInitializer(encoderLookup,
                 encodingStateRegistryLookup, writers);
         connectTo(encodingWriterInitializer, autoFlush);
+       
     }
 
     public LazyInitializingWriter createEncodingInitializer(final EncoderAware encoderLookup,
@@ -392,12 +393,11 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
                 return lazyWriter;
             }
 
-            public LazyInitializingWriter[] initializeMultiple(boolean autoFlushMode) throws IOException {
+            public LazyInitializingWriter[] initializeMultiple(StreamCharBuffer buffer, boolean autoFlushMode) throws IOException {
                 Encoder encoder = encoderLookup.getEncoder();
                 if(encoder != null) {
                     EncodingStateRegistry encodingStateRegistry = encodingStateRegistryLookup.lookup();
                     StreamCharBuffer encodeBuffer=new StreamCharBuffer(chunkSize, growProcent, maxChunkSize);
-                    encodeBuffer.setWriteDirectlyToConnectedMinSize(0);
                     lazyWriter=encodeBuffer.getWriterForEncoder(encoder, encodingStateRegistry);
                     for(LazyInitializingWriter w : writers) {
                         encodeBuffer.connectTo(w, autoFlushMode);
@@ -2115,10 +2115,10 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
          * 
          * @return false if this writer entry should be removed after calling this callback method
          */
-        public LazyInitializingWriter[] initializeMultiple(boolean autoFlush) throws IOException;
+        public LazyInitializingWriter[] initializeMultiple(StreamCharBuffer buffer, boolean autoFlush) throws IOException;
     }
     
-    static final class ConnectToWriter {
+    final class ConnectToWriter {
         final Writer writer;
         final LazyInitializingWriter lazyInitializingWriter;
         final boolean autoFlush;
@@ -2151,7 +2151,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
             if(!resolved.contains(identityHashCode) && lazyInitializingWriter instanceof LazyInitializingMultipleWriter) {
                 resolved.add(identityHashCode);
                 writerList = new LinkedHashSet<Writer>();
-                LazyInitializingWriter[] writers = ((LazyInitializingMultipleWriter)lazyInitializingWriter).initializeMultiple(autoFlush);
+                LazyInitializingWriter[] writers = ((LazyInitializingMultipleWriter)lazyInitializingWriter).initializeMultiple(StreamCharBuffer.this, autoFlush);
                 for(LazyInitializingWriter writer : writers) {
                     writerList.addAll(resolveLazyInitializers(resolved, writer));
                 }
