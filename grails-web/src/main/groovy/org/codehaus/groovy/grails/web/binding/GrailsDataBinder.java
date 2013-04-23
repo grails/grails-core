@@ -925,8 +925,14 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 }
             }
             else if (GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
-                if (isArray) {
-                    Object[] values = (Object[])v;
+                Object[] values = null;
+                if(isArray) {
+                    values = (Object[])v;
+                } else if(v instanceof String) {
+                    values = new String[]{(String)v};
+                }
+
+                if (values != null) {
                     List list = collection instanceof List ? (List)collection : null;
                     for (int i = 0; i < values.length; i++) {
                         Object value = values[i];
@@ -948,6 +954,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                             // ignore
                         }
                     }
+                    mpvs.removePropertyValue(pv);
                 }
             }
         }
