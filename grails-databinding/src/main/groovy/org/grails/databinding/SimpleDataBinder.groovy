@@ -1,4 +1,5 @@
-/* Copyright 2013 the original author or authors.
+/* 
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +35,32 @@ import org.grails.databinding.errors.SimpleBindingError
 import org.grails.databinding.events.DataBindingListener
 import org.grails.databinding.xml.GPathResultMap
 
+/** 
+ * A data binder that will bind nested Maps to an object.
+ * 
+ <pre>
+ class Person {
+     String firstName
+     Address homeAddress
+ }
+ 
+ class Address {
+     String city
+     String state
+ }
+ 
+ def person = new Person()
+ def binder = new SimpleDataBinder()
+ binder.bind person, [firstName: 'Steven', homeAddress: [city: 'St. Louis', state: 'Missouri']]
+ assert person.firstName == 'Steven'
+ assert person.homeAddress.city == 'St. Louis'
+ assert person.homeAddress.state == 'Missouri'
+ 
+ </pre>
+ *
+ * @author Jeff Brown
+ * @since 2.3 
+ */
 @CompileStatic
 class SimpleDataBinder implements DataBinder {
 
@@ -45,24 +72,24 @@ class SimpleDataBinder implements DataBinder {
     static final INDEXED_PROPERTY_REGEX = /(.*)\[\s*([^\s]*)\s*\]\s*$/
 
     SimpleDataBinder() {
-        registerConverter Date, new DateConversionHelper()
+        registerConverter new DateConversionHelper()
 
         registerStructuredEditor java.util.Date.class, new StructuredDateBindingEditor()
         registerStructuredEditor java.sql.Date.class, new StructuredSqlDateBindingEditor()
         registerStructuredEditor java.util.Calendar.class, new StructuredCalendarBindingEditor()
         
-        registerFormattedValueConverter Date, new FormattedDateValueConverter()
+        registerFormattedValueConverter new FormattedDateValueConverter()
     }
 
     void registerStructuredEditor(Class clazz, StructuredBindingEditor editor) {
         structuredEditors[clazz] = editor
     }
     
-    void registerConverter(Class clazz, ValueConverter converter) {
-        conversionHelpers[clazz] = converter
+    void registerConverter(ValueConverter converter) {
+        conversionHelpers[converter.targetType] = converter
     }
-    void registerFormattedValueConverter(Class clazz, FormattedValueConverter converter) {
-        formattedValueConvertersionHelpers[clazz] = converter
+    void registerFormattedValueConverter(FormattedValueConverter converter) {
+        formattedValueConvertersionHelpers[converter.targetType] = converter
     }
 
     /**

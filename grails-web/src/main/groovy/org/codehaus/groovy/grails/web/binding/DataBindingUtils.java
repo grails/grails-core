@@ -189,9 +189,14 @@ public class DataBindingUtils {
     public static BindingResult bindObjectToDomainInstance(GrailsDomainClass domain, Object object,
             Object source, List include, List exclude, String filter) {
         BindingResult bindingResult = null;
-        // setting this inline temporarily here for now...
         boolean useLegacyBinder = false;
-        final GrailsApplication grailsApplication = GrailsWebRequest.lookupApplication();
+        GrailsApplication grailsApplication = null;
+        if(domain != null) {
+            grailsApplication = domain.getGrailsApplication();
+        }
+        if(grailsApplication == null) {
+            grailsApplication = GrailsWebRequest.lookupApplication();
+        }
         if(grailsApplication != null) {
             if(Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.databinding.useLegacyBinder"))) {
                 useLegacyBinder = true;

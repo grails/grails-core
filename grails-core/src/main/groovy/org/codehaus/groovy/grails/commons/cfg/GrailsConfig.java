@@ -33,6 +33,7 @@ import java.util.Map;
  */
 public class GrailsConfig {
 
+    public static final String SPRING_PLACEHOLDER_PREFIX = "grails.spring.placeholder.prefix";
     private static final Log LOG = LogFactory.getLog(GrailsConfig.class);
 
     private GrailsApplication grailsApplication;
