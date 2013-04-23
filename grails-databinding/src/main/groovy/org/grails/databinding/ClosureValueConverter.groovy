@@ -33,4 +33,8 @@ class ClosureValueConverter implements ValueConverter {
     Class getTargetType() {
         targetType
     }
+
+    public boolean canConvert(Object value) {
+        true
+    }
 }

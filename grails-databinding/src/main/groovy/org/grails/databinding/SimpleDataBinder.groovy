@@ -66,7 +66,7 @@ class SimpleDataBinder implements DataBinder {
 
     protected Map<Class, StructuredBindingEditor> structuredEditors = new HashMap<Class, StructuredBindingEditor>()
     ConversionService conversionService
-    protected Map<Class, ValueConverter> conversionHelpers = new HashMap<Class, ValueConverter>()
+    protected Map<Class, List<ValueConverter>> conversionHelpers = [:].withDefault { Class c -> new ArrayList<ValueConverter>()}
     protected Map<Class, FormattedValueConverter> formattedValueConvertersionHelpers = new HashMap<Class, FormattedValueConverter>()
     protected static final List<Class> BASIC_TYPES = [
         String,
@@ -97,7 +97,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     void registerConverter(ValueConverter converter) {
-        conversionHelpers[converter.targetType] = converter
+        conversionHelpers[converter.targetType] << converter
     }
     void registerFormattedValueConverter(FormattedValueConverter converter) {
         formattedValueConvertersionHelpers[converter.targetType] = converter
@@ -454,8 +454,13 @@ class SimpleDataBinder implements DataBinder {
 
     protected convert(Class typeToConvertTo, value) {
         if(conversionHelpers.containsKey(typeToConvertTo)) {
-            return conversionHelpers.get(typeToConvertTo).convert(value)
-        } else if(conversionService?.canConvert(value.getClass(), typeToConvertTo)) {
+            def converters = conversionHelpers.get(typeToConvertTo)
+            ValueConverter converter = converters?.find { ValueConverter c -> c.canConvert(value) }
+            if(converter) {
+                return converter.convert(value)
+            }
+        }
+        if(conversionService?.canConvert(value.getClass(), typeToConvertTo)) {
             return conversionService.convert(value, typeToConvertTo)
         } else if(Collection.isAssignableFrom(typeToConvertTo) && value instanceof String[]) {
             if(Set == typeToConvertTo) {

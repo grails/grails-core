@@ -51,4 +51,8 @@ class DateConversionHelper implements ValueConverter {
     Class<?> getTargetType() {
         Date
     }
+
+    public boolean canConvert(Object value) {
+        value instanceof String
+    }
 }
