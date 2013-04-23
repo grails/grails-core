@@ -72,7 +72,7 @@ class SimpleDataBinder implements DataBinder {
     static final INDEXED_PROPERTY_REGEX = /(.*)\[\s*([^\s]*)\s*\]\s*$/
 
     SimpleDataBinder() {
-        registerConverter Date, new DateConversionHelper()
+        registerConverter new DateConversionHelper()
 
         registerStructuredEditor java.util.Date.class, new StructuredDateBindingEditor()
         registerStructuredEditor java.sql.Date.class, new StructuredSqlDateBindingEditor()
@@ -85,8 +85,8 @@ class SimpleDataBinder implements DataBinder {
         structuredEditors[clazz] = editor
     }
     
-    void registerConverter(Class clazz, ValueConverter converter) {
-        conversionHelpers[clazz] = converter
+    void registerConverter(ValueConverter converter) {
+        conversionHelpers[converter.targetType] = converter
     }
     void registerFormattedValueConverter(FormattedValueConverter converter) {
         formattedValueConvertersionHelpers[converter.targetType] = converter

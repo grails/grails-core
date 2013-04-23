@@ -290,7 +290,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
     @Autowired(required=false)
     public void setValueConverters(ValueConverter[] converters) {
         converters?.each { ValueConverter converter ->
-            registerConverter converter.targetType, converter
+            registerConverter converter
         }
     }
     
