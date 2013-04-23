@@ -294,6 +294,9 @@ abstract class ForkedGrailsProcess {
 
     protected File storeExecutionContext(ExecutionContext executionContext) {
         def baseName = executionContext.getBaseDir().canonicalFile.name
+        if (baseName.length() < 3) {
+            baseName+='ec'
+        }
         File tempFile = File.createTempFile(baseName, "grails-execution-context")
 
         tempFile.deleteOnExit()
