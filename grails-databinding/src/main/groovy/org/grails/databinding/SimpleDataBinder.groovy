@@ -34,6 +34,30 @@ import org.grails.databinding.errors.SimpleBindingError
 import org.grails.databinding.events.DataBindingListener
 import org.grails.databinding.xml.GPathResultMap
 
+/** 
+ * A data binder that will bind nested Maps to an object.
+ * 
+ <pre>
+ class Person {
+     String firstName
+     Address homeAddress
+ }
+ 
+ class Address {
+     String city
+     String state
+ }
+ 
+ def person = new Person()
+ def binder = new SimpleDataBinder()
+ binder.bind person, [firstName: 'Steven', homeAddress: [city: 'St. Louis', state: 'Missouri']]
+ assert person.firstName == 'Steven'
+ assert person.homeAddress.city == 'St. Louis'
+ assert person.homeAddress.state == 'Missouri'
+ 
+ </pre>
+ *
+ */
 @CompileStatic
 class SimpleDataBinder implements DataBinder {
 
