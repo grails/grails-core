@@ -299,7 +299,7 @@ class TestUrlMappings {
         PrintWriter pw = new PrintWriter(sw)
 
         withTag("escapeJavascript", pw) {tag ->
-            tag.call("This is some \"text\" to be 'escaped'", Collections.EMPTY_MAP)
+            tag.call(Collections.EMPTY_MAP, "This is some \"text\" to be 'escaped'")
             assertEquals("This is some \\\"text\\\" to be \\'escaped\\'", sw.toString())
         }
     }

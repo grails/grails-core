@@ -46,7 +46,6 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
         if (!destinationActivated && factory != null) {
             try {
                 super.setTarget(factory.activateDestination());
-                factory = null;
             }
             catch (IOException e) {
                 setError();

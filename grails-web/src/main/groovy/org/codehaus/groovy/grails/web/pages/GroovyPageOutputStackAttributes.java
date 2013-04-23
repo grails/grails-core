@@ -24,6 +24,7 @@ public class GroovyPageOutputStackAttributes {
     private final Encoder staticEncoder;
     private final Encoder outEncoder;
     private final Encoder expressionEncoder;
+    private final Encoder taglibEncoder;
     private final boolean allowCreate;
     private final boolean pushTop;
     private final boolean autoSync;
@@ -50,6 +51,10 @@ public class GroovyPageOutputStackAttributes {
         return expressionEncoder;
     }
 
+    public Encoder getTaglibEncoder() {
+        return taglibEncoder;
+    }
+
     public boolean isAllowCreate() {
         return allowCreate;
     }
@@ -71,6 +76,7 @@ public class GroovyPageOutputStackAttributes {
         private Encoder staticEncoder;
         private Encoder outEncoder;
         private Encoder expressionEncoder;
+        private Encoder taglibEncoder;
         private boolean allowCreate=true;
         private boolean pushTop=true;
         private boolean autoSync=true;
@@ -85,6 +91,7 @@ public class GroovyPageOutputStackAttributes {
             this.staticEncoder = attributes.staticEncoder;
             this.outEncoder = attributes.outEncoder;
             this.expressionEncoder = attributes.expressionEncoder;
+            this.taglibEncoder = attributes.taglibEncoder;
             this.allowCreate = attributes.allowCreate;
             this.pushTop = attributes.pushTop;
             this.autoSync = attributes.autoSync;
@@ -112,6 +119,11 @@ public class GroovyPageOutputStackAttributes {
             return this;
         }
 
+        public Builder taglibEncoder(Encoder taglibEncoder) {
+            this.taglibEncoder = taglibEncoder;
+            return this;
+        }
+        
         public Builder allowCreate(boolean allowCreate) {
             this.allowCreate = allowCreate;
             return this;
@@ -146,6 +158,7 @@ public class GroovyPageOutputStackAttributes {
         this.topWriter = builder.topWriter;
         this.staticEncoder = builder.staticEncoder;
         this.outEncoder = builder.outEncoder;
+        this.taglibEncoder = builder.taglibEncoder;
         this.expressionEncoder = builder.expressionEncoder;
         this.allowCreate = builder.allowCreate;
         this.pushTop = builder.pushTop;

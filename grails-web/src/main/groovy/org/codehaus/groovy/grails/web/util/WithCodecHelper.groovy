@@ -40,6 +40,7 @@ class WithCodecHelper {
     public static String EXPRESSION_CODEC_NAME_ALIAS="defaultCodec"
     /**  staticCodec escapes the static html parts coming from the GSP file to output */
     public static String STATIC_CODEC_NAME="staticCodec"
+    public static String TAGLIB_CODEC_NAME="taglibCodec"
 
     /** all is the key to set all codecs at once */
     public static String ALL_CODECS_FALLBACK_KEY_NAME="all"
@@ -50,17 +51,18 @@ class WithCodecHelper {
      * Executes closure with given codecs
      *
      * codecInfo parameter can be a single String value or a java.util.Map.
-     * When it's a single String value, "outCodec" and "expressionCodec" get set with the given codec
+     * When it's a single String value, "outCodec" and "expressionCodec" get set with the given codec 
      * When it's a java.util.Map, these keys get used:
      * <ul>
-     * <li>outCodec - escapes output from taglibs and scriptlets to output (the codec attached to "out" writer instance)</li>
+     * <li>outCodec - escapes output from scriptlets to output (the codec attached to "out" writer instance in GSP scriptlets)</li>
+     * <li>templateCodec - escapes output from taglibs to output (the codec attached to "out" writer instance in taglibs)</li>
      * <li>expressionCodec - escapes values inside ${} to output</li>
      * <li>staticCodec - escapes the static html parts coming from the GSP file to output</li>
      * </ul>
      * These keys set several codecs at once:
      * <ul>
-     * <li>all - sets outCodec, expressionCodec and staticCodec</li>
-     * <li>name - sets outCodec and expressionCodec</li>
+     * <li>all - sets outCodec, taglibCodec, expressionCodec and staticCodec</li>
+     * <li>name - sets outCodec, taglibCodec and expressionCodec</li>
      * </ul>
      * expressionCodec has an alias "defaultCodec".
      *
@@ -103,13 +105,15 @@ class WithCodecHelper {
 
                 def outEncoderName = codecInfoMap[(OUT_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
                 builder.outEncoder(lookupEncoderFromMap(encoders, outEncoderName?.toString()))
+                def taglibEncoderName = codecInfoMap[(TAGLIB_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
+                builder.taglibEncoder(lookupEncoderFromMap(encoders, taglibEncoderName?.toString()))
                 def defaultEncoderName = codecInfoMap[(EXPRESSION_CODEC_NAME)] ?: codecInfoMap[(EXPRESSION_CODEC_NAME_ALIAS)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
                 builder.expressionEncoder(lookupEncoderFromMap(encoders, defaultEncoderName?.toString()))
                 def staticEncoderName = codecInfoMap[(STATIC_CODEC_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
                 builder.staticEncoder(lookupEncoderFromMap(encoders, staticEncoderName?.toString()))
             } else {
                 Encoder encoder = lookupEncoder(grailsApplication, codecInfo.toString())
-                builder.outEncoder(encoder).expressionEncoder(encoder)
+                builder.outEncoder(encoder).expressionEncoder(encoder).taglibEncoder(encoder);
             }
         }
         return builder

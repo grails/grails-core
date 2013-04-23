@@ -168,7 +168,7 @@ public abstract class GroovyPage extends Script {
             return DefaultTypeTransformation.castToBoolean(retval);
         }
     }
-
+   
     protected static final Closure<?> EMPTY_BODY_CLOSURE = new ConstantClosure(BLANK_STRING);
 
     public GroovyPage() {
@@ -191,8 +191,9 @@ public abstract class GroovyPage extends Script {
         throw new IllegalStateException("Setting out in page isn't allowed.");
     }
 
+    @SuppressWarnings("rawtypes")
     public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GroovyPageMetaInfo metaInfo) {
-        GroovyPageOutputStackAttributes.Builder attributesBuilder = new GroovyPageOutputStackAttributes.Builder();
+        GroovyPageOutputStackAttributes.Builder attributesBuilder = new GroovyPageOutputStackAttributes.Builder();        
         if(metaInfo != null) {
             setJspTags(metaInfo.getJspTags());
             setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
@@ -205,22 +206,23 @@ public abstract class GroovyPage extends Script {
         }
         attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
         attributesBuilder.webRequest(grailsWebRequest);
+        attributesBuilder.inheritPreviousEncoders(false);
         outputStack = GroovyPageOutputStack.currentStack(attributesBuilder.build());
-
+        
         out = outputStack.getOutWriter();
         staticOut = outputStack.getStaticWriter();
         expressionOut = outputStack.getExpressionWriter();
-
+        
         this.webRequest = grailsWebRequest;
         if (grailsWebRequest != null) {
             grailsWebRequest.setOut(out);
             request = grailsWebRequest.getCurrentRequest();
         }
-
+        
         setVariableDirectly(OUT, out);
         setVariableDirectly(EXPRESSION_OUT, expressionOut);
     }
-
+    
     @SuppressWarnings("unchecked")
     private void setVariableDirectly(String name, Object value) {
         Binding binding = getBinding();
@@ -252,7 +254,7 @@ public abstract class GroovyPage extends Script {
         while (index >= bodyClosures.size()) {
             bodyClosures.add(null);
         }
-
+        
         bodyClosures.set(index, bodyClosure);
     }
 
@@ -396,7 +398,7 @@ public abstract class GroovyPage extends Script {
                     boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName);
                     Object tagLibClosure = tagLib.getProperty(tagName);
                     if (tagLibClosure instanceof Closure) {
-                        Object encodeAsForTag = gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName);
+                        Object encodeAsForTag = gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName); 
                         invokeTagLibClosure(tagName, tagNamespace, (Closure)tagLibClosure, attrs, body, returnsObject, encodeAsForTag);
                     } else {
                         throw new GrailsTagException("Tag [" + tagName + "] does not exist in tag library [" + tagLib.getClass().getName() + "]", getGroovyPageFileName(), lineNumber);
@@ -449,8 +451,8 @@ public abstract class GroovyPage extends Script {
         }
     }
 
-    private void invokeTagLibClosure(String tagName, String tagNamespace, Closure<?> tagLibClosure, Map<?,?> attrs, Closure<?> body, boolean returnsObject, Object defaultEncodeAs) {
-        Closure<?> tag = (Closure<?>)tagLibClosure.clone();
+    private void invokeTagLibClosure(String tagName, String tagNamespace, Closure tagLibClosure, Map attrs, Closure body, boolean returnsObject, Object defaultEncodeAs) {
+        Closure tag = (Closure)tagLibClosure.clone();
 
         if (!(attrs instanceof GroovyPageAttributes)) {
             attrs = new GroovyPageAttributes(attrs);
@@ -493,7 +495,7 @@ public abstract class GroovyPage extends Script {
             if(tagresult instanceof String && isHtmlPart((String)tagresult)) {
                 staticOut.print(tagresult);
             } else {
-                out.print(tagresult);
+                outputStack.getTaglibWriter().print(tagresult);
             }
         }
     }
@@ -517,16 +519,16 @@ public abstract class GroovyPage extends Script {
     public final static Object captureTagOutput(TagLibraryLookup gspTagLibraryLookup, String namespace,
                                                 String tagName, Map attrs, Object body, GrailsWebRequest webRequest) {
 
-        if (!(attrs instanceof GroovyPageAttributes)) {
-            attrs = new GroovyPageAttributes(attrs, false);
-        }
-        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(false);
         GroovyObject tagLib = lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
 
         if (tagLib == null) {
             throw new GrailsTagException("Tag [" + tagName + "] does not exist. No corresponding tag library found.");
         }
 
+        if (!(attrs instanceof GroovyPageAttributes)) {
+            attrs = new GroovyPageAttributes(attrs, false);
+        }
+        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(false);
         Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest);
 
         final GroovyPageTagWriter tagOutput = new GroovyPageTagWriter();
@@ -547,7 +549,7 @@ public abstract class GroovyPage extends Script {
             GroovyPageOutputStackAttributes.Builder builder = WithCodecHelper.createOutputStackAttributesBuilder(codecInfo, webRequest.getAttributes().getGrailsApplication());
             builder.topWriter(tagOutput);
             outputStack.push(builder.build());
-
+           
             Object tagLibProp = tagLib.getProperty(tagName); // retrieve tag lib and create wrapper writer
             if (tagLibProp instanceof Closure) {
                 Closure tag = (Closure) ((Closure) tagLibProp).clone();
@@ -562,7 +564,7 @@ public abstract class GroovyPage extends Script {
                                 if(actualBody instanceof ConstantClosure) {
                                     outputStack.getStaticWriter().print(bodyResult2);
                                 } else {
-                                    outputStack.getOutWriter().print(bodyResult2);
+                                    outputStack.getTaglibWriter().print(bodyResult2);
                                 }
                             }
                         }
@@ -577,21 +579,21 @@ public abstract class GroovyPage extends Script {
                                 tagLib.getClass().getName() + "]");
 
                 }
-
-                Encoder pageEncoder = outputStack.getOutEncoder();
+                
+                Encoder taglibEncoder = outputStack.getTaglibEncoder(); 
 
                 boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(namespace, tagName);
 
                 if (returnsObject && bodyResult != null && !(bodyResult instanceof Writer)) {
-                    if(pageEncoder != null) {
-                        bodyResult=pageEncoder.encode(bodyResult);
+                    if(taglibEncoder != null) {
+                        bodyResult=taglibEncoder.encode(bodyResult);
                     }
                     return bodyResult;
                 }
 
                 // add some method to always return string, configurable?
-                if(pageEncoder != null) {
-                    return pageEncoder.encode(tagOutput.getBuffer());
+                if(taglibEncoder != null) {
+                    return taglibEncoder.encode(tagOutput.getBuffer());
                 } else {
                     return tagOutput.getBuffer();
                 }
@@ -654,7 +656,7 @@ public abstract class GroovyPage extends Script {
     public String[] getHtmlParts() {
         return htmlParts;
     }
-
+    
     protected boolean isHtmlPart(String htmlPart) {
         return htmlPartsSet != null && htmlPart != null && htmlPartsSet.contains(System.identityHashCode(htmlPart));
     }
