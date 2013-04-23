@@ -189,15 +189,27 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter {
     }
 
     private boolean canFlushContentLengthAwareResponse() {
-        return CONTENT_LENGTH_COUNTING_ENABLED && bytesCounter != null && bytesCounter.isWriterReferenced() && response != null && !response.isCommitted() && !isTrouble();
+        return CONTENT_LENGTH_COUNTING_ENABLED && isDestinationActivated() && bytesCounter != null && bytesCounter.isWriterReferenced() && response != null && !response.isCommitted() && !isTrouble();
     }
 
     private void flushResponse() {
         try {
-            response.getWriter().flush();
+            if(isDestinationActivated()) {
+                response.getWriter().flush();
+            }
         }
         catch (IOException e) {
             handleIOException(e);
         }
+    }
+
+    @Override
+    public boolean isAllowUnwrappingOut() {
+        return false;
+    }
+
+    @Override
+    public Writer unwrap() {
+        return this;
     }
 }
