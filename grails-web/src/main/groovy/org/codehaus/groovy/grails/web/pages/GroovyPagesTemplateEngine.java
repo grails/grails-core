@@ -541,30 +541,11 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         GroovyPageParser parser;
         String path = getPathForResource(res);
         try {
-            String encoding = GroovyPageParser.DEFAULT_ENCODING;
-            String defaultCodecName = "none";
-            if (grailsApplication != null) {
-                Map<String,Object> config = grailsApplication.getFlatConfig();
-                Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
-                if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
-                    encoding = gspEnc.toString();
-                }
-
-                Object defaultCodecConf = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
-                if (defaultCodecConf != null) {
-                    defaultCodecName = defaultCodecConf.toString().trim();
-                }
-            }
-            parser = new GroovyPageParser(name, path, path, inputStream, encoding, defaultCodecName);
+            parser = new GroovyPageParser(name, path, path, inputStream, null, null);
+                
 
             if (grailsApplication != null) {
                 Map<String,Object> config = grailsApplication.getFlatConfig();
-
-                Object sitemeshPreprocessEnabled = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
-                if (sitemeshPreprocessEnabled != null) {
-                    final boolean enableSitemeshPreprocessing = BooleanUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim());
-                    parser.setEnableSitemeshPreprocessing(enableSitemeshPreprocessing);
-                }
 
                 Object keepDirObj = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR);
                 if (keepDirObj instanceof File) {

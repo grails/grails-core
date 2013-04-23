@@ -210,10 +210,19 @@ public class GroovyPageParser implements Tokens {
     }
 
     public GroovyPageParser(String name, String uri, String filename, InputStream in, String encoding, String expressionCodecName) throws IOException {
+        Map<?, ?> config = Holders.getFlatConfig();
+
         this.gspEncoding = encoding;
+        if(this.gspEncoding == null) {                            
+            if (config != null) {
+                Object gspEnc = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_ENCODING);
+                if ((gspEnc != null) && (gspEnc.toString().trim().length() > 0)) {
+                    this.gspEncoding = gspEnc.toString();
+                }
+            }
+        }
         this.expressionCodecDirectiveValue = expressionCodecName;
         if(expressionCodecDirectiveValue==null) {
-            Map<?, ?> config = Holders.getFlatConfig();
             if (config != null) {
                 Object o = config.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC);
                 if (o != null) {
@@ -225,6 +234,14 @@ public class GroovyPageParser implements Tokens {
             }
         }
 
+        if (config != null) {
+            Object sitemeshPreprocessEnabled = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
+            if (sitemeshPreprocessEnabled != null) {
+                final boolean enableSitemeshPreprocessing = BooleanUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim());
+                setEnableSitemeshPreprocessing(enableSitemeshPreprocessing);
+            }
+        }
+        
         if (filename != null && BuildSettingsHolder.getSettings() != null) {
             GrailsPluginInfo info = GrailsPluginUtils.getPluginBuildSettings().getPluginInfoForSource(filename);
             if (info != null) {
@@ -252,7 +269,7 @@ public class GroovyPageParser implements Tokens {
     }
 
     public GroovyPageParser(String name, String uri, String filename, InputStream in) throws IOException {
-        this(name, uri, filename, in, "UTF-8", null);
+        this(name, uri, filename, in, null, null);
     }
 
     public void setGspEncoding(String gspEncoding) {
