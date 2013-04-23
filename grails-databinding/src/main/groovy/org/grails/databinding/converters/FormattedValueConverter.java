@@ -27,7 +27,7 @@ class FormattedStringValueConverter implements FormattedValueConverter {
  *
  * @see BindingFormat
  * @see org.grails.databinding.SimpleDataBinder
- * @see org.grails.databinding.SimpleDataBinder#registerFormattedValueConverter(Class, FormattedValueConverter)
+ * @see org.grails.databinding.SimpleDataBinder#registerFormattedValueConverter(FormattedValueConverter)
  */
 public interface FormattedValueConverter {
     /**

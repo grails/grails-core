@@ -75,7 +75,7 @@ class SimpleDataBinder implements DataBinder {
         registerStructuredEditor java.sql.Date.class, new StructuredSqlDateBindingEditor()
         registerStructuredEditor java.util.Calendar.class, new StructuredCalendarBindingEditor()
         
-        registerFormattedValueConverter Date, new FormattedDateValueConverter()
+        registerFormattedValueConverter new FormattedDateValueConverter()
     }
 
     void registerStructuredEditor(Class clazz, StructuredBindingEditor editor) {
@@ -85,8 +85,8 @@ class SimpleDataBinder implements DataBinder {
     void registerConverter(Class clazz, ValueConverter converter) {
         conversionHelpers[clazz] = converter
     }
-    void registerFormattedValueConverter(Class clazz, FormattedValueConverter converter) {
-        formattedValueConvertersionHelpers[clazz] = converter
+    void registerFormattedValueConverter(FormattedValueConverter converter) {
+        formattedValueConvertersionHelpers[converter.targetType] = converter
     }
 
     /**
