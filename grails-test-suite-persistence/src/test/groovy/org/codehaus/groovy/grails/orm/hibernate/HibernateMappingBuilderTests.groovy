@@ -330,13 +330,15 @@ class HibernateMappingBuilderTests extends GroovyTestCase {
 
         mapping = builder.evaluate {
             columns {
-                things joinTable:[name:'foo', key:'foo_id', column:'bar_id']
+                things joinTable:[name:'foo', key:'foo_id', column:'bar_id', schema: 'foos', catalog: 'bars']
             }
         }
 
         property = mapping.getPropertyConfig('things')
         assert property?.joinTable
         assertEquals "foo", property.joinTable.name
+        assertEquals "foos", property.joinTable.schema
+        assertEquals "bars", property.joinTable.catalog
         assertEquals "foo_id", property.joinTable.key.name
         assertEquals "bar_id", property.joinTable.column.name
     }

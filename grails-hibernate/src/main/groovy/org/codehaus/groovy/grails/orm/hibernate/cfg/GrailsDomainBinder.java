@@ -1179,9 +1179,22 @@ public final class GrailsDomainBinder {
             Collection collection, Table ownerTable, String sessionFactoryBeanName) {
 
         String prefix = ownerTable.getSchema();
+        PropertyConfig config = getPropertyConfig(property);
+        JoinTable jt = config != null ? config.getJoinTable() : null;
+
         String tableName = (prefix == null ? "" : prefix + '.') + calculateTableForMany(property, sessionFactoryBeanName);
+        String schemaName = mappings.getSchemaName();
+        String catalogName = mappings.getCatalogName();
+        if(jt != null) {
+            if(jt.getSchema() != null) {
+                schemaName = jt.getSchema();
+            }
+            if(jt.getCatalog() != null) {
+                catalogName = jt.getCatalog();
+            }
+        }
         collection.setCollectionTable(mappings.addTable(
-              mappings.getSchemaName(), mappings.getCatalogName(),
+                schemaName, catalogName,
               tableName, null, false));
     }
 
