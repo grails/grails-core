@@ -202,7 +202,6 @@ public class DataBindingUtils {
             }
         }
         if (!useLegacyBinder && source instanceof Map) {
-            
             final Map propertyMap = convertPotentialGStrings((Map) source);
             final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());

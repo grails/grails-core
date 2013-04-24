@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -35,31 +35,31 @@ import org.grails.databinding.errors.SimpleBindingError
 import org.grails.databinding.events.DataBindingListener
 import org.grails.databinding.xml.GPathResultMap
 
-/** 
+/**
  * A data binder that will bind nested Maps to an object.
- * 
+ *
  <pre>
  class Person {
      String firstName
      Address homeAddress
  }
- 
+
  class Address {
      String city
      String state
  }
- 
+
  def person = new Person()
  def binder = new SimpleDataBinder()
  binder.bind person, [firstName: 'Steven', homeAddress: [city: 'St. Louis', state: 'Missouri']]
  assert person.firstName == 'Steven'
  assert person.homeAddress.city == 'St. Louis'
  assert person.homeAddress.state == 'Missouri'
- 
+
  </pre>
  *
  * @author Jeff Brown
- * @since 2.3 
+ * @since 2.3
  */
 @CompileStatic
 class SimpleDataBinder implements DataBinder {
@@ -74,17 +74,17 @@ class SimpleDataBinder implements DataBinder {
     SimpleDataBinder() {
         registerConverter new DateConversionHelper()
 
-        registerStructuredEditor java.util.Date.class, new StructuredDateBindingEditor()
-        registerStructuredEditor java.sql.Date.class, new StructuredSqlDateBindingEditor()
-        registerStructuredEditor java.util.Calendar.class, new StructuredCalendarBindingEditor()
-        
+        registerStructuredEditor Date, new StructuredDateBindingEditor()
+        registerStructuredEditor java.sql.Date, new StructuredSqlDateBindingEditor()
+        registerStructuredEditor Calendar, new StructuredCalendarBindingEditor()
+
         registerFormattedValueConverter new FormattedDateValueConverter()
     }
 
     void registerStructuredEditor(Class clazz, StructuredBindingEditor editor) {
         structuredEditors[clazz] = editor
     }
-    
+
     void registerConverter(ValueConverter converter) {
         conversionHelpers[converter.targetType] = converter
     }
