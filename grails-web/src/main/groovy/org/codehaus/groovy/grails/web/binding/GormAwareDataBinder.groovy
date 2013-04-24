@@ -229,11 +229,11 @@ class GormAwareDataBinder extends SimpleDataBinder {
                 if (property != null) {
                     if(Collection.isAssignableFrom(property.type)) {
                         if(propertyValue instanceof String) {
-                            isSet = addElementToCollection obj, propName, property, propertyValue
+                            isSet = addElementToCollection obj, propName, property, propertyValue, true
                         } else if(propertyValue instanceof String[]){
                             if(isDomainClass(property.referencedPropertyType)) {
                                 propertyValue.each { val ->
-                                    isSet = isSet | addElementToCollection(obj, propName, property, val)
+                                    isSet = isSet | addElementToCollection(obj, propName, property, val, false)
                                 }
                             }
                         }
@@ -261,10 +261,13 @@ class GormAwareDataBinder extends SimpleDataBinder {
         }
     }
 
-    protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue) {
+    protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue, boolean clearCollection) {
         boolean isSet = false
         def coll = initializeCollection obj, propName, property.type
         if(coll != null) {
+            if(clearCollection) {
+                coll.clear()
+            }
             def referencedType = getReferencedTypeForCollection propName, obj
             if(referencedType != null) {
                 if(isDomainClass(referencedType)) {

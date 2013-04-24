@@ -384,7 +384,9 @@ class SimpleDataBinder implements DataBinder {
                             List list = (List)((Map)propertyValue)[key]
                             addElementsToCollection(obj, propName, list)
                         } else {
-                            initializeProperty(obj, propName, propertyType, source)
+                            if(obj[propName] == null) {
+                                initializeProperty(obj, propName, propertyType, source)
+                            }
                             bind obj[propName], propertyValue
                         }
                     } else {
