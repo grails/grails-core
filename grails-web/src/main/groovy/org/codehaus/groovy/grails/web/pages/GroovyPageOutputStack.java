@@ -1,19 +1,26 @@
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.Holders;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.GrailsPlugin;
+import org.codehaus.groovy.grails.support.encoding.CodecLookup;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsLazyProxyPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsLazyProxyPrintWriter.DestinationFactory;
 import org.codehaus.groovy.grails.web.util.GrailsWrappedWriter;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -151,19 +158,48 @@ public final class GroovyPageOutputStack {
             return GroovyPageOutputStack.this;
         }
     }
+    
+    private static final class CodecSettingsLookup {
+        GroovyPageConfig groovyPageConfig;
+        CodecLookup codecLookup;
+        
+        public CodecSettingsLookup() {
+            groovyPageConfig = new GroovyPageConfig(Holders.getFlatConfig());
+            GrailsApplication grailsApplication = Holders.getGrailsApplication();
+            if(grailsApplication != null) {
+                codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup.class);
+            }
+        }
+        
+        public Encoder lookupEncoder(String codecWriterName) {
+            if(codecLookup==null) return null;
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if(webRequest != null) {
+                GrailsPlugin plugin = null;
+                GroovyPageBinding binding = (GroovyPageBinding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
+                if(binding != null) {
+                    plugin = binding.getPagePlugin();
+                }
+                return codecLookup.lookupEncoder(groovyPageConfig.getCodecSettings(plugin, codecWriterName));
+            }
+            return null;
+        }
+    }
 
+    final CodecSettingsLookup codecSettingsLookup = new CodecSettingsLookup();
+    
     private GroovyPageOutputStack(GroovyPageOutputStackAttributes attributes) {
         outWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
-                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.outEncoder, encodingStateRegistry);
+                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.outEncoder, encodingStateRegistry, WithCodecHelper.OUT_CODEC_NAME);
             }
         });
         staticWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
                 if(stackEntry.staticEncoder != null) {
-                    return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.staticEncoder, encodingStateRegistry);
+                    return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.staticEncoder, encodingStateRegistry, WithCodecHelper.STATIC_CODEC_NAME);
                 } else {
                     return stackEntry.unwrappedTarget;            
                 }
@@ -172,13 +208,13 @@ public final class GroovyPageOutputStack {
         expressionWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
-                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.expressionEncoder, encodingStateRegistry);
+                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.expressionEncoder, encodingStateRegistry, WithCodecHelper.EXPRESSION_CODEC_NAME);
             }
         });
         taglibWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
-                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.taglibEncoder, encodingStateRegistry);
+                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.taglibEncoder, encodingStateRegistry, WithCodecHelper.TAGLIB_CODEC_NAME);
             }
         });
         this.autoSync = attributes.isAutoSync();
@@ -277,7 +313,10 @@ public final class GroovyPageOutputStack {
         taglibWriter.setDestinationActivated(false);
     }
     
-    private Writer createEncodingWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
+    private Writer createEncodingWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry, String codecWriterName) {
+        if(encoder==null) {
+            encoder = codecSettingsLookup.lookupEncoder(codecWriterName);
+        }
         Writer encodingWriter;
         if(out instanceof EncodedAppenderWriterFactory) {
             encodingWriter=((EncodedAppenderWriterFactory)out).getWriterForEncoder(encoder, encodingStateRegistry);

@@ -17,6 +17,7 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifierProvider;
 import org.codehaus.groovy.grails.support.encoding.CodecLookup;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
+import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -28,6 +29,10 @@ public class DefaultCodecLookup implements GrailsApplicationAware, InitializingB
     protected GrailsApplication grailsApplication;
     protected Map<String, Encoder> encoders;
     protected Map<String, Decoder> decoders;
+    public static final Encoder NONE_ENCODER = new NoneEncoder();
+    static {
+        DefaultEncodingStateRegistry.NONE_ENCODER = NONE_ENCODER;
+    }
 
     public void afterPropertiesSet() throws Exception {
         registerCodecs();
@@ -38,19 +43,24 @@ public class DefaultCodecLookup implements GrailsApplicationAware, InitializingB
     }
     
     public Encoder lookupEncoder(String codecName) {
-        return lookupCodec(codecName, encoders);
+        return lookupCodec(codecName, encoders, Encoder.class);
     }
 
     public Decoder lookupDecoder(String codecName) {
-        return lookupCodec(codecName, decoders);
+        return lookupCodec(codecName, decoders, Decoder.class);
     }
 
-    private <T> T lookupCodec(String codecName, Map<String, T> map) {
-        if(codecName != null && codecName.length() > 0 && !NONE_CODEC_NAME.equalsIgnoreCase(codecName)) {
-            return map.get(codecName);
-        } else {
-            return null;
+    private <T> T lookupCodec(String codecName, Map<String, T> map, Class<T> returnType) {
+        if(codecName != null && codecName.length() > 0) {
+            if(NONE_CODEC_NAME.equalsIgnoreCase(codecName)) {
+                if(returnType == Encoder.class) {   
+                    return (T)NONE_ENCODER;
+                }
+            } else {
+                return map.get(codecName);
+            }
         }
+        return null;
     }
     
     protected void registerCodecs() {

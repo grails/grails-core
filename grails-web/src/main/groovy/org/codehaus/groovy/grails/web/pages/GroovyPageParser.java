@@ -142,6 +142,7 @@ public class GroovyPageParser implements Tokens {
     public static final String CONFIG_PROPERTY_GSP_ENCODING = "grails.views.gsp.encoding";
     public static final String CONFIG_PROPERTY_GSP_KEEPGENERATED_DIR = "grails.views.gsp.keepgenerateddir";
     public static final String CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS = "grails.views.gsp.sitemesh.preprocess";
+    public static final String CONFIG_PROPERTY_GSP_CODECS = "grails.views.gsp.codecs";
 
     private static final String DEFAULT_EXPRESSIONCODEC = "none";
     private static final String DEFAULT_STATICCODEC = "none";
