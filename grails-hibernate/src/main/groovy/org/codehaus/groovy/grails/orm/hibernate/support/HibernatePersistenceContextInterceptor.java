@@ -21,7 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.codehaus.groovy.grails.orm.hibernate.metaclass.AbstractSavePersistentMethod;
-import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.codehaus.groovy.grails.support.ParticipatingInterceptor;
 import org.hibernate.FlushMode;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
@@ -33,7 +33,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
  * @author Graeme Rocher
  * @since 0.4
  */
-public class HibernatePersistenceContextInterceptor implements PersistenceContextInterceptor {
+public class HibernatePersistenceContextInterceptor implements ParticipatingInterceptor {
 
     private static final Log LOG = LogFactory.getLog(HibernatePersistenceContextInterceptor.class);
     private SessionFactory sessionFactory;
@@ -136,6 +136,15 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
         }
     }
 
+    public void setParticipate(boolean flag) {
+        participate.set(flag);
+    }
+
+    public boolean getParticipate() {
+        Boolean ret = participate.get();
+        return (ret != null) ? ret : false;
+    }
+
     private Session getSession() {
         return getSession(true);
     }
@@ -173,14 +182,5 @@ public class HibernatePersistenceContextInterceptor implements PersistenceContex
         }
         nestingCount.set(value);
         return value;
-    }
-
-    private void setParticipate(boolean flag) {
-        participate.set(flag);
-    }
-
-    private boolean getParticipate() {
-        Boolean ret = participate.get();
-        return (ret != null) ? ret : false;
     }
 }
