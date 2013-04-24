@@ -86,6 +86,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     private boolean initialized = false;
 
     private CacheEntry<Resource> shouldReloadCacheEntry = new CacheEntry<Resource>(null);
+    public static String DEFAULT_PLUGIN_PATH = "";
 
     public GroovyPageMetaInfo() {
         shouldReloadCacheEntry.expire();
@@ -161,7 +162,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
         GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
         pluginPath = pluginManager.getPluginPathForClass(pageClass);
-        if (pluginPath == null) pluginPath="";
+        if (pluginPath == null) pluginPath=DEFAULT_PLUGIN_PATH ;
         pagePlugin = pluginManager.getPluginForClass(pageClass);
     }
 

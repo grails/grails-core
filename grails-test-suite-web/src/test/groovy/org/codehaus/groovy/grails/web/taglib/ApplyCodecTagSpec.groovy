@@ -26,15 +26,8 @@ import spock.lang.Specification
 
 @TestFor(ApplicationTagLib)
 class ApplyCodecTagSpec extends Specification {
-    GrailsApplication application
-
-    def setup() {
-        application = grailsApplication
-        CodecsGrailsPlugin codecsMockPlugin = new CodecsGrailsPlugin()
-        codecsMockPlugin.onChange.delegate = this
-        [HTMLCodec, HTML4Codec].each { codecsMockPlugin.onChange([source: it]) }
-    }
-
+    
+        
     def "applyCodec tag should apply codecs to values"() {
         when:
             def output=applyTemplate('<g:applyCodec name="html">${"<script>"}</g:applyCodec>')

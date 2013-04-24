@@ -1,12 +1,9 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import java.io.Writer;
-
 import grails.test.MockUtils
 import grails.util.GrailsWebUtil
+import grails.util.Holders
 import grails.util.Metadata
-import grails.web.CamelCaseUrlConverter
-import grails.web.UrlConverter
 
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -23,12 +20,13 @@ import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPageMetaInfo
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
@@ -62,7 +60,6 @@ import org.w3c.dom.Document
 import com.opensymphony.module.sitemesh.RequestConstants
 
 abstract class AbstractGrailsTagTests extends GroovyTestCase {
-
     MockServletContext servletContext
     GrailsWebRequest webRequest
     MockHttpServletRequest request
@@ -73,7 +70,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     GrailsApplication ga
     GrailsPluginManager mockManager
     GroovyClassLoader gcl = new GroovyClassLoader()
-
+    
     boolean enableProfile = false
 
     GrailsApplication grailsApplication
@@ -90,11 +87,13 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         }
         finally {
             RequestContextHolder.setRequestAttributes(null)
+            Holders.config = null
         }
     }
 
     GrailsWebRequest buildMockRequest(ConfigObject config) throws Exception {
         ga.config = config
+        Holders.config = config
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
         GrailsWebRequest request = GrailsWebUtil.bindMockWebRequest(appCtx)
@@ -214,6 +213,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     }
 
     protected void setUp() throws Exception {
+        GroovyPageMetaInfo.DEFAULT_PLUGIN_PATH = null
         domBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder()
         xpath = XPathFactory.newInstance().newXPath()
         originalHandler = GroovySystem.metaClassRegistry.metaClassCreationHandle
@@ -223,9 +223,6 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         grailsApplication = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         grailsApplication.metadata[Metadata.APPLICATION_NAME] = getClass().name
         ga = grailsApplication
-        def mainContext = new MockApplicationContext()
-        mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
-        ga.mainContext = mainContext
         grailsApplication.initialise()
         mockManager = new MockGrailsPluginManager(grailsApplication)
         mockManager.registerProvidedArtefacts(grailsApplication)
@@ -278,14 +275,15 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
         appCtx = springConfig.getApplicationContext()
+        grailsApplication.mainContext = appCtx
 
         ctx.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
         mockManager.applicationContext = appCtx
 
-        GroovySystem.metaClassRegistry.removeMetaClass(String)
-        GroovySystem.metaClassRegistry.removeMetaClass(Object)
+        //GroovySystem.metaClassRegistry.removeMetaClass(String)
+        //GroovySystem.metaClassRegistry.removeMetaClass(Object)
 
         mockManager.doDynamicMethods()
         request = webRequest.currentRequest
@@ -315,6 +313,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         onDestroy()
 
         ServletContextHolder.servletContext = null
+        GroovyPageMetaInfo.DEFAULT_PLUGIN_PATH = ""
     }
 
     protected void onInit() {

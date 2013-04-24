@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
 import grails.util.GrailsWebUtil;
+import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
@@ -45,6 +46,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
         DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication();
         grailsApplication.setConfig(config);
+        Holders.setConfig(config);
         appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
         GrailsConventionGroovyPageLocator pageLocator = new GrailsConventionGroovyPageLocator();
         pageLocator.setApplicationContext(appCtx);

@@ -12,27 +12,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.util
+package org.codehaus.groovy.grails.web.util;
 
-import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import groovy.transform.TypeChecked
 
-import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsCodecClass
+import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
-import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes.Builder
+import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
 
 /**
- * Helper methods for {@link #withCodec} feature
+ * Helper methods for {@link #withCodec} feature 
  *
  * @author Lari Hotari
  * @since 2.3
  */
 @CompileStatic
-class WithCodecHelper {
+public class WithCodecHelper {
     /**  outCodec escapes the static html parts coming from the GSP file to output */
     public static String OUT_CODEC_NAME="outCodec"
     /** expressionCodec escapes values inside ${} to output */
@@ -47,11 +45,12 @@ class WithCodecHelper {
     /** name is the key to set out and expression codecs at once */
     public static String OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME="name"
 
+
     /**
      * Executes closure with given codecs
-     *
+     * 
      * codecInfo parameter can be a single String value or a java.util.Map.
-     * When it's a single String value, "outCodec" and "expressionCodec" get set with the given codec 
+     * When it's a single String value, "outCodec", "templateCodec" and "expressionCodec" get set with the given codec 
      * When it's a java.util.Map, these keys get used:
      * <ul>
      * <li>outCodec - escapes output from scriptlets to output (the codec attached to "out" writer instance in GSP scriptlets)</li>
@@ -71,25 +70,25 @@ class WithCodecHelper {
      * @param closure the closure to execute
      * @return the return value of the closure
      */
-    static withCodec(GrailsApplication grailsApplication, Object codecInfo, Closure closure) {
-        GroovyPageOutputStack outputStack=GroovyPageOutputStack.currentStack()
+    public static withCodec(GrailsApplication grailsApplication, Object codecInfo, Closure closure) {
+        GroovyPageOutputStack outputStack=GroovyPageOutputStack.currentStack();
         try {
-            outputStack.push(createOutputStackAttributesBuilder(codecInfo, grailsApplication).build(), false)
-            return closure.call()
+            outputStack.push(createOutputStackAttributesBuilder(codecInfo, grailsApplication).build(), false);
+            return closure.call();
         } finally {
-            outputStack.pop()
+            outputStack.pop();
         }
     }
 
     /**
      * Creates a builder for building a new {@link GroovyPageOutputStackAttributes} instance
      *
-     * @param codecInfo the codec info, see {@link #withCodec} method for more info
+     * @param codecInfo the codec info, see {@link #withCodec} method for more info 
      * @param grailsApplication the grails application
      * @return the builder instance for building {@link GroovyPageOutputStackAttributes} instance
      */
-    static Builder createOutputStackAttributesBuilder(Object codecInfo, GrailsApplication grailsApplication) {
-        Builder builder = new Builder()
+    public static org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes.Builder createOutputStackAttributesBuilder(Object codecInfo, GrailsApplication grailsApplication) {
+        GroovyPageOutputStackAttributes.Builder builder=new GroovyPageOutputStackAttributes.Builder()
         builder.inheritPreviousEncoders(true)
         if(codecInfo != null) {
             if(codecInfo instanceof Map) {
@@ -130,22 +129,8 @@ class WithCodecHelper {
      * @param codecName the codec name
      * @return the encoder instance
      */
-    static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
-        GrailsCodecClass codecArtefact = null
-        if(codecName != null && codecName.length() > 0 && !"none".equalsIgnoreCase(codecName)) {
-            if(codecName.equalsIgnoreCase("html")) {
-                codecName="HTML"
-            } else if (codecName.equalsIgnoreCase("html4")) {
-                codecName="HTML4"
-            } else {
-                codecName=GrailsNameUtils.getPropertyNameRepresentation(codecName)
-            }
-            codecArtefact = (GrailsCodecClass) grailsApplication.getArtefactByLogicalPropertyName(CodecArtefactHandler.TYPE, codecName)
-            if(codecArtefact==null) {
-                codecArtefact = (GrailsCodecClass) grailsApplication.getArtefactByLogicalPropertyName(CodecArtefactHandler.TYPE, codecName.toUpperCase())
-            }
-        }
-        Encoder encoder = codecArtefact != null ? codecArtefact.getEncoder() : null
-        return encoder
+    public static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
+        CodecLookup codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup.class);
+        return codecLookup.lookupEncoder(codecName);
     }
 }

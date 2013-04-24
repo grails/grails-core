@@ -16,7 +16,7 @@ class JavascriptTagLibResourcesTests extends AbstractGrailsTagTests {
     }
 
     void onInitMockBeans() {
-        grailsApplication.mainContext.registerMockBean('grailsResourceProcessor', [something:'value'])
+        grailsApplication.parentContext.registerMockBean('grailsResourceProcessor', [something:'value'])
     }
 
     /**

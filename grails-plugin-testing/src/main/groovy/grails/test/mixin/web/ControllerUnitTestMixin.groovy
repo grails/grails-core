@@ -209,6 +209,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, ref('grailsApplication'))
         }
+        defineBeans(new CodecsGrailsPlugin().doWithSpring)
 
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
@@ -224,6 +225,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         new CodecsGrailsPlugin().providedArtefacts.each {
             mockCodec(it)
         }
+        
+        applicationContext.codecLookup.reInitialize()
 
         if (webRequest != null) {
             return

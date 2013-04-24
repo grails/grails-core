@@ -20,6 +20,7 @@ import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
+import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup;
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec;
 import org.codehaus.groovy.grails.plugins.codecs.XMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
@@ -64,13 +65,11 @@ class CodecsGrailsPlugin {
     def onChange = { event ->
         if (application.isArtefactOfType(CodecArtefactHandler.TYPE, event.source)) {
             def codecClass = application.addArtefact(CodecArtefactHandler.TYPE, event.source)
-            codecClass.configureCodecMethods()
+            event.ctx.codecLookup.reInitialize()
         }
     }
-
-    def doWithDynamicMethods = { applicationContext ->
-        for (GrailsCodecClass c in application.codecClasses) {
-            c.configureCodecMethods()
-        }
+    
+    def doWithSpring = {
+        codecLookup(DefaultCodecLookup)
     }
 }

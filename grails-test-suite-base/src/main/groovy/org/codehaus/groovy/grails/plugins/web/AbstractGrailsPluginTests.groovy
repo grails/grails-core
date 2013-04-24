@@ -50,9 +50,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         onSetUp()
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl)
         ga.metadata[Metadata.APPLICATION_NAME] = getClass().name
-        def mainContext = new MockApplicationContext()
-        mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
-        ga.mainContext = mainContext
+        ctx.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
         mockManager = new MockGrailsPluginManager(ga)
         def dependentPlugins = pluginsToLoad.collect { new DefaultGrailsPlugin(it, ga)}
         dependentPlugins.each{ mockManager.registerMockPlugin(it); it.manager = mockManager }
@@ -75,6 +73,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
         appCtx = springConfig.getApplicationContext()
+        ga.mainContext = appCtx
         mockManager.applicationContext = appCtx
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         dependentPlugins*.doWithDynamicMethods(appCtx)

@@ -122,6 +122,7 @@ public final class GroovyPageOutputStack {
         Writer unwrappedTarget;
         Encoder staticEncoder;
         Encoder taglibEncoder;
+        boolean taglibEncoderInherited=false;
         Encoder outEncoder;
         Encoder expressionEncoder;
 
@@ -135,6 +136,7 @@ public final class GroovyPageOutputStack {
             newEntry.staticEncoder = staticEncoder;
             newEntry.outEncoder = outEncoder;
             newEntry.taglibEncoder = taglibEncoder;
+            newEntry.taglibEncoderInherited = taglibEncoderInherited;
             newEntry.expressionEncoder = expressionEncoder;
             return newEntry;
         }
@@ -235,7 +237,9 @@ public final class GroovyPageOutputStack {
         stackEntry.outEncoder = applyEncoder(attributes.getOutEncoder(), previousStackEntry != null ? previousStackEntry.outEncoder : null, attributes.isInheritPreviousEncoders());
         stackEntry.staticEncoder = applyEncoder(attributes.getStaticEncoder(), previousStackEntry != null ? previousStackEntry.staticEncoder : null, attributes.isInheritPreviousEncoders());
         stackEntry.expressionEncoder = applyEncoder(attributes.getExpressionEncoder(), previousStackEntry != null ? previousStackEntry.expressionEncoder : null, attributes.isInheritPreviousEncoders());
-        stackEntry.taglibEncoder = applyEncoder(attributes.getTaglibEncoder(), previousStackEntry != null ? previousStackEntry.taglibEncoder : null, attributes.isInheritPreviousEncoders());
+        stackEntry.taglibEncoder = applyEncoder(attributes.getTaglibEncoder(), previousStackEntry != null ? previousStackEntry.taglibEncoder : null, attributes.isInheritPreviousEncoders() && (previousStackEntry == null || !previousStackEntry.taglibEncoderInherited));
+        stackEntry.taglibEncoderInherited = stackEntry.taglibEncoder != null && attributes.getTaglibEncoder() == null; 
+        
         stack.push(stackEntry);
 
         resetWriters();
