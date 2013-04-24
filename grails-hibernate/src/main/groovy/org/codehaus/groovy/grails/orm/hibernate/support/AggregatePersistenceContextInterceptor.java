@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.support.ParticipatingInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -28,7 +29,7 @@ import org.springframework.context.ApplicationContextAware;
 /**
  * @author Burt Beckwith
  */
-public class AggregatePersistenceContextInterceptor implements PersistenceContextInterceptor, InitializingBean, ApplicationContextAware {
+public class AggregatePersistenceContextInterceptor implements ParticipatingInterceptor, InitializingBean, ApplicationContextAware {
 
     private List<PersistenceContextInterceptor> interceptors = new ArrayList<PersistenceContextInterceptor>();
     private List<String> dataSourceNames = new ArrayList<String>();
@@ -92,6 +93,26 @@ public class AggregatePersistenceContextInterceptor implements PersistenceContex
         for (PersistenceContextInterceptor interceptor : interceptors) {
             interceptor.setReadWrite();
         }
+    }
+
+    public void setParticipate(boolean flag) {
+        for (PersistenceContextInterceptor interceptor : interceptors) {
+            if (interceptor instanceof ParticipatingInterceptor) {
+                ((ParticipatingInterceptor)interceptor).setParticipate(flag);
+            }
+        }
+    }
+
+    public boolean getParticipate() {
+        for (PersistenceContextInterceptor interceptor : interceptors) {
+            if (interceptor instanceof ParticipatingInterceptor) {
+                if (((ParticipatingInterceptor)interceptor).getParticipate()) {
+                    // true at least one is true
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
