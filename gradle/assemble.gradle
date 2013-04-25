@@ -191,16 +191,12 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
     into("grails-$grailsVersion") {
         from(projectDir) {
             include 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', "src/"
-            exclude 'ant/bin', 'src/grails', 'src/war', 'gradlew'
+            exclude 'ant/bin', 'src/grails', 'src/war'
         }
         from("grails-resources") {
             include 'src/grails/**', 'src/war/**'
             // this file is accounted for later with special handling to do some token replacement
             exclude 'src/grails/grails-macros.xml'
-        }
-        from(projectDir) {
-            include "gradlew"
-            fileMode = 0755
         }
         from(docs.destinationDir) {
             into "doc"
