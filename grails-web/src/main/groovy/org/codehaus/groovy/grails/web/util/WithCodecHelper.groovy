@@ -20,8 +20,10 @@ import groovy.transform.TypeChecked
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
+import org.codehaus.groovy.grails.web.pages.GroovyPageConfig
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
+import org.codehaus.groovy.grails.web.pages.GroovyPageParser
 
 /**
  * Helper methods for {@link #withCodec} feature 
@@ -31,39 +33,35 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
  */
 @CompileStatic
 public class WithCodecHelper {
-    /**  outCodec escapes the static html parts coming from the GSP file to output */
-    public static String OUT_CODEC_NAME="outCodec"
-    /** expressionCodec escapes values inside ${} to output */
-    public static String EXPRESSION_CODEC_NAME="expressionCodec"
-    public static String EXPRESSION_CODEC_NAME_ALIAS="defaultCodec"
-    /**  staticCodec escapes the static html parts coming from the GSP file to output */
-    public static String STATIC_CODEC_NAME="staticCodec"
-    public static String TAGLIB_CODEC_NAME="taglibCodec"
-
     /** all is the key to set all codecs at once */
     public static String ALL_CODECS_FALLBACK_KEY_NAME="all"
     /** name is the key to set out and expression codecs at once */
     public static String OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME="name"
+    
+    public static String INHERIT_KEY_NAME="inherit"
 
 
     /**
      * Executes closure with given codecs
      * 
      * codecInfo parameter can be a single String value or a java.util.Map.
-     * When it's a single String value, "outCodec", "templateCodec" and "expressionCodec" get set with the given codec 
+     * When it's a single String value, "out", "expression" and "taglib" get set with the given codec 
      * When it's a java.util.Map, these keys get used:
      * <ul>
-     * <li>outCodec - escapes output from scriptlets to output (the codec attached to "out" writer instance in GSP scriptlets)</li>
-     * <li>templateCodec - escapes output from taglibs to output (the codec attached to "out" writer instance in taglibs)</li>
-     * <li>expressionCodec - escapes values inside ${} to output</li>
-     * <li>staticCodec - escapes the static html parts coming from the GSP file to output</li>
+     * <li>out - escapes output from scriptlets to output (the codec attached to "out" writer instance in GSP scriptlets)</li>
+     * <li>taglib - escapes output from taglibs to output (the codec attached to "out" writer instance in taglibs)</li>
+     * <li>expression - escapes values inside ${} to output</li>
+     * <li>static - escapes the static html parts coming from the GSP file to output</li>
      * </ul>
      * These keys set several codecs at once:
      * <ul>
-     * <li>all - sets outCodec, taglibCodec, expressionCodec and staticCodec</li>
-     * <li>name - sets outCodec, taglibCodec and expressionCodec</li>
+     * <li>all - sets out, taglib, expression and static</li>
+     * <li>name - sets out, taglib and expression</li>
      * </ul>
-     * expressionCodec has an alias "defaultCodec".
+     * In addition there is
+     * <ul>
+     * <li>inherit (boolean) - defaults to true. Control whether codecs should be inherited to deeper level (taglib calls)</li> 
+     * </ul>
      *
      * @param grailsApplication the grailsApplication instance
      * @param codecInfo this parameter is explained above
@@ -92,24 +90,37 @@ public class WithCodecHelper {
         builder.inheritPreviousEncoders(true)
         if(codecInfo != null) {
             if(codecInfo instanceof Map) {
-                Map codecInfoMap = (Map)codecInfo
                 Map<String, Encoder> encoders = [:]
-
-                codecInfoMap.each { k, v ->
-                    String codecName=v.toString()
+                
+                Map<String, String> codecInfoMap = (Map<String,String>)((Map)codecInfo).collectEntries { k, v ->
+                    String codecWriterName = k.toString()
+                    String codecName=v?.toString() ?: 'none'
                     if(!encoders.containsKey(codecName)) {
                         encoders[codecName] = lookupEncoder(grailsApplication, codecName)
                     }
+                    [codecWriterName, codecName]
                 }
 
-                def outEncoderName = codecInfoMap[(OUT_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
-                builder.outEncoder(lookupEncoderFromMap(encoders, outEncoderName?.toString()))
-                def taglibEncoderName = codecInfoMap[(TAGLIB_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
-                builder.taglibEncoder(lookupEncoderFromMap(encoders, taglibEncoderName?.toString()))
-                def defaultEncoderName = codecInfoMap[(EXPRESSION_CODEC_NAME)] ?: codecInfoMap[(EXPRESSION_CODEC_NAME_ALIAS)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
-                builder.expressionEncoder(lookupEncoderFromMap(encoders, defaultEncoderName?.toString()))
-                def staticEncoderName = codecInfoMap[(STATIC_CODEC_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
-                builder.staticEncoder(lookupEncoderFromMap(encoders, staticEncoderName?.toString()))
+                def outEncoderName = codecInfoMap[(GroovyPageConfig.OUT_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
+                builder.outEncoder(lookupEncoderFromMap(encoders, outEncoderName))
+                
+                def taglibEncoderName = codecInfoMap[(GroovyPageConfig.TAGLIB_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
+                builder.taglibEncoder(lookupEncoderFromMap(encoders, taglibEncoderName))
+                
+                def defaultEncoderName = codecInfoMap[(GroovyPageConfig.EXPRESSION_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
+                builder.expressionEncoder(lookupEncoderFromMap(encoders, defaultEncoderName))
+                
+                def staticEncoderName = codecInfoMap[(GroovyPageConfig.STATIC_CODEC_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
+                builder.staticEncoder(lookupEncoderFromMap(encoders, staticEncoderName))
+                
+                if(codecInfoMap.containsKey(INHERIT_KEY_NAME)) {
+                    Object inheritVal = codecInfoMap.get(INHERIT_KEY_NAME)
+                    boolean inheritPrevious = inheritVal as boolean
+                    if(inheritPrevious && inheritVal instanceof CharSequence && inheritVal.toString()=="false") {
+                        inheritPrevious = false
+                    }
+                    builder.inheritPreviousEncoders(inheritPrevious)
+                }
             } else {
                 Encoder encoder = lookupEncoder(grailsApplication, codecInfo.toString())
                 builder.outEncoder(encoder).expressionEncoder(encoder).taglibEncoder(encoder);

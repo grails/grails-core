@@ -228,11 +228,11 @@ class GroovyPageWritable implements Writable {
     }
 
     private void makeLegacyCodecVariablesAvailable(boolean hasRequest, GroovyPageBinding binding) {
-        if (metaInfo.getExpressionCodec() != null) {
+        if (metaInfo.getExpressionEncoder() != null) {
             if (hasRequest) {
-                request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getExpressionCodec().getName());
+                request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, metaInfo.getExpressionEncoder().getCodecIdentifier().getCodecName());
             }
-            binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getExpressionCodec().getEncoder());
+            binding.setVariableDirectly(GroovyPage.CODEC_VARNAME, metaInfo.getExpressionEncoder());
         } else {
             if (hasRequest) {
                 request.setAttribute(GrailsApplicationAttributes.GSP_CODEC, GSP_NONE_CODEC_NAME);
