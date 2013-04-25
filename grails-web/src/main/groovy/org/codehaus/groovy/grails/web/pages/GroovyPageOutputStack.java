@@ -20,7 +20,6 @@ import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsLazyProxyPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsLazyProxyPrintWriter.DestinationFactory;
 import org.codehaus.groovy.grails.web.util.GrailsWrappedWriter;
-import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -129,7 +128,6 @@ public final class GroovyPageOutputStack {
         Writer unwrappedTarget;
         Encoder staticEncoder;
         Encoder taglibEncoder;
-        boolean taglibEncoderInherited=false;
         Encoder outEncoder;
         Encoder expressionEncoder;
 
@@ -143,7 +141,6 @@ public final class GroovyPageOutputStack {
             newEntry.staticEncoder = staticEncoder;
             newEntry.outEncoder = outEncoder;
             newEntry.taglibEncoder = taglibEncoder;
-            newEntry.taglibEncoderInherited = taglibEncoderInherited;
             newEntry.expressionEncoder = expressionEncoder;
             return newEntry;
         }
@@ -192,14 +189,14 @@ public final class GroovyPageOutputStack {
         outWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
-                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.outEncoder, encodingStateRegistry, WithCodecHelper.OUT_CODEC_NAME);
+                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.outEncoder, encodingStateRegistry, GroovyPageConfig.OUT_CODEC_NAME);
             }
         });
         staticWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
                 if(stackEntry.staticEncoder != null) {
-                    return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.staticEncoder, encodingStateRegistry, WithCodecHelper.STATIC_CODEC_NAME);
+                    return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.staticEncoder, encodingStateRegistry, GroovyPageConfig.STATIC_CODEC_NAME);
                 } else {
                     return stackEntry.unwrappedTarget;            
                 }
@@ -208,13 +205,13 @@ public final class GroovyPageOutputStack {
         expressionWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
-                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.expressionEncoder, encodingStateRegistry, WithCodecHelper.EXPRESSION_CODEC_NAME);
+                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.expressionEncoder, encodingStateRegistry, GroovyPageConfig.EXPRESSION_CODEC_NAME);
             }
         });
         taglibWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
-                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.taglibEncoder, encodingStateRegistry, WithCodecHelper.TAGLIB_CODEC_NAME);
+                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.taglibEncoder, encodingStateRegistry, GroovyPageConfig.TAGLIB_CODEC_NAME);
             }
         });
         this.autoSync = attributes.isAutoSync();
@@ -273,8 +270,7 @@ public final class GroovyPageOutputStack {
         stackEntry.outEncoder = applyEncoder(attributes.getOutEncoder(), previousStackEntry != null ? previousStackEntry.outEncoder : null, attributes.isInheritPreviousEncoders());
         stackEntry.staticEncoder = applyEncoder(attributes.getStaticEncoder(), previousStackEntry != null ? previousStackEntry.staticEncoder : null, attributes.isInheritPreviousEncoders());
         stackEntry.expressionEncoder = applyEncoder(attributes.getExpressionEncoder(), previousStackEntry != null ? previousStackEntry.expressionEncoder : null, attributes.isInheritPreviousEncoders());
-        stackEntry.taglibEncoder = applyEncoder(attributes.getTaglibEncoder(), previousStackEntry != null ? previousStackEntry.taglibEncoder : null, attributes.isInheritPreviousEncoders() && (previousStackEntry == null || !previousStackEntry.taglibEncoderInherited));
-        stackEntry.taglibEncoderInherited = stackEntry.taglibEncoder != null && attributes.getTaglibEncoder() == null; 
+        stackEntry.taglibEncoder = applyEncoder(attributes.getTaglibEncoder(), previousStackEntry != null ? previousStackEntry.taglibEncoder : null, attributes.isInheritPreviousEncoders());
         
         stack.push(stackEntry);
 
