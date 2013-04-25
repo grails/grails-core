@@ -100,11 +100,14 @@ task sourcesJars(type: Sync) {
 
 task pluginsFromRepo {
     ext.plugins = [
-        resources: "1.2",
-        webxml: "1.4.1",
+        cache: "1.0.1",
+        'database-migration': "1.3.3",
+        hibernate: "3.6.10.M1",
         jquery: "1.9.1",
-        'database-migration': "1.3.2",
-        cache: "1.0.1"
+        resources: "1.2",
+        scaffolding: "1.0.0",
+        tomcat: "7.0.39",
+        webxml: "1.4.1"
     ]
 
     ext.dir = file("$buildDir/pluginsFromRepo")
