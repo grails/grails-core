@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
+import org.codehaus.groovy.grails.support.ParticipatingInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -176,6 +177,11 @@ public class GrailsPageFilter extends SiteMeshFilter {
                 request.setAttribute(ALREADY_APPLIED_KEY, null);
             }
             if (persistenceInterceptor.isOpen()) {
+                if (persistenceInterceptor instanceof ParticipatingInterceptor) {
+                    // to ensure that it will close the session in the destroy() call
+                    ((ParticipatingInterceptor)persistenceInterceptor).setParticipate(false);
+                }
+
                 persistenceInterceptor.destroy();
             }
         }
