@@ -19,6 +19,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     static setterGetterClass
     static dateBindingClass
     static classWithHasMany
+    static classWithNoBindableProperties
     
     def setupSpec() {
         final gcl = new GrailsAwareClassLoader()
@@ -111,11 +112,20 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                     }
                 }
             ''')
+            classWithNoBindableProperties = gcl.parseClass('''
+                class ClassWithNoBindableProperties {
+                    String firstName
+                    String lastName
+                    static constraints = {
+                        firstName bindable: false
+                        lastName bindable: false
+                    }
+                }''')
             
             // there must be a request bound in order for the structured date editor to be registered
             GrailsWebUtil.bindMockWebRequest()
     }
-
+    
     void 'Test class with hasMany'() {
         when:
         final whiteListField = classWithHasMany.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
@@ -190,6 +200,18 @@ class DefaultASTDatabindingHelperSpec extends Specification {
            'person' in whiteList
            'person.*' in whiteList
            'person_*' in whiteList
+    }
+    
+    void 'Test binding to a class that has no bindable properties'() {
+        given:
+            def obj = classWithNoBindableProperties.newInstance()
+            
+        when:
+            obj.properties = [firstName: 'First Name', lastName: 'Last Name']
+            
+        then:
+            obj.firstName == null
+            obj.lastName == null
     }
 
     void 'Test that binding respects the generated white list'() {
