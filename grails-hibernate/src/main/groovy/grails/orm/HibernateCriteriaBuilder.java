@@ -1569,16 +1569,18 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
 
                     // Restore the previous projection, add settings for the pagination parameters,
                     // and then execute the query.
-                    if (projectionList != null && projectionList.getLength() > 0) {
-                        criteria.setProjection(projectionList);
-                    } else {
-                        criteria.setProjection(null);
-                    }
+                    boolean isProjection = (projectionList != null && projectionList.getLength() > 0);
+                    criteria.setProjection(isProjection ? projectionList : null);
+
                     for (Order orderEntry : orderEntries) {
                         criteria.addOrder(orderEntry);
                     }
                     if (resultTransformer == null) {
-                        criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
+                        // GRAILS-9644 - Use projection transformer
+                        criteria.setResultTransformer( isProjection ?
+                            CriteriaSpecification.PROJECTION :
+                            CriteriaSpecification.ROOT_ENTITY
+                        );
                     }
                     else if (paginationEnabledList) {
                         // relevant to GRAILS-5692
