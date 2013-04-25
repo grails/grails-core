@@ -29,6 +29,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
     public static final String BINDABLE_CONSTRAINT_NAME = "bindable";
 
     public static final String DEFAULT_DATABINDING_WHITELIST = "$defaultDatabindingWhiteList";
+    public static final String NO_BINDABLE_PROPERTIES = "$_NO_BINDABLE_PROPERTIES_$";
 
     private static Map<ClassNode, Set<String>> CLASS_NODE_TO_WHITE_LIST_PROPERTY_NAMES = new HashMap<ClassNode, Set<String>>();
 
@@ -95,31 +96,36 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
 
     private void addDefaultDatabindingWhitelistField(final SourceUnit sourceUnit, final ClassNode classNode) {
         final FieldNode defaultWhitelistField = classNode.getDeclaredField(DEFAULT_DATABINDING_WHITELIST);
-        if(defaultWhitelistField == null) {
-            final Set<String> propertyNamesToIncludeInWhiteList = getPropertyNamesToIncludeInWhiteList(sourceUnit, classNode);
-                
-            final ListExpression listExpression = new ListExpression();
-            for(String propertyName : propertyNamesToIncludeInWhiteList) {
+        if (defaultWhitelistField != null) {
+            return;
+        }
+
+        final Set<String> propertyNamesToIncludeInWhiteList = getPropertyNamesToIncludeInWhiteList(sourceUnit, classNode);
+
+        final ListExpression listExpression = new ListExpression();
+        if (propertyNamesToIncludeInWhiteList.size() > 0) {
+            for (String propertyName : propertyNamesToIncludeInWhiteList) {
                 listExpression.addExpression(new ConstantExpression(propertyName));
 
                 final FieldNode declaredField = getDeclaredFieldInInheritanceHierarchy(classNode, propertyName);
                 boolean isSimpleType = false;
-                if(declaredField != null) {
+                if (declaredField != null) {
                     final ClassNode type = declaredField.getType();
-                    if(type != null) {
+                    if (type != null) {
                         isSimpleType = SIMPLE_TYPES.contains(type);
                     }
                 }
-                if(!isSimpleType) {
+                if (!isSimpleType) {
                     listExpression.addExpression(new ConstantExpression(propertyName + "_*"));
                     listExpression.addExpression(new ConstantExpression(propertyName + ".*"));
                 }
             }
-            
-            classNode.addField(DEFAULT_DATABINDING_WHITELIST,
-                    Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL, new ClassNode(List.class),
-                    listExpression);
-         }
+        } else {
+            listExpression.addExpression(new ConstantExpression(NO_BINDABLE_PROPERTIES));
+        }
+        classNode.addField(DEFAULT_DATABINDING_WHITELIST,
+                Modifier.STATIC | Modifier.PUBLIC | Modifier.FINAL, new ClassNode(List.class),
+                listExpression);
     }
 
 
