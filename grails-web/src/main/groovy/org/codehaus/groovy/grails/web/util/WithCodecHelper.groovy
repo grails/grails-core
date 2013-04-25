@@ -23,7 +23,8 @@ import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.pages.GroovyPageConfig
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
-import org.codehaus.groovy.grails.web.pages.GroovyPageParser
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Helper methods for {@link #withCodec} feature 
@@ -33,6 +34,8 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageParser
  */
 @CompileStatic
 public class WithCodecHelper {
+    private static final Logger log = LoggerFactory.getLogger(WithCodecHelper)
+    
     /** all is the key to set all codecs at once */
     public static String ALL_CODECS_FALLBACK_KEY_NAME="all"
     /** name is the key to set out and expression codecs at once */
@@ -93,7 +96,7 @@ public class WithCodecHelper {
                 Map<String, Encoder> encoders = [:]
                 
                 Map<String, String> codecInfoMap = (Map<String,String>)((Map)codecInfo).collectEntries { k, v ->
-                    String codecWriterName = k.toString()
+                    String codecWriterName = k.toString() - 'Codec'
                     String codecName=v?.toString() ?: 'none'
                     if(!encoders.containsKey(codecName)) {
                         encoders[codecName] = lookupEncoder(grailsApplication, codecName)
@@ -141,7 +144,12 @@ public class WithCodecHelper {
      * @return the encoder instance
      */
     public static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
-        CodecLookup codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup.class);
-        return codecLookup.lookupEncoder(codecName);
+        try {
+            CodecLookup codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup.class);
+            return codecLookup.lookupEncoder(codecName);
+        } catch (NullPointerException e) {
+            // ignore NPE for encoder lookups
+            log.debug("NPE in lookupEncoder, grailsApplication.mainContext is null or codecLookup bean is missing from test context.", e)
+        }
     }
 }
