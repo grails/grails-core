@@ -769,7 +769,7 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         List results = parse("{ " +
                     "projections { " +
-                        "property('lastName',)" +
+                        "property('lastName')" +
                     "}" +
                 "}", "Test1",CriteriaBuilderTestClass.name)
 
@@ -1619,14 +1619,17 @@ class HibernateCriteriaBuilderTests extends AbstractGrailsHibernateTests {
 
         obj.invokeMethod("save", null)
 
-        List results = parse(".list([:]) { " +
-                    "projections { " +
-                        "property('firstName')" +
+        List results = parse(".list([:]) {\n" +
+                    "projections { \n" +
+                        "property('firstName')\n" +
+                        "property('lastName')\n" +
                     "}" +
-                "}", "Test1",CriteriaBuilderTestClass.name)
+                "}", "Test1", CriteriaBuilderTestClass.name)
 
-        assertEquals 1 , results.size()
-        assertTrue 'Result list should contain Strings', results[0] instanceof String
+        assertEquals 1, results.size()
+        assertEquals 2, results[0].size()
+        assertEquals "homer", results[0][0]
+        assertEquals "simpson", results[0][1]
     }
     
     
