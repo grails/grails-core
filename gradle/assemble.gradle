@@ -187,9 +187,8 @@ task zipDist(type: Zip, dependsOn: [sourcesJars, install]) {
 
     into("grails-$grailsVersion") {
         from(projectDir) {
-            include 'lib/', 'gradle/', 'media/', 'samples/', 'scripts/', 'build.gradle', 'build.properties',
-                    'LICENSE', 'INSTALL', "src/", "gradlew.bat","gradle.properties"
-            exclude 'ant/bin', 'src/grails', 'src/war'
+            include 'lib/', 'media/', 'samples/', 'scripts/', 'LICENSE', 'INSTALL', "src/"
+            exclude 'ant/bin', 'src/grails', 'src/war', 'gradlew'
         }
         from("grails-resources") {
             include 'src/grails/**', 'src/war/**'
