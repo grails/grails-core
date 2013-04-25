@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.core.Ordered;
 import org.springframework.util.ReflectionUtils;
 
@@ -65,12 +66,14 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         Integer orderSetting = (Integer)getPropertyOrStaticPropertyOrFieldValue("order", Integer.class);
         if(Encoder.class.isAssignableFrom(getClazz())) {
             encoder = (Encoder)getReferenceInstance();
+            autowireCodecBean(encoder);
             if(encoder instanceof Ordered) {
                 order = ((Ordered)encoder).getOrder();
             }
         }
         if(Decoder.class.isAssignableFrom(getClazz())) {
             decoder = (Decoder)getReferenceInstance();
+            autowireCodecBean(decoder);
             if(decoder instanceof Ordered) {
                 order = ((Ordered)decoder).getOrder();
             }
@@ -79,9 +82,11 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             CodecFactory codecFactory=null;
             if(CodecFactory.class.isAssignableFrom(getClazz())) {
                 codecFactory=(CodecFactory)getReferenceInstance();
+                autowireCodecBean(codecFactory);
             }
             if(codecFactory==null) {
                 codecFactory=(CodecFactory)getPropertyOrStaticPropertyOrFieldValue("codecFactory", CodecFactory.class);
+                autowireCodecBean(codecFactory);
             }
             if(codecFactory==null) {
                 codecFactory=new ClosureCodecFactory();
@@ -98,6 +103,12 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             } else {
                 encoder=new StateAwareEncoderWrapper(encoder);
             }
+        }
+    }
+
+    protected void autowireCodecBean(Object existingBean) {
+        if(existingBean != null && grailsApplication != null && grailsApplication.getMainContext() instanceof AutowireCapableBeanFactory) {
+            ((AutowireCapableBeanFactory)grailsApplication.getMainContext()).autowireBean(existingBean);
         }
     }
 
