@@ -176,15 +176,14 @@ grails.views {
         htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
         codecs {
             expression = 'html' // escapes values inside ${}
-            out = 'html' // escapes output from scriptlets in GSPs
-            taglib = 'raw' // escapes output from taglibs
-            'static' = 'raw' // escapes output from static template parts
+            out = 'none' // escapes output from scriptlets in GSPs
+            taglib = 'none' // escapes output from taglibs
+            'static' = 'none' // escapes output from static template parts
         }
     }
     // escapes all not-encoded output at final stage of outputting
     filteringCodecForContentType {
-        'text/html' = 'html'
-        'application/xhtml+xml' = 'html'
+        //'text/html' = 'html'
     }
 }
 remove this line */
