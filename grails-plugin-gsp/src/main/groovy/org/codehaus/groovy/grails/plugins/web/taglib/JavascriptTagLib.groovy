@@ -45,6 +45,8 @@ class JavascriptTagLib implements ApplicationContextAware {
 
     Class<JavascriptProvider> defaultProvider
     boolean hasResourceProcessor = false
+    
+    static encodeAsForTags = [escapeJavascript: 'JavaScript']
 
     JavascriptTagLib() {
         def cl = Thread.currentThread().contextClassLoader
@@ -412,14 +414,11 @@ a 'params' key to the [url] attribute instead.""")
      * &lt;g:escapeJavascript&gt;This is some "text" to be escaped&lt;/g:escapeJavascript&gt;
      */
     Closure escapeJavascript = { attrs, body ->
-
-        withCodec(all:"JavaScript") {
-            if (body) {
-                out << body()
-            }
-            else if (attrs.value) {
-                out << attrs.value
-            }
+        if (body) {
+            out << body()
+        }
+        else if (attrs.value) {
+            out << attrs.value
         }
     }
 
