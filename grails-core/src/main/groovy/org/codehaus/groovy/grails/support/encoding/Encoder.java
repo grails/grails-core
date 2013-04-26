@@ -38,6 +38,15 @@ public interface Encoder extends CodecIdentifierProvider {
      * @return true, if is safe
      */
     boolean isSafe();
+    
+    
+    /**
+     * Should this codec be applied to a buffer part that is 
+     * already encoded with a safe encoder
+     * 
+     * @return
+     */
+    boolean isApplyToSafelyEncoded();
 
     /**
      * Mark this instance as encoded with this encoder in the current

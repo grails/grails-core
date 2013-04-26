@@ -94,4 +94,8 @@ public class RawCodec implements Encoder, Decoder, StreamingEncoder {
     public CodecIdentifier getCodecIdentifier() {
         return RAW_CODEC_IDENTIFIER;
     }
+
+    public boolean isApplyToSafelyEncoded() {
+        return false;
+    }
 }

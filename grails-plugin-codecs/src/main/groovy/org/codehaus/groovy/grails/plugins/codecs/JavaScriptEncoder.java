@@ -87,4 +87,9 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
         }
         return null;
     }
+    
+    @Override
+    public boolean isApplyToSafelyEncoded() {
+        return true;
+    }
 }

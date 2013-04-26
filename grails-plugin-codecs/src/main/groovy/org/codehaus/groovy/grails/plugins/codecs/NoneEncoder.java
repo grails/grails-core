@@ -18,6 +18,10 @@ public class NoneEncoder implements StreamingEncoder {
     public boolean isSafe() {
         return false;
     }
+    
+    public boolean isApplyToSafelyEncoded() {
+        return false;
+    }
 
     public void markEncoded(CharSequence string) {
         

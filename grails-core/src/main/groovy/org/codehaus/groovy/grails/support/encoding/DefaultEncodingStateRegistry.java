@@ -126,7 +126,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
      * @return true, if previous encoder is already "safe", equal or equivalent
      */
     public static boolean isPreviousEncoderSafeOrEqual(Encoder encoderToApply, Encoder previousEncoder) {
-        return previousEncoder == encoderToApply || previousEncoder.isSafe()
+        return previousEncoder == encoderToApply || !encoderToApply.isApplyToSafelyEncoded() && previousEncoder.isSafe() && encoderToApply.isSafe() 
                 || previousEncoder.getCodecIdentifier().isEquivalent(encoderToApply.getCodecIdentifier());
     }
 }

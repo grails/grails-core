@@ -2491,6 +2491,10 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         public void markEncoded(CharSequence string) {
             throw new UnsupportedOperationException("markEncoded isn't supported for SavedEncoder");
         }
+
+        public boolean isApplyToSafelyEncoded() {
+            return false;
+        }
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {

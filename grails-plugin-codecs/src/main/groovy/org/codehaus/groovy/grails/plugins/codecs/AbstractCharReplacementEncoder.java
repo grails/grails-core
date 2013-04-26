@@ -170,6 +170,15 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
     public boolean isSafe() {
         return true;
     }
+    
+    
+
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Encoder#isApplyToSafelyEncoded()
+     */
+    public boolean isApplyToSafelyEncoded() {
+        return false;
+    }
 
     /*
      * (non-Javadoc)

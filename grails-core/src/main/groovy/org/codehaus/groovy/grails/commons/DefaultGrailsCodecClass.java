@@ -216,6 +216,10 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         public boolean isSafe() {
             return delegate.isSafe();
         }
+        
+        public boolean isApplyToSafelyEncoded() {
+            return delegate.isApplyToSafelyEncoded();
+        }
     }
 
     private static class StreamingStateAwareEncoderWrapper extends StateAwareEncoderWrapper implements StreamingEncoder {
@@ -258,6 +262,10 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
         public boolean isSafe() {
             return false;
+        }
+
+        public boolean isApplyToSafelyEncoded() {
+            return true;
         }
     }
 

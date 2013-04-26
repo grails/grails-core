@@ -15,7 +15,24 @@ class CodecSpec extends Specification {
     // TODO: separate tag codec from scriplet codec to it's own setting
     // TODO: applyCodec should have an option to make everything safe at the end
     
-    
+    void "safe codec should allow applying unsafe codecs"() {
+        expect: 
+            '"<script>"'.encodeAsJavaScript() == '\\u0022\\u003cscript\\u003e\\u0022'
+            '"<script>"'.encodeAsJavaScript().encodeAsURL() == '%5Cu0022%5Cu003cscript%5Cu003e%5Cu0022'
+    }
+
+    void "javascript codec should escape any safe codec"() {
+        expect:
+            '"<script>"'.encodeAsHTML() == '&quot;&lt;script&gt;&quot;'
+            '"<script>"'.encodeAsHTML().encodeAsJavaScript() == '\\u0026quot\\u003b\\u0026lt\\u003bscript\\u0026gt\\u003b\\u0026quot\\u003b'
+    }
+
+    void "html codec should not escape a safe codec"() {
+        expect:
+            '"<script>"'.encodeAsJavaScript() == '\\u0022\\u003cscript\\u003e\\u0022'
+            '"<script>"'.encodeAsJavaScript().encodeAsHTML() == '"<script>"'.encodeAsJavaScript()
+    }
+            
     void "output should be safe at the end"() {
         
     }
