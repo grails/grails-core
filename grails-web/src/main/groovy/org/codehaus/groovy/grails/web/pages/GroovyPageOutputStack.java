@@ -156,35 +156,6 @@ public final class GroovyPageOutputStack {
         }
     }
     
-    private static final class CodecSettingsLookup {
-        GroovyPageConfig groovyPageConfig;
-        CodecLookup codecLookup;
-        
-        public CodecSettingsLookup() {
-            groovyPageConfig = new GroovyPageConfig(Holders.getFlatConfig());
-            GrailsApplication grailsApplication = Holders.getGrailsApplication();
-            if(grailsApplication != null) {
-                codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup.class);
-            }
-        }
-        
-        public Encoder lookupEncoder(String codecWriterName) {
-            if(codecLookup==null) return null;
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if(webRequest != null) {
-                GrailsPlugin plugin = null;
-                GroovyPageBinding binding = (GroovyPageBinding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, RequestAttributes.SCOPE_REQUEST);
-                if(binding != null) {
-                    plugin = binding.getPagePlugin();
-                }
-                return codecLookup.lookupEncoder(groovyPageConfig.getCodecSettings(plugin, codecWriterName));
-            }
-            return null;
-        }
-    }
-
-    final CodecSettingsLookup codecSettingsLookup = new CodecSettingsLookup();
-    
     private GroovyPageOutputStack(GroovyPageOutputStackAttributes attributes) {
         outWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
@@ -310,9 +281,6 @@ public final class GroovyPageOutputStack {
     }
     
     private Writer createEncodingWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry, String codecWriterName) {
-        if(encoder==null) {
-            encoder = codecSettingsLookup.lookupEncoder(codecWriterName);
-        }
         Writer encodingWriter;
         if(out instanceof EncodedAppenderWriterFactory) {
             encodingWriter=((EncodedAppenderWriterFactory)out).getWriterForEncoder(encoder, encodingStateRegistry);
