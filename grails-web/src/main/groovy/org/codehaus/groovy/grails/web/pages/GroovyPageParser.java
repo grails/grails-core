@@ -74,7 +74,10 @@ public class GroovyPageParser implements Tokens {
     private static final Pattern PAGE_DIRECTIVE_PATTERN = Pattern.compile(
             "(\\w+)\\s*=\\s*\"([^\"]*)\"");
 
-    private static final Pattern PRESCAN_PAGE_DIRECTIVE_PATTERN = Pattern.compile("<%@\\s*page\\s+(.*?)\\s*%>", Pattern.DOTALL);
+    private static final String PAGE_DIRECTIVE = "page";
+    private static final String TAGLIB_DIRECTIVE = "taglib";
+    
+    private static final Pattern PRESCAN_PAGE_DIRECTIVE_PATTERN = Pattern.compile("<%@\\s*(?!" + TAGLIB_DIRECTIVE + ")\\s+(.*?)\\s*%>", Pattern.DOTALL);
     private static final Pattern PRESCAN_COMMENT_PATTERN = Pattern.compile("<%--.*?%>", Pattern.DOTALL);
 
     public static final String CONSTANT_NAME_JSP_TAGS = "JSP_TAGS";
@@ -153,9 +156,7 @@ public class GroovyPageParser implements Tokens {
     private static final String OUT_CODEC_DIRECTIVE = GroovyPageConfig.OUT_CODEC_NAME + CODEC_DIRECTIVE_POSTFIX;
     private static final String TAGLIB_CODEC_DIRECTIVE = GroovyPageConfig.TAGLIB_CODEC_NAME + CODEC_DIRECTIVE_POSTFIX;    
     private static final String SITEMESH_PREPROCESS_DIRECTIVE = "sitemeshPreprocess";
-    private static final String PAGE_DIRECTIVE = "page";
 
-    private static final String TAGLIB_DIRECTIVE = "taglib";
     private String gspEncoding = System.getProperty("file.encoding", "us-ascii");
     private String pluginAnnotation;
     public static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
@@ -461,11 +462,10 @@ public class GroovyPageParser implements Tokens {
 
         String text = scan.getToken();
         text = text.trim();
-        if (text.startsWith(PAGE_DIRECTIVE)) {
-            directPage(text);
-        }
-        else if (text.startsWith(TAGLIB_DIRECTIVE)) {
+        if (text.startsWith(TAGLIB_DIRECTIVE)) {
             directJspTagLib(text);
+        } else {
+            directPage(text);
         }
     }
 
