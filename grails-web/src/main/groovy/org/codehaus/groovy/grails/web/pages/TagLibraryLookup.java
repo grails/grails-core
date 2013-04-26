@@ -16,6 +16,7 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.GroovyObject;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,6 +29,7 @@ import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
 import org.codehaus.groovy.grails.web.taglib.TemplateNamespacedTagDispatcher;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -46,7 +48,7 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     protected Map<String, Map<String, Object>> tagNamespaces = new HashMap<String, Map<String, Object>>();
     protected Map<String, NamespacedTagDispatcher> namespaceDispatchers = new HashMap<String, NamespacedTagDispatcher>();
     protected Map<String, Set<String>> tagsThatReturnObjectForNamespace = new HashMap<String, Set<String>>();
-    protected Map<String, Map<String,Object>> encodeAsForTagNamespaces = new HashMap<String, Map<String,Object>>();
+    protected Map<String, Map<String,Map<String, Object>>> encodeAsForTagNamespaces = new HashMap<String, Map<String,Map<String, Object>>>();
 
     public void afterPropertiesSet() throws Exception {
         if (grailsApplication == null || applicationContext == null) {
@@ -98,15 +100,22 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
             tagsThatReturnObject.add(tagName);
         }
 
-        Map<String,Object> encodeAsForTagNamespace = encodeAsForTagNamespaces.get(namespace);
+        Map<String,Map<String, Object>> encodeAsForTagNamespace = encodeAsForTagNamespaces.get(namespace);
         if (encodeAsForTagNamespace==null) {
-            encodeAsForTagNamespace = new HashMap<String, Object>();
+            encodeAsForTagNamespace = new HashMap<String, Map<String, Object>>();
             encodeAsForTagNamespaces.put(namespace, encodeAsForTagNamespace);
         }
+        
+        Map<String, Object> defaultEncodeAsForTagLib = null;
+        if(taglib.getDefaultEncodeAs() != null) {
+            defaultEncodeAsForTagLib = Collections.unmodifiableMap(WithCodecHelper.makeSettingsCanonical(taglib.getDefaultEncodeAs()));
+        }
+                
         for (String tagName : taglib.getTagNames()) {
             Object codecInfo = taglib.getEncodeAsForTag(tagName);
-            if(codecInfo != null) {
-                encodeAsForTagNamespace.put(tagName, codecInfo);
+            Map<String, Object> codecInfoMap = WithCodecHelper.mergeSettingsAndMakeCanonical(codecInfo, defaultEncodeAsForTagLib);
+            if(codecInfoMap != null) {
+                encodeAsForTagNamespace.put(tagName, codecInfoMap);
             }
         }
     }
@@ -135,8 +144,8 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
         return tagsThatReturnObject != null && tagsThatReturnObject.contains(tagName);
     }
 
-    public Object getEncodeAsForTag(String namespace, String tagName) {
-        Map<String,Object> encodeAsForTagNamespace = encodeAsForTagNamespaces.get(namespace);
+    public Map<String, Object> getEncodeAsForTag(String namespace, String tagName) {
+        Map<String,Map<String, Object>> encodeAsForTagNamespace = encodeAsForTagNamespaces.get(namespace);
         return encodeAsForTagNamespace != null ? encodeAsForTagNamespace.get(tagName) : null;
     }
 

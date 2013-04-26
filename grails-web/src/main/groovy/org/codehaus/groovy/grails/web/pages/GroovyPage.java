@@ -399,7 +399,7 @@ public abstract class GroovyPage extends Script {
                     boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName);
                     Object tagLibClosure = tagLib.getProperty(tagName);
                     if (tagLibClosure instanceof Closure) {
-                        Object encodeAsForTag = gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName); 
+                        Map<String, Object> encodeAsForTag = gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName); 
                         invokeTagLibClosure(tagName, tagNamespace, (Closure)tagLibClosure, attrs, body, returnsObject, encodeAsForTag);
                     } else {
                         throw new GrailsTagException("Tag [" + tagName + "] does not exist in tag library [" + tagLib.getClass().getName() + "]", getGroovyPageFileName(), lineNumber);
@@ -452,7 +452,7 @@ public abstract class GroovyPage extends Script {
         }
     }
 
-    private void invokeTagLibClosure(String tagName, String tagNamespace, Closure tagLibClosure, Map attrs, Closure body, boolean returnsObject, Object defaultEncodeAs) {
+    private void invokeTagLibClosure(String tagName, String tagNamespace, Closure tagLibClosure, Map attrs, Closure body, boolean returnsObject, Map<String, Object> defaultEncodeAs) {
         Closure tag = (Closure)tagLibClosure.clone();
 
         if (!(attrs instanceof GroovyPageAttributes)) {
@@ -462,14 +462,9 @@ public abstract class GroovyPage extends Script {
 
         boolean encodeAsPushedToStack=false;
         try {
-            Object codecInfo=defaultEncodeAs;
-            if(attrs.containsKey(ENCODE_AS_ATTRIBUTE_NAME)) {
-                codecInfo = attrs.get(ENCODE_AS_ATTRIBUTE_NAME);
-            } else if (DEFAULT_NAMESPACE.equals(tagNamespace) && APPLY_CODEC_TAG_NAME.equals(tagName)) {
-                codecInfo = attrs;
-            }
-            if(codecInfo != null) {
-                outputStack.push(WithCodecHelper.createOutputStackAttributesBuilder(codecInfo, webRequest.getAttributes().getGrailsApplication()).build());
+            Map<String, Object> codecSettings = createCodecSettings(tagNamespace, tagName, attrs, defaultEncodeAs);
+            if(codecSettings != null) {
+                outputStack.push(WithCodecHelper.createOutputStackAttributesBuilder(codecSettings, webRequest.getAttributes().getGrailsApplication()).build());
                 encodeAsPushedToStack=true;
             }
             Object tagresult = null;
@@ -539,15 +534,10 @@ public abstract class GroovyPage extends Script {
             if (outputStack == null) {
                 outputStack = GroovyPageOutputStack.currentStack(webRequest, true, tagOutput, true, true);
             }
-            Object codecInfo = null;
-            if(attrs.containsKey(ENCODE_AS_ATTRIBUTE_NAME)) {
-                codecInfo = attrs.get(ENCODE_AS_ATTRIBUTE_NAME);
-            } else if (DEFAULT_NAMESPACE.equals(namespace) && APPLY_CODEC_TAG_NAME.equals(tagName)) {
-                codecInfo = attrs;
-            } else {
-                codecInfo = gspTagLibraryLookup.getEncodeAsForTag(namespace, tagName);
-            }
-            GroovyPageOutputStackAttributes.Builder builder = WithCodecHelper.createOutputStackAttributesBuilder(codecInfo, webRequest.getAttributes().getGrailsApplication());
+            Map<String, Object> defaultEncodeAs = gspTagLibraryLookup.getEncodeAsForTag(namespace, tagName);
+            Map<String, Object> codecSettings = createCodecSettings(namespace, tagName, attrs, defaultEncodeAs);
+            
+            GroovyPageOutputStackAttributes.Builder builder = WithCodecHelper.createOutputStackAttributesBuilder(codecSettings, webRequest.getAttributes().getGrailsApplication());
             builder.topWriter(tagOutput);
             outputStack.push(builder.build());
            
@@ -605,6 +595,18 @@ public abstract class GroovyPage extends Script {
         } finally {
             if (outputStack != null) outputStack.pop();
         }
+    }
+
+    private static Map<String, Object> createCodecSettings(String namespace, String tagName, @SuppressWarnings("rawtypes") Map attrs,
+            Map<String, Object> defaultEncodeAs) {
+        Object codecInfo = null;
+        if(attrs.containsKey(ENCODE_AS_ATTRIBUTE_NAME)) {
+            codecInfo = attrs.get(ENCODE_AS_ATTRIBUTE_NAME);
+        } else if (DEFAULT_NAMESPACE.equals(namespace) && APPLY_CODEC_TAG_NAME.equals(tagName)) {
+            codecInfo = attrs;
+        }
+        Map<String, Object> codecSettings = WithCodecHelper.mergeSettingsAndMakeCanonical(codecInfo, defaultEncodeAs);
+        return codecSettings;
     }
 
     private final static GroovyObject lookupCachedTagLib(TagLibraryLookup gspTagLibraryLookup,
