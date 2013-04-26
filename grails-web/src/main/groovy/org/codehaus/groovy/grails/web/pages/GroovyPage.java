@@ -203,7 +203,7 @@ public abstract class GroovyPage extends Script {
             attributesBuilder.outEncoder(metaInfo.getOutEncoder());
             attributesBuilder.staticEncoder(metaInfo.getStaticEncoder());
             attributesBuilder.expressionEncoder(metaInfo.getExpressionEncoder());
-            attributesBuilder.taglibEncoder(metaInfo.getTaglibEncoder());
+            attributesBuilder.defaultTaglibEncoder(metaInfo.getTaglibEncoder());
         }
         attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
         attributesBuilder.webRequest(grailsWebRequest);

@@ -94,6 +94,7 @@ public class WithCodecHelper {
         if(codecInfo != null) {
             if(codecInfo instanceof Map) {
                 Map<String, Encoder> encoders = [:]
+            builder.defaultTaglibEncoder(lookupEncoderFromMap(encoders, (String)codecInfoMap.get(GroovyPageConfig.TAGLIB_DEFAULT_CODEC_NAME)))
                 
                 Map<String, String> codecInfoMap = (Map<String,String>)((Map)codecInfo).collectEntries { k, v ->
                     String codecWriterName = k.toString() - 'Codec'

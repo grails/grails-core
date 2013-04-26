@@ -128,6 +128,7 @@ public final class GroovyPageOutputStack {
         Writer unwrappedTarget;
         Encoder staticEncoder;
         Encoder taglibEncoder;
+        Encoder defaultTaglibEncoder;
         Encoder outEncoder;
         Encoder expressionEncoder;
 
@@ -141,6 +142,7 @@ public final class GroovyPageOutputStack {
             newEntry.staticEncoder = staticEncoder;
             newEntry.outEncoder = outEncoder;
             newEntry.taglibEncoder = taglibEncoder;
+            newEntry.defaultTaglibEncoder = defaultTaglibEncoder;
             newEntry.expressionEncoder = expressionEncoder;
             return newEntry;
         }
@@ -182,7 +184,7 @@ public final class GroovyPageOutputStack {
         taglibWriter = new GroovyPageProxyWriter(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 StackEntry stackEntry = stack.peek();
-                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.taglibEncoder, encodingStateRegistry, GroovyPageConfig.TAGLIB_CODEC_NAME);
+                return createEncodingWriter(stackEntry.unwrappedTarget, stackEntry.taglibEncoder != null ? stackEntry.taglibEncoder : stackEntry.defaultTaglibEncoder, encodingStateRegistry, GroovyPageConfig.TAGLIB_CODEC_NAME);
             }
         });
         this.autoSync = attributes.isAutoSync();
@@ -242,6 +244,7 @@ public final class GroovyPageOutputStack {
         stackEntry.staticEncoder = applyEncoder(attributes.getStaticEncoder(), previousStackEntry != null ? previousStackEntry.staticEncoder : null, attributes.isInheritPreviousEncoders());
         stackEntry.expressionEncoder = applyEncoder(attributes.getExpressionEncoder(), previousStackEntry != null ? previousStackEntry.expressionEncoder : null, attributes.isInheritPreviousEncoders());
         stackEntry.taglibEncoder = applyEncoder(attributes.getTaglibEncoder(), previousStackEntry != null ? previousStackEntry.taglibEncoder : null, attributes.isInheritPreviousEncoders());
+        stackEntry.defaultTaglibEncoder = applyEncoder(attributes.getDefaultTaglibEncoder(), previousStackEntry != null ? previousStackEntry.defaultTaglibEncoder : null, attributes.isInheritPreviousEncoders());
         
         stack.push(stackEntry);
 
@@ -335,6 +338,10 @@ public final class GroovyPageOutputStack {
     
     public Encoder getTaglibEncoder() {
         return stack.size() > 0 ? stack.peek().taglibEncoder : null;
+    }
+    
+    public Encoder getDefaultTaglibEncoder() {
+        return stack.size() > 0 ? stack.peek().defaultTaglibEncoder : null;
     }
     
     public Writer getCurrentOriginalWriter() {

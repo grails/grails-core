@@ -14,12 +14,18 @@ class GroovyPageConfig {
     /**  staticCodec escapes the static html parts coming from the GSP file to output */
     public static String STATIC_CODEC_NAME="static"
     public static String TAGLIB_CODEC_NAME="taglib"
+    public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibDefault"
+    
+    public static final String INHERIT_SETTING_NAME="inherit"
+    
+    public static final Set<String> VALID_CODEC_SETTING_NAMES = ([OUT_CODEC_NAME, EXPRESSION_CODEC_NAME, STATIC_CODEC_NAME, TAGLIB_CODEC_NAME, TAGLIB_DEFAULT_CODEC_NAME] as Set).asImmutable()
 
     private static final Map<String, String> defaultSettings =
                                                         [(EXPRESSION_CODEC_NAME): 'none',
                                                             (STATIC_CODEC_NAME): 'none',
                                                             (OUT_CODEC_NAME): 'none',
-                                                            (TAGLIB_CODEC_NAME): 'none']
+                                                            (TAGLIB_CODEC_NAME): 'none',
+                                                            (TAGLIB_DEFAULT_CODEC_NAME): 'none']
 
     Map flatConfig
 
