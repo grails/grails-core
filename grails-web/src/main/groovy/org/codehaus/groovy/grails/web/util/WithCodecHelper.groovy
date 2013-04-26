@@ -35,13 +35,13 @@ import org.slf4j.LoggerFactory
 @CompileStatic
 public class WithCodecHelper {
     private static final Logger log = LoggerFactory.getLogger(WithCodecHelper)
-    
+
     /** all is the key to set all codecs at once */
-    public static String ALL_CODECS_FALLBACK_KEY_NAME="all"
+    public static final String ALL_CODECS_FALLBACK_KEY_NAME="all"
     /** name is the key to set out and expression codecs at once */
-    public static String OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME="name"
-    
-    public static String INHERIT_KEY_NAME="inherit"
+    public static final String OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME="name"
+
+    private static final String ALREADY_CANONICAL_KEY_NAME = "_canonical_"
 
 
     /**
@@ -92,45 +92,78 @@ public class WithCodecHelper {
         GroovyPageOutputStackAttributes.Builder builder=new GroovyPageOutputStackAttributes.Builder()
         builder.inheritPreviousEncoders(true)
         if(codecInfo != null) {
-            if(codecInfo instanceof Map) {
-                Map<String, Encoder> encoders = [:]
-            builder.defaultTaglibEncoder(lookupEncoderFromMap(encoders, (String)codecInfoMap.get(GroovyPageConfig.TAGLIB_DEFAULT_CODEC_NAME)))
-                
-                Map<String, String> codecInfoMap = (Map<String,String>)((Map)codecInfo).collectEntries { k, v ->
-                    String codecWriterName = k.toString() - 'Codec'
-                    String codecName=v?.toString() ?: 'none'
-                    if(!encoders.containsKey(codecName)) {
-                        encoders[codecName] = lookupEncoder(grailsApplication, codecName)
-                    }
-                    [codecWriterName, codecName]
+            Map<String, Object> codecInfoMap = makeSettingsCanonical(codecInfo)
+            Map<String, Encoder> encoders = [:]
+            codecInfoMap.each { String codecWriterName, Object codecName ->
+                if(codecName instanceof String && !encoders.containsKey(codecName)) {
+                    encoders.put(codecName, lookupEncoder(grailsApplication, codecName))
                 }
-
-                def outEncoderName = codecInfoMap[(GroovyPageConfig.OUT_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
-                builder.outEncoder(lookupEncoderFromMap(encoders, outEncoderName))
-                
-                def taglibEncoderName = codecInfoMap[(GroovyPageConfig.TAGLIB_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
-                builder.taglibEncoder(lookupEncoderFromMap(encoders, taglibEncoderName))
-                
-                def defaultEncoderName = codecInfoMap[(GroovyPageConfig.EXPRESSION_CODEC_NAME)] ?: codecInfoMap[(OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
-                builder.expressionEncoder(lookupEncoderFromMap(encoders, defaultEncoderName))
-                
-                def staticEncoderName = codecInfoMap[(GroovyPageConfig.STATIC_CODEC_NAME)] ?: codecInfoMap[(ALL_CODECS_FALLBACK_KEY_NAME)]
-                builder.staticEncoder(lookupEncoderFromMap(encoders, staticEncoderName))
-                
-                if(codecInfoMap.containsKey(INHERIT_KEY_NAME)) {
-                    Object inheritVal = codecInfoMap.get(INHERIT_KEY_NAME)
-                    boolean inheritPrevious = inheritVal as boolean
-                    if(inheritPrevious && inheritVal instanceof CharSequence && inheritVal.toString()=="false") {
-                        inheritPrevious = false
-                    }
-                    builder.inheritPreviousEncoders(inheritPrevious)
-                }
-            } else {
-                Encoder encoder = lookupEncoder(grailsApplication, codecInfo.toString())
-                builder.outEncoder(encoder).expressionEncoder(encoder).taglibEncoder(encoder);
+            }
+            builder.outEncoder(lookupEncoderFromMap(encoders, (String)codecInfoMap.get(GroovyPageConfig.OUT_CODEC_NAME)))
+            builder.taglibEncoder(lookupEncoderFromMap(encoders, (String)codecInfoMap.get(GroovyPageConfig.TAGLIB_CODEC_NAME)))
+            builder.expressionEncoder(lookupEncoderFromMap(encoders, (String)codecInfoMap.get(GroovyPageConfig.EXPRESSION_CODEC_NAME)))
+            builder.staticEncoder(lookupEncoderFromMap(encoders, (String)codecInfoMap.get(GroovyPageConfig.STATIC_CODEC_NAME)))
+            if(codecInfoMap.containsKey(GroovyPageConfig.INHERIT_SETTING_NAME)) {
+                builder.inheritPreviousEncoders(codecInfoMap.get(GroovyPageConfig.INHERIT_SETTING_NAME) as boolean)
             }
         }
         return builder
+    }
+
+    public static Map<String, Object> makeSettingsCanonical(codecInfo) {
+        if(!codecInfo) {
+            return null
+        }
+        Map<String, Object> codecInfoMap =[:]
+        if(codecInfo instanceof Map) {
+            if(codecInfo.get(ALREADY_CANONICAL_KEY_NAME)) {
+                return (Map<String, Object>)codecInfo
+            }
+            String allFallback = null
+            String nameFallback = null
+            (Map<String,String>)((Map)codecInfo).each { k, v ->
+                String codecWriterName = k.toString() - 'Codec'
+                if(codecWriterName == GroovyPageConfig.INHERIT_SETTING_NAME) {
+                    Boolean inheritPrevious = v as Boolean
+                    if(inheritPrevious && v instanceof CharSequence && (v.toString()=="false" || v.toString()=="no")) {
+                        inheritPrevious = false
+                    }
+                    codecInfoMap.put(GroovyPageConfig.INHERIT_SETTING_NAME, inheritPrevious)
+                } else {
+                    String codecName=v?.toString() ?: 'none'
+                    if(GroovyPageConfig.VALID_CODEC_SETTING_NAMES.contains(codecWriterName)) {
+                        codecInfoMap.put(codecWriterName, codecName)
+                    } else if (codecWriterName == WithCodecHelper.ALL_CODECS_FALLBACK_KEY_NAME) {
+                        allFallback = codecName
+                    } else if (codecWriterName == WithCodecHelper.OUT_AND_EXPRESSION_CODECS_FALLBACK_KEY_NAME) {
+                        nameFallback = codecName
+                    }
+                }
+            }
+
+            if(allFallback || nameFallback) {
+                for(String codecWriterName : GroovyPageConfig.VALID_CODEC_SETTING_NAMES) {
+                    String codecName=codecInfoMap.get(codecWriterName)?.toString()
+                    if(!codecName) {
+                        if(nameFallback && codecWriterName != GroovyPageConfig.STATIC_CODEC_NAME) {
+                            codecName = nameFallback
+                        } else if (allFallback) {
+                            codecName = allFallback
+                        }
+                        codecInfoMap.put(codecWriterName, codecName)
+                    }
+                }
+            }
+        } else {
+            String codecName = codecInfo.toString()
+            for(String codecWriterName : GroovyPageConfig.VALID_CODEC_SETTING_NAMES) {
+                if(codecWriterName != GroovyPageConfig.STATIC_CODEC_NAME) {
+                    codecInfoMap.put(codecWriterName, codecName)
+                }
+            }
+        }
+        codecInfoMap.put(ALREADY_CANONICAL_KEY_NAME, true)
+        codecInfoMap
     }
 
     private static Encoder lookupEncoderFromMap(Map<String, Encoder> encoders, String codecName) {
@@ -152,5 +185,25 @@ public class WithCodecHelper {
             // ignore NPE for encoder lookups
             log.debug("NPE in lookupEncoder, grailsApplication.mainContext is null or codecLookup bean is missing from test context.", e)
         }
+    }
+
+    public static Map<String, Object> mergeSettingsAndMakeCanonical(Object currentSettings,
+            Map<String, Object> parentSettings) {
+        Map<String, Object> codecInfoMap=null
+        if(currentSettings) {
+            Map<String, Object> canonicalCodecInfo = makeSettingsCanonical(currentSettings)
+            if(parentSettings != null) {
+                codecInfoMap = new HashMap<String, Object>()
+                codecInfoMap.putAll(parentSettings)
+                codecInfoMap.putAll(canonicalCodecInfo)
+            } else {
+                codecInfoMap = canonicalCodecInfo
+            }
+            codecInfoMap = (Map<String, Object>)codecInfoMap.asImmutable()
+        }
+        if(codecInfoMap == null) {
+            codecInfoMap = parentSettings
+        }
+        return codecInfoMap
     }
 }

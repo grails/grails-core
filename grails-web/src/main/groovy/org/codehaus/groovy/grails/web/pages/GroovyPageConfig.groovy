@@ -3,17 +3,16 @@ package org.codehaus.groovy.grails.web.pages
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
-import org.codehaus.groovy.grails.web.util.WithCodecHelper
 
 @CompileStatic
 class GroovyPageConfig {
     /**  outCodec escapes the static html parts coming from the GSP file to output */
-    public static String OUT_CODEC_NAME="out"
+    public static final String OUT_CODEC_NAME="out"
     /** expressionCodec escapes values inside ${} to output */
-    public static String EXPRESSION_CODEC_NAME="expression"
+    public static final String EXPRESSION_CODEC_NAME="expression"
     /**  staticCodec escapes the static html parts coming from the GSP file to output */
-    public static String STATIC_CODEC_NAME="static"
-    public static String TAGLIB_CODEC_NAME="taglib"
+    public static final String STATIC_CODEC_NAME="static"
+    public static final String TAGLIB_CODEC_NAME="taglib"
     public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibDefault"
     
     public static final String INHERIT_SETTING_NAME="inherit"
