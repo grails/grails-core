@@ -612,8 +612,11 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
             return ((EncodedAppenderWriterFactory)target).getWriterForEncoder(encoder, encodingStateRegistry);
         } else if (target instanceof EncodedAppenderFactory) {
             EncodedAppender encodedAppender=((EncodedAppenderFactory)target).getEncodedAppender();
-            return new EncodedAppenderWriter(encodedAppender, encoder, encodingStateRegistry);
-        } else if (target != null) {
+            if(encodedAppender != null) {
+                return new EncodedAppenderWriter(encodedAppender, encoder, encodingStateRegistry);
+            }
+        }
+        if (target != null) {
             return new CodecPrintWriter(target, encoder, encodingStateRegistry);
         } else {
             return null;

@@ -575,11 +575,22 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
             return;
         } else if (target instanceof EncodedAppenderFactory) {
             EncodedAppenderFactory eaw=(EncodedAppenderFactory)target;
-            if (eaw.getEncodedAppender() == writer.getEncodedAppender()) {
+            EncodedAppender appender = eaw.getEncodedAppender();
+            if (appender == writer.getEncodedAppender()) {
                 throw new IllegalArgumentException("Cannot write buffer to itself.");
             }
+            Encoder encoder=null;
+            
             if (target instanceof EncoderAware) {
-                encodeTo(eaw.getEncodedAppender(), ((EncoderAware)eaw).getEncoder());
+                encoder = ((EncoderAware)target).getEncoder();
+            }
+            
+            if (encoder == null && appender instanceof EncoderAware) {
+                encoder = ((EncoderAware)appender).getEncoder();
+            }
+            
+            if (encoder != null) {
+                encodeTo(appender, encoder);
                 if (emptyAfter) {
                     emptyAfterReading();
                 }

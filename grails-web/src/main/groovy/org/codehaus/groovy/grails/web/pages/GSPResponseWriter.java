@@ -22,8 +22,12 @@ import javax.servlet.ServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.EncoderAware;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsRoutablePrintWriter;
 import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
@@ -50,7 +54,7 @@ import com.opensymphony.module.sitemesh.RequestConstants;
  *
  * Date: Jan 10, 2004
  */
-public class GSPResponseWriter extends GrailsRoutablePrintWriter {
+public class GSPResponseWriter extends GrailsRoutablePrintWriter implements EncoderAware, EncodedAppenderFactory {
     protected static final Log LOG = LogFactory.getLog(GSPResponseWriter.class);
     private ServletResponse response;
     private BoundedCharsAsEncodedBytesCounter bytesCounter;
@@ -58,6 +62,8 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter {
     public static final boolean BUFFERING_ENABLED = Boolean.valueOf(System.getProperty("GSPResponseWriter.enableBuffering","true"));
     public static final boolean AUTOFLUSH_ENABLED = Boolean.getBoolean("GSPResponseWriter.enableAutoFlush");
     private static final int BUFFER_SIZE = Integer.getInteger("GSPResponseWriter.bufferSize", 8042);
+    private Encoder encoder;
+    private StreamCharBuffer buffer;
 
     public static GSPResponseWriter getInstance(final ServletResponse response) {
         return getInstance(response, BUFFER_SIZE);
@@ -81,41 +87,33 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter {
             }
         };
             
-        streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingMultipleWriter() {
-            public Writer getWriter() throws IOException {
-                return null;
-            }
-
-            public LazyInitializingWriter[] initializeMultiple(StreamCharBuffer buffer, boolean autoFlush) throws IOException {
-                final StreamCharBuffer.LazyInitializingWriter[] lazyWriters;
-                if (CONTENT_LENGTH_COUNTING_ENABLED) {
-                    lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {new StreamCharBuffer.LazyInitializingWriter() {
-                        public Writer getWriter() throws IOException {
-                            bytesCounter.setCapacity(max * 2);
-                            bytesCounter.setEncoding(response.getCharacterEncoding());
-                            return bytesCounter.getCountingWriter();
-                        }
-                    }, lazyResponseWriter};
-                } else {
-                    lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {lazyResponseWriter};
+        if(!(response instanceof GrailsContentBufferingResponse)) {
+            streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingMultipleWriter() {
+                public Writer getWriter() throws IOException {
+                    return null;
                 }
-                return lazyWriters;
-            }
-        }, AUTOFLUSH_ENABLED);
-        
-        DestinationFactory lazyTargetFactory = new DestinationFactory() {
-            public Writer activateDestination() throws IOException {
-                final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-                final Encoder encoder = webRequest != null ? webRequest.lookupFilteringEncoder() : null;
-                if(encoder != null) {
-                    return streamBuffer.getWriterForEncoder(encoder, webRequest.getEncodingStateRegistry());
-                } else {
-                    return streamBuffer.getWriter();
+    
+                public LazyInitializingWriter[] initializeMultiple(StreamCharBuffer buffer, boolean autoFlush) throws IOException {
+                    final StreamCharBuffer.LazyInitializingWriter[] lazyWriters;
+                    if (CONTENT_LENGTH_COUNTING_ENABLED) {
+                        lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {new StreamCharBuffer.LazyInitializingWriter() {
+                            public Writer getWriter() throws IOException {
+                                bytesCounter.setCapacity(max * 2);
+                                bytesCounter.setEncoding(response.getCharacterEncoding());
+                                return bytesCounter.getCountingWriter();
+                            }
+                        }, lazyResponseWriter};
+                    } else {
+                        lazyWriters=new StreamCharBuffer.LazyInitializingWriter[] {lazyResponseWriter};
+                    }
+                    return lazyWriters;
                 }
-            }
-        }; 
+            }, AUTOFLUSH_ENABLED);
+        } else {
+            streamBuffer.connectTo(lazyResponseWriter);
+        }
         
-        return new GSPResponseWriter(lazyTargetFactory, response, bytesCounter);
+        return new GSPResponseWriter(streamBuffer, response, bytesCounter);
     }
 
     /**
@@ -146,8 +144,22 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter {
      * @param streamBuffer StreamCharBuffer instance
      * @param bytesCounter    Keeps count of encoded bytes count
      */
-    private GSPResponseWriter(DestinationFactory destinationFactory, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {
-        super(destinationFactory);
+    private GSPResponseWriter(final StreamCharBuffer buffer, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {
+        super(null);
+        
+        DestinationFactory lazyTargetFactory = new DestinationFactory() {
+            public Writer activateDestination() throws IOException {
+                final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+                encoder = webRequest != null ? webRequest.lookupFilteringEncoder() : null;
+                if(encoder != null) {
+                    return buffer.getWriterForEncoder(encoder, webRequest.getEncodingStateRegistry());
+                } else {
+                    return buffer.getWriter();
+                }
+            }
+        }; 
+        
+        updateDestination(lazyTargetFactory);
         this.response = response;
         this.bytesCounter = bytesCounter;
         setBlockFlush(false);
@@ -158,11 +170,13 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter {
      * @param activeWriter buffered writer
      */
     private GSPResponseWriter(final Writer activeWriter) {
-        this(new DestinationFactory() {
+        super(null);
+        updateDestination(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 return activeWriter;
             }
-        }, null, null);
+        });
+        setBlockFlush(false);
     }
 
     /**
@@ -211,5 +225,22 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter {
     @Override
     public Writer unwrap() {
         return this;
+    }
+
+    public EncodedAppender getEncodedAppender() {
+        if(buffer != null) {
+            return ((EncodedAppenderFactory)buffer.getWriter()).getEncodedAppender();
+        } else {
+            activateDestination();
+            Writer target = getTarget().unwrap();
+            if(target != this && target instanceof EncodedAppenderFactory) {
+                return ((EncodedAppenderFactory)target).getEncodedAppender();
+            }
+        }
+        return null;
+    }
+
+    public Encoder getEncoder() {
+        return encoder;
     }
 }

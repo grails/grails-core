@@ -19,10 +19,14 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
+import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
@@ -80,7 +84,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
             throw new GrailsTagException("Template not found for name [" + templateName + "] and path [" + uri + "]");
         }
 
-        makeTemplate(t, attrs, body, out);
+        makeTemplate(webRequest, t, attrs, body, out);
     }
 
     private Template findAndCacheTemplate(GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
@@ -143,8 +147,12 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void makeTemplate(Template t, Map<String, Object> attrs, Object body, Writer out) throws IOException {
-
+    private void makeTemplate(GrailsWebRequest webRequest, Template t, Map<String, Object> attrs, Object body, Writer out) throws IOException {
+        
+        Writer newOut = wrapWriterWithEncoder(webRequest, attrs, out);
+        boolean writerWrapped = (newOut != out); 
+        out = newOut;
+        
         String var = getStringValue(attrs, "var");
         Map b = new LinkedHashMap<String, Object>();
         b.put("body", body);
@@ -181,6 +189,27 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         } else {
             t.make(b).writeTo(out);
         }
+        
+        if(writerWrapped) {
+            out.flush();
+        }
+    }
+
+    private Writer wrapWriterWithEncoder(GrailsWebRequest webRequest, Map<String, Object> attrs, Writer out) {
+        Object encodeAs = attrs.get(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME);
+        if(encodeAs != null) {
+            Map<String, Object> codecSettings=WithCodecHelper.makeSettingsCanonical(encodeAs);
+            String codecForTaglibs = (String)codecSettings.get(GroovyPageConfig.TAGLIB_CODEC_NAME);
+            if(codecForTaglibs != null) {
+                Encoder encoder = WithCodecHelper.lookupEncoder(webRequest.getAttributes().getGrailsApplication(), codecForTaglibs);
+                if (out instanceof EncodedAppenderWriterFactory) {
+                    out = ((EncodedAppenderWriterFactory)out).getWriterForEncoder(encoder, webRequest.getEncodingStateRegistry());
+                } else {
+                    out = new CodecPrintWriter(out, encoder, webRequest.getEncodingStateRegistry());
+                }
+            }
+        }
+        return out;
     }
 
     private Template generateScaffoldedTemplate(GrailsWebRequest webRequest, String uri) throws IOException {

@@ -282,6 +282,19 @@ public final class GroovyPageOutputStack {
         expressionWriter.setDestinationActivated(false);
         taglibWriter.setDestinationActivated(false);
     }
+
+    private void flushCodecPrintWriters() throws IOException {
+        flushCodecPrintWriter(outWriter);
+        flushCodecPrintWriter(staticWriter);
+        flushCodecPrintWriter(expressionWriter);
+        flushCodecPrintWriter(taglibWriter);
+    }
+
+    private void flushCodecPrintWriter(GroovyPageProxyWriter writer) throws IOException {
+        if(writer.isDestinationActivated() && writer.getOut() instanceof CodecPrintWriter) {
+            writer.getOut().flush();
+        }
+    }
     
     private Writer createEncodingWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry, String codecWriterName) {
         Writer encodingWriter;
@@ -299,9 +312,15 @@ public final class GroovyPageOutputStack {
 
     public void pop(boolean forceSync) {
         stack.pop();
+        try {
+            flushCodecPrintWriters();
+        }
+        catch (IOException e) {
+            throw new RuntimeException("Error flushing", e);
+        }                
+        resetWriters();
         if (stack.size() > 0) {
             StackEntry stackEntry = stack.peek();
-            resetWriters();
             if (forceSync) {
                 applyWriterThreadLocals(stackEntry.originalTarget);
             }

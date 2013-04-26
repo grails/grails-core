@@ -375,21 +375,24 @@ public abstract class GroovyPage extends Script {
         Closure body = getBodyClosure(bodyClosureIndex);
 
         // TODO custom namespace stuff needs to be generalized and pluggable
-        if (tagNamespace.equals(TEMPLATE_NAMESPACE)) {
+        if (tagNamespace.equals(TEMPLATE_NAMESPACE) || tagNamespace.equals(LINK_NAMESPACE)) {
             final String tmpTagName = tagName;
             final Map tmpAttrs = attrs;
-            tagName = "render";
-            tagNamespace = DEFAULT_NAMESPACE;
-            attrs = CollectionUtils.newMap("model", tmpAttrs, "template", tmpTagName);
-        } else if (tagNamespace.equals(LINK_NAMESPACE)) {
-            final String tmpTagName = tagName;
-            final Map tmpAttrs = attrs;
-            tagName = "link";
-            tagNamespace = DEFAULT_NAMESPACE;
-            attrs = CollectionUtils.newMap("mapping", tmpTagName);
-            if (!tmpAttrs.isEmpty()) {
-                attrs.put("params", tmpAttrs);
+            Object encodeAs = tmpAttrs.remove(ENCODE_AS_ATTRIBUTE_NAME);
+            if (tagNamespace.equals(TEMPLATE_NAMESPACE)) {
+                tagName = "render";
+                attrs = CollectionUtils.newMap("model", tmpAttrs, "template", tmpTagName);
+            } else if (tagNamespace.equals(LINK_NAMESPACE)) {
+                tagName = "link";
+                attrs = CollectionUtils.newMap("mapping", tmpTagName);
+                if (!tmpAttrs.isEmpty()) {
+                    attrs.put("params", tmpAttrs);
+                }
             }
+            if(encodeAs != null) {
+                attrs.put(ENCODE_AS_ATTRIBUTE_NAME, encodeAs);
+            }
+            tagNamespace = DEFAULT_NAMESPACE;            
         }
 
         try {

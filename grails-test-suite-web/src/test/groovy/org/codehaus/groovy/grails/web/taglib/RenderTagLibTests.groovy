@@ -165,13 +165,13 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         webRequest.controllerName = "table"
 
-        def template = '<tmpl:tableRow label="one" value="two" />'
+        def template = '<tmpl:tableRow label="one" value="two" encodeAs="raw" />'
 
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
 
         // now test method call
 
-        template = '${tmpl.tableRow(label:"one", value:"two")}'
+        template = '${tmpl.tableRow(label:"one", value:"two", encodeAs:"raw")}'
 
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
         // execute twice to make sure methodMissing works

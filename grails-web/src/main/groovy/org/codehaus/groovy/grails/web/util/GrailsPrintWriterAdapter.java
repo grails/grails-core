@@ -58,7 +58,7 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
 
     public Writer unwrap() {
         if (isAllowUnwrappingOut()) {
-            return getOut();
+            return target.unwrap();
         }
         return this;
     }
