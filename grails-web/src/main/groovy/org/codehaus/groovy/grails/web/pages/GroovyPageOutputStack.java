@@ -1,20 +1,14 @@
 package org.codehaus.groovy.grails.web.pages;
 
-import grails.util.Holders;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.GrailsPlugin;
-import org.codehaus.groovy.grails.support.encoding.CodecLookup;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsLazyProxyPrintWriter;
@@ -225,6 +219,15 @@ public final class GroovyPageOutputStack {
             previousStackEntry = stack.peek();
         }
         
+        if(previousStackEntry != null) {
+            try {
+                flushCodecPrintWriters();
+            }
+            catch (IOException e) {
+                throw new RuntimeException("Error flushing", e);
+            }
+        }
+        
         Writer topWriter = attributes.getTopWriter();
         Writer unwrappedWriter = null;
         if(topWriter!=null) {
@@ -291,9 +294,7 @@ public final class GroovyPageOutputStack {
     }
 
     private void flushCodecPrintWriter(GroovyPageProxyWriter writer) throws IOException {
-        if(writer.isDestinationActivated() && writer.getOut() instanceof CodecPrintWriter) {
-            writer.getOut().flush();
-        }
+        writer.flush();
     }
     
     private Writer createEncodingWriter(Writer out, Encoder encoder, EncodingStateRegistry encodingStateRegistry, String codecWriterName) {
