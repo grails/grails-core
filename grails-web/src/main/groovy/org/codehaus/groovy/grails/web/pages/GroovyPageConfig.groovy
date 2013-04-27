@@ -6,8 +6,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 
 @CompileStatic
 class GroovyPageConfig {
-    /**  outCodec escapes the static html parts coming from the GSP file to output */
-    public static final String OUT_CODEC_NAME="out"
+    /** scriptlet codec escapes the static html parts coming from the GSP file scriptlets to output */
+    public static final String OUT_CODEC_NAME="scriptlet"
     /** expressionCodec escapes values inside ${} to output */
     public static final String EXPRESSION_CODEC_NAME="expression"
     /**  staticCodec escapes the static html parts coming from the GSP file to output */
