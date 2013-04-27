@@ -81,9 +81,9 @@ public class RawCodec implements Encoder, Decoder, StreamingEncoder {
      * org.codehaus.groovy.grails.support.encoding.EncodedAppender,
      * org.codehaus.groovy.grails.support.encoding.EncodingState)
      */
-    public void encodeToStream(CharSequence source, int offset, int len, EncodedAppender appender,
+    public void encodeToStream(Encoder thisInstance, CharSequence source, int offset, int len, EncodedAppender appender,
             EncodingState encodingState) throws IOException {
-        appender.appendEncoded(this, encodingState, source, offset, len);
+        appender.appendEncoded(thisInstance, encodingState, source, offset, len);
     }
 
     /*

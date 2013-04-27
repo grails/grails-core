@@ -228,9 +228,9 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             super(delegate);
             this.delegate=delegate;
         }
-        public void encodeToStream(CharSequence source, int offset, int len, EncodedAppender appender,
+        public void encodeToStream(Encoder thisInstance, CharSequence source, int offset, int len, EncodedAppender appender,
                 EncodingState encodingState) throws IOException {
-            delegate.encodeToStream(source, offset, len, appender, encodingState);
+            delegate.encodeToStream(this, source, offset, len, appender, encodingState);
         }
     }
 
