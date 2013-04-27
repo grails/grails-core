@@ -387,4 +387,8 @@ public final class GroovyPageOutputStack {
             webRequest.setOut(writer);
         }
     }
+    
+    public void flushActiveWriter() {
+        writerGroup.flushActive();
+    }
 }
