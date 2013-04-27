@@ -80,6 +80,7 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
 
         final StreamCharBuffer streamBuffer = new StreamCharBuffer(max, 0, max);
         streamBuffer.setChunkMinSize(max/2);
+        streamBuffer.setNotifyParentBuffersEnabled(false);
         
         final StreamCharBuffer.LazyInitializingWriter lazyResponseWriter = new StreamCharBuffer.LazyInitializingWriter() {
             public Writer getWriter() throws IOException {

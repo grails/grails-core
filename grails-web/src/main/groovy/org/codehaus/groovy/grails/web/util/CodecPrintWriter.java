@@ -16,6 +16,7 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware,
         super(null);
         this.encoder = encoder;
         buffer=new StreamCharBuffer();
+        buffer.setNotifyParentBuffersEnabled(false);
         allowUnwrappingOut = false;
         buffer.connectTo(out, false);
         if(out instanceof EncodedAppenderFactory) {
