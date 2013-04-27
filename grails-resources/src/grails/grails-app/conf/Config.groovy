@@ -47,7 +47,7 @@ grails.views {
             expression = 'html' // escapes values inside ${}
             out = 'none' // escapes output from scriptlets in GSPs
             taglib = 'none' // escapes output from taglibs
-            'static' = 'none' // escapes output from static template parts
+            staticparts = 'none' // escapes output from static template parts
         }
     }
     // escapes all not-encoded output at final stage of outputting

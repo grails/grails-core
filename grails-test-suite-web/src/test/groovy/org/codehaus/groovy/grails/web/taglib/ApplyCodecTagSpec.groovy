@@ -49,9 +49,9 @@ class ApplyCodecTagSpec extends Specification {
             output=='&lt;script&gt;'
     }
 
-    def "applyCodec tag should support changing staticCodec"() {
+    def "applyCodec tag should support changing staticParts codec"() {
         when:
-            def output=applyTemplate('''<g:applyCodec staticCodec="html"><script></g:applyCodec>''')
+            def output=applyTemplate('''<g:applyCodec staticPartsCodec="html"><script></g:applyCodec>''')
         then:
             output=='&lt;script&gt;'
     }

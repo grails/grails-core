@@ -11,7 +11,7 @@ class GroovyPageConfig {
     /** expressionCodec escapes values inside ${} to output */
     public static final String EXPRESSION_CODEC_NAME="expression"
     /**  staticCodec escapes the static html parts coming from the GSP file to output */
-    public static final String STATIC_CODEC_NAME="static"
+    public static final String STATIC_CODEC_NAME="staticparts"
     public static final String TAGLIB_CODEC_NAME="taglib"
     public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibDefault"
     
