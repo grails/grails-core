@@ -13,7 +13,7 @@ class GroovyPageConfig {
     /**  staticCodec escapes the static html parts coming from the GSP file to output */
     public static final String STATIC_CODEC_NAME="staticparts"
     public static final String TAGLIB_CODEC_NAME="taglib"
-    public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibDefault"
+    public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibdefault"
     
     public static final String INHERIT_SETTING_NAME="inherit"
     
@@ -44,7 +44,14 @@ class GroovyPageConfig {
             }
         } else {
             codecInfo = codecSettings.get(codecWriterName)?.toString()
+            if(!codecInfo) {
+                // case-insensitive fallback
+                codecInfo = codecSettings.find { k, v -> 
+                    k.toString().equalsIgnoreCase(codecWriterName)
+                }?.value
+            }
         }
+        
         if(!codecInfo) {
             codecInfo = defaultSettings.get(codecWriterName)
         }

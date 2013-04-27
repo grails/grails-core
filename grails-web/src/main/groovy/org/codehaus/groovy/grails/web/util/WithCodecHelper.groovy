@@ -122,7 +122,7 @@ public class WithCodecHelper {
             String allFallback = null
             String nameFallback = null
             (Map<String,String>)((Map)codecInfo).each { k, v ->
-                String codecWriterName = k.toString() - 'Codec'
+                String codecWriterName = k.toString().toLowerCase() - 'codec'
                 if(codecWriterName == GroovyPageConfig.INHERIT_SETTING_NAME) {
                     Boolean inheritPrevious = v as Boolean
                     if(inheritPrevious && v instanceof CharSequence && (v.toString()=="false" || v.toString()=="no")) {

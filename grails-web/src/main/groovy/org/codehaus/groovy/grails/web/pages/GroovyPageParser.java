@@ -483,22 +483,22 @@ public class GroovyPageParser implements Tokens {
             if (name.equals(IMPORT_DIRECTIVE)) {
                 pageImport(value);
             }
-            if (name.equals(CONTENT_TYPE_DIRECTIVE)) {
+            if (name.equalsIgnoreCase(CONTENT_TYPE_DIRECTIVE)) {
                 contentType(value);
             }
-            if (name.equals(EXPRESSION_CODEC_DIRECTIVE)) {
+            if (name.equalsIgnoreCase(EXPRESSION_CODEC_DIRECTIVE)) {
                 expressionCodecDirectiveValue = value.trim();
             }
-            if (name.equals(EXPRESSION_CODEC_DIRECTIVE_ALIAS)) {
+            if (name.equalsIgnoreCase(EXPRESSION_CODEC_DIRECTIVE_ALIAS)) {
                 expressionCodecDirectiveValue = value.trim();
             }
-            if (name.equals(STATIC_CODEC_DIRECTIVE)) {
+            if (name.equalsIgnoreCase(STATIC_CODEC_DIRECTIVE)) {
                 staticCodecDirectiveValue = value.trim();
             }
-            if (name.equals(OUT_CODEC_DIRECTIVE)) {
+            if (name.equalsIgnoreCase(OUT_CODEC_DIRECTIVE)) {
                 outCodecDirectiveValue = value.trim();
             }
-            if (name.equals(TAGLIB_CODEC_DIRECTIVE)) {
+            if (name.equalsIgnoreCase(TAGLIB_CODEC_DIRECTIVE)) {
                 taglibCodecDirectiveValue = value.trim();
             }
             ix = mat.end();
