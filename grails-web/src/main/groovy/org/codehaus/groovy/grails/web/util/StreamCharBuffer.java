@@ -770,6 +770,45 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         }
         return chunk.buffer;
     }
+    
+    public static final class EncodedPart {
+        private final EncodingState encodingState;
+        private final String part;
+        
+        public EncodedPart(EncodingState encodingState, String part) {
+            this.encodingState = encodingState;
+            this.part = part;
+        }
+
+        public EncodingState getEncodingState() {
+            return encodingState;
+        }
+
+        public String getPart() {
+            return part;
+        }
+
+        @Override
+        public String toString() {
+            return "EncodedPart [encodingState='" + encodingState + "', part='" + part + "']";
+        }
+    }
+    
+    public List<EncodedPart> dumpEncodedParts() {
+        List<EncodedPart> encodedParts = new ArrayList<StreamCharBuffer.EncodedPart>();
+        MultipartStringChunk mpStringChunk = readToSingleChunk().asStringChunk();
+        if(mpStringChunk.firstPart != null) {
+            EncodingStatePart current = mpStringChunk.firstPart;
+            int offset = 0;
+            char[] buf=StringCharArrayAccessor.getValue(mpStringChunk.str);
+            while (current != null) {
+                encodedParts.add(new EncodedPart(current.encodingState, new String(buf, offset, current.len)));
+                offset += current.len;
+                current = current.next;
+            }
+        }
+        return encodedParts;
+    }
 
     private MultipartCharBufferChunk readToSingleChunk() {
         int currentSize = size();
