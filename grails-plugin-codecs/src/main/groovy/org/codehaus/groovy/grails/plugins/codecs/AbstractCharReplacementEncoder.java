@@ -122,7 +122,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
      * org.codehaus.groovy.grails.support.encoding.EncodedAppender,
      * org.codehaus.groovy.grails.support.encoding.EncodingState)
      */
-    public void encodeToStream(CharSequence str, int off, int len, EncodedAppender appender, EncodingState encodingState)
+    public void encodeToStream(Encoder thisInstance, CharSequence str, int off, int len, EncodedAppender appender, EncodingState encodingState)
             throws IOException {
         if (str == null || len <= 0) {
             return;
@@ -139,17 +139,17 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
             String escaped = escapeCharacter(ch, prevChar);
             if (escaped != null) {
                 if (i - startPos > 0) {
-                    appender.appendEncoded(this, encodingState, str, startPos, i - startPos);
+                    appender.appendEncoded(thisInstance, encodingState, str, startPos, i - startPos);
                 }
                 if (escaped.length() > 0) {
-                    appender.appendEncoded(this, encodingState, escaped, 0, escaped.length());
+                    appender.appendEncoded(thisInstance, encodingState, escaped, 0, escaped.length());
                 }
                 startPos = -1;
             }
             prevChar = ch;
         }
         if (startPos > -1 && i - startPos > 0) {
-            appender.appendEncoded(this, encodingState, str, startPos, i - startPos);
+            appender.appendEncoded(thisInstance, encodingState, str, startPos, i - startPos);
         }
     }
 
@@ -169,6 +169,15 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
      */
     public boolean isSafe() {
         return true;
+    }
+    
+    
+
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Encoder#isApplyToSafelyEncoded()
+     */
+    public boolean isApplyToSafelyEncoded() {
+        return false;
     }
 
     /*

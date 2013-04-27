@@ -99,9 +99,6 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         mockManager.doArtefactConfiguration()
         ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
 
-        def mainContext = new MockApplicationContext()
-        mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter())
-        ga.mainContext = mainContext
         ga.initialise()
 
         ga.setApplicationContext(ctx)
@@ -122,7 +119,8 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
 
         appCtx = springConfig.getApplicationContext()
-
+        ga.mainContext = appCtx
+        
         dependentPlugins*.doWithApplicationContext(appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)

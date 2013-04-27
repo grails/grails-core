@@ -42,6 +42,6 @@ public interface StreamingEncoder extends Encoder {
      * @throws IOException
      *             Signals that an I/O exception has occurred.
      */
-    void encodeToStream(CharSequence source, int offset, int len, EncodedAppender appender,
+    void encodeToStream(Encoder thisInstance, CharSequence source, int offset, int len, EncodedAppender appender,
             EncodingState encodingState) throws IOException;
 }

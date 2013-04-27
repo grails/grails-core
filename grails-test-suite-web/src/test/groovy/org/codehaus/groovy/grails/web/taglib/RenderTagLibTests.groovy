@@ -165,13 +165,13 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
 
         webRequest.controllerName = "table"
 
-        def template = '<tmpl:tableRow label="one" value="two" />'
+        def template = '<tmpl:tableRow label="one" value="two" encodeAs="raw" />'
 
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
 
         // now test method call
 
-        template = '${tmpl.tableRow(label:"one", value:"two")}'
+        template = '${tmpl.tableRow(label:"one", value:"two", encodeAs:"raw")}'
 
         assertOutputEquals '<tr><td class="prop">one</td><td class="value">two</td></tr>', template
         // execute twice to make sure methodMissing works
@@ -258,8 +258,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", title:"Title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     }
 
     void testSortableColumnTagWithTitleKey() {
@@ -275,8 +275,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", titleKey:"book.title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'book.title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'book.title')
 
         sw = new StringWriter()
         pw = new PrintWriter(sw)
@@ -288,8 +288,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", title:"Title", titleKey:"book.title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
 
         // test message resolved
 
@@ -304,8 +304,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", title:"Title", titleKey:"book.title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'Book Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'Book Title')
     }
 
     void testSortableColumnTagWithAction() {
@@ -318,8 +318,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([action:"list2", property:"title", title:"Title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     }
 
     void testSortableColumnTagWithDefaultOrder() {
@@ -334,8 +334,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", defaultOrder:"desc", title:"Title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'desc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'desc', 'Title')
 
         // default order: asc
 
@@ -348,8 +348,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", defaultOrder:"asc", title:"Title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
 
         // invalid default order
 
@@ -362,8 +362,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", defaultOrder:"invalid", title:"Title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     }
 
     void testSortableColumnTagWithAdditionalAttributes() {
@@ -377,8 +377,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", title:"Title", class:"other", style:"width: 200px;"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'other sortable', 'asc', 'Title', ' style="width: 200px;"')
         }
+        checkTagOutput(sw.toString(), 'other sortable', 'asc', 'Title', ' style="width: 200px;"')
     }
 
     void testSortableColumnTagSorted() {
@@ -396,8 +396,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", title:"Title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable sorted asc', 'desc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable sorted asc', 'desc', 'Title')
 
         // column sorted desc
 
@@ -413,8 +413,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", title:"Title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable sorted desc', 'asc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable sorted desc', 'asc', 'Title')
 
         // other column sorted
 
@@ -430,8 +430,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", title:"Title"])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
 
         // sort in params attribute
 
@@ -447,8 +447,8 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
             def attrs = new TreeMap([property:"title", title:"Title", params:[sort:"id"]])
             tag.call(attrs)
 
-            checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
         }
+        checkTagOutput(sw.toString(), 'sortable', 'asc', 'Title')
     }
 
     /**

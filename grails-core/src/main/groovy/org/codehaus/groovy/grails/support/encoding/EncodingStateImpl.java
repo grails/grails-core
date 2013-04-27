@@ -99,4 +99,30 @@ public class EncodingStateImpl implements EncodingState {
         }
         return new EncodingStateImpl(newEncoders);
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb=new StringBuilder();
+        sb.append("EncodingStateImpl");
+        if(encoders != null && encoders.size() > 0) {
+            sb.append(" [encoders=");
+            boolean first=true;
+            for(Encoder encoder : encoders) {
+                if(!first) {
+                    sb.append(", ");
+                } else {
+                    first=false;
+                }
+                sb.append("[@");
+                sb.append(System.identityHashCode(encoder));
+                sb.append(" ");
+                sb.append(encoder.getCodecIdentifier().getCodecName() + " safe:" + encoder.isSafe() + " apply to safe:" + encoder.isApplyToSafelyEncoded());
+                sb.append("]");
+            }
+            sb.append("]");
+        } else {
+            sb.append("[no encoders]");
+        }
+        return sb.toString();
+    }
 }

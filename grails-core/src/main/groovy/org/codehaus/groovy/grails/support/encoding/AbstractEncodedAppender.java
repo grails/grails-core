@@ -98,7 +98,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
         if (shouldEncode(encoder, encodingState)) {
             EncodingState newEncoders = appendEncoders(encoder, encodingState);
             if (encoder instanceof StreamingEncoder) {
-                ((StreamingEncoder)encoder).encodeToStream(new CharArrayCharSequence(b, off, len), 0, len, this,
+                ((StreamingEncoder)encoder).encodeToStream(encoder, new CharArrayCharSequence(b, off, len), 0, len, this,
                         newEncoders);
             }
             else {
@@ -133,7 +133,7 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
         if (shouldEncode(encoder, encodingState)) {
             EncodingState newEncoders = appendEncoders(encoder, encodingState);
             if (encoder instanceof StreamingEncoder) {
-                ((StreamingEncoder)encoder).encodeToStream(str, off, len, this, newEncoders);
+                ((StreamingEncoder)encoder).encodeToStream(encoder, str, off, len, this, newEncoders);
             }
             else {
                 CharSequence source;

@@ -18,7 +18,6 @@ package grails.test.mixin.support
 import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
-import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import grails.validation.DeferredBindingActions
 import grails.web.CamelCaseUrlConverter
@@ -27,6 +26,7 @@ import junit.framework.AssertionFailedError
 
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
+import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -34,7 +34,6 @@ import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
-import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
@@ -223,7 +222,11 @@ class GrailsUnitTestMixin {
 
         loadedCodecs << codecClass
 
-        new DefaultGrailsCodecClass(codecClass).configureCodecMethods()
+        DefaultGrailsCodecClass grailsCodecClass = new DefaultGrailsCodecClass(codecClass)
+        grailsCodecClass.configureCodecMethods()
+        if(grailsApplication != null) {
+            grailsApplication.addArtefact(CodecArtefactHandler.TYPE, grailsCodecClass)
+        }
     }
 
     @AfterClass

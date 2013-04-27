@@ -33,17 +33,21 @@ import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
+import org.springframework.core.Ordered;
 import org.springframework.util.ReflectionUtils;
 
 /**
  * @author Jeff Brown
  * @since 0.4
  */
-public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass implements GrailsCodecClass {
+public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass implements GrailsCodecClass, Ordered {
     public static final String CODEC = CodecArtefactHandler.TYPE;
     private static EncodingStateRegistryLookup encodingStateRegistryLookup=null;
     private Encoder encoder;
     private Decoder decoder;
+    private static int instantionCounter=0;
+    private int order = 100 + instantionCounter++;
 
     public static void setEncodingStateRegistryLookup(EncodingStateRegistryLookup lookup) {
         encodingStateRegistryLookup = lookup;
@@ -59,25 +63,39 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     }
 
     private void initializeCodec() {
+        Integer orderSetting = (Integer)getPropertyOrStaticPropertyOrFieldValue("order", Integer.class);
         if(Encoder.class.isAssignableFrom(getClazz())) {
             encoder = (Encoder)getReferenceInstance();
+            autowireCodecBean(encoder);
+            if(encoder instanceof Ordered) {
+                order = ((Ordered)encoder).getOrder();
+            }
         }
         if(Decoder.class.isAssignableFrom(getClazz())) {
             decoder = (Decoder)getReferenceInstance();
+            autowireCodecBean(decoder);
+            if(decoder instanceof Ordered) {
+                order = ((Ordered)decoder).getOrder();
+            }
         }
         if(encoder==null && decoder==null) {
             CodecFactory codecFactory=null;
             if(CodecFactory.class.isAssignableFrom(getClazz())) {
                 codecFactory=(CodecFactory)getReferenceInstance();
+                autowireCodecBean(codecFactory);
             }
             if(codecFactory==null) {
                 codecFactory=(CodecFactory)getPropertyOrStaticPropertyOrFieldValue("codecFactory", CodecFactory.class);
+                autowireCodecBean(codecFactory);
             }
             if(codecFactory==null) {
                 codecFactory=new ClosureCodecFactory();
             }
             encoder=codecFactory.getEncoder();
             decoder=codecFactory.getDecoder();
+            if(codecFactory instanceof Ordered) {
+                order = ((Ordered)codecFactory).getOrder();
+            }
         }
         if(encoder != null) {
             if(encoder instanceof StreamingEncoder) {
@@ -85,6 +103,12 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             } else {
                 encoder=new StateAwareEncoderWrapper(encoder);
             }
+        }
+    }
+
+    protected void autowireCodecBean(Object existingBean) {
+        if(existingBean != null && grailsApplication != null && grailsApplication.getMainContext() instanceof AutowireCapableBeanFactory) {
+            ((AutowireCapableBeanFactory)grailsApplication.getMainContext()).autowireBean(existingBean);
         }
     }
 
@@ -192,6 +216,10 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
         public boolean isSafe() {
             return delegate.isSafe();
         }
+        
+        public boolean isApplyToSafelyEncoded() {
+            return delegate.isApplyToSafelyEncoded();
+        }
     }
 
     private static class StreamingStateAwareEncoderWrapper extends StateAwareEncoderWrapper implements StreamingEncoder {
@@ -200,9 +228,9 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             super(delegate);
             this.delegate=delegate;
         }
-        public void encodeToStream(CharSequence source, int offset, int len, EncodedAppender appender,
+        public void encodeToStream(Encoder thisInstance, CharSequence source, int offset, int len, EncodedAppender appender,
                 EncodingState encodingState) throws IOException {
-            delegate.encodeToStream(source, offset, len, appender, encodingState);
+            delegate.encodeToStream(this, source, offset, len, appender, encodingState);
         }
     }
 
@@ -234,6 +262,10 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
         public boolean isSafe() {
             return false;
+        }
+
+        public boolean isApplyToSafelyEncoded() {
+            return true;
         }
     }
 
@@ -278,5 +310,9 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
     public void configureCodecMethods() {
         new CodecMetaClassSupport().configureCodecMethods(this);
+    }
+
+    public int getOrder() {
+        return order;
     }
 }

@@ -214,7 +214,7 @@ public abstract class AbstractGrailsClass implements GrailsClass {
      *
      * @return property value or null if no property or static field was found
      */
-    protected Object getPropertyOrStaticPropertyOrFieldValue(String name, Class<?> type) {
+    protected <T> T getPropertyOrStaticPropertyOrFieldValue(String name, Class<T> type) {
         Object value = classPropertyFetcher.getPropertyValue(name);
         return returnOnlyIfInstanceOf(value, type);
     }

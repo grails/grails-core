@@ -53,12 +53,16 @@ test {
 
 task isolatedTestsOne(type:Test) {
     includes = [
-                "**/DataSourceGrailsPluginTests.class","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class","**/SetupTeardownInvokeTests.class","**/TestMixinSetupTeardownInvokeTests.class"]
+                "**/DataSourceGrailsPluginTests.class","**/MockUtilsTests.class","**/GrailsUnitTestCaseTests.class"]
 }
 
 task isolatedTestsTwo(type:Test) {
+    maxParallelForks = 1
+    forkEvery = 1
     includes = [
-                "**/UrlMappingsTestMixinTests.class"]
+                "**/UrlMappingsTestMixinTests.class",
+                "**/SetupTeardownInvokeTests.class",
+		"**/TestMixinSetupTeardownInvokeTests.class"]
 }
 
 test.dependsOn isolatedTestsOne, isolatedTestsTwo

@@ -161,124 +161,113 @@ class TestUrlMappings {
 
     void testPluginAwareJSSrc() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             setupPluginController(tag)
             def attrs = [src: 'lib.js']
             tag.call(attrs) {}
-            assertEquals("<script src=\"/myapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"/myapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testPluginAwareJSSrcTrailingSlash() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             setupPluginController(tag)
             setRequestContext('/otherapp/')
             def attrs = [src: 'lib.js']
             tag.call(attrs) {}
-            assertEquals("<script src=\"/otherapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"/otherapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testPluginAwareJSLib() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             setupPluginController(tag)
             def attrs = [library: 'lib']
             tag.call(attrs) {}
-            assertEquals("<script src=\"/myapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"/myapp/plugins/myplugin/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testJSSrc() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             def attrs = [src: 'lib.js']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testJSSrcTrailingSlash() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             def attrs = [src: 'lib.js']
             setRequestContext('/otherapp/')
             tag.call(attrs) {}
-            assertEquals("<script src=\"/otherapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"/otherapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testJSSrcWithNoController() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             def attrs = [src: 'lib.js']
             setRequestContext()
             request.setAttribute(GrailsApplicationAttributes.CONTROLLER, null)
             tag.call(attrs) {}
-            assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testJSLib() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             def attrs = [library: 'lib']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"/myapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testJSLibTrailingSlash() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             def attrs = [library: 'lib']
             setRequestContext('/otherapp/')
             tag.call(attrs) {}
-            assertEquals("<script src=\"/otherapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"/otherapp/js/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testJSWithBody() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             setRequestContext()
             tag.call([:]) {"do.this();"}
-            assertEquals("<script type=\"text/javascript\">" + EOL + "do.this();" + EOL + "</script>" + EOL, sw.toString())
         }
+        assertEquals("<script type=\"text/javascript\">" + EOL + "do.this();" + EOL + "</script>" + EOL, sw.toString())
     }
 
     void testJSLibWithBase() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             def attrs = [library: 'lib', base: 'http://testserver/static/']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script src=\"http://testserver/static/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"http://testserver/static/lib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     void testJSSrcWithBase() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
-        withTag("javascript", pw) {tag ->
+        withTag("javascript", sw) {tag ->
             def attrs = [src: 'mylib.js', base: 'http://testserver/static/']
             setRequestContext()
             tag.call(attrs) {}
-            assertEquals("<script src=\"http://testserver/static/mylib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
         }
+        assertEquals("<script src=\"http://testserver/static/mylib.js\" type=\"text/javascript\"></script>" + EOL, sw.toString())
     }
 
     def setRequestContext() {
@@ -296,12 +285,11 @@ class TestUrlMappings {
 
     void testEscapeJavascript() {
         StringWriter sw = new StringWriter()
-        PrintWriter pw = new PrintWriter(sw)
 
-        withTag("escapeJavascript", pw) {tag ->
-            tag.call("This is some \"text\" to be 'escaped'", Collections.EMPTY_MAP)
-            assertEquals("This is some \\\"text\\\" to be \\'escaped\\'", sw.toString())
+        withTag("escapeJavascript", sw) {tag ->
+            tag.call(Collections.EMPTY_MAP, "This is some \"text\" to be 'escaped'")
         }
+        assertEquals("This is some \\u0022text\\u0022 to be \\u0027escaped\\u0027", sw.toString())
     }
 }
 

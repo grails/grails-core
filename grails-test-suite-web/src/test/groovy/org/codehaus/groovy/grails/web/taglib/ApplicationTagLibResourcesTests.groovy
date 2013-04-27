@@ -6,7 +6,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 class ApplicationTagLibResourcesTests extends AbstractGrailsTagTests {
 
     void onInitMockBeans() {
-        grailsApplication.mainContext.registerMockBean('grailsResourceProcessor', [something:'value'])
+        grailsApplication.parentContext.registerMockBean('grailsResourceProcessor', [something:'value'])
     }
 
     def replaceMetaClass(Object o) {

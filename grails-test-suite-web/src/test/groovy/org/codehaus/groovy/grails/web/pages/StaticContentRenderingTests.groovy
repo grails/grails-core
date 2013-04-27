@@ -48,7 +48,7 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
     }
 
     void testNotHtmlEscaping() {
-        def template = '<%@ contentType="text/plain" %>${test}'
+        def template = '<%@ contentType="text/plain" defaultCodec="none" %>${test}'
         assertOutputEquals('<html><body>hello</body></html>', template, [test:"<html><body>hello</body></html>"])
     }
 

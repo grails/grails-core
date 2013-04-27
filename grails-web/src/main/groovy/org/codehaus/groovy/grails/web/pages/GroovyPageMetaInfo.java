@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
 import org.codehaus.groovy.grails.web.util.CacheEntry;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -67,12 +68,14 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     @SuppressWarnings("rawtypes")
     private Map jspTags = Collections.EMPTY_MAP;
     private GroovyPagesException compilationException;
-    private GrailsCodecClass expressionCodec;
-    private GrailsCodecClass staticCodec;
-    private GrailsCodecClass outCodec;
+    private Encoder expressionEncoder;
+    private Encoder staticEncoder;
+    private Encoder outEncoder;
+    private Encoder taglibEncoder;
     private String expressionCodecName;
     private String staticCodecName;
     private String outCodecName;
+    private String taglibCodecName;
 
     public static final String HTML_DATA_POSTFIX = "_html.data";
     public static final String LINENUMBERS_DATA_POSTFIX = "_linenumbers.data";
@@ -86,6 +89,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     private boolean initialized = false;
 
     private CacheEntry<Resource> shouldReloadCacheEntry = new CacheEntry<Resource>(null);
+    public static String DEFAULT_PLUGIN_PATH = "";
 
     public GroovyPageMetaInfo() {
         shouldReloadCacheEntry.expire();
@@ -102,6 +106,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         expressionCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_EXPRESSION_CODEC), null);
         staticCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_STATIC_CODEC), null);
         outCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_OUT_CODEC), null);
+        taglibCodecName = (String)ReflectionUtils.getField(ReflectionUtils.findField(pageClass, GroovyPageParser.CONSTANT_NAME_TAGLIB_CODEC), null);
 
         try {
             readHtmlData();
@@ -122,31 +127,18 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     }
 
     public void initialize() {
-        expressionCodec = getCodec(expressionCodecName);
-        staticCodec = getCodec(staticCodecName);
-        outCodec = getCodec(outCodecName);
+        expressionEncoder = getCodec(expressionCodecName);
+        staticEncoder = getCodec(staticCodecName);
+        outEncoder = getCodec(outCodecName);
+        taglibEncoder = getCodec(taglibCodecName);
 
         initializePluginPath();
 
         initialized = true;
     }
 
-    private GrailsCodecClass getCodec(String codecName) {
-        GrailsCodecClass codecGrailsClass = null;
-        if (codecName != null && grailsApplication != null && StringUtils.isNotBlank(codecName)) {
-            codecGrailsClass = (GrailsCodecClass)grailsApplication.getArtefactByLogicalPropertyName(
-                    CodecArtefactHandler.TYPE, codecName);
-            if (codecGrailsClass == null) {
-                codecGrailsClass = (GrailsCodecClass)grailsApplication.getArtefactByLogicalPropertyName(
-                        CodecArtefactHandler.TYPE, codecName.toUpperCase());
-            }
-        }
-
-        if (codecGrailsClass == null && StringUtils.isNotBlank(codecName) && !"none".equalsIgnoreCase(codecName)) {
-            LOG.warn("Couldn't initialize Codec by name '" + codecName + "' , pageClass=" + ((pageClass!=null)?pageClass.getName():null));
-        }
-
-        return codecGrailsClass;
+    private Encoder getCodec(String codecName) {
+        return WithCodecHelper.lookupEncoder(grailsApplication, codecName);
     }
 
     private void initializePluginPath() {
@@ -161,7 +153,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
         GrailsPluginManager pluginManager = applicationContext.getBean(GrailsPluginManager.BEAN_NAME, GrailsPluginManager.class);
         pluginPath = pluginManager.getPluginPathForClass(pageClass);
-        if (pluginPath == null) pluginPath="";
+        if (pluginPath == null) pluginPath=DEFAULT_PLUGIN_PATH ;
         pagePlugin = pluginManager.getPluginForClass(pageClass);
     }
 
@@ -441,32 +433,20 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
         return pagePlugin;
     }
 
-    public GrailsCodecClass getExpressionCodec() {
-        return expressionCodec;
-    }
-
-    public GrailsCodecClass getStaticCodec() {
-        return staticCodec;
-    }
-
-    public GrailsCodecClass getOutCodec() {
-        return outCodec;
-    }
-
     public Encoder getOutEncoder() {
-        return returnEncoder(outCodec);
+        return outEncoder;
     }
 
     public Encoder getStaticEncoder() {
-        return returnEncoder(staticCodec);
+        return staticEncoder;
     }
 
     public Encoder getExpressionEncoder() {
-        return returnEncoder(expressionCodec);
+        return expressionEncoder;
     }
-
-    private Encoder returnEncoder(GrailsCodecClass codecClass) {
-        return codecClass != null ? codecClass.getEncoder() : null;
+    
+    public Encoder getTaglibEncoder() {
+        return taglibEncoder;
     }
 
     public void setExpressionCodecName(String expressionCodecName) {
@@ -479,5 +459,9 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
 
     public void setOutCodecName(String pageCodecName) {
         this.outCodecName = pageCodecName;
+    }
+
+    public void setTaglibCodecName(String taglibCodecName) {
+        this.taglibCodecName = taglibCodecName;
     }
 }

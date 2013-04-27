@@ -302,6 +302,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
                     throw new IllegalStateException("response.getWriter() called after response.getOutputStream()");
                 }
                 charBuffer=new StreamCharBuffer();
+                charBuffer.setNotifyParentBuffersEnabled(false);
                 if (gspSitemeshPage != null) {
                     gspSitemeshPage.setPageBuffer(charBuffer);
                 }

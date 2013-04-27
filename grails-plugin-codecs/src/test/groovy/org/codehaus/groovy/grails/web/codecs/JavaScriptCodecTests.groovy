@@ -7,8 +7,8 @@ class JavaScriptCodecTests extends GroovyTestCase {
     def codec = new JavaScriptEncoder()
 
     void testEncode() {
-        assertEquals('\\"\\"', codec.encode('""'))
-        assertEquals("\\'\\'", codec.encode("''"))
-        assertEquals('\\\\', codec.encode('\\'))
+        assertEquals('\\u0022\\u0022', codec.encode('""'))
+        assertEquals("\\u0027\\u0027", codec.encode("''"))
+        assertEquals('\\u005c', codec.encode('\\'))
     }
 }

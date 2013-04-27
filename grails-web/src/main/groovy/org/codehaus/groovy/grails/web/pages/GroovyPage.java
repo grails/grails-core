@@ -168,7 +168,7 @@ public abstract class GroovyPage extends Script {
             return DefaultTypeTransformation.castToBoolean(retval);
         }
     }
-
+   
     protected static final Closure<?> EMPTY_BODY_CLOSURE = new ConstantClosure(BLANK_STRING);
 
     public GroovyPage() {
@@ -191,8 +191,9 @@ public abstract class GroovyPage extends Script {
         throw new IllegalStateException("Setting out in page isn't allowed.");
     }
 
+    @SuppressWarnings("rawtypes")
     public void initRun(Writer target, GrailsWebRequest grailsWebRequest, GroovyPageMetaInfo metaInfo) {
-        GroovyPageOutputStackAttributes.Builder attributesBuilder = new GroovyPageOutputStackAttributes.Builder();
+        GroovyPageOutputStackAttributes.Builder attributesBuilder = new GroovyPageOutputStackAttributes.Builder();        
         if(metaInfo != null) {
             setJspTags(metaInfo.getJspTags());
             setJspTagLibraryResolver(metaInfo.getJspTagLibraryResolver());
@@ -202,25 +203,27 @@ public abstract class GroovyPage extends Script {
             attributesBuilder.outEncoder(metaInfo.getOutEncoder());
             attributesBuilder.staticEncoder(metaInfo.getStaticEncoder());
             attributesBuilder.expressionEncoder(metaInfo.getExpressionEncoder());
+            attributesBuilder.defaultTaglibEncoder(metaInfo.getTaglibEncoder());
         }
         attributesBuilder.allowCreate(true).topWriter(target).autoSync(false).pushTop(true);
         attributesBuilder.webRequest(grailsWebRequest);
+        attributesBuilder.inheritPreviousEncoders(false);
         outputStack = GroovyPageOutputStack.currentStack(attributesBuilder.build());
-
+        
         out = outputStack.getOutWriter();
         staticOut = outputStack.getStaticWriter();
         expressionOut = outputStack.getExpressionWriter();
-
+        
         this.webRequest = grailsWebRequest;
         if (grailsWebRequest != null) {
             grailsWebRequest.setOut(out);
             request = grailsWebRequest.getCurrentRequest();
         }
-
+        
         setVariableDirectly(OUT, out);
         setVariableDirectly(EXPRESSION_OUT, expressionOut);
     }
-
+    
     @SuppressWarnings("unchecked")
     private void setVariableDirectly(String name, Object value) {
         Binding binding = getBinding();
@@ -252,7 +255,7 @@ public abstract class GroovyPage extends Script {
         while (index >= bodyClosures.size()) {
             bodyClosures.add(null);
         }
-
+        
         bodyClosures.set(index, bodyClosure);
     }
 
@@ -372,21 +375,24 @@ public abstract class GroovyPage extends Script {
         Closure body = getBodyClosure(bodyClosureIndex);
 
         // TODO custom namespace stuff needs to be generalized and pluggable
-        if (tagNamespace.equals(TEMPLATE_NAMESPACE)) {
+        if (tagNamespace.equals(TEMPLATE_NAMESPACE) || tagNamespace.equals(LINK_NAMESPACE)) {
             final String tmpTagName = tagName;
             final Map tmpAttrs = attrs;
-            tagName = "render";
-            tagNamespace = DEFAULT_NAMESPACE;
-            attrs = CollectionUtils.newMap("model", tmpAttrs, "template", tmpTagName);
-        } else if (tagNamespace.equals(LINK_NAMESPACE)) {
-            final String tmpTagName = tagName;
-            final Map tmpAttrs = attrs;
-            tagName = "link";
-            tagNamespace = DEFAULT_NAMESPACE;
-            attrs = CollectionUtils.newMap("mapping", tmpTagName);
-            if (!tmpAttrs.isEmpty()) {
-                attrs.put("params", tmpAttrs);
+            Object encodeAs = tmpAttrs.remove(ENCODE_AS_ATTRIBUTE_NAME);
+            if (tagNamespace.equals(TEMPLATE_NAMESPACE)) {
+                tagName = "render";
+                attrs = CollectionUtils.newMap("model", tmpAttrs, "template", tmpTagName);
+            } else if (tagNamespace.equals(LINK_NAMESPACE)) {
+                tagName = "link";
+                attrs = CollectionUtils.newMap("mapping", tmpTagName);
+                if (!tmpAttrs.isEmpty()) {
+                    attrs.put("params", tmpAttrs);
+                }
             }
+            if(encodeAs != null) {
+                attrs.put(ENCODE_AS_ATTRIBUTE_NAME, encodeAs);
+            }
+            tagNamespace = DEFAULT_NAMESPACE;            
         }
 
         try {
@@ -396,7 +402,7 @@ public abstract class GroovyPage extends Script {
                     boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName);
                     Object tagLibClosure = tagLib.getProperty(tagName);
                     if (tagLibClosure instanceof Closure) {
-                        Object encodeAsForTag = gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName);
+                        Map<String, Object> encodeAsForTag = gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName); 
                         invokeTagLibClosure(tagName, tagNamespace, (Closure)tagLibClosure, attrs, body, returnsObject, encodeAsForTag);
                     } else {
                         throw new GrailsTagException("Tag [" + tagName + "] does not exist in tag library [" + tagLib.getClass().getName() + "]", getGroovyPageFileName(), lineNumber);
@@ -449,8 +455,8 @@ public abstract class GroovyPage extends Script {
         }
     }
 
-    private void invokeTagLibClosure(String tagName, String tagNamespace, Closure<?> tagLibClosure, Map<?,?> attrs, Closure<?> body, boolean returnsObject, Object defaultEncodeAs) {
-        Closure<?> tag = (Closure<?>)tagLibClosure.clone();
+    private void invokeTagLibClosure(String tagName, String tagNamespace, Closure tagLibClosure, Map attrs, Closure body, boolean returnsObject, Map<String, Object> defaultEncodeAs) {
+        Closure tag = (Closure)tagLibClosure.clone();
 
         if (!(attrs instanceof GroovyPageAttributes)) {
             attrs = new GroovyPageAttributes(attrs);
@@ -459,14 +465,9 @@ public abstract class GroovyPage extends Script {
 
         boolean encodeAsPushedToStack=false;
         try {
-            Object codecInfo=defaultEncodeAs;
-            if(attrs.containsKey(ENCODE_AS_ATTRIBUTE_NAME)) {
-                codecInfo = attrs.get(ENCODE_AS_ATTRIBUTE_NAME);
-            } else if (DEFAULT_NAMESPACE.equals(tagNamespace) && APPLY_CODEC_TAG_NAME.equals(tagName)) {
-                codecInfo = attrs;
-            }
-            if(codecInfo != null) {
-                outputStack.push(WithCodecHelper.createOutputStackAttributesBuilder(codecInfo, webRequest.getAttributes().getGrailsApplication()).build());
+            Map<String, Object> codecSettings = createCodecSettings(tagNamespace, tagName, attrs, defaultEncodeAs);
+            if(codecSettings != null) {
+                outputStack.push(WithCodecHelper.createOutputStackAttributesBuilder(codecSettings, webRequest.getAttributes().getGrailsApplication()).build());
                 encodeAsPushedToStack=true;
             }
             Object tagresult = null;
@@ -493,7 +494,7 @@ public abstract class GroovyPage extends Script {
             if(tagresult instanceof String && isHtmlPart((String)tagresult)) {
                 staticOut.print(tagresult);
             } else {
-                out.print(tagresult);
+                outputStack.getTaglibWriter().print(tagresult);
             }
         }
     }
@@ -517,16 +518,16 @@ public abstract class GroovyPage extends Script {
     public final static Object captureTagOutput(TagLibraryLookup gspTagLibraryLookup, String namespace,
                                                 String tagName, Map attrs, Object body, GrailsWebRequest webRequest) {
 
-        if (!(attrs instanceof GroovyPageAttributes)) {
-            attrs = new GroovyPageAttributes(attrs, false);
-        }
-        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(false);
         GroovyObject tagLib = lookupCachedTagLib(gspTagLibraryLookup, namespace, tagName);
 
         if (tagLib == null) {
             throw new GrailsTagException("Tag [" + tagName + "] does not exist. No corresponding tag library found.");
         }
 
+        if (!(attrs instanceof GroovyPageAttributes)) {
+            attrs = new GroovyPageAttributes(attrs, false);
+        }
+        ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(false);
         Closure actualBody = createOutputCapturingClosure(tagLib, body, webRequest);
 
         final GroovyPageTagWriter tagOutput = new GroovyPageTagWriter();
@@ -536,18 +537,13 @@ public abstract class GroovyPage extends Script {
             if (outputStack == null) {
                 outputStack = GroovyPageOutputStack.currentStack(webRequest, true, tagOutput, true, true);
             }
-            Object codecInfo = null;
-            if(attrs.containsKey(ENCODE_AS_ATTRIBUTE_NAME)) {
-                codecInfo = attrs.get(ENCODE_AS_ATTRIBUTE_NAME);
-            } else if (DEFAULT_NAMESPACE.equals(namespace) && APPLY_CODEC_TAG_NAME.equals(tagName)) {
-                codecInfo = attrs;
-            } else {
-                codecInfo = gspTagLibraryLookup.getEncodeAsForTag(namespace, tagName);
-            }
-            GroovyPageOutputStackAttributes.Builder builder = WithCodecHelper.createOutputStackAttributesBuilder(codecInfo, webRequest.getAttributes().getGrailsApplication());
+            Map<String, Object> defaultEncodeAs = gspTagLibraryLookup.getEncodeAsForTag(namespace, tagName);
+            Map<String, Object> codecSettings = createCodecSettings(namespace, tagName, attrs, defaultEncodeAs);
+            
+            GroovyPageOutputStackAttributes.Builder builder = WithCodecHelper.createOutputStackAttributesBuilder(codecSettings, webRequest.getAttributes().getGrailsApplication());
             builder.topWriter(tagOutput);
             outputStack.push(builder.build());
-
+           
             Object tagLibProp = tagLib.getProperty(tagName); // retrieve tag lib and create wrapper writer
             if (tagLibProp instanceof Closure) {
                 Closure tag = (Closure) ((Closure) tagLibProp).clone();
@@ -562,7 +558,7 @@ public abstract class GroovyPage extends Script {
                                 if(actualBody instanceof ConstantClosure) {
                                     outputStack.getStaticWriter().print(bodyResult2);
                                 } else {
-                                    outputStack.getOutWriter().print(bodyResult2);
+                                    outputStack.getTaglibWriter().print(bodyResult2);
                                 }
                             }
                         }
@@ -577,21 +573,21 @@ public abstract class GroovyPage extends Script {
                                 tagLib.getClass().getName() + "]");
 
                 }
-
-                Encoder pageEncoder = outputStack.getOutEncoder();
+                
+                Encoder taglibEncoder = outputStack.getTaglibEncoder(); 
 
                 boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(namespace, tagName);
 
                 if (returnsObject && bodyResult != null && !(bodyResult instanceof Writer)) {
-                    if(pageEncoder != null) {
-                        bodyResult=pageEncoder.encode(bodyResult);
+                    if(taglibEncoder != null) {
+                        bodyResult=taglibEncoder.encode(bodyResult);
                     }
                     return bodyResult;
                 }
 
                 // add some method to always return string, configurable?
-                if(pageEncoder != null) {
-                    return pageEncoder.encode(tagOutput.getBuffer());
+                if(taglibEncoder != null) {
+                    return taglibEncoder.encode(tagOutput.getBuffer());
                 } else {
                     return tagOutput.getBuffer();
                 }
@@ -602,6 +598,18 @@ public abstract class GroovyPage extends Script {
         } finally {
             if (outputStack != null) outputStack.pop();
         }
+    }
+
+    private static Map<String, Object> createCodecSettings(String namespace, String tagName, @SuppressWarnings("rawtypes") Map attrs,
+            Map<String, Object> defaultEncodeAs) {
+        Object codecInfo = null;
+        if(attrs.containsKey(ENCODE_AS_ATTRIBUTE_NAME)) {
+            codecInfo = attrs.get(ENCODE_AS_ATTRIBUTE_NAME);
+        } else if (DEFAULT_NAMESPACE.equals(namespace) && APPLY_CODEC_TAG_NAME.equals(tagName)) {
+            codecInfo = attrs;
+        }
+        Map<String, Object> codecSettings = WithCodecHelper.mergeSettingsAndMakeCanonical(codecInfo, defaultEncodeAs);
+        return codecSettings;
     }
 
     private final static GroovyObject lookupCachedTagLib(TagLibraryLookup gspTagLibraryLookup,
@@ -654,7 +662,7 @@ public abstract class GroovyPage extends Script {
     public String[] getHtmlParts() {
         return htmlParts;
     }
-
+    
     protected boolean isHtmlPart(String htmlPart) {
         return htmlPartsSet != null && htmlPart != null && htmlPartsSet.contains(System.identityHashCode(htmlPart));
     }

@@ -122,4 +122,6 @@ public interface EncodedAppender {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     void flush() throws IOException;
+
+    public void close() throws IOException;
 }

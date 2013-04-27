@@ -28,6 +28,7 @@ import java.util.Set;
  */
 public final class DefaultEncodingStateRegistry implements EncodingStateRegistry {
     private Map<Encoder, Set<Integer>> encodingTagIdentityHashCodes = new HashMap<Encoder, Set<Integer>>();
+    public static Encoder NONE_ENCODER;
 
     private Set<Integer> getIdentityHashCodesForEncoder(Encoder encoder) {
         Set<Integer> identityHashCodes = encodingTagIdentityHashCodes.get(encoder);
@@ -89,6 +90,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
      * java.lang.CharSequence)
      */
     public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string) {
+        if(encoderToApply==NONE_ENCODER) return false;
         EncodingState encodingState = getEncodingStateFor(string);
         return shouldEncodeWith(encoderToApply, encodingState);
     }
@@ -103,6 +105,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
      * @return true, if should encode
      */
     public static boolean shouldEncodeWith(Encoder encoderToApply, EncodingState currentEncodingState) {
+        if(encoderToApply==NONE_ENCODER) return false;
         if (currentEncodingState != null && currentEncodingState.getEncoders() != null) {
             for (Encoder encoder : currentEncodingState.getEncoders()) {
                 if (isPreviousEncoderSafeOrEqual(encoderToApply, encoder)) {
@@ -123,7 +126,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
      * @return true, if previous encoder is already "safe", equal or equivalent
      */
     public static boolean isPreviousEncoderSafeOrEqual(Encoder encoderToApply, Encoder previousEncoder) {
-        return previousEncoder == encoderToApply || previousEncoder.isSafe()
+        return previousEncoder == encoderToApply || !encoderToApply.isApplyToSafelyEncoded() && previousEncoder.isSafe() && encoderToApply.isSafe() 
                 || previousEncoder.getCodecIdentifier().isEquivalent(encoderToApply.getCodecIdentifier());
     }
 }

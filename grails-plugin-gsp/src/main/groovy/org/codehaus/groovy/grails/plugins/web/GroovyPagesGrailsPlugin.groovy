@@ -44,6 +44,7 @@ import org.codehaus.groovy.grails.plugins.web.taglib.ValidationTagLib
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.filters.JavascriptLibraryHandlerInterceptor
+import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPageResourceLoader
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
@@ -244,6 +245,8 @@ class GroovyPagesGrailsPlugin {
         errorsViewStackTracePrinter(ErrorsViewStackTracePrinter, ref('grailsResourceLocator'))
 
         javascriptLibraryHandlerInterceptor(JavascriptLibraryHandlerInterceptor, ref('grailsApplication'))
+        
+        filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, ref('grailsApplication'))
     }
 
     static String transformToValidLocation(String location) {
@@ -341,5 +344,10 @@ class GroovyPagesGrailsPlugin {
 
         // clear uri cache after changes
         ctx.groovyPagesUriService.clear()
+    }
+    
+    def onConfigChange = { event ->
+        def ctx = event.ctx ?: application.mainContext
+        ctx.filteringCodecsByContentTypeSettings.initialize(application)
     }
 }

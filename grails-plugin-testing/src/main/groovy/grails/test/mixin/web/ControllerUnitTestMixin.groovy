@@ -45,6 +45,7 @@ import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
@@ -205,7 +206,10 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
                 groovyPageLocator = ref("groovyPageLocator")
                 groovyPagesTemplateEngine = ref("groovyPagesTemplateEngine")
             }
+            
+            filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, ref('grailsApplication'))
         }
+        defineBeans(new CodecsGrailsPlugin().doWithSpring)
 
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
@@ -221,6 +225,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         new CodecsGrailsPlugin().providedArtefacts.each {
             mockCodec(it)
         }
+        
+        applicationContext.codecLookup.reInitialize()
 
         if (webRequest != null) {
             return

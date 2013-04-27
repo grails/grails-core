@@ -245,9 +245,9 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
     void testCreateLinkWithCollectionParameterAndRequestDataValueProcessor() {
         def template = '<% l=\'a\' %>${g.createLink(controller:"foo", action:"action", params:[letter:[l]])} ${g.createLink(controller:"foo", action:"action", params:[letter:[l]])}'
-        assertOutputEquals('/foo/action?letter=a&requestDataValueProcessorParamName=paramValue /foo/action?letter=a&requestDataValueProcessorParamName=paramValue', template)
+        assertOutputEquals('/foo/action?letter=a&amp;requestDataValueProcessorParamName=paramValue /foo/action?letter=a&amp;requestDataValueProcessorParamName=paramValue', template)
         // test caching too
-        assertOutputEquals('/foo/action?letter=a&requestDataValueProcessorParamName=paramValue /foo/action?letter=a&requestDataValueProcessorParamName=paramValue', template)
+        assertOutputEquals('/foo/action?letter=a&amp;requestDataValueProcessorParamName=paramValue /foo/action?letter=a&amp;requestDataValueProcessorParamName=paramValue', template)
     }
 
     void testLikeWithElementId() {

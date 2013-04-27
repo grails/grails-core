@@ -46,6 +46,7 @@ public class CodecPrintWriterTest {
         FastStringWriter stringwriter=new FastStringWriter();
         CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), HTMLCodec.class), registry);
         writer.print("&&");
+        writer.flush();
         assertEquals("&amp;&amp;", stringwriter.getValue());
     }
 
@@ -54,6 +55,7 @@ public class CodecPrintWriterTest {
         FastStringWriter stringwriter=new FastStringWriter();
         CodecPrintWriter writer=new CodecPrintWriter(stringwriter, getEncoder(new MockGrailsApplication(), CodecWithClosureProperties.class), registry);
         writer.print("hello");
+        writer.flush();
         assertEquals("-> hello <-", stringwriter.getValue());
     }
 
@@ -64,6 +66,7 @@ public class CodecPrintWriterTest {
         StreamCharBuffer buf=new StreamCharBuffer();
         buf.getWriter().write("&&");
         writer.write(buf);
+        writer.flush();
         assertEquals("&amp;&amp;", stringwriter.getValue());
     }
 
@@ -74,6 +77,7 @@ public class CodecPrintWriterTest {
         StreamCharBuffer buf=new StreamCharBuffer();
         buf.getWriter().write("hola");
         writer.write(buf);
+        writer.flush();
         assertEquals("-> hola <-", stringwriter.getValue());
     }
 
@@ -91,6 +95,7 @@ public class CodecPrintWriterTest {
 
         // print some output
         codecOut.print("hola");
+        codecOut.flush();
         out.print("1");
         out.print("2");
         out.print("3");
@@ -101,19 +106,23 @@ public class CodecPrintWriterTest {
         outputStack.push(out2);
         out.print("4");
         codecOut.print("A");
+        codecOut.flush();
         outputStack.pop();
 
         // add output before appending "taglib output"
         out.print("added");
         codecOut.print("too");
+        codecOut.flush();
 
         // append "taglib output"
         out.leftShift(bufferWriter.getBuffer());
 
         // print some more output
         codecOut.print("B");
+        codecOut.flush();
         out.print("5");
         codecOut.print("C");
+        codecOut.flush();
 
         // clear thread local
         RequestContextHolder.setRequestAttributes(null);

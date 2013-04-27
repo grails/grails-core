@@ -41,10 +41,12 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
         else {
             this.target = new GrailsPrintWriter(wrapped);
         }
+        this.out = this.target;
+        this.lock = this.out != null ? this.out : this;
     }
 
     public boolean isAllowUnwrappingOut() {
-        return target.isAllowUnwrappingOut();
+        return true;
     }
 
     public GrailsPrintWriter getTarget() {
@@ -56,10 +58,7 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
     }
 
     public Writer unwrap() {
-        if (isAllowUnwrappingOut()) {
-            return getOut();
-        }
-        return this;
+        return target.unwrap();
     }
 
     public GrailsPrintWriter leftShift(Object value) throws IOException {

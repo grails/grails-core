@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.sitemesh;
 
 import grails.util.GrailsWebUtil;
+import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.util.ConfigObject;
@@ -17,7 +18,9 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
+import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
+import org.codehaus.groovy.grails.support.encoding.CodecLookup;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
@@ -45,6 +48,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
         DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication();
         grailsApplication.setConfig(config);
+        Holders.setConfig(config);
         appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
         GrailsConventionGroovyPageLocator pageLocator = new GrailsConventionGroovyPageLocator();
         pageLocator.setApplicationContext(appCtx);
@@ -68,8 +72,12 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
 
         appCtx.registerMockBean("groovyPageLocator", pageLocator);
         appCtx.registerMockBean("groovyPageLayoutFinder", layoutFinder);
+        DefaultCodecLookup codecLookup=new DefaultCodecLookup();
+        codecLookup.setGrailsApplication(grailsApplication);
+        appCtx.registerMockBean("codecLookup", codecLookup);
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
+        grailsApplication.setMainContext(appCtx);
         return GrailsWebUtil.bindMockWebRequest(appCtx, new MockHttpServletRequest(appCtx.getServletContext()) {
             @Override
             public RequestDispatcher getRequestDispatcher(String path) {

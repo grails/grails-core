@@ -35,12 +35,28 @@ grails.mime.types = [
 // What URL patterns should be processed by the resources plugin
 grails.resources.adhoc.patterns = ['/images/*', '/css/*', '/js/*', '/plugins/*']
 
-// The default codec used to encode data with ${}
-grails.views.default.codec = "none" // none, html, base64
-grails.views.gsp.encoding = "UTF-8"
+// Legacy setting for codec used to encode data with ${}
+grails.views.default.codec = "html"
+
+// GSP settings
+grails.views {
+    gsp {
+        encoding = 'UTF-8'
+        htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
+        codecs {
+            expression = 'html' // escapes values inside ${}
+            out = 'none' // escapes output from scriptlets in GSPs
+            taglib = 'none' // escapes output from taglibs
+            'static' = 'none' // escapes output from static template parts
+        }
+    }
+    // escapes all not-encoded output at final stage of outputting
+    filteringCodecForContentType {
+        //'text/html' = 'html'
+    }
+}
+ 
 grails.converters.encoding = "UTF-8"
-// enable Sitemesh preprocessing of GSP pages
-grails.views.gsp.sitemesh.preprocess = true
 // scaffolding templates configuration
 grails.scaffolding.templates.domainSuffix = 'Instance'
 

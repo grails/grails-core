@@ -39,7 +39,7 @@ class HTMLEncoderSpec extends Specification {
              EncodingState encodingState=Mock(EncodingState)
              def hello="Hello <script>alert('hi!')</script> World!"
         when:
-            streamingEncoder.encodeToStream(hello, 0, hello.length(), appender, encodingState)
+            streamingEncoder.encodeToStream(streamingEncoder, hello, 0, hello.length(), appender, encodingState)
         then:
             1 * appender.appendEncoded(streamingEncoder, encodingState, hello, 0, 6)
         then:

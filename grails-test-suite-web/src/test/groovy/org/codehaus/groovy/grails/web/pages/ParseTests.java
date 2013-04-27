@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.GrailsWebUtil;
+import grails.util.Holders;
 import groovy.util.ConfigObject;
 import groovy.util.ConfigSlurper;
 
@@ -49,7 +50,8 @@ public class ParseTests extends TestCase {
             + "public static final long LAST_MODIFIED = 0L\n"
             + "public static final String EXPRESSION_CODEC = 'HTML'\n"
             + "public static final String STATIC_CODEC = 'none'\n"
-            + "public static final String OUT_CODEC = 'none'\n" +
+            + "public static final String OUT_CODEC = 'none'\n"
+            + "public static final String TAGLIB_CODEC = 'none'\n" +            
             "}\n";
 
     protected String makeImports() {
@@ -141,6 +143,7 @@ public class ParseTests extends TestCase {
 
         DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication();
         grailsApplication.setConfig(config);
+        Holders.setConfig(config);
         appCtx.registerMockBean(GrailsApplication.APPLICATION_ID, grailsApplication);
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);

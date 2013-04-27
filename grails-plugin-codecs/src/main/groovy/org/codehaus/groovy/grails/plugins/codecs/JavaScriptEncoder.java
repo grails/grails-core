@@ -43,13 +43,13 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
     protected String escapeCharacter(char ch, char previousChar) {
         switch (ch) {
             case '"':
-                return "\\\"";
+                return "\\u0022";
             case '\'':
-                return "\\'";
+                return "\\u0027";
             case '\\':
-                return "\\\\";
+                return "\\u005c";
             case '/':
-                return "\\/";
+                return "\\u002f";
             case '\t':
                 return "\\t";
             case '\n':
@@ -66,9 +66,30 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
                 return "\\u003c";
             case '>':
                 return "\\u003e";
+            case '(':
+                return "\\u0028";
+            case ')':
+                return "\\u0029";
+            case '[':
+                return "\\u005b";
+            case ']':
+                return "\\u005d";
+            case '{':
+                return "\\u007b";
+            case '}':
+                return "\\u007d";
+            case ',':
+                return "\\u002c";
+            case ';':
+                return "\\u003b";
             case '@':
                 return "\\u0040";
         }
         return null;
+    }
+    
+    @Override
+    public boolean isApplyToSafelyEncoded() {
+        return true;
     }
 }

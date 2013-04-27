@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.CodecFactory;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.Decoder;
@@ -26,16 +28,27 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
  * @author Lari Hotari
  * @since 1.1
  */
-public class HTMLCodec implements CodecFactory {
+public final class HTMLCodec implements CodecFactory, GrailsApplicationAware {
+    public static final String CONFIG_PROPERTY_GSP_HTMLCODEC = "grails.views.gsp.htmlcodec";
     static final String CODEC_NAME = "HTML";
-
-    private static Encoder encoder = new HTMLEncoder();
-    private static Decoder decoder = new HTML4Decoder() {
+    private Encoder encoder;
+    private static final Encoder xml_encoder = new HTMLEncoder();
+    private static final Encoder html4_encoder = new HTML4Encoder() {
         @Override
         public CodecIdentifier getCodecIdentifier() {
             return HTMLEncoder.HTML_CODEC_IDENTIFIER;
         }
     };
+    private static final Decoder decoder = new HTML4Decoder() {
+        @Override
+        public CodecIdentifier getCodecIdentifier() {
+            return HTMLEncoder.HTML_CODEC_IDENTIFIER;
+        }
+    };
+    
+    public HTMLCodec() {
+        setUseLegacyEncoder(true);
+    }
 
     public Encoder getEncoder() {
         return encoder;
@@ -43,5 +56,21 @@ public class HTMLCodec implements CodecFactory {
 
     public Decoder getDecoder() {
         return decoder;
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        if(grailsApplication != null && grailsApplication.getFlatConfig() != null) {
+            Object htmlCodecSetting = grailsApplication.getFlatConfig().get(CONFIG_PROPERTY_GSP_HTMLCODEC);
+            if(htmlCodecSetting != null) {
+                String htmlCodecSettingStr = htmlCodecSetting.toString().toLowerCase();
+                if(htmlCodecSettingStr.startsWith("xml") || "xhtml".equalsIgnoreCase(htmlCodecSettingStr)) {
+                    setUseLegacyEncoder(false);
+                }
+            }
+        }
+    }
+    
+    public void setUseLegacyEncoder(boolean useLegacyEncoder) {
+        encoder = useLegacyEncoder ? html4_encoder : xml_encoder;
     }
 }

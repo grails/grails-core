@@ -38,6 +38,7 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
     private Set<String> tags = new HashSet<String>();
     private String namespace = GrailsTagLibClass.DEFAULT_NAMESPACE;
     private Set<String> returnObjectForTagsSet = new HashSet<String>();
+    private Object defaultEncodeAs = null;
     private Map<String, Object> encodeAsForTags = new HashMap<String, Object>();
 
     /**
@@ -72,13 +73,8 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
             }
         }
 
-        Object defaultEncodeAs = getStaticPropertyValue(DEFAULT_ENCODE_AS_FIELD_NAME, Object.class);
-        if(defaultEncodeAs != null) {
-            for(String tag : tags) {
-                encodeAsForTags.put(tag, defaultEncodeAs);
-            }
-        }
-
+        defaultEncodeAs = getStaticPropertyValue(DEFAULT_ENCODE_AS_FIELD_NAME, Object.class);
+        
         Map encodeAsForTagsMap = getStaticPropertyValue(ENCODE_AS_FOR_TAGS_FIELD_NAME, Map.class);
         if(encodeAsForTagsMap != null) {
             for (@SuppressWarnings("unchecked")
@@ -107,5 +103,9 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
 
     public Object getEncodeAsForTag(String tagName) {
         return encodeAsForTags.get(tagName);
+    }
+
+    public Object getDefaultEncodeAs() {
+        return defaultEncodeAs;
     }
 }
