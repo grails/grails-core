@@ -8,13 +8,15 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 class GroovyPageConfig {
     /** scriptlet codec escapes the static html parts coming from the GSP file scriptlets to output */
     public static final String OUT_CODEC_NAME="scriptlet"
-    /** expressionCodec escapes values inside ${} to output */
+    /** expression codec escapes values inside ${} to output */
     public static final String EXPRESSION_CODEC_NAME="expression"
-    /**  staticCodec escapes the static html parts coming from the GSP file to output */
+    /** staticparts escapes the static html parts coming from the GSP file to output */
     public static final String STATIC_CODEC_NAME="staticparts"
+    /** taglib codec escapes taglib output */
     public static final String TAGLIB_CODEC_NAME="taglib"
+    /** taglibdefault codec setting name is the fallback for taglib default codec, taglibCodec in gsp directive uses this setting internally */
     public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibdefault"
-    
+    /** allow inheriting codecs from parent levels */
     public static final String INHERIT_SETTING_NAME="inherit"
     
     public static final Set<String> VALID_CODEC_SETTING_NAMES = ([OUT_CODEC_NAME, EXPRESSION_CODEC_NAME, STATIC_CODEC_NAME, TAGLIB_CODEC_NAME, TAGLIB_DEFAULT_CODEC_NAME] as Set).asImmutable()
