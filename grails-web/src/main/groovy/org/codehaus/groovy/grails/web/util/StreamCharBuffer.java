@@ -2583,6 +2583,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
 
     public StreamCharBuffer encodeToBuffer(Encoder encoder) {
         StreamCharBuffer coded = new StreamCharBuffer(Math.min(Math.max(totalChunkSize, chunkSize) * 12 / 10, maxChunkSize));
+        coded.setNotifyParentBuffersEnabled(false);
         EncodedAppender codedWriter = coded.writer.getEncodedAppender();
         try {
             encodeTo(codedWriter, encoder);
