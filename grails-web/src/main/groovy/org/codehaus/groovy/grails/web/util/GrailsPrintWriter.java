@@ -78,6 +78,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
 
     public void setOut(Writer newOut) {
         this.out = unwrapWriter(newOut);
+        this.lock = this.out != null ? this.out : this;
         this.streamCharBufferTarget = null;
         this.previousOut = null;
     }
