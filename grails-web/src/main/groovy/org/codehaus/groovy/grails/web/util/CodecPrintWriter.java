@@ -20,6 +20,7 @@ public class CodecPrintWriter extends GrailsPrintWriter implements EncoderAware,
         buffer.connectTo(out, false);
         if(out instanceof EncodedAppenderFactory) {
             buffer.setWriteDirectlyToConnectedMinSize(0);
+            buffer.setChunkMinSize(0);
         }
         setOut(buffer.getWriterForEncoder(encoder, encodingStateRegistry));
     }
