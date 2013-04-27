@@ -77,7 +77,7 @@ public class GroovyPageParser implements Tokens {
     private static final String PAGE_DIRECTIVE = "page";
     private static final String TAGLIB_DIRECTIVE = "taglib";
     
-    private static final Pattern PRESCAN_PAGE_DIRECTIVE_PATTERN = Pattern.compile("<%@\\s*(?!" + TAGLIB_DIRECTIVE + ")\\s+(.*?)\\s*%>", Pattern.DOTALL);
+    private static final Pattern PRESCAN_PAGE_DIRECTIVE_PATTERN = Pattern.compile("<%@\\s*(?!" + TAGLIB_DIRECTIVE + " )(.*?)\\s*%>", Pattern.DOTALL);
     private static final Pattern PRESCAN_COMMENT_PATTERN = Pattern.compile("<%--.*?%>", Pattern.DOTALL);
 
     public static final String CONSTANT_NAME_JSP_TAGS = "JSP_TAGS";
