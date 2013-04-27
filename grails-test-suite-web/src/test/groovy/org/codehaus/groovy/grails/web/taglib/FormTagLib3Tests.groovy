@@ -31,8 +31,8 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             def attributes = [name: "testField", value: "1"]
             tag.call(attributes)
 
-            assertEquals '<input type="hidden" name="testField" value="1" id="testField" />', sw.toString()
         }
+        assertEquals '<input type="hidden" name="testField" value="1" id="testField" />', sw.toString()
     }
 
     void testRadioTag() {
@@ -44,8 +44,8 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             def attributes = new TreeMap([name: "testRadio", checked: "true", value: "1"])
             tag.call(attributes)
 
-            assertEquals "<input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\" id=\"testRadio\"  />", sw.toString()
         }
+        assertEquals "<input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\" id=\"testRadio\"  />", sw.toString()
 
         sw = new StringWriter()
         pw = new PrintWriter(sw)
@@ -55,8 +55,8 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             def attributes = new TreeMap([name: "testRadio", value: "2"])
             tag.call(attributes)
 
-            assertEquals "<input type=\"radio\" name=\"testRadio\" value=\"2\" id=\"testRadio\"  />", sw.toString()
         }
+        assertEquals "<input type=\"radio\" name=\"testRadio\" value=\"2\" id=\"testRadio\"  />", sw.toString()
     }
 
     void testRadioUsesExpressionForDisable() {
@@ -76,11 +76,11 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         withTag("radioGroup", pw) { tag ->
             def attributes = new TreeMap([name: "testRadio", labels:['radio.1', 'radio.2', 'radio.3'], values:[1,2,3], value: "1"])
             tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
-            assertEquals ("<p><g:message code=\"radio.1\" /> <input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\" /></p>"
+        }
+        assertEquals ("<p><g:message code=\"radio.1\" /> <input type=\"radio\" name=\"testRadio\" checked=\"checked\" value=\"1\" /></p>"
                 + lineSep + "<p><g:message code=\"radio.2\" /> <input type=\"radio\" name=\"testRadio\" value=\"2\" /></p>"
                 + lineSep + "<p><g:message code=\"radio.3\" /> <input type=\"radio\" name=\"testRadio\" value=\"3\" /></p>"
                 + lineSep , sw.toString())
-        }
     }
 
     void testRadioGroupTagWithoutLabelsAndInvalidValue() {
@@ -89,10 +89,10 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         withTag("radioGroup", pw) { tag ->
             def attributes = new TreeMap([name: "testRadio2", values:[3,2], value: "1"])
             tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
-            assertEquals ("<p><g:message code=\"Radio 3\" /> <input type=\"radio\" name=\"testRadio2\" value=\"3\" /></p>"
+        }
+        assertEquals ("<p><g:message code=\"Radio 3\" /> <input type=\"radio\" name=\"testRadio2\" value=\"3\" /></p>"
                 + lineSep + "<p><g:message code=\"Radio 2\" /> <input type=\"radio\" name=\"testRadio2\" value=\"2\" /></p>"
                 + lineSep , sw.toString())
-        }
     }
 
     void testRadioGroupTagWithNonStringValue() {
@@ -101,10 +101,10 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         withTag("radioGroup", pw) { tag ->
             def attributes = new TreeMap([name: "testRadio2", values:[4,1], value: 1])
             tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
-            assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" /></p>"
+        }
+        assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" /></p>"
                 + lineSep + "<p><g:message code=\"Radio 1\" /> <input type=\"radio\" name=\"testRadio2\" checked=\"checked\" value=\"1\" /></p>"
                 + lineSep , sw.toString())
-        }
     }
 
     void testRadioGroupTagWithNoValue() {
@@ -113,10 +113,10 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         withTag("radioGroup", pw) { tag ->
             def attributes = new TreeMap([name: "testRadio2", values:[4,1]])
             tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
-            assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" /></p>"
+        }
+        assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" /></p>"
                 + lineSep + "<p><g:message code=\"Radio 1\" /> <input type=\"radio\" name=\"testRadio2\" value=\"1\" /></p>"
                 + lineSep , sw.toString())
-        }
     }
 
     void testRadioGroupTagWithCustomAttributes() {
@@ -125,10 +125,10 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
         withTag("radioGroup", pw) { tag ->
             def attributes = new TreeMap([name: "testRadio2", values:[4,1], onclick: "growl();"])
             tag.call(attributes, {"<p><g:message code=\"${it.label}\" /> ${it.radio}</p>"})
-            assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" onclick=\"growl();\" /></p>"
+        }
+        assertEquals ("<p><g:message code=\"Radio 4\" /> <input type=\"radio\" name=\"testRadio2\" value=\"4\" onclick=\"growl();\" /></p>"
                 + lineSep + "<p><g:message code=\"Radio 1\" /> <input type=\"radio\" name=\"testRadio2\" value=\"1\" onclick=\"growl();\" /></p>"
                 + lineSep , sw.toString())
-        }
     }
 
     void testCheckboxTag() {
@@ -195,7 +195,8 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             attrs.put("value", "<b>some text</b>")
 
             tag.call(attrs, {})
-
+        };
+        { ->
             final String result = sw.toString()
             // need to inspect this as raw text so the DocumentHelper doesn't
             // unescape anything...
@@ -206,7 +207,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
 
             final Element inputElement = document.getDocumentElement()
             assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
-        }
+        }()
 
         sw = new StringWriter()
         pw = new PrintWriter(sw)
@@ -221,7 +222,8 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             attrs.put("value", "<b>some text</b>")
 
             tag.call(attrs, {})
-
+        };
+        {->
             final String result = sw.toString()
             // need to inspect this as raw text so the DocumentHelper doesn't
             // unescape anything...
@@ -232,14 +234,14 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
 
             final Element inputElement = document.getDocumentElement()
             assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
-        }
+        }()
     }
 
     void testHtmlEscapingTextAreaTag() {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
 
-        withTag("textArea", pw) { tag ->
+        withTag("textArea", pw, 'g') { tag ->
 
             assertNotNull(tag)
 
@@ -250,6 +252,8 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
 
             tag.call(attrs, {})
 
+        };
+        { ->
             final String result = sw.toString()
             // need to inspect this as raw text so the DocumentHelper doesn't
             // unescape anything...
@@ -260,12 +264,12 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
 
             final Element inputElement = document.getDocumentElement()
             assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
-        }
+        }()
 
         sw = new StringWriter()
         pw = new PrintWriter(sw)
 
-        withTag("textArea", pw) { tag ->
+        withTag("textArea", pw, 'g') { tag ->
 
             assertNotNull(tag)
 
@@ -275,7 +279,9 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             attrs.put("value", "<b>some text</b>")
 
             tag.call(attrs, {})
-
+        };
+        
+        { ->
             final String result = sw.toString()
             // need to inspect this as raw text so the DocumentHelper doesn't
             // unescape anything...
@@ -286,7 +292,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
 
             final Element inputElement = document.getDocumentElement()
             assertFalse("escapeHtml attribute should not exist", inputElement.hasAttribute("escapeHtml"))
-        }
+        }()
     }
 
     void testSelectTagWithEmptyListFromAttribute() {

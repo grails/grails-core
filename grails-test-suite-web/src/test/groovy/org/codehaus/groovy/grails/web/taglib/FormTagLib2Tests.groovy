@@ -255,7 +255,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
         StringWriter sw = new StringWriter()
         PrintWriter pw = new PrintWriter(sw)
 
-        def document = withTag("datePicker", pw) {tag ->
+        withTag("datePicker", pw) {tag ->
 
             assertNotNull(tag)
 
@@ -276,10 +276,8 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
 
             attrs.noSelection = ['': 'Please choose']
             tag.call(attrs)
-
-            String enclosed = "<test>" + sw.toString() + "</test>"
-            return parseText(enclosed)
         }
-        return document
+        String enclosed = "<test>" + sw.toString() + "</test>"
+        return parseText(enclosed)
     }
 }

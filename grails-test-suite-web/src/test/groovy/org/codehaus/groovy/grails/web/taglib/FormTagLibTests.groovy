@@ -145,8 +145,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([url:[controller:'con', action:'action'], id:'formElementId'])
             tag.call(attributes, { "" })
-            assertEquals '<form action="/con/action" method="post" id="formElementId" ></form>', sw.toString().trim()
         }
+        assertEquals '<form action="/con/action" method="post" id="formElementId" ></form>', sw.toString().trim()
     }
 
     void testFormWithURLAndRequestDataValueProcessor() {
@@ -159,8 +159,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([url:[controller:'con', action:'action'], id:'formElementId'])
             tag.call(attributes, { "" })
-            assertEquals '<form action="/con/action" method="post" id="formElementId" ><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', sw.toString().trim()
         }
+        assertEquals '<form action="/con/action" method="post" id="formElementId" ><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', sw.toString().trim()
     }
 
     void testActionSubmitWithoutAction() {
@@ -170,8 +170,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([value:'Edit'])
             tag.call(attributes)
-            assertEquals '<input type="submit" name="_action_Edit" value="Edit" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="submit" name="_action_Edit" value="Edit" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testActionSubmitWithoutActionAndWithRequestDataValueProcessor() {
@@ -184,8 +184,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([value:'Edit'])
             tag.call(attributes)
-            assertEquals '<input type="submit" name="_action_Edit" value="Edit_PROCESSED_" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="submit" name="_action_Edit" value="Edit_PROCESSED_" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testActionSubmitWithAction() {
@@ -195,8 +195,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([action:'Edit', value:'Some label for editing'])
             tag.call(attributes)
-            assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testActionSubmitWithActionAndRequestDataValueProcessor() {
@@ -209,8 +209,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([action:'Edit', value:'Some label for editing'])
             tag.call(attributes)
-            assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing_PROCESSED_" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing_PROCESSED_" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     /**
@@ -223,8 +223,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([action:'Edit', value:'Some label for editing', name:'customName'])
             tag.call(attributes)
-            assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testActionSubmitWithAdditionalAttributes() {
@@ -234,8 +234,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([action:'Edit', value:'Some label for editing', style:'width: 200px;'])
             tag.call(attributes)
-            assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" style="width: 200px;" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="submit" name="_action_Edit" value="Some label for editing" style="width: 200px;" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testActionSubmitImageWithoutAction() {
@@ -246,8 +246,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([src:'edit.gif', value:'Edit'])
             tag.call(attributes)
-            assertEquals '<input type="image" name="_action_Edit" value="Edit" src="edit.gif" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="image" name="_action_Edit" value="Edit" src="edit.gif" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testActionSubmitImageWithoutActionAndWithRequestDataValueProcessor() {
@@ -260,8 +260,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([src:'edit.gif', value:'Edit'])
             tag.call(attributes)
-            assertEquals '<input type="image" name="_action_Edit" value="Edit_PROCESSED_" src="edit.gif?requestDataValueProcessorParamName=paramValue" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="image" name="_action_Edit" value="Edit_PROCESSED_" src="edit.gif?requestDataValueProcessorParamName=paramValue" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testActionSubmitImageWithAction() {
@@ -271,8 +271,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([src:'edit.gif', action:'Edit', value:'Some label for editing'])
             tag.call(attributes)
-            assertEquals '<input type="image" name="_action_Edit" value="Some label for editing" src="edit.gif" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="image" name="_action_Edit" value="Some label for editing" src="edit.gif" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testActionSubmitImageWithAdditionalAttributes() {
@@ -282,8 +282,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
             // use sorted map to be able to predict the order in which tag attributes are generated
             def attributes = new TreeMap([src:'edit.gif', action:'Edit', value:'Some label for editing', style:'border-line: 0px;'])
             tag.call(attributes)
-            assertEquals '<input type="image" name="_action_Edit" value="Some label for editing" src="edit.gif" style="border-line: 0px;" />', sw.toString() // NO TRIM, TEST WS!
         }
+        assertEquals '<input type="image" name="_action_Edit" value="Some label for editing" src="edit.gif" style="border-line: 0px;" />', sw.toString() // NO TRIM, TEST WS!
     }
 
     void testHtmlEscapingTextAreaTag() {
@@ -292,8 +292,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         withTag("textArea", new PrintWriter(sw)) { tag ->
             def attributes = [name: "testField", value: "<b>some text</b>"]
             tag.call(attributes,{})
-            assertEquals '<textarea name="testField" id="testField" >&lt;b&gt;some text&lt;/b&gt;</textarea>', sw.toString()
         }
+        assertEquals '<textarea name="testField" id="testField" >&lt;b&gt;some text&lt;/b&gt;</textarea>', sw.toString()
     }
 
     void testTextAreaTag() {
@@ -302,8 +302,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         withTag("textArea", new PrintWriter(sw)) { tag ->
             def attributes = [name: "testField", value: "1"]
             tag.call(attributes,{})
-            assertEquals '<textarea name="testField" id="testField" >1</textarea>', sw.toString()
         }
+        assertEquals '<textarea name="testField" id="testField" >1</textarea>', sw.toString()
     }
 
     void testPassingTheSameMapToTextField() {
@@ -313,15 +313,15 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         def attributes = [name: 'A']
         withTag("textField", new PrintWriter(sw)) { tag ->
             tag.call(attributes)
-            assertEquals '<input type="text" name="A" value="" id="A" />', sw.toString()
         }
+        assertEquals '<input type="text" name="A" value="" id="A" />', sw.toString()
 
         sw = new StringWriter()
         attributes.name = 'B'
         withTag("textField", new PrintWriter(sw)) { tag ->
             tag.call(attributes)
-            assertEquals '<input type="text" name="B" value="" id="B" />', sw.toString()
         }
+        assertEquals '<input type="text" name="B" value="" id="B" />', sw.toString()
     }
 
     void testFieldImplDoesNotApplyAttributesFromPreviousInvocation() {
@@ -350,8 +350,8 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         def sw = new StringWriter()
         withTag('textField', new PrintWriter(sw)) { tag ->
             tag.call(attributes)
-            assertEquals expected, sw.toString()
         }
+        assertEquals expected, sw.toString()
     }
 
     void testBooleanAttributes() {

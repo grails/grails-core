@@ -389,8 +389,8 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
             def attrs = [:]
             tag.call(attrs, { "error found"})
 
-            assertEquals "error found", sw.toString()
         }
+        assertEquals "error found", sw.toString()
     }
 
     void testMessageHtmlEscaping() {
