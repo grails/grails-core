@@ -111,7 +111,8 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
     protected void autowireCodecBean(Object existingBean) {
         if(existingBean != null && grailsApplication != null && grailsApplication.getMainContext() instanceof AutowireCapableBeanFactory) {
-            ((AutowireCapableBeanFactory)grailsApplication.getMainContext()).autowireBean(existingBean);
+            ((AutowireCapableBeanFactory)grailsApplication.getMainContext()).autowireBeanProperties(
+                    existingBean, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
         }
     }
 
