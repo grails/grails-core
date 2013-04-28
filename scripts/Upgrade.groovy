@@ -164,26 +164,28 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         if (configFile.exists()) {
             def configText = configFile.text
             configFile.withWriterAppend {
-                if (!configText.contains("grails.views {")) {
+                if (!configText.find(/grails\s*\{\s*views\s*\{\s*gsp\s*\{/)) {
                     it << """
 // Uncomment and edit the following lines to start using Grails encoding & escaping improvements
 
 /* remove this line 
 // GSP settings
-grails.views {
-    gsp {
-        encoding = 'UTF-8'
-        htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
-        codecs {
-            expression = 'html' // escapes values inside ${}
-            scriptlet = 'none' // escapes output from scriptlets in GSPs
-            taglib = 'none' // escapes output from taglibs
-            staticparts = 'none' // escapes output from static template parts
+grails {
+    views {
+        gsp {
+            encoding = 'UTF-8'
+            htmlcodec = 'xml' // use xml escaping instead of HTML4 escaping
+            codecs {
+                expression = 'html' // escapes values inside ${}
+                scriptlet = 'none' // escapes output from scriptlets in GSPs
+                taglib = 'none' // escapes output from taglibs
+                staticparts = 'none' // escapes output from static template parts
+            }
         }
-    }
-    // escapes all not-encoded output at final stage of outputting
-    filteringCodecForContentType {
-        //'text/html' = 'html'
+        // escapes all not-encoded output at final stage of outputting
+        filteringCodecForContentType {
+            //'text/html' = 'html'
+        }
     }
 }
 remove this line */
