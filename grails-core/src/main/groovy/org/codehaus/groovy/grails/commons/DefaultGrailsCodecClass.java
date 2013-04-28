@@ -64,6 +64,9 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
 
     private void initializeCodec() {
         Integer orderSetting = (Integer)getPropertyOrStaticPropertyOrFieldValue("order", Integer.class);
+        if(orderSetting != null) {
+            order = orderSetting;
+        }
         if(Encoder.class.isAssignableFrom(getClazz())) {
             encoder = (Encoder)getReferenceInstance();
             autowireCodecBean(encoder);
