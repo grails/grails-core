@@ -1,4 +1,5 @@
-/* Copyright 2011 SpringSource
+/*
+ * Copyright 2011 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.codehaus.groovy.grails.cli.agent;
 
 import org.springsource.loaded.Plugins;
