@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package grails.build.logging;
 
 import static org.fusesource.jansi.Ansi.ansi;
