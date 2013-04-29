@@ -30,7 +30,7 @@ class Book {
 '''
     }
 
-    void testBindToReadyOnlyProperty() {
+    void testBindToPropertyThatIsNotReadable() {
         def Book = ga.getDomainClass("Book").clazz
         def b = Book.newInstance()
 
