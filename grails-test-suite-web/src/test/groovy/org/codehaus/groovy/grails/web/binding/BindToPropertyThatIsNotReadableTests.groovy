@@ -6,7 +6,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
  * @author Graeme Rocher
  * @since 1.1
  */
-class BindToReadOnlyPropertyTests extends AbstractGrailsControllerTests {
+class BindToPropertyThatIsNotReadableTests extends AbstractGrailsControllerTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
