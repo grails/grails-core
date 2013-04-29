@@ -153,6 +153,34 @@ class GormAwareDataBinderSpec extends Specification {
         widget.isNotBindable == null
     }
 
+    void 'Test binding to a collection of String'() {
+        given:
+        mockDomain DataBindingBook
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def book = new DataBindingBook()
+        
+        when:
+        binder.bind book, [topics: ['journalism', null, 'satire']]
+        binder.bind book, ['topics[1]': 'counterculture']
+        
+        then:
+        book.topics == ['journalism', 'counterculture', 'satire']
+    }
+    
+    void 'Test binding to a collection of Integer'() {
+        given:
+        mockDomain DataBindingBook
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def book = new DataBindingBook()
+        
+        when:
+        binder.bind book, [importantPageNumbers: ['5', null, '42']]
+        binder.bind book, ['importantPageNumbers[1]': '2112']
+        
+        then:
+        book.importantPageNumbers == [5, 2112, 42]
+    }
+    
     void 'Test binding to a collection of primitive'() {
         given:
         mockDomains Parent, Child
@@ -223,6 +251,14 @@ class Parent {
 @Entity
 class Child {
     static hasMany = [someOtherIds: Integer]
+}
+
+@Entity
+class DataBindingBook {
+    String title
+    List importantPageNumbers
+    List topics
+    static hasMany = [topics: String, importantPageNumbers: Integer]
 }
 
 class PrimitiveContainer {

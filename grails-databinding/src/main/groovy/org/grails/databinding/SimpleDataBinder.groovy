@@ -68,6 +68,17 @@ class SimpleDataBinder implements DataBinder {
     ConversionService conversionService
     protected Map<Class, ValueConverter> conversionHelpers = new HashMap<Class, ValueConverter>()
     protected Map<Class, FormattedValueConverter> formattedValueConvertersionHelpers = new HashMap<Class, FormattedValueConverter>()
+    protected static final List<Class> BASIC_TYPES = [
+        String,
+        Boolean,
+        Byte,
+        Short,
+        Integer,
+        Long,
+        Float,
+        Double,
+        Character
+    ]
 
     static final INDEXED_PROPERTY_REGEX = /(.*)\[\s*([^\s]*)\s*\]\s*$/
 
@@ -200,8 +211,14 @@ class SimpleDataBinder implements DataBinder {
                         if(indexedInstance == null) {
                             Class genericType = getReferencedTypeForCollection(simplePropertyName, obj)
                             if(genericType) {
-                                indexedInstance = genericType.newInstance()
-                                addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, indexedInstance
+                                if(genericType.isAssignableFrom(val?.getClass())) {
+                                    addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, val
+                                } else if(isBasicType(genericType)) {
+                                    addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, convert(genericType, val)
+                                } else {
+                                    indexedInstance = genericType.newInstance()
+                                    addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, indexedInstance
+                                }
                             } else {
                                 addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, val
                             }
@@ -231,6 +248,10 @@ class SimpleDataBinder implements DataBinder {
                 }
             }
         }
+    }
+    
+    protected boolean isBasicType(Class c) {
+        BASIC_TYPES.contains(c) || c.isPrimitive()
     }
 
     protected Class<?> getReferencedTypeForCollection(String propertyName, Object obj) {
@@ -366,7 +387,11 @@ class SimpleDataBinder implements DataBinder {
             }
 
             if(propertyValue == null || propertyType == Object || propertyType.isAssignableFrom(propertyValue.getClass())) {
-                obj[propName] = propertyValue
+                if(propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType)) {
+                    addElementsToCollection(obj, propName, propertyValue, true)
+                } else {
+                    obj[propName] = propertyValue
+                }
             } else if(propertyValue instanceof List &&
 //                      !propertyValue instanceof ListOrderedSet &&
                       Set.isAssignableFrom(propertyType) &&
@@ -413,7 +438,7 @@ class SimpleDataBinder implements DataBinder {
             coll.clear()
         }
         collection?.each { element ->
-            if(referencedType.isAssignableFrom(element.getClass())) {
+            if(element == null || referencedType.isAssignableFrom(element.getClass())) {
                 coll << element
             } else {
                 coll << convert(referencedType, element)
