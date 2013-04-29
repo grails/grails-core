@@ -335,6 +335,30 @@ class SimpleDataBinderSpec extends Specification {
         widget.numbers.contains 5
         widget.numbers.contains 6
     }
+    
+    void 'Test binding ranges'() {
+        given:
+        def widget = new Widget()
+        def binder = new SimpleDataBinder()
+        
+        when:
+        binder.bind widget, [validNumbers: 3..5]
+        
+        then:
+        widget.validNumbers == 3..5
+        
+        when:
+        binder.bind widget, [validNumbers: null]
+        
+        then:
+        widget.validNumbers == null
+        
+        when:
+        binder.bind widget, [validNumbers: 1..5]
+        
+        then:
+        widget.validNumbers == 1..5
+    }
 }
 
 class Factory {
@@ -350,6 +374,7 @@ class Widget {
     Set<String> widgetChildren
     Gadget nestedGadget
     Set<Integer> numbers
+    Range validNumbers = 4..42
 }
 
 class Gadget extends Widget {

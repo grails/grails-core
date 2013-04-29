@@ -389,7 +389,7 @@ class SimpleDataBinder implements DataBinder {
             }
 
             if(propertyValue == null || propertyType == Object || propertyType.isAssignableFrom(propertyValue.getClass())) {
-                if(propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType) && propertyGetter) {
+                if(!(propertyValue instanceof Range) && propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType) && propertyGetter) {
                     addElementsToCollection(obj, propName, propertyValue, true)
                 } else {
                     obj[propName] = propertyValue
