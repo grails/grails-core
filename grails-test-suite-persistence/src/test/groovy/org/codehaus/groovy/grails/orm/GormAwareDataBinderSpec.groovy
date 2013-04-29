@@ -212,6 +212,37 @@ class GormAwareDataBinderSpec extends Specification {
         parent.child.someOtherIds.size() == 1
         parent.child.someOtherIds.contains(4)
     }
+    
+    void 'Test unbinding a Map entry'() {
+        given:
+        mockDomains Team, Author
+        def team = new Team()
+        def binder = new GormAwareDataBinder(grailsApplication)
+        
+        when:
+        team.members = ['jeff': new Author(name: 'Jeff Scott Brown'),'betsy': new Author(name: 'Sarah Elizabeth Brown')]
+        
+        then:
+        team.members.size() == 2
+        team.members.containsKey('betsy')
+        team.members.containsKey('jeff')
+        'Sarah Elizabeth Brown' == team.members.betsy.name
+        'Jeff Scott Brown' == team.members.jeff.name
+
+        when:
+        binder.bind team, ['members[jeff]': [id: 'null']]
+        
+        then:
+        team.members.size() == 1
+        team.members.containsKey('betsy')
+        'Sarah Elizabeth Brown' == team.members.betsy.name
+    }
+}
+
+@Entity
+class Team {
+    static hasMany = [members: Author]
+    Map members
 }
 
 @Entity
