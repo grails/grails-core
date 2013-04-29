@@ -378,16 +378,18 @@ class SimpleDataBinder implements DataBinder {
         if(listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
             def metaProperty = obj.metaClass.getMetaProperty(propName)
             def propertyType
+            def propertyGetter
             if(metaProperty instanceof MetaBeanProperty) {
                 def mbp = (MetaBeanProperty)metaProperty
                 propertyType = mbp.field?.type
+                propertyGetter = mbp.getter
             }
             if(propertyType == null) {
                 propertyType = metaProperty.type
             }
 
             if(propertyValue == null || propertyType == Object || propertyType.isAssignableFrom(propertyValue.getClass())) {
-                if(propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType)) {
+                if(propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType) && propertyGetter) {
                     addElementsToCollection(obj, propName, propertyValue, true)
                 } else {
                     obj[propName] = propertyValue
