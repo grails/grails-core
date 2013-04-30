@@ -15,11 +15,9 @@ import org.springframework.validation.FieldError
 @CompileStatic
 class GormAwareDataBindindingListener extends DataBindingListenerAdapter {
     private final BindingResult tmpBindingResult
-    private final Object object
 
-    GormAwareDataBindindingListener(BindingResult tmpBindingResult, object) {
+    GormAwareDataBindindingListener(BindingResult tmpBindingResult) {
         this.tmpBindingResult = tmpBindingResult
-        this.object = object
     }
 
     @Override
@@ -39,7 +37,7 @@ class GormAwareDataBindindingListener extends DataBindingListenerAdapter {
 
     @Override
     void bindingError(BindingError error) {
-        Object[] o = getArgumentsForBindError(object.getClass().getName(), error.getPropertyName())
+        Object[] o = getArgumentsForBindError(error.object?.getClass()?.getName(), error.getPropertyName())
         def codes = ['typeMismatch']
         def cause = error.cause
         def defaultMessage = cause ? cause.message : 'Data Binding Failed'
