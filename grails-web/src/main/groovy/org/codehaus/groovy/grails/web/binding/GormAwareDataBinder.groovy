@@ -141,7 +141,13 @@ class GormAwareDataBinder extends SimpleDataBinder {
                                 }
                             } else {
                                 map = initializeMap obj, descriptor.propertyName
-                                map[descriptor.index] = getPersistentInstance referencedType, idValue
+                                def persistedInstance = getPersistentInstance referencedType, idValue
+                                if(persistedInstance != null) {
+                                    map[descriptor.index] = persistedInstance
+                                    bind persistedInstance, val, listener
+                                } else {
+                                    map.remove descriptor.index
+                                }
                             }
                         }
                     }
@@ -215,11 +221,13 @@ class GormAwareDataBinder extends SimpleDataBinder {
         }
 
         def domainClass = (GrailsDomainClass)grailsApplication.getArtefact('Domain', obj.getClass().name)
-        def property = domainClass.getPersistentProperty propertyName
-        if (property != null && property.isBidirectional()) {
-            def otherSide = property.otherSide
-            if (otherSide.isManyToOne()) {
-                val[otherSide.name] = obj
+        if(domainClass != null) {
+            def property = domainClass.getPersistentProperty propertyName
+            if (property != null && property.isBidirectional()) {
+                def otherSide = property.otherSide
+                if (otherSide.isManyToOne()) {
+                    val[otherSide.name] = obj
+                }
             }
         }
     }

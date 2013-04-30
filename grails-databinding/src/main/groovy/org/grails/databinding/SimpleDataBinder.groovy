@@ -231,11 +231,13 @@ class SimpleDataBinder implements DataBinder {
                             }
                         }
                     } else if(Map.isAssignableFrom(propertyType)) {
-                        Map mapInstance = (Map)obj[simplePropertyName]
-                        if(mapInstance == null) {
-                            mapInstance = initializeMap obj, simplePropertyName
+                        Map mapInstance = initializeMap obj, simplePropertyName
+                        def referencedType = getReferencedTypeForCollection simplePropertyName, obj
+                        if(referencedType != null && val instanceof Map) {
+                            mapInstance[indexedPropertyReferenceDescriptor.index] = referencedType.newInstance(val)
+                        } else {
+                            mapInstance[indexedPropertyReferenceDescriptor.index] = val
                         }
-                        mapInstance[indexedPropertyReferenceDescriptor.index] = val
                     }
                 }
             } else if(propName.startsWith('_')) {
@@ -243,7 +245,7 @@ class SimpleDataBinder implements DataBinder {
                 metaProperty = obj.metaClass.getMetaProperty restOfPropName
                 if(metaProperty &&
                    (Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type) &&
-                   !source.containsKey('restOfPropName')) {
+                   !source.containsKey(restOfPropName)) {
                     setPropertyValue obj, source, restOfPropName, false, listener
                 }
             }
@@ -469,6 +471,8 @@ class SimpleDataBinder implements DataBinder {
             } else if(List == typeToConvertTo) {
                 return value as List
             }
+        } else if(typeToConvertTo.isPrimitive() || typeToConvertTo.isArray()) {
+            return value
         }
         typeToConvertTo.newInstance value
     }
