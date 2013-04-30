@@ -188,7 +188,7 @@ public class DataBindingUtils {
     public static BindingResult bindObjectToDomainInstance(GrailsDomainClass domain, Object object,
             Object source, List include, List exclude, String filter) {
         BindingResult bindingResult = null;
-        boolean useLegacyBinder = false;
+        boolean useSpringBinder = false;
         GrailsApplication grailsApplication = null;
         if(domain != null) {
             grailsApplication = domain.getGrailsApplication();
@@ -197,11 +197,11 @@ public class DataBindingUtils {
             grailsApplication = GrailsWebRequest.lookupApplication();
         }
         if(grailsApplication != null) {
-            if(Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.databinding.useLegacyBinder"))) {
-                useLegacyBinder = true;
+            if(Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.databinding.useSpringBinder"))) {
+                useSpringBinder = true;
             }
         }
-        if (!useLegacyBinder && source instanceof Map) {
+        if (!useSpringBinder && source instanceof Map) {
             final Map propertyMap = convertPotentialGStrings((Map) source);
             final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
