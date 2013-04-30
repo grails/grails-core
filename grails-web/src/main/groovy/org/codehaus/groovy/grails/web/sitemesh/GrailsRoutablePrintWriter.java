@@ -71,8 +71,7 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
 
     @Override
     public void close() {
-        if (!isBlockClose()) {
-            activateDestination();
+        if (!isBlockClose() && isDestinationActivated()) {
             super.close();
         }
     }
@@ -229,8 +228,7 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
 
     @Override
     public void flush() {
-        if (!isBlockFlush()) {
-            activateDestination();
+        if (!isBlockFlush() && isDestinationActivated()) {
             super.flush();
         }
     }
