@@ -20,6 +20,12 @@ import org.grails.databinding.converters.ValueConverter
 
 import org.springframework.web.multipart.MultipartFile
 
+/**
+ * 
+ * @author Jeff Brown
+ * @since 2.3
+ *
+ */
 @CompileStatic
 class ByteArrayMultipartFileValueConverter implements ValueConverter {
 

@@ -55,5 +55,10 @@ public interface FormattedValueConverter {
      * @return the formatted value
      */
     Object convert(Object value, String format);
+    
+    /**
+     * 
+     * @return the output type of this converter
+     */
     Class<?> getTargetType();
 }
