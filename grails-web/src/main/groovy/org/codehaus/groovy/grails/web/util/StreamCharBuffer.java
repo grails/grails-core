@@ -567,10 +567,10 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
                 target = ((GrailsPrintWriter)target).getOut();
             }
         }
-        if (target instanceof StreamCharBufferWriter) {
-            if (target == writer) {
-                throw new IllegalArgumentException("Cannot write buffer to itself.");
-            }
+        if (target == writer) {
+            throw new IllegalArgumentException("Cannot write buffer to itself.");
+        }
+        if (!emptyAfter && target instanceof StreamCharBufferWriter) {
             ((StreamCharBufferWriter)target).write(this);
             return;
         } else if (target instanceof EncodedAppenderFactory) {
