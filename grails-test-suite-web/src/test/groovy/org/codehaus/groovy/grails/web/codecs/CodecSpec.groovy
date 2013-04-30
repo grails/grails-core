@@ -32,6 +32,13 @@ class CodecSpec extends Specification {
             '"<script>"'.encodeAsJavaScript() == '\\u0022\\u003cscript\\u003e\\u0022'
             '"<script>"'.encodeAsJavaScript().encodeAsHTML() == '"<script>"'.encodeAsJavaScript()
     }
+
+    void "Test that the raw method works in GSP"() {
+        when:"The raw method is called for a GSP expression"
+            def content = applyTemplate('${foo}${raw(bar)}', [foo:'"<script>"', bar:'<script>'])
+        then:"The content it output is raw form"
+            content == '&quot;&lt;script&gt;&quot;<script>'
+    }
             
     void "output should be safe at the end"() {
         

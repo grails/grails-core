@@ -34,6 +34,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsCodecClass;
+import org.codehaus.groovy.grails.plugins.web.api.CommonWebApi;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
@@ -49,6 +53,7 @@ import org.codehaus.groovy.grails.web.taglib.GroovyPageTagWriter;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.typehandling.DefaultTypeTransformation;
 
 /**
@@ -123,6 +128,7 @@ public abstract class GroovyPage extends Script {
     private GrailsWebRequest webRequest;
     private String pluginContextPath;
     private HttpServletRequest request;
+    private Encoder rawEncoder;
 
     private final List<Closure<?>> bodyClosures = new ArrayList<Closure<?>>(15);
 
@@ -218,10 +224,26 @@ public abstract class GroovyPage extends Script {
         if (grailsWebRequest != null) {
             grailsWebRequest.setOut(out);
             request = grailsWebRequest.getCurrentRequest();
+            GrailsApplication grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
+            if(grailsApplication != null) {
+                GrailsCodecClass codecClass = (GrailsCodecClass) grailsApplication.getArtefact(CodecArtefactHandler.TYPE, CommonWebApi.RAW_CODEC_NAME);
+                if(codecClass != null) {
+                    rawEncoder = codecClass.getEncoder();
+                }
+            }
         }
         
         setVariableDirectly(OUT, out);
         setVariableDirectly(EXPRESSION_OUT, expressionOut);
+    }
+
+    public Object raw(Object value) {
+        if(rawEncoder != null) {
+            return rawEncoder.encode(value);
+        }
+        else {
+            return InvokerHelper.invokeMethod(value, "encodeAsRaw", null);
+        }
     }
     
     @SuppressWarnings("unchecked")
