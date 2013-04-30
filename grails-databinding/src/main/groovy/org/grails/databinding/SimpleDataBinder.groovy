@@ -203,10 +203,7 @@ class SimpleDataBinder implements DataBinder {
                     def propertyType = metaProperty.type
                     if(Collection.isAssignableFrom(propertyType)) {
                         def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
-                        Collection collectionInstance = (Collection)obj[simplePropertyName]
-                        if(collectionInstance == null) {
-                            collectionInstance = initializeCollection obj, simplePropertyName, propertyType
-                        }
+                        Collection collectionInstance = initializeCollection obj, simplePropertyName, propertyType
                         def indexedInstance = collectionInstance[index]
                         if(indexedInstance == null) {
                             Class genericType = getReferencedTypeForCollection(simplePropertyName, obj)
@@ -287,6 +284,11 @@ class SimpleDataBinder implements DataBinder {
                 obj[propertyName] = new ArrayList()
             } else if (Set.isAssignableFrom(type)) {
                 obj[propertyName] = ListOrderedSet.decorate([] as Set)
+            }
+        } else if(obj[propertyName] instanceof Set) {
+            Set set = (Set)obj[propertyName]
+            if(!(set instanceof ListOrderedSet)) {
+                obj[propertyName] = ListOrderedSet.decorate(set)
             }
         }
         obj[propertyName]

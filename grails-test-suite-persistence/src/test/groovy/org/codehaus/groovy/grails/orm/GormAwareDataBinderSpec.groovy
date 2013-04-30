@@ -237,6 +237,22 @@ class GormAwareDataBinderSpec extends Specification {
         team.members.containsKey('betsy')
         'Sarah Elizabeth Brown' == team.members.betsy.name
     }
+    
+    void 'Test binding to Set with subscript'() {
+        given:
+        mockDomains Publisher, Author
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def pub = new Publisher()
+        pub.addToAuthors(name: 'Author One')
+        
+        when:
+        binder.bind pub, ['authors[0]': [name: 'Author Uno'], 'authors[1]': [name: 'Author Dos']]
+        
+        then:
+        pub.authors.size() == 2
+        pub.authors[0].name == 'Author Uno'
+        pub.authors[1].name == 'Author Dos'
+    }
 }
 
 @Entity
@@ -248,7 +264,7 @@ class Team {
 @Entity
 class Publisher {
     String name
-    static hasMany = [publications: Publication]
+    static hasMany = [publications: Publication, authors: Author]
     List publications
 }
 
