@@ -563,8 +563,6 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
             GrailsWrappedWriter wrappedWriter = ((GrailsWrappedWriter)target);
             if(wrappedWriter.isAllowUnwrappingOut()) {
                 target = wrappedWriter.unwrap();
-            } else if (target instanceof GrailsPrintWriter && ((GrailsPrintWriter)target).getOut() instanceof EncodedAppenderWriter) {
-                target = ((GrailsPrintWriter)target).getOut();
             }
         }
         if (target == writer) {
