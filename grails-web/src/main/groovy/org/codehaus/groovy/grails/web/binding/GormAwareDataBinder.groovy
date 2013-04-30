@@ -221,11 +221,13 @@ class GormAwareDataBinder extends SimpleDataBinder {
         }
 
         def domainClass = (GrailsDomainClass)grailsApplication.getArtefact('Domain', obj.getClass().name)
-        def property = domainClass.getPersistentProperty propertyName
-        if (property != null && property.isBidirectional()) {
-            def otherSide = property.otherSide
-            if (otherSide.isManyToOne()) {
-                val[otherSide.name] = obj
+        if(domainClass != null) {
+            def property = domainClass.getPersistentProperty propertyName
+            if (property != null && property.isBidirectional()) {
+                def otherSide = property.otherSide
+                if (otherSide.isManyToOne()) {
+                    val[otherSide.name] = obj
+                }
             }
         }
     }
