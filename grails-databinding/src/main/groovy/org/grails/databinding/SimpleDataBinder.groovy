@@ -267,7 +267,6 @@ class SimpleDataBinder implements DataBinder {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected addElementToCollectionAt(obj, String propertyName, Collection collection, index, val) {
-        // TODO
         if(collection instanceof ListOrderedSet) {
             collection.add Math.min(index, collection.size()), val
         } else {
@@ -275,7 +274,6 @@ class SimpleDataBinder implements DataBinder {
         }
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
     protected Map initializeMap(obj, String propertyName) {
         if(obj[propertyName] == null) {
             obj[propertyName] = [:]
@@ -283,7 +281,6 @@ class SimpleDataBinder implements DataBinder {
         obj[propertyName]
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
     protected Collection initializeCollection(obj, String propertyName, Class type) {
         if(obj[propertyName] == null) {
             if(List.isAssignableFrom(type)) {
