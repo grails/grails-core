@@ -43,7 +43,7 @@ class ValidationSupport {
             for (originalError in originalErrors.allErrors) {
                 if (originalError instanceof FieldError) {
                     if (originalErrors.getFieldError(originalError.field)?.bindingFailure) {
-                        localErrors.rejectValue originalError.field, originalError.code, originalError.arguments, originalError.defaultMessage
+                        localErrors.addError originalError
                     }
                 } else {
                     localErrors.addError originalError

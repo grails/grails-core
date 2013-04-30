@@ -86,15 +86,27 @@ class TestingValidationSpec extends Specification {
 
     when:
         person.properties = [age: 'some string', name: 'Jeff Scott Brown', email: 'abcdefgh']
+        
+    then:
+        1 == person.errors.errorCount
+        
+    when:
+        def ageError = person.errors.getFieldError('age')
+        
+    then:
+        'some string' == ageError.rejectedValue
+        
+    when:
         person.validate()
         def errorCount = person.errors.errorCount
-        def ageError = person.errors.getFieldError('age')
+        ageError = person.errors.getFieldError('age')
         def emailError = person.errors.getFieldError('email')
 
     then:
         errorCount == 2
         'typeMismatch' in ageError.codes
         'person.email.email.error' in emailError.codes
+        'some string' == ageError.rejectedValue
     }
 }
 

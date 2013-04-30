@@ -99,6 +99,10 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             def methodActionWithSomeCommand(SomeCommand co) {
                 [commandObject: co]
             }
+
+            def methodActionWithWidgetCommand(WidgetCommand co) {
+                [widget: co]
+            }
         }
 
         class PersonCommand {
@@ -113,6 +117,15 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
                 bindable: false
                 city nullable: true, bindable: false
                 state nullable: true
+            }
+        }
+
+        class WidgetCommand {
+            Integer width 
+            Integer height
+
+            static constraints = {
+                height range: 1..10
             }
         }
 
@@ -197,6 +210,21 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
 
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+    }
+    
+    void 'Test that rejected binding value survives validation'() {
+        when:
+            testController.params.width = 'some bad value'
+            testController.params.height = 42
+            def model = testController.methodActionWithWidgetCommand()
+            def widget = model.widget
+            def err = widget.errors
+            
+        then:
+            widget.height == 42
+            widget.width == null
+            widget.errors.errorCount == 2
+            widget.errors.getFieldError('width').rejectedValue == 'some bad value'
     }
 
     void 'Test non validateable command object'() {
