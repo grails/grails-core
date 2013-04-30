@@ -238,6 +238,22 @@ class GormAwareDataBinderSpec extends Specification {
         'Sarah Elizabeth Brown' == team.members.betsy.name
     }
     
+    void 'Test binding to a Map for new instance with quoted key'() {
+        given:
+        mockDomains Team, Author
+        def team = new Team()
+        def binder = new GormAwareDataBinder(grailsApplication)
+        
+        when:
+        binder.bind team, ["members['jeff']": [name: 'Jeff Scott Brown'], 'members["betsy"]': [name: 'Sarah Elizabeth Brown']]
+        
+        then:
+        team.members.size() == 2
+        team.members.jeff.name == 'Jeff Scott Brown'
+        team.members.betsy.name == 'Sarah Elizabeth Brown'
+
+    }
+    
     void 'Test binding to Set with subscript'() {
         given:
         mockDomains Publisher, Author

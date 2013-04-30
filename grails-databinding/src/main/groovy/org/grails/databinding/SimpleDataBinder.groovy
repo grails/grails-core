@@ -178,6 +178,9 @@ class SimpleDataBinder implements DataBinder {
         if(matcher) {
             def indexedPropertyName = matcher.group(1)
             def index = matcher.group(2)
+            if(index.size() > 2 && ((index.startsWith("'") && index.endsWith("'")) || (index.startsWith('"') && index.endsWith('"')))) {
+                index = index[1..-2]
+            }
             descriptor = new IndexedPropertyReferenceDescriptor(propertyName: indexedPropertyName, index: index)
         }
         descriptor
