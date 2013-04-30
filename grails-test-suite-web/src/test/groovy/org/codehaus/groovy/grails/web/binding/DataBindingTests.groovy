@@ -24,9 +24,18 @@ class TestController {
 
 @Entity
 class Book {
+    static instanceCount = 0
+    Book() {
+        instanceCount++
+    }
     String title
     Author author
     URL site
+}
+
+@Entity
+class BookReview {
+    Book book
 }
 
 @Entity
@@ -89,6 +98,28 @@ class EmbedDate {
 }
 
         ''')
+    }
+    
+    void testBinderDoesNotCreateExtraneousInstances() {
+        // GRAILS-9914
+        def bookReviewClass = ga.getDomainClass('databindingtests.BookReview')
+        def bookClass = ga.getDomainClass('databindingtests.Book')
+        def book = bookClass.clazz.newInstance(title: 'Some Book')
+        
+        assert 1 == bookClass.clazz.instanceCount
+        
+        def bookReview = bookReviewClass.clazz.newInstance(book: book)
+        
+        assert 'Some Book' == bookReview.book.title
+        
+        def req = new GrailsMockHttpServletRequest()
+        req.addParameter 'book.title', 'Some New Book'
+        bookReview.properties = req
+        
+        assert 'Some New Book' == bookReview.book.title
+        
+        // this fails with GrailsDataBinder and passes with GormAwareDataBinder
+        assert 1 == bookClass.clazz.instanceCount
     }
 
     void testBindEmbeddedWithMultipartFileAndDate() {
