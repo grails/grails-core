@@ -15,7 +15,6 @@
  */
 package org.grails.async.transform.internal;
 
-
 import grails.async.Promise;
 import grails.async.Promises;
 import groovy.lang.Closure;

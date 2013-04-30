@@ -36,7 +36,6 @@ import org.junit.runners.Suite
 /**
  * An {@code GrailsTestType} for JUnit4 tests.
  */
-
 class JUnit4GrailsTestType extends GrailsTestTypeSupport {
 
     static final List<String> SUFFIXES = ["Test", "Tests"].asImmutable()
