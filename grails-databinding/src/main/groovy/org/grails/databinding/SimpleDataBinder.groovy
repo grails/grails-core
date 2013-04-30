@@ -471,7 +471,7 @@ class SimpleDataBinder implements DataBinder {
             } else if(List == typeToConvertTo) {
                 return value as List
             }
-        } else if(typeToConvertTo.isPrimitive()) {
+        } else if(typeToConvertTo.isPrimitive() || typeToConvertTo.isArray()) {
             return value
         }
         typeToConvertTo.newInstance value

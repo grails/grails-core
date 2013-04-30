@@ -378,6 +378,13 @@ class SimpleDataBinderSpec extends Specification {
         
         then:
         widget.validNumbers == 1..5
+        
+        when:
+        binder.bind widget, [byteArray: 3..7]
+        
+        then:
+        widget.byteArray.length == 5
+        widget.byteArray == ([3,4,5,6,7] as byte[])
     }
 }
 
@@ -396,6 +403,8 @@ class Widget {
     Gadget nestedGadget
     Set<Integer> numbers
     Range validNumbers = 4..42
+    byte[] byteArray
+    
 }
 
 class Gadget extends Widget {
