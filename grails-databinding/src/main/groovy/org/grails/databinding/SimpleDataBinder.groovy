@@ -231,11 +231,13 @@ class SimpleDataBinder implements DataBinder {
                             }
                         }
                     } else if(Map.isAssignableFrom(propertyType)) {
-                        Map mapInstance = (Map)obj[simplePropertyName]
-                        if(mapInstance == null) {
-                            mapInstance = initializeMap obj, simplePropertyName
+                        Map mapInstance = initializeMap obj, simplePropertyName
+                        def referencedType = getReferencedTypeForCollection simplePropertyName, obj
+                        if(referencedType != null && val instanceof Map) {
+                            mapInstance[indexedPropertyReferenceDescriptor.index] = referencedType.newInstance(val)
+                        } else {
+                            mapInstance[indexedPropertyReferenceDescriptor.index] = val
                         }
-                        mapInstance[indexedPropertyReferenceDescriptor.index] = val
                     }
                 }
             } else if(propName.startsWith('_')) {

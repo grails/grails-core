@@ -141,7 +141,13 @@ class GormAwareDataBinder extends SimpleDataBinder {
                                 }
                             } else {
                                 map = initializeMap obj, descriptor.propertyName
-                                map[descriptor.index] = getPersistentInstance referencedType, idValue
+                                def persistedInstance = getPersistentInstance referencedType, idValue
+                                if(persistedInstance != null) {
+                                    map[descriptor.index] = persistedInstance
+                                    bind persistedInstance, val, listener
+                                } else {
+                                    map.remove descriptor.index
+                                }
                             }
                         }
                     }

@@ -249,6 +249,8 @@ class GormAwareDataBinderSpec extends Specification {
         
         then:
         team.members.size() == 2
+        assert team.members.jeff instanceof Author
+        assert team.members.betsy instanceof Author
         team.members.jeff.name == 'Jeff Scott Brown'
         team.members.betsy.name == 'Sarah Elizabeth Brown'
 
