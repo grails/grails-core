@@ -283,6 +283,26 @@ class SimpleDataBinderSpec extends Specification {
         then:
         user.role == Role.USER
     }
+    
+    void 'Test special boolean handling'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def factory = new Factory()
+        factory.isActive = true
+        
+        when:
+        binder.bind factory, [_isActive: '']
+        
+        then:
+        !factory.isActive
+        
+        when:
+        // the underscore one should be ignored since the real one is present
+        binder.bind factory, [isActive: true, _isActive: '']
+        
+        then:
+        factory.isActive
+    }
 
     void 'Test binding to a List with a combination of Map values and instances of the actual type contained in the List '() {
         given:
@@ -364,6 +384,7 @@ class SimpleDataBinderSpec extends Specification {
 class Factory {
     def name
     List<Widget> widgets
+    boolean isActive
 }
 
 class Widget {

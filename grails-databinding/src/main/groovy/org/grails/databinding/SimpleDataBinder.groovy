@@ -245,7 +245,7 @@ class SimpleDataBinder implements DataBinder {
                 metaProperty = obj.metaClass.getMetaProperty restOfPropName
                 if(metaProperty &&
                    (Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type) &&
-                   !source.containsKey('restOfPropName')) {
+                   !source.containsKey(restOfPropName)) {
                     setPropertyValue obj, source, restOfPropName, false, listener
                 }
             }
@@ -471,6 +471,8 @@ class SimpleDataBinder implements DataBinder {
             } else if(List == typeToConvertTo) {
                 return value as List
             }
+        } else if(typeToConvertTo.isPrimitive()) {
+            return value
         }
         typeToConvertTo.newInstance value
     }
