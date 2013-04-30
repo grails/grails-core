@@ -15,12 +15,15 @@
  */
 package org.grails.databinding
 
+import groovy.transform.CompileStatic
+
 import org.grails.databinding.converters.ValueConverter
 
 /**
  * @author Jeff Brown
  * @since 2.3
  */
+@CompileStatic
 class ClosureValueConverter implements ValueConverter {
 
     Closure converterClosure

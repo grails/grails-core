@@ -15,10 +15,13 @@
  */
 package org.grails.databinding.converters
 
+import groovy.transform.CompileStatic
+
 /**
  * @author Jeff Brown
  * @since 2.3
  */
+@CompileStatic
 class StructuredDateBindingEditor extends AbstractStructuredDateBindingEditor<Date> {
 
     @Override

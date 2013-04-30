@@ -15,12 +15,15 @@
  */
 package org.grails.databinding.converters
 
+import groovy.transform.CompileStatic
+
 import java.text.SimpleDateFormat
 
 /**
  * @author Jeff Brown
  * @since 2.3
  */
+@CompileStatic
 class DateConversionHelper implements ValueConverter {
 
     Object convert(value) {
@@ -29,7 +32,7 @@ class DateConversionHelper implements ValueConverter {
             // TODO - fix this...
             def formatStrings = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'hh:mm:ss'Z'"]
             def firstException
-            formatStrings.each { format ->
+            formatStrings.each { String format ->
                 if (dateValue == null) {
                     def formatter = new SimpleDateFormat(format)
                     try {
@@ -42,8 +45,6 @@ class DateConversionHelper implements ValueConverter {
             if(dateValue == null && firstException) {
                 throw firstException
             }
-        } else {
-            dateValue = new Date(value)
         }
         dateValue
     }

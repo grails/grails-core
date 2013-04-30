@@ -15,12 +15,15 @@
  */
 package org.grails.databinding.converters
 
+import groovy.transform.CompileStatic
+
 import java.sql.Date
 
 /**
  * @author Jeff Brown
  * @since 2.3
  */
+@CompileStatic
 class StructuredSqlDateBindingEditor extends AbstractStructuredDateBindingEditor<Date> {
 
     @Override

@@ -15,12 +15,15 @@
  */
 package org.grails.databinding.converters
 
+import groovy.transform.CompileStatic
+
 import java.text.SimpleDateFormat
 
 /**
  * @author Jeff Brown
  * @since 2.3
  */
+@CompileStatic
 class FormattedDateValueConverter implements FormattedValueConverter {
 
     def convert(value, String format) {
