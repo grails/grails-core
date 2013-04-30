@@ -43,7 +43,7 @@ class GormAwareDataBindindingListener extends DataBindingListenerAdapter {
         def codes = ['typeMismatch']
         def cause = error.cause
         def defaultMessage = cause ? cause.message : 'Data Binding Failed'
-        def fieldError = new FieldError("", error.getPropertyName(), error.getRejectedValue(), true, codes as String[], o, defaultMessage)
+        def fieldError = new FieldError(error.object?.getClass()?.getName(), error.getPropertyName(), error.getRejectedValue(), true, codes as String[], o, defaultMessage)
         tmpBindingResult.addError(fieldError)
     }
 

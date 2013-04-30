@@ -100,6 +100,21 @@ class EmbedDate {
         ''')
     }
     
+    void testFieldErrorObjectName() {
+        def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
+        def myBean = myBeanClass.newInstance()
+        
+        def req = new GrailsMockHttpServletRequest()
+        req.addParameter 'someIntProperty', 'bad integer'
+        myBean.properties = req
+        def errors = myBean.errors
+        def fieldError = errors.getFieldError('someIntProperty')
+
+        assert myBean.someIntProperty == null
+        assert fieldError.rejectedValue == 'bad integer'
+        assert fieldError.objectName == 'databindingtests.MyBean'
+    }
+    
     void testBinderDoesNotCreateExtraneousInstances() {
         // GRAILS-9914
         def bookReviewClass = ga.getDomainClass('databindingtests.BookReview')
