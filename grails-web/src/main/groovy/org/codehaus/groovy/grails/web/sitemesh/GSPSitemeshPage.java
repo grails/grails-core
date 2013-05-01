@@ -40,8 +40,8 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
     StreamCharBuffer bodyBuffer;
     StreamCharBuffer pageBuffer;
     StreamCharBuffer titleBuffer;
-    boolean used = false;
-    boolean titleCaptured = false;
+    boolean used;
+    boolean titleCaptured;
     Map<String, StreamCharBuffer> contentBuffers;
     private boolean renderingLayout;
 
@@ -50,7 +50,19 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
     }
 
     public GSPSitemeshPage(boolean renderingLayout) {
+        reset();
         this.renderingLayout=renderingLayout;
+    }
+    
+    public void reset() {
+        headBuffer=null;
+        bodyBuffer=null;
+        pageBuffer=null;
+        titleBuffer=null;
+        used = false;
+        titleCaptured = false;
+        contentBuffers = null;
+        renderingLayout = false;
     }
 
     public void addProperty(String name, Object value) {

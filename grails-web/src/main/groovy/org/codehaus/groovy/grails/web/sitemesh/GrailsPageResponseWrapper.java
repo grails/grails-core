@@ -75,7 +75,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
 
     @Override
     public void sendError(int sc) throws IOException {
-        aborted = true;
+        abortRequest();
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
         try {
             super.sendError(sc);
@@ -87,7 +87,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
 
     @Override
     public void sendError(int sc, String msg) throws IOException {
-        aborted = true;
+        abortRequest();
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
         try {
             super.sendError(sc, msg);
@@ -95,6 +95,12 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         finally {
             WebUtils.storeGrailsWebRequest(webRequest);
         }
+    }
+
+    private void abortRequest() {
+        aborted = true;
+        // route any content back to the original writer.  There shouldn't be any content, but just to be safe
+        deactivateSiteMesh();
     }
 
     /**
@@ -142,6 +148,9 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
     private void deactivateSiteMesh() {
         parseablePage = false;
         buffer = null;
+        if (gspSitemeshPage != null) {
+            gspSitemeshPage.reset();
+        }
         routablePrintWriter.updateDestination(new GrailsRoutablePrintWriter.DestinationFactory() {
             public PrintWriter activateDestination() throws IOException {
                 return getResponse().getWriter();
@@ -202,10 +211,8 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
      */
     @Override
     public void setStatus(int sc) {
-        if (sc == HttpServletResponse.SC_NOT_MODIFIED) {
-            aborted = true;
-            // route any content back to the original writer.  There shouldn't be any content, but just to be safe
-            deactivateSiteMesh();
+        if (sc == HttpServletResponse.SC_NOT_MODIFIED || sc >= 400) {
+            abortRequest();
         }
         super.setStatus(sc);
     }
@@ -235,7 +242,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
 
     @Override
     public void sendRedirect(String location) throws IOException {
-        aborted = true;
+        abortRequest();
         super.sendRedirect(location);
     }
 
