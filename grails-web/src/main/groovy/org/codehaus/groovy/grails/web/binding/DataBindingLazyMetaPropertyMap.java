@@ -15,7 +15,10 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap;
 
@@ -41,9 +44,18 @@ public class DataBindingLazyMetaPropertyMap extends LazyMetaPropertyMap {
     public Object put(Object propertyName, Object propertyValue) {
         if (propertyName instanceof List) {
             DataBindingUtils.bindObjectToInstance(getInstance(),propertyValue, (List)propertyName,null,null);
-            return null;
+        } else {
+            final Map bindingSource;
+            if(propertyValue instanceof Map) {
+                bindingSource = (Map) propertyValue;
+            } else {
+                bindingSource = new HashMap();
+                bindingSource.put(propertyName, propertyValue);
+            }
+            List propertyNames = new ArrayList();
+            propertyNames.add(propertyName);
+            DataBindingUtils.bindObjectToInstance(getInstance(),bindingSource, propertyNames,null,null);
         }
-
-        return super.put(propertyName, propertyValue);
+        return null;
     }
 }

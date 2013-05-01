@@ -111,6 +111,19 @@ class AuthorBean {
         ''')
     }
 
+    void testBindingASinglePropertyWithSubscriptOperator() {
+        def personClass = ga.getDomainClass('databindingtests.Person')
+        def person = personClass.newInstance()
+
+        person.properties['birthDate'] = '2013-04-15 21:26:31.973'
+        
+        assert person.birthDate instanceof Date   
+        def cal = Calendar.instance
+        cal.time = person.birthDate
+        assert Calendar.APRIL == cal.get(Calendar.MONTH)
+        assert 2013 == cal.get(Calendar.YEAR)     
+    }
+
     void testBindintToNestedArray() {
         def authorCommandClass = ga.getDomainClass('databindingtests.AuthorCommand')
         def author = authorCommandClass.newInstance()
