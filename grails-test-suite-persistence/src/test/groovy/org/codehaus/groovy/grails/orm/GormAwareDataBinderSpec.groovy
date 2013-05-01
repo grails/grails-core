@@ -275,6 +275,55 @@ class GormAwareDataBinderSpec extends Specification {
 
     }
     
+    void 'Test autoGrowCollectionLimit with Maps of String'() {
+        given:
+        mockDomains Team, Author
+        def team = new Team()
+        def binder = new GormAwareDataBinder(grailsApplication)
+        binder.autoGrowCollectionLimit = 2
+        def bindingSource = [:]
+        bindingSource['states[MO]'] = 'Missouri'
+        bindingSource['states[IL]'] = 'Illinois'
+        bindingSource['states[VA]'] = 'Virginia'
+        bindingSource['states[CA]'] = 'California'
+        
+        when:
+        binder.bind team, bindingSource
+        
+        then:
+        team.states.size() == 2
+        team.states.containsKey('MO')
+        team.states.containsKey('IL')
+        team.states.MO == 'Missouri'
+        team.states.IL == 'Illinois'
+
+    }
+    
+    void 'Test autoGrowCollectionLimit with Maps of domain objects'() {
+        given:
+        mockDomains Team, Author
+        def team = new Team()
+        def binder = new GormAwareDataBinder(grailsApplication)
+        binder.autoGrowCollectionLimit = 2
+        def bindingSource = [:]
+        bindingSource['members[jeff]'] = [name: 'Jeff Scott Brown']
+        bindingSource['members[betsy]'] = [name: 'Sarah Elizabeth Brown']
+        bindingSource['members[jake]'] = [name: 'Jacob Ray Brown']
+        bindingSource['members[zack]'] = [name: 'Zachary Scott Brown']
+        
+        when:
+        binder.bind team, bindingSource
+        
+        then:
+        team.members.size() == 2
+        team.members.containsKey('jeff')
+        team.members.containsKey('betsy')
+        team.members.jeff instanceof Author
+        team.members.betsy instanceof Author
+        team.members.jeff.name == 'Jeff Scott Brown'
+        team.members.betsy.name == 'Sarah Elizabeth Brown'
+    }
+    
     void 'Test binding to Set with subscript'() {
         given:
         mockDomains Publisher, Author
@@ -294,8 +343,9 @@ class GormAwareDataBinderSpec extends Specification {
 
 @Entity
 class Team {
-    static hasMany = [members: Author]
+    static hasMany = [members: Author, states: String]
     Map members
+    Map states
 }
 
 @Entity
