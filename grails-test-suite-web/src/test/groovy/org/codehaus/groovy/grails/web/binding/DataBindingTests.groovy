@@ -43,6 +43,7 @@ class MyBean {
   Integer someIntProperty
   Integer someOtherIntProperty
   Integer thirdIntProperty
+  Float someFloatProperty
   static constraints = {
     someIntProperty(min:1, nullable:true)
     someOtherIntProperty(max:99)
@@ -113,6 +114,23 @@ class EmbedDate {
         assert myBean.someIntProperty == null
         assert fieldError.rejectedValue == 'bad integer'
         assert fieldError.objectName == 'databindingtests.MyBean'
+    }
+    
+    void testBindingMalformedNumber() {
+        // GRAILS-6766
+        def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
+        def myBean = myBeanClass.newInstance()
+        
+        def req = new GrailsMockHttpServletRequest()
+        req.addParameter 'someFloatProperty', '21.12Rush'
+        myBean.properties = req
+        
+        def errors = myBean.errors
+        def fieldError = errors.getFieldError('someFloatProperty')
+
+        // these fail with GrailsDataBinder and pass with GormAwareDataBinder
+        assert myBean.someFloatProperty == null
+        assert fieldError.rejectedValue == '21.12Rush'
     }
     
     void testBinderDoesNotCreateExtraneousInstances() {
@@ -291,6 +309,8 @@ class EmbedDate {
 
         // binding should fail for this one...
         request.addParameter("thirdIntProperty", "bar")
+        
+        request.addParameter("someFloatProperty", "21.12")
 
         def params = c.params
 
