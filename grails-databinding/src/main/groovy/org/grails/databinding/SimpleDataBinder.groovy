@@ -82,6 +82,8 @@ class SimpleDataBinder implements DataBinder {
     ]
 
     static final INDEXED_PROPERTY_REGEX = /(.*)\[\s*([^\s]*)\s*\]\s*$/
+    
+    int autoGrowCollectionLimit = 256
 
     SimpleDataBinder() {
         registerConverter new DateConversionHelper()
@@ -208,7 +210,9 @@ class SimpleDataBinder implements DataBinder {
                     if(propertyType.isArray()) {
                         def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
                         def array = initializeArray(obj, simplePropertyName, propertyType.componentType, index)
-                        addElementToArrayAt array, index, val
+                        if(array != null) {
+                            addElementToArrayAt array, index, val
+                        }
                     } else if(Collection.isAssignableFrom(propertyType)) {
                         def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
                         Collection collectionInstance = initializeCollection obj, simplePropertyName, propertyType
@@ -259,10 +263,10 @@ class SimpleDataBinder implements DataBinder {
 
     protected initializeArray(obj, String propertyName, Class arrayType, int index) {
         Object[] array = obj[propertyName]
-        if(array == null) {
+        if(array == null && index < autoGrowCollectionLimit) {
             array = Array.newInstance(arrayType, index + 1)
             obj[propertyName] = array
-        } else if(array.length <= index) {
+        } else if(array != null && array.length <= index && index < autoGrowCollectionLimit) {
             def newArray = Array.newInstance(arrayType, index + 1)
             System.arraycopy(array, 0, newArray, 0, array.length)
             array = newArray
@@ -288,6 +292,9 @@ class SimpleDataBinder implements DataBinder {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected addElementToCollectionAt(obj, String propertyName, Collection collection, index, val) {
+        if(index >= autoGrowCollectionLimit && index > collection.size()) {
+            return
+        }
         if(collection instanceof ListOrderedSet) {
             collection.add Math.min(index, collection.size()), val
         } else {
@@ -297,7 +304,9 @@ class SimpleDataBinder implements DataBinder {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected addElementToArrayAt(array, index, val) {
-        array[index] = convert(array.class.componentType, val)
+        if(array.length > index) {
+            array[index] = convert(array.class.componentType, val)
+        }
     }
 
     protected Map initializeMap(obj, String propertyName) {

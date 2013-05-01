@@ -400,6 +400,31 @@ class SimpleDataBinderSpec extends Specification {
         widget.byteArray.length == 5
         widget.byteArray == ([3,4,5,6,7] as byte[])
     }
+    
+    void 'Test auto grow collection limit'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+        binder.autoGrowCollectionLimit = 3
+        
+        when:
+        binder.bind widget, ['integers[5]': 50, 'integers[0]': 10, 'integers[3]': 30, 'integers[2]': 20]
+        
+        then:
+        widget.integers.length == 3
+        widget.integers[0] == 10
+        widget.integers[1] == null
+        widget.integers[2] == 20
+        
+        when:
+        binder.bind widget, ['names[5]': 'five', 'names[0]': 'zero', 'names[3]': 'three', 'names[2]': 'two']
+        
+        then:
+        widget.names.size() == 3
+        widget.names[0] == 'zero'
+        widget.names[1] == null
+        widget.names[2] == 'two'
+    }
 }
 
 class Factory {
@@ -419,6 +444,7 @@ class Widget {
     Range validNumbers = 4..42
     byte[] byteArray
     Integer[] integers
+    List<String> names
 }
 
 class Gadget extends Widget {
