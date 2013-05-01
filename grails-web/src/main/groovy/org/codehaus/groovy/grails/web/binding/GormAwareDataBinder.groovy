@@ -43,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired
 class GormAwareDataBinder extends SimpleDataBinder {
     protected static final Map<Class, List> CLASS_TO_BINDING_INCLUDE_LIST = new ConcurrentHashMap<Class, List>()
     protected GrailsApplication grailsApplication
+    boolean trimStrings = true
 
     GormAwareDataBinder(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication
@@ -234,6 +235,9 @@ class GormAwareDataBinder extends SimpleDataBinder {
 
     @Override
     protected setPropertyValue(obj, Map source, String propName, propertyValue, DataBindingListener listener) {
+        if(trimStrings && propertyValue instanceof String) {
+            propertyValue = propertyValue.trim()
+        }
         boolean isSet = false
         if(grailsApplication != null) {
             def domainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)

@@ -24,6 +24,8 @@ class DataBindingGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
 
     def doWithSpring = {
-        "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GormAwareDataBinder, ref('grailsApplication'))
+        "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GormAwareDataBinder, ref('grailsApplication')) {
+            trimStrings = !Boolean.FALSE.equals(application?.config?.grails?.databinding?.trimStrings)
+        }
     }
 }

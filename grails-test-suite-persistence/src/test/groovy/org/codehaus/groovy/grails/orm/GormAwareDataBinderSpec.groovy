@@ -26,6 +26,25 @@ import spock.lang.Specification
 @TestMixin(DomainClassUnitTestMixin)
 class GormAwareDataBinderSpec extends Specification {
 
+    void 'Test string trimming'() {
+        given:
+        def binder = new GormAwareDataBinder()
+        def author = new Author()
+        
+        when:
+        binder.bind author, [name: '   Jeff Scott Brown ']
+        
+        then:
+        author.name == 'Jeff Scott Brown'
+        
+        when:
+        binder.trimStrings = false
+        binder.bind author, [name: '  Jeff Scott Brown   ']
+        
+        then:
+        author.name == '  Jeff Scott Brown   '
+    }
+    
     void 'Test binding to primitives from Strings'() {
         given:
         def binder = new GormAwareDataBinder()
