@@ -24,8 +24,12 @@ class DataBindingGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
 
     def doWithSpring = {
+        def autoGrowCollectionLimitSetting = application?.config?.grails?.databinding?.autoGrowCollectionLimit
         "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GormAwareDataBinder, ref('grailsApplication')) {
             trimStrings = !Boolean.FALSE.equals(application?.config?.grails?.databinding?.trimStrings)
+            if(autoGrowCollectionLimitSetting instanceof Integer) {
+                autoGrowCollectionLimit = autoGrowCollectionLimitSetting
+            }
         }
     }
 }
