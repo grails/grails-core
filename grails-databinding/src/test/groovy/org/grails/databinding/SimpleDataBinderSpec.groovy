@@ -356,6 +356,20 @@ class SimpleDataBinderSpec extends Specification {
         widget.numbers.contains 6
     }
     
+    void 'Test binding to an array of Integer'() {
+        given:
+        def widget = new Widget()
+        def binder = new SimpleDataBinder()
+        
+        when:
+        binder.bind widget, ['integers[0]': 42, 'integers[1]': '2112']
+        
+        then:
+        widget.integers.length == 2
+        widget.integers[0] == 42
+        widget.integers[1] == 2112
+    }
+    
     void 'Test binding ranges'() {
         given:
         def widget = new Widget()
@@ -404,7 +418,7 @@ class Widget {
     Set<Integer> numbers
     Range validNumbers = 4..42
     byte[] byteArray
-    
+    Integer[] integers
 }
 
 class Gadget extends Widget {

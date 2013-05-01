@@ -19,6 +19,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
+import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 
@@ -204,7 +205,11 @@ class SimpleDataBinder implements DataBinder {
                 metaProperty = obj.metaClass.getMetaProperty simplePropertyName
                 if(metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
                     def propertyType = metaProperty.type
-                    if(Collection.isAssignableFrom(propertyType)) {
+                    if(propertyType.isArray()) {
+                        def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
+                        def array = initializeArray(obj, simplePropertyName, propertyType.componentType, index)
+                        addElementToArrayAt array, index, val
+                    } else if(Collection.isAssignableFrom(propertyType)) {
                         def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
                         Collection collectionInstance = initializeCollection obj, simplePropertyName, propertyType
                         def indexedInstance = collectionInstance[index]
@@ -251,6 +256,20 @@ class SimpleDataBinder implements DataBinder {
             }
         }
     }
+
+    protected initializeArray(obj, String propertyName, Class arrayType, int index) {
+        Object[] array = obj[propertyName]
+        if(array == null) {
+            array = Array.newInstance(arrayType, index + 1)
+            obj[propertyName] = array
+        } else if(array.length <= index) {
+            def newArray = Array.newInstance(arrayType, index + 1)
+            System.arraycopy(array, 0, newArray, 0, array.length)
+            array = newArray
+            obj[propertyName] = newArray
+        }
+        array
+    }
     
     protected boolean isBasicType(Class c) {
         BASIC_TYPES.contains(c) || c.isPrimitive()
@@ -274,6 +293,11 @@ class SimpleDataBinder implements DataBinder {
         } else {
             collection[index] = val
         }
+    }
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected addElementToArrayAt(array, index, val) {
+        array[index] = convert(array.class.componentType, val)
     }
 
     protected Map initializeMap(obj, String propertyName) {
@@ -457,6 +481,9 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected convert(Class typeToConvertTo, value) {
+        if(typeToConvertTo.isAssignableFrom(value?.getClass())) {
+            return value
+        }
         if(conversionHelpers.containsKey(typeToConvertTo)) {
             ValueConverter converter = getConverter(typeToConvertTo, value)
             if(converter) {

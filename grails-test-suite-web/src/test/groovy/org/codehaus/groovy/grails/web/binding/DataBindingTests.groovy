@@ -97,10 +97,33 @@ class EmbedDate {
     static constraints = {
     }
 }
-
+@Entity
+class AuthorCommand {
+    List beans = []
+    public AuthorCommand() {
+        beans << new AuthorBean()
+    }
+}
+@Entity
+class AuthorBean {
+    Integer[] integers
+}
         ''')
     }
-    
+
+    void testBindintToNestedArray() {
+        def authorCommandClass = ga.getDomainClass('databindingtests.AuthorCommand')
+        def author = authorCommandClass.newInstance()
+        def req = new GrailsMockHttpServletRequest()
+        req.addParameter 'beans[0].integers[0]', '42'
+        
+        author.properties = req
+        
+        assert author.beans.size() == 1
+        assert author.beans[0].integers.length == 1
+        assert author.beans[0].integers[0] == 42
+    }
+
     void testFieldErrorObjectName() {
         def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
         def myBean = myBeanClass.newInstance()
