@@ -48,6 +48,7 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     private final SortedSet<Entry> objectMarshallers = new TreeSet<Entry>();
     private Converter.CircularReferenceBehaviour circularReferenceBehaviour;
     private ProxyHandler proxyHandler;
+    private boolean cacheObjectMarshallerByClass = true;
 
     public String getEncoding() {
         return encoding != null ? encoding : (delegate != null ? delegate.getEncoding() : null);
@@ -166,5 +167,13 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
 
     public ProxyHandler getProxyHandler() {
         return proxyHandler;
+    }
+
+    public boolean isCacheObjectMarshallerByClass() {
+        return cacheObjectMarshallerByClass;
+    }
+
+    public void setCacheObjectMarshallerByClass(boolean cacheObjectMarshallerByClass) {
+        this.cacheObjectMarshallerByClass = cacheObjectMarshallerByClass;
     }
 }

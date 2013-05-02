@@ -67,4 +67,11 @@ public interface ConverterConfiguration<C extends Converter> {
      * @return the List of ObjectMarshallers ordered by priority
      */
     List<ObjectMarshaller<C>> getOrderedObjectMarshallers();
+    
+    
+    /**
+     * Enables caching object marshaller selection by class 
+     * @return a boolean
+     */
+    boolean isCacheObjectMarshallerByClass();
 }

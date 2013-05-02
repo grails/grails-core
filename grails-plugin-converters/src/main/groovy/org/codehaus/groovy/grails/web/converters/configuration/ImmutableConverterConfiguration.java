@@ -41,6 +41,8 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
     private final boolean prettyPrint;
 
     private ProxyHandler proxyHandler;
+    
+    private final boolean cacheObjectMarshallerByClass;
 
     public ImmutableConverterConfiguration(ConverterConfiguration<C> cfg) {
         this(cfg, new DefaultProxyHandler());
@@ -50,6 +52,7 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
         marshallers = Collections.unmodifiableList(cfg.getOrderedObjectMarshallers());
         encoding = cfg.getEncoding();
         prettyPrint = cfg.isPrettyPrint();
+        cacheObjectMarshallerByClass = cfg.isCacheObjectMarshallerByClass();
         circularReferenceBehaviour = cfg.getCircularReferenceBehaviour();
         this.proxyHandler = proxyHandler;
     }
@@ -93,5 +96,9 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
 
     public ProxyHandler getProxyHandler() {
         return proxyHandler;
+    }
+
+    public boolean isCacheObjectMarshallerByClass() {
+        return cacheObjectMarshallerByClass;
     }
 }

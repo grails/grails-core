@@ -104,6 +104,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         Boolean defaultPrettyPrint = grailsConfig.get("grails.converters.default.pretty.print", false);
         Boolean prettyPrint = grailsConfig.get("grails.converters.json.pretty.print", defaultPrettyPrint);
         cfg.setPrettyPrint(prettyPrint);
+        cfg.setCacheObjectMarshallerByClass(grailsConfig.get("grails.converters.json.cacheObjectMarshallerSelectionByClass", true));
 
         registerObjectMarshallersFromApplicationContext(cfg, JSON.class);
 
@@ -152,6 +153,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         Boolean defaultPrettyPrint = grailsConfig.get("grails.converters.default.pretty.print", false);
         Boolean prettyPrint = grailsConfig.get("grails.converters.xml.pretty.print", defaultPrettyPrint);
         cfg.setPrettyPrint(prettyPrint);
+        cfg.setCacheObjectMarshallerByClass(grailsConfig.get("grails.converters.xml.cacheObjectMarshallerSelectionByClass", true));
         registerObjectMarshallersFromApplicationContext(cfg, XML.class);
         ConvertersConfigurationHolder.setDefaultConfiguration(XML.class, new ChainedConverterConfiguration<XML>(cfg,proxyHandler));
     }
