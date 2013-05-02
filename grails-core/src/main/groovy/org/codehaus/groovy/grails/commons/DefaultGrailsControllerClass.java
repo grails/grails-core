@@ -15,7 +15,10 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.util.Environment;
 import grails.util.GrailsNameUtils;
+import grails.util.Pair;
+import grails.util.Triple;
 import grails.web.Action;
 import grails.web.UrlConverter;
 import groovy.lang.Closure;
@@ -33,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -70,6 +74,11 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private Map<String, FeatureDescriptor> flows = new HashMap<String, FeatureDescriptor>();
     private UrlConverter urlConverter;
+    
+    private final boolean developerMode = Environment.isDevelopmentMode();
+    private Map<Pair<Class<?>, String>, Boolean> isInterceptedBeforeCache = new ConcurrentHashMap<Pair<Class<?>, String>, Boolean>();
+    private Map<Pair<Class<?>, String>, Boolean> isInterceptedAfterCache = new ConcurrentHashMap<Pair<Class<?>, String>, Boolean>();
+    private Map<Triple<Class<?>, String, String>, Boolean> isHttpMethodAllowedCache = new ConcurrentHashMap<Triple<Class<?>, String, String>, Boolean>();    
 
     public void setDefaultActionName(String defaultActionName) {
         this.defaultActionName = defaultActionName;
@@ -204,8 +213,16 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public boolean isInterceptedBefore(GroovyObject controller, String action) {
-        return controller.getMetaClass().hasProperty(controller, BEFORE_INTERCEPTOR) != null &&
-                isIntercepted(controller.getProperty(BEFORE_INTERCEPTOR), action);
+        Pair<Class<?>, String> key = new Pair<Class<?>, String>(controller.getClass(), action);
+        Boolean interceptedBefore = isInterceptedBeforeCache.get(key);
+        if(interceptedBefore == null) {        
+            interceptedBefore = controller.getMetaClass().hasProperty(controller, BEFORE_INTERCEPTOR) != null &&
+                    isIntercepted(controller.getProperty(BEFORE_INTERCEPTOR), action);
+            if(!developerMode) {
+                isInterceptedBeforeCache.put(key, interceptedBefore);
+            }
+        }
+        return interceptedBefore;
     }
 
     private boolean isIntercepted(Object bip, String action) {
@@ -249,6 +266,18 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public boolean isHttpMethodAllowedForAction(GroovyObject controller, final String httpMethod, String actionName) {
+        Triple<Class<?>, String, String> key = new Triple<Class<?>, String, String>(controller.getClass(), actionName, httpMethod);
+        Boolean httpMethodAllowed = isHttpMethodAllowedCache.get(key);
+        if (httpMethodAllowed == null) {
+            httpMethodAllowed = doCheckIsHttpMethodAllowedForAction(controller, httpMethod, actionName);
+            if (!developerMode) {
+                isHttpMethodAllowedCache.put(key, httpMethodAllowed);
+            }
+        }
+        return httpMethodAllowed;
+    }
+    
+    protected boolean doCheckIsHttpMethodAllowedForAction(GroovyObject controller, final String httpMethod, String actionName) {
         Object methodRestrictionsProperty = null;
         MetaProperty metaProp = controller.getMetaClass().getMetaProperty(ALLOWED_HTTP_METHODS_PROPERTY);
         if (metaProp != null) {
@@ -277,8 +306,16 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     public boolean isInterceptedAfter(GroovyObject controller, String action) {
-        return controller.getMetaClass().hasProperty(controller, AFTER_INTERCEPTOR) != null &&
-                isIntercepted(controller.getProperty(AFTER_INTERCEPTOR), action);
+        Pair<Class<?>, String> key = new Pair<Class<?>, String>(controller.getClass(), action);
+        Boolean interceptedAfter = isInterceptedAfterCache.get(key);
+        if(interceptedAfter == null) {        
+            interceptedAfter = controller.getMetaClass().hasProperty(controller, AFTER_INTERCEPTOR) != null &&
+                    isIntercepted(controller.getProperty(AFTER_INTERCEPTOR), action);
+            if(!developerMode) {
+                isInterceptedAfterCache.put(key, interceptedAfter);
+            }
+        }
+        return interceptedAfter;
     }
 
     public Closure getBeforeInterceptor(GroovyObject controller) {

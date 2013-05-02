@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc;
 
+import grails.util.Environment;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.util.Proxy;
@@ -74,6 +75,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
     private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
     private Collection<ActionResultTransformer> actionResultTransformers = Collections.emptyList();
+    protected boolean developmentMode = Environment.isDevelopmentMode();
 
     public ServletContext getServletContext() {
         return servletContext;
@@ -138,8 +140,8 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         Object attribute = grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
         if (attribute instanceof GrailsControllerClass) {
             String matchedUri = (String)grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_MATCHED_URI, WebRequest.SCOPE_REQUEST);
-            if(matchedUri != null && originalUri.equals(matchedUri)) {
-            controllerClass = (GrailsControllerClass) attribute;
+            if (matchedUri != null && originalUri.equals(matchedUri)) {
+                controllerClass = (GrailsControllerClass)attribute;
             }
         }
 
@@ -177,7 +179,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
 
         // Step 4: Set grails attributes in request scope
-        request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID,grailsAttributes);
+        request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID, grailsAttributes);
 
         // Step 5: get the view name for this URI.
         String viewName = controllerClass.getViewByURI(uri);
@@ -302,26 +304,29 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
     @SuppressWarnings("rawtypes")
     private boolean invokeAfterInterceptor(GrailsControllerClass controllerClass,
             GroovyObject controller, String actionName, ModelAndView mv) {
+        if (!controllerClass.isInterceptedAfter(controller,actionName)) {
+            return true;
+        }
+            
         // Step 9: Check if there is after interceptor
         Object interceptorResult = null;
-        if (controllerClass.isInterceptedAfter(controller,actionName)) {
-            Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
-            Map model = new HashMap();
-            if (mv != null) {
-                model = mv.getModel() == null ? new HashMap() : mv.getModel();
-            }
-            switch (afterInterceptor.getMaximumNumberOfParameters()) {
-                case 1:
-                    interceptorResult = afterInterceptor.call(new Object[]{ model });
-                    break;
-                case 2:
-                    interceptorResult = afterInterceptor.call(new Object[]{ model, mv });
-                    break;
-                default:
-                    throw new ControllerExecutionException("AfterInterceptor closure must accept one or two parameters");
-            }
+        Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
+        Map model = new HashMap();
+        if (mv != null) {
+            model = mv.getModel() == null ? new HashMap() : mv.getModel();
         }
-        return !(interceptorResult != null && interceptorResult instanceof Boolean) || (Boolean)interceptorResult;
+        switch (afterInterceptor.getMaximumNumberOfParameters()) {
+            case 1:
+                interceptorResult = afterInterceptor.call(new Object[]{ model });
+                break;
+            case 2:
+                interceptorResult = afterInterceptor.call(new Object[]{ model, mv });
+                break;
+            default:
+                throw new ControllerExecutionException("AfterInterceptor closure must accept one or two parameters");
+        }
+        
+        return interceptorResult instanceof Boolean ? (Boolean)interceptorResult : true;
     }
 
     public GrailsApplicationAttributes getGrailsAttributes() {
