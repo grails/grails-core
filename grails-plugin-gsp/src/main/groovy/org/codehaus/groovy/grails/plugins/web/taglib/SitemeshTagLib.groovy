@@ -15,14 +15,18 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import com.opensymphony.module.sitemesh.RequestConstants
 import grails.artefact.Artefact
+import groovy.transform.CompileStatic
+
 import org.apache.commons.lang.WordUtils
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import org.codehaus.groovy.runtime.InvokerHelper
+
+import com.opensymphony.module.sitemesh.RequestConstants
 
 /**
  * Internal Sitemesh pre-processor tags.
@@ -35,7 +39,8 @@ class SitemeshTagLib implements RequestConstants {
 
     static namespace = 'sitemesh'
 
-    def captureTagContent(writer, tagname, attrs, body, noEndTagForEmpty=false) {
+    @CompileStatic
+    def captureTagContent(Writer writer, String tagname, Map attrs, Object body, boolean noEndTagForEmpty=false) {
         def content = null
         if (body != null) {
             if (body instanceof Closure) {
@@ -61,7 +66,7 @@ class SitemeshTagLib implements RequestConstants {
                 writer << ' '
                 writer << k
                 writer << '="'
-                writer << v.toString().encodeAsHTML()
+                writer << InvokerHelper.invokeMethod(v.toString(), "encodeAsHTML", null)
                 writer << '"'
             }
         }
@@ -94,18 +99,20 @@ class SitemeshTagLib implements RequestConstants {
         content
     }
 
-    def wrapContentInBuffer(content) {
+    @CompileStatic
+    def StreamCharBuffer wrapContentInBuffer(Object content) {
         if (content instanceof Closure) {
             content = content()
         }
         if (!(content instanceof StreamCharBuffer)) {
             // the body closure might be a string constant, so wrap it in a StreamCharBuffer in that case
-            def newbuffer = new FastStringWriter()
-            newbuffer.print(content)
-            content = newbuffer.buffer
-            content.setPreferSubChunkWhenWritingToOtherBuffer(true)
+            def newbuffer = new StreamCharBuffer()
+            newbuffer.setPreferSubChunkWhenWritingToOtherBuffer(true)
+            InvokerHelper.write(newbuffer.writer, content)
+            return newbuffer
+        } else {
+            return (StreamCharBuffer)content
         }
-        content
     }
 
     /**
