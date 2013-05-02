@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-
-
 /**
  * Gant script that bootstraps a running Grails instance without a
  * servlet container.
