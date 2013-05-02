@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.util
 
-import org.apache.commons.lang.builder.HashCodeBuilder
+import groovy.transform.CompileStatic
 
 /**
  * A category for use with maps that want type conversion capabilities.
@@ -26,6 +26,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder
  * @author Graeme Rocher
  * @since 1.2
  */
+@CompileStatic
 class TypeConvertingMap extends AbstractTypeConvertingMap {
     TypeConvertingMap() {
         super()
