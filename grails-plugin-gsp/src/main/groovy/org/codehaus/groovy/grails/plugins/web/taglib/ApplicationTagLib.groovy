@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import grails.util.GrailsUtil
 import grails.util.Metadata
+import groovy.transform.CompileStatic;
 
 import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -235,17 +236,18 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         writer << '</a>'
     }
 
+    @CompileStatic
     static String attrsToString(Map attrs) {
         // Output any remaining user-specified attributes
         StringBuilder sb=new StringBuilder()
         // For some strange reason Groovy creates ClassCastExceptions internally in PogoMetaMethodSite.checkCall without this hack
         for (Iterator i = InvokerHelper.asIterator(attrs); i.hasNext();) {
-            Map.Entry e = i.next()
+            Map.Entry e = (Map.Entry)i.next()
             if (e.value != null) {
                 sb.append(' ')
                 sb.append(e.key)
                 sb.append('="')
-                sb.append(String.valueOf(e.value).encodeAsHTML())
+                sb.append(InvokerHelper.invokeMethod(String.valueOf(e.value), "encodeAsHTML", null))
                 sb.append('"')
             }
         }

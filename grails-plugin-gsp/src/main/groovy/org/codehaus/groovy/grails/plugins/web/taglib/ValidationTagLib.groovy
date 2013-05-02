@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
+import groovy.transform.CompileStatic
 import groovy.xml.MarkupBuilder
 
 import java.beans.PropertyEditor
@@ -23,14 +24,16 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
 import org.apache.commons.lang.StringEscapeUtils
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.beans.PropertyEditorRegistry
+import org.springframework.context.MessageSource
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.context.NoSuchMessageException
 import org.springframework.context.support.DefaultMessageSourceResolvable
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 /**
  * Tags to handle validation and errors.
@@ -41,6 +44,8 @@ import org.springframework.web.servlet.support.RequestContextUtils as RCU
 class ValidationTagLib {
 
     static returnObjectForTags = ['message', 'fieldError', 'formatValue']
+    
+    MessageSource messageSource
 
     /**
      * Renders an error message for the given bean and field.<br/>
@@ -281,23 +286,30 @@ class ValidationTagLib {
         messageImpl(attrs)
     }
 
-    def messageImpl(attrs) {
-        def messageSource = grailsAttributes.applicationContext.messageSource
-        def locale = attrs.locale ?: RCU.getLocale(request)
+    @CompileStatic
+    def messageImpl(Map attrs) {
+        Locale locale = FormatTagLib.resolveLocale(attrs.locale)
         def tagSyntaxCall = (attrs instanceof GroovyPageAttributes) ? attrs.isGspTagSyntaxCall() : false
 
         def text
-        def error = attrs.error ?: attrs.message
+        Object error = attrs.error ?: attrs.message
         if (error) {
-            if (!attrs.encodeAs && error instanceof MessageSourceResolvable && error.arguments) {
-                error = new DefaultMessageSourceResolvable(error.codes, encodeArgsIfRequired(error.arguments) as Object[], error.defaultMessage)
+            if (!attrs.encodeAs && error instanceof MessageSourceResolvable) {
+                MessageSourceResolvable errorResolvable = (MessageSourceResolvable)error
+                if(errorResolvable.arguments) {
+                    error = new DefaultMessageSourceResolvable(errorResolvable.codes, encodeArgsIfRequired(errorResolvable.arguments) as Object[], errorResolvable.defaultMessage)
+                }
             }
             try {
-                text = messageSource.getMessage(error , locale)
+                if(error instanceof MessageSourceResolvable) {
+                    text = messageSource.getMessage(error, locale)
+                } else {
+                    text = messageSource.getMessage(error.toString(), null, locale)
+                }
             }
             catch (NoSuchMessageException e) {
                 if (error instanceof MessageSourceResolvable) {
-                    text = error?.code
+                    text = ((MessageSourceResolvable)error).codes[0]
                 }
                 else {
                     text = error?.toString()
@@ -305,14 +317,14 @@ class ValidationTagLib {
             }
         }
         else if (attrs.code) {
-            def code = attrs.code
-            def args = []
+            String code = attrs.code?.toString()
+            List args = []
             if(attrs.args) {
-                args = attrs.encodeAs ? attrs.args : encodeArgsIfRequired(attrs.args)
+                args = attrs.encodeAs ? attrs.args as List : encodeArgsIfRequired(attrs.args)
             }
-            def defaultMessage
+            String defaultMessage
             if (attrs.containsKey('default')) {
-                defaultMessage = attrs['default']
+                defaultMessage = attrs['default']?.toString()
             } else {
                 defaultMessage = code
             }
@@ -327,17 +339,18 @@ class ValidationTagLib {
             }
         }
         if (text) {
-            return attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text.encodeAsRaw()
+            return InvokerHelper.invokeMethod(text, attrs.encodeAs ? "encodeAs${attrs.encodeAs}".toString() : "encodeAsRaw", null)
         }
         ''
     }
 
-    private encodeArgsIfRequired(arguments) {
+    @CompileStatic
+    private List encodeArgsIfRequired(arguments) {
         arguments.collect { value ->
             if(value == null || value instanceof Number || value instanceof Date) {
                 value
             } else {
-                value.toString().encodeAsHTML()
+                InvokerHelper.invokeMethod(value.toString(), "encodeAsHTML", null)
             }
         }
     }
@@ -459,7 +472,7 @@ class ValidationTagLib {
             if (value instanceof Double || value instanceof Float || value instanceof BigDecimal) {
                 pattern = "0.00#####"
             }
-            def locale = RCU.getLocale(request)
+            def locale = GrailsWebRequest.lookup().getLocale()
             def dcfs = locale ? new DecimalFormatSymbols(locale) : new DecimalFormatSymbols()
             def decimalFormat = new DecimalFormat(pattern, dcfs)
             value = decimalFormat.format(value)

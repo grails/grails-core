@@ -15,14 +15,19 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import org.springframework.web.servlet.support.RequestContextUtils as RCU
-
 import grails.artefact.Artefact
+import groovy.transform.CompileStatic
+
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
+
 import org.apache.commons.lang.time.FastDateFormat
+import org.codehaus.groovy.grails.support.encoding.CodecLookup
+import org.codehaus.groovy.grails.support.encoding.Encoder
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.context.MessageSource
 import org.springframework.context.NoSuchMessageException
 import org.springframework.util.StringUtils
 
@@ -40,12 +45,15 @@ import org.springframework.util.StringUtils
 class FormatTagLib {
 
     static returnObjectForTags = ['formatBoolean','formatDate','formatNumber','encodeAs']
+    
+    MessageSource messageSource
+    CodecLookup codecLookup
 
-    String messageHelper(code, defaultMessage = null, args = null, locale = null) {
+    @CompileStatic
+    String messageHelper(String code, Object defaultMessage = null, List args = null, Locale locale = null) {
         if (locale == null) {
-            locale = RCU.getLocale(request)
+            locale = GrailsWebRequest.lookup().getLocale()
         }
-        def messageSource = grailsAttributes.applicationContext.messageSource
         def message
         try {
             message = messageSource.getMessage(code, args == null ? null : args.toArray(), locale)
@@ -334,13 +342,16 @@ class FormatTagLib {
         return formatted
     }
 
-    def resolveLocale(localeAttr) {
-        def locale = localeAttr
-        if (locale != null && !(locale instanceof Locale)) {
-            locale = StringUtils.parseLocaleString(locale as String)
+    @CompileStatic    
+    static Locale resolveLocale(Object localeAttr) {
+        Locale locale
+        if (localeAttr instanceof Locale) {
+            locale = (Locale)localeAttr
+        } else if (localeAttr != null) {
+            locale = StringUtils.parseLocaleString(localeAttr.toString())
         }
         if (locale == null) {
-            locale = RCU.getLocale(request)
+            locale = GrailsWebRequest.lookup().getLocale()
             if (locale == null) {
                 locale = Locale.getDefault()
             }
@@ -357,7 +368,7 @@ class FormatTagLib {
         if (!attrs.codec) {
             throwTagError("Tag [encodeAs] requires a codec name in the [codec] attribute")
         }
-
-        return body()?."encodeAs${attrs.codec}"()
+        Encoder encoder = codecLookup.lookupEncoder(attrs.codec.toString())
+        return encoder.encode(body())
     }
 }
