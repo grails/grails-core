@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import groovy.transform.CompileStatic
 
 /**
  * A customizable UrlMappingInfo instance used for forwards and includes.
@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * @author Graeme Rocher
  * @since 1.1
  */
+@CompileStatic
 class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
 
     String controllerName

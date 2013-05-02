@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.mapping
 
 import grails.util.Environment
 import grails.web.UrlConverter
+import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerAware
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Qualifier
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
     String configuredServerBaseURL
@@ -79,19 +81,12 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
         }
         else {
             // prefer a URL attribute
-            def urlAttrs = attrs
+            Map urlAttrs = attrs
             final urlAttribute = attrs.get(ATTRIBUTE_URL)
             if (urlAttribute instanceof Map) {
-                urlAttrs = urlAttribute
+                urlAttrs = (Map)urlAttribute
             }
-            else if (urlAttribute) {
-                urlAttrs = urlAttribute.toString()
-            }
-
-            if (urlAttrs instanceof String) {
-                writer << urlAttrs
-            }
-            else {
+            if (!urlAttribute || urlAttribute instanceof Map) {
                 final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
                 String controller = controllerAttribute == null ? requestStateLookupStrategy.getControllerName() : controllerAttribute.toString()
                 String action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
@@ -110,7 +105,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 def id = urlAttrs.get(ATTRIBUTE_ID)
                 String frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
                 final paramsAttribute = urlAttrs.get(ATTRIBUTE_PARAMS)
-                def params = paramsAttribute && (paramsAttribute instanceof Map) ? paramsAttribute : [:]
+                Map params = paramsAttribute && (paramsAttribute instanceof Map) ? (Map)paramsAttribute : [:]
                 def mappingName = urlAttrs.get(ATTRIBUTE_MAPPING)
                 if (mappingName != null) {
                     params.mappingName = mappingName
@@ -119,7 +114,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 if (id != null) {
                     params.put(ATTRIBUTE_ID, id)
                 }
-                def pluginName = attrs.get('plugin')
+                def pluginName = attrs.get('plugin')?.toString()
                 UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,pluginName,params)
                 if (mapping == null && isDefaultAction) {
                     mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,pluginName,params)
@@ -148,6 +143,8 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     writer << handleAbsolute(attrs)
                     writer << url
                 }
+            } else {
+                writer << urlAttribute
             }
         }
         return writer.toString()
@@ -177,7 +174,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
     String resource(Map attrs) {
         def absolutePath = handleAbsolute(attrs)
 
-        final contextPathAttribute = attrs.contextPath
+        final contextPathAttribute = attrs.contextPath?.toString()
         if (absolutePath == null) {
             final cp = contextPathAttribute == null ? getContextPath() : contextPathAttribute
             if (cp == null) {
@@ -188,14 +185,14 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
             }
         }
 
-        StringBuilder url = new StringBuilder(absolutePath ?: '')
-        def dir = attrs.dir
+        StringBuilder url = new StringBuilder(absolutePath?.toString() ?: '')
+        def dir = attrs.dir?.toString()
         if (attrs.plugin) {
-            url << pluginManager?.getPluginPath(attrs.plugin) ?: ''
+            url << pluginManager?.getPluginPath(attrs.plugin?.toString()) ?: ''
         }
         else {
             if (contextPathAttribute == null) {
-                def pluginContextPath = attrs.pluginContextPath
+                def pluginContextPath = attrs.pluginContextPath?.toString()
                 if (pluginContextPath != null && dir != pluginContextPath) {
                     url << pluginContextPath
                 }
@@ -209,7 +206,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
             url << dir
         }
 
-        def file = attrs.file
+        def file = attrs.file?.toString()
         if (file) {
             if (!(file.startsWith('/') || dir?.endsWith('/'))) {
                 url << '/'
@@ -230,7 +227,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
     /**
      * Check for "absolute" attribute and render server URL if available from Config or deducible in non-production.
      */
-    private handleAbsolute(attrs) {
+    private handleAbsolute(Map attrs) {
         def base = attrs.base
         if (base) {
             return base

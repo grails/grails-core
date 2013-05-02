@@ -15,12 +15,15 @@
  */
 package org.codehaus.groovy.grails.web.mime
 
+import groovy.transform.CompileStatic;
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+@CompileStatic
 class MimeType {
 
     /**
@@ -53,7 +56,7 @@ class MimeType {
      */
     static MimeType[] getConfiguredMimeTypes() {
         def ctx = GrailsWebRequest.lookup()?.getApplicationContext()
-        ctx?.containsBean(MimeType.BEAN_NAME) ? ctx?.getBean(MimeType.BEAN_NAME, MimeType[]) : DEFAULTS
+        (MimeType[])ctx?.containsBean(MimeType.BEAN_NAME) ? ctx?.getBean(MimeType.BEAN_NAME, MimeType[]) : DEFAULTS
     }
 
     /**
@@ -62,6 +65,6 @@ class MimeType {
     static MimeType[] createDefaults() {
         def mimes = [new MimeType('text/html')]
         mimes[-1].extension = 'html'
-        mimes
+        mimes as MimeType[]
     }
 }
