@@ -26,23 +26,82 @@ import spock.lang.Specification
 @TestMixin(DomainClassUnitTestMixin)
 class GormAwareDataBinderSpec extends Specification {
 
+    protected dataBinder
+    
+    protected doBind(obj, source) {
+        if(dataBinder == null) {
+            dataBinder = new GormAwareDataBinder(grailsApplication)
+        }
+        dataBinder.bind obj, source
+    }
+    
+    protected doBind(obj, source, whiteList, blackList) {
+        if(dataBinder == null) {
+            dataBinder = new GormAwareDataBinder(grailsApplication)
+        }
+        dataBinder.bind obj, source, null, whiteList, blackList, null
+    }
+    
     void 'Test string trimming'() {
         given:
-        def binder = new GormAwareDataBinder()
+        def binder = new GormAwareDataBinder(grailsApplication)
+        mockDomain Author
         def author = new Author()
         
         when:
-        binder.bind author, [name: '   Jeff Scott Brown ']
+        binder.bind author, [name: '   Jeff Scott Brown ', nullableString: ' ']
         
         then:
         author.name == 'Jeff Scott Brown'
+        author.nullableString == ''
         
         when:
         binder.trimStrings = false
-        binder.bind author, [name: '  Jeff Scott Brown   ']
+        binder.bind author, [name: '  Jeff Scott Brown   ', nullableString: ' ']
         
         then:
         author.name == '  Jeff Scott Brown   '
+        author.nullableString == ' '
+    }
+    
+    void 'Test binding empty String to nullable property'() {
+        given:
+        mockDomain Author
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def obj = new Author()
+        
+        when:
+        doBind obj, [nullableString: '']
+        
+        then:
+        obj.nullableString == null
+    }
+    
+    void 'Test binding blank String to nullable property'() {
+        given:
+        mockDomain Author
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def obj = new Author()
+        
+        when:
+        doBind obj, [nullableString: '  ']
+        
+        then:
+        obj.nullableString == ''
+    }
+    
+    void 'Test binding blank String to nullable property with trimming turned off'() {
+        given:
+        def binder = new GormAwareDataBinder(grailsApplication)
+        binder.trimStrings = false
+        mockDomain Author
+        def obj = new Author()
+        
+        when:
+        binder.bind obj, [nullableString: '  ']
+        
+        then:
+        obj.nullableString == '  '
     }
     
     void 'Test binding to primitives from Strings'() {
@@ -51,7 +110,7 @@ class GormAwareDataBinderSpec extends Specification {
         def obj = new PrimitiveContainer()
 
         when:
-        binder.bind(obj, [someBoolean: 'true',
+        doBind(obj, [someBoolean: 'true',
             someByte: '1',
             someChar: 'a',
             someShort: '2',
@@ -74,26 +133,25 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test id binding'() {
         given:
         mockDomains Author, Publication
-        def binder = new GormAwareDataBinder(grailsApplication)
         def author = new Author(name: 'David Foster Wallace').save(flush: true)
         def publication = new Publication()
 
         when:
-        binder.bind publication, [title: 'Infinite Jest', author: [id: author.id]]
+        doBind publication, [title: 'Infinite Jest', author: [id: author.id]]
 
         then:
         publication.title == 'Infinite Jest'
         publication.author.name == 'David Foster Wallace'
 
         when:
-        binder.bind publication, [author: [id: 'null']]
+        doBind publication, [author: [id: 'null']]
 
         then:
         publication.author == null
 
         when:
         publication.title = null
-        binder.bind publication, [title: 'Infinite Jest', author: [id: author.id]], [], ['author']
+        doBind publication, [title: 'Infinite Jest', author: [id: author.id]], [], ['author']
 
         then:
         publication.title == 'Infinite Jest'
@@ -101,7 +159,7 @@ class GormAwareDataBinderSpec extends Specification {
 
         when:
         publication.author = null
-        binder.bind publication, [title: 'Infinite Jest 2', author: [id: author.id]]
+        doBind publication, [title: 'Infinite Jest 2', author: [id: author.id]]
 
         then:
         publication.author.name == 'David Foster Wallace'
@@ -110,12 +168,11 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to the one side of a one to many'() {
         given:
         mockDomains Author, Publication, Publisher
-        def binder = new GormAwareDataBinder(grailsApplication)
         def author = new Author(name: 'Graeme').save()
         def pub = new Publication(title: 'DGG', author: author)
 
         when:
-        binder.bind pub, [publisher: [name: 'Apress']]
+        doBind pub, [publisher: [name: 'Apress']]
 
         // pending investigation...
         DeferredBindingActions.runActions()
@@ -139,11 +196,10 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a hasMany List'() {
         given:
         mockDomain Publisher
-        def binder = new GormAwareDataBinder(grailsApplication)
         def publisher = new Publisher()
 
         when:
-        binder.bind publisher, [name: 'Apress',
+        doBind publisher, [name: 'Apress',
             'publications[0]': [title: 'DGG', author: [name: 'Graeme']],
             'publications[1]': [title: 'DGG2', author: [name: 'Jeff']]]
 
@@ -161,11 +217,10 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test bindable'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
         def widget = new Widget()
 
         when:
-        binder.bind widget, [isBindable: 'Should Be Bound', isNotBindable: 'Should Not Be Bound']
+        doBind widget, [isBindable: 'Should Be Bound', isNotBindable: 'Should Not Be Bound']
 
         then:
         widget.isBindable == 'Should Be Bound'
@@ -175,12 +230,11 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a collection of String'() {
         given:
         mockDomain DataBindingBook
-        def binder = new GormAwareDataBinder(grailsApplication)
         def book = new DataBindingBook()
         
         when:
-        binder.bind book, [topics: ['journalism', null, 'satire']]
-        binder.bind book, ['topics[1]': 'counterculture']
+        doBind book, [topics: ['journalism', null, 'satire']]
+        doBind book, ['topics[1]': 'counterculture']
         
         then:
         book.topics == ['journalism', 'counterculture', 'satire']
@@ -189,12 +243,11 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a collection of Integer'() {
         given:
         mockDomain DataBindingBook
-        def binder = new GormAwareDataBinder(grailsApplication)
         def book = new DataBindingBook()
         
         when:
-        binder.bind book, [importantPageNumbers: ['5', null, '42']]
-        binder.bind book, ['importantPageNumbers[1]': '2112']
+        doBind book, [importantPageNumbers: ['5', null, '42']]
+        doBind book, ['importantPageNumbers[1]': '2112']
         
         then:
         book.importantPageNumbers == [5, 2112, 42]
@@ -203,11 +256,10 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a collection of primitive'() {
         given:
         mockDomains Parent, Child
-        def binder = new GormAwareDataBinder(grailsApplication)
         def parent = new Parent()
 
         when:
-        binder.bind parent, [child: [someOtherIds: '4']]
+        doBind parent, [child: [someOtherIds: '4']]
 
         then:
         parent.child.someOtherIds.size() == 1
@@ -215,7 +267,7 @@ class GormAwareDataBinderSpec extends Specification {
 
         when:
         parent.child = null
-        binder.bind(parent,  [child: [someOtherIds: ['4', '5', '6']]])
+        doBind(parent,  [child: [someOtherIds: ['4', '5', '6']]])
 
         then:
         parent.child.someOtherIds.size() == 3
@@ -225,7 +277,7 @@ class GormAwareDataBinderSpec extends Specification {
 
         when:
         parent.child = null
-        binder.bind(parent,  [child: [someOtherIds: 4]])
+        doBind(parent,  [child: [someOtherIds: 4]])
 
         then:
         parent.child.someOtherIds.size() == 1
@@ -236,7 +288,6 @@ class GormAwareDataBinderSpec extends Specification {
         given:
         mockDomains Team, Author
         def team = new Team()
-        def binder = new GormAwareDataBinder(grailsApplication)
         
         when:
         team.members = ['jeff': new Author(name: 'Jeff Scott Brown'),'betsy': new Author(name: 'Sarah Elizabeth Brown')]
@@ -249,7 +300,7 @@ class GormAwareDataBinderSpec extends Specification {
         'Jeff Scott Brown' == team.members.jeff.name
 
         when:
-        binder.bind team, ['members[jeff]': [id: 'null']]
+        doBind team, ['members[jeff]': [id: 'null']]
         
         then:
         team.members.size() == 1
@@ -261,10 +312,9 @@ class GormAwareDataBinderSpec extends Specification {
         given:
         mockDomains Team, Author
         def team = new Team()
-        def binder = new GormAwareDataBinder(grailsApplication)
         
         when:
-        binder.bind team, ["members['jeff']": [name: 'Jeff Scott Brown'], 'members["betsy"]': [name: 'Sarah Elizabeth Brown']]
+        doBind team, ["members['jeff']": [name: 'Jeff Scott Brown'], 'members["betsy"]': [name: 'Sarah Elizabeth Brown']]
         
         then:
         team.members.size() == 2
@@ -277,9 +327,9 @@ class GormAwareDataBinderSpec extends Specification {
     
     void 'Test autoGrowCollectionLimit with Maps of String'() {
         given:
+        def binder = new GormAwareDataBinder(grailsApplication)
         mockDomains Team, Author
         def team = new Team()
-        def binder = new GormAwareDataBinder(grailsApplication)
         binder.autoGrowCollectionLimit = 2
         def bindingSource = [:]
         bindingSource['states[MO]'] = 'Missouri'
@@ -301,9 +351,9 @@ class GormAwareDataBinderSpec extends Specification {
     
     void 'Test autoGrowCollectionLimit with Maps of domain objects'() {
         given:
+        def binder = new GormAwareDataBinder(grailsApplication)
         mockDomains Team, Author
         def team = new Team()
-        def binder = new GormAwareDataBinder(grailsApplication)
         binder.autoGrowCollectionLimit = 2
         def bindingSource = [:]
         bindingSource['members[jeff]'] = [name: 'Jeff Scott Brown']
@@ -327,12 +377,11 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to Set with subscript'() {
         given:
         mockDomains Publisher, Author
-        def binder = new GormAwareDataBinder(grailsApplication)
         def pub = new Publisher()
         pub.addToAuthors(name: 'Author One')
         
         when:
-        binder.bind pub, ['authors[0]': [name: 'Author Uno'], 'authors[1]': [name: 'Author Dos']]
+        doBind pub, ['authors[0]': [name: 'Author Uno'], 'authors[1]': [name: 'Author Dos']]
         
         then:
         pub.authors.size() == 2
@@ -365,6 +414,10 @@ class Publication {
 @Entity
 class Author {
     String name
+    String nullableString
+    static constraints = {
+        nullableString nullable: true
+    }
 }
 
 @Entity

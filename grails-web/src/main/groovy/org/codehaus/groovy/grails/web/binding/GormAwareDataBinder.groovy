@@ -30,9 +30,12 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.codehaus.groovy.grails.web.json.JSONObject
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.binding.converters.ByteArrayMultipartFileValueConverter
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.runtime.InvokerHelper
+import org.codehaus.groovy.runtime.MetaClassHelper
+import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
 import org.grails.databinding.SimpleDataBinder
 import org.grails.databinding.converters.FormattedValueConverter
 import org.grails.databinding.converters.ValueConverter
@@ -168,7 +171,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                             }
                         }
 
-                        setPropertyValue obj, source, propName, persistedInstance, listener
+                        bindProperty obj, source, propName, persistedInstance, listener
                         if(persistedInstance != null) {
                             bind persistedInstance, val, listener
                         }
@@ -235,10 +238,37 @@ class GormAwareDataBinder extends SimpleDataBinder {
             }
         }
     }
+    private Map resolveConstrainedProperties(object) {
+        Map constrainedProperties = null
+        MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass())
+        MetaProperty metaProp = mc.getMetaProperty('constraints')
+        if (metaProp != null) {
+            Object constrainedPropsObj = getMetaPropertyValue(metaProp, object)
+            if (constrainedPropsObj instanceof Map) {
+                constrainedProperties = (Map)constrainedPropsObj
+            }
+        }
+        constrainedProperties
+    }
+    private getMetaPropertyValue(MetaProperty metaProperty, delegate) {
+        if (metaProperty instanceof ThreadManagedMetaBeanProperty) {
+            return ((ThreadManagedMetaBeanProperty)metaProperty).getGetter().invoke(delegate, MetaClassHelper.EMPTY_ARRAY)
+        }
+
+        return metaProperty.getProperty(delegate)
+    }
 
     @Override
-    protected setPropertyValue(obj, Map source, String propName, propertyValue, DataBindingListener listener) {
-        if(trimStrings && propertyValue instanceof String) {
+    protected setPropertyValue(obj, Map source, String propName, propertyValue) {
+        if ("".equals(propertyValue)) {
+            def cps = resolveConstrainedProperties(obj)
+            if (cps != null) {
+                ConstrainedProperty cp = (ConstrainedProperty)cps[propName]
+                if (cp && cp.isNullable()) {
+                    propertyValue = null
+                }
+            }
+        } else if(trimStrings && propertyValue instanceof String) {
             propertyValue = propertyValue.trim()
         }
         boolean isSet = false
@@ -276,7 +306,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
             }
         }
         if(!isSet) {
-            super.setPropertyValue obj, source, propName, propertyValue, listener
+            super.setPropertyValue obj, source, propName, propertyValue
         }
     }
 

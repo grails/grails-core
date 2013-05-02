@@ -198,7 +198,7 @@ class SimpleDataBinder implements DataBinder {
                     def structuredEditor = structuredEditors[propertyType]
                     val = structuredEditor.getPropertyValue obj, propName, source
                 }
-                setPropertyValue obj, source, propName, val, listener
+                bindProperty obj, source, propName, val, listener
             }
         } else {
             def indexedPropertyReferenceDescriptor = getIndexedPropertyReferenceDescriptor propName
@@ -257,7 +257,7 @@ class SimpleDataBinder implements DataBinder {
                 if(metaProperty &&
                    (Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type) &&
                    !source.containsKey(restOfPropName)) {
-                    setPropertyValue obj, source, restOfPropName, false, listener
+                    bindProperty obj, source, restOfPropName, false, listener
                 }
             }
         }
@@ -408,13 +408,12 @@ class SimpleDataBinder implements DataBinder {
 
         enumValue
     }
-    protected setPropertyValue(obj, Map source, String propName, propertyValue, DataBindingListener listener) {
+    protected setPropertyValue(obj, Map source, String propName, propertyValue) {
         def converter = getValueConverter obj, propName
 
         if(converter) {
             propertyValue = converter.convert source
         }
-        if(listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
             def metaProperty = obj.metaClass.getMetaProperty(propName)
             def propertyType
             def propertyGetter
@@ -441,7 +440,6 @@ class SimpleDataBinder implements DataBinder {
             } else if(Enum.isAssignableFrom(propertyType) && propertyValue instanceof String) {
                 obj[propName] = convertStringToEnum(propertyType, propertyValue)
             } else {
-                try {
                     if(propertyValue instanceof Map) {
                         if(Collection.isAssignableFrom(propertyType) &&
                             propertyValue.size() == 1 &&
@@ -458,13 +456,25 @@ class SimpleDataBinder implements DataBinder {
                     } else {
                         obj[propName] = convert(propertyType, propertyValue)
                     }
-                } catch (Exception e) {
-                    if(listener) {
-                        def error = new SimpleBindingError(obj, propName, propertyValue, e.cause ?: e)
-                        listener.bindingError error
-                    }
+            }
+    }
+
+    protected bindProperty(obj, Map source, String propName, propertyValue, DataBindingListener listener) {
+        def converter = getValueConverter obj, propName
+
+        if(converter) {
+            propertyValue = converter.convert source
+        }
+        if(listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
+            try {
+                setPropertyValue obj, source, propName, propertyValue
+            } catch (Exception e) {
+                if(listener) {
+                    def error = new SimpleBindingError(obj, propName, propertyValue, e.cause ?: e)
+                    listener.bindingError error
                 }
             }
+
         } else if(listener != null && propertyValue instanceof Map && obj[propName] != null) {
             bind obj[propName], propertyValue
         }
