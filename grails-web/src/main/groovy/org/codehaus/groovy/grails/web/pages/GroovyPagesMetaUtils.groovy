@@ -1,10 +1,12 @@
 package org.codehaus.groovy.grails.web.pages
 
 import grails.util.Environment
+import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.springframework.web.context.request.RequestContextHolder as RCH
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
+@CompileStatic
 class GroovyPagesMetaUtils {
     private final static Object[] EMPTY_OBJECT_ARRAY = new Object[0]
 
@@ -12,23 +14,33 @@ class GroovyPagesMetaUtils {
         registerMethodMissingForGSP(GrailsMetaClassUtils.getExpandoMetaClass(gspClass), gspTagLibraryLookup)
     }
 
-    static void registerMethodMissingForGSP(final MetaClass mc, final TagLibraryLookup gspTagLibraryLookup) {
+    static void registerMethodMissingForGSP(final MetaClass emc, final TagLibraryLookup gspTagLibraryLookup) {
         final boolean addMethodsToMetaClass = !Environment.isDevelopmentMode()
 
-        mc.methodMissing = { String name, args ->
-            methodMissingForTagLib(mc, mc.getTheClass(), gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, name, args, addMethodsToMetaClass)
+        GroovyObject mc = (GroovyObject)emc
+        synchronized(emc) {
+            mc.setProperty("methodMissing", { String name, Object args ->
+                methodMissingForTagLib(emc, emc.getTheClass(), gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, name, args, addMethodsToMetaClass)
+            })
         }
-        registerMethodMissingWorkaroundsForDefaultNamespace(mc, gspTagLibraryLookup)
+        registerMethodMissingWorkaroundsForDefaultNamespace(emc, gspTagLibraryLookup)
     }
+    
+    private static Object[] makeObjectArray(Object args) {
+        args instanceof Object[] ? (Object[])args : [args] as Object[]
+    }
+    
 
-    static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, args, boolean addMethodsToMetaClass) {
+    static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, Object argsParam, boolean addMethodsToMetaClass) {
+        Object[] args = makeObjectArray(argsParam)
         final GroovyObject tagBean = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
         if (tagBean != null) {
-            final MetaMethod method=tagBean.respondsTo(name, args).find{ it }
+            MetaClass tagBeanMc = tagBean.getMetaClass()
+            final MetaMethod method=tagBeanMc.respondsTo(tagBean, name, args).find{ it }
             if (method != null) {
                 if (addMethodsToMetaClass) {
                     // add all methods with the same name to metaclass at once to prevent "wrong number of arguments" exception
-                    for (MetaMethod m in tagBean.respondsTo(name)) {
+                    for (MetaMethod m in tagBeanMc.respondsTo(tagBean, name)) {
                         addTagLibMethodToMetaClass(tagBean, m, mc)
                     }
                 }
@@ -79,29 +91,30 @@ class GroovyPagesMetaUtils {
         }
         if (methodMissingClosure != null) {
             synchronized(mc) {
-                mc."${method.name}" = methodMissingClosure
+                ((GroovyObject)mc).setProperty(method.name, methodMissingClosure)
             }
         }
     }
 
     // copied from /grails-plugin-controllers/src/main/groovy/org/codehaus/groovy/grails/web/plugins/support/WebMetaUtils.groovy
-    private static void registerMethodMissingForTags(final MetaClass mc, final TagLibraryLookup gspTagLibraryLookup, final String namespace, final String name, final boolean addAll) {
-        mc."$name" = {Map attrs, Closure body ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, RCH.currentRequestAttributes())
-        }
-        mc."$name" = {Map attrs, CharSequence body ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, new GroovyPage.ConstantClosure(body), RCH.currentRequestAttributes())
-        }
-        mc."$name" = {Map attrs ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, RCH.currentRequestAttributes())
-        }
+    private static void registerMethodMissingForTags(final MetaClass emc, final TagLibraryLookup gspTagLibraryLookup, final String namespace, final String name, final boolean addAll) {
+        GroovyObject mc = (GroovyObject)emc
+        mc.setProperty(name, {Map attrs, Closure body ->
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, GrailsWebRequest.lookup())
+        })
+        mc.setProperty(name, {Map attrs, CharSequence body ->
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, new GroovyPage.ConstantClosure(body), GrailsWebRequest.lookup())
+        })
+        mc.setProperty(name, {Map attrs ->
+            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, GrailsWebRequest.lookup())
+        })
         if (addAll) {
-            mc."$name" = {Closure body ->
-                GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, RCH.currentRequestAttributes())
-            }
-            mc."$name" = {->
-                GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, RCH.currentRequestAttributes())
-            }
+            mc.setProperty(name, {Closure body ->
+                GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, GrailsWebRequest.lookup())
+            })
+            mc.setProperty(name, {->
+                GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, GrailsWebRequest.lookup())
+            })
         }
     }
 }
