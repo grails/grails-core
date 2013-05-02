@@ -243,8 +243,9 @@ public class GrailsParameterMap extends TypeConvertingMap  implements Cloneable 
         if (nestedDateMap.containsKey(key)) nestedDateMap.remove(key);
         Object returnValue =  wrappedMap.put(key, value);
         if(key instanceof String) {
-            if(((String)key).indexOf(".") > -1) {
-                updateNestedKeys(this);
+            String keyString = (String)key;
+            if(keyString.indexOf(".") > -1) {
+                processNestedKeys(this, keyString, keyString, wrappedMap);
             }
         }
         return returnValue;
