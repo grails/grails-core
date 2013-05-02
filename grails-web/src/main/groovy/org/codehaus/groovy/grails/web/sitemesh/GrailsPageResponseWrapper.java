@@ -100,8 +100,6 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
 
     private void abortRequest() {
         aborted = true;
-        // route any content back to the original writer.  There shouldn't be any content, but just to be safe
-        deactivateSiteMesh();
     }
 
     /**
@@ -144,9 +142,10 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
             }
         });
         parseablePage = true;
+        aborted = false;
     }
 
-    private void deactivateSiteMesh() {
+    public void deactivateSiteMesh() {
         parseablePage = false;
         buffer = null;
         if (gspSitemeshPage != null) {
@@ -212,7 +211,11 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
      */
     @Override
     public void setStatus(int sc) {
-        if (sc == HttpServletResponse.SC_NOT_MODIFIED || sc >= 400) {
+        if (sc == HttpServletResponse.SC_NOT_MODIFIED) {
+            abortRequest();
+            // route any content back to the original writer.  There shouldn't be any content, but just to be safe
+            deactivateSiteMesh();
+        } else if (sc >= 400) {
             abortRequest();
         }
         super.setStatus(sc);
