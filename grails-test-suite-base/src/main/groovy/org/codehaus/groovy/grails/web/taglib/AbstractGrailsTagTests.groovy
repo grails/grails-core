@@ -37,8 +37,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.WithCodecHelper
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ApplicationContextAware
 import org.springframework.context.MessageSource
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.convert.support.DefaultConversionService
@@ -128,16 +128,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                 fail("No tag library found for tag $tagName")
             }
             def go = tagLibrary.newInstance()
-            if (go.properties.containsKey("grailsUrlMappingsHolder")) {
-                go.grailsUrlMappingsHolder = appCtx.grailsUrlMappingsHolder
-            }
-            if (go.properties.containsKey("requestDataValueProcessor")) {
-                go.requestDataValueProcessor = appCtx.requestDataValueProcessor
-            }
-            if (go instanceof ApplicationContextAware) {
-                go.applicationContext = appCtx
-            }
-            
+            appCtx.autowireCapableBeanFactory.autowireBeanProperties(go, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
             def gspTagLibraryLookup = appCtx.gspTagLibraryLookup
 
             GroovyPageOutputStack stack=GroovyPageOutputStack.currentStack(webRequest, true)
