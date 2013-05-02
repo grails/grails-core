@@ -260,16 +260,8 @@ class GormAwareDataBinder extends SimpleDataBinder {
 
     @Override
     protected setPropertyValue(obj, Map source, String propName, propertyValue) {
-        if ("".equals(propertyValue)) {
-            def cps = resolveConstrainedProperties(obj)
-            if (cps != null) {
-                ConstrainedProperty cp = (ConstrainedProperty)cps[propName]
-                if (cp && cp.isNullable()) {
-                    propertyValue = null
-                }
-            }
-        } else if(trimStrings && propertyValue instanceof String) {
-            propertyValue = propertyValue.trim()
+        if(propertyValue instanceof CharSequence) {
+            propertyValue = preprocessCharSequenceValue(obj, propName, propertyValue)
         }
         boolean isSet = false
         if(grailsApplication != null) {
@@ -308,6 +300,22 @@ class GormAwareDataBinder extends SimpleDataBinder {
         if(!isSet) {
             super.setPropertyValue obj, source, propName, propertyValue
         }
+    }
+
+    protected preprocessCharSequenceValue(obj, String propName, CharSequence propertyValue) {
+        String stringValue = propertyValue.toString()
+        if ("".equals(stringValue)) {
+            def cps = resolveConstrainedProperties(obj)
+            if (cps != null) {
+                ConstrainedProperty cp = (ConstrainedProperty)cps[propName]
+                if (cp && cp.isNullable()) {
+                    stringValue = null
+                }
+            }
+        } else if(trimStrings) {
+            stringValue = stringValue.trim()
+        }
+        return stringValue
     }
 
     protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue, boolean clearCollection) {

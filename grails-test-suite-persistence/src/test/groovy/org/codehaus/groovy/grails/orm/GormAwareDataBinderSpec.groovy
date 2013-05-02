@@ -56,12 +56,30 @@ class GormAwareDataBinderSpec extends Specification {
         author.nullableString == ''
         
         when:
+        def actualName = 'Jeff Scott Brown'
+        def space = ' '
+        binder.bind author, [name: "   ${actualName} ", nullableString: "${space}"]
+        
+        then:
+        author.name == 'Jeff Scott Brown'
+        author.nullableString == ''
+        
+        when:
         binder.trimStrings = false
         binder.bind author, [name: '  Jeff Scott Brown   ', nullableString: ' ']
         
         then:
         author.name == '  Jeff Scott Brown   '
         author.nullableString == ' '
+        
+        when:
+        binder.trimStrings = false
+        binder.bind author, [name: "  ${actualName}   ", nullableString: "${space}"]
+        
+        then:
+        author.name == '  Jeff Scott Brown   '
+        author.nullableString == ' '
+
     }
     
     void 'Test binding empty String to nullable property'() {
@@ -72,6 +90,13 @@ class GormAwareDataBinderSpec extends Specification {
         
         when:
         doBind obj, [nullableString: '']
+        
+        then:
+        obj.nullableString == null
+        
+        when:
+        def emptyString = ''
+        doBind obj, [nullableString: "${emptyString}"]
         
         then:
         obj.nullableString == null
