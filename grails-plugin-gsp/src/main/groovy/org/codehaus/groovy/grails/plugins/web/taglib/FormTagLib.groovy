@@ -24,12 +24,12 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
-import org.springframework.beans.SimpleTypeConverter
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.MessageSourceResolvable
+import org.springframework.core.convert.ConversionService
 import org.springframework.http.HttpMethod
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.springframework.web.servlet.support.RequestDataValueProcessor
@@ -48,8 +48,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
 
     ApplicationContext applicationContext
     RequestDataValueProcessor requestDataValueProcessor
-
-    protected SimpleTypeConverter typeConverter = new SimpleTypeConverter()
+    ConversionService conversionService
 
     void afterPropertiesSet() {
         if (applicationContext.containsBean('requestDataValueProcessor')) {
@@ -1020,7 +1019,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         }
         else if (keyClass && value != null) {
             try {
-                value = typeConverter.convertIfNecessary(value, keyClass)
+                value = conversionService.convert(value, keyClass)
                 selected = keyValue == value
             }
             catch (e) {
