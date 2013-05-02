@@ -73,6 +73,10 @@ class GroovyPagesMetaUtils {
                     methodMissingClosure = { Map attrs->
                         method.invoke(tagBean, attrs)
                     }
+                } else {
+                    methodMissingClosure = { Object attrs->
+                        method.invoke(tagBean, attrs)
+                    }
                 }
                 break
             case 2:
@@ -83,6 +87,14 @@ class GroovyPagesMetaUtils {
                         }
                     } else if (paramTypes[1] == CharSequence) {
                         methodMissingClosure = { Map attrs, CharSequence body ->
+                            method.invoke(tagBean, attrs, body)
+                        }
+                    } else if (paramTypes[1] == String) {
+                        methodMissingClosure = { Map attrs, String body ->
+                            method.invoke(tagBean, attrs, body)
+                        }
+                    } else {
+                        methodMissingClosure = { Map attrs, Object body ->
                             method.invoke(tagBean, attrs, body)
                         }
                     }
