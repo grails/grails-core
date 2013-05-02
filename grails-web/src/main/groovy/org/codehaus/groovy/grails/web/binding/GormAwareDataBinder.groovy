@@ -137,7 +137,11 @@ class GormAwareDataBinder extends SimpleDataBinder {
                     if(referencedType != null) {
                         if(Collection.isAssignableFrom(metaProperty.type)) {
                             def collection = initializeCollection obj, descriptor.propertyName, metaProperty.type
-                            addElementToCollectionAt obj, descriptor.propertyName, collection, Integer.parseInt(descriptor.index), 'null' == idValue ? null : getPersistentInstance(referencedType, idValue)
+                            def instance = 'null' == idValue ? null : getPersistentInstance(referencedType, idValue)
+                            addElementToCollectionAt obj, descriptor.propertyName, collection, Integer.parseInt(descriptor.index), instance
+                            if(instance != null) {
+                                bind instance, val, listener
+                            } 
                         } else if(Map.isAssignableFrom(metaProperty.type)) {
                             Map map = (Map)obj[descriptor.propertyName]
                             if(idValue == 'null' || idValue == null || idValue == '') {

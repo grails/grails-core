@@ -407,6 +407,28 @@ class GormAwareDataBinderSpec extends Specification {
         pub.authors[0].name == 'Author Uno'
         pub.authors[1].name == 'Author Dos'
     }
+    
+    void 'Test updating nested entities retrieved by id'() {
+        given:
+        mockDomains Publisher, Publication
+        def binder = new GormAwareDataBinder(grailsApplication)
+        
+        when:
+        def publisher = new Publisher(name: 'Apress').save()
+        def publication = new Publication(title: 'Definitive Guide To Grails', author: new Author(name: 'Author Name'))
+        publisher.addToPublications(publication)
+        publisher.save(flush: true)
+        then:
+        publication.publisher != null
+        publication.id != null
+        
+        when:
+        binder.bind publisher, ['publications[0]': [id: publication.id, title: 'Definitive Guide To Grails 2']]
+        
+        then:
+        publisher.publications[0].title == 'Definitive Guide To Grails 2'
+    }
+    
 }
 
 @Entity
