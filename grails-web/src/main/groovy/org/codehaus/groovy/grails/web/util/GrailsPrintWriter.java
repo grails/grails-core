@@ -546,6 +546,11 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
         writeWritable(gstring);
         return this;
     }
+    
+    public GrailsPrintWriter leftShift(final String string) {
+        print(string);
+        return this;
+    }
 
     public boolean isUsed() {
         if (usageFlag) {
