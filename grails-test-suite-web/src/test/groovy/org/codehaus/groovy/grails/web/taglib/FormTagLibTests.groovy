@@ -327,7 +327,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     void testFieldImplDoesNotApplyAttributesFromPreviousInvocation() {
         // GRAILS-8250
         def attrs = [:]
-        def out = new StringBuilder()
+        def out = new StringWriter()
         attrs.name = 'A'
         attrs.type = 'text'
         attrs.tagName = 'textField'
@@ -336,7 +336,7 @@ class FormTagLibTests extends AbstractGrailsTagTests {
         tag.fieldImpl out, attrs
         assert '<input type="text" name="A" value="" id="A" />' == out.toString()
 
-        out = new StringBuilder()
+        out = new StringWriter()
         attrs.name = 'B'
         attrs.type = 'text'
         attrs.tagName = 'textField'

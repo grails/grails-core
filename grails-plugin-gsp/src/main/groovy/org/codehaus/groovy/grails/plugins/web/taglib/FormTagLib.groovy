@@ -15,14 +15,17 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
+import groovy.transform.CompileStatic
 
 import java.text.DateFormat
 import java.text.DateFormatSymbols
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
+import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.servlet.mvc.SynchronizerTokensHolder
 import org.springframework.beans.SimpleTypeConverter
+import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -129,7 +132,8 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         fieldImpl(out, attrs)
     }
 
-    def fieldImpl(out, attrs) {
+    @CompileStatic
+    def fieldImpl(Writer out, Map attrs) {
         resolveAttributes(attrs)
 
         attrs.value = processFormFieldValueIfNecessary(attrs.name, attrs.value, attrs.type)
@@ -139,10 +143,11 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         out << "/>"
     }
 
-    private void outputNameAsIdIfIdDoesNotExist(attrs, out) {
+    @CompileStatic
+    private void outputNameAsIdIfIdDoesNotExist(Map attrs, Writer out) {
         if (!attrs.containsKey('id') && attrs.containsKey('name')) {
             out << 'id="'
-            out << attrs.name?.encodeAsHTML()
+            out << InvokerHelper.invokeMethod(String.valueOf(attrs.name), "encodeAsHTML", null)
             out << '" '
         }
     }
@@ -249,14 +254,18 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
      * mandates the attribute must have the same value as its name. For example,
      * disabled, readonly and checked.
      */
-    private void booleanToAttribute(attrs, String attrName) {
+    @CompileStatic
+    private void booleanToAttribute(Map attrs, String attrName) {
         def attrValue = attrs.remove(attrName)
+        if(attrValue instanceof CharSequence) {
+            attrValue = attrValue.toString().trim()
+        }
         // If the value is the same as the name or if it is a boolean value,
         // reintroduce the attribute to the map according to the w3c rules, so it is output later
-        if (Boolean.valueOf(attrValue) ||
-           (attrValue instanceof String && attrValue?.equalsIgnoreCase(attrName))) {
+        if ((attrValue instanceof Boolean && attrValue) || 
+            (attrValue instanceof String && (attrValue.equalsIgnoreCase("true") || attrValue.equalsIgnoreCase(attrName)))) {
             attrs.put(attrName, attrName)
-        } else if (attrValue instanceof String && !attrValue?.equalsIgnoreCase('false')) {
+        } else if (attrValue instanceof String && !attrValue.equalsIgnoreCase("false")) {
             // If the value is not the string 'false', then we should just pass it on to
             // keep compatibility with existing code
             attrs.put(attrName, attrValue)
@@ -266,7 +275,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
     /**
      * Check required attributes, set the id to name if no id supplied, extract bean values etc.
      */
-    void resolveAttributes(attrs) {
+    void resolveAttributes(Map attrs) {
         if (!attrs.name && !attrs.field) {
             throwTagError("Tag [${attrs.tagName}] is missing required attribute [name] or [field]")
         }
@@ -295,13 +304,14 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
     /**
      * Dump out attributes in HTML compliant fashion.
      */
-    void outputAttributes(attrs, writer, boolean useNameAsIdIfIdDoesNotExist = false) {
+    @CompileStatic
+    void outputAttributes(Map attrs, Writer writer, boolean useNameAsIdIfIdDoesNotExist = false) {
         attrs.remove('tagName') // Just in case one is left
         attrs.each { k, v ->
             if (v != null) {
                 writer << k
                 writer << '="'
-                writer << v.encodeAsHTML()
+                writer << InvokerHelper.invokeMethod(v.toString(), "encodeAsHTML", null)
                 writer << '" '
             }
         }
@@ -1075,17 +1085,19 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
 
         values.eachWithIndex {val, idx ->
             def it = new Expando()
-            it.radio = new StringBuilder("<input type=\"radio\" name=\"${name}\" ")
+            def radioWriter = new FastStringWriter()
+            it.radio = radioWriter.buffer
+            radioWriter << "<input type=\"radio\" name=\"${name}\" "
             if (value?.toString().equals(val.toString())) {
-                it.radio << 'checked="checked" '
+                radioWriter << 'checked="checked" '
             }
             // Generate
             def processedVal = processFormFieldValueIfNecessary(name, val.toString().encodeAsHTML(), "radio")
-            it.radio << "value=\"${processedVal}\" "
+            radioWriter << "value=\"${processedVal}\" "
 
             // process remaining attributes
-            outputAttributes(attrs, it.radio)
-            it.radio << "/>"
+            outputAttributes(attrs, radioWriter)
+            radioWriter << "/>"
 
             it.label = labels == null ? 'Radio ' + val : labels[idx]
 
