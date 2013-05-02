@@ -45,6 +45,7 @@ import org.junit.BeforeClass
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.MessageSource
+import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
 
 /**
@@ -94,6 +95,7 @@ class GrailsUnitTestMixin {
                 pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
                 messageSource(StaticMessageSource)
                 "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
+                conversionService(ConversionServiceFactoryBean)
             }
             applicationContext.refresh()
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)

@@ -41,6 +41,7 @@ import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.context.MessageSource
 import org.springframework.context.support.StaticMessageSource
+import org.springframework.core.convert.support.DefaultConversionService
 import org.springframework.core.io.Resource
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver
 import org.springframework.mock.web.MockHttpServletRequest
@@ -242,6 +243,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         ctx.registerMockBean("manager", mockManager)
         ctx.registerMockBean("messageSource", messageSource)
         ctx.registerMockBean("grailsApplication", grailsApplication)
+        ctx.registerMockBean("conversionService", new DefaultConversionService())
         ctx.registerMockBean(GroovyPagesUriService.BEAN_ID, new DefaultGroovyPagesUriService())
 
         onInitMockBeans()
