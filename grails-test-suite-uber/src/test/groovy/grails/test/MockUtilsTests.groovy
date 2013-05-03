@@ -660,9 +660,9 @@ class MockUtilsTests extends GroovyTestCase {
                 title: "Ms.")
         dc.validate()
         assertEquals "unique", dc.errors["id"]
-        assertEquals "blank", dc.errors["name"]
+        assertEquals "nullable", dc.errors["name"]
 
-        assertNull dc.errors["country"] // blank values bound to null when nullable:true
+        assertNull dc.errors["country"] // blank values bound to null
         assertEquals "matches", dc.errors["email"]
         assertEquals "size", dc.errors["other"]
         assertEquals "range", dc.errors["number"]

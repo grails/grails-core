@@ -57,7 +57,7 @@ class DomainClassControllerUnitTestMixinTests {
         assert book.validate() == false
 
         assert book.errors.allErrors.size() == 1
-        assert book.errors['title'].code == 'blank'
+        assert book.errors['title'].code == 'nullable'
 
         book.clearErrors()
 

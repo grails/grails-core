@@ -286,18 +286,18 @@ class AuthorBean {
         assertEquals "Stephen King", b.author.name
     }
 
-    void testBindBlankToNullWhenNullable() {
+    void testConvertingBlankAndEmptyStringsToNull() {
         def c = ga.getControllerClass("databindingtests.TestController").newInstance()
         def a = ga.getDomainClass("databindingtests.Author").newInstance()
 
         def params = c.params
         params.name =  ''
-        params.hairColour = ''
+        params.hairColour = '  '
 
         a.properties = params
 
         assertNull a.name
-        assertEquals '', a.hairColour
+        assertNull a.hairColour
     }
 
     void testTypeConversionErrorsWithNestedAssociations() {

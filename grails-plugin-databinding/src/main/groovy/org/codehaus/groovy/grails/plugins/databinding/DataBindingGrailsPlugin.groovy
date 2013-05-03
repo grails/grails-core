@@ -29,9 +29,19 @@ class DataBindingGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
 
     def doWithSpring = {
-        def autoGrowCollectionLimitSetting = application?.config?.grails?.databinding?.autoGrowCollectionLimit
+        def databindingConfig = application?.config?.grails?.databinding
+        
+        def autoGrowCollectionLimitSetting = databindingConfig?.autoGrowCollectionLimit
+        
         "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GormAwareDataBinder, ref('grailsApplication')) {
-            trimStrings = !Boolean.FALSE.equals(application?.config?.grails?.databinding?.trimStrings)
+            
+            // trimStrings defaults to TRUE
+            trimStrings = !Boolean.FALSE.equals(databindingConfig?.trimStrings)
+            
+            // convertEmptyStringsToNull defaults to TRUE
+            convertEmptyStringsToNull = !Boolean.FALSE.equals(databindingConfig?.convertEmptyStringsToNull)
+        
+            // autoGrowCollectionLimit defaults to 256
             if(autoGrowCollectionLimitSetting instanceof Integer) {
                 autoGrowCollectionLimit = autoGrowCollectionLimitSetting
             }

@@ -33,84 +33,65 @@ class GormAwareDataBinderSpec extends Specification {
         def author = new Author()
         
         when:
-        binder.bind author, [name: '   Jeff Scott Brown ', nullableString: ' ']
+        binder.bind author, [name: '   Jeff Scott Brown ']
         
         then:
         author.name == 'Jeff Scott Brown'
-        author.nullableString == ''
         
         when:
         def actualName = 'Jeff Scott Brown'
         def space = ' '
-        binder.bind author, [name: "   ${actualName} ", nullableString: "${space}"]
+        binder.bind author, [name: "   ${actualName} "]
         
         then:
         author.name == 'Jeff Scott Brown'
-        author.nullableString == ''
         
         when:
         binder.trimStrings = false
-        binder.bind author, [name: '  Jeff Scott Brown   ', nullableString: ' ']
+        binder.bind author, [name: '  Jeff Scott Brown   ']
         
         then:
         author.name == '  Jeff Scott Brown   '
-        author.nullableString == ' '
         
         when:
         binder.trimStrings = false
-        binder.bind author, [name: "  ${actualName}   ", nullableString: "${space}"]
+        binder.bind author, [name: "  ${actualName}   "]
         
         then:
         author.name == '  Jeff Scott Brown   '
-        author.nullableString == ' '
 
     }
     
-    void 'Test binding empty String to nullable property'() {
+    void 'Test binding empty and blank String'() {
         given:
         mockDomain Author
         def binder = new GormAwareDataBinder(grailsApplication)
         def obj = new Author()
         
         when:
-        binder.bind obj, [nullableString: '']
+        binder.bind obj, [name: '']
         
         then:
-        obj.nullableString == null
+        obj.name == null
+        
+        when:
+        binder.bind obj, [name: '  ']
+        
+        then:
+        obj.name == null
         
         when:
         def emptyString = ''
-        binder.bind obj, [nullableString: "${emptyString}"]
+        binder.bind obj, [name: "${emptyString}"]
         
         then:
-        obj.nullableString == null
-    }
-    
-    void 'Test binding blank String to nullable property'() {
-        given:
-        mockDomain Author
-        def binder = new GormAwareDataBinder(grailsApplication)
-        def obj = new Author()
+        obj.name == null
         
         when:
-        binder.bind obj, [nullableString: '  ']
+        binder.bind obj, [name: "  ${emptyString}  "]
         
         then:
-        obj.nullableString == ''
-    }
-    
-    void 'Test binding blank String to nullable property with trimming turned off'() {
-        given:
-        def binder = new GormAwareDataBinder(grailsApplication)
-        binder.trimStrings = false
-        mockDomain Author
-        def obj = new Author()
-        
-        when:
-        binder.bind obj, [nullableString: '  ']
-        
-        then:
-        obj.nullableString == '  '
+        obj.name == null
     }
     
     void 'Test binding to primitives from Strings'() {
@@ -455,10 +436,6 @@ class Publication {
 @Entity
 class Author {
     String name
-    String nullableString
-    static constraints = {
-        nullableString nullable: true
-    }
 }
 
 @Entity

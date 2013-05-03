@@ -30,7 +30,6 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.binding.converters.ByteArrayMultipartFileValueConverter
 import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -48,6 +47,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
     protected static final Map<Class, List> CLASS_TO_BINDING_INCLUDE_LIST = new ConcurrentHashMap<Class, List>()
     protected GrailsApplication grailsApplication
     boolean trimStrings = true
+    boolean convertEmptyStringsToNull = true
 
     GormAwareDataBinder(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication
@@ -308,16 +308,11 @@ class GormAwareDataBinder extends SimpleDataBinder {
 
     protected preprocessCharSequenceValue(obj, String propName, CharSequence propertyValue) {
         String stringValue = propertyValue.toString()
-        if ("".equals(stringValue)) {
-            def cps = resolveConstrainedProperties(obj)
-            if (cps != null) {
-                ConstrainedProperty cp = (ConstrainedProperty)cps[propName]
-                if (cp && cp.isNullable()) {
-                    stringValue = null
-                }
-            }
-        } else if(trimStrings) {
+        if(trimStrings) {
             stringValue = stringValue.trim()
+        }
+        if (convertEmptyStringsToNull && "".equals(stringValue)) {
+            stringValue = null
         }
         return stringValue
     }
