@@ -26,10 +26,10 @@ import org.springframework.validation.FieldError
 
 @CompileStatic
 class GormAwareDataBindingListener extends DataBindingListenerAdapter {
-    private final BindingResult tmpBindingResult
+    private final BindingResult bindingResult
 
-    GormAwareDataBindingListener(BindingResult tmpBindingResult) {
-        this.tmpBindingResult = tmpBindingResult
+    GormAwareDataBindingListener(BindingResult bindingResult) {
+        this.bindingResult = bindingResult
     }
 
     @Override
@@ -39,7 +39,7 @@ class GormAwareDataBindingListener extends DataBindingListenerAdapter {
         def cause = error.cause
         def defaultMessage = cause ? cause.message : 'Data Binding Failed'
         def fieldError = new FieldError(error.object?.getClass()?.getName(), error.getPropertyName(), error.getRejectedValue(), true, codes as String[], o, defaultMessage)
-        tmpBindingResult.addError(fieldError)
+        bindingResult.addError(fieldError)
     }
 
     protected Object[] getArgumentsForBindError(String objectName, String field) {
