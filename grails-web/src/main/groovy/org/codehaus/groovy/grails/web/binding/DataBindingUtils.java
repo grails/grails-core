@@ -212,7 +212,7 @@ public class DataBindingUtils {
             }
             final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
-            final DataBindingListener listener = new GormAwareDataBindindingListener(tmpBindingResult);
+            final DataBindingListener listener = new GormAwareDataBindingListener(tmpBindingResult);
             gormAwareDataBinder.bind(object, bindingSource, filter, include, exclude, listener);
             bindingResult = tmpBindingResult;
         } else {
