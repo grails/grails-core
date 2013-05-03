@@ -126,7 +126,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
                 String inlinePath = getInlinePluginPath(grailsPlugin);
                 if(inlinePath != null) {
-                    basePath = "file:" + inlinePath;
+                    basePath = inlinePath;
                 } else {
                     basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
                 }
