@@ -20,6 +20,8 @@ class FormRenderingTagLibTests extends AbstractGrailsTagTests {
         def output = sw.toString()
 
         assertTrue output.startsWith('<select name="foo" id="foo" >')
+        assertTrue output.contains('<option value="Pacific/Galapagos" >GALT, Galapagos Time -6:0.0 [Pacific/Galapagos]</option>')
+        assertTrue output.contains('<option value="US/Central" >CDT, Central Daylight Time -6:0.0 [US/Central]</option>')
         assertTrue output.endsWith('</select>')
     }
 

@@ -811,7 +811,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
             def hour = offset / (60 * 60 * 1000)
             def min = Math.abs(offset / (60 * 1000)) % 60
 
-            return "${shortName}, ${longName} ${hour}:${min}"
+            return "${shortName}, ${longName} ${hour}:${min} [${it}]"
         }
 
         // use generic select
