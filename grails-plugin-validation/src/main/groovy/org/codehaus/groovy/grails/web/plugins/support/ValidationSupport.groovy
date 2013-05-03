@@ -18,12 +18,17 @@ package org.codehaus.groovy.grails.web.plugins.support
 import grails.validation.ValidationErrors
 
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
+import org.grails.datastore.gorm.support.BeforeValidateHelper
 import org.springframework.web.context.support.WebApplicationContextUtils
 
 
 class ValidationSupport {
 
+    static final beforeValidateHelper = new BeforeValidateHelper()
+    
     static validateInstance(object, List fieldsToValidate = null) {
+        beforeValidateHelper.invokeBeforeValidate(object, fieldsToValidate)
+
         if (!object.hasProperty('constraints')) {
             return true
         }

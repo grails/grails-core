@@ -110,9 +110,14 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         class PersonCommand {
             String name
             def theAnswer
+            def beforeValidateCounter = 0
 
             String city
             String state
+
+            def beforeValidate() {
+                ++beforeValidateCounter
+            }
 
             static constraints = {
                 name matches: /[A-Z]+/
@@ -314,6 +319,15 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             model.artist.name == null
             nameErrorCodes
             'artistCommand.name.nullable.error' in nameErrorCodes
+    }
+    
+    void 'Test beforeValidate gets invoked'() {
+        when:
+        def model = testController.methodAction()
+        def person = model.person
+        
+        then:
+        1 == person.beforeValidateCounter
     }
 
     void 'Test constraints property'() {
