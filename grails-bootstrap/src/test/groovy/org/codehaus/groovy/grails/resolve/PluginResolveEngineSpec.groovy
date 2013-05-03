@@ -12,7 +12,7 @@ class PluginResolveEngineSpec extends Specification {
 
         when:"We resolve the 'feeds' plugin"
             def sw = new StringWriter()
-            resolveEngine.renderInstallInfo("feeds", null, sw)
+            resolveEngine.renderInstallInfo("feeds", '1.5', sw)
             def info = sw.toString()
 
         then:"The correct metadata is obtained"
