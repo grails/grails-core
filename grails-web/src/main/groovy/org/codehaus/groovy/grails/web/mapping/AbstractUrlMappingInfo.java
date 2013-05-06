@@ -22,6 +22,7 @@ import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +40,33 @@ import org.springframework.web.context.request.RequestContextHolder;
 @SuppressWarnings("rawtypes")
 public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
 
-    protected Map params = Collections.EMPTY_MAP;
+    private Map<String, Object> params = Collections.EMPTY_MAP;
+
+    public Map<String, Object> getParams() {
+        return params;
+    }
+
+    public void setParams(final Map newParams) {
+        Collection keys = newParams.keySet();
+        keys = DefaultGroovyMethods.toList(keys);
+        Collections.sort((List) keys, new Comparator() {
+            public int compare(Object leftKey, Object rightKey) {
+                Object leftValue = newParams.get(leftKey);
+                Object rightValue = newParams.get(rightKey);
+                boolean leftIsClosure = leftValue instanceof Closure;
+                boolean rightIsClosure = rightValue instanceof Closure;
+                if (leftIsClosure && rightIsClosure) return 0;
+                if (leftIsClosure && !rightIsClosure) return 1;
+                if (rightIsClosure && !leftIsClosure) return -1;
+                return 0;
+            }
+        });
+        Map<String,Object> sortedParams = new LinkedHashMap<String,Object>();
+        for(Object key : keys) {
+            sortedParams.put(String.valueOf(key), newParams.get(key));
+        }
+        this.params = Collections.unmodifiableMap(sortedParams);
+    }
 
     public void configure(GrailsWebRequest webRequest) {
         populateParamsForMapping(webRequest);
@@ -57,24 +84,9 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
         String encoding = webRequest.getRequest().getCharacterEncoding();
         if (encoding == null) encoding = "UTF-8";
 
-        Collection keys = params.keySet();
-        keys = DefaultGroovyMethods.toList(keys);
-        Collections.sort((List) keys, new Comparator() {
-            public int compare(Object leftKey, Object rightKey) {
-                Object leftValue = params.get(leftKey);
-                Object rightValue = params.get(rightKey);
-                boolean leftIsClosure = leftValue instanceof Closure;
-                boolean rightIsClosure = rightValue instanceof Closure;
-                if (leftIsClosure && rightIsClosure) return 0;
-                if (leftIsClosure && !rightIsClosure) return 1;
-                if (rightIsClosure && !leftIsClosure) return -1;
-                return 0;
-            }
-        });
-
-        for (Object key : keys) {
-            String name = (String) key;
-            Object param = params.get(name);
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            String name = entry.getKey();
+            Object param = entry.getValue();
             if (param instanceof Closure) {
                 param = evaluateNameForValue(param);
             }

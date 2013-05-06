@@ -62,8 +62,8 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     @SuppressWarnings({"unchecked","rawtypes"})
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
-        this.params = Collections.unmodifiableMap(params);
-        id = params.get(ID_PARAM);
+        setParams(params);
+        id = getParams().get(ID_PARAM);
         this.urlData = urlData;
         this.servletContext = servletContext;
         GrailsApplication grailsApplication = WebUtils.lookupApplication(servletContext);
@@ -105,7 +105,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     @SuppressWarnings("rawtypes")
     public Map getParameters() {
-        return params;
+        return getParams();
     }
 
     public boolean isParsingRequest() {
