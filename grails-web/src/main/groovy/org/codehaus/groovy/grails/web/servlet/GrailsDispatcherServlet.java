@@ -33,7 +33,6 @@ import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.context.ServletContextHolder;
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
@@ -293,11 +292,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
                 // Expose current RequestAttributes to current thread.
                 previousRequestAttributes = RequestContextHolder.currentRequestAttributes();
-                if(previousRequestAttributes instanceof GrailsWebRequest) {
-                    requestAttributes = new GrailsWebRequest(processedRequest, response, ((GrailsWebRequest)previousRequestAttributes).getAttributes());
-                } else {
-                    requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
-                }
+                requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
                 if( previousRequestAttributes != null) {
                     copyParamsFromPreviousRequest(previousRequestAttributes, requestAttributes);
                 }
@@ -495,7 +490,13 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         if (!(previousRequestAttributes instanceof GrailsWebRequest)) {
             return;
         }
-        requestAttributes.copyParamsFrom(((GrailsWebRequest)previousRequestAttributes).getParams());
+
+        Map previousParams = ((GrailsWebRequest)previousRequestAttributes).getParams();
+        Map params =  requestAttributes.getParams();
+        for (Object o : previousParams.keySet()) {
+            String name = (String) o;
+            params.put(name, previousParams.get(name));
+        }
     }
 
     /**
