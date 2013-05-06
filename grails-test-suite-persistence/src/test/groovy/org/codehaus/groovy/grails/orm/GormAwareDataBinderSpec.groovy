@@ -20,6 +20,7 @@ import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
 
 import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
+import org.grails.databinding.BindUsing
 
 import spock.lang.Specification
 
@@ -409,7 +410,25 @@ class GormAwareDataBinderSpec extends Specification {
         then:
         publisher.publications[0].title == 'Definitive Guide To Grails 2'
     }
-    
+
+    void 'Test using @BindUsing to intialize property with a type other than the declared type'() {
+        given:
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def author = new Author()
+        
+        when:
+        binder.bind author, [widget: [name: 'Some Name', isBindable: 'Some Bindable String']]
+        
+        then:
+        // should be a Fidget, not a Widget
+        author.widget instanceof Fidget
+        
+        // property in Fidget
+        author.widget.name == 'Some Name'
+        
+        // property in Widget
+        author.widget.isBindable == 'Some Bindable String'
+    }
 }
 
 @Entity
@@ -436,6 +455,22 @@ class Publication {
 @Entity
 class Author {
     String name
+
+    @BindUsing({ obj, source ->
+        // could have conditional logic here
+        // that instantiates different types 
+        // based on entries in the source map
+        // or some other criteria.
+        // in this case, hardcoded to return a
+        // particular type.
+        
+        new Fidget(source.widget)
+    })
+    Widget widget
+    
+    static constraints = {
+        widget nullable: true
+    }
 }
 
 @Entity
@@ -446,6 +481,11 @@ class Widget {
     static constraints = {
         isNotBindable bindable: false
     }
+}
+
+@Entity
+class Fidget extends Widget {
+    String name
 }
 
 @Entity
