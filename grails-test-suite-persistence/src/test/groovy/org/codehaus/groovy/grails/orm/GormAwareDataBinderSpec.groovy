@@ -399,6 +399,37 @@ class GormAwareDataBinderSpec extends Specification {
         pub.authors[1].name == 'Author Dos'
     }
     
+    void 'Test updating Set elements by id and subscript operator'() {
+        when:
+        def a1 = new Author(name: 'Author One').save()
+        def a2 = new Author(name: 'Author Two').save()
+        def a3 = new Author(name: 'Author Three').save()
+        def publisher = new Publisher(name: 'Some Publisher')
+        publisher.addToAuthors(a1)
+        publisher.addToAuthors(a2)
+        publisher.addToAuthors(a3)
+        
+        then:
+        a1.id != null
+        a2.id != null
+        a3.id != null
+        
+        when:
+        def binder = new GormAwareDataBinder(grailsApplication)
+        // the subscript values are not important, the ids drive selection from the Set
+        binder.bind publisher, ['authors[123]': [id: a3.id, name: 'Author Tres'],
+                                'authors[456]': [id: a1.id, name: 'Author Uno'],
+                                'authors[789]': [id: a2.id, name: 'Author Dos']]
+        def updatedA1 = publisher.authors.find { it.id == a1.id }
+        def updatedA2 = publisher.authors.find { it.id == a2.id }
+        def updatedA3 = publisher.authors.find { it.id == a3.id }
+        
+        then:
+        updatedA1.name == 'Author Uno'
+        updatedA2.name == 'Author Dos'
+        updatedA3.name == 'Author Tres'
+        
+    }
     void 'Test updating a Set element by id that does not exist'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)

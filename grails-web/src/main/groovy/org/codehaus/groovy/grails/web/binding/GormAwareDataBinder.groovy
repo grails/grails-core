@@ -19,6 +19,7 @@ import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.validation.DeferredBindingActions
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
 import java.lang.reflect.Modifier
@@ -135,12 +136,27 @@ class GormAwareDataBinder extends SimpleDataBinder {
                 if(metaProperty) {
                     def referencedType = getReferencedTypeForCollection descriptor.propertyName, obj
                     if(referencedType != null) {
-                        if(Collection.isAssignableFrom(metaProperty.type)) {
-                            def instance = 'null' == idValue ? null : getPersistentInstance(referencedType, idValue)
-                            if(instance == null && Set.isAssignableFrom(metaProperty.type)) {
-                                def message = "Illegal attempt to update element in [${metaProperty.name}] Set with id [${idValue}]. No such record was found."
-                                throw new IllegalArgumentException(message)
+                        if(Set.isAssignableFrom(metaProperty.type)) {
+                            def collection = initializeCollection obj, descriptor.propertyName, metaProperty.type
+                            def instance
+                            if(collection != null) {
+                                instance = findAlementWithId((Set)collection, idValue)
                             }
+                            if(instance == null) {
+                                if('null' != idValue) {
+                                    instance = getPersistentInstance(referencedType, idValue)
+                                }
+                                if(instance == null) {
+                                    def message = "Illegal attempt to update element in [${metaProperty.name}] Set with id [${idValue}]. No such record was found."
+                                    throw new IllegalArgumentException(message)
+                                }
+                                addElementToCollectionAt obj, descriptor.propertyName, collection, null, instance
+                            }
+                            if(instance != null) {
+                                bind instance, val, listener
+                            } 
+                        } else if(Collection.isAssignableFrom(metaProperty.type)) {
+                            def instance = 'null' == idValue ? null : getPersistentInstance(referencedType, idValue)
                             def collection = initializeCollection obj, descriptor.propertyName, metaProperty.type
                             addElementToCollectionAt obj, descriptor.propertyName, collection, Integer.parseInt(descriptor.index), instance
                             if(instance != null) {
@@ -199,6 +215,13 @@ class GormAwareDataBinder extends SimpleDataBinder {
             }
             */
             super.processProperty obj, propName, val, source, whiteList, blackList, listener
+        }
+    }
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    private findAlementWithId(Set set,  idValue) {
+        set.find {
+            it.id == idValue
         }
     }
 

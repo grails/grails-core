@@ -291,15 +291,24 @@ class SimpleDataBinder implements DataBinder {
         contentType
     }
 
+    protected isOkToAddElementAt(Collection collection, int index) {
+        boolean isOk = true
+        if(collection instanceof Set) {
+            isOk = collection.size() < autoGrowCollectionLimit
+        } else {
+            isOk = (index < autoGrowCollectionLimit || index < collection.size())
+        }
+        isOk
+    }
+
     @CompileStatic(TypeCheckingMode.SKIP)
     protected addElementToCollectionAt(obj, String propertyName, Collection collection, index, val) {
-        if(index >= autoGrowCollectionLimit && index > collection.size()) {
-            return
-        }
-        if(collection instanceof Set) {
-            collection.add val
-        } else {
-            collection[index] = val
+        if(isOkToAddElementAt(collection, index)) {
+            if(collection instanceof Set) {
+                collection.add val
+            } else {
+                collection[index] = val
+            }
         }
     }
 
