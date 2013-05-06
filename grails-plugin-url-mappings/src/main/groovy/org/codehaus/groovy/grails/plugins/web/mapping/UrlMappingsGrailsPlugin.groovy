@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.mapping
 
+import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
@@ -60,18 +61,24 @@ class UrlMappingsGrailsPlugin {
         }
         grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)
 
-        "org.grails.internal.URL_MAPPINGS_HOLDER"(UrlMappingsHolderFactoryBean) { bean ->
-            bean.lazyInit = true
-        }
-
-        urlMappingsTargetSource(HotSwappableTargetSource, ref("org.grails.internal.URL_MAPPINGS_HOLDER")) { bean ->
-            bean.lazyInit = true
-        }
-
-        grailsUrlMappingsHolder(ProxyFactoryBean) { bean ->
-            bean.lazyInit = true
-            targetSource = urlMappingsTargetSource
-            proxyInterfaces = [UrlMappingsHolder]
+        if(Environment.isDevelopmentMode() || Environment.current.isReloadEnabled()) {
+            "org.grails.internal.URL_MAPPINGS_HOLDER"(UrlMappingsHolderFactoryBean) { bean ->
+                bean.lazyInit = true
+            }
+    
+            urlMappingsTargetSource(HotSwappableTargetSource, ref("org.grails.internal.URL_MAPPINGS_HOLDER")) { bean ->
+                bean.lazyInit = true
+            }
+    
+            grailsUrlMappingsHolder(ProxyFactoryBean) { bean ->
+                bean.lazyInit = true
+                targetSource = urlMappingsTargetSource
+                proxyInterfaces = [UrlMappingsHolder]
+            }
+        } else {
+            grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) { bean ->
+                bean.lazyInit = true
+            }
         }
     }
 
