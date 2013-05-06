@@ -75,6 +75,11 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private String baseUrl;
 
     private EncodingStateRegistry encodingStateRegistry;
+    
+    public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, GrailsApplicationAttributes attributes) {
+        super(request, response);
+        this.attributes = attributes;
+    }
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
@@ -190,6 +195,19 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public void resetParams() {
         params = new GrailsParameterMap(getCurrentRequest());
+    }
+    
+    @SuppressWarnings("rawtypes")
+    public void copyParamsFrom(Map previousParams) {
+        if(previousParams instanceof GrailsParameterMap) {
+            this.params = (GrailsParameterMap)((GrailsParameterMap)previousParams).clone();
+        } else {
+            resetParams();
+            for (Object key : previousParams.keySet()) {
+                String name = String.valueOf(key);
+                params.put(name, previousParams.get(key));
+            }
+        }
     }
 
     /**
