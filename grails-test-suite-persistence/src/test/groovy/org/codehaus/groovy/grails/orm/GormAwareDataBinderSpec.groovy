@@ -399,6 +399,20 @@ class GormAwareDataBinderSpec extends Specification {
         pub.authors[1].name == 'Author Dos'
     }
     
+    void 'Test updating a Set element by id that does not exist'() {
+        given:
+        def binder = new GormAwareDataBinder(grailsApplication)
+        
+        when:
+        def publisher = new Publisher(name: 'Apress').save()
+        publisher.save(flush: true)
+        binder.bind publisher, ['authors[0]': [id: 42, name: 'Some Name']]
+        
+        then:
+        def ex = thrown(IllegalArgumentException)
+        ex.message == 'Illegal attempt to update element in [authors] Set with id [42]. No such record was found.'
+    }
+    
     void 'Test updating nested entities retrieved by id'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
