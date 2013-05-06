@@ -151,15 +151,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         WrappedResponseHolder.setWrappedResponse(response);
         boolean dispatched = false;
         try {
-            // GRAILS-3369: Save the original request parameters.
-            Map backupParameters;
-            try {
-                backupParameters = new HashMap(webRequest.getParams());
-            }
-            catch (Exception e) {
-                LOG.error("Error creating params object: " + e.getMessage(), e);
-                backupParameters = Collections.EMPTY_MAP;
-            }
 
             for (UrlMappingInfo info : urlInfos) {
                 if (info != null) {
@@ -167,8 +158,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     // parameter map attached to the web request. So,
                     // we need to clear it each time and restore the
                     // original request parameters.
-                    webRequest.getParams().clear();
-                    webRequest.getParams().putAll(backupParameters);
+                    webRequest.resetParams();
 
                     final String viewName;
                     try {

@@ -180,9 +180,16 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public GrailsParameterMap getParams() {
         if (params == null) {
-            params = new GrailsParameterMap(getCurrentRequest());
+            resetParams();
         }
         return params;
+    }
+    
+    /**
+     * Reset params by re-reading & initializing parameters from request
+     */
+    public void resetParams() {
+        params = new GrailsParameterMap(getCurrentRequest());
     }
 
     /**
