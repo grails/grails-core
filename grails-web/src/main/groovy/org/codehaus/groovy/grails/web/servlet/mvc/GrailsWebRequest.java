@@ -75,6 +75,11 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private String baseUrl;
 
     private EncodingStateRegistry encodingStateRegistry;
+    
+    public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, GrailsApplicationAttributes attributes) {
+        super(request, response);
+        this.attributes = attributes;
+    }
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
