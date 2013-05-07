@@ -15,6 +15,7 @@
 package org.codehaus.groovy.grails.orm
 
 import grails.persistence.Entity
+import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
@@ -25,12 +26,12 @@ import org.grails.databinding.BindUsing
 import spock.lang.Specification
 
 @TestMixin(DomainClassUnitTestMixin)
+@Mock([Author, Child, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
 class GormAwareDataBinderSpec extends Specification {
 
     void 'Test string trimming'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomain Author
         def author = new Author()
         
         when:
@@ -66,7 +67,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding an invalid String to an object reference does not result in an empty instance being bound'() {
         // GRAILS-3159
         given:
-        mockDomains Author, Publication
         def binder = new GormAwareDataBinder(grailsApplication)
         def publication = new Publication()
         
@@ -79,7 +79,6 @@ class GormAwareDataBinderSpec extends Specification {
     
     void 'Test binding empty and blank String'() {
         given:
-        mockDomain Author
         def binder = new GormAwareDataBinder(grailsApplication)
         def obj = new Author()
         
@@ -138,7 +137,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test id binding'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomains Author, Publication
         def author = new Author(name: 'David Foster Wallace').save(flush: true)
         def publication = new Publication()
 
@@ -180,7 +178,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to the one side of a one to many'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomains Author, Publication, Publisher
         def author = new Author(name: 'Graeme').save()
         def pub = new Publication(title: 'DGG', author: author)
 
@@ -209,7 +206,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a hasMany List'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomain Publisher
         def publisher = new Publisher()
 
         when:
@@ -245,7 +241,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a collection of String'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomain DataBindingBook
         def book = new DataBindingBook()
         
         when:
@@ -259,7 +254,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a collection of Integer'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomain DataBindingBook
         def book = new DataBindingBook()
         
         when:
@@ -273,7 +267,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a collection of primitive'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomains Parent, Child
         def parent = new Parent()
 
         when:
@@ -305,7 +298,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test unbinding a Map entry'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomains Team, Author
         def team = new Team()
         
         when:
@@ -330,7 +322,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to a Map for new instance with quoted key'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomains Team, Author
         def team = new Team()
         
         when:
@@ -348,7 +339,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test autoGrowCollectionLimit with Maps of String'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomains Team, Author
         def team = new Team()
         binder.autoGrowCollectionLimit = 2
         def bindingSource = [:]
@@ -372,7 +362,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test autoGrowCollectionLimit with Maps of domain objects'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomains Team, Author
         def team = new Team()
         binder.autoGrowCollectionLimit = 2
         def bindingSource = [:]
@@ -397,7 +386,6 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding to Set with subscript'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        mockDomains Publisher, Author
         def pub = new Publisher()
         pub.addToAuthors(name: 'Author One')
         
@@ -412,7 +400,6 @@ class GormAwareDataBinderSpec extends Specification {
     
     void 'Test updating nested entities retrieved by id'() {
         given:
-        mockDomains Publisher, Publication
         def binder = new GormAwareDataBinder(grailsApplication)
         
         when:
