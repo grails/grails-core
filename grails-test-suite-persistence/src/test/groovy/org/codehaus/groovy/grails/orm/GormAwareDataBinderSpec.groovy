@@ -411,7 +411,7 @@ class GormAwareDataBinderSpec extends Specification {
         publisher.publications[0].title == 'Definitive Guide To Grails 2'
     }
 
-    void 'Test using @BindUsing to intialize property with a type other than the declared type'() {
+    void 'Test using @BindUsing to initialize property with a type other than the declared type'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def author = new Author()
