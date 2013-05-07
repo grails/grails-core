@@ -63,6 +63,20 @@ class GormAwareDataBinderSpec extends Specification {
 
     }
     
+    void 'Test binding an invalid String to an object reference does not result in an empty instance being bound'() {
+        // GRAILS-3159
+        given:
+        mockDomains Author, Publication
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def publication = new Publication()
+        
+        when:
+        binder.bind publication, [author: '42']
+        
+        then:
+        publication.author == null
+    }
+    
     void 'Test binding empty and blank String'() {
         given:
         mockDomain Author
