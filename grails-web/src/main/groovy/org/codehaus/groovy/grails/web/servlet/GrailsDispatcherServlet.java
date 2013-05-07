@@ -495,12 +495,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             return;
         }
 
-        Map previousParams = ((GrailsWebRequest)previousRequestAttributes).getParams();
-        Map params =  requestAttributes.getParams();
-        for (Object o : previousParams.keySet()) {
-            String name = (String) o;
-            params.put(name, previousParams.get(name));
-        }
+        requestAttributes.addParametersFrom(((GrailsWebRequest)previousRequestAttributes).getParams());
     }
 
     /**
