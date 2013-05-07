@@ -122,8 +122,8 @@ class CollectionBindingSpec extends Specification {
         dept.listOfCodes[2] == null
         dept.listOfCodes[3] == 42
         dept.setOfCodes.size() == 2
-        dept.setOfCodes[0] == 2112
-        dept.setOfCodes[1] == 'Rush'
+        dept.setOfCodes.contains 2112
+        dept.setOfCodes.contains 'Rush'
     }
 
     void 'Test binding to an unitialized untyped Map'() {

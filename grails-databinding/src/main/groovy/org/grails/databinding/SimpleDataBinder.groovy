@@ -23,7 +23,6 @@ import java.lang.reflect.Array
 import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 
-import org.apache.commons.collections.set.ListOrderedSet
 import org.grails.databinding.converters.ConversionService
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.converters.FormattedDateValueConverter
@@ -297,9 +296,7 @@ class SimpleDataBinder implements DataBinder {
         if(index >= autoGrowCollectionLimit && index > collection.size()) {
             return
         }
-        if(collection instanceof ListOrderedSet) {
-            collection.add Math.min(index, collection.size()), val
-        } else if(collection instanceof SortedSet) {
+        if(collection instanceof Set) {
             collection.add val
         } else {
             collection[index] = val
@@ -327,12 +324,7 @@ class SimpleDataBinder implements DataBinder {
             } else if (SortedSet.isAssignableFrom(type)) {
                 obj[propertyName] = new TreeSet()
             } else if (Set.isAssignableFrom(type)) {
-                obj[propertyName] = ListOrderedSet.decorate([] as Set)
-            }
-        } else if(obj[propertyName] instanceof Set) {
-            Set set = (Set)obj[propertyName]
-            if(!(set instanceof SortedSet) && !(set instanceof ListOrderedSet)) {
-                obj[propertyName] = ListOrderedSet.decorate(set)
+                obj[propertyName] = new HashSet()
             }
         }
         obj[propertyName]
@@ -437,7 +429,6 @@ class SimpleDataBinder implements DataBinder {
                     obj[propName] = propertyValue
                 }
             } else if(propertyValue instanceof List &&
-//                      !propertyValue instanceof ListOrderedSet &&
                       Set.isAssignableFrom(propertyType) &&
                       !SortedSet.isAssignableFrom(propertyType)) {
                 addElementsToCollection(obj, propName, propertyValue, true)
