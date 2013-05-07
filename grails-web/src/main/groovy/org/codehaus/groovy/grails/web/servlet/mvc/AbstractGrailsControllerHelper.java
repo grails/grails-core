@@ -135,9 +135,12 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         GrailsControllerClass controllerClass=null;
         Object attribute = grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
         if (attribute instanceof GrailsControllerClass) {
-            String matchedUri = (String)grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_MATCHED_URI, WebRequest.SCOPE_REQUEST);
-            if(matchedUri != null && originalUri.equals(matchedUri)) {
-            controllerClass = (GrailsControllerClass) attribute;
+            controllerClass = (GrailsControllerClass)attribute;
+            Boolean canUse = (Boolean)grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
+            if(canUse == null) {
+                controllerClass = null;
+            } else {
+                grailsWebRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
             }
         } 
         
@@ -175,7 +178,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         request.setAttribute(GrailsApplicationAttributes.CONTROLLER, controller);
 
         // Step 4: Set grails attributes in request scope
-        request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID,grailsAttributes);
+        request.setAttribute(GrailsApplicationAttributes.REQUEST_SCOPE_ID, grailsAttributes);
 
         // Step 5: get the view name for this URI.
         String viewName = controllerClass.getViewByURI(uri);
