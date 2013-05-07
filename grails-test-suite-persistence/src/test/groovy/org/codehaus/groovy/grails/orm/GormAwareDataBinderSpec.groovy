@@ -155,6 +155,12 @@ class GormAwareDataBinderSpec extends Specification {
 
         then:
         publication.author.name == 'David Foster Wallace'
+        
+        when:
+        binder.bind publication, [author: [id: '']]
+        
+        then:
+        publication.author == null
     }
 
     void 'Test binding to the one side of a one to many'() {
