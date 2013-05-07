@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.pages
 
 import grails.util.Environment
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -44,8 +45,8 @@ class GroovyPagesMetaUtils {
     private static Object[] makeObjectArray(Object args) {
         args instanceof Object[] ? (Object[])args : [args] as Object[]
     }
-    
 
+    @CompileStatic(TypeCheckingMode.SKIP) // workaround for GROOVY-6147 bug
     static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, Object argsParam, boolean addMethodsToMetaClass) {
         Object[] args = makeObjectArray(argsParam)
         final GroovyObject tagBean = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
