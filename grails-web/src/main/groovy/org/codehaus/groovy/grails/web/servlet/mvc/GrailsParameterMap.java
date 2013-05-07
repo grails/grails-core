@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -111,7 +112,19 @@ public class GrailsParameterMap extends TypeConvertingMap  implements Cloneable 
 
     @Override
     public Object clone() {
-        return new GrailsParameterMap(new LinkedHashMap(wrappedMap), request);
+        if(wrappedMap.size()==0) {
+            return new GrailsParameterMap(new LinkedHashMap(), request);
+        } else {
+            Map clonedMap = new LinkedHashMap(wrappedMap);
+            // deep clone nested entries
+            for(Iterator it=clonedMap.entrySet().iterator();it.hasNext();) {
+                Map.Entry entry = (Map.Entry)it.next();
+                if(entry.getValue() instanceof GrailsParameterMap) {
+                    entry.setValue(((GrailsParameterMap)entry.getValue()).clone());
+                }
+            }
+            return new GrailsParameterMap(clonedMap, request);
+        }
     }
 
     private Object getParameterValue(Map requestMap, String key) {
