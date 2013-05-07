@@ -139,9 +139,12 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         GrailsControllerClass controllerClass=null;
         Object attribute = grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
         if (attribute instanceof GrailsControllerClass) {
-            String matchedUri = (String)grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_MATCHED_URI, WebRequest.SCOPE_REQUEST);
-            if (matchedUri != null && originalUri.equals(matchedUri)) {
-                controllerClass = (GrailsControllerClass)attribute;
+            controllerClass = (GrailsControllerClass) attribute;
+            Boolean canUse = (Boolean)grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
+            if(canUse == null) {
+                controllerClass = null;
+            } else {
+                grailsWebRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
             }
         }
 
@@ -341,7 +344,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     @SuppressWarnings("rawtypes")
     public Object handleAction(GroovyObject controller, Object action, HttpServletRequest request,
-            HttpServletResponse response, Map params) {
+            @SuppressWarnings("unused") HttpServletResponse response, Map params) {
         GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params");
         // if there are additional params add them to the params dynamic property
         if (params != null && !params.isEmpty()) {

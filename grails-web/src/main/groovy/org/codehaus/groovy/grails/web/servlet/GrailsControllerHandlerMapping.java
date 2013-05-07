@@ -63,8 +63,8 @@ public class GrailsControllerHandlerMapping extends AbstractHandlerMapping imple
         GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
         if (webRequest != null) {
             controllerAttribute = webRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
-            String matchedUri = (String)webRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_MATCHED_URI, WebRequest.SCOPE_REQUEST);
-            if(matchedUri == null || !matchedUri.equals(uri)) {
+            Boolean canUse = (Boolean)webRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
+            if(canUse == null || !canUse) {
                 controllerAttribute = null;
             }
         }
