@@ -224,15 +224,15 @@ class SimpleDataBinder implements DataBinder {
                                     addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, val
                                 } else if(isBasicType(genericType)) {
                                     addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, convert(genericType, val)
-                                } else {
+                                } else if(val instanceof Map){
                                     indexedInstance = genericType.newInstance()
+                                    bind indexedInstance, val, listener
                                     addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, indexedInstance
                                 }
                             } else {
                                 addElementToCollectionAt obj, simplePropertyName, collectionInstance, index, val
                             }
-                        }
-                        if(indexedInstance != null) {
+                        } else {
                             if(val instanceof Map) {
                                 bind indexedInstance, (Map)val, listener
                             } else if (val == null && indexedInstance != null) {
@@ -299,6 +299,8 @@ class SimpleDataBinder implements DataBinder {
         }
         if(collection instanceof ListOrderedSet) {
             collection.add Math.min(index, collection.size()), val
+        } else if(collection instanceof SortedSet) {
+            collection.add val
         } else {
             collection[index] = val
         }
@@ -322,12 +324,14 @@ class SimpleDataBinder implements DataBinder {
         if(obj[propertyName] == null) {
             if(List.isAssignableFrom(type)) {
                 obj[propertyName] = new ArrayList()
+            } else if (SortedSet.isAssignableFrom(type)) {
+                obj[propertyName] = new TreeSet()
             } else if (Set.isAssignableFrom(type)) {
                 obj[propertyName] = ListOrderedSet.decorate([] as Set)
             }
         } else if(obj[propertyName] instanceof Set) {
             Set set = (Set)obj[propertyName]
-            if(!(set instanceof ListOrderedSet)) {
+            if(!(set instanceof SortedSet) && !(set instanceof ListOrderedSet)) {
                 obj[propertyName] = ListOrderedSet.decorate(set)
             }
         }

@@ -20,13 +20,14 @@ import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
 
+import org.apache.commons.lang.builder.CompareToBuilder
 import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
 import org.grails.databinding.BindUsing
 
 import spock.lang.Specification
 
 @TestMixin(DomainClassUnitTestMixin)
-@Mock([Author, Child, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
+@Mock([Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
 class GormAwareDataBinderSpec extends Specification {
 
     void 'Test string trimming'() {
@@ -436,6 +437,60 @@ class GormAwareDataBinderSpec extends Specification {
         // property in Widget
         author.widget.isBindable == 'Some Bindable String'
     }
+    
+    void 'Test binding to different collection types'() {
+        given:
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def obj = new CollectionContainer()
+        def map = [:]
+        
+//        map['collectionOfWidgets[0]'] = [isBindable: 'Is Uno (Collection)', isNotBindable: 'Is Not Uno (Collection)']
+//        map['collectionOfWidgets[1]'] = [isBindable: 'Is Dos (Collection)', isNotBindable: 'Is Not Dos (Collection)']
+//        map['collectionOfWidgets[2]'] = [isBindable: 'Is Tres (Collection)', isNotBindable: 'Is Not Tres (Collection)']
+        
+        map['listOfWidgets[0]'] = [isBindable: 'Is Uno (List)', isNotBindable: 'Is Not Uno (List)']
+        map['listOfWidgets[1]'] = [isBindable: 'Is Dos (List)', isNotBindable: 'Is Not Dos (List)']
+        map['listOfWidgets[2]'] = [isBindable: 'Is Tres (List)', isNotBindable: 'Is Not Tres (List)']
+        
+        map['setOfWidgets[0]'] = [isBindable: 'Is Uno (Set)', isNotBindable: 'Is Not Uno (Set)']
+        map['setOfWidgets[1]'] = [isBindable: 'Is Dos (Set)', isNotBindable: 'Is Not Dos (Set)']
+        map['setOfWidgets[2]'] = [isBindable: 'Is Tres (Set)', isNotBindable: 'Is Not Tres (Set)']
+
+        map['sortedSetOfWidgets[0]'] = [isBindable: 'Is Uno (SortedSet)', isNotBindable: 'Is Not Uno (SortedSet)']
+        map['sortedSetOfWidgets[1]'] = [isBindable: 'Is Dos (SortedSet)', isNotBindable: 'Is Not Dos (SortedSet)']
+        map['sortedSetOfWidgets[2]'] = [isBindable: 'Is Tres (SortedSet)', isNotBindable: 'Is Not Tres (SortedSet)']
+        
+        when:
+        binder.bind obj, map
+        def listOfWidgets = obj.listOfWidgets
+        def setOfWidgets = obj.setOfWidgets
+        def collectionOfWidgets = obj.collectionOfWidgets
+        def sortedSetOfWidgets = obj.sortedSetOfWidgets
+        
+        then:
+        listOfWidgets instanceof List
+        listOfWidgets.size() == 3
+        listOfWidgets[0].isBindable == 'Is Uno (List)'
+        listOfWidgets[0].isNotBindable == null
+        listOfWidgets[1].isBindable == 'Is Dos (List)'
+        listOfWidgets[1].isNotBindable == null
+        listOfWidgets[2].isBindable == 'Is Tres (List)'
+        listOfWidgets[2].isNotBindable == null
+        
+        setOfWidgets instanceof Set
+        !(setOfWidgets instanceof SortedSet)
+        setOfWidgets.size() == 3
+        setOfWidgets.find { it.isBindable == 'Is Uno (Set)' && it.isNotBindable == null }
+        setOfWidgets.find { it.isBindable == 'Is Dos (Set)' && it.isNotBindable == null }
+        setOfWidgets.find { it.isBindable == 'Is Tres (Set)' && it.isNotBindable == null }
+        
+        sortedSetOfWidgets instanceof SortedSet
+        sortedSetOfWidgets.size() == 3
+        sortedSetOfWidgets[0].isBindable == 'Is Dos (SortedSet)'
+        sortedSetOfWidgets[1].isBindable == 'Is Tres (SortedSet)'
+        sortedSetOfWidgets[2].isBindable == 'Is Uno (SortedSet)'
+        
+    }
 }
 
 @Entity
@@ -481,14 +536,17 @@ class Author {
 }
 
 @Entity
-class Widget {
+class Widget implements Comparable {
     String isBindable
     String isNotBindable
 
     static constraints = {
         isNotBindable bindable: false
     }
-}
+
+    public int compareTo(Object rhs) {
+        new CompareToBuilder().append(isBindable, rhs.isBindable).append(isNotBindable, rhs.isNotBindable).toComparison()
+    }}
 
 @Entity
 class Fidget extends Widget {
@@ -513,6 +571,16 @@ class DataBindingBook {
     static hasMany = [topics: String, importantPageNumbers: Integer]
 }
 
+@Entity
+class CollectionContainer {
+    static hasMany = [listOfWidgets: Widget, 
+                      setOfWidgets: Widget, 
+                      collectionOfWidgets: Widget, 
+                      sortedSetOfWidgets: Widget]
+    List listOfWidgets
+    SortedSet sortedSetOfWidgets
+    Collection collectionOfWidgets
+}
 class PrimitiveContainer {
     boolean someBoolean
     byte someByte
