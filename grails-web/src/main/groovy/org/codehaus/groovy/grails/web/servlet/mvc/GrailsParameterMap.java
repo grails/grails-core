@@ -126,10 +126,6 @@ public class GrailsParameterMap extends TypeConvertingMap  implements Cloneable 
             return new GrailsParameterMap(clonedMap, request);
         }
     }
-    
-    public void addParametersFrom(GrailsParameterMap otherMap) {
-        this.wrappedMap.putAll((GrailsParameterMap)otherMap.clone());
-    }
 
     private Object getParameterValue(Map requestMap, String key) {
         Object paramValue = requestMap.get(key);
