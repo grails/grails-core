@@ -63,6 +63,7 @@ class Author {
 @Entity
 class City {
     String name
+    static hasMany = [people: Person]
 }
 @Entity
 class Person {
@@ -70,6 +71,37 @@ class Person {
     Date birthDate
     static constraints = {
         birthDate nullable: true
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result
+                + ((birthDate == null) ? 0 : birthDate.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
+    }
+    @Override
+    public boolean equals(Object obj) {
+        if (this.is(obj))
+            return true;
+        if (obj == null)
+            return false;
+        if (!getClass().is(obj.getClass()))
+            return false
+        Person other = (Person) obj;
+        if (birthDate == null) {
+            if (other.birthDate != null)
+                return false;
+        } else if (birthDate != other.birthDate)
+            return false;
+        if (name == null) {
+            if (other.name != null)
+                return false;
+        } else if (name != other.name)
+            return false;
+        return true;
     }
 }
 @Entity
@@ -109,6 +141,28 @@ class AuthorBean {
     Integer[] integers
 }
         ''')
+    }
+
+    void testBindingObjectsWithHashcodeAndEqualsToASet() {
+        // GRAILS-9825 = this test fails with the spring binder
+        // and passes with GormAwareDataBinder
+        
+        def cityClass = ga.getDomainClass('databindingtests.City')
+        def city = cityClass.newInstance()
+        
+        def req = new GrailsMockHttpServletRequest()
+        req.addParameter 'people[0].name', 'Jeff'
+        req.addParameter 'people[1].name', 'Jake'
+        req.addParameter 'people[1].birthDate', '2000-08-26 21:26:31.973'
+        req.addParameter 'people[2].name', 'Zack'
+
+        city.properties = req
+        
+        assert city.people instanceof Set
+        assert city.people.size() == 3
+        assert city.people.find { it.name == 'Jeff' && it.birthDate == null} != null
+        assert city.people.find { it.name == 'Jake' && it.birthDate != null} != null
+        assert city.people.find { it.name == 'Zack' && it.birthDate == null} != null
     }
 
     void testBindingASinglePropertyWithSubscriptOperator() {
