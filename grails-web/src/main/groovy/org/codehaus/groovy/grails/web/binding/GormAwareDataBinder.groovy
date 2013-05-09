@@ -148,9 +148,11 @@ class GormAwareDataBinder extends SimpleDataBinder {
                                 }
                                 if(instance == null) {
                                     def message = "Illegal attempt to update element in [${metaProperty.name}] Set with id [${idValue}]. No such record was found."
-                                    throw new IllegalArgumentException(message)
+                                    Exception e = new IllegalArgumentException(message)
+                                    addBindingError(obj, descriptor.propertyName, idValue, e, listener)
+                                } else {
+                                    addElementToCollectionAt obj, descriptor.propertyName, collection, null, instance
                                 }
-                                addElementToCollectionAt obj, descriptor.propertyName, collection, null, instance
                             }
                             if(instance != null) {
                                 bind instance, val, listener

@@ -473,16 +473,20 @@ class SimpleDataBinder implements DataBinder {
             try {
                 setPropertyValue obj, source, propName, propertyValue
             } catch (Exception e) {
-                if(listener) {
-                    def error = new SimpleBindingError(obj, propName, propertyValue, e.cause ?: e)
-                    listener.bindingError error
-                }
+                addBindingError(obj, propName, propertyValue, e, listener)
             }
 
         } else if(listener != null && propertyValue instanceof Map && obj[propName] != null) {
             bind obj[propName], propertyValue
         }
         listener?.afterBinding obj, propName
+    }
+
+    protected addBindingError(obj, String propName, propertyValue, Exception e, DataBindingListener listener) {
+        if(listener) {
+            def error = new SimpleBindingError(obj, propName, propertyValue, e.cause ?: e)
+            listener.bindingError error
+        }
     }
 
     private void addElementsToCollection(obj, String collectionPropertyName, Collection collection, boolean removeExistingElements = false) {

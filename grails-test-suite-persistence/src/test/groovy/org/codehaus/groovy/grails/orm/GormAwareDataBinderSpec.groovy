@@ -23,6 +23,8 @@ import grails.validation.DeferredBindingActions
 import org.apache.commons.lang.builder.CompareToBuilder
 import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
 import org.grails.databinding.BindUsing
+import org.grails.databinding.errors.BindingError;
+import org.grails.databinding.events.DataBindingListener
 
 import spock.lang.Specification
 
@@ -433,15 +435,25 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test updating a Set element by id that does not exist'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
+        def bindingErrors = []
+        def listener = { BindingError error ->
+            bindingErrors << error
+        } as DataBindingListener
         
         when:
         def publisher = new Publisher(name: 'Apress').save()
         publisher.save(flush: true)
-        binder.bind publisher, ['authors[0]': [id: 42, name: 'Some Name']]
+        binder.bind publisher, ['authors[0]': [id: 42, name: 'Some Name']], listener
         
         then:
-        def ex = thrown(IllegalArgumentException)
-        ex.message == 'Illegal attempt to update element in [authors] Set with id [42]. No such record was found.'
+        bindingErrors?.size() == 1
+        
+        when:
+        def error = bindingErrors[0]
+        
+        then:
+        error.propertyName == 'authors'
+        error.cause?.message == 'Illegal attempt to update element in [authors] Set with id [42]. No such record was found.'
     }
     
     void 'Test updating nested entities retrieved by id'() {

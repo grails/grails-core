@@ -143,6 +143,26 @@ class AuthorBean {
         ''')
     }
 
+    void testUpdatingSetElementByIdThatDoesNotExist() {
+        def cityClass = ga.getDomainClass('databindingtests.City')
+        def personClass = ga.getDomainClass('databindingtests.Person')
+        personClass.clazz.metaClass.static.get = { String id ->
+            null
+        }
+        def city = cityClass.newInstance()
+        
+        def req = new GrailsMockHttpServletRequest()
+        req.addParameter 'people[0].id', '42'
+        
+        city.properties = req
+        
+        assert city.hasErrors()
+        assert city.errors.errorCount == 1
+        
+        def error = city.errors.getFieldError('people')
+        assert error.defaultMessage == 'Illegal attempt to update element in [people] Set with id [42]. No such record was found.'
+    }
+    
     void testBindingObjectsWithHashcodeAndEqualsToASet() {
         // GRAILS-9825 = this test fails with the spring binder
         // and passes with GormAwareDataBinder
