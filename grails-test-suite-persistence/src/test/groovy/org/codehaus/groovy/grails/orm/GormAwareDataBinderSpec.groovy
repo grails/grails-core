@@ -401,6 +401,28 @@ class GormAwareDataBinderSpec extends Specification {
         pub.authors[1].name == 'Author Dos'
     }
     
+    void 'Test binding existing entities to a new Set'() {
+        given:
+        def binder = new GormAwareDataBinder(grailsApplication)
+        
+        when:
+        def a1 = new Author(name: 'Author One').save()
+        def a2 = new Author(name: 'Author Two').save(flush:true)
+        
+        then:
+        a2
+        a1
+        
+        when:
+        def pub = new Publisher()
+        binder.bind pub, ['authors[0]': [id: a1.id], 'authors[1]': [id: a2.id]]
+        
+        then:
+        pub.authors.size() == 2
+        pub.authors.find { it.name == 'Author One' } != null
+        pub.authors.find { it.name == 'Author Two' } != null
+    }
+    
     void 'Test updating Set elements by id and subscript operator'() {
         when:
         def a1 = new Author(name: 'Author One').save()

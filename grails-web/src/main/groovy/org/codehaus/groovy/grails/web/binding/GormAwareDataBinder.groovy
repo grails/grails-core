@@ -151,7 +151,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                                     Exception e = new IllegalArgumentException(message)
                                     addBindingError(obj, descriptor.propertyName, idValue, e, listener)
                                 } else {
-                                    addElementToCollectionAt obj, descriptor.propertyName, collection, null, instance
+                                    addElementToCollectionAt obj, descriptor.propertyName, collection, Integer.parseInt(descriptor.index), instance
                                 }
                             }
                             if(instance != null) {
