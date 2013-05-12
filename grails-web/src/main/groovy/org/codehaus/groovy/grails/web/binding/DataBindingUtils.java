@@ -38,6 +38,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grails.databinding.DataBinder;
 import org.grails.databinding.events.DataBindingListener;
 import org.springframework.beans.MutablePropertyValues;
@@ -207,8 +208,10 @@ public class DataBindingUtils {
             if(source instanceof HttpServletRequest) {
                 HttpServletRequest req = (HttpServletRequest)source;
                 bindingSource = new GrailsParameterMap(req);
-            } else {
+            } else if(source instanceof Map) {
                 bindingSource = convertPotentialGStrings((Map) source);
+            } else {
+                bindingSource = (Map) InvokerHelper.getPropertySafe(source, "properties");
             }
             final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());

@@ -146,6 +146,18 @@ class AuthorBean {
         ''')
     }
     
+    void testBindingPogoToDomainClass() {
+        def authorClass = ga.getDomainClass('databindingtests.Author').clazz
+        def author = authorClass.newInstance()
+        def clown = new Clown(name: 'Bozo', hairColour: 'Orange')
+        
+        author.properties = clown
+        
+        assert !author.hasErrors()
+        assert author.name == 'Bozo'
+        assert author.hairColour == 'Orange'
+    }
+
     void testDateFormatError() {
         def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
         def bean = myBeanClass.newInstance()
@@ -532,4 +544,9 @@ class AuthorBean {
         assertEquals "The Stand", b.title
         assertEquals "Stephen King", b.author?.name
     }
+}
+
+class Clown {
+    String name
+    String hairColour
 }
