@@ -414,11 +414,11 @@ class SimpleDataBinder implements DataBinder {
         enumValue
     }
     protected setPropertyValue(obj, Map source, String propName, propertyValue) {
-        def converter = getValueConverter obj, propName
+            def converter = getValueConverter obj, propName
 
-        if(converter) {
-            propertyValue = converter.convert source
-        }
+            if(converter) {
+                propertyValue = converter.convert source
+            }
             def metaProperty = obj.metaClass.getMetaProperty(propName)
             def propertyType
             def propertyGetter
@@ -464,11 +464,6 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected bindProperty(obj, Map source, String propName, propertyValue, DataBindingListener listener) {
-        def converter = getValueConverter obj, propName
-
-        if(converter) {
-            propertyValue = converter.convert source
-        }
         if(listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
             try {
                 setPropertyValue obj, source, propName, propertyValue

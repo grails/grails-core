@@ -14,6 +14,9 @@
  */
 package org.grails.databinding
 
+import org.grails.databinding.errors.BindingError
+import org.grails.databinding.events.DataBindingListener
+
 import spock.lang.Ignore
 import spock.lang.Specification
 
@@ -132,6 +135,34 @@ class SimpleDataBinderSpec extends Specification {
         obj.utilDate == nowUtilDate
         obj.sqlDate == nowSqlDate
         obj.calendar == nowCalendar
+    }
+    
+    void 'Test invalid date format'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new DateContainer()
+        def errors = []
+        def listener = new DataBindingListener() {
+            Boolean beforeBinding(Object o, String propertyName, Object value) {
+                true
+            }
+            
+            void afterBinding(Object o, String propertyName) {
+            }
+            
+            void bindingError(BindingError error) {
+                errors << error
+            }
+        }
+        
+        when:
+        binder.bind obj, [formattedUtilDate: 'BAD'], listener
+        
+        then:
+        obj.formattedUtilDate == null
+        errors.size() == 1
+        errors[0].rejectedValue == 'BAD'
+        errors[0].cause.message == 'Unparseable date: "BAD"'
     }
 
     void 'Test binding string to date'() {

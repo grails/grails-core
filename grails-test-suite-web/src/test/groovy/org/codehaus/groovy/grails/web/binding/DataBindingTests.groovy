@@ -40,6 +40,8 @@ class BookReview {
 
 @Entity
 class MyBean {
+  @org.grails.databinding.BindingFormat('MMddyyyy')
+  Date formattedDate
   Integer someIntProperty
   Integer someOtherIntProperty
   Integer thirdIntProperty
@@ -48,6 +50,7 @@ class MyBean {
     someIntProperty(min:1, nullable:true)
     someOtherIntProperty(max:99)
     thirdIntProperty nullable:false
+    formattedDate nullable: true
   }
 }
 @Entity
@@ -141,6 +144,24 @@ class AuthorBean {
     Integer[] integers
 }
         ''')
+    }
+    
+    void testDateFormatError() {
+        def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
+        def bean = myBeanClass.newInstance()
+        
+        def req = new GrailsMockHttpServletRequest()
+        req.addParameter 'formattedDate', 'BAD'
+        
+        bean.properties = req
+        
+        assert bean.hasErrors()
+        assert bean.errors.errorCount == 1
+        
+        def dateError = bean.errors.getFieldError('formattedDate')
+        assert dateError != null
+        
+        assert dateError.defaultMessage == 'Unparseable date: "BAD"'
     }
 
     void testUpdatingSetElementByIdThatDoesNotExist() {
