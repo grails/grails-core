@@ -31,6 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -38,7 +39,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.grails.databinding.DataBinder;
 import org.grails.databinding.events.DataBindingListener;
 import org.springframework.beans.MutablePropertyValues;
@@ -211,7 +211,7 @@ public class DataBindingUtils {
             } else if(source instanceof Map) {
                 bindingSource = convertPotentialGStrings((Map) source);
             } else {
-                bindingSource = (Map) InvokerHelper.getPropertySafe(source, "properties");
+                bindingSource = new BeanMap(source);    
             }
             final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
