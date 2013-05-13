@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
+import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.SimpleDataBinder
 import org.grails.databinding.converters.FormattedValueConverter
 import org.grails.databinding.converters.ValueConverter
@@ -148,7 +149,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
     }
 
     @Override
-    protected processProperty(obj, String propName, val, Map source,  List whiteList, List blackList, DataBindingListener listener) {
+    protected processProperty(obj, String propName, val, Map source, DataBindingListener listener) {
         boolean needsBinding = true
         
         if((val instanceof Map && val.containsKey('id')) || (val instanceof CharSequence)) {
@@ -156,84 +157,95 @@ class GormAwareDataBinder extends SimpleDataBinder {
             if(idValue instanceof GString) {
                 idValue = idValue.toString()
             }
-            def descriptor = getIndexedPropertyReferenceDescriptor propName
-            def metaProperty
-            if(descriptor) {
-                metaProperty = obj.metaClass.getMetaProperty descriptor.propertyName
-            } else {
-                metaProperty = obj.metaClass.getMetaProperty propName
-            }
+            def metaProperty = obj.metaClass.getMetaProperty propName
             if(metaProperty) {
                 def propertyType = getDomainClassType(obj, metaProperty.name)
                 if(propertyType) {
                     needsBinding = false
-                    if(isOkToBind(propName, whiteList, blackList)) {
-                        def persistedInstance = null
-                        if(idValue != 'null' && idValue != null && idValue != '') {
-                            persistedInstance = getPersistentInstance(propertyType, idValue)
-                            if(persistedInstance == null) {
-                                needsBinding = true
-                            } else {
-                                bindProperty obj, source, propName, persistedInstance, listener
-                                if(persistedInstance != null && val instanceof Map) {
-                                    bind persistedInstance, val, listener
-                                }
-                            }
+                    def persistedInstance = null
+                    if(idValue != 'null' && idValue != null && idValue != '') {
+                        persistedInstance = getPersistentInstance(propertyType, idValue)
+                        if(persistedInstance == null) {
+                            needsBinding = true
                         } else {
-                            bindProperty obj, source, propName, null, listener
+                            bindProperty obj, source, propName, persistedInstance, listener
+                            if(persistedInstance != null && val instanceof Map) {
+                                bind persistedInstance, val, listener
+                            }
                         }
+                    } else {
+                        bindProperty obj, source, propName, null, listener
                     }
-                } else if(descriptor) {
-                    def referencedType = getReferencedTypeForCollection descriptor.propertyName, obj
-                    if(referencedType != null && isDomainClass(referencedType)) {
-                        needsBinding = false
-                        if(Set.isAssignableFrom(metaProperty.type)) {
-                            def collection = initializeCollection obj, descriptor.propertyName, metaProperty.type
-                            def instance
-                            if(collection != null) {
-                                instance = findAlementWithId((Set)collection, idValue)
+                }
+            }
+        }
+        if(needsBinding) {
+            super.processProperty obj, propName, val, source, listener
+        }
+    }
+
+    @Override    
+    protected processIndexedProperty(obj, IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor, val, Map source, DataBindingListener listener) { 
+        boolean needsBinding = true
+        def propName = indexedPropertyReferenceDescriptor.propertyName
+        
+        if((val instanceof Map && val.containsKey('id')) || (val instanceof CharSequence)) {
+            def idValue = val instanceof Map ? val['id'] : val
+            if(idValue instanceof GString) {
+                idValue = idValue.toString()
+            }
+            def metaProperty = obj.metaClass.getMetaProperty propName
+            if(metaProperty) {
+                def propertyType = getDomainClassType(obj, metaProperty.name)
+                def referencedType = getReferencedTypeForCollection propName, obj
+                if(referencedType != null && isDomainClass(referencedType)) {
+                    needsBinding = false
+                    if(Set.isAssignableFrom(metaProperty.type)) {
+                        def collection = initializeCollection obj, propName, metaProperty.type
+                        def instance
+                        if(collection != null) {
+                            instance = findAlementWithId((Set)collection, idValue)
+                        }
+                        if(instance == null) {
+                            if('null' != idValue) {
+                                instance = getPersistentInstance(referencedType, idValue)
                             }
                             if(instance == null) {
-                                if('null' != idValue) {
-                                    instance = getPersistentInstance(referencedType, idValue)
-                                }
-                                if(instance == null) {
-                                    def message = "Illegal attempt to update element in [${metaProperty.name}] Set with id [${idValue}]. No such record was found."
-                                    Exception e = new IllegalArgumentException(message)
-                                    addBindingError(obj, descriptor.propertyName, idValue, e, listener)
-                                } else {
-                                    addElementToCollectionAt obj, descriptor.propertyName, collection, Integer.parseInt(descriptor.index), instance
-                                }
+                                def message = "Illegal attempt to update element in [${metaProperty.name}] Set with id [${idValue}]. No such record was found."
+                                Exception e = new IllegalArgumentException(message)
+                                addBindingError(obj, propName, idValue, e, listener)
+                            } else {
+                                addElementToCollectionAt obj, propName, collection, Integer.parseInt(indexedPropertyReferenceDescriptor.index), instance
                             }
-                            if(instance != null && val instanceof Map) {
-                                bind instance, val, listener
-                            } 
-                        } else if(Collection.isAssignableFrom(metaProperty.type)) {
-                            def instance = 'null' == idValue ? null : getPersistentInstance(referencedType, idValue)
-                            def collection = initializeCollection obj, descriptor.propertyName, metaProperty.type
-                            addElementToCollectionAt obj, descriptor.propertyName, collection, Integer.parseInt(descriptor.index), instance
-                            if(instance != null && val instanceof Map) {
-                                bind instance, val, listener
-                            } 
-                        } else if(Map.isAssignableFrom(metaProperty.type)) {
-                            Map map = (Map)obj[descriptor.propertyName]
-                            if(idValue == 'null' || idValue == null || idValue == '') {
-                                if(map != null) {
-                                    map.remove descriptor.index
+                        }
+                        if(instance != null && val instanceof Map) {
+                            bind instance, val, listener
+                        } 
+                    } else if(Collection.isAssignableFrom(metaProperty.type)) {
+                        def instance = 'null' == idValue ? null : getPersistentInstance(referencedType, idValue)
+                        def collection = initializeCollection obj, propName, metaProperty.type
+                        addElementToCollectionAt obj, propName, collection, Integer.parseInt(indexedPropertyReferenceDescriptor.index), instance
+                        if(instance != null && val instanceof Map) {
+                            bind instance, val, listener
+                        } 
+                    } else if(Map.isAssignableFrom(metaProperty.type)) {
+                        Map map = (Map)obj[propName]
+                        if(idValue == 'null' || idValue == null || idValue == '') {
+                            if(map != null) {
+                                map.remove indexedPropertyReferenceDescriptor.index
+                            }
+                        } else {
+                            map = initializeMap obj, propName
+                            def persistedInstance = getPersistentInstance referencedType, idValue
+                            if(persistedInstance != null) {
+                                if(map.size() < autoGrowCollectionLimit || map.containsKey(indexedPropertyReferenceDescriptor.index)) {
+                                    map[indexedPropertyReferenceDescriptor.index] = persistedInstance
+                                    if(val instanceof Map) {
+                                        bind persistedInstance, val, listener
+                                    }
                                 }
                             } else {
-                                map = initializeMap obj, descriptor.propertyName
-                                def persistedInstance = getPersistentInstance referencedType, idValue
-                                if(persistedInstance != null) {
-                                    if(map.size() < autoGrowCollectionLimit || map.containsKey(descriptor.index)) {
-                                        map[descriptor.index] = persistedInstance
-                                        if(val instanceof Map) {
-                                            bind persistedInstance, val, listener
-                                        }
-                                    }
-                                } else {
-                                    map.remove descriptor.index
-                                }
+                                map.remove indexedPropertyReferenceDescriptor.index
                             }
                         }
                     }
@@ -241,7 +253,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
             }
         }
         if(needsBinding) {
-            super.processProperty obj, propName, val, source, whiteList, blackList, listener
+            super.processIndexedProperty obj, indexedPropertyReferenceDescriptor, val, source, listener
         }
     }
 
