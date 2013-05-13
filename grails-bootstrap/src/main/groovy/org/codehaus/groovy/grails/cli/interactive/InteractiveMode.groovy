@@ -87,7 +87,7 @@ class InteractiveMode {
         current = this
         System.setProperty("grails.disable.exit", "true") // you can't exit completely in interactive mode from a script
 
-        console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
+        console.reader.addCompleter(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
         interactiveModeActive = true
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
 
