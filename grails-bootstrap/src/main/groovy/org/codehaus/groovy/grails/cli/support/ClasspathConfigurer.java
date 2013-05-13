@@ -106,7 +106,7 @@ public class ClasspathConfigurer {
         final List<File> buildDependencies;
         buildDependencies = settings.getBuildDependencies();
         if (!dependenciesExternallyConfigured && buildDependencies.isEmpty()) {
-            GrailsConsole.getInstance().error("Required Grails build dependencies were not found. Either GRAILS_HOME is not set or your dependencies are misconfigured in grails-app/conf/BuildConfig.groovy");
+            GrailsConsole.getInstance().error("Required Grails build dependencies were not found. This is normally due to internet connectivity issues (such as a misconfigured proxy) or missing repositories in grails-app/conf/BuildConfig.groovy. Please verify your configuration to continue.");
             cleanResolveCache(settings);
 
             System.exit(1);

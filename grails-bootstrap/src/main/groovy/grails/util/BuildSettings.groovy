@@ -15,6 +15,8 @@
  */
 package grails.util
 
+import grails.build.logging.GrailsConsole
+
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import groovy.transform.CompileStatic
 
@@ -503,6 +505,11 @@ class BuildSettings extends AbstractBuildSettings {
     @CompileStatic
     List<File> doResolve(String scope, List<File> pluginZips, boolean includeAppJars = true) {
         final resolveReport = dependencyManager.resolve(scope)
+        if (resolveReport.hasError()) {
+            final console = GrailsConsole.getInstance()
+            final error = resolveReport.getResolveError()
+            console.error("Resolve error obtaining dependencies: ${error.message}", error)
+        }
         ((GroovyObject)this).setProperty("${scope}ResolveReport".toString(), resolveReport )
         List<File> jarFiles
         if (includeAppJars) {

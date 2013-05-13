@@ -41,6 +41,7 @@ import org.codehaus.plexus.DefaultPlexusContainer
 import org.sonatype.aether.RepositorySystem
 import org.sonatype.aether.artifact.Artifact
 import org.sonatype.aether.collection.CollectRequest
+import org.sonatype.aether.collection.DependencyCollectionException
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.graph.DependencyNode
 import org.sonatype.aether.graph.Exclusion
@@ -258,10 +259,9 @@ class AetherDependencyManager implements DependencyManager {
      * @return A DependencyReport instance
      */
     DependencyReport resolve(String scope = "runtime") {
-
-        DependencyNode root = collectDependencies(scope)
-
+        DependencyNode root
         try {
+            root = collectDependencies(scope)
             DependencyResult results = resolveToResult(root, scope)
 
             if (includeSource || includeJavadoc) {
@@ -298,15 +298,30 @@ class AetherDependencyManager implements DependencyManager {
                     ar.request.artifact.classifier == 'javadoc' || ar.request.artifact.classifier == 'sources'
                 }
             }
+            if (root) {
+                def nlg = new PreorderNodeListGenerator()
+                root.accept nlg
+
+                if (failWithException) {
+                    return new AetherDependencyReport(nlg, scope, e)
+                }
+                else {
+                    return new AetherDependencyReport(nlg, scope)
+                }
+            }
+            else {
+                root = e.result.root
+                def nlg = new PreorderNodeListGenerator()
+                root.accept nlg
+
+                return new AetherDependencyReport(nlg, scope, e)
+            }
+        } catch (DependencyCollectionException e) {
+            root = e.result.root
             def nlg = new PreorderNodeListGenerator()
             root.accept nlg
 
-            if (failWithException) {
-                return new AetherDependencyReport(nlg, scope, e)
-            }
-            else {
-                return new AetherDependencyReport(nlg, scope)
-            }
+            return new AetherDependencyReport(nlg, scope, e)
         }
 
         def nlg = new PreorderNodeListGenerator()
