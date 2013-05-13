@@ -159,17 +159,20 @@ class SimpleDataBinder implements DataBinder {
      * @param blackList A list of properties to exclude from binding
      */
     void bind(obj, Map<String, Object> source, String filter, List whiteList, List blackList, DataBindingListener listener) {
-        source.each {String propName, val ->
-            if(filter && !propName.startsWith(filter + '.')) {
+        def keys = source.keySet()
+        keys.each { String key ->
+            if(filter && !key.startsWith(filter + '.')) {
                 return
             }
+            String propName = key
             if(filter) {
-                propName = propName[(1+filter.size())..-1]
+                propName = key[(1+filter.size())..-1]
             }
             def metaProperty = obj.metaClass.getMetaProperty propName
             
             if(metaProperty) { // normal property
                 if(isOkToBind(metaProperty.name, whiteList, blackList)) {
+                    def val = source[key]
                     processProperty obj, metaProperty, val, source, listener
                 }
             } else {
@@ -177,6 +180,7 @@ class SimpleDataBinder implements DataBinder {
                 if(descriptor) { // indexed property
                     metaProperty = obj.metaClass.getMetaProperty descriptor.propertyName
                     if(metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
+                        def val = source[key]
                         processIndexedProperty obj, metaProperty, descriptor, val, source, listener
                     }
                 } else if(propName.startsWith('_')) { // boolean special handling
