@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.resolve.maven.aether.config
 import groovy.transform.CompileStatic
 
 import org.sonatype.aether.repository.ArtifactRepository
+import org.sonatype.aether.repository.Authentication
+import org.sonatype.aether.repository.Proxy
 import org.sonatype.aether.repository.RemoteRepository
 
 /**
@@ -57,6 +59,19 @@ class RepositoriesConfiguration {
     }
 
     protected void configureRepository(RemoteRepository repository, Closure configurer) {
+        final proxyHost = System.getProperty("http.proxyHost")
+        final proxyPort = System.getProperty("http.proxyPort")
+        if (proxyHost && proxyPort) {
+            final proxyUser = System.getProperty("http.proxyUserName")
+            final proxyPass = System.getProperty("http.proxyPassword")
+            if (proxyUser && proxyPass) {
+                repository.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),new Authentication(proxyUser, proxyPass)))
+            }
+            else {
+                repository.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),null))
+            }
+
+        }
         if (configurer) {
             final rc = new RepositoryConfiguration(repository)
             configurer.setDelegate(rc)
