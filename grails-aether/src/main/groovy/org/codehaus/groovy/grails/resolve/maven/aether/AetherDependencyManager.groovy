@@ -384,7 +384,7 @@ class AetherDependencyManager implements DependencyManager {
             final modelRequest = new DefaultModelBuildingRequest()
             modelRequest.setPomFile(pomFile)
             ModelBuildingResult modelBuildingResult = modelBuilder.build(modelRequest)
-            final mavenDependencies = modelBuildingResult.getRawModel().getDependencies()
+            final mavenDependencies = modelBuildingResult.getEffectiveModel().getDependencies()
             for (org.apache.maven.model.Dependency md in mavenDependencies) {
                 final dependency = new Dependency(new DefaultArtifact(md.groupId, md.artifactId, md.classifier, md.type, md.version), md.scope)
                 addDependency(dependency)

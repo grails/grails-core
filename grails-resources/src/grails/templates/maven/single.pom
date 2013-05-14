@@ -10,19 +10,88 @@
     <name>@name@</name>
     <description>@name@</description>
 
+
     <properties>
         <grails.version>@grailsVersion@</grails.version>
+        <h2.version>1.3.170</h2.version>
     </properties>
 
     <dependencies>
 
         <dependency>
             <groupId>org.grails</groupId>
-            <artifactId>grails-dependencies</artifactId>
+            <artifactId>grails-plugin-async</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-controllers</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-datasource</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-databinding</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-filters</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-gsp</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-i18n</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-log4j</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-servlets</artifactId>
+            <version>${grails.version}</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-url-mappings</artifactId>
             <version>${grails.version}</version>
             <type>pom</type>
         </dependency>
 
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-resources</artifactId>
+            <version>${grails.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>runtime</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.grails</groupId>
@@ -40,16 +109,7 @@
 
         @dependencies@
 
-        <dependency>
-            <groupId>org.grails.plugins</groupId>
-            <artifactId>tomcat</artifactId>
-            <version>7.0.37</version>
-            <scope>provided</scope>
-            <type>zip</type>
-        </dependency>
         @plugins@
-
-
     </dependencies>
 
     <build>
