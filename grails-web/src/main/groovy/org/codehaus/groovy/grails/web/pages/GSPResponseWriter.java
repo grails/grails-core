@@ -33,6 +33,8 @@ import org.codehaus.groovy.grails.web.util.BoundedCharsAsEncodedBytesCounter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.LazyInitializingWriter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer.StreamCharBufferWriter;
+import org.objenesis.ObjenesisStd;
+import org.objenesis.instantiator.ObjectInstantiator;
 
 import com.opensymphony.module.sitemesh.RequestConstants;
 
@@ -64,6 +66,14 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
     private static final int BUFFER_SIZE = Integer.getInteger("GSPResponseWriter.bufferSize", 8042);
     private Encoder encoder;
     private StreamCharBuffer buffer;
+    private static ObjectInstantiator instantiator=null;
+    static {
+        try {
+            instantiator = new ObjenesisStd(false).getInstantiatorOf(GSPResponseWriter.class);
+        } catch (Exception e) {
+            LOG.debug("Couldn't get direct performance optimized instantiator for GSPResponseWriter. Using default instantiation.", e);
+        }
+    }
 
     public static GSPResponseWriter getInstance(final ServletResponse response) {
         return getInstance(response, BUFFER_SIZE);
@@ -114,7 +124,13 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
             streamBuffer.connectTo(lazyResponseWriter);
         }
         
-        return new GSPResponseWriter(streamBuffer, response, bytesCounter);
+        if(instantiator != null) {
+            GSPResponseWriter instance = (GSPResponseWriter)instantiator.newInstance();
+            instance.initialize(streamBuffer, response, bytesCounter);
+            return instance;
+        } else {
+            return new GSPResponseWriter(streamBuffer, response, bytesCounter);
+        }
     }
 
     /**
@@ -131,11 +147,16 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
         if (BUFFERING_ENABLED && !(target instanceof GrailsRoutablePrintWriter) && !(target instanceof StreamCharBufferWriter)) {
             StreamCharBuffer streamBuffer=new StreamCharBuffer(max, 0, max);
             streamBuffer.connectTo(target, false);
-            Writer writer=streamBuffer.getWriter();
-            return new GSPResponseWriter(writer);
+            target=streamBuffer.getWriter();
         }
-
-        return new GSPResponseWriter(target);
+        
+        if(instantiator != null) {
+            GSPResponseWriter instance = (GSPResponseWriter)instantiator.newInstance();
+            instance.initialize(target);
+            return instance;
+        } else {
+            return new GSPResponseWriter(target);
+        }
     }
 
     /**
@@ -148,6 +169,11 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
     private GSPResponseWriter(final StreamCharBuffer buffer, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {
         super(null);
         
+        initialize(buffer, response, bytesCounter);
+    }
+
+    void initialize(final StreamCharBuffer buffer, final ServletResponse response,
+            BoundedCharsAsEncodedBytesCounter bytesCounter) {
         DestinationFactory lazyTargetFactory = new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
@@ -163,6 +189,7 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
         updateDestination(lazyTargetFactory);
         this.response = response;
         this.bytesCounter = bytesCounter;
+        setBlockClose(true);
         setBlockFlush(false);
     }
 
@@ -172,11 +199,16 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
      */
     private GSPResponseWriter(final Writer activeWriter) {
         super(null);
+        initialize(activeWriter);
+    }
+
+    void initialize(final Writer activeWriter) {
         updateDestination(new DestinationFactory() {
             public Writer activateDestination() throws IOException {
                 return activeWriter;
             }
         });
+        setBlockClose(true);
         setBlockFlush(false);
     }
 

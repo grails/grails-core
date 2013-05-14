@@ -177,7 +177,7 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
             throw new GrailsTagException("Tag [" + getTagName() + "] does not exist. No tag library found.");
         }
 
-        sw = new FastStringPrintWriter();
+        sw = FastStringPrintWriter.newInstance();
         out = sw;
         tagLib.setProperty(OUT_PROPERTY, out);
         Object tagLibProp;

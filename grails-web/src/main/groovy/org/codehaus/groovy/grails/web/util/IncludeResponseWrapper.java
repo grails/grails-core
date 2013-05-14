@@ -139,7 +139,7 @@ public class IncludeResponseWrapper extends HttpServletResponseWrapper {
             usingWriter = true;
             charBuffer = new StreamCharBuffer();
             charBuffer.setNotifyParentBuffersEnabled(false);
-            pw = new GrailsPrintWriterAdapter(charBuffer.getWriter());
+            pw = GrailsPrintWriterAdapter.newInstance(charBuffer.getWriter());
         }
         return pw;
     }

@@ -317,7 +317,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
                 if (gspSitemeshPage != null) {
                     gspSitemeshPage.setPageBuffer(charBuffer);
                 }
-                exposedWriter = new GrailsPrintWriterAdapter(charBuffer.getWriter());
+                exposedWriter = GrailsPrintWriterAdapter.newInstance(charBuffer.getWriter());
             }
             return exposedWriter;
         }

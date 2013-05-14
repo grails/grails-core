@@ -24,12 +24,25 @@ import java.io.Writer;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter;
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+import org.objenesis.ObjenesisStd;
+import org.objenesis.instantiator.ObjectInstantiator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
+    private static final Logger LOG = LoggerFactory.getLogger(GrailsRoutablePrintWriter.class);
     private DestinationFactory factory;
     private boolean blockFlush = true;
     private boolean blockClose = true;
     private boolean destinationActivated = false;
+    private static ObjectInstantiator instantiator=null;
+    static {
+        try {
+            instantiator = new ObjenesisStd(false).getInstantiatorOf(GrailsRoutablePrintWriter.class);
+        } catch (Exception e) {
+            LOG.debug("Couldn't get direct performance optimized instantiator for GrailsRoutablePrintWriter. Using default instantiation.", e);
+        }
+    }
 
     /**
      * Factory to lazily instantiate the destination.
@@ -42,7 +55,20 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
         super(new NullWriter());
         this.factory = factory;
     }
-
+    
+    public static GrailsRoutablePrintWriter newInstance(DestinationFactory factory) {
+        if (instantiator != null) {
+            GrailsRoutablePrintWriter instance = (GrailsRoutablePrintWriter)instantiator.newInstance();
+            instance.out = new NullWriter();
+            instance.factory = factory;
+            instance.blockFlush = true;
+            instance.blockClose = true;
+            return instance;
+        } else {
+            return new GrailsRoutablePrintWriter(factory);
+        }
+    }
+    
     protected void activateDestination() {
         if (!destinationActivated && factory != null) {
             try {
