@@ -35,7 +35,7 @@ ext {
     gradleGroovyVersion = groovyVersion
     gradleGroovyVersion = "1.8.2"
     ivyVersion = "2.3.0"
-    jansiVersion = "1.10"
+    jansiVersion = "1.11"
     jlineVersion = "2.10"
     jnaVersion = "3.5.2"
     slf4jVersion = "1.7.4"
