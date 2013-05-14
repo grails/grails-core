@@ -64,6 +64,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 
     private GrailsApplicationAttributes attributes;
     private GrailsParameterMap params;
+    private GrailsParameterMap originalParams;
     private GrailsHttpSession session;
     private boolean renderView = true;
     private boolean skipFilteringCodec = false;
@@ -75,6 +76,11 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private String baseUrl;
 
     private EncodingStateRegistry encodingStateRegistry;
+    
+    public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, GrailsApplicationAttributes attributes) {
+        super(request, response);
+        this.attributes = attributes;
+    }
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
@@ -85,7 +91,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         this(request, response, servletContext);
         this.applicationContext = applicationContext;
     }
-
+    
     /**
      * Overriden to return the GrailsParameterMap instance,
      *
@@ -95,7 +101,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map getParameterMap() {
         if (params == null) {
-            params = new GrailsParameterMap(getCurrentRequest());
+            resetParams();
         }
         return params;
     }
@@ -189,7 +195,22 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      * Reset params by re-reading & initializing parameters from request
      */
     public void resetParams() {
-        params = new GrailsParameterMap(getCurrentRequest());
+        if(originalParams == null) {
+            originalParams = new GrailsParameterMap(getCurrentRequest());
+        }
+        params = (GrailsParameterMap)originalParams.clone();
+    }
+    
+    @SuppressWarnings("rawtypes")
+    public void addParametersFrom(Map previousParams) {
+        if(previousParams instanceof GrailsParameterMap) {
+            getParams().addParametersFrom((GrailsParameterMap)previousParams);
+        } else {
+            for (Object key : previousParams.keySet()) {
+                String name = String.valueOf(key);
+                getParams().put(name, previousParams.get(key));
+            }
+        }
     }
 
     /**

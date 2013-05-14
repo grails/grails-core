@@ -292,7 +292,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
                 // Expose current RequestAttributes to current thread.
                 previousRequestAttributes = RequestContextHolder.currentRequestAttributes();
-                requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
+                if(previousRequestAttributes instanceof GrailsWebRequest) {
+                    requestAttributes = new GrailsWebRequest(processedRequest, response, ((GrailsWebRequest)previousRequestAttributes).getAttributes());
+                } else {
+                    requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
+                }
                 if( previousRequestAttributes != null) {
                     copyParamsFromPreviousRequest(previousRequestAttributes, requestAttributes);
                 }
@@ -491,12 +495,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             return;
         }
 
-        Map previousParams = ((GrailsWebRequest)previousRequestAttributes).getParams();
-        Map params =  requestAttributes.getParams();
-        for (Object o : previousParams.keySet()) {
-            String name = (String) o;
-            params.put(name, previousParams.get(name));
-        }
+        requestAttributes.addParametersFrom(((GrailsWebRequest)previousRequestAttributes).getParams());
     }
 
     /**
