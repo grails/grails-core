@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api
 
+import groovy.transform.CompileStatic
+import org.apache.commons.collections.map.ListOrderedMap
+
 import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -31,15 +34,17 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  */
 class MimeTypesApiSupport {
 
+    @CompileStatic
     def withFormat(HttpServletRequest request, Closure callable) {
         return withFormatInternal(request, getDefinedFormats(callable))
     }
 
+    @CompileStatic
     def withFormat(HttpServletResponse response, Closure callable) {
         return withFormatInternal(response, getDefinedFormats(callable))
     }
 
-    protected withFormatInternal(formatProvider, Map formats) {
+    protected withFormatInternal(formatProvider, ListOrderedMap formats) {
         def result
         def format = formatProvider.format
         if (formats) {
@@ -73,14 +78,16 @@ class MimeTypesApiSupport {
         return result
     }
 
-    Map getDefinedFormats(Closure callable) {
-        def formats
+    @CompileStatic
+    ListOrderedMap getDefinedFormats(Closure callable) {
+        ListOrderedMap formats = null
         def original = callable.delegate
+        final interceptor = new FormatInterceptor()
         try {
-            callable.delegate = new FormatInterceptor()
+            callable.delegate = interceptor
             callable.resolveStrategy = Closure.DELEGATE_ONLY
             callable.call()
-            formats = callable.delegate.formatOptions
+            formats = interceptor.formatOptions
         }
         finally {
             callable.delegate = original

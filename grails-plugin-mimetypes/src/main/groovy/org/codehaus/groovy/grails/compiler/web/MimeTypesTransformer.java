@@ -34,6 +34,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
@@ -46,41 +47,42 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi;
  * @since 2.0
  */
 @AstTransformer
-public class MimeTypesTransformer implements GrailsArtefactClassInjector {
+public class MimeTypesTransformer extends AbstractGrailsArtefactTransformer {
 
     public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
               GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
 
-    public static final String FIELD_MIME_TYPES_API = "mimeTypesApi";
-    public static final Parameter[] CLOSURE_PARAMETER = new Parameter[]{ new Parameter(new ClassNode(Closure.class), "callable")};
-    public static final String WITH_FORMAT_METHOD = "withFormat";
 
+    @Override
+    public Class getInstanceImplementation() {
+        return ControllersMimeTypesApi.class;
+    }
+
+    @Override
+    public Class getStaticImplementation() {
+        return null;
+    }
+
+    @Override
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        FieldNode field = classNode.getField(FIELD_MIME_TYPES_API);
-        if (field == null) {
-            final ClassNode mimeTypesApiClass = new ClassNode(ControllersMimeTypesApi.class);
-            field = new FieldNode(FIELD_MIME_TYPES_API, PRIVATE_STATIC_MODIFIER, mimeTypesApiClass,classNode, new ConstructorCallExpression(mimeTypesApiClass, GrailsArtefactClassInjector.ZERO_ARGS));
-
-            classNode.addField(field);
-
-            final BlockStatement methodBody = new BlockStatement();
-            final ArgumentListExpression args = new ArgumentListExpression();
-            args.addExpression(new VariableExpression("this"))
-                .addExpression(new VariableExpression("callable"));
-            methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression(FIELD_MIME_TYPES_API),  WITH_FORMAT_METHOD, args)));
-            classNode.addMethod(new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody));
+        if (isControllerClassNode(classNode)) {
+            super.performInjection(source, context, classNode);
         }
     }
 
+    @Override
     public void performInjection(SourceUnit source, ClassNode classNode) {
-        performInjection(source,null, classNode);
+        if (isControllerClassNode(classNode)) {
+            super.performInjection(source, classNode);
+        }
     }
 
+    protected boolean isControllerClassNode(ClassNode classNode) {
+        return classNode.getName().endsWith("Controller");
+    }
     public boolean shouldInject(URL url) {
         return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
 
-    public String[] getArtefactTypes() {
-        return new String[]{ControllerArtefactHandler.TYPE};
-    }
+
 }

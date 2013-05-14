@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api
 
+import groovy.transform.CompileStatic
+
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -25,9 +27,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class ControllersMimeTypesApi {
 
-    protected apiSupport = new MimeTypesApiSupport()
+    protected MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
     /**
      * <p>The withFormat method is used to allow controllers to handle different types of
