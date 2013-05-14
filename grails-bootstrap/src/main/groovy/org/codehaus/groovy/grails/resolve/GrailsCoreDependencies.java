@@ -76,10 +76,7 @@ public class GrailsCoreDependencies {
 
         compileDependencies = Arrays.asList(
             new Dependency("org.codehaus.groovy", "groovy-all", groovyVersion, true),
-            new Dependency("org.grails", "grails-plugin-codecs", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-controllers", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-domain-class", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-converters", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-datasource", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-databinding", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-filters", grailsVersion, true),
@@ -88,9 +85,7 @@ public class GrailsCoreDependencies {
             new Dependency("org.grails", "grails-plugin-log4j", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-services", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-servlets", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-mimetypes", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-url-mappings", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-validation", grailsVersion, true)
+            new Dependency("org.grails", "grails-plugin-url-mappings", grailsVersion, true)
         );
 
         if (GrailsVersionUtils.isValidVersion(servletVersion, "3.0 > *")) {
