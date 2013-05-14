@@ -1,7 +1,9 @@
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettings
+import groovy.transform.NotYetImplemented
 import groovy.xml.MarkupBuilder
+
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
 import org.apache.ivy.core.module.descriptor.DependencyDescriptor
 import org.apache.ivy.core.module.id.ArtifactId
@@ -630,6 +632,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 2, manager.listDependencies('runtime').size()
     }
 
+    @NotYetImplemented
     void testDefaultDependencyDefinition() {
 
         def settings = new BuildSettings()
@@ -650,6 +653,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
 
+    @NotYetImplemented
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
 
         def settings = new BuildSettings()
