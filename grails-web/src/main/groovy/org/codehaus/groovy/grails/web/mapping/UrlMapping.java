@@ -84,6 +84,11 @@ public interface UrlMapping extends Comparable, UrlCreator {
      */
     Object getActionName();
 
+    /**
+     * The name of the plugin this URL mapping relates to, if any
+     *
+     * @return The plugin name
+     */
     Object getPluginName();
 
     /**
@@ -91,6 +96,12 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return The view name
      */
     Object getViewName();
+
+    /**
+     * The HTTP method this URL mapping applies to. Will be null for all HTTP methods
+     * @return The HTTP method
+     */
+    String getHttpMethod();
 
     /**
      * Sets any parameter values that should be populated into the request

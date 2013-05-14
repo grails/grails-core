@@ -359,6 +359,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     }
 
     public UrlMappingInfo[] matchAll(String uri) {
+        return matchAll(uri, null);
+    }
+
+    public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
         List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
         if (cachedListMatches.containsKey(uri)) {
             matchingUrls = cachedListMatches.get(uri);
@@ -381,10 +385,6 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             cachedListMatches.put(uri, matchingUrls);
         }
         return matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
-    }
-
-    public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
-        return matchAll(uri);
     }
 
     public UrlMappingInfo matchStatusCode(int responseCode) {
