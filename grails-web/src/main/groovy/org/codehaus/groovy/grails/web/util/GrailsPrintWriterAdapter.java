@@ -22,17 +22,42 @@ import java.io.PrintWriter;
 import java.io.Writer;
 
 import org.apache.commons.io.output.NullWriter;
+import org.objenesis.ObjenesisStd;
+import org.objenesis.instantiator.ObjectInstantiator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Lari Hotari
  * @since 2.0
  */
 public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrappedWriter {
+    private static final Logger LOG = LoggerFactory.getLogger(GrailsPrintWriterAdapter.class);
     protected GrailsPrintWriter target;
+    
+    private static ObjectInstantiator instantiator=null;
+    static {
+        try {
+            instantiator = new ObjenesisStd(false).getInstantiatorOf(GrailsPrintWriterAdapter.class);
+        } catch (Exception e) {
+            LOG.debug("Couldn't get direct performance optimized instantiator for GrailsPrintWriterAdapter. Using default instantiation.", e);
+        }
+    }
+    
 
     public GrailsPrintWriterAdapter(Writer wrapped) {
         super(new NullWriter());
         setTarget(wrapped);
+    }
+    
+    public static GrailsPrintWriterAdapter newInstance(Writer wrapped) {
+        if(instantiator != null) {
+            GrailsPrintWriterAdapter instance = (GrailsPrintWriterAdapter)instantiator.newInstance();
+            instance.setTarget(wrapped);
+            return instance;
+        } else {
+            return new GrailsPrintWriterAdapter(wrapped);
+        }
     }
 
     public void setTarget(Writer wrapped) {

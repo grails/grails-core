@@ -604,7 +604,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
     }
 
     public PrintWriter asPrintWriter() {
-        return new GrailsPrintWriterAdapter(this);
+        return GrailsPrintWriterAdapter.newInstance(this);
     }
 
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {

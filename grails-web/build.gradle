@@ -43,6 +43,8 @@ dependencies {
     optional("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
         exclude group:'commons-cli', module:'commons-cli'
     }
+
+    compile 'org.objenesis:objenesis:1.3'
 }
 
 sourceSets {
