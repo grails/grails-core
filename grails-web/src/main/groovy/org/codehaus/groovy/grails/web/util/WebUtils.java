@@ -170,6 +170,15 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     /**
+     * Locates the ApplicationContext, returns null if not found
+     * @param servletContext The servlet context
+     * @return The ApplicationContext
+     */
+    public static ApplicationContext findApplicationContext(ServletContext servletContext) {
+        return WebApplicationContextUtils.getWebApplicationContext(servletContext);
+    }
+
+    /**
      * Resolves a view for the given view and UrlMappingInfo instance
      *
      * @param request The request

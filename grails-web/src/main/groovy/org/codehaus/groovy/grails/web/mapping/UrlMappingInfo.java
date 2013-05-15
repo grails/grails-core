@@ -38,6 +38,13 @@ public interface UrlMappingInfo {
     String getURI();
 
     /**
+     * The HTTP method that this URL mapping maps to
+     *
+     * @return The http method
+     */
+    String getHttpMethod();
+
+    /**
      * The name of the controller that the URL mapping maps to
      *
      * @return The name of the controller
@@ -51,6 +58,11 @@ public interface UrlMappingInfo {
      */
     String getActionName();
 
+    /**
+     * The name of the plugin that this UrlMappingInfo maps to
+     *
+     * @return The plugin name
+     */
     String getPluginName();
 
     /**

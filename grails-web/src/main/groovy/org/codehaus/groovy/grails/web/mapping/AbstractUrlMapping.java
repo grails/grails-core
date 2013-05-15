@@ -43,6 +43,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected boolean parseRequest;
     protected String mappingName;
     protected boolean restful;
+    protected String httpMethod;
 
     /**
      * Base constructor required to construct a UrlMapping instance
@@ -71,6 +72,11 @@ public abstract class AbstractUrlMapping implements UrlMapping {
         this.forwardURI = uri;
         this.constraints = constraints;
         this.servletContext = servletContext;
+    }
+
+    @Override
+    public String getHttpMethod() {
+        return httpMethod;
     }
 
     /**

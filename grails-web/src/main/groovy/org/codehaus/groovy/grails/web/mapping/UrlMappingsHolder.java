@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * Main entry point of Grails URL mapping mechanism. This interface defines methods to match
- * URLs and create reverse mappings based on the UrlMapping instances the implementor contains.
+ * URLs and create reverse mappings based on the UrlMapping instances the implementer contains.
  *
  * @author Graeme Rocher
  * @since 0.5

@@ -359,6 +359,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     }
 
     public UrlMappingInfo[] matchAll(String uri) {
+        return matchAll(uri, null);
+    }
+
+    public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
         List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
         if (cachedListMatches.containsKey(uri)) {
             matchingUrls = cachedListMatches.get(uri);
@@ -375,16 +379,14 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                         LOG.debug("Matched URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "], adding to posibilities");
                     }
 
-                    matchingUrls.add(current);
+                    String mappingHttpMethod = current.getHttpMethod();
+                    if(mappingHttpMethod == null || mappingHttpMethod.equalsIgnoreCase(httpMethod))
+                        matchingUrls.add(current);
                 }
             }
             cachedListMatches.put(uri, matchingUrls);
         }
         return matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
-    }
-
-    public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
-        return matchAll(uri);
     }
 
     public UrlMappingInfo matchStatusCode(int responseCode) {
