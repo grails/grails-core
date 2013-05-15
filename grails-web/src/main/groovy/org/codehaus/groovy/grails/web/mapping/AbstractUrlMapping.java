@@ -43,7 +43,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected boolean parseRequest;
     protected String mappingName;
     protected boolean restful;
-    protected String httpMethod;
+    protected String httpMethod = ANY_HTTP_METHOD;
 
     /**
      * Base constructor required to construct a UrlMapping instance

@@ -91,7 +91,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 String controller = controllerAttribute == null ? requestStateLookupStrategy.getControllerName() : controllerAttribute.toString()
 
                 final methodAttribute = urlAttrs.get(ATTRIBUTE_METHOD)
-                String httpMethod = methodAttribute == null ? requestStateLookupStrategy.getHttpMethod() : methodAttribute.toString()
+                String httpMethod = methodAttribute == null ? requestStateLookupStrategy.getHttpMethod() ?: UrlMapping.ANY_HTTP_METHOD : methodAttribute.toString()
 
                 String action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
 

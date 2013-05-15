@@ -69,7 +69,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this.urlData = urlData;
         this.servletContext = servletContext;
         ApplicationContext applicationContext = WebUtils.findApplicationContext(servletContext);
-        if(applicationContext != null) {
+        if(applicationContext != null && applicationContext.containsBean(UrlConverter.BEAN_NAME)) {
             urlConverter = applicationContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
         }
         else {

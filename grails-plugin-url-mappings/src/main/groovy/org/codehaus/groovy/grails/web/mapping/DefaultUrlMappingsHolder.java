@@ -313,8 +313,13 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         final String actionName = lookupKey.action;
         boolean secondAttempt = false;
         final boolean isIndexAction = GrailsControllerClass.INDEX_ACTION.equals(actionName);
+        if(null == mappingKeysSet) {
+            lookupKey.httpMethod=UrlMapping.ANY_HTTP_METHOD;
+            mappingKeysSet = mappingsListLookup.get(lookupKey);
+        }
         if (null == mappingKeysSet && actionName != null) {
             lookupKey.action=null;
+
             mappingKeysSet = mappingsListLookup.get(lookupKey);
             secondAttempt = true;
         }
@@ -497,7 +502,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             this.controller = controller;
             this.action = action;
             this.pluginName = pluginName;
-            if(httpMethod != null && !UrlMapping.ANY_HTTP_METHOD.equalsIgnoreCase(httpMethod)) {
+            if(httpMethod != null) {
                 this.httpMethod = httpMethod;
             }
             this.paramNames = paramNames;
@@ -582,7 +587,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             this.controller = controller;
             this.action = action;
             this.pluginName = pluginName;
-            if(httpMethod != null && !UrlMapping.ANY_HTTP_METHOD.equalsIgnoreCase(httpMethod)) {
+            if(httpMethod != null) {
                 this.httpMethod = httpMethod;
             }
         }
