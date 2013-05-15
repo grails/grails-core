@@ -632,7 +632,6 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 2, manager.listDependencies('runtime').size()
     }
 
-    @NotYetImplemented
     void testDefaultDependencyDefinition() {
 
         def settings = new BuildSettings()
@@ -653,7 +652,6 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
     }
 
-    @NotYetImplemented
     void testDefaultDependencyDefinitionWithDefaultDependenciesProvided() {
 
         def settings = new BuildSettings()
