@@ -13,7 +13,7 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
          "/foo"( controller:"bar", action:"save", method:"POST" )
          "/foo2"( controller:"bar", action:"save", method:"PUT" )
          "/foo"( controller:"bar", action:"update", method:"PUT" )
-         "/bar"( controller:"bar", action:"list", method:"ANY" )
+         "/bar"( controller:"bar", action:"list", method:"*" )
          "/bar2"( controller:"bar", action:"list" )
 
     }
