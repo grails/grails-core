@@ -57,7 +57,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     private int maxWeightedCacheCapacity = DEFAULT_MAX_WEIGHTED_CAPACITY;
     private Map<String, UrlMappingInfo> cachedMatches;
-    private Map<String, List<UrlMappingInfo>> cachedListMatches;
+    private Map<UriToUrlMappingKey, List<UrlMappingInfo>> cachedListMatches;
     private enum CustomListWeigher implements Weigher<List<UrlMappingInfo>> {
         INSTANCE;
         public int weightOf(List<UrlMappingInfo> values) {
@@ -100,7 +100,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         cachedMatches = new ConcurrentLinkedHashMap.Builder<String, UrlMappingInfo>()
             .maximumWeightedCapacity(maxWeightedCacheCapacity)
             .build();
-        cachedListMatches = new ConcurrentLinkedHashMap.Builder<String, List<UrlMappingInfo>>()
+        cachedListMatches = new ConcurrentLinkedHashMap.Builder<UriToUrlMappingKey, List<UrlMappingInfo>>()
             .maximumWeightedCapacity(maxWeightedCacheCapacity)
             .weigher(CustomListWeigher.INSTANCE)
             .build();
@@ -376,8 +376,9 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
         List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
-        if (cachedListMatches.containsKey(uri)) {
-            matchingUrls = cachedListMatches.get(uri);
+        UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod);
+        if (cachedListMatches.containsKey(cacheKey)) {
+            matchingUrls = cachedListMatches.get(cacheKey);
         }
         else {
             for (UrlMapping mapping : mappings) {
@@ -396,7 +397,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                         matchingUrls.add(current);
                 }
             }
-            cachedListMatches.put(uri, matchingUrls);
+            cachedListMatches.put(cacheKey, matchingUrls);
         }
         return matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
     }
@@ -441,6 +442,44 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         }
         pw.flush();
         return sw.toString();
+    }
+
+    class UriToUrlMappingKey {
+        String uri;
+        String httpMethod;
+
+        UriToUrlMappingKey(String uri, String httpMethod) {
+            this.uri = uri;
+            this.httpMethod = httpMethod;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            UriToUrlMappingKey that = (UriToUrlMappingKey) o;
+
+            if (httpMethod != null ? !httpMethod.equals(that.httpMethod) : that.httpMethod != null) {
+                return false;
+            }
+            if (uri != null ? !uri.equals(that.uri) : that.uri != null) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = uri != null ? uri.hashCode() : 0;
+            result = 31 * result + (httpMethod != null ? httpMethod.hashCode() : 0);
+            return result;
+        }
     }
 
     /**

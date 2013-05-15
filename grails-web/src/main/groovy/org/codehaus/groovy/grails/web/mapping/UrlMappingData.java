@@ -55,4 +55,11 @@ public interface UrlMappingData {
      * @return  True if it is optional
      */
     boolean isOptional(int index);
+
+    /**
+     * Creates a new UrlMappingData instance relative to this one for the given path
+     * @param path The path
+     * @return The new instance
+     */
+    UrlMappingData createRelative(String path);
 }
