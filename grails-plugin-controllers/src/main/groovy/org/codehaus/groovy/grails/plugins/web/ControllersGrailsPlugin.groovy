@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.codehaus.groovy.grails.web.servlet.mvc.MixedGrailsControllerHelper
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter
@@ -101,8 +102,12 @@ class ControllersGrailsPlugin {
             log.debug "Configuring controller $controller.fullName"
             if (controller.available) {
                 "${controller.fullName}"(controller.clazz) { bean ->
-                    bean.scope = controller.getPropertyValue("scope") ?: defaultScope
-                    bean.autowire = "byName"
+                    def beanScope = controller.getPropertyValue("scope") ?: defaultScope
+                    bean.scope = beanScope
+                    bean.autowire =  "byName"
+                    if (beanScope == 'prototype') {
+                        bean.beanDefinition.dependencyCheck = AbstractBeanDefinition.DEPENDENCY_CHECK_NONE
+                    }
                 }
             }
         }
@@ -234,8 +239,12 @@ class ControllersGrailsPlugin {
             def controllerClass = application.addArtefact(ControllerArtefactHandler.TYPE, event.source)
             def beanDefinitions = beans {
                 "${controllerClass.fullName}"(controllerClass.clazz) { bean ->
-                    bean.scope = controllerClass.getPropertyValue("scope") ?: defaultScope
-                    bean.autowire = true
+                    def beanScope = controllerClass.getPropertyValue("scope") ?: defaultScope
+                    bean.scope = beanScope
+                    bean.autowire = "byName"
+                    if (beanScope == 'prototype') {
+                        bean.beanDefinition.dependencyCheck = AbstractBeanDefinition.DEPENDENCY_CHECK_NONE
+                    }
                 }
             }
             // now that we have a BeanBuilder calling registerBeans and passing the app ctx will
