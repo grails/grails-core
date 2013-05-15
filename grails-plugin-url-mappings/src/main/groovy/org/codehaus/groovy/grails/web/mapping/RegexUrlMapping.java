@@ -518,13 +518,13 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
         DefaultUrlMappingInfo info;
         if (forwardURI != null && controllerName == null) {
-            info = new DefaultUrlMappingInfo(forwardURI, urlData, servletContext);
+            info = new DefaultUrlMappingInfo(forwardURI,getHttpMethod(), urlData, servletContext);
         }
         else if (viewName != null && controllerName == null) {
             info = new DefaultUrlMappingInfo(viewName, params, urlData, servletContext);
         }
         else {
-            info = new DefaultUrlMappingInfo(controllerName, actionName, pluginName, getViewName(), params, urlData, servletContext);
+            info = new DefaultUrlMappingInfo(controllerName, actionName, pluginName, getViewName(), getHttpMethod(), params, urlData, servletContext);
         }
 
         if (parseRequest) {

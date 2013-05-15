@@ -379,7 +379,9 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                         LOG.debug("Matched URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "], adding to posibilities");
                     }
 
-                    matchingUrls.add(current);
+                    String mappingHttpMethod = current.getHttpMethod();
+                    if(mappingHttpMethod == null || mappingHttpMethod.equalsIgnoreCase(httpMethod))
+                        matchingUrls.add(current);
                 }
             }
             cachedListMatches.put(uri, matchingUrls);

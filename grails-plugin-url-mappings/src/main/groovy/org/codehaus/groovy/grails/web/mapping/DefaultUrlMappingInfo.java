@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.mapping;
 
 import grails.util.GrailsNameUtils;
+import grails.web.CamelCaseUrlConverter;
 import grails.web.UrlConverter;
 
 import java.util.Collections;
@@ -59,6 +60,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     private boolean parsingRequest;
     private Object uri;
     private UrlConverter urlConverter;
+    private String httpMethod;
 
     @SuppressWarnings({"unchecked","rawtypes"})
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
@@ -66,6 +68,20 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         id = getParams().get(ID_PARAM);
         this.urlData = urlData;
         this.servletContext = servletContext;
+        ApplicationContext applicationContext = WebUtils.findApplicationContext(servletContext);
+        if(applicationContext != null) {
+            urlConverter = applicationContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
+        }
+        else {
+            urlConverter = new CamelCaseUrlConverter();
+        }
+    }
+    private DefaultUrlMappingInfo(String httpMethod,Map params, UrlMappingData urlData, ServletContext servletContext) {
+        setParams(params);
+        id = getParams().get(ID_PARAM);
+        this.urlData = urlData;
+        this.servletContext = servletContext;
+        this.httpMethod = httpMethod;
         GrailsApplication grailsApplication = WebUtils.lookupApplication(servletContext);
         ApplicationContext mainContext = grailsApplication.getMainContext();
         urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
@@ -74,12 +90,17 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     @SuppressWarnings("rawtypes")
     public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object pluginName, Object viewName, Map params,
             UrlMappingData urlData, ServletContext servletContext) {
+        this(controllerName, actionName, pluginName, viewName, null, params, urlData, servletContext);
+    }
+    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object pluginName, Object viewName, String httpMethod, Map params,
+                                 UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
         Assert.isTrue(controllerName != null || viewName != null, "URL mapping must either provide a controller or view name to map to!");
         Assert.notNull(params, "Argument [params] cannot be null");
         this.controllerName = controllerName;
         this.actionName = actionName;
         this.pluginName = pluginName;
+        this.httpMethod = httpMethod;
         if (actionName == null) {
             this.viewName = viewName;
         }
@@ -96,6 +117,18 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this(Collections.EMPTY_MAP, data, servletContext);
         this.uri = uri;
         Assert.notNull(uri, "Argument [uri] cannot be null or blank");
+    }
+    public DefaultUrlMappingInfo(Object uri,String httpMethod, UrlMappingData data, ServletContext servletContext) {
+        this(Collections.EMPTY_MAP, data, servletContext);
+        this.uri = uri;
+        this.httpMethod = httpMethod;
+        Assert.notNull(uri, "Argument [uri] cannot be null or blank");
+    }
+
+
+    @Override
+    public String getHttpMethod() {
+        return httpMethod;
     }
 
     @Override
