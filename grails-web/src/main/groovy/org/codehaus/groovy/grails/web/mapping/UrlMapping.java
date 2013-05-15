@@ -34,8 +34,23 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 @SuppressWarnings("rawtypes")
 public interface UrlMapping extends Comparable, UrlCreator {
 
+    /**
+     * The controller this mapping matches
+     */
     String CONTROLLER = "controller";
+    /**
+     * The action this mapping matches
+     */
     String ACTION = "action";
+    /**
+     * The HTTP method this mapping matches
+     */
+    String HTTP_METHOD = "method";
+
+    /**
+     * Constant used to define a Url mapping that matches any HTTP method
+     */
+    String ANY_HTTP_METHOD = "any";
 
     /**
      * Matches the given URI and returns an instance of the UrlMappingInfo interface or null

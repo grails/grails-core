@@ -30,6 +30,7 @@ public interface LinkGenerator {
 
     String ATTRIBUTE_CONTROLLER = "controller";
     String ATTRIBUTE_ACTION = "action";
+    String ATTRIBUTE_METHOD = "method";
     String ATTRIBUTE_URI = "uri";
     String ATTRIBUTE_CONTEXT_PATH = "contextPath";
     String ATTRIBUTE_URL = "url";

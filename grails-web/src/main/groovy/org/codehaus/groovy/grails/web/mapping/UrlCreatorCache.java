@@ -58,8 +58,8 @@ public class UrlCreatorCache {
         cacheMap.clear();
     }
 
-    public ReverseMappingKey createKey(String controller, String action, String pluginName, Map params) {
-        return new ReverseMappingKey(controller, action, pluginName, params);
+    public ReverseMappingKey createKey(String controller, String action, String pluginName, String httpMethod, Map params) {
+        return new ReverseMappingKey(controller, action, pluginName,httpMethod, params);
     }
 
     public UrlCreator lookup(ReverseMappingKey key) {
@@ -96,7 +96,7 @@ public class UrlCreatorCache {
 
         public String createRelativeURL(String controller, String action, String pluginName, Map parameterValues,
                 String encoding, String fragment) {
-            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, parameterValues, encoding, fragment, 0);
+            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, null,parameterValues, encoding, fragment, 0);
             String url = cache.get(key);
             if (url == null) {
                 url = delegate.createRelativeURL(controller, action, pluginName, parameterValues, encoding, fragment);
@@ -110,7 +110,7 @@ public class UrlCreatorCache {
         }
 
         public String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding) {
-            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, parameterValues, encoding, null, 0);
+            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, null,parameterValues, encoding, null, 0);
             String url = cache.get(key);
             if (url == null) {
                 url = delegate.createRelativeURL(controller, action, pluginName, parameterValues, encoding);
@@ -124,7 +124,7 @@ public class UrlCreatorCache {
         }
 
         public String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding, String fragment) {
-            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, parameterValues, encoding, fragment, 1);
+            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName,null, parameterValues, encoding, fragment, 1);
             String url = cache.get(key);
             if (url == null) {
                 url = delegate.createURL(controller, action, pluginName, parameterValues, encoding, fragment);
@@ -138,7 +138,7 @@ public class UrlCreatorCache {
         }
 
         public String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding) {
-            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName, parameterValues, encoding, null, 1);
+            UrlCreatorKey key = new UrlCreatorKey(controller, action, pluginName,null, parameterValues, encoding, null, 1);
             String url = cache.get(key);
             if (url == null) {
                 url = delegate.createURL(controller, action, pluginName, parameterValues, encoding);
@@ -162,13 +162,20 @@ public class UrlCreatorCache {
         protected final String controller;
         protected final String action;
         protected final String pluginName;
+        protected final String httpMethod;
         protected final String[] paramKeys;
         protected final String[] paramValues;
 
-        public ReverseMappingKey(String controller, String action, String pluginName, Map<Object, Object> params) {
+        public ReverseMappingKey(String controller, String action, String pluginName, String httpMethod, Map<Object, Object> params) {
             this.controller = controller;
             this.action = action;
             this.pluginName = pluginName;
+            if(httpMethod != null && !UrlMapping.ANY_HTTP_METHOD.equalsIgnoreCase(httpMethod)) {
+                this.httpMethod = httpMethod;
+            }
+            else {
+                this.httpMethod = null;
+            }
             if (params != null) {
                 paramKeys = new String[params.size()];
                 paramValues = new String[params.size()];
@@ -260,6 +267,16 @@ public class UrlCreatorCache {
             else if (!pluginName.equals(other.pluginName)) {
                 return false;
             }
+            if (httpMethod == null) {
+                if (other.httpMethod != null) {
+                    return false;
+                }
+            }
+            else if(!httpMethod.equals(other.httpMethod)) {
+                return false;
+            }
+
+
             if (!Arrays.equals(paramKeys, other.paramKeys)) {
                 return false;
             }
@@ -282,9 +299,9 @@ public class UrlCreatorCache {
         protected final String fragment;
         protected final int urlType;
 
-        public UrlCreatorKey(String controller, String action, String pluginName, Map<Object, Object> params, String encoding,
+        public UrlCreatorKey(String controller, String action, String pluginName, String httpMethod, Map<Object, Object> params, String encoding,
                 String fragment, int urlType) {
-            super(controller, action, pluginName, params);
+            super(controller, action, pluginName, httpMethod,params);
             this.encoding = (encoding != null) ? encoding.toLowerCase() : null;
             this.fragment = fragment;
             this.urlType = urlType;
