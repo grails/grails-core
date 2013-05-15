@@ -115,7 +115,8 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object pluginName, Object viewName, String httpMethod, ConstrainedProperty[] constraints, ServletContext servletContext) {
         super(controllerName, actionName, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
         grailsApplication = GrailsWebUtil.lookupApplication(servletContext);
-        this.httpMethod = httpMethod;
+        if(httpMethod != null)
+            this.httpMethod = httpMethod;
         parse(data, constraints);
     }
 

@@ -57,9 +57,11 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
 
     void "Test that the HTTP method is taken into account when generating links"() {
         expect:"A link is generated with a specified HTTP method the results are correct"
+            linkGenerator.link( controller:"bar", action:"list", method:'GET') == 'http://localhost/bar'
             linkGenerator.link( controller:"bar", action:"save", method:"POST" ) == 'http://localhost/foo'
             linkGenerator.link( controller:"bar", action:"save", method:"PUT" ) == 'http://localhost/foo2'
             linkGenerator.link( controller:"bar", action:"list") == 'http://localhost/bar'
+
     }
 
     LinkGenerator getLinkGenerator() {
