@@ -450,6 +450,11 @@ class MockUrlMapping implements UrlMapping {
 
     Object getViewName() { null }
 
+    @Override
+    String getHttpMethod() {
+        null
+    }
+
     void setParameterValues(Map parameterValues) {}
 
     void setParseRequest(boolean shouldParse) {
