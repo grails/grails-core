@@ -37,7 +37,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
 
     private final String urlPattern;
     private final String[] logicalUrls;
-    private String[] tokens;
+    private final String[] tokens;
 
     private List<Boolean> optionalTokens = new ArrayList<Boolean>();
 
@@ -45,15 +45,32 @@ public class DefaultUrlMappingData implements UrlMappingData {
         Assert.hasLength(urlPattern, "Argument [urlPattern] cannot be null or blank");
         Assert.isTrue(urlPattern.startsWith(SLASH), "Argument [urlPattern] is not a valid URL. It must start with '/' !");
 
-        this.urlPattern = StringUtils.replace(urlPattern, "(*)**", CAPTURED_DOUBLE_WILDCARD); // remove starting /
-        tokens = this.urlPattern.substring(1).split(SLASH);
+        String configuredPattern = configureUrlPattern(urlPattern);
+        this.urlPattern = configuredPattern;
+        tokens = tokenizeUrlPattern(configuredPattern);
         List<String> urls = new ArrayList<String>();
-        parseUrls(urls);
+        parseUrls(urls, tokens, optionalTokens);
 
         logicalUrls = urls.toArray(new String[urls.size()]);
     }
 
-    private void parseUrls(List<String> urls) {
+    private String[] tokenizeUrlPattern(String urlPattern) {
+        // remove starting / and split
+        return urlPattern.substring(1).split(SLASH);
+    }
+
+    private String configureUrlPattern(String urlPattern) {
+        return StringUtils.replace(urlPattern, "(*)**", CAPTURED_DOUBLE_WILDCARD);
+    }
+
+    private DefaultUrlMappingData(String urlPattern, String[] logicalUrls, String[] tokens, List<Boolean> optionalTokens) {
+        this.urlPattern = urlPattern;
+        this.logicalUrls = logicalUrls;
+        this.tokens = tokens;
+        this.optionalTokens = optionalTokens;
+    }
+
+    private void parseUrls(List<String> urls, String[] tokens, List<Boolean> optionalTokens) {
         StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < tokens.length; i++) {
@@ -102,5 +119,22 @@ public class DefaultUrlMappingData implements UrlMappingData {
     public boolean isOptional(int index) {
         if (index >= optionalTokens.size()) return true;
         return optionalTokens.get(index).equals(Boolean.TRUE);
+    }
+
+    @Override
+    public UrlMappingData createRelative(String path) {
+        Assert.hasLength(path, "Argument [path] cannot be null or blank");
+        Assert.isTrue(path.startsWith(SLASH), "Argument [path] with value ["+path+"] is not a valid URL. It must start with '/' !");
+
+        String newPattern = this.urlPattern + configureUrlPattern(path);
+
+        String[] tokens = tokenizeUrlPattern(newPattern);
+        List<String> urls = new ArrayList<String>();
+        List<Boolean> optionalTokens = new ArrayList<Boolean>();
+        parseUrls(urls, tokens, optionalTokens);
+        String[] logicalUrls = urls.toArray(new String[urls.size()]);
+
+
+        return new DefaultUrlMappingData(newPattern,logicalUrls, tokens,optionalTokens);
     }
 }

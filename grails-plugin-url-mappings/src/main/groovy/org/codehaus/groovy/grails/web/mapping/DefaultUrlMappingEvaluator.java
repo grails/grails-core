@@ -51,6 +51,7 @@ import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -421,9 +422,18 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             callable.call();
                         }
 
-                        UrlMapping urlMapping = getURLMappingForNamedArgs(namedArguments, urlData, methodName, isResponseCode);
-                        configureUrlMapping(urlMapping);
-                        return urlMapping;
+                        if(namedArguments.containsKey(RESOURCE)) {
+                            Object controller = namedArguments.get(RESOURCE);
+                            if(controller != null) {
+                                createSingleResourceRestfulMappings(controller.toString(),pluginName, urlData, previousConstraints);
+                            }
+                        }
+                        else {
+
+                            UrlMapping urlMapping = getURLMappingForNamedArgs(namedArguments, urlData, methodName, isResponseCode);
+                            configureUrlMapping(urlMapping);
+                            return urlMapping;
+                        }
                     }
                     return null;
                 }
@@ -457,6 +467,46 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             else {
                 return super.invokeMethod(methodName, arg);
             }
+        }
+
+        /**
+         * Takes a controller and creates the necessary URL mappings for a singular RESTful resource
+         *
+         * @param controllerName The controller name
+         * @param pluginName The name of the plugin
+         * @param urlData   The urlData instance
+         * @param previousConstraints Any constraints
+         */
+        protected void createSingleResourceRestfulMappings(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+
+
+            ConstrainedProperty[] constraintArray = previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
+            // GET /$controller/create -> action: 'create'
+            UrlMappingData createMappingData = urlData.createRelative("/create");
+            UrlMapping createUrlMapping = new RegexUrlMapping(createMappingData,controllerName,"create",pluginName, null, HttpMethod.GET.toString(), constraintArray, servletContext);
+            configureUrlMapping(createUrlMapping);
+
+            // POST /$controller -> action:'save'
+            UrlMapping saveUrlMapping = new RegexUrlMapping(urlData,controllerName,"save",pluginName, null, HttpMethod.POST.toString(),constraintArray, servletContext);
+            configureUrlMapping(saveUrlMapping);
+
+            // GET /$controller -> action:'show'
+            UrlMapping showUrlMapping = new RegexUrlMapping(urlData,controllerName,"show",pluginName, null, HttpMethod.GET.toString(),constraintArray, servletContext);
+            configureUrlMapping(showUrlMapping);
+
+            // GET /$controller/edit -> action:'edit'
+            UrlMappingData editMappingData = urlData.createRelative("/edit");
+            UrlMapping editUrlMapping = new RegexUrlMapping(editMappingData,controllerName,"edit",pluginName, null, HttpMethod.GET.toString(),constraintArray, servletContext);
+            configureUrlMapping(editUrlMapping);
+
+            // PUT /$controller -> action:'update'
+            UrlMapping updateUrlMapping = new RegexUrlMapping(urlData,controllerName,"update",pluginName, null, HttpMethod.PUT.toString(),constraintArray, servletContext);
+            configureUrlMapping(updateUrlMapping);
+
+            // DELETE /$controller -> action:'delete'
+            UrlMapping deleteUrlMapping = new RegexUrlMapping(urlData,controllerName,"delete",pluginName, null, HttpMethod.DELETE.toString(),constraintArray, servletContext);
+            configureUrlMapping(deleteUrlMapping);
+            
         }
 
         @SuppressWarnings("unchecked")
@@ -514,16 +564,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             Object controllerName;
             Object actionName;
             final Map bindingVariables = binding != null ? binding.getVariables() : null;
-            boolean restRequest = false;
-            if (namedArguments.containsKey(RESOURCE)) {
-                controllerName = namedArguments.get(RESOURCE);
-                actionName = DEFAULT_REST_MAPPING;
-                restRequest = true;
-            }
-            else {
-                controllerName = getControllerName(namedArguments, bindingVariables);
-                actionName = getActionName(namedArguments, bindingVariables);
-            }
+            controllerName = getControllerName(namedArguments, bindingVariables);
+            actionName = getActionName(namedArguments, bindingVariables);
             Object pluginName = getPluginName(namedArguments, bindingVariables);
             Object httpMethod = getHttpMethod(namedArguments, bindingVariables);
             Object viewName = getViewName(namedArguments, bindingVariables);
@@ -561,24 +603,15 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     }
                 }
                 else {
-                    LOG.error("URL mapping argument [exception] with value ["+ exceptionArg +"] must be a valid class");
+                    LOG.error("URL mapping argument [exception] with value [" + exceptionArg + "] must be a valid class");
                 }
             }
 
-            if (restRequest) {
-                urlMapping.setParseRequest(true);
-                urlMapping.setRestfulMapping(true);
-            }
-            else {
-                Object parseRequest = getParseRequest(namedArguments,bindingVariables);
-                if (parseRequest instanceof Boolean) {
-                    urlMapping.setParseRequest((Boolean) parseRequest);
-                }
+            Object parseRequest = getParseRequest(namedArguments,bindingVariables);
+            if (parseRequest instanceof Boolean) {
+                urlMapping.setParseRequest((Boolean) parseRequest);
             }
 
-            if (actionName instanceof Map) {
-                urlMapping.setRestfulMapping(true);
-            }
 
             return urlMapping;
         }
@@ -636,4 +669,5 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     null, sc);
         }
     }
+
 }
