@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.web.CamelCaseUrlConverter
 import org.springframework.mock.web.MockServletContext
 import spock.lang.Specification
 
@@ -10,7 +11,10 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
 
     def mappings = {
          "/foo"( controller:"bar", action:"save", method:"POST" )
+         "/foo2"( controller:"bar", action:"save", method:"PUT" )
          "/foo"( controller:"bar", action:"update", method:"PUT" )
+         "/bar"( controller:"bar", action:"list", method:"ANY" )
+         "/bar2"( controller:"bar", action:"list" )
 
     }
 
@@ -23,7 +27,7 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
             def mappings = evaluator.evaluateMappings mappings
 
         then:"The mapping only accepts POST requests"
-            mappings.size() == 2
+            mappings.size() == 5
             mappings[0].httpMethod == 'POST'
             mappings[1].httpMethod == 'PUT'
 
@@ -42,8 +46,28 @@ class UrlMappingsWithHttpMethodSpec extends Specification{
         then:"No results are found"
             results.size() == 0
 
+        expect:"A URL mapping that matches any HTTP method returns results"
+            urlMappingsHolder.matchAll('/bar', 'GET').size() == 1
+            urlMappingsHolder.matchAll('/bar', 'POST').size() == 1
+            urlMappingsHolder.matchAll('/bar2', 'GET').size() == 1
+
+
+
     }
 
+    void "Test that the HTTP method is taken into account when generating links"() {
+        expect:"A link is generated with a specified HTTP method the results are correct"
+            linkGenerator.link( controller:"bar", action:"save", method:"POST" ) == 'http://localhost/foo'
+            linkGenerator.link( controller:"bar", action:"save", method:"PUT" ) == 'http://localhost/foo2'
+            linkGenerator.link( controller:"bar", action:"list") == 'http://localhost/bar'
+    }
+
+    LinkGenerator getLinkGenerator() {
+        def generator = new DefaultLinkGenerator("http://localhost", null)
+        generator.grailsUrlConverter = new CamelCaseUrlConverter()
+        generator.urlMappingsHolder = urlMappingsHolder
+        return generator;
+    }
     UrlMappingsHolder getUrlMappingsHolder() {
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         def mappings = evaluator.evaluateMappings mappings

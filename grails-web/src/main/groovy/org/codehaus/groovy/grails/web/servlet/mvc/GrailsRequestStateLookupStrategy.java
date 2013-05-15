@@ -56,4 +56,9 @@ public interface GrailsRequestStateLookupStrategy {
      * @return The action name or null if not known
      */
     public String getActionName();
+
+    /**
+     * @return The HTTP method
+     */
+    public String getHttpMethod();
 }

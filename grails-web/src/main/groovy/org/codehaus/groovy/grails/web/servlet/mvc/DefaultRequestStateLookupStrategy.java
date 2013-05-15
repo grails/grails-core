@@ -62,6 +62,15 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
         return DEFAULT_REQUEST_ENCODING;
     }
 
+    @Override
+    public String getHttpMethod() {
+        final GrailsWebRequest req = getWebRequest();
+        if (req != null) {
+            return req.getCurrentRequest().getMethod();
+        }
+        return null;
+    }
+
     public String getControllerName() {
         final GrailsWebRequest req = getWebRequest();
         return getControllerNameInternal(req);

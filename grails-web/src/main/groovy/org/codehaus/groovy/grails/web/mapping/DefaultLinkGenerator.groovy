@@ -89,6 +89,10 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
             if (!urlAttribute || urlAttribute instanceof Map) {
                 final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
                 String controller = controllerAttribute == null ? requestStateLookupStrategy.getControllerName() : controllerAttribute.toString()
+
+                final methodAttribute = urlAttrs.get(ATTRIBUTE_METHOD)
+                String httpMethod = methodAttribute == null ? requestStateLookupStrategy.getHttpMethod() : methodAttribute.toString()
+
                 String action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
 
                 String convertedControllerName = grailsUrlConverter.toUrlElement(controller)
@@ -115,12 +119,12 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     params.put(ATTRIBUTE_ID, id)
                 }
                 def pluginName = attrs.get('plugin')?.toString()
-                UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,pluginName,params)
+                UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,pluginName,httpMethod,params)
                 if (mapping == null && isDefaultAction) {
-                    mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,pluginName,params)
+                    mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,pluginName,httpMethod,params)
                 }
                 if (mapping == null) {
-                    mapping = urlMappingsHolder.getReverseMapping(controller,action,pluginName,params)
+                    mapping = urlMappingsHolder.getReverseMapping(controller,action,pluginName,httpMethod,params)
                 }
 
                 boolean absolute = isAbsolute(attrs)
