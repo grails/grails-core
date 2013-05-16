@@ -58,7 +58,7 @@ public class GrailsPageResponseWrapper extends HttpServletResponseWrapper{
         super(response);
         this.parserSelector = parserSelector;
 
-        routablePrintWriter = new GrailsRoutablePrintWriter(new GrailsRoutablePrintWriter.DestinationFactory() {
+        routablePrintWriter = GrailsRoutablePrintWriter.newInstance(new GrailsRoutablePrintWriter.DestinationFactory() {
             public PrintWriter activateDestination() throws IOException {
                 return response.getWriter();
             }
