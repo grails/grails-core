@@ -261,12 +261,20 @@ class RestfulResourceMappingSpec extends Specification{
 
         expect:"The generated links to be correct"
 
+            linkGenerator.link(resource:"book/author", action:"create", bookId:1) == "http://localhost/books/1/author/create"
+            linkGenerator.link(resource:"book/author", action:"save", bookId:1) == "http://localhost/books/1/author"
+            linkGenerator.link(resource:"book/author", action:"show", bookId:1) == "http://localhost/books/1/author"
+            linkGenerator.link(resource:"book/author", action:"edit", bookId:1) == "http://localhost/books/1/author/edit"
+            linkGenerator.link(resource:"book/author", action:"delete", bookId:1) == "http://localhost/books/1/author"
+            linkGenerator.link(resource:"book/author", action:"update", bookId:1) == "http://localhost/books/1/author"
+
             linkGenerator.link(controller:"author", action:"create", method:"GET", params:[bookId:1]) == "http://localhost/books/1/author/create"
             linkGenerator.link(controller:"author", action:"save", method:"POST", params:[bookId:1]) == "http://localhost/books/1/author"
             linkGenerator.link(controller:"author", action:"show", method:"GET", params:[bookId:1]) == "http://localhost/books/1/author"
             linkGenerator.link(controller:"author", action:"edit", method:"GET", params:[bookId:1]) == "http://localhost/books/1/author/edit"
             linkGenerator.link(controller:"author", action:"delete", method:"DELETE", params:[bookId:1]) == "http://localhost/books/1/author"
             linkGenerator.link(controller:"author", action:"update", method:"PUT", params:[bookId:1]) == "http://localhost/books/1/author"
+
 
             linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/books/create"
             linkGenerator.link(controller:"book", action:"save", method:"POST") == "http://localhost/books"

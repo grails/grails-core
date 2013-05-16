@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 
@@ -36,6 +37,15 @@ import org.springframework.beans.factory.annotation.Qualifier
 @CompileStatic
 class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
+    private static final Map<String, String> REST_RESOURCE_ACTION_TO_HTTP_METHOD_MAP = [
+        create:"GET",
+        save:"POST",
+        show:"GET",
+        index:"GET",
+        edit:"GET",
+        update:"PUT",
+        delete:"DELETE"
+    ]
     String configuredServerBaseURL
     String contextPath
 
@@ -88,12 +98,43 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
             }
             if (!urlAttribute || urlAttribute instanceof Map) {
                 final controllerAttribute = urlAttrs.get(ATTRIBUTE_CONTROLLER)
-                String controller = controllerAttribute == null ? requestStateLookupStrategy.getControllerName() : controllerAttribute.toString()
-
-                final methodAttribute = urlAttrs.get(ATTRIBUTE_METHOD)
-                String httpMethod = methodAttribute == null ? requestStateLookupStrategy.getHttpMethod() ?: UrlMapping.ANY_HTTP_METHOD : methodAttribute.toString()
-
+                final resourceAttribute = urlAttrs.get(ATTRIBUTE_RESOURCE)
+                String controller
                 String action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
+                String httpMethod;
+                final methodAttribute = urlAttrs.get(ATTRIBUTE_METHOD)
+                final paramsAttribute = urlAttrs.get(ATTRIBUTE_PARAMS)
+                Map params = paramsAttribute && (paramsAttribute instanceof Map) ? (Map)paramsAttribute : [:]
+
+                if (resourceAttribute) {
+                    String resource = resourceAttribute.toString()
+                    List tokens = resource.contains('/') ?  resource.tokenize('/') :[resource]
+                    controller = tokens[-1]
+                    if (!action) {
+                        throw new GrailsTagException("[resource] attribute requires [action] attribute, but none specified");
+                    }
+                    if (tokens.size()>1) {
+                        for(t in tokens[0..-2]) {
+                            final key = "${t}Id".toString()
+                            params[key] = urlAttrs.remove(key)
+                        }
+                    }
+                    if (!methodAttribute) {
+                        httpMethod =  REST_RESOURCE_ACTION_TO_HTTP_METHOD_MAP.get(action.toString())
+                        if (!httpMethod) {
+                            throw new GrailsTagException("Cannot infer HTTP method from [action] attribute with value [$action], please specify explicit HTTP method via [method] attribute");
+                        }
+                    }
+                    else {
+                        httpMethod = methodAttribute == null ? requestStateLookupStrategy.getHttpMethod() ?: UrlMapping.ANY_HTTP_METHOD : methodAttribute.toString()
+                    }
+
+                }
+                else {
+                    controller = controllerAttribute == null ? requestStateLookupStrategy.getControllerName() : controllerAttribute.toString()
+                    httpMethod = methodAttribute == null ? requestStateLookupStrategy.getHttpMethod() ?: UrlMapping.ANY_HTTP_METHOD : methodAttribute.toString()
+                }
+
 
                 String convertedControllerName = grailsUrlConverter.toUrlElement(controller)
 
@@ -108,8 +149,8 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 }
                 def id = urlAttrs.get(ATTRIBUTE_ID)
                 String frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
-                final paramsAttribute = urlAttrs.get(ATTRIBUTE_PARAMS)
-                Map params = paramsAttribute && (paramsAttribute instanceof Map) ? (Map)paramsAttribute : [:]
+
+
                 def mappingName = urlAttrs.get(ATTRIBUTE_MAPPING)
                 if (mappingName != null) {
                     params.mappingName = mappingName

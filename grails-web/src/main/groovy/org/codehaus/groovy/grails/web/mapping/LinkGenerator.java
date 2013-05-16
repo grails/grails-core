@@ -29,6 +29,7 @@ import java.util.Set;
 public interface LinkGenerator {
 
     String ATTRIBUTE_CONTROLLER = "controller";
+    String ATTRIBUTE_RESOURCE = "resource";
     String ATTRIBUTE_ACTION = "action";
     String ATTRIBUTE_METHOD = "method";
     String ATTRIBUTE_URI = "uri";
@@ -83,6 +84,7 @@ public interface LinkGenerator {
      * Possible named parameters include:
      *
      * <ul>
+     *    <li>resource - If linking to a REST resource, the name of the resource or resource path to link to. Either 'resource' or 'controller' should be specified, but not both</li>
      *    <li>controller - The name of the controller to use in the link, if not specified the current controller will be linked</li>
      *    <li>action -  The name of the action to use in the link, if not specified the default action will be linked</li>
      *    <li>uri -  relative URI</li>
@@ -107,6 +109,7 @@ public interface LinkGenerator {
      * Possible named parameters include:
      *
      * <ul>
+     *    <li>resource - If linking to a REST resource, the name of the resource or resource path to link to. Either 'resource' or 'controller' should be specified, but not both</li>
      *    <li>controller - The name of the controller to use in the link, if not specified the current controller will be linked</li>
      *    <li>action -  The name of the action to use in the link, if not specified the default action will be linked</li>
      *    <li>uri -  relative URI</li>
