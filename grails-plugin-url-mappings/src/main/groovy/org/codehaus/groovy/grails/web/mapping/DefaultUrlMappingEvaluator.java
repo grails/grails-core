@@ -90,6 +90,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     private static final String EXCEPTION = "exception";
     private static final String PARSE_REQUEST = "parseRequest";
     private static final String RESOURCE = "resource";
+    private static final String RESOURCES = "resources";
     private GrailsPluginManager pluginManager;
     private WebApplicationContext applicationContext;
 
@@ -428,6 +429,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                 createSingleResourceRestfulMappings(controller.toString(),pluginName, urlData, previousConstraints);
                             }
                         }
+                        else if(namedArguments.containsKey(RESOURCES)) {
+                            Object controller = namedArguments.get(RESOURCES);
+                            if(controller != null) {
+                                createResourceRestfulMappings(controller.toString(), pluginName, urlData, previousConstraints);
+                            }
+                        }
                         else {
 
                             UrlMapping urlMapping = getURLMappingForNamedArgs(namedArguments, urlData, methodName, isResponseCode);
@@ -467,6 +474,55 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             else {
                 return super.invokeMethod(methodName, arg);
             }
+        }
+
+        private void createResourceRestfulMappings(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+            ConstrainedProperty[] constraintArray = previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
+
+            // GET /$controller -> action:'list'
+            UrlMapping listUrlMapping = new RegexUrlMapping(urlData, controllerName, "list", pluginName, null, HttpMethod.GET.toString(), constraintArray, servletContext);
+            configureUrlMapping(listUrlMapping);
+
+            // GET /$controller/create -> action:'create'
+            UrlMappingData createMappingData = urlData.createRelative("/create");
+            UrlMapping createUrlMapping = new RegexUrlMapping(createMappingData,controllerName,"create",pluginName, null, HttpMethod.GET.toString(), constraintArray, servletContext);
+            configureUrlMapping(createUrlMapping);
+
+            // POST /$controller -> action:'save'
+            UrlMapping saveUrlMapping = new RegexUrlMapping(urlData,controllerName,"save",pluginName, null, HttpMethod.POST.toString(),constraintArray, servletContext);
+            configureUrlMapping(saveUrlMapping);
+
+            // GET /$controller/$id -> action:'show'
+            UrlMappingData showUrlMappingData = urlData.createRelative('/' + CAPTURING_WILD_CARD);
+            List<ConstrainedProperty> showUrlMappingConstraints = new ArrayList<ConstrainedProperty>(previousConstraints);
+            showUrlMappingConstraints.add(new ConstrainedProperty(UrlMapping.class, "id", String.class));
+
+            UrlMapping showUrlMapping = new RegexUrlMapping(showUrlMappingData,controllerName,"show",pluginName, null, HttpMethod.GET.toString(), showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , servletContext);
+            configureUrlMapping(showUrlMapping);
+
+            // GET /$controller/$id/edit -> action:'edit'
+            UrlMappingData editUrlMappingData = urlData.createRelative('/' + CAPTURING_WILD_CARD + "/edit");
+            List<ConstrainedProperty> editUrlMappingConstraints = new ArrayList<ConstrainedProperty>(previousConstraints);
+            editUrlMappingConstraints.add(new ConstrainedProperty(UrlMapping.class, "id", String.class));
+
+            UrlMapping editUrlMapping = new RegexUrlMapping(editUrlMappingData,controllerName,"edit",pluginName, null, HttpMethod.GET.toString(), editUrlMappingConstraints.toArray(new ConstrainedProperty[editUrlMappingConstraints.size()]) , servletContext);
+            configureUrlMapping(editUrlMapping);
+
+            // PUT /$controller/$id -> action:'update'
+            UrlMappingData updateUrlMappingData = urlData.createRelative('/' + CAPTURING_WILD_CARD);
+            List<ConstrainedProperty> updateUrlMappingConstraints = new ArrayList<ConstrainedProperty>(previousConstraints);
+            updateUrlMappingConstraints.add(new ConstrainedProperty(UrlMapping.class, "id", String.class));
+
+            UrlMapping updateUrlMapping = new RegexUrlMapping(updateUrlMappingData,controllerName,"update",pluginName, null, HttpMethod.PUT.toString(),updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
+            configureUrlMapping(updateUrlMapping);
+
+            // DELETE /$controller/$id -> action:'delete'
+            UrlMappingData deleteUrlMappingData = urlData.createRelative('/' + CAPTURING_WILD_CARD);
+            List<ConstrainedProperty> deleteUrlMappingConstraints = new ArrayList<ConstrainedProperty>(previousConstraints);
+            deleteUrlMappingConstraints.add(new ConstrainedProperty(UrlMapping.class, "id", String.class));
+
+            UrlMapping deleteUrlMapping = new RegexUrlMapping(deleteUrlMappingData,controllerName,"delete",pluginName, null, HttpMethod.DELETE.toString(),deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , servletContext);
+            configureUrlMapping(deleteUrlMapping);
         }
 
         /**
