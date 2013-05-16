@@ -70,6 +70,7 @@ import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.grails.databinding.xml.GPathResultMap;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.validation.MapBindingResult;
 
@@ -429,18 +430,32 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             final ASTNode actionNode, final String actionName, final String paramName,
             final SourceUnit source, final GeneratorContext context) {
 
-        final Expression constructorCallExpression = new ConstructorCallExpression(
-                commandObjectNode, EMPTY_TUPLE);
+        final DeclarationExpression declareCoExpression = new DeclarationExpression(
+                new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
+        
+        wrapper.addStatement(new ExpressionStatement(declareCoExpression));
 
-        final Statement newCommandCode = new ExpressionStatement(
-                new DeclarationExpression(new VariableExpression(paramName, commandObjectNode),
-                        Token.newSymbol(Types.EQUALS, 0, 0), constructorCallExpression));
+        final Statement constructWithJsonBlock = getStatementToInitializeCommandObjectWithJson(commandObjectNode, paramName);
+        
+        final Statement constructWithXmlBlock = getStatementToInitializeCommandObjectWithXml(commandObjectNode, paramName);
+        
+        final Statement constructAndBindParamsBlock = getStatementToInitializeCommandObject(commandObjectNode, paramName);
+        
+        final Expression contentTypeExpression = new PropertyExpression(new VariableExpression("request"), "contentType");
+        final Expression isJsonRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
+                new ConstantExpression("application/json"));
 
-        wrapper.addStatement(newCommandCode);
-
-        final Statement statement = getCommandObjectDataBindingStatement(
-                controllerNode, paramName, commandObjectNode);
-        wrapper.addStatement(statement);
+        final Expression isXmlRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
+                new ConstantExpression("application/xml"));
+        
+        final Statement isJsonRequestStatement = new IfStatement(
+                new BooleanExpression(isJsonRequestExpression),
+                constructWithJsonBlock,
+                new IfStatement(new BooleanExpression(isXmlRequestExpression), 
+                                constructWithXmlBlock, 
+                                constructAndBindParamsBlock));
+        
+        wrapper.addStatement(isJsonRequestStatement);
 
         final Statement autoWireCommandObjectStatement = getAutoWireCommandObjectStatement(paramName);
         wrapper.addStatement(autoWireCommandObjectStatement);
@@ -500,6 +515,65 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         new DefaultASTDatabindingHelper().injectDatabindingCode(source, context, commandObjectNode);
     }
 
+    protected Statement getStatementToInitializeCommandObject(final ClassNode commandObjectNode,
+                                                              final String paramName) {
+        final ArgumentListExpression getCommandObjectBindingParamsArgs = new ArgumentListExpression();
+        getCommandObjectBindingParamsArgs.addExpression(new MethodCallExpression(
+                new VariableExpression(paramName), "getClass", ZERO_ARGS));
+        getCommandObjectBindingParamsArgs.addExpression(PARAMS_EXPRESSION);
+        final Expression invokeGetCommandObjectBindingParamsExpression = new StaticMethodCallExpression(
+                new ClassNode(WebMetaUtils.class), "getCommandObjectBindingParams",
+                getCommandObjectBindingParamsArgs);
+        return getStatementToInitializeAndDataBindObject(commandObjectNode, paramName, invokeGetCommandObjectBindingParamsExpression);
+    }
+
+    /**
+     * Returns a statement that will initialize variableName with
+     * a call to the no-arg constructor of classNode and then 
+     * invoke this.bindData(variableName, valueToBind)
+     * 
+     * @param classNode type to instantiate
+     * @param variableName the name of the variable to initialize
+     * @param valueToBind the value to bind
+     * @return a Statement which does all that is described above
+     */
+    protected Statement getStatementToInitializeAndDataBindObject(
+            final ClassNode classNode, final String variableName,
+            final Expression valueToBind) {
+        final Expression ctorCall = new ConstructorCallExpression(classNode, 
+                                                                  EMPTY_TUPLE);
+        
+        final Expression intitializeObjectExpression = new BinaryExpression(
+                new VariableExpression(variableName), Token.newSymbol(Types.EQUALS, 0, 0), ctorCall);
+        
+        final Statement initializeObjectStatement = new ExpressionStatement(intitializeObjectExpression);
+        
+        final ArgumentListExpression arguments = new ArgumentListExpression();
+        arguments.addExpression(new VariableExpression(variableName));
+        arguments.addExpression(valueToBind);
+
+        final MethodCallExpression bindDataMethodCallExpression = new MethodCallExpression(
+                THIS_EXPRESSION, "bindData", arguments);
+        
+        final BlockStatement block = new BlockStatement();
+        block.addStatement(initializeObjectStatement);
+        block.addStatement(new ExpressionStatement(bindDataMethodCallExpression));
+        return block;
+    }
+    
+    protected Statement getStatementToInitializeCommandObjectWithJson(final ClassNode commandObjectNode, final String paramName) {
+        final Expression requestJsonProperty = new PropertyExpression(new VariableExpression("request"), "JSON");
+
+        return getStatementToInitializeAndDataBindObject(commandObjectNode, paramName, requestJsonProperty);
+    }
+
+    protected Statement getStatementToInitializeCommandObjectWithXml(final ClassNode commandObjectNode, final String paramName) {
+        final Expression requestXmlProperty = new PropertyExpression(new VariableExpression("request"), "XML");
+        final Expression newGPathResultMapExpression = new ConstructorCallExpression(new ClassNode(GPathResultMap.class), requestXmlProperty);
+        
+        return getStatementToInitializeAndDataBindObject(commandObjectNode, paramName, newGPathResultMapExpression);
+    }
+
     /**
      * Checks to see if a Module is defined at a path which includes the specified substring
      *
@@ -519,41 +593,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
             substringFoundInDescription = commandObjectModuleDescription.contains(substring);
         }
         return substringFoundInDescription;
-    }
-
-    protected Statement getCommandObjectDataBindingStatement(final ClassNode controllerClassNode, final String paramName,
-            ClassNode commandObjectClassNode) {
-
-        BlockStatement bindingStatement = new BlockStatement();
-        final ArgumentListExpression getCommandObjectBindingParamsArgs = new ArgumentListExpression();
-        getCommandObjectBindingParamsArgs.addExpression(new MethodCallExpression(
-                new VariableExpression(paramName), "getClass", ZERO_ARGS));
-        getCommandObjectBindingParamsArgs.addExpression(PARAMS_EXPRESSION);
-        Expression invokeGetCommandObjectBindingParamsExpression = new StaticMethodCallExpression(
-                new ClassNode(WebMetaUtils.class), "getCommandObjectBindingParams",
-                getCommandObjectBindingParamsArgs);
-        final Statement intializeCommandObjectParams = new ExpressionStatement(
-                new DeclarationExpression(new VariableExpression(
-                        "$commandObjectParams", new ClassNode(Map.class)),
-                        Token.newSymbol(Types.EQUALS, 0, 0),
-                        invokeGetCommandObjectBindingParamsExpression));
-
-        bindingStatement.addStatement(intializeCommandObjectParams);
-
-        final ArgumentListExpression arguments = new ArgumentListExpression();
-        arguments.addExpression(new VariableExpression(paramName));
-        arguments.addExpression(new VariableExpression(new VariableExpression("$commandObjectParams")));
-
-        final MethodCallExpression bindDataMethodCallExpression = new MethodCallExpression(
-                THIS_EXPRESSION, "bindData", arguments);
-//        final MethodNode bindDataMethodNode = controllerClassNode.getMethod("bindData", new Parameter[]{
-//                new Parameter(new ClassNode(Object.class), "target"),
-//                new Parameter(new ClassNode(Object.class), "params")});
-//        if (bindDataMethodNode != null) {
-//            bindDataMethodCallExpression.setMethodTarget(bindDataMethodNode);
-//        }
-        bindingStatement.addStatement(new ExpressionStatement(bindDataMethodCallExpression));
-        return bindingStatement;
     }
 
     protected Statement getAutoWireCommandObjectStatement(
