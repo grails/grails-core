@@ -252,6 +252,9 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                                          String httpMethod, Map params, boolean useDefault) {
         UrlMapping mapping = null;
 
+        if(httpMethod == null) {
+            httpMethod = UrlMapping.ANY_HTTP_METHOD;
+        }
         mapping = namedMappings.get(params.remove("mappingName"));
         if (mapping == null) {
             mapping = lookupMapping(controller, action, pluginName,httpMethod, params);

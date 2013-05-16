@@ -12,8 +12,6 @@ mappings {
       controller = "book"
       action = [GET:"list", DELETE:"delete", POST:"update", PUT:"save"]
   }
-
-  "/authors"(resource:"author")
 }
 '''
 
@@ -27,39 +25,6 @@ mappings {
 }
 '''
 
-   void testRestfulMappingsWithResource() {
-        def res = new ByteArrayResource(mappingScript.bytes)
-        def mappings = evaluator.evaluateMappings(res)
-
-        def holder = new DefaultUrlMappingsHolder(mappings)
-        assert webRequest
-        webRequest.currentRequest.method = "GET"
-
-        def info = holder.match("/authors")
-
-        assertTrue "should have been a request parsing mapping", info.parsingRequest
-
-        assertEquals "author", info.controllerName
-        assertEquals "show", info.actionName
-
-        webRequest.currentRequest.method = "DELETE"
-
-        info = holder.match("/authors")
-        assertEquals "author", info.controllerName
-        assertEquals "delete", info.actionName
-
-        webRequest.currentRequest.method = "POST"
-
-        info = holder.match("/authors")
-        assertEquals "author", info.controllerName
-        assertEquals "save", info.actionName
-
-        webRequest.currentRequest.method = "PUT"
-
-        info = holder.match("/authors")
-        assertEquals "author", info.controllerName
-        assertEquals "update", info.actionName
-    }
 
     void testResultMappingsWithAbsolutePaths() {
         def res = new ByteArrayResource(mappingScript.bytes)
