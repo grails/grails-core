@@ -32,6 +32,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -40,14 +41,17 @@ import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.MethodInvocationException;
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.beans.factory.Aware;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.QualifierAnnotationAutowireCandidateResolver;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.CglibSubclassingInstantiationStrategy;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.support.RootBeanDefinition;
@@ -185,6 +189,32 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
             super.autowireBeanProperties(existingBean, autowireMode, dependencyCheck);
         }
     }
+    
+    @Override
+    protected void autowireByName(String beanName, AbstractBeanDefinition mbd, final BeanWrapper bw, MutablePropertyValues pvs) {
+        if(!DISABLE_AUTOWIRE_BY_NAME_OPTIMIZATIONS && mbd.isPrototype()) {
+            Map<String, PropertyDescriptor> autowireableBeanProps = resolveAutowireablePropertyDescriptorsForClass(bw.getWrappedClass(), new Callable<BeanWrapper>() {
+                public BeanWrapper call() throws Exception {
+                    return bw;
+                }
+            });
+            for (Map.Entry<String, PropertyDescriptor> entry : autowireableBeanProps.entrySet()) {
+                final PropertyDescriptor pd = entry.getValue();
+                final String propertyName = pd.getName(); 
+                if(!pvs.contains(propertyName)) {
+                    final String otherBeanName = entry.getKey();
+                    final Object otherBean = getBean(otherBeanName);
+                    pvs.add(propertyName, otherBean);
+                    if (logger.isDebugEnabled()) {
+                        logger.debug("Added autowiring by name from bean name '" + beanName +
+                                "' via property '" + propertyName + "' to bean named '" + propertyName + "'");
+                    }
+                }
+            }
+        } else {
+            super.autowireByName(beanName, mbd, bw, pvs);
+        }
+    }
 
     protected void populateBeanInAutowireByName(final Object existingBean) {
         // list of bean properties for that a bean exists
@@ -234,15 +264,30 @@ public class ReloadAwareAutowireCapableBeanFactory extends DefaultListableBeanFa
             }
         }
     }
-
+    
     protected Map<String, PropertyDescriptor> resolveAutowireablePropertyDescriptors(final Object existingBean) {
-        Class<?> beanClass = ClassUtils.getUserClass(existingBean.getClass());
+        return resolveAutowireablePropertyDescriptorsForClass(existingBean.getClass(), new Callable<BeanWrapper>() {
+            public BeanWrapper call() throws Exception {
+                BeanWrapperImpl bw = new BeanWrapperImpl(false);
+                bw.setWrappedInstance(existingBean);
+                bw.setConversionService(getConversionService());
+                return bw;
+            }
+        });
+    }
+    
+    protected Map<String, PropertyDescriptor> resolveAutowireablePropertyDescriptorsForClass(Class<?> beanClass, final Callable<BeanWrapper> beanWrapperCallback) {
+        beanClass = ClassUtils.getUserClass(beanClass);
         Map<String, PropertyDescriptor> autowireableBeanProps = autowireableBeanPropsCacheForClass.get(beanClass);
         if (autowireableBeanProps == null) {
             autowireableBeanProps = new HashMap<String, PropertyDescriptor>();
-            BeanWrapperImpl bw = new BeanWrapperImpl(false);
-            bw.setWrappedInstance(existingBean);
-            bw.setConversionService(getConversionService());
+            BeanWrapper bw=null;
+            try {
+                bw = beanWrapperCallback.call();
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             PropertyDescriptor[] pds = bw.getPropertyDescriptors();
             for (PropertyDescriptor pd : pds) {
                 if (containsBean(pd.getName()) && pd.getWriteMethod() != null && !isExcludedFromDependencyCheck(pd)
