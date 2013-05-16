@@ -319,6 +319,22 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             }
         }
 
+        /**
+         * Define a namespace
+         *
+         * @param uri The URI
+         * @param mappings The mappings
+         */
+        public void namespace(String uri, Closure mappings) {
+
+            try {
+                parentResources.push(new ParentResource(null, uri, true));
+                mappings.call();
+            } finally {
+                parentResources.pop();
+            }
+        }
+
         @Override
         public Object invokeMethod(String methodName, Object arg) {
             if (binding == null) {
@@ -498,8 +514,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         uriBuilder.append(parentResource.uri);
                     }
                     else {
-                        uriBuilder.append(parentResource.uri).append(SLASH).append(CAPTURING_WILD_CARD);
-                        previousConstraints.add(new ConstrainedProperty(UrlMapping.class,parentResource.controllerName + "Id", String.class));
+                        if(parentResource.controllerName != null) {
+                            uriBuilder.append(parentResource.uri).append(SLASH).append(CAPTURING_WILD_CARD);
+                            previousConstraints.add(new ConstrainedProperty(UrlMapping.class,parentResource.controllerName + "Id", String.class));
+                        }
                     }
                 }
 

@@ -128,6 +128,53 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'
     }
 
+    void "Test a single resource within a namespace produces the correct URL mappings"() {
+        given:"A URL mappings definition with a single resource"
+        def urlMappingsHolder = getUrlMappingsHolder {
+            namespace "/admin", {
+                "/book"(resource:"book")
+            }
+        }
+
+        when:"The URLs are obtained"
+        def urlMappings = urlMappingsHolder.urlMappings
+
+        then:"There are six of them in total"
+        urlMappings.size() == 6
+
+        expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
+        urlMappingsHolder.matchAll('/admin/book/create', 'GET')
+        urlMappingsHolder.matchAll('/admin/book/create', 'GET')[0].actionName == 'create'
+        urlMappingsHolder.matchAll('/admin/book/create', 'GET')[0].httpMethod == 'GET'
+
+        !urlMappingsHolder.matchAll('/admin/book/create', 'POST')
+        !urlMappingsHolder.matchAll('/admin/book/create', 'PUT')
+        !urlMappingsHolder.matchAll('/admin/book/create', 'DELETE')
+
+        urlMappingsHolder.matchAll('/admin/book/edit', 'GET')
+        urlMappingsHolder.matchAll('/admin/book/edit', 'GET')[0].actionName == 'edit'
+        urlMappingsHolder.matchAll('/admin/book/edit', 'GET')[0].httpMethod == 'GET'
+        !urlMappingsHolder.matchAll('/admin/book/edit', 'POST')
+        !urlMappingsHolder.matchAll('/admin/book/edit', 'PUT')
+        !urlMappingsHolder.matchAll('/admin/book/edit', 'DELETE')
+
+        urlMappingsHolder.matchAll('/admin/book', 'POST')
+        urlMappingsHolder.matchAll('/admin/book', 'POST')[0].actionName == 'save'
+        urlMappingsHolder.matchAll('/admin/book', 'POST')[0].httpMethod == 'POST'
+
+        urlMappingsHolder.matchAll('/admin/book', 'PUT')
+        urlMappingsHolder.matchAll('/admin/book', 'PUT')[0].actionName == 'update'
+        urlMappingsHolder.matchAll('/admin/book', 'PUT')[0].httpMethod == 'PUT'
+
+        urlMappingsHolder.matchAll('/admin/book', 'DELETE')
+        urlMappingsHolder.matchAll('/admin/book', 'DELETE')[0].actionName == 'delete'
+        urlMappingsHolder.matchAll('/admin/book', 'DELETE')[0].httpMethod == 'DELETE'
+
+        urlMappingsHolder.matchAll('/admin/book', 'GET')
+        urlMappingsHolder.matchAll('/admin/book', 'GET')[0].actionName == 'show'
+        urlMappingsHolder.matchAll('/admin/book', 'GET')[0].httpMethod == 'GET'
+    }
+
     void "Test a single resource produces the correct URL mappings"() {
         given:"A URL mappings definition with a single resource"
             def urlMappingsHolder = getUrlMappingsHolder {
