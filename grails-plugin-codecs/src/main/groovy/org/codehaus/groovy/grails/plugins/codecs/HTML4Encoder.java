@@ -17,6 +17,8 @@ package org.codehaus.groovy.grails.plugins.codecs;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,6 +39,8 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
     private static final Log log = LogFactory.getLog(HTML4Encoder.class);
     static final String HTML4_CODEC_NAME = "HTML4";
     static final CodecIdentifier HTML4_CODEC_IDENTIFIER = new DefaultCodecIdentifier(HTML4_CODEC_NAME);
+    Map<Character, String> replacements = new ConcurrentHashMap<Character, String>();
+    private static final String NULL_MARKER = "NULL_MARKER";
 
     public HTML4Encoder() {
         super(HTML4_CODEC_IDENTIFIER);
@@ -50,7 +54,13 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
      */
     @Override
     protected String escapeCharacter(char ch, char previousChar) {
-        return StreamingHTMLEncoderHelper.convertToReference(ch);
+        Character key = Character.valueOf(ch);
+        String replacement = replacements.get(key);
+        if(replacement==null) {
+            replacement = StreamingHTMLEncoderHelper.convertToReference(ch);
+            replacements.put(key, replacement != null ? replacement : NULL_MARKER);
+        }
+        return replacement != NULL_MARKER ? replacement : null;
     }
 
     /**
@@ -89,7 +99,13 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
                 return (String)ReflectionUtils.invokeMethod(mapMethod, instance, c);
             }
             else {
-                return HtmlUtils.htmlEscape(String.valueOf(c));
+                String charAsString = String.valueOf(c);
+                String replacement = HtmlUtils.htmlEscape(charAsString);
+                if(charAsString.equals(replacement)) {
+                    return null;
+                } else {
+                    return replacement;
+                }
             }
         }
     }

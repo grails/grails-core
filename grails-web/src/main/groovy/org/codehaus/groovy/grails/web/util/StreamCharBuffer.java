@@ -418,26 +418,28 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
     }
     
     private void startUsingConnectedWritersWriter() throws IOException {
-        List<ConnectedWriter> connectedWriters=new ArrayList<ConnectedWriter>();
-        
-        for(ConnectToWriter connectToWriter : connectToWriters) {
-            for(Writer writer : connectToWriter.getWriters()) {
-                Writer target=writer;
-                if (target instanceof GrailsWrappedWriter) {
-                    target = ((GrailsWrappedWriter)target).unwrap();
+        if(connectedWritersWriter == null) {
+            List<ConnectedWriter> connectedWriters=new ArrayList<ConnectedWriter>();
+            
+            for(ConnectToWriter connectToWriter : connectToWriters) {
+                for(Writer writer : connectToWriter.getWriters()) {
+                    Writer target=writer;
+                    if (target instanceof GrailsWrappedWriter) {
+                        target = ((GrailsWrappedWriter)target).unwrap();
+                    }
+                    if(target==null) {
+                        throw new NullPointerException("target is null");
+                    }
+                    connectedWriters.add(new ConnectedWriter(target, connectToWriter.isAutoFlush()));
                 }
-                if(target==null) {
-                    throw new NullPointerException("target is null");
-                }
-                connectedWriters.add(new ConnectedWriter(target, connectToWriter.isAutoFlush()));
             }
-        }
-        
-        if (connectedWriters.size() > 1) {
-            connectedWritersWriter = new MultiOutputWriter(connectedWriters);
-        }
-        else {
-            connectedWritersWriter = new SingleOutputWriter(connectedWriters.get(0));
+            
+            if (connectedWriters.size() > 1) {
+                connectedWritersWriter = new MultiOutputWriter(connectedWriters);
+            }
+            else {
+                connectedWritersWriter = new SingleOutputWriter(connectedWriters.get(0));
+            }
         }
     }
 

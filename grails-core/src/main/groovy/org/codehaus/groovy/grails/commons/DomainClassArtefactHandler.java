@@ -16,12 +16,15 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.persistence.Entity;
+import grails.util.Environment;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils;
 
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
+import org.codehaus.groovy.grails.validation.ConstraintEvalUtils;
 
 /**
  * Evaluates the conventions that define a domain class in Grails.
@@ -37,6 +40,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public DomainClassArtefactHandler() {
         super(TYPE, GrailsDomainClass.class, DefaultGrailsDomainClass.class, null, true);
     }
+    private static boolean developmentMode = Environment.isDevelopmentMode();
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         if (grailsApplication != null) {
@@ -67,9 +71,25 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public boolean isArtefactClass(Class clazz) {
         return isDomainClass(clazz);
     }
+    
+    static final Map<Integer, Boolean> DOMAIN_CLASS_CHECK_CACHE=new ConcurrentHashMap<Integer, Boolean>();
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static boolean isDomainClass(Class clazz) {
+    public static boolean isDomainClass(Class<?> clazz) {
+        Integer cacheKey = System.identityHashCode(clazz);
+        
+        Boolean retval = DOMAIN_CLASS_CHECK_CACHE.get(cacheKey);
+        if(retval != null) {
+            return retval;
+        }
+        
+        retval = doIsDomainClassCheck(clazz);
+        if(!developmentMode) {
+            DOMAIN_CLASS_CHECK_CACHE.put(cacheKey, retval);
+        }
+        return retval;
+    }
+    
+    private static boolean doIsDomainClassCheck(Class<?> clazz) {
         // it's not a closure
         if (clazz == null) return false;
 
@@ -77,13 +97,13 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
             return false;
         }
 
-        if (GrailsClassUtils.isJdk5Enum(clazz)) return false;
+        if (clazz.isEnum()) return false;
 
         if (clazz.getAnnotation(Entity.class) != null) {
             return true;
         }
 
-        Class testClass = clazz;
+        Class<?> testClass = clazz;
         while (testClass != null && !testClass.equals(GroovyObject.class) && !testClass.equals(Object.class)) {
             try {
                 // make sure the identify and version field exist
