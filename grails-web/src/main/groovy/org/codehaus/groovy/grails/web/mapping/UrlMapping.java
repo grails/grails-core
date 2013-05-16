@@ -131,8 +131,17 @@ public interface UrlMapping extends Comparable, UrlCreator {
      */
     void setParseRequest(boolean shouldParse);
 
+    /**
+     * The name of the mapping in case of named URL mapping
+     *
+     * @return The mapping name
+     */
     String getMappingName();
 
+    /**
+     * Sets the name of the URL mapping
+     * @param name The name of the URL mapping
+     */
     void setMappingName(String name);
 
     /**

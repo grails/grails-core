@@ -9,12 +9,83 @@ import spock.lang.Specification
  */
 class RestfulResourceMappingSpec extends Specification{
 
-    def mappings = {
-        "/book"(resource:"book")
-        "/books"(resources:"book")
-        "/authors"(resources: "author") {
-            "/books"(resource:"book")
-        }
+    void "Test nested resources produce the correct URL mappings"() {
+        given:"A URL mappings definition with nested resources"
+            def urlMappingsHolder = getUrlMappingsHolder {
+                "/books"(resources: "book") {
+                    "/author"(resource:"author")
+                }
+            }
+        when:"The URLs are obtained"
+            def urlMappings = urlMappingsHolder.urlMappings
+
+        then:"There are seven of them in total"
+            urlMappings.size() == 13
+
+        expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
+            !urlMappingsHolder.matchAll('/author/create', 'GET')
+            !urlMappingsHolder.matchAll('/author/edit', 'GET')
+            !urlMappingsHolder.matchAll('/author', 'POST')
+            !urlMappingsHolder.matchAll('/author', 'PUT')
+            !urlMappingsHolder.matchAll('/author', 'DELETE')
+            !urlMappingsHolder.matchAll('/author', 'GET')
+            urlMappingsHolder.matchAll('/books/create', 'GET')
+            urlMappingsHolder.matchAll('/books/create', 'GET')[0].actionName == 'create'
+            urlMappingsHolder.matchAll('/books/create', 'GET')[0].httpMethod == 'GET'
+
+            urlMappingsHolder.matchAll('/books/1/edit', 'GET')
+            urlMappingsHolder.matchAll('/books/1/edit', 'GET')[0].actionName == 'edit'
+            urlMappingsHolder.matchAll('/books/1/edit', 'GET')[0].httpMethod == 'GET'
+            !urlMappingsHolder.matchAll('/books/1/edit', 'POST')
+            !urlMappingsHolder.matchAll('/books/1/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/edit', 'DELETE')
+
+            urlMappingsHolder.matchAll('/books', 'POST')
+            urlMappingsHolder.matchAll('/books', 'POST')[0].actionName == 'save'
+            urlMappingsHolder.matchAll('/books', 'POST')[0].httpMethod == 'POST'
+
+            urlMappingsHolder.matchAll('/books/1', 'PUT')
+            urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
+            urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/books/1', 'DELETE')
+            urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].actionName == 'delete'
+            urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].httpMethod == 'DELETE'
+
+            urlMappingsHolder.matchAll('/books', 'GET')
+            urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'list'
+            urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'
+
+            urlMappingsHolder.matchAll('/books/1/author/create', 'GET')
+            urlMappingsHolder.matchAll('/books/1/author/create', 'GET')[0].actionName == 'create'
+            urlMappingsHolder.matchAll('/books/1/author/create', 'GET')[0].httpMethod == 'GET'
+
+            !urlMappingsHolder.matchAll('/books/1/author/create', 'POST')
+            !urlMappingsHolder.matchAll('/books/1/author/create', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/author/create', 'DELETE')
+
+            urlMappingsHolder.matchAll('/books/1/author/edit', 'GET')
+            urlMappingsHolder.matchAll('/books/1/author/edit', 'GET')[0].actionName == 'edit'
+            urlMappingsHolder.matchAll('/books/1/author/edit', 'GET')[0].httpMethod == 'GET'
+            !urlMappingsHolder.matchAll('/books/1/author/edit', 'POST')
+            !urlMappingsHolder.matchAll('/books/1/author/edit', 'PUT')
+            !urlMappingsHolder.matchAll('/books/1/author/edit', 'DELETE')
+
+            urlMappingsHolder.matchAll('/books/1/author', 'POST')
+            urlMappingsHolder.matchAll('/books/1/author', 'POST')[0].actionName == 'save'
+            urlMappingsHolder.matchAll('/books/1/author', 'POST')[0].httpMethod == 'POST'
+
+            urlMappingsHolder.matchAll('/books/1/author', 'PUT')
+            urlMappingsHolder.matchAll('/books/1/author', 'PUT')[0].actionName == 'update'
+            urlMappingsHolder.matchAll('/books/1/author', 'PUT')[0].httpMethod == 'PUT'
+
+            urlMappingsHolder.matchAll('/books/1/author', 'DELETE')
+            urlMappingsHolder.matchAll('/books/1/author', 'DELETE')[0].actionName == 'delete'
+            urlMappingsHolder.matchAll('/books/1/author', 'DELETE')[0].httpMethod == 'DELETE'
+
+            urlMappingsHolder.matchAll('/books/1/author', 'GET')
+            urlMappingsHolder.matchAll('/books/1/author', 'GET')[0].actionName == 'show'
+            urlMappingsHolder.matchAll('/books/1/author', 'GET')[0].httpMethod == 'GET'
     }
 
     void "Test multiple resources produce the correct URL mappings"() {
@@ -131,6 +202,32 @@ class RestfulResourceMappingSpec extends Specification{
             linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
             linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
             linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+    }
+
+    void "Test it is possible to link to nested resources"() {
+        given:"A link generator with nested resources"
+            def linkGenerator = getLinkGenerator {
+                "/books"(resources: "book") {
+                    "/author"(resource:"author")
+                }
+            }
+
+        expect:"The generated links to be correct"
+
+            linkGenerator.link(controller:"author", action:"create", method:"GET", params:[bookId:1]) == "http://localhost/books/1/author/create"
+            linkGenerator.link(controller:"author", action:"save", method:"POST", params:[bookId:1]) == "http://localhost/books/1/author"
+            linkGenerator.link(controller:"author", action:"show", method:"GET", params:[bookId:1]) == "http://localhost/books/1/author"
+            linkGenerator.link(controller:"author", action:"edit", method:"GET", params:[bookId:1]) == "http://localhost/books/1/author/edit"
+            linkGenerator.link(controller:"author", action:"delete", method:"DELETE", params:[bookId:1]) == "http://localhost/books/1/author"
+            linkGenerator.link(controller:"author", action:"update", method:"PUT", params:[bookId:1]) == "http://localhost/books/1/author"
+
+            linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/books/create"
+            linkGenerator.link(controller:"book", action:"save", method:"POST") == "http://localhost/books"
+            linkGenerator.link(controller:"book", action:"show", id:1, method:"GET") == "http://localhost/books/1"
+            linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
+            linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
+            linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+
     }
 
 
