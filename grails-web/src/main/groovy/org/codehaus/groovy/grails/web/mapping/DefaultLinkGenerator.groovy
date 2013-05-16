@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpMethod
 
 /**
  * A link generating service for applications to use when generating links.
@@ -110,19 +111,16 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     String resource = resourceAttribute.toString()
                     List tokens = resource.contains('/') ?  resource.tokenize('/') :[resource]
                     controller = tokens[-1]
-                    if (!action) {
-                        throw new GrailsTagException("[resource] attribute requires [action] attribute, but none specified");
-                    }
                     if (tokens.size()>1) {
                         for(t in tokens[0..-2]) {
                             final key = "${t}Id".toString()
                             params[key] = urlAttrs.remove(key)
                         }
                     }
-                    if (!methodAttribute) {
+                    if (!methodAttribute && action) {
                         httpMethod =  REST_RESOURCE_ACTION_TO_HTTP_METHOD_MAP.get(action.toString())
                         if (!httpMethod) {
-                            throw new GrailsTagException("Cannot infer HTTP method from [action] attribute with value [$action], please specify explicit HTTP method via [method] attribute");
+                            httpMethod = HttpMethod.GET.toString()
                         }
                     }
                     else {
