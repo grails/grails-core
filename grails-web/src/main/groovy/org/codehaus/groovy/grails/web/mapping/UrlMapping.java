@@ -34,6 +34,14 @@ import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 @SuppressWarnings("rawtypes")
 public interface UrlMapping extends Comparable, UrlCreator {
 
+    String WILDCARD = "*";
+    String CAPTURED_WILDCARD = "(*)";
+    String SLASH = "/";
+    char QUESTION_MARK = '?';
+    char AMPERSAND = '&';
+    String DOUBLE_WILDCARD = "**";
+    String CAPTURED_DOUBLE_WILDCARD = "(**)";
+
     /**
      * The controller this mapping matches
      */

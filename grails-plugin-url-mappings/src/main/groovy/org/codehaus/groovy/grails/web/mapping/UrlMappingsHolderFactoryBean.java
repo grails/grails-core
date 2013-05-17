@@ -84,7 +84,7 @@ public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHold
             for (GrailsClass mapping : mappings) {
                 GrailsUrlMappingsClass mappingClass = (GrailsUrlMappingsClass) mapping;
                 List grailsClassMappings;
-                if (Script.class.isAssignableFrom(mappingClass.getClass())) {
+                if (Script.class.isAssignableFrom(mappingClass.getClazz())) {
                     grailsClassMappings = mappingEvaluator.evaluateMappings(mappingClass.getClazz());
                 }
                 else {

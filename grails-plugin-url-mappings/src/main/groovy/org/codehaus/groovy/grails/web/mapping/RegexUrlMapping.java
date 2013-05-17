@@ -69,16 +69,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
     private Pattern[] patterns;
     private UrlMappingData urlData;
-
-    private static final String WILDCARD = "*";
-    private static final String CAPTURED_WILDCARD = "(*)";
-    private static final String SLASH = "/";
-    private static final char QUESTION_MARK = '?';
-    private static final char AMPERSAND = '&';
-    private static final String DOUBLE_WILDCARD = "**";
     private static final String DEFAULT_ENCODING = "UTF-8";
-
-    private static final String CAPTURED_DOUBLE_WILDCARD = "(**)";
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
     private static final Pattern DOUBLE_WILDCARD_PATTERN = Pattern.compile("\\(\\*\\*?\\)");
     private GrailsApplication grailsApplication;
