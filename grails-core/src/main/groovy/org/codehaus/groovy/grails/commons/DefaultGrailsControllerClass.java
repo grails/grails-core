@@ -57,6 +57,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private static final String SLASH = "/";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
+    private static final String NAMESPACE_PROPERTY = "namespace";
     private static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
 
     private static final String EXCEPT = "except";
@@ -87,10 +88,12 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
     }
 
     private String defaultActionName;
+    private String namespace;
     private String controllerPath;
 
     public DefaultGrailsControllerClass(Class<?> clazz) {
         super(clazz, CONTROLLER);
+        namespace = getStaticPropertyValue(NAMESPACE_PROPERTY, String.class);
         defaultActionName = getStaticPropertyValue(DEFAULT_CLOSURE_PROPERTY, String.class);
         if (defaultActionName == null) {
             defaultActionName = INDEX_ACTION;
@@ -385,6 +388,10 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     public String getDefaultAction() {
         return defaultActionName;
+    }
+
+    public String getNamespace() {
+        return namespace;
     }
 
     public void registerMapping(String actionName) {

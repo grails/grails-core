@@ -176,16 +176,16 @@ mappings {
     void testComparable() {
         def parser = new DefaultUrlMappingParser()
 
-        def m1 = new RegexUrlMapping(parser.parse("/foo/"), "test", null, null, null, null, servletContext)
-        def m2 = new RegexUrlMapping(parser.parse("/"), "test", null, null, null, null, servletContext)
-        def m3 = new RegexUrlMapping(parser.parse("/foo/bar/(*)"), "test", null, null, null, null, servletContext)
-        def m4 = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null, null, null, null, servletContext)
-        def m5 = new RegexUrlMapping(parser.parse("/(*)/foo/bar"), "test", null, null, null, null, servletContext)
-        def m6 = new RegexUrlMapping(parser.parse("/foo/(*)"), "test", null, null, null, null, servletContext)
-        def m7 = new RegexUrlMapping(parser.parse("/(*)"), "test", null, null, null, null, servletContext)
-        def m8 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null, null, null, null, servletContext)
-        def m9 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null, null, null, null, servletContext)
-        def m10 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null, null, null, null, servletContext)
+        def m1 = new RegexUrlMapping(parser.parse("/foo/"), "test", null, null, null, null, null, null, servletContext)
+        def m2 = new RegexUrlMapping(parser.parse("/"), "test", null, null, null, null, null, null, servletContext)
+        def m3 = new RegexUrlMapping(parser.parse("/foo/bar/(*)"), "test", null, null, null, null, null, null, servletContext)
+        def m4 = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null, null, null, null, null, null, servletContext)
+        def m5 = new RegexUrlMapping(parser.parse("/(*)/foo/bar"), "test", null, null, null, null, null, null, servletContext)
+        def m6 = new RegexUrlMapping(parser.parse("/foo/(*)"), "test", null, null, null, null, null, null, servletContext)
+        def m7 = new RegexUrlMapping(parser.parse("/(*)"), "test", null, null, null, null, null, null, servletContext)
+        def m8 = new RegexUrlMapping(parser.parse("/foo/(*)/(*)"), "test", null, null, null, null, null, null, servletContext)
+        def m9 = new RegexUrlMapping(parser.parse("/(*)/(*)/bar"), "test", null, null, null, null, null, null, servletContext)
+        def m10 = new RegexUrlMapping(parser.parse("/(*)/(*)/(*)"), "test", null, null, null, null, null, null, servletContext)
 
         assertTrue m1.compareTo(m2) > 0
         assertTrue m1.compareTo(m3) > 0
@@ -310,7 +310,7 @@ mappings {
         // mapping would be "/foo/$hello/bar
         def parser = new DefaultUrlMappingParser()
 
-        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, [cp] as ConstrainedProperty[], servletContext)
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null, [cp] as ConstrainedProperty[], servletContext)
 
         def info = m.match("/foo/world/bar")
         assert info
@@ -326,7 +326,7 @@ mappings {
 
         // mapping would be "/foo/$hello/bar
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, [cp] as ConstrainedProperty[], servletContext)
+        def m = new RegexUrlMapping(parser.parse('/foo/(*)/bar'), "test", "action", null, null, null, null, [cp] as ConstrainedProperty[], servletContext)
 
         def info = m.match("/foo/2007/bar")
         assert info
@@ -355,12 +355,12 @@ mappings {
 
     void testInit() {
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null, null, [] as ConstrainedProperty[], servletContext)
+        def m = new RegexUrlMapping(parser.parse("/(*)/hello"), "test", null, null, null, null, null, [] as ConstrainedProperty[], servletContext)
     }
 
     void testMatchUriNoConstraints() {
         def parser = new DefaultUrlMappingParser()
-        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null, null, null, [] as ConstrainedProperty[], servletContext)
+        def m = new RegexUrlMapping(parser.parse("/foo/(*)/bar"), "test", null, null, null, null, null, [] as ConstrainedProperty[], servletContext)
 
         def info = m.match("/foo/test/bar")
         assert info

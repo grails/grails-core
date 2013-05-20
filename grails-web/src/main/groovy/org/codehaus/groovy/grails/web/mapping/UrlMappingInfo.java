@@ -57,6 +57,12 @@ public interface UrlMappingInfo {
      * @return The name of the action or null if not known
      */
     String getActionName();
+    
+    /**
+     * 
+     * @return the namespace of the corresponding controller, null if none was specified
+     */
+    String getControllerNamespace();
 
     /**
      * The name of the plugin that this UrlMappingInfo maps to

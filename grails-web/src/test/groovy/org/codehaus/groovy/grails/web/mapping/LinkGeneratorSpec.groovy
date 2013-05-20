@@ -211,7 +211,7 @@ class LinkGeneratorSpec extends Specification {
 
     protected getGenerator(boolean cache=false) {
         def generator = cache ? new CachingLinkGenerator(baseUrl, context) : new DefaultLinkGenerator(baseUrl, context)
-        final callable = { String controller, String action, String pluginName, String httpMethod, Map params ->
+        final callable = { String controller, String action, String controllerNamespace, String pluginName, String httpMethod, Map params ->
             [createRelativeURL: { String c, String a, Map parameterValues, String encoding, String fragment ->
                 "/$controller/$action".toString()
             }] as UrlCreator

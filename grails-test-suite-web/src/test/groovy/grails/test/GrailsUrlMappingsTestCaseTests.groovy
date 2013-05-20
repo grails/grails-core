@@ -1,5 +1,7 @@
 package grails.test
 
+import java.util.Map;
+
 import grails.util.GrailsWebUtil
 import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
@@ -426,19 +428,19 @@ class MockUrlMapping implements UrlMapping {
 
     String createURL(String controller, String action, Map parameterValues, String encoding) { null }
 
-    String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding) { null }
+    String createURL(String controller, String action, String controllerNamespace, String pluginName, Map parameterValues, String encoding) { null }
 
     String createRelativeURL(String controller, String action, Map parameterValues, String encoding) { null }
 
-    String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding) { null }
+    String createRelativeURL(String controller, String action, String controllerNamespace, String pluginName, Map parameterValues, String encoding) { null }
 
     String createRelativeURL(String controller, String action, Map parameterValues, String encoding, String fragment) { null }
 
-    String createRelativeURL(String controller, String action, String pluginName, Map parameterValues, String encoding, String fragment) { null }
+    String createRelativeURL(String controller, String action, String controllerNamespace, String pluginName, Map parameterValues, String encoding, String fragment) { null }
 
     String createURL(String controller, String action, Map parameterValues, String encoding, String fragment) { null }
 
-    String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding, String fragment) { null }
+    String createURL(String controller, String action, String controllerNamespace, String pluginName, Map parameterValues, String encoding, String fragment) { null }
 
     ConstrainedProperty[] getConstraints() { new ConstrainedProperty[0] }
 
@@ -466,6 +468,13 @@ class MockUrlMapping implements UrlMapping {
     void setMappingName(String name) {}
 
     boolean hasRuntimeVariable(String name) { false }
+    public Object getControllerNamespace() { null }
+    public String createRelativeURL(String controller, String action,
+            String pluginName, Map parameterValues, String encoding) {
+        null
+    }
+    public String createURL(String controller, String action,
+            String pluginName, Map parameterValues, String encoding) { null }
 }
 
 abstract class GrailsUrlMappingTestCaseTestsBaseController {

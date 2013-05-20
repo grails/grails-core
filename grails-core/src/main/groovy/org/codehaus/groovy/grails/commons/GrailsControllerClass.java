@@ -135,6 +135,12 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @return The view for the specified closure action
      */
     String getViewByName(String closureName);
+    
+    /**
+     * 
+     * @return the namespace of this controller, null if none was specified
+     */
+    String getNamespace();
 
     /**
      * Returns a closure property name for a specific URI or null if the URI does not map to a closure.

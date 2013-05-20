@@ -113,6 +113,12 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return The plugin name
      */
     Object getPluginName();
+    
+    /**
+     * 
+     * @return the name of the controller namespace
+     */
+    Object getControllerNamespace();
 
     /**
      * Returns the name of the view to map to

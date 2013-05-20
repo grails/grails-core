@@ -81,16 +81,18 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
 
         String uri;
         String pluginName = null;
+        String controllerNamespace = null;
 
         if (featureId instanceof Map) {
             Map featureIdMap = (Map)featureId;
             uri = (String)featureIdMap.get("uri");
             pluginName = (String)featureIdMap.get("pluginName");
+            controllerNamespace = (String)featureIdMap.get("controllerNamespace");
         } else {
             uri = featureId.toString();
         }
 
-        String cacheKey = (pluginName != null ? pluginName : "") + ":" + uri;
+        String cacheKey = (controllerNamespace != null ? controllerNamespace : "") + ":" + (pluginName != null ? pluginName : "") + ":" + uri;
 
         GrailsClass controllerClass = uriToControllerClassCache.get(cacheKey);
         if (controllerClass == null) {
@@ -108,13 +110,19 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
                 GrailsClass c = controllerClasses[i];
                 if (((GrailsControllerClass) c).mapsToURI(uri)) {
                     boolean foundController = false;
-                    if (pluginName != null && grailsPluginManager != null) {
-                        final GrailsPlugin pluginForClass = grailsPluginManager.getPluginForClass(c.getClazz());
-                        if (pluginForClass != null && pluginName.equals(pluginForClass.getName())) {
-                            foundController = true;
-                        }
-                    } else {
+                    if(pluginName == null && controllerNamespace == null) {
                         foundController = true;
+                    } else {
+                        boolean pluginMatches = false;
+                        boolean controllerNamespaceMatches = false;
+                        
+                        controllerNamespaceMatches = namespaceMatches((GrailsControllerClass)c, controllerNamespace);
+                        
+                        if(controllerNamespaceMatches) {
+                            pluginMatches = pluginMatches(c, pluginName, grailsPluginManager);
+                        }
+                        
+                        foundController = pluginMatches && controllerNamespaceMatches;
                     }
                     if (foundController) {
                         controllerClass = c;
@@ -136,6 +144,42 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
             controllerClass = null;
         }
         return controllerClass;
+    }
+    
+    /**
+     * 
+     * @param c the class to inspect
+     * @param controllerNamespace a controller namespace
+     * @return true if c is in the controllerNamespace namespace
+     */
+    protected boolean namespaceMatches(GrailsControllerClass c, String controllerNamespace) {
+        boolean controllerNamespaceMatches;
+        if(controllerNamespace != null) {
+            controllerNamespaceMatches = controllerNamespace.equals(c.getNamespace());
+        } else {
+            controllerNamespaceMatches = (c.getNamespace() == null);
+        }
+        return controllerNamespaceMatches;
+    }
+    
+    /**
+     * 
+     * @param c the class to inspect
+     * @param pluginName the name of a plugin
+     * @param grailsPluginManager the plugin manager
+     * @return true if c is provided by a plugin with the name pluginName or if pluginName is null, otherwise false
+     */
+    protected boolean pluginMatches(GrailsClass c, String pluginName, GrailsPluginManager grailsPluginManager) {
+        boolean pluginMatches = false;
+        if (pluginName != null && grailsPluginManager != null) {
+            final GrailsPlugin pluginForClass = grailsPluginManager.getPluginForClass(c.getClazz());
+            if (pluginForClass != null && pluginName.equals(pluginForClass.getName())) {
+                pluginMatches = true;
+            }
+        } else {
+            pluginMatches = true;
+        }
+        return pluginMatches;
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
