@@ -42,7 +42,7 @@ class MimeType {
 
     String name
     String extension
-    Map parameters = [q: "1.0"]
+    Map<String, String> parameters = [q: "1.0"]
 
     boolean equals(Object o) { o instanceof MimeType && name.equals(o.name) }
     int hashCode() { name.hashCode() }

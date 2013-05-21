@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.plugins.web.mimes
 
+import groovy.transform.CompileStatic
 import org.apache.commons.collections.map.ListOrderedMap
 
 /**
@@ -23,11 +24,13 @@ import org.apache.commons.collections.map.ListOrderedMap
  * @author Graeme Rocher
  * @since 1.2
  */
+@CompileStatic
 class FormatInterceptor {
-    def formatOptions = new ListOrderedMap()
-    Object invokeMethod(String name,args) {
-        if (args.size() > 0 && (args[0] instanceof Closure || args[0] instanceof Map)) {
-            formatOptions[name] = args[0]
+    LinkedHashMap<String, Object> formatOptions = new LinkedHashMap<String, Object>()
+    Object invokeMethod(String name, args) {
+        Object[] argsArray = args instanceof Object[] ? ((Object[])args) : [args] as Object[]
+        if (argsArray.size() > 0 && (argsArray[0] instanceof Closure || argsArray[0] instanceof Map)) {
+            formatOptions[name] = argsArray[0]
         }
         else {
             formatOptions[name] = null

@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.mime
 
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
@@ -26,9 +29,10 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
  * @author Graeme Rocher
  * @since 1.0
  */
+@CompileStatic
 class DefaultAcceptHeaderParser implements AcceptHeaderParser {
 
-    static final LOG = LogFactory.getLog(DefaultAcceptHeaderParser)
+    static final Log LOG = LogFactory.getLog(DefaultAcceptHeaderParser)
 
     GrailsApplication application
     MimeType[] configuredMimeTypes
@@ -41,9 +45,8 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
 
     MimeType[] parse(String header) {
         def config = application?.getConfig()
-        def mimes = []
-        def qualifiedMimes = []
-        def mimeConfig = config?.grails?.mime?.types
+        List<MimeType> mimes = []
+        Map mimeConfig = getMimeConfig(config)
         if (!mimeConfig) {
             LOG.debug "No mime types configured, defaulting to 'text/html'"
             return MimeType.createDefaults()
@@ -56,22 +59,23 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
             return MimeType.getConfiguredMimeTypes()
         }
 
-        def tokens = header.split(',')
-        for (t in tokens) {
+        String[] tokens = header.split(',')
+        for (String t in tokens) {
             if (t.indexOf(';') > -1) {
-                t = t.split(';')
-                def params = [:]
-                t[1..-1].each {
+                List tokenWithArgs = t.split(';').toList()
+                Map<String, String> params = [:]
+                final paramsList = tokenWithArgs[1..-1]
+                paramsList.each{ String it ->
                     def i = it.indexOf('=')
                     if (i > -1) {
                         params[it[0..i-1].trim()] = it[i+1..-1].trim()
                     }
                 }
                 if (params) {
-                    createMimeTypeAndAddToList(t[0].trim(),mimeConfig, mimes, params)
+                    createMimeTypeAndAddToList(tokenWithArgs[0].trim(),mimeConfig, mimes, params)
                 }
                 else {
-                    createMimeTypeAndAddToList(t[0].trim(),mimeConfig, mimes)
+                    createMimeTypeAndAddToList(tokenWithArgs[0].trim(),mimeConfig, mimes)
                 }
             }
             else {
@@ -85,8 +89,8 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         }
 
         // remove duplicate text/xml and application/xml entries
-        MimeType textXml = mimes.find { it.name == 'text/xml' }
-        MimeType appXml = mimes.find { it.name ==  MimeType.XML }
+        MimeType textXml = mimes.find { MimeType it -> it.name == 'text/xml' }
+        MimeType appXml = mimes.find { MimeType it -> it.name ==  MimeType.XML }
         if (textXml && appXml) {
             // take the largest q value
             appXml.parameters.q = [textXml.parameters.q.toBigDecimal(), appXml.parameters.q.toBigDecimal()].max()
@@ -99,7 +103,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
 
         if (appXml) {
             // prioritise more specific XML types like xhtml+xml if they are of equal quality
-            def specificTypes = mimes.findAll { it.name ==~ /\S+?\+xml$/ }
+            def specificTypes = mimes.findAll { MimeType it -> it.name ==~ /\S+?\+xml$/ }
             def appXmlIndex = mimes.indexOf(appXml)
             def appXmlQuality = appXml.parameters.q.toBigDecimal()
             for (mime in specificTypes) {
@@ -115,12 +119,17 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         return mimes.sort(new QualityComparator()) as MimeType[]
     }
 
-    private createMimeTypeAndAddToList(name, mimeConfig, mimes, params = null) {
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected Map getMimeConfig(ConfigObject config) {
+        config?.grails?.mime?.types
+    }
+
+    protected void createMimeTypeAndAddToList(String name, Map mimeConfig, List<MimeType> mimes, Map<String,String> params = null) {
         def mime = params ? new MimeType(name, params) : new MimeType(name)
-        def ext = mimeConfig.find { it.value == name }
+        def ext = mimeConfig.find { key, value -> value == name }
         if (!ext) {
-            def multiMimeFormats = mimeConfig.findAll {it.value instanceof List}
-            ext = multiMimeFormats?.find { it.value?.find { it == name } }
+            def multiMimeFormats = mimeConfig.findAll { key, value -> value instanceof List}
+            ext = multiMimeFormats?.find { key, value -> value?.find { it == name } }
         }
         if (ext) {
             mime.extension = ext.key
@@ -129,9 +138,10 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
     }
 }
 
-class QualityComparator implements Comparator {
+@CompileStatic
+class QualityComparator implements Comparator<MimeType> {
 
-    int compare(Object t, Object t1) {
+    int compare(MimeType t, MimeType t1) {
         def left = t.parameters.q.toBigDecimal()
         def right = t1.parameters.q.toBigDecimal()
         if (left > right) return -1

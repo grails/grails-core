@@ -15,6 +15,10 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api
 
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.grails.web.mime.MimeType
+
 import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -29,6 +33,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class MimeTypesApiSupport {
 
     def withFormat(HttpServletRequest request, Closure callable) {
@@ -39,12 +44,12 @@ class MimeTypesApiSupport {
         return withFormatInternal(response, getDefinedFormats(callable))
     }
 
-    protected withFormatInternal(formatProvider, Map formats) {
-        def result
-        def format = formatProvider.format
+    protected Object withFormatInternal(formatProvider, LinkedHashMap<String, Object> formats) {
+        def result = null
+        String format = lookupFormat(formatProvider)
         if (formats) {
             if (format == 'all') {
-                def firstKey = formats.firstKey()
+                def firstKey = formats.keySet().iterator().next()
                 result = getResponseForFormat(formats[firstKey], firstKey, formatProvider)
             }
             else {
@@ -54,14 +59,14 @@ class MimeTypesApiSupport {
                 }
                 // otherwise look for the best match
                 else {
-                    for (mime in formatProvider.mimeTypes) {
+                    for (MimeType mime in lookupMimeTypes(formatProvider)) {
                         if (formats.containsKey(mime.extension)) {
                             result = getResponseForFormat(formats[mime.extension], mime.extension, formatProvider)
                             break
                         }
                         else {
                             if (mime.extension == 'all') {
-                                def firstKey = formats.firstKey()
+                                def firstKey = formats.keySet().iterator().next()
                                 result = getResponseForFormat(formats[firstKey], firstKey, formatProvider)
                                 break
                             }
@@ -73,14 +78,25 @@ class MimeTypesApiSupport {
         return result
     }
 
-    Map getDefinedFormats(Closure callable) {
-        def formats
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected MimeType[] lookupMimeTypes(formatProvider) {
+        formatProvider.mimeTypes
+    }
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected String lookupFormat(formatProvider) {
+        formatProvider.format
+    }
+
+    LinkedHashMap<String, Object> getDefinedFormats(Closure callable) {
+        LinkedHashMap<String, Object> formats = null
         def original = callable.delegate
         try {
-            callable.delegate = new FormatInterceptor()
+            final interceptor = new FormatInterceptor()
+            callable.delegate = interceptor
             callable.resolveStrategy = Closure.DELEGATE_ONLY
             callable.call()
-            formats = callable.delegate.formatOptions
+            formats = interceptor.formatOptions
         }
         finally {
             callable.delegate = original
@@ -89,7 +105,7 @@ class MimeTypesApiSupport {
         return formats
     }
 
-    private getResponseForFormat(formatResponse, format, formatProvider) {
+    private Object getResponseForFormat(formatResponse, format, formatProvider) {
         if (formatProvider instanceof ServletRequest) {
             formatProvider.setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
         }
@@ -97,10 +113,12 @@ class MimeTypesApiSupport {
             GrailsWebRequest.lookup().currentRequest.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, format)
         }
 
-        if (formatResponse instanceof Map) {
+        if (formatResponse instanceof Closure) {
+            return formatResponse?.call()
+        }
+        else {
             return formatResponse
         }
 
-        return formatResponse?.call()
     }
 }

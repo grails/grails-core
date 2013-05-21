@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api
 
+import groovy.transform.CompileStatic
+
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -31,6 +33,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class ResponseMimeTypesApi {
 
     GrailsApplication grailsApplication
@@ -74,7 +77,7 @@ class ResponseMimeTypesApi {
             def formatOverride = webRequest?.params?.format
             if (formatOverride) {
                 def allMimes = getMimeTypes()
-                MimeType mime = allMimes.find { it.extension == formatOverride }
+                MimeType mime = allMimes.find { MimeType it -> it.extension == formatOverride }
                 result = mime ? mime.extension : getMimeTypes()[0].extension
 
                 // Save the evaluated format as a request attribute.
@@ -119,7 +122,7 @@ class ResponseMimeTypesApi {
     }
 
     private MimeType[] getMimeTypesInternal(HttpServletRequest request, HttpServletResponse response) {
-        MimeType[] result = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS)
+        MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS)
         if (!result) {
 
             def userAgent = request.getHeader(HttpHeaders.USER_AGENT)
@@ -127,7 +130,7 @@ class ResponseMimeTypesApi {
 
             def parser = new DefaultAcceptHeaderParser(grailsApplication)
             parser.configuredMimeTypes = getMimeTypes()
-            def header = null
+            String header = null
             if (msie) header = "*/*"
             if (!header && useAcceptHeader) header = request.getHeader(HttpHeaders.ACCEPT)
             result = parser.parse(header)

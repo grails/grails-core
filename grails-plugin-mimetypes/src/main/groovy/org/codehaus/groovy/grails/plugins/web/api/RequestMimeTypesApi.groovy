@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api
 
+import groovy.transform.CompileStatic
+
 import javax.servlet.http.HttpServletRequest
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
@@ -29,6 +31,7 @@ import org.codehaus.groovy.grails.web.servlet.HttpHeaders
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class RequestMimeTypesApi {
 
     MimeType[] mimeTypes
@@ -69,7 +72,7 @@ class RequestMimeTypesApi {
      * @return A list of configured mime types
      */
     MimeType[] getMimeTypes(HttpServletRequest request) {
-        MimeType[] result = request.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
+        MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.REQUEST_FORMATS)
         if (!result) {
             def parser = new DefaultAcceptHeaderParser(grailsApplication)
             parser.configuredMimeTypes = getMimeTypes()
