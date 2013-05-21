@@ -93,13 +93,18 @@ class HibernatePluginSupport {
         }
 
         def datasourceNames = []
+        def persistenceInterceptorDatasourceNames = []
         if (getSpringConfig().containsBean('dataSource')) {
             datasourceNames << GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
+            persistenceInterceptorDatasourceNames << GrailsDomainClassProperty.DEFAULT_DATA_SOURCE
         }
 
         for (name in application.config.keySet()) {
             if (name.startsWith('dataSource_')) {
                 datasourceNames << name - 'dataSource_'
+                if( application.config[name].persistenceInterceptor ) {
+                    persistenceInterceptorDatasourceNames << name - 'dataSource_'
+                }
             }
         }
 
@@ -116,7 +121,7 @@ class HibernatePluginSupport {
         hibernateEventListeners(HibernateEventListeners)
 
         persistenceInterceptor(AggregatePersistenceContextInterceptor) {
-            dataSourceNames = datasourceNames
+            dataSourceNames = persistenceInterceptorDatasourceNames
         }
 
         for (String datasourceName in datasourceNames) {
