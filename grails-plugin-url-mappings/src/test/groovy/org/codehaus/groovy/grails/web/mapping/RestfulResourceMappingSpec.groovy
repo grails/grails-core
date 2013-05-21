@@ -9,6 +9,31 @@ import spock.lang.Specification
  */
 class RestfulResourceMappingSpec extends Specification{
 
+    void "Test that URL mappings with resources 3 levels deep works"() {
+        given:"A resources definition with nested URL mappings"
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/books"(resources: "book") {
+                '/authors'(resources:'author') {
+                    "/publisher"(resource:"publisher")
+                }
+
+            }
+        }
+
+        when:"The URL mappings are obtained"
+            def urlMappings = urlMappingsHolder.urlMappings
+
+        then:"There are eight of them in total"
+            urlMappings.size() == 20
+
+        expect:
+            urlMappingsHolder.matchAll('/books/1/authors/create', 'GET')
+            urlMappingsHolder.matchAll('/books/1/authors/create', 'GET')[0].actionName == 'create'
+            urlMappingsHolder.matchAll('/books/1/authors/create', 'GET')[0].httpMethod == 'GET'
+
+
+    }
+
     void "Test that normal URL mappings can be nested within resources"() {
         given:"A resources definition with nested URL mappings"
             def urlMappingsHolder = getUrlMappingsHolder {

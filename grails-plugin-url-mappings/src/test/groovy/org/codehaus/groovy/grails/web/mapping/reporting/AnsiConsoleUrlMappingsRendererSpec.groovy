@@ -11,6 +11,52 @@ import spock.lang.Specification
  */
 class AnsiConsoleUrlMappingsRendererSpec extends Specification{
 
+    void "Test render URL mappings for 3 level resource"() {
+        given:"A URL mappings renderer"
+            def sw = new ByteArrayOutputStream()
+            def ps = new PrintStream(sw)
+            def renderer = new AnsiConsoleUrlMappingsRenderer(ps)
+            renderer.isAnsiEnabled = false
+            def urlMappingsHolder = getUrlMappingsHolder {
+                "/books"(resources:'book') {
+                    '/authors'(resources:'author') {
+                        '/publisher'(resource:'publisher')
+                    }
+                }
+            }
+        when:"The URL mappings are rendered"
+            renderer.render(urlMappingsHolder.urlMappings.toList())
+            println sw.toString()
+        then:"The output is correct"
+            sw.toString() == '''Controller: author
+ |   GET    | /books/${bookId}/authors/create                            | Action: create           |
+ |   POST   | /books/${bookId}/authors                                   | Action: save             |
+ |   GET    | /books/${bookId}/authors                                   | Action: index            |
+ |   GET    | /books/${bookId}/authors/${id}/edit                        | Action: edit             |
+ |  DELETE  | /books/${bookId}/authors/${id}                             | Action: delete           |
+ |   PUT    | /books/${bookId}/authors/${id}                             | Action: update           |
+ |   GET    | /books/${bookId}/authors/${id}                             | Action: show             |
+
+Controller: book
+ |   GET    | /books/create                                              | Action: create           |
+ |   POST   | /books                                                     | Action: save             |
+ |   GET    | /books                                                     | Action: index            |
+ |   GET    | /books/${id}/edit                                          | Action: edit             |
+ |  DELETE  | /books/${id}                                               | Action: delete           |
+ |   PUT    | /books/${id}                                               | Action: update           |
+ |   GET    | /books/${id}                                               | Action: show             |
+
+Controller: publisher
+ |   GET    | /books/${bookId}/authors/${authorId}/publisher/edit        | Action: edit             |
+ |   GET    | /books/${bookId}/authors/${authorId}/publisher/create      | Action: create           |
+ |  DELETE  | /books/${bookId}/authors/${authorId}/publisher             | Action: delete           |
+ |   PUT    | /books/${bookId}/authors/${authorId}/publisher             | Action: update           |
+ |   GET    | /books/${bookId}/authors/${authorId}/publisher             | Action: show             |
+ |   POST   | /books/${bookId}/authors/${authorId}/publisher             | Action: save             |
+
+'''
+    }
+
     void "Test render URL mappings to target stream"() {
         given:"A URL mappings renderer"
             def sw = new ByteArrayOutputStream()

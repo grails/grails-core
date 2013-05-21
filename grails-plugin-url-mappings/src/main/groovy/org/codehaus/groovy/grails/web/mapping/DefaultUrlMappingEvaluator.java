@@ -273,7 +273,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         @Override
         public Object getProperty(String name) {
             if (urlDefiningMode) {
-                previousConstraints.add(new ConstrainedProperty(UrlMapping.class, name, String.class));
+                getCurrentConstraints().add(new ConstrainedProperty(UrlMapping.class, name, String.class));
                 return CAPTURING_WILD_CARD;
             }
             return super.getProperty(name);
@@ -350,7 +350,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         public void namespace(String uri, Closure mappings) {
 
             try {
-                parentResources.push(new ParentResource(null, uri, true));
+                parentResources.push(new ParentResource(null, uri,previousConstraints, true));
                 mappings.call();
             } finally {
                 parentResources.pop();
@@ -396,7 +396,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         UrlMappingData urlData = createUrlMappingData(mappedURI, isResponseCode);
 
                         Closure callable = (Closure) args[0];
-                        if (delegate != null) callable.setDelegate(delegate);
+                        if (delegate != null) {
+                            callable.setDelegate(delegate);
+                        }
                         callable.call();
 
                         Object controllerName;
@@ -414,12 +416,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             uri = variables.get(URI);
                             pluginName = variables.get(PLUGIN);
                             controllerNamespace = variables.get("controllerNamespace");
-                            if(variables.containsKey(HTTP_METHOD)) {
+                            if (variables.containsKey(HTTP_METHOD)) {
                                 httpMethod = variables.get(HTTP_METHOD).toString();
                             }
 
-                        }
-                        else {
+                        } else {
                             controllerName = this.controllerName;
                             actionName = this.actionName;
                             pluginName = this.pluginName;
@@ -429,17 +430,15 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             httpMethod = this.httpMethod;
                         }
 
-                        ConstrainedProperty[] constraints = previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
+                        ConstrainedProperty[] constraints = getCurrentConstraints().toArray(new ConstrainedProperty[getCurrentConstraints().size()]);
                         UrlMapping urlMapping;
                         if (uri != null) {
                             try {
                                 urlMapping = new RegexUrlMapping(urlData, new URI(uri.toString()), constraints, sc);
-                            }
-                            catch (URISyntaxException e) {
+                            } catch (URISyntaxException e) {
                                 throw new UrlMappingException("Cannot map to invalid URI: " + e.getMessage(), e);
                             }
-                        }
-                        else {
+                        } else {
                             urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, controllerNamespace, pluginName, viewName, httpMethod, constraints);
                         }
 
@@ -447,7 +446,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             Map bindingVariables = variables;
                             Object parse = getParseRequest(Collections.EMPTY_MAP, bindingVariables);
                             if (parse instanceof Boolean) {
-                                urlMapping.setParseRequest((Boolean)parse);
+                                urlMapping.setParseRequest((Boolean) parse);
                             }
                         }
                         configureUrlMapping(urlMapping);
@@ -460,34 +459,32 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                         UrlMappingData urlData = createUrlMappingData(uri, isResponseCode);
 
-                        if(namedArguments.containsKey(RESOURCE)) {
+                        if (namedArguments.containsKey(RESOURCE)) {
                             Object controller = namedArguments.get(RESOURCE);
                             String controllerName = controller.toString();
-                            parentResources.push( new ParentResource(controllerName,uri, true) );
+                            parentResources.push(new ParentResource(controllerName, uri, getCurrentConstraints(), true));
                             try {
                                 invokeLastArgumentIfClosure(args);
                             } finally {
                                 parentResources.pop();
                             }
-                            if(controller != null) {
+                            if (controller != null) {
 
-                                createSingleResourceRestfulMappings(controllerName,pluginName, urlData, previousConstraints, calculateIncludes(namedArguments, DEFAULT_RESOURCE_INCLUDES));
+                                createSingleResourceRestfulMappings(controllerName, pluginName, urlData, getCurrentConstraints(), calculateIncludes(namedArguments, DEFAULT_RESOURCE_INCLUDES));
                             }
-                        }
-                        else if(namedArguments.containsKey(RESOURCES)) {
+                        } else if (namedArguments.containsKey(RESOURCES)) {
                             Object controller = namedArguments.get(RESOURCES);
                             String controllerName = controller.toString();
-                            parentResources.push( new ParentResource(controllerName,uri,false) );
+                            parentResources.push(new ParentResource(controllerName, uri, getCurrentConstraints(), false));
                             try {
                                 invokeLastArgumentIfClosure(args);
                             } finally {
                                 parentResources.pop();
                             }
-                            if(controller != null) {
-                                createResourceRestfulMappings(controllerName, pluginName, urlData, previousConstraints,calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
+                            if (controller != null) {
+                                createResourceRestfulMappings(controllerName, pluginName, urlData, getCurrentConstraints(), calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
                             }
-                        }
-                        else {
+                        } else {
 
                             invokeLastArgumentIfClosure(args);
                             UrlMapping urlMapping = getURLMappingForNamedArgs(namedArguments, urlData, mappedURI, isResponseCode);
@@ -496,39 +493,38 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         }
                     }
                     return null;
-                }
-                finally {
+                } finally {
                     if (binding != null) {
                         variables.clear();
-                    }
-                    else {
+                    } else {
                         controllerName = null;
                         actionName = null;
                         viewName = null;
                         pluginName = null;
                         controllerNamespace = null;
                     }
-                    previousConstraints.clear();
-                    urlDefiningMode = true;
+                    if (parentResources.isEmpty()) {
+                        previousConstraints.clear();
+                        urlDefiningMode = true;
+                    }
                 }
-            }
-            else if (!urlDefiningMode && CONSTRAINTS.equals(mappedURI)) {
+            } else if (!urlDefiningMode && CONSTRAINTS.equals(mappedURI)) {
                 ConstrainedPropertyBuilder builder = new ConstrainedPropertyBuilder(this);
                 if (args.length > 0 && (args[0] instanceof Closure)) {
 
                     Closure callable = (Closure) args[0];
                     callable.setDelegate(builder);
-                    for (ConstrainedProperty constrainedProperty : previousConstraints) {
+                    for (ConstrainedProperty constrainedProperty : getCurrentConstraints()) {
                         builder.getConstrainedProperties().put(constrainedProperty.getPropertyName(), constrainedProperty);
                     }
                     callable.call();
                 }
                 return builder.getConstrainedProperties();
-            }
-            else {
+            } else {
                 return super.invokeMethod(mappedURI, arg);
             }
         }
+
 
         private List<String> calculateIncludes(Map namedArguments, List<String> defaultResourcesIncludes) {
             List<String> includes = new ArrayList<String>(defaultResourcesIncludes);
@@ -576,15 +572,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             }
             else {
                 StringBuilder uriBuilder = new StringBuilder();
-                for (ParentResource parentResource : parentResources) {
-                    if(parentResource.isSingle) {
-                        uriBuilder.append(parentResource.uri);
-                    }
-                    else {
-                        if(parentResource.controllerName != null) {
-                            uriBuilder.append(parentResource.uri).append(SLASH).append(CAPTURING_WILD_CARD);
-                            previousConstraints.add(new ConstrainedProperty(UrlMapping.class,parentResource.controllerName + "Id", String.class));
-                        }
+                ParentResource parentResource = parentResources.peek();
+                if(parentResource.isSingle) {
+                    uriBuilder.append(parentResource.uri);
+                }
+                else {
+                    if(parentResource.controllerName != null) {
+                        uriBuilder.append(parentResource.uri).append(SLASH).append(CAPTURING_WILD_CARD);
+                        getCurrentConstraints().add(new ConstrainedProperty(UrlMapping.class, parentResource.controllerName + "Id", String.class));
                     }
                 }
 
@@ -831,7 +826,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             }
 
             Object uri = getURI(namedArguments, bindingVariables);
-            ConstrainedProperty[] constraints = previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
+            ConstrainedProperty[] constraints = getCurrentConstraints().toArray(new ConstrainedProperty[getCurrentConstraints().size()]);
 
             UrlMapping urlMapping;
             if (uri != null) {
@@ -929,14 +924,26 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     null, sc);
         }
 
+        public List<ConstrainedProperty> getCurrentConstraints() {
+            ParentResource parentResource = parentResources.peek();
+            if(parentResource != null) {
+                return parentResource.constraints;
+            }
+            else {
+                return previousConstraints;
+            }
+        }
+
         class ParentResource {
             String controllerName;
             String uri;
+            List<ConstrainedProperty> constraints;
             boolean isSingle;
 
-            ParentResource(String controllerName, String uri, boolean single) {
+            ParentResource(String controllerName, String uri, List<ConstrainedProperty> constraints, boolean single) {
                 this.controllerName = controllerName;
                 this.uri = uri;
+                this.constraints = new ArrayList<ConstrainedProperty>(constraints);
                 isSingle = single;
             }
         }
