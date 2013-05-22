@@ -73,31 +73,43 @@ public class DefaultUrlMappingData implements UrlMappingData {
     private void parseUrls(List<String> urls, String[] tokens, List<Boolean> optionalTokens) {
         StringBuilder buf = new StringBuilder();
 
-        for (int i = 0; i < tokens.length; i++) {
-            String token = tokens[i].trim();
+        for (String t : tokens) {
+            String token = t.trim();
 
-            if (token.equals(SLASH)) continue;
+            if (token.equals(SLASH)) {
+                continue;
+            }
+
+            String optionalExtensionPattern = UrlMapping.OPTIONAL_EXTENSION_WILDCARD + '?';
+            boolean hasOptionalExtension = token.endsWith(optionalExtensionPattern);
+            String optionalExtension = null;
+            if(hasOptionalExtension) {
+                int i = token.indexOf(optionalExtensionPattern);
+                optionalExtension = token.substring(i, token.length());
+                token = token.substring(0, i);
+            }
 
             boolean isOptional = false;
             if (token.endsWith(QUESTION_MARK)) {
                 urls.add(buf.toString());
-                tokens[i] = token.substring(0, token.length()-1);
-                buf.append(SLASH).append(tokens[i]);
+                buf.append(SLASH).append(token);
                 isOptional = true;
-            }
-            else {
+            } else {
                 buf.append(SLASH).append(token);
             }
-            if (CAPTURED_WILDCARD.equals(tokens[i])) {
+            if (CAPTURED_WILDCARD.equals(token)) {
                 if (isOptional) {
                     optionalTokens.add(Boolean.TRUE);
-                }
-                else {
+                } else {
                     optionalTokens.add(Boolean.FALSE);
                 }
             }
-            if (CAPTURED_DOUBLE_WILDCARD.equals(tokens[i])) {
+            if (CAPTURED_DOUBLE_WILDCARD.equals(token)) {
                 optionalTokens.add(Boolean.TRUE);
+            }
+
+            if(optionalExtension != null) {
+                buf.append(optionalExtension);
             }
         }
         urls.add(buf.toString());
@@ -124,7 +136,6 @@ public class DefaultUrlMappingData implements UrlMappingData {
     @Override
     public UrlMappingData createRelative(String path) {
         Assert.hasLength(path, "Argument [path] cannot be null or blank");
-        Assert.isTrue(path.startsWith(SLASH), "Argument [path] with value ["+path+"] is not a valid URL. It must start with '/' !");
 
         String newPattern = this.urlPattern + configureUrlPattern(path);
 

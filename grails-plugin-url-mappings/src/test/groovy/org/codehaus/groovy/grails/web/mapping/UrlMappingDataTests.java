@@ -44,7 +44,7 @@ public class UrlMappingDataTests extends TestCase {
         assertEquals("blog",tokens[0]);
         assertEquals("(*)",tokens[1]);
         assertEquals("2007",tokens[2]);
-        assertEquals("(*)",tokens[3]);
+        assertEquals("(*)?",tokens[3]);
 
         assertFalse(data.isOptional(0));
         assertTrue(data.isOptional(1));
@@ -57,8 +57,8 @@ public class UrlMappingDataTests extends TestCase {
 
         assertEquals(3, urls.length);
 
-        assertEquals("/blog/(*)/2007/*/*", urls[0]);
-        assertEquals("/blog/(*)/2007/*", urls[1]);
+        assertEquals("/blog/(*)?/2007/*/*?", urls[0]);
+        assertEquals("/blog/(*)?/2007/*", urls[1]);
         assertEquals("/blog", urls[2]);
     }
 
@@ -71,8 +71,8 @@ public class UrlMappingDataTests extends TestCase {
 
         assertEquals(3, urls.length);
 
-        assertEquals("/blog/(*)/2007/*/*", urls[0]);
-        assertEquals("/blog/(*)/2007/*", urls[1]);
+        assertEquals("/blog/(*)?/2007/*/*?", urls[0]);
+        assertEquals("/blog/(*)?/2007/*", urls[1]);
         assertEquals("/blog", urls[2]);
 
     }

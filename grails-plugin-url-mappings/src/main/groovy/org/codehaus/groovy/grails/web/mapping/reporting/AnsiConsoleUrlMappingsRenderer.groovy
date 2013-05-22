@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.mapping.reporting
 
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping
 import org.codehaus.groovy.grails.web.mapping.ResponseCodeMappingData
 import org.codehaus.groovy.grails.web.mapping.ResponseCodeUrlMapping
 import org.codehaus.groovy.grails.web.mapping.UrlMapping
@@ -103,19 +104,29 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
         StringBuilder urlPattern = new StringBuilder(UrlMapping.SLASH)
         int constraintIndex = 0
         tokens.eachWithIndex { String token, int i ->
-            if (token.contains(UrlMapping.CAPTURED_WILDCARD)) {
-                def constraint = constraints[constraintIndex++]
-                def prop = '${' + constraint.propertyName + '}'
-                urlPattern << token.replace(UrlMapping.CAPTURED_WILDCARD, withAnsi ? variable(prop) : prop)
-            }
-            else if (token.contains(UrlMapping.CAPTURED_DOUBLE_WILDCARD)) {
-                def constraint = constraints[constraintIndex++]
-                def prop = '${' + constraint.propertyName + '}**'
-                urlPattern << token.replace(UrlMapping.CAPTURED_DOUBLE_WILDCARD, prop)
+            boolean hasTokens = token.contains(UrlMapping.CAPTURED_WILDCARD) || token.contains(UrlMapping.CAPTURED_DOUBLE_WILDCARD)
+            if (hasTokens) {
+                String finalToken = token
+                while(hasTokens) {
+                    if (finalToken.contains(UrlMapping.CAPTURED_WILDCARD)) {
+                        def constraint = constraints[constraintIndex++]
+                        def prop = '\\${' + constraint.propertyName + '}'
+                        finalToken = finalToken.replaceFirst(/\(\*\)/, withAnsi ? variable(prop) : prop)
+                    }
+                    else if (finalToken.contains(UrlMapping.CAPTURED_DOUBLE_WILDCARD)) {
+                        def constraint = constraints[constraintIndex++]
+                        def prop = '\\\${' + constraint.propertyName + '}**'
+                        finalToken =  finalToken.replaceFirst(/\(\*\*\)/, prop)
+                    }
+                    hasTokens = finalToken.contains(UrlMapping.CAPTURED_WILDCARD) || finalToken.contains(UrlMapping.CAPTURED_DOUBLE_WILDCARD)
+                }
+                urlPattern << finalToken
             }
             else {
                 urlPattern << token
             }
+
+
             if (i < (tokens.length-1)) {
                 urlPattern << UrlMapping.SLASH
             }

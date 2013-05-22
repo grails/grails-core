@@ -49,6 +49,10 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappings.size() == 8
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
+            urlMappingsHolder.matchAll('/books', 'GET')
+            urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
+            urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'
+
             !urlMappingsHolder.matchAll('/publisher', 'GET')
             urlMappingsHolder.matchAll('/books/publisher', 'GET')
             urlMappingsHolder.matchAll('/books/create', 'GET')
@@ -74,9 +78,6 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].actionName == 'delete'
             urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].httpMethod == 'DELETE'
 
-            urlMappingsHolder.matchAll('/books', 'GET')
-            urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
-            urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'
     }
 
     void "Test nested resource within another resource produce the correct URL mappings"() {
@@ -348,7 +349,7 @@ class RestfulResourceMappingSpec extends Specification{
     void "Test a single resource within a namespace produces the correct URL mappings"() {
         given:"A URL mappings definition with a single resource"
         def urlMappingsHolder = getUrlMappingsHolder {
-            namespace "/admin", {
+            group "/admin", {
                 "/book"(resource:"book")
             }
         }
@@ -488,13 +489,13 @@ class RestfulResourceMappingSpec extends Specification{
             }
 
         expect:"The generated links to be correct"
-            linkGenerator.link(controller:"book", action:"create") == "http://localhost/book/create"
-            linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/book/create"
             linkGenerator.link(controller:"book", action:"save", method:"POST") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"show", method:"GET") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"edit", method:"GET") == "http://localhost/book/edit"
             linkGenerator.link(controller:"book", action:"delete", method:"DELETE") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"update", method:"PUT") == "http://localhost/book"
+            linkGenerator.link(controller:"book", action:"create") == "http://localhost/book/create"
+            linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/book/create"
     }
 
     void "Test a resource produces the correct links for reverse mapping"() {
@@ -504,9 +505,9 @@ class RestfulResourceMappingSpec extends Specification{
         }
 
         expect:"The generated links to be correct"
+        linkGenerator.link(controller:"book", action:"show", id:1, method:"GET") == "http://localhost/books/1"
             linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/books/create"
             linkGenerator.link(controller:"book", action:"save", method:"POST") == "http://localhost/books"
-            linkGenerator.link(controller:"book", action:"show", id:1, method:"GET") == "http://localhost/books/1"
             linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
             linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
             linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"

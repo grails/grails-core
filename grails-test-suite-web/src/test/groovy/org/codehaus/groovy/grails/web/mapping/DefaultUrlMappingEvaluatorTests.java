@@ -62,8 +62,8 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertNull(mapping.getActionName());
         assertNull(mapping.getControllerName());
         assertEquals("(*)",mapping.getUrlData().getTokens()[0]);
-        assertEquals("(*)",mapping.getUrlData().getTokens()[1]);
-        assertEquals("(*)",mapping.getUrlData().getTokens()[2]);
+        assertEquals("(*)?",mapping.getUrlData().getTokens()[1]);
+        assertEquals("(*)?",mapping.getUrlData().getTokens()[2]);
 
         assertNotNull(mapping.getConstraints());
 
@@ -103,8 +103,8 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertNull(((UrlMapping) mappings.get(0)).getActionName());
         assertNull(((UrlMapping) mappings.get(0)).getControllerName());
         assertEquals("(*)",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[0]);
-        assertEquals("(*)",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[1]);
-        assertEquals("(*)",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[2]);
+        assertEquals("(*)?",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[1]);
+        assertEquals("(*)?",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[2]);
     }
 
     private boolean makeSureMatchesConstraintExistsOnId(UrlMapping mapping) {
