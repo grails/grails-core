@@ -29,30 +29,30 @@ class AnsiConsoleUrlMappingsRendererSpec extends Specification{
             println sw.toString()
         then:"The output is correct"
             sw.toString() == '''Controller: author
- |   GET    | /books/${bookId}/authors/create                                  | Action: create           |
- |   GET    | /books/${bookId}/authors/${id}/edit                              | Action: edit             |
- |  DELETE  | /books/${bookId}/authors/${id}(.${format})?                      | Action: delete           |
- |   PUT    | /books/${bookId}/authors/${id}(.${format})?                      | Action: update           |
- |   GET    | /books/${bookId}/authors/${id}(.${format})?                      | Action: show             |
- |   POST   | /books/${bookId}/authors(.${format})?                            | Action: save             |
- |   GET    | /books/${bookId}/authors(.${format})?                            | Action: index            |
+ |   GET    | /books/${bookId}/authors/create                            | Action: create           |
+ |   POST   | /books/${bookId}/authors                                   | Action: save             |
+ |   GET    | /books/${bookId}/authors                                   | Action: index            |
+ |   GET    | /books/${bookId}/authors/${id}/edit                        | Action: edit             |
+ |  DELETE  | /books/${bookId}/authors/${id}                             | Action: delete           |
+ |   PUT    | /books/${bookId}/authors/${id}                             | Action: update           |
+ |   GET    | /books/${bookId}/authors/${id}                             | Action: show             |
 
 Controller: book
- |   GET    | /books/create                                                    | Action: create           |
- |   GET    | /books/${id}/edit                                                | Action: edit             |
- |  DELETE  | /books/${id}(.${format})?                                        | Action: delete           |
- |   PUT    | /books/${id}(.${format})?                                        | Action: update           |
- |   GET    | /books/${id}(.${format})?                                        | Action: show             |
- |   POST   | /books(.${format})?                                              | Action: save             |
- |   GET    | /books(.${format})?                                              | Action: index            |
+ |   GET    | /books/create                                              | Action: create           |
+ |   POST   | /books                                                     | Action: save             |
+ |   GET    | /books                                                     | Action: index            |
+ |   GET    | /books/${id}/edit                                          | Action: edit             |
+ |  DELETE  | /books/${id}                                               | Action: delete           |
+ |   PUT    | /books/${id}                                               | Action: update           |
+ |   GET    | /books/${id}                                               | Action: show             |
 
 Controller: publisher
- |   GET    | /books/${bookId}/authors/${authorId}/publisher/edit              | Action: edit             |
- |   GET    | /books/${bookId}/authors/${authorId}/publisher/create            | Action: create           |
- |  DELETE  | /books/${bookId}/authors/${authorId}/publisher(.${format})?      | Action: delete           |
- |   PUT    | /books/${bookId}/authors/${authorId}/publisher(.${format})?      | Action: update           |
- |   GET    | /books/${bookId}/authors/${authorId}/publisher(.${format})?      | Action: show             |
- |   POST   | /books/${bookId}/authors/${authorId}/publisher(.${format})?      | Action: save             |
+ |   GET    | /books/${bookId}/authors/${authorId}/publisher/edit        | Action: edit             |
+ |   GET    | /books/${bookId}/authors/${authorId}/publisher/create      | Action: create           |
+ |  DELETE  | /books/${bookId}/authors/${authorId}/publisher             | Action: delete           |
+ |   PUT    | /books/${bookId}/authors/${authorId}/publisher             | Action: update           |
+ |   GET    | /books/${bookId}/authors/${authorId}/publisher             | Action: show             |
+ |   POST   | /books/${bookId}/authors/${authorId}/publisher             | Action: save             |
 
 '''
     }
@@ -77,23 +77,23 @@ Controller: publisher
             println sw.toString()
         then:"The output is correct"
             sw.toString() == '''Dynamic Mappings
- |    *     | /                                                  | View:   /index           |
- |    *     | /${controller}/${action}?/${id}?(.${format})?      | Action: (default action) |
+ |    *     | /                                                 | View:   /index           |
+ |    *     | /${controller}/${action}?/${id}?(.${format)?      | Action: (default action) |
 
 Controller: errors
- |    *     | ERROR: 500                                         | Action: (default action) |
+ |    *     | ERROR: 500                                        | Action: (default action) |
 
 Controller: foo
- |   GET    | /foo/create                                        | Action: create           |
- |   GET    | /foo/${id}/edit                                    | Action: edit             |
- |  DELETE  | /foo/${id}(.${format})?                            | Action: delete           |
- |   PUT    | /foo/${id}(.${format})?                            | Action: update           |
- |   GET    | /foo/${id}(.${format})?                            | Action: show             |
- |   POST   | /foo(.${format})?                                  | Action: save             |
- |   GET    | /foo(.${format})?                                  | Action: index            |
+ |   GET    | /foo/create                                       | Action: create           |
+ |   POST   | /foo                                              | Action: save             |
+ |   GET    | /foo                                              | Action: index            |
+ |   GET    | /foo/${id}/edit                                   | Action: edit             |
+ |  DELETE  | /foo/${id}                                        | Action: delete           |
+ |   PUT    | /foo/${id}                                        | Action: update           |
+ |   GET    | /foo/${id}                                        | Action: show             |
 
 Controller: image
- |    *     | /images/${name}**.jpg                              | Action: (default action) |
+ |    *     | /images/${name}**.jpg                             | Action: (default action) |
 
 '''
     }

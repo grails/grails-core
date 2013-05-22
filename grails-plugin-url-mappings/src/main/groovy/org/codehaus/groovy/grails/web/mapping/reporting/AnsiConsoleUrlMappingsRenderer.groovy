@@ -131,6 +131,11 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
                 urlPattern << UrlMapping.SLASH
             }
         }
+        if (urlMapping.urlData.hasOptionalExtension()) {
+            final allConstraints = urlMapping.constraints
+            def lastConstraint = allConstraints[-1]
+            urlPattern << "(.\${${lastConstraint.propertyName})?"
+        }
         if (padding) {
             if (withAnsi) {
 

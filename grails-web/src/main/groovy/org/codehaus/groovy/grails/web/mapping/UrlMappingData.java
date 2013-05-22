@@ -62,4 +62,9 @@ public interface UrlMappingData {
      * @return The new instance
      */
     UrlMappingData createRelative(String path);
+
+    /**
+     * @return Whether the pattern has an optional extension
+     */
+    boolean hasOptionalExtension();
 }

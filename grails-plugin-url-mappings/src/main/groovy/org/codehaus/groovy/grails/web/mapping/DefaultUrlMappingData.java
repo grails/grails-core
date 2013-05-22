@@ -40,6 +40,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
     private final String[] tokens;
 
     private List<Boolean> optionalTokens = new ArrayList<Boolean>();
+    private boolean hasOptionalExtension;
 
     public DefaultUrlMappingData(String urlPattern) {
         Assert.hasLength(urlPattern, "Argument [urlPattern] cannot be null or blank");
@@ -52,6 +53,11 @@ public class DefaultUrlMappingData implements UrlMappingData {
         parseUrls(urls, tokens, optionalTokens);
 
         logicalUrls = urls.toArray(new String[urls.size()]);
+    }
+
+    @Override
+    public boolean hasOptionalExtension() {
+        return hasOptionalExtension;
     }
 
     private String[] tokenizeUrlPattern(String urlPattern) {
@@ -73,25 +79,36 @@ public class DefaultUrlMappingData implements UrlMappingData {
     private void parseUrls(List<String> urls, String[] tokens, List<Boolean> optionalTokens) {
         StringBuilder buf = new StringBuilder();
 
-        for (String t : tokens) {
-            String token = t.trim();
 
+        String optionalExtensionPattern = UrlMapping.OPTIONAL_EXTENSION_WILDCARD + '?';
+        String optionalExtension = null;
+
+        if(tokens.length>0) {
+            String lastToken = tokens[tokens.length-1];
+            hasOptionalExtension = lastToken.endsWith(optionalExtensionPattern);
+            if(hasOptionalExtension) {
+                int i = lastToken.indexOf(optionalExtensionPattern);
+                optionalExtension = lastToken.substring(i, lastToken.length());
+                tokens[tokens.length-1] = lastToken.substring(0, i);
+            }
+
+        }
+
+        for (int i = 0; i < tokens.length; i++) {
+            String token = tokens[i].trim();
             if (token.equals(SLASH)) {
                 continue;
             }
 
-            String optionalExtensionPattern = UrlMapping.OPTIONAL_EXTENSION_WILDCARD + '?';
-            boolean hasOptionalExtension = token.endsWith(optionalExtensionPattern);
-            String optionalExtension = null;
-            if(hasOptionalExtension) {
-                int i = token.indexOf(optionalExtensionPattern);
-                optionalExtension = token.substring(i, token.length());
-                token = token.substring(0, i);
-            }
 
             boolean isOptional = false;
             if (token.endsWith(QUESTION_MARK)) {
-                urls.add(buf.toString());
+                if(optionalExtension != null) {
+                    urls.add(buf.toString() + optionalExtension);
+                }
+                else {
+                    urls.add(buf.toString());
+                }
                 buf.append(SLASH).append(token);
                 isOptional = true;
             } else {
@@ -107,12 +124,14 @@ public class DefaultUrlMappingData implements UrlMappingData {
             if (CAPTURED_DOUBLE_WILDCARD.equals(token)) {
                 optionalTokens.add(Boolean.TRUE);
             }
-
-            if(optionalExtension != null) {
-                buf.append(optionalExtension);
-            }
         }
-        urls.add(buf.toString());
+        if(optionalExtension != null) {
+            urls.add(buf.toString() + optionalExtension);
+        }
+        else {
+            urls.add(buf.toString());
+        }
+
         Collections.reverse(urls);
     }
 
