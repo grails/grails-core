@@ -71,7 +71,8 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     private UrlMappingData urlData;
     private static final String DEFAULT_ENCODING = "UTF-8";
     private static final Log LOG = LogFactory.getLog(RegexUrlMapping.class);
-    private static final Pattern DOUBLE_WILDCARD_PATTERN = Pattern.compile("\\(\\*\\*?\\)");
+    public static final Pattern DOUBLE_WILDCARD_PATTERN = Pattern.compile("\\(\\*\\*?\\)\\??");
+    public static final Pattern OPTIONAL_EXTENSION_WILDCARD_PATTERN = Pattern.compile("[^/]+\\(\\.\\(\\*\\)\\)");
     private GrailsApplication grailsApplication;
 
     /**
@@ -127,23 +128,52 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         }
 
         if (constraints != null) {
-            String pattern = data.getUrlPattern();
+            String[] tokens = data.getTokens();
             int pos = 0;
+            int currentToken = 0;
+            int tokensLength = tokens.length - 1;
             for (ConstrainedProperty constraint : constraints) {
-                pos = pattern.indexOf("(*)", pos);
+                String token = tokens[currentToken];
+                int shiftLength = 3;
+                pos = token.indexOf(UrlMapping.CAPTURED_WILDCARD, pos);
+                while(pos == -1) {
+                    boolean isLastToken = currentToken == tokensLength-1;
+                    if(currentToken < tokensLength) {
+
+                        token = tokens[++currentToken];
+                        // special handling for last token to deal with optional extension
+                        if(isLastToken) {
+                            if(token.startsWith(UrlMapping.CAPTURED_WILDCARD + '?') ) {
+                                constraint.setNullable(true);
+                            }
+                            if(token.endsWith(UrlMapping.OPTIONAL_EXTENSION_WILDCARD + '?')) {
+                                constraints[constraints.length-1].setNullable(true);
+                            }
+
+                        }
+                        else {
+                            pos = token.indexOf(UrlMapping.CAPTURED_WILDCARD, pos);
+                        }
+
+                    }
+                    else {
+                        break;
+                    }
+                }
 
                 if (pos == -1) {
                     constraint.setNullable(true);
                 }
-                else if (pos + 3 < pattern.length() && pattern.charAt(pos + 3) == '?') {
+                else if (pos + shiftLength < token.length() && token.charAt(pos + shiftLength) == '?') {
                     constraint.setNullable(true);
-                }
-                else {
-                    constraint.setNullable(false);
                 }
 
                 // Move on to the next place-holder.
-                pos += 3;
+                pos += shiftLength;
+                if(token.indexOf(UrlMapping.CAPTURED_WILDCARD, pos) == -1) {
+                    currentToken++;
+                    pos = 0;
+                }
             }
         }
     }
@@ -160,11 +190,12 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         try {
             // Escape any characters that have special meaning in regular expressions,
             // such as '.' and '+'.
-            pattern = StringUtils.replace(url, ".", "\\.");
-            pattern = StringUtils.replace(pattern, "+", "\\+");
+            pattern = url.replace(".", "\\.");
+            pattern = pattern.replace("+", "\\+");
 
+            pattern = pattern.replace("(\\.(*))", "\\.?([^/\\.]+)?");
             // Now replace "*" with "[^/]" and "**" with ".*".
-            pattern = "^" + pattern.replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2").replaceAll("([^\\*])\\*$", "$1[^/]+").replaceAll("\\*\\*", ".*");
+            pattern = "^" + pattern.replaceAll("([^\\*])\\*([^\\*])", "$1[^/\\.]+$2").replaceAll("([^\\*])\\*$", "$1[^/\\.]+").replaceAll("\\*\\*", ".*");
             pattern += "/??$";
             regex = Pattern.compile(pattern);
         }
@@ -219,12 +250,47 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         StringBuilder uri = new StringBuilder(contextPath);
         Set usedParams = new HashSet();
 
-        Pattern p = DOUBLE_WILDCARD_PATTERN;
 
         String[] tokens = urlData.getTokens();
         int paramIndex = 0;
         for (String token : tokens) {
-            Matcher m = p.matcher(token);
+            Matcher m = OPTIONAL_EXTENSION_WILDCARD_PATTERN.matcher(token);
+            if(m.find()){
+
+
+                if(token.startsWith(CAPTURED_WILDCARD)) {
+                    ConstrainedProperty prop = constraints[paramIndex++];
+                    String propName = prop.getPropertyName();
+
+                    Object value = paramValues.get(propName);
+                    usedParams.add(propName);
+
+                    if(value != null) {
+                        token = token.replaceFirst(DOUBLE_WILDCARD_PATTERN.pattern(), value.toString());
+                    }
+                    else if(prop.isNullable()) {
+                        break;
+                    }
+                }
+                uri.append(SLASH);
+                ConstrainedProperty prop = constraints[paramIndex++];
+                String propName = prop.getPropertyName();
+                Object value = paramValues.get(propName);
+                usedParams.add(propName);
+                if(value != null) {
+                    String ext = "." + value;
+                    uri.append(token.replace(OPTIONAL_EXTENSION_WILDCARD+'?', ext).replace(OPTIONAL_EXTENSION_WILDCARD, ext));
+                }
+                else {
+                    uri.append(token.replace(OPTIONAL_EXTENSION_WILDCARD+'?', "").replace(OPTIONAL_EXTENSION_WILDCARD, ""));
+                }
+
+                continue;
+            }
+            if(token.endsWith("?")) {
+                token = token.substring(0,token.length()-1);
+            }
+            m = DOUBLE_WILDCARD_PATTERN.matcher(token);
             if (m.find()) {
                 StringBuffer buf = new StringBuffer();
                 do {
@@ -470,6 +536,8 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         String lastGroup = null;
         for (int i = 0, count = m.groupCount(); i < count; i++) {
             lastGroup = m.group(i + 1);
+            // if null optional.. ignore
+            if(lastGroup == null) continue;
             int j = lastGroup.indexOf('?');
             if (j > -1) {
                 lastGroup = lastGroup.substring(0, j);
@@ -676,11 +744,11 @@ public class RegexUrlMapping extends AbstractUrlMapping {
     }
 
     private boolean isSingleWildcard(String token) {
-        return WILDCARD.equals(token) || CAPTURED_WILDCARD.equals(token);
+        return token.contains(WILDCARD) || token.contains(CAPTURED_WILDCARD);
     }
 
     private boolean isDoubleWildcard(String token) {
-        return DOUBLE_WILDCARD.equals(token) || CAPTURED_DOUBLE_WILDCARD.equals(token);
+        return token.contains(DOUBLE_WILDCARD) || token.contains(CAPTURED_DOUBLE_WILDCARD);
     }
 
     @Override

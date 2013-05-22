@@ -36,6 +36,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
 
     String WILDCARD = "*";
     String CAPTURED_WILDCARD = "(*)";
+    String OPTIONAL_EXTENSION_WILDCARD = "(.(*))";
     String SLASH = "/";
     char QUESTION_MARK = '?';
     char AMPERSAND = '&';
