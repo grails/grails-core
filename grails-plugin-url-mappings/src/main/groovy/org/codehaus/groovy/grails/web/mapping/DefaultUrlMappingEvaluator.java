@@ -85,11 +85,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     public static final List<String> DEFAULT_RESOURCES_INCLUDES = Arrays.asList(ACTION_INDEX, ACTION_CREATE, ACTION_SAVE,ACTION_SHOW,ACTION_EDIT, ACTION_UPDATE, ACTION_DELETE);
     public static final List<String> DEFAULT_RESOURCE_INCLUDES = Arrays.asList(ACTION_CREATE,ACTION_SAVE,ACTION_SHOW, ACTION_EDIT, ACTION_UPDATE, ACTION_DELETE);
     private static final Log LOG = LogFactory.getLog(UrlMappingBuilder.class);
-    public static final String HTTP_METHOD = "method";
-    public static final String PLUGIN = "plugin";
-    public static final String NAMESPACE = "namespace";
-    public static final String URI = "uri";
-
     private GroovyClassLoader classLoader = new GroovyClassLoader();
     private UrlMappingParser urlParser = new DefaultUrlMappingParser();
     private ServletContext servletContext;
@@ -414,11 +409,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             controllerName = variables.get(GrailsControllerClass.CONTROLLER);
                             actionName = variables.get(GrailsControllerClass.ACTION);
                             viewName = variables.get(GrailsControllerClass.VIEW);
-                            uri = variables.get(URI);
-                            pluginName = variables.get(PLUGIN);
-                            namespace = variables.get(NAMESPACE);
-                            if (variables.containsKey(HTTP_METHOD)) {
-                                httpMethod = variables.get(HTTP_METHOD).toString();
+                            uri = variables.get(UrlMapping.URI);
+                            pluginName = variables.get(UrlMapping.PLUGIN);
+                            namespace = variables.get(UrlMapping.NAMESPACE);
+                            if (variables.containsKey(UrlMapping.HTTP_METHOD)) {
+                                httpMethod = variables.get(UrlMapping.HTTP_METHOD).toString();
                             }
 
                         } else {
@@ -890,15 +885,15 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private Object getPluginName(Map namedArguments, Map bindingVariables) {
-            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, PLUGIN, pluginName);
+            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.PLUGIN, pluginName);
         }
 
         private Object getHttpMethod(Map namedArguments, Map bindingVariables) {
-            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, HTTP_METHOD, pluginName);
+            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.HTTP_METHOD, pluginName);
         }
         
         private Object getNamespace(Map namedArguments, Map bindingVariables) {
-            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, "namespace", namespace);
+            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.NAMESPACE, namespace);
         }
 
         private Object getViewName(Map namedArguments, Map bindingVariables) {
@@ -906,7 +901,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         private Object getURI(Map namedArguments, Map bindingVariables) {
-            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,URI, uri);
+            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.URI, uri);
         }
 
         private Object getException(Map namedArguments, Map bindingVariables) {

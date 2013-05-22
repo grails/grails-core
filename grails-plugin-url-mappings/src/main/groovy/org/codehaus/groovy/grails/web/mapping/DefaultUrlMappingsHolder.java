@@ -575,10 +575,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
         @Override
         public String toString() {
-            return new ToStringCreator(this).append("controller", controller)
-                                            .append("action", action)
-                                            .append("namespace", namespace)
-                                            .append("plugin",pluginName)
+            return new ToStringCreator(this).append(UrlMapping.CONTROLLER, controller)
+                                            .append(UrlMapping.ACTION, action)
+                                            .append(UrlMapping.NAMESPACE, namespace)
+                                            .append(UrlMapping.PLUGIN,pluginName)
                                             .append("httpMethod", httpMethod)
                                             .append("params", paramNames)
                                             .toString();
@@ -665,10 +665,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
         @Override
         public String toString() {
-            return new ToStringCreator(this).append("controller", controller)
-                                            .append("action", action)
-                                            .append("namespace", namespace)
-                                            .append("plugin",pluginName)
+            return new ToStringCreator(this).append(UrlMapping.CONTROLLER, controller)
+                                            .append(UrlMapping.ACTION, action)
+                                            .append(UrlMapping.NAMESPACE, namespace)
+                                            .append(UrlMapping.PLUGIN, pluginName)
                                             .append("httpMethod", httpMethod)
                                             .toString();
         }

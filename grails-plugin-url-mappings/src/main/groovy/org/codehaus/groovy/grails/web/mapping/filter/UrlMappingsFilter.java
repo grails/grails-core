@@ -44,6 +44,7 @@ import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingEvaluator;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -174,12 +175,12 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                             Object featureId = null;
                             if (pluginName != null || namespace != null) {
                                 Map featureIdMap = new HashMap();
-                                featureIdMap.put("uri", featureUri);
+                                featureIdMap.put(UrlMapping.URI, featureUri);
                                 if(pluginName != null) {
                                     featureIdMap.put("pluginName", pluginName);
                                 }
                                 if(namespace != null) {
-                                    featureIdMap.put("namespace", namespace);
+                                    featureIdMap.put(UrlMapping.NAMESPACE, namespace);
                                 }
                                 featureId = featureIdMap;
                             } else {

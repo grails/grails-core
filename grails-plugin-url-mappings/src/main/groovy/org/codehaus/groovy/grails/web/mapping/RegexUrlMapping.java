@@ -327,10 +327,10 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                 paramValues.put(ACTION, action);
             }
             if (hasPlugin) {
-                paramValues.put("plugin", pluginName);
+                paramValues.put(PLUGIN, pluginName);
             }
             if (hasNamespace) {
-                paramValues.put("namespace", namespace);
+                paramValues.put(NAMESPACE, namespace);
             }
 
             return createURLInternal(paramValues, encoding, includeContextPath);
@@ -514,7 +514,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         }
 
         if (namespace == null) {
-            namespace = createRuntimeConstraintEvaluator("namespace", constraints);
+            namespace = createRuntimeConstraintEvaluator(NAMESPACE, constraints);
         }
         
         if (viewName == null) {

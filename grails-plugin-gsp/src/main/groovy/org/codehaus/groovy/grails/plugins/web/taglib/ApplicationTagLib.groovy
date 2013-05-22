@@ -18,13 +18,14 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import grails.util.GrailsUtil
 import grails.util.Metadata
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
 
 import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
+import org.codehaus.groovy.grails.web.mapping.UrlMapping
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -223,8 +224,8 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         if (elementId) {
             writer << " id=\"${elementId}\""
         }
-        attrs.remove('plugin')
-        attrs.remove('namespace')
+        attrs.remove(UrlMapping.PLUGIN)
+        attrs.remove(UrlMapping.NAMESPACE)
         def remainingKeys = attrs.keySet() - LinkGenerator.LINK_ATTRIBUTES
         for (key in remainingKeys) {
             writer << " " << key << "=\"" << attrs[key]?.encodeAsHTML() << "\""
