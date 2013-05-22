@@ -96,12 +96,13 @@ class TransactionalTransform implements ASTTransformation{
         final constructorArgs = new ArgumentListExpression()
         constructorArgs.addExpression(new VariableExpression(PROPERTY_TRANSACTION_MANAGER));
         final transactionTemplateVar = new VariableExpression('$transactionTemplate')
+        final transactionTemplateClassNode = ClassHelper.make(TransactionTemplate).getPlainNodeReference()
         methodBody.addStatement(
             new ExpressionStatement(
                 new DeclarationExpression(
                     transactionTemplateVar,
                     GrailsASTUtils.ASSIGNMENT_OPERATOR,
-                    new ConstructorCallExpression(ClassHelper.make(TransactionTemplate).getPlainNodeReference(), constructorArgs)
+                    new ConstructorCallExpression(transactionTemplateClassNode, constructorArgs)
                 )
             )
         )
@@ -127,7 +128,8 @@ class TransactionalTransform implements ASTTransformation{
         }
 
         final methodArgs = new ArgumentListExpression()
-        final callCallExpression = new ClosureExpression([new Parameter(ClassHelper.make(TransactionStatus).getPlainNodeReference(), "transactionStatus")] as Parameter[],
+        final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus).getPlainNodeReference(), "transactionStatus")] as Parameter[]
+        final callCallExpression = new ClosureExpression(executeMethodParameterTypes ,
             methodNode.getCode())
 
         final variableScope = new VariableScope()
@@ -141,8 +143,12 @@ class TransactionalTransform implements ASTTransformation{
         )
         castExpression.coerce = true
         methodArgs.addExpression(castExpression)
+
+        final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, METHOD_EXECUTE, methodArgs)
+        final executeMethodNode = transactionTemplateClassNode.getMethod("execute", executeMethodParameterTypes)
+        executeMethodCallExpression.setMethodTarget(executeMethodNode)
         methodBody.addStatement(new ExpressionStatement(
-            new MethodCallExpression(transactionTemplateVar, METHOD_EXECUTE, methodArgs)
+            executeMethodCallExpression
         ))
         methodNode.setCode(methodBody)
     }
