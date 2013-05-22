@@ -62,7 +62,7 @@ public interface UrlMappingInfo {
      * 
      * @return the namespace of the corresponding controller, null if none was specified
      */
-    String getControllerNamespace();
+    String getNamespace();
 
     /**
      * The name of the plugin that this UrlMappingInfo maps to

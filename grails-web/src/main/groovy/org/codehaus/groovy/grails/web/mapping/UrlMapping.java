@@ -60,6 +60,9 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * Constant used to define a Url mapping that matches any HTTP method
      */
     String ANY_HTTP_METHOD = "*";
+    public static final String URI = "uri";
+    public static final String PLUGIN = "plugin";
+    public static final String NAMESPACE = "namespace";
 
     /**
      * Matches the given URI and returns an instance of the UrlMappingInfo interface or null
@@ -119,7 +122,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * 
      * @return the name of the controller namespace
      */
-    Object getControllerNamespace();
+    Object getNamespace();
 
     /**
      * Returns the name of the view to map to

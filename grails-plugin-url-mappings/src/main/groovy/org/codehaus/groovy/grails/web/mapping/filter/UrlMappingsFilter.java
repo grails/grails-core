@@ -44,6 +44,7 @@ import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingEvaluator;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -168,18 +169,18 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         if (viewName == null && info.getURI() == null) {
                             final String controllerName = info.getControllerName();
                             String pluginName = info.getPluginName();
-                            String controllerNamespace = info.getControllerNamespace();
+                            String namespace = info.getNamespace();
                             String featureUri = WebUtils.SLASH + urlConverter.toUrlElement(controllerName) + WebUtils.SLASH + urlConverter.toUrlElement(action);
 
                             Object featureId = null;
-                            if (pluginName != null || controllerNamespace != null) {
+                            if (pluginName != null || namespace != null) {
                                 Map featureIdMap = new HashMap();
-                                featureIdMap.put("uri", featureUri);
+                                featureIdMap.put(UrlMapping.URI, featureUri);
                                 if(pluginName != null) {
                                     featureIdMap.put("pluginName", pluginName);
                                 }
-                                if(controllerNamespace != null) {
-                                    featureIdMap.put("controllerNamespace", controllerNamespace);
+                                if(namespace != null) {
+                                    featureIdMap.put(UrlMapping.NAMESPACE, namespace);
                                 }
                                 featureId = featureIdMap;
                             } else {

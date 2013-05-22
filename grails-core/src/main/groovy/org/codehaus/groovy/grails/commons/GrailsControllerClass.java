@@ -58,6 +58,13 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      */
     String VIEW = "view";
 
+    
+    /**
+     * The name of the namespace property
+     */
+    String NAMESPACE_PROPERTY = "namespace";
+
+
     /**
      * Checks to see if an action is accessible via a particular http method.
      *

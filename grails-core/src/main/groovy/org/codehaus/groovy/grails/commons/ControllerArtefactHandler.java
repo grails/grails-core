@@ -81,18 +81,18 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
 
         String uri;
         String pluginName = null;
-        String controllerNamespace = null;
+        String namespace = null;
 
         if (featureId instanceof Map) {
             Map featureIdMap = (Map)featureId;
             uri = (String)featureIdMap.get("uri");
             pluginName = (String)featureIdMap.get("pluginName");
-            controllerNamespace = (String)featureIdMap.get("controllerNamespace");
+            namespace = (String)featureIdMap.get("namespace");
         } else {
             uri = featureId.toString();
         }
 
-        String cacheKey = (controllerNamespace != null ? controllerNamespace : "") + ":" + (pluginName != null ? pluginName : "") + ":" + uri;
+        String cacheKey = (namespace != null ? namespace : "") + ":" + (pluginName != null ? pluginName : "") + ":" + uri;
 
         GrailsClass controllerClass = uriToControllerClassCache.get(cacheKey);
         if (controllerClass == null) {
@@ -110,19 +110,19 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
                 GrailsClass c = controllerClasses[i];
                 if (((GrailsControllerClass) c).mapsToURI(uri)) {
                     boolean foundController = false;
-                    if(pluginName == null && controllerNamespace == null) {
+                    if(pluginName == null && namespace == null) {
                         foundController = true;
                     } else {
                         boolean pluginMatches = false;
-                        boolean controllerNamespaceMatches = false;
+                        boolean namespaceMatches = false;
                         
-                        controllerNamespaceMatches = namespaceMatches((GrailsControllerClass)c, controllerNamespace);
+                        namespaceMatches = namespaceMatches((GrailsControllerClass)c, namespace);
                         
-                        if(controllerNamespaceMatches) {
+                        if(namespaceMatches) {
                             pluginMatches = pluginMatches(c, pluginName, grailsPluginManager);
                         }
                         
-                        foundController = pluginMatches && controllerNamespaceMatches;
+                        foundController = pluginMatches && namespaceMatches;
                     }
                     if (foundController) {
                         controllerClass = c;
@@ -149,17 +149,17 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
     /**
      * 
      * @param c the class to inspect
-     * @param controllerNamespace a controller namespace
-     * @return true if c is in the controllerNamespace namespace
+     * @param namespace a controller namespace
+     * @return true if c is in namespace
      */
-    protected boolean namespaceMatches(GrailsControllerClass c, String controllerNamespace) {
-        boolean controllerNamespaceMatches;
-        if(controllerNamespace != null) {
-            controllerNamespaceMatches = controllerNamespace.equals(c.getNamespace());
+    protected boolean namespaceMatches(GrailsControllerClass c, String namespace) {
+        boolean namespaceMatches;
+        if(namespace != null) {
+            namespaceMatches = namespace.equals(c.getNamespace());
         } else {
-            controllerNamespaceMatches = (c.getNamespace() == null);
+            namespaceMatches = (c.getNamespace() == null);
         }
-        return controllerNamespaceMatches;
+        return namespaceMatches;
     }
     
     /**

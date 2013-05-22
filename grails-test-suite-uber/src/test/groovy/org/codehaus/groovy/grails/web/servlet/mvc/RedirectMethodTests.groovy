@@ -4,6 +4,7 @@ import grails.util.MockRequestDataValueProcessor
 
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException
 import org.springframework.beans.MutablePropertyValues
@@ -41,6 +42,21 @@ class UrlMappings {
                 // apply constraints here
             }
         }
+        "/noNamespace/$action?" {
+            controller = 'namespaced'
+        }
+        "/anotherNoNamespace/$action?" {
+            controller = 'anotherNamespaced'
+        }
+
+        "/secondaryNamespace/$action?" {
+            controller = 'namespaced'
+            namespace = 'secondary'
+        }
+        "/anotherSecondaryNamespace/$action?" {
+            controller = 'anotherNamespaced'
+            namespace = 'secondary'
+        }
     }
 }
 ''')
@@ -48,9 +64,50 @@ class UrlMappings {
 
     @Override
     protected Collection<Class> getControllerClasses() {
-        [NewsSignupController, RedirectController, AController, ABCController]
+        [NewsSignupController, 
+         RedirectController, 
+         AController, 
+         ABCController,
+         org.codehaus.groovy.grails.web.servlet.mvc.alpha.NamespacedController,
+         org.codehaus.groovy.grails.web.servlet.mvc.beta.NamespacedController]
     }
 
+    void testRedirectsWithNamespacedControllers() {
+        def primary = new org.codehaus.groovy.grails.web.servlet.mvc.alpha.NamespacedController()
+        webRequest.controllerName = 'namespaced'
+        primary.redirectToSelf()
+        assertEquals '/noNamespace/demo', response.redirectedUrl
+        
+        request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
+        primary.redirectToSecondary()
+        assertEquals '/secondaryNamespace/demo', response.redirectedUrl
+        
+        def secondary = new org.codehaus.groovy.grails.web.servlet.mvc.beta.NamespacedController()
+        request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
+        secondary.redirectToPrimary()
+        assertEquals '/noNamespace/demo', response.redirectedUrl
+        
+        request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
+        secondary.redirectToSelfWithImplicitNamespace()
+        assertEquals '/secondaryNamespace/demo', response.redirectedUrl
+        
+        request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
+        secondary.redirectToSelfWithExplicitNamespace()
+        assertEquals '/secondaryNamespace/demo', response.redirectedUrl
+        
+        request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
+        secondary.redirectToAnotherPrimary()
+        assertEquals '/anotherNoNamespace/demo', response.redirectedUrl
+        
+        request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
+        secondary.redirectToAnotherSecondaryWithImplicitNamespace()
+        assertEquals '/anotherSecondaryNamespace/demo', response.redirectedUrl
+        
+        request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
+        secondary.redirectToAnotherSecondaryWithExplicitNamespace()
+        assertEquals '/anotherSecondaryNamespace/demo', response.redirectedUrl
+    }
+    
     void testRedirectToDefaultActionOfAnotherController() {
         def c = new NewsSignupController()
         webRequest.controllerName = 'newsSignup'

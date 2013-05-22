@@ -115,7 +115,7 @@ public class DefaultUrlCreator implements UrlCreator {
     }
     
     @SuppressWarnings("unchecked")
-    public String createURL(String controller, String action, String controllerNamespace, String pluginName, Map parameterValues, String encoding) {
+    public String createURL(String controller, String action, String namespace, String pluginName, Map parameterValues, String encoding) {
         return createURLInternal(controller, action, parameterValues, true);
     }
 
@@ -156,7 +156,7 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     @SuppressWarnings("unchecked")
-    public String createRelativeURL(String controller, String action, String controllerNamespace, String pluginName, Map parameterValues, String encoding) {
+    public String createRelativeURL(String controller, String action, String namespace, String pluginName, Map parameterValues, String encoding) {
         return createURLInternal(controller, action, parameterValues, false);
     }
     
@@ -165,7 +165,7 @@ public class DefaultUrlCreator implements UrlCreator {
     }
 
     @SuppressWarnings("unchecked")
-    public String createRelativeURL(String controller, String action, String controllerNamespace, String pluginName, Map parameterValues, String encoding, String fragment) {
+    public String createRelativeURL(String controller, String action, String namespace, String pluginName, Map parameterValues, String encoding, String fragment) {
         final String url = createURLInternal(controller, action, parameterValues, false);
         return  createUrlWithFragment(encoding, fragment, url);
     }
@@ -174,8 +174,8 @@ public class DefaultUrlCreator implements UrlCreator {
         return createURL(controller, action, null, null, parameterValues, encoding, fragment);
     }
 
-    public String createURL(String controller, String action, String controllerNamespace, String pluginName, Map parameterValues, String encoding, String fragment) {
-        String url = createURL(controller, action, controllerNamespace, pluginName, parameterValues, encoding);
+    public String createURL(String controller, String action, String namespace, String pluginName, Map parameterValues, String encoding, String fragment) {
+        String url = createURL(controller, action, namespace, pluginName, parameterValues, encoding);
         return createUrlWithFragment(encoding, fragment, url);
     }
 

@@ -149,6 +149,12 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
         // we generate a relative link with no context path so that the absolute can be calculated by combining the serverBaseURL
         // which includes the contextPath
         argMap.put(LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK);
+        
+        if(!argMap.containsKey(GrailsControllerClass.NAMESPACE_PROPERTY)) {
+            // this could be made more efficient if we had a reference to the GrailsControllerClass object, which
+            // has the namespace property accessible without needing reflection
+            argMap.put(GrailsControllerClass.NAMESPACE_PROPERTY, GrailsClassUtils.getStaticFieldValue(controller.getClass(), GrailsControllerClass.NAMESPACE_PROPERTY));
+        }
         return redirectResponse(requestLinkGenerator.getServerBaseURL(), requestLinkGenerator.link(argMap), request, response, permanent);
     }
 
