@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.plugins.services
 
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic
 
 import java.lang.reflect.Method
 
@@ -115,13 +116,16 @@ class ServicesGrailsPlugin {
         }
     }
 
+    @CompileStatic
     boolean shouldCreateTransactionalProxy(GrailsServiceClass serviceClass) {
         Class javaClass = serviceClass.clazz
 
         try {
             serviceClass.transactional &&
+              !AnnotationUtils.findAnnotation(javaClass, grails.transaction.Transactional) &&
               !AnnotationUtils.findAnnotation(javaClass, Transactional) &&
-                 !javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, Transactional) != null }
+                 !javaClass.methods.any { Method m -> AnnotationUtils.findAnnotation(m, Transactional) != null ||
+                                                        AnnotationUtils.findAnnotation(m, grails.transaction.Transactional) != null}
         }
         catch (e) {
             return false
