@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.mapping
 
 /**
  */
-class UrlMappingsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
+class UrlMappingRsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
 
     void "Test that URL mappings can be specified with an optional extension"() {
         given:"A URL mapping with an optional extension"
@@ -50,6 +50,24 @@ class UrlMappingsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
 
     }
 
+    void "Test deep dynamic URL mappings can be specified with an optional extension"() {
+        given:"A URL mapping with an optional extension"
+            def urlMappingsHolder = getUrlMappingsHolder {
+                "/$controller/$action?/$id?(.$format)?"()
+            }
+
+        expect:"URLs with and without the format specified match"
+            urlMappingsHolder.match('/book/list.xml')
+            urlMappingsHolder.match('/book/list.xml').parameters.format == 'xml'
+            urlMappingsHolder.match('/book/list/1')
+            urlMappingsHolder.match('/book/list/1.xml')
+            urlMappingsHolder.match('/book/list/1.xml').parameters.format == 'xml'
+            urlMappingsHolder.match('/book')
+            urlMappingsHolder.match('/book/list')
+            urlMappingsHolder.match('/book/list').parameters.format == null
+
+    }
+
     void "Test that dynamic URL mappings generated correct links when specified with an optional extension"() {
         given:"A URL mapping with an optional extension"
             def linkGenerator = getLinkGenerator {
@@ -72,9 +90,7 @@ class UrlMappingsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
             }
 
         expect:"URLs with and without the format specified match"
-            linkGenerator.link(controller:"book") == "http://localhost/book/list"
             linkGenerator.link(controller:"book", params:[format:'xml']) == "http://localhost/book/list.xml"
-
-
+            linkGenerator.link(controller:"book") == "http://localhost/book/list"
     }
 }

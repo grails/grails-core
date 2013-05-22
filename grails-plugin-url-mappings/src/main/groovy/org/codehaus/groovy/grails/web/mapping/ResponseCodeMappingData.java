@@ -51,6 +51,11 @@ public class ResponseCodeMappingData implements UrlMappingData{
         throw new UnsupportedOperationException("You cannot create relative UrlMappings for response codes");
     }
 
+    @Override
+    public boolean hasOptionalExtension() {
+        return false;
+    }
+
     public int getResponseCode() {
         return responseCode;
     }

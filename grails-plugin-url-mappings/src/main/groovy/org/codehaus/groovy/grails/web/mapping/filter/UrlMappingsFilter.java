@@ -131,21 +131,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             LOG.debug(holder);
         }
 
-        if (areFileExtensionsEnabled()) {
-            String format = WebUtils.getFormatFromURI(uri, mimeTypes);
-            if (format != null) {
-                MimeType[] configuredMimes = mimeTypes == null ? MimeType.getConfiguredMimeTypes() : mimeTypes;
-                // only remove the file extension if it's one of the configured mimes in Config.groovy
-                for (MimeType configuredMime : configuredMimes) {
-                    if (configuredMime.getExtension().equals(format)) {
-                        request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, format);
-                        uri = uri.substring(0, (uri.length() - format.length() - 1));
-                        break;
-                    }
-                }
-            }
-        }
-
         GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
         UrlMappingInfo[] urlInfos = holder.matchAll(uri, webRequest.getCurrentRequest().getMethod());
         WrappedResponseHolder.setWrappedResponse(response);
