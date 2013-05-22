@@ -44,16 +44,16 @@ name showBooks2: '/showSomeOtherBooks' {
     action = 'list'
 }
 
-"/$controllerNamespace/$controller/$action?"()
+"/$namespace/$controller/$action?"()
 
 "/invokePrimaryController" {
     controller = 'namespaced'
-    controllerNamespace = 'primary'
+    namespace = 'primary'
 }
 
 "/invokeSecondaryController" {
     controller = 'namespaced'
-    controllerNamespace = 'secondary'
+    namespace = 'secondary'
 }
 
 "/nonNamespacedController/$action?" {
@@ -92,10 +92,10 @@ class ProductController {
         def template7 = '<g:link mapping="myOtherNamedMapping" params="[lastName:\'Keenan\']">List People</g:link>'
         assertOutputEquals '<a href="/showPeople/Keenan">List People</a>', template7, [:]
         
-        def template8 = '<g:link controller="namespaced" controllerNamespace="primary">Link To Primary</g:link>'
+        def template8 = '<g:link controller="namespaced" namespace="primary">Link To Primary</g:link>'
         assertOutputEquals '<a href="/invokePrimaryController">Link To Primary</a>', template8, [:]
         
-        def template9 = '<g:link controller="namespaced" controllerNamespace="secondary">Link To Secondary</g:link>'
+        def template9 = '<g:link controller="namespaced" namespace="secondary">Link To Secondary</g:link>'
         assertOutputEquals '<a href="/invokeSecondaryController">Link To Secondary</a>', template9, [:]
         
         def template10 = '<g:link controller="namespaced">Link To Non Namespaced</g:link>'

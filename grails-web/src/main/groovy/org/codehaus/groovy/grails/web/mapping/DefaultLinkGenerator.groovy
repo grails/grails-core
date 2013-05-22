@@ -158,10 +158,10 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     params.put(ATTRIBUTE_ID, id)
                 }
                 def pluginName = attrs.get('plugin')?.toString()
-                def controllerNamespace = attrs.get('controllerNamespace')?.toString()
-                UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,controllerNamespace,pluginName,httpMethod,params)
+                def namespace = attrs.get('namespace')?.toString()
+                UrlCreator mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,action,namespace,pluginName,httpMethod,params)
                 if (mapping == null && isDefaultAction) {
-                    mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,controllerNamespace,pluginName,httpMethod,params)
+                    mapping = urlMappingsHolder.getReverseMappingNoDefault(controller,null,namespace,pluginName,httpMethod,params)
                 }
                 if (mapping == null) {
                     mapping = urlMappingsHolder.getReverseMapping(controller,action,pluginName,httpMethod,params)

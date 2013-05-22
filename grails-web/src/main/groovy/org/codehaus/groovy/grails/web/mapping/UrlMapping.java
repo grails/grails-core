@@ -118,7 +118,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * 
      * @return the name of the controller namespace
      */
-    Object getControllerNamespace();
+    Object getNamespace();
 
     /**
      * Returns the name of the view to map to

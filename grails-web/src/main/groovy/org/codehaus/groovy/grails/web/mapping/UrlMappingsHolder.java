@@ -61,27 +61,27 @@ public interface UrlMappingsHolder {
      *
      * @param controller The name of the controller
      * @param action The name of the action or null
-     * @param controllerNamespace The controller namespace
+     * @param namespace The controller namespace
      * @param pluginName the name of the plugin which provides the controller
      * @param httpMethod The HTTP method to reverse map
      * @param params The parameters or null
      * @return A URI for the given arguments
      */
     @SuppressWarnings("rawtypes")
-    UrlCreator getReverseMapping(String controller, String action, String controllerNamespace, String pluginName, String httpMethod, Map params);
+    UrlCreator getReverseMapping(String controller, String action, String namespace, String pluginName, String httpMethod, Map params);
 
     /**
      * Retrieves the best guess of a URI for the given controller, action and parameters
      *
      * @param controller The name of the controller
      * @param action The name of the action or null
-     * @param controllerNamespace The controller namespace or null
+     * @param namespace The controller namespace or null
      * @param pluginName the name of the plugin which provides the controller
      * @param params The parameters or null
      * @return A URI for the given arguments
      */
     @SuppressWarnings("rawtypes")
-    UrlCreator getReverseMapping(String controller, String action, String controllerNamespace, String pluginName, Map params);
+    UrlCreator getReverseMapping(String controller, String action, String namespace, String pluginName, Map params);
 
     /**
      * Retrieves the best guess of a URI for the given controller, action and parameters
@@ -110,14 +110,14 @@ public interface UrlMappingsHolder {
      *
      * @param controller The name of the controller
      * @param action The name of the action or null
-     * @param controllerNamespace The controller namespace or null
+     * @param namespace The controller namespace or null
      * @param pluginName the name of the plugin which provides the controller
      * @param httpMethod the HTTP method
      * @param params The parameters or null
      * @return A URI for the given arguments
      */
     @SuppressWarnings("rawtypes")
-    UrlCreator getReverseMappingNoDefault(String controller, String action, String controllerNamespace, String pluginName, String httpMethod, Map params);
+    UrlCreator getReverseMappingNoDefault(String controller, String action, String namespace, String pluginName, String httpMethod, Map params);
     /**
      * Match and return the first UrlMappingInfo instance possible
      *

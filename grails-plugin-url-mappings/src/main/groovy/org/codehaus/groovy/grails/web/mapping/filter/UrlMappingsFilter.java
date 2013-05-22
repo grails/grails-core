@@ -168,18 +168,18 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         if (viewName == null && info.getURI() == null) {
                             final String controllerName = info.getControllerName();
                             String pluginName = info.getPluginName();
-                            String controllerNamespace = info.getControllerNamespace();
+                            String namespace = info.getNamespace();
                             String featureUri = WebUtils.SLASH + urlConverter.toUrlElement(controllerName) + WebUtils.SLASH + urlConverter.toUrlElement(action);
 
                             Object featureId = null;
-                            if (pluginName != null || controllerNamespace != null) {
+                            if (pluginName != null || namespace != null) {
                                 Map featureIdMap = new HashMap();
                                 featureIdMap.put("uri", featureUri);
                                 if(pluginName != null) {
                                     featureIdMap.put("pluginName", pluginName);
                                 }
-                                if(controllerNamespace != null) {
-                                    featureIdMap.put("controllerNamespace", controllerNamespace);
+                                if(namespace != null) {
+                                    featureIdMap.put("namespace", namespace);
                                 }
                                 featureId = featureIdMap;
                             } else {
