@@ -27,12 +27,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
@@ -850,6 +845,16 @@ public class GrailsASTUtils {
         associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.HAS_ONE));
         associationMap.putAll( getAssocationMap(classNode, GrailsDomainClassProperty.BELONGS_TO));
         return associationMap;
+    }
+
+    public static ClassNode findInterface(ClassNode classNode, ClassNode interfaceNode) {
+        Set<ClassNode> interfaces = classNode.getAllInterfaces();
+
+        for (ClassNode anInterface : interfaces) {
+            if(anInterface.equals(interfaceNode)) return anInterface;
+
+        }
+        return null;
     }
 
     @Target(ElementType.CONSTRUCTOR)
