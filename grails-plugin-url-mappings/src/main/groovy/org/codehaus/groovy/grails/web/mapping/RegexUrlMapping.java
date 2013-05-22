@@ -243,16 +243,12 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      */
     public UrlMappingInfo match(String uri) {
         Integer slashCount = org.springframework.util.StringUtils.countOccurrencesOf(uri, "/");
-        List<Pattern> patterns = patternByTokenCount.get(slashCount);
-        if(patterns != null) {
-
-            for (Pattern pattern : patterns) {
-                Matcher m = pattern.matcher(uri);
-                if (m.matches()) {
-                    UrlMappingInfo urlInfo = createUrlMappingInfo(uri, m, slashCount);
-                    if (urlInfo != null) {
-                        return urlInfo;
-                    }
+        for (Pattern pattern : patterns) {
+            Matcher m = pattern.matcher(uri);
+            if (m.matches()) {
+                UrlMappingInfo urlInfo = createUrlMappingInfo(uri, m, slashCount);
+                if (urlInfo != null) {
+                    return urlInfo;
                 }
             }
         }
