@@ -118,6 +118,28 @@ class GPathResultMapSpec extends Specification {
         'baseball' in keys
         'country' in keys
     }
+    
+    void 'Test id element'() {
+        given:
+        def xml = new XmlSlurper().parseText('''
+<post>
+    <id>42</id>
+    <name>Thin Lizzy</name>
+</post>
+''')
+
+        when:
+        def map = new GPathResultMap(xml)
+
+        then:
+        map.size() == 2
+        map.keySet().size() == 2
+        map.containsKey('id')
+        map.containsKey('name')
+        map.id == '42'
+        map.name == 'Thin Lizzy'
+
+    }
 
     void 'Test id attributes'() {
         given:
