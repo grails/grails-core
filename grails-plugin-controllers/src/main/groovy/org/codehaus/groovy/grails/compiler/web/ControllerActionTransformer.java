@@ -442,11 +442,22 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         final Statement constructAndBindParamsBlock = getStatementToInitializeCommandObject(commandObjectNode, paramName);
         
         final Expression contentTypeExpression = new PropertyExpression(new VariableExpression("request"), "contentType");
-        final Expression isJsonRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
+        
+        final Expression isApplicationJsonRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
                 new ConstantExpression("application/json"));
 
-        final Expression isXmlRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
+        final Expression isTextJsonRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
+                new ConstantExpression("text/json"));
+        
+        final Expression isJsonRequestExpression = new BinaryExpression(isApplicationJsonRequestExpression, Token.newSymbol(Types.LOGICAL_OR, 0, 0), isTextJsonRequestExpression);
+        
+        final Expression isApplicationXmlRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
                 new ConstantExpression("application/xml"));
+        
+        final Expression isTextXmlRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
+                new ConstantExpression("text/xml"));
+        
+        final Expression isXmlRequestExpression = new BinaryExpression(isApplicationXmlRequestExpression, Token.newSymbol(Types.LOGICAL_OR, 0, 0), isTextXmlRequestExpression);
         
         final Statement isJsonRequestStatement = new IfStatement(
                 new BooleanExpression(isJsonRequestExpression),
