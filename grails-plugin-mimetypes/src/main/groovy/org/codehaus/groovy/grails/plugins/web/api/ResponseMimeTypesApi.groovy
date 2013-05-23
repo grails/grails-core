@@ -41,11 +41,14 @@ class ResponseMimeTypesApi {
     private boolean useAcceptHeader
 
     MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
+    private DefaultAcceptHeaderParser parser
+
 
     /**
      * Initialize with default settings
      */
     ResponseMimeTypesApi() {
+        parser = new DefaultAcceptHeaderParser()
     }
 
     MimeType[] getMimeTypes() { mimeTypes }
@@ -60,6 +63,8 @@ class ResponseMimeTypesApi {
         grailsApplication = application
         mimeTypes = types
         useAcceptHeader = grailsApplication.flatConfig.get("grails.mime.use.accept.header") ? true : false
+        parser = new DefaultAcceptHeaderParser(grailsApplication)
+        parser.configuredMimeTypes = getMimeTypes()
     }
 
     /**
@@ -128,8 +133,6 @@ class ResponseMimeTypesApi {
             def userAgent = request.getHeader(HttpHeaders.USER_AGENT)
             def msie = userAgent && userAgent ==~ /msie(?i)/ ?: false
 
-            def parser = new DefaultAcceptHeaderParser(grailsApplication)
-            parser.configuredMimeTypes = getMimeTypes()
             String header = null
             if (msie) header = "*/*"
             if (!header && useAcceptHeader) header = request.getHeader(HttpHeaders.ACCEPT)
