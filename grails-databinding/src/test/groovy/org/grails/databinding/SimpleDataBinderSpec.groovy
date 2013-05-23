@@ -137,6 +137,40 @@ class SimpleDataBinderSpec extends Specification {
         obj.calendar == nowCalendar
     }
     
+    void 'Test listener is notified for properties in nested maps'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new DateContainer()
+        def afterBindingEvents = []
+        def listener = new DataBindingListener() {
+            Boolean beforeBinding(Object o, String propertyName, Object value) {
+                true
+            }
+            
+            void afterBinding(Object o, String propertyName) {
+                afterBindingEvents << [object: o, propertyName: propertyName]
+            }
+            
+            void bindingError(BindingError error) {
+            }
+        }
+        def f = new Fidget()
+
+        when:
+        binder.bind f, [name: 'Stuff', gadget: [gamma: 42, alpha: 43]], listener
+
+        then:
+        f.name == 'Stuff'
+        f.gadget.gamma == 42
+        f.gadget.alpha == 43
+        f.gadget.beta == null
+        afterBindingEvents.size() == 4
+        afterBindingEvents.find { it.object.is(f) && it.propertyName == 'name' }
+        afterBindingEvents.find { it.object.is(f) && it.propertyName == 'gadget' }
+        afterBindingEvents.find { it.object.is(f.gadget) && it.propertyName == 'alpha' }
+        afterBindingEvents.find { it.object.is(f.gadget) && it.propertyName == 'gamma' }
+    }
+    
     void 'Test invalid date format'() {
         given:
         def binder = new SimpleDataBinder()
