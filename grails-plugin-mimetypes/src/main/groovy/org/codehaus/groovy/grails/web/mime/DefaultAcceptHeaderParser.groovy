@@ -37,16 +37,19 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
     GrailsApplication application
     MimeType[] configuredMimeTypes
 
+    private Map mimeConfig
+
     DefaultAcceptHeaderParser() {}
 
     DefaultAcceptHeaderParser(GrailsApplication application) {
         this.application = application
+        def config = application?.getConfig()
+        mimeConfig = getMimeConfig(config)
     }
 
     MimeType[] parse(String header) {
-        def config = application?.getConfig()
         List<MimeType> mimes = []
-        Map mimeConfig = getMimeConfig(config)
+
         if (!mimeConfig) {
             LOG.debug "No mime types configured, defaulting to 'text/html'"
             return MimeType.createDefaults()
