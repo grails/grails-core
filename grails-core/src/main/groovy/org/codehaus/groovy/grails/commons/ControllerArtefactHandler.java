@@ -109,21 +109,16 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
             for (int i = (controllerClasses.length-1); i >= 0; i--) {
                 GrailsClass c = controllerClasses[i];
                 if (((GrailsControllerClass) c).mapsToURI(uri)) {
-                    boolean foundController = false;
-                    if(pluginName == null && namespace == null) {
-                        foundController = true;
-                    } else {
-                        boolean pluginMatches = false;
-                        boolean namespaceMatches = false;
+                    boolean pluginMatches = false;
+                    boolean namespaceMatches = false;
                         
-                        namespaceMatches = namespaceMatches((GrailsControllerClass)c, namespace);
+                    namespaceMatches = namespaceMatches((GrailsControllerClass)c, namespace);
                         
-                        if(namespaceMatches) {
-                            pluginMatches = pluginMatches(c, pluginName, grailsPluginManager);
-                        }
-                        
-                        foundController = pluginMatches && namespaceMatches;
+                    if(namespaceMatches) {
+                        pluginMatches = pluginMatches(c, pluginName, grailsPluginManager);
                     }
+                        
+                    boolean foundController = pluginMatches && namespaceMatches;
                     if (foundController) {
                         controllerClass = c;
                         break;
