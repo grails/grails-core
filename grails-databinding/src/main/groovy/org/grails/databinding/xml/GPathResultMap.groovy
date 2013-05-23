@@ -40,7 +40,7 @@ class GPathResultMap implements Map {
 
     boolean containsKey(key) {
         if(key == 'id') {
-            return this.@id != null
+            return this.@id != null || gpath['id'].size()
         }
         gpath[key].size()
     }
