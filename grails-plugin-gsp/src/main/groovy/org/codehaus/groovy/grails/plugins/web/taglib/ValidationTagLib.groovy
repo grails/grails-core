@@ -24,6 +24,8 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
 import org.apache.commons.lang.StringEscapeUtils
+import org.codehaus.groovy.grails.support.encoding.CodecLookup
+import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
 import org.codehaus.groovy.runtime.InvokerHelper
@@ -46,6 +48,7 @@ class ValidationTagLib {
     static returnObjectForTags = ['message', 'fieldError', 'formatValue']
     
     MessageSource messageSource
+    CodecLookup codecLookup
 
     /**
      * Renders an error message for the given bean and field.<br/>
@@ -339,7 +342,8 @@ class ValidationTagLib {
             }
         }
         if (text) {
-            return InvokerHelper.invokeMethod(text, attrs.encodeAs ? "encodeAs${attrs.encodeAs}".toString() : "encodeAsRaw", null)
+            Encoder encoder = codecLookup.lookupEncoder(attrs.encodeAs?.toString() ?: 'raw')
+            return encoder  ? encoder.encode(text) : text
         }
         ''
     }
@@ -350,7 +354,7 @@ class ValidationTagLib {
             if(value == null || value instanceof Number || value instanceof Date) {
                 value
             } else {
-                InvokerHelper.invokeMethod(value.toString(), "encodeAsHTML", null)
+                codecLookup.lookupEncoder('HTML').encode(value)
             }
         }
     }
