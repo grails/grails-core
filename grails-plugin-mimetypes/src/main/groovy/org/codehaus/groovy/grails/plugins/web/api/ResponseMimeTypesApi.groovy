@@ -74,11 +74,35 @@ class ResponseMimeTypesApi {
         HttpServletRequest request = webRequest.getCurrentRequest()
         def result = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT)
         if (!result) {
+            final mimeType = getMimeType(response)
+            if (mimeType) {
+                result = mimeType.extension
+                request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, result)
+            }
+        }
+        return result
+    }
+
+    /**
+     * Obtains the MimeType for the response using either the file extension or the ACCEPT header
+     *
+     * @param response The response
+     * @return The MimeType
+     */
+    MimeType getMimeType(HttpServletResponse response) {
+
+        final webRequest = GrailsWebRequest.lookup()
+        HttpServletRequest request = webRequest.getCurrentRequest()
+        MimeType result = (MimeType)request.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE)
+        if (!result) {
             def formatOverride = webRequest?.params?.format
+            if (!formatOverride) {
+                formatOverride = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT)
+            }
             if (formatOverride) {
                 def allMimes = getMimeTypes()
                 MimeType mime = allMimes.find { MimeType it -> it.extension == formatOverride }
-                result = mime ? mime.extension : getMimeTypes()[0].extension
+                result = mime ? mime : getMimeTypes()[0]
 
                 // Save the evaluated format as a request attribute.
                 // This is a blatant hack because we should to this
@@ -91,10 +115,10 @@ class ResponseMimeTypesApi {
                 //   - which initialises the CONTENT_FORMAT attribute
                 //   - *before* the "format" parameter is added to the map
                 //   - so the saved format is wrong
-                request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, result)
+                request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, result)
             }
             else {
-                result = getMimeTypesInternal(request, response)[0].extension
+                result = getMimeTypesInternal(request, response)[0]
             }
         }
         return result
