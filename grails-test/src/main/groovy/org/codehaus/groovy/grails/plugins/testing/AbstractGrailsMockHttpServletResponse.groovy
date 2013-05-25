@@ -44,11 +44,7 @@ abstract class AbstractGrailsMockHttpServletResponse extends MockHttpServletResp
      */
     void setFormat(String format) {
         HttpServletRequest request = GrailsWebRequest.lookup().getCurrentRequest()
-
-
         request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT, format)
-        // remove so that is can be repopulated
-        request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, null)
     }
 
     /**

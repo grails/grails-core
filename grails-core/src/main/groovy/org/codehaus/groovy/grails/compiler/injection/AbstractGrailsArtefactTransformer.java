@@ -101,7 +101,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             }
             else if (requiresAutowiring()) {
 
-                PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, null, null, null);
+                PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, new ConstructorCallExpression(implementationNode, ZERO_ARGS), null, null);
                 propertyNode.addAnnotation(AUTO_WIRED_ANNOTATION);
                 if(getMarkerAnnotation() != null) {
                     propertyNode.addAnnotation(getMarkerAnnotation());

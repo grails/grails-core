@@ -90,7 +90,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
 
         // remove duplicate text/xml and application/xml entries
         MimeType textXml = mimes.find { MimeType it -> it.name == 'text/xml' }
-        MimeType appXml = mimes.find { MimeType it -> it.name ==  MimeType.XML.name }
+        MimeType appXml = mimes.find { MimeType it -> it.name ==  MimeType.XML }
         if (textXml && appXml) {
             // take the largest q value
             appXml.parameters.q = [textXml.parameters.q.toBigDecimal(), appXml.parameters.q.toBigDecimal()].max()
@@ -98,7 +98,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
             mimes.remove(textXml)
         }
         else if (textXml) {
-            textXml.name = MimeType.XML.name
+            textXml.name = MimeType.XML
         }
 
         if (appXml) {

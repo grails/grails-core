@@ -55,8 +55,6 @@ import org.codehaus.groovy.grails.web.servlet.FlashScope
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.plugins.web.rest.api.ControllersRestApi
-import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
@@ -170,7 +168,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         defineBeans(new ConvertersGrailsPlugin().doWithSpring)
         defineBeans {
             instanceControllersApi(ControllersApi)
-            instanceControllersRestApi(ControllersRestApi, new DefaultRendererRegistry(), ref("instanceControllersApi"), new ControllersMimeTypesApi())
             instanceControllerTagLibraryApi(ControllerTagLibraryApi)
 
             def urlConverterType = config?.grails?.web?.url?.converter
