@@ -1,5 +1,7 @@
 repositories {
     //FIXME to delete after reactor-groovy M1 release
+
+    mavenCentral()
     maven { url 'http://repo.springsource.org/libs-release' }
     maven { url 'http://repo.springsource.org/libs-snapshot' }
 }
