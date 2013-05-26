@@ -18,6 +18,7 @@ package grails.async
 import org.grails.async.decorator.PromiseDecorator
 import spock.lang.Specification
 
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
@@ -71,7 +72,7 @@ class PromiseSpec extends Specification {
 
             sleep 200
         then:"The result is correct"
-            result == [2,4]
+            result.containsAll 2,4
 
         when:"A promise list is created from two closures"
             list = Promises.createPromise({ 1 + 1 }, { 2 + 2 })
@@ -82,7 +83,7 @@ class PromiseSpec extends Specification {
 
             sleep 200
         then:"The result is correct"
-            result == [2,4]
+            result.containsAll 2,4
 
 
     }
@@ -91,7 +92,7 @@ class PromiseSpec extends Specification {
 
         when:"A promise is executed with an onComplete handler"
             def promise = Promises.createPromise { 1 + 1 }
-            def result
+            def result = 0
             def hasError = false
             promise.onComplete { val ->
                 result = val
@@ -103,7 +104,7 @@ class PromiseSpec extends Specification {
 
         then:"The onComplete handler is invoked and the onError handler is ignored"
             result == 2
-            hasError == false
+            !hasError
 
 
     }
@@ -111,6 +112,7 @@ class PromiseSpec extends Specification {
     void "Test promise onError handling"() {
 
         when:"A promise is executed with an onComplete handler"
+            def latch = new CountDownLatch(1)
             def promise = Promises.createPromise {
                 throw new RuntimeException("bad")
             }
@@ -121,10 +123,11 @@ class PromiseSpec extends Specification {
             }
             promise.onError { err ->
                 error = err
+                latch.countDown()
             }
-            sleep 1000
 
         then:"The onComplete handler is invoked and the onError handler is ignored"
+            latch.await(500,TimeUnit.MILLISECONDS)
             result == null
             error != null
             error.message == "bad"
@@ -147,8 +150,8 @@ class PromiseSpec extends Specification {
             def val = promise.get()
 
         then:'the chain is executed'
-            thrown RuntimeException
             val == null
+            thrown RuntimeException
     }
 }
 

@@ -17,12 +17,8 @@ package grails.async
 
 import org.grails.async.decorator.PromiseDecorator
 import org.grails.async.factory.SynchronousPromiseFactory
-import org.grails.async.factory.gpars.GparsPromiseFactory
+import org.grails.async.factory.reactor.ReactorPromiseFactory
 import spock.lang.Specification
-
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-
 /**
  * @author Graeme Rocher
  * @since 2.3
@@ -34,7 +30,7 @@ class SynchronousPromiseFactorySpec extends Specification {
     }
 
     void cleanup() {
-        Promises.promiseFactory = new GparsPromiseFactory()
+        Promises.promiseFactory = new ReactorPromiseFactory()
     }
 
     void "Test add promise decorator"() {
