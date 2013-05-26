@@ -1,3 +1,9 @@
+repositories {
+    //FIXME to delete after reactor-groovy M1 release
+    maven { url 'http://repo.springsource.org/libs-release' }
+    maven { url 'http://repo.springsource.org/libs-snapshot' }
+}
+
 dependencies {
     compile ('org.codehaus.gpars:gpars:1.0.0'){
         ext.notInPom = true
