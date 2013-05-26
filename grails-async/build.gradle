@@ -2,7 +2,9 @@ dependencies {
     compile ('org.codehaus.gpars:gpars:1.0.0'){
         ext.notInPom = true
     }
-    compile 'reactor:reactor-groovy:1.0.0.BUILD-SNAPSHOT'
+    compile('reactor:reactor-groovy:1.0.0.BUILD-SNAPSHOT'){
+        exclude module:"groovy-all"
+    }
 }
 
 eclipse {
