@@ -28,7 +28,7 @@ class DefaultRendererRegistrySpec extends Specification {
             def mimeType = new MimeType("text/xml", 'xml')
             registry.addRenderer(new AbstractRenderer(URL,mimeType) {
                 @Override
-                def render(Object object, RenderContext context) {
+                void render(Object object, RenderContext context) {
 
                 }
             })
@@ -46,7 +46,7 @@ class DefaultRendererRegistrySpec extends Specification {
         def mimeType = new MimeType("text/xml", 'xml')
         registry.addRenderer(new AbstractRenderer(CharSequence,mimeType) {
             @Override
-            def render(Object object, RenderContext context) {
+            void  render(Object object, RenderContext context) {
 
             }
         })
@@ -65,7 +65,7 @@ class DefaultRendererRegistrySpec extends Specification {
             def mimeType = new MimeType("text/xml", 'xml')
             registry.addDefaultRenderer(new AbstractRenderer(Object,mimeType) {
                 @Override
-                def render(Object object, RenderContext context) {
+                void  render(Object object, RenderContext context) {
 
                 }
             })

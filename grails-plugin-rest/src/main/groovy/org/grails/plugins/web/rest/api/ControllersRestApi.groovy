@@ -21,6 +21,7 @@ import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
@@ -68,11 +69,13 @@ class ControllersRestApi {
      * @return
      */
     public <T> Object respond(Object controller, Object value, Map args = [:]) {
+        List<String> formats = args.formats ? (List<String>) args.formats  : MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
+        def statusCode = args.status ?: null
         if (value == null) {
-            return render(controller,[status:404])
+            return render(controller,[status:statusCode ?: 404 ])
         }
 
-        List<String> formats = args.formats ? (List<String>) args.formats  : MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
+
         final webRequest = getWebRequest(controller)
         final response = webRequest.getCurrentResponse()
         MimeType mimeType = getResponseFormat(response)
@@ -83,7 +86,7 @@ class ControllersRestApi {
 
         if (mimeType && formats.contains(mimeType.extension)) {
 
-            Errors errors = value.hasProperty("errors") ? getDomainErrors(value) : null
+            Errors errors = value.hasProperty(GrailsDomainClassProperty.ERRORS) ? getDomainErrors(value) : null
 
             Renderer<T> renderer
             if (errors && errors.hasErrors()) {
@@ -100,12 +103,12 @@ class ControllersRestApi {
             }
             else {
                 // TODO: Check correct status code here
-                return render(controller,[status:404])
+                return render(controller,[status: statusCode ?: 404 ])
             }
         }
         else {
             // TODO: Check correct status code here
-            return render(controller,[status:404])
+            return render(controller,[status: statusCode ?: 404 ])
         }
     }
 

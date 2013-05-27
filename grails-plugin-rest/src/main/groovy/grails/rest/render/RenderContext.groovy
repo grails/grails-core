@@ -36,6 +36,19 @@ public interface RenderContext {
     void setContentType(String contentType)
 
     /**
+     * The view to use for the response
+     *
+     * @param viewName The view name
+     */
+    void setViewName(String viewName)
+
+    /**
+     * The model to use for the response
+     * @param model The model
+     */
+    void setModel(Map model)
+
+    /**
      * @return The current action name
      */
     String getActionName()

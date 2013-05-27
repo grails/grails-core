@@ -47,9 +47,10 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
     }
 
     @Override
-    def render(T object, RenderContext context) {
+    void render(T object, RenderContext context) {
         final modelVariableName = GrailsNameUtils.getPropertyName(object.class)
 
-        return new ModelAndView(context.actionName, [(modelVariableName): object])
+        context.setViewName(context.actionName)
+        context.setModel([(modelVariableName): object])
     }
 }

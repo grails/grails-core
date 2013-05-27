@@ -44,5 +44,5 @@ interface Renderer<T> {
      *
      * @return Optional return value, those to that directly write typically return null
      */
-    def render(T object, RenderContext context)
+    void render(T object, RenderContext context)
 }

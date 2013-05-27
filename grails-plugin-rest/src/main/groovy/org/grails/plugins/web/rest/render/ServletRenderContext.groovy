@@ -18,7 +18,9 @@ package org.grails.plugins.web.rest.render
 
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.servlet.ModelAndView
 
 /**
  * RenderContext for the servlet environment
@@ -43,6 +45,28 @@ class ServletRenderContext implements RenderContext{
     @Override
     void setContentType(String contentType) {
         webRequest.currentResponse.contentType = contentType
+    }
+
+    @Override
+    void setViewName(String viewName) {
+        ModelAndView modelAndView = getModelAndView()
+        modelAndView.setViewName(viewName)
+    }
+
+    protected ModelAndView getModelAndView() {
+        final request = webRequest.currentRequest
+        ModelAndView modelAndView = (ModelAndView) request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+        if (modelAndView == null) {
+            modelAndView = new ModelAndView()
+            request.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, modelAndView)
+        }
+        modelAndView
+    }
+
+    @Override
+    void setModel(Map model) {
+        ModelAndView modelAndView = getModelAndView()
+        modelAndView.model.putAll(model)
     }
 
     @Override

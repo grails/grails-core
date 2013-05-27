@@ -21,6 +21,7 @@ import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.junit.Before
 import org.springframework.web.servlet.ModelAndView
 import spock.lang.Specification
@@ -64,7 +65,8 @@ class RespondMethodSpec extends Specification{
 
         when:"The respond method is used to render a response"
             webRequest.actionName = 'show'
-            ModelAndView modelAndView = controller.show(book.id)
+            controller.show(book.id)
+            def modelAndView = webRequest.request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
 
         then:"A modelAndView and view is produced"
             modelAndView != null

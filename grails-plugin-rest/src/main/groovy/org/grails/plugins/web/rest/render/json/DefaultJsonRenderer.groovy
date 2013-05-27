@@ -40,7 +40,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     }
 
     @Override
-    def render(T object, RenderContext context) {
+    void render(T object, RenderContext context) {
         context.setContentType(mimeType.name)
         def converter = object as JSON
         converter.render(context.getWriter())
