@@ -67,4 +67,11 @@ public interface RendererRegistry {
      */
     public <C, T> Renderer<C> findContainerRenderer(MimeType contentType, Class<C> containerType, T object)
 
+    /**
+     * Whether the specified class is a container (list, map etc.)
+     *
+     * @param aClass The class
+     * @return True if it is
+     */
+    boolean isContainerType(Class<?> aClass)
 }

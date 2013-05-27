@@ -101,11 +101,12 @@ class DefaultRendererRegistry implements RendererRegistry{
         if (renderer == null) {
 
             Class currentClass = clazz
-            while(currentClass != Object) {
+            while(currentClass != null) {
 
                 renderer = findRendererForType(currentClass, mimeType)
                 if (renderer) break
-                currentClass = clazz.getSuperclass()
+                if (currentClass == Object) break
+                currentClass = currentClass.getSuperclass()
             }
             final interfaces = ClassUtils.getAllInterfaces(object)
             for(i in interfaces) {
@@ -126,7 +127,26 @@ class DefaultRendererRegistry implements RendererRegistry{
     @Override
     def <C, T> Renderer<C> findContainerRenderer(MimeType mimeType, Class<C> containerType, T object) {
         if (object == null) return null
-        final targetClass = object instanceof Class ? (Class) object : object.getClass()
+        def targetClass = object instanceof Class ? (Class) object : object.getClass()
+        if (targetClass.isArray()) {
+            targetClass = targetClass.getComponentType()
+        }
+        if (object instanceof Iterable) {
+            if (object) {
+                final first = object.iterator().next()
+                if (first) {
+                    targetClass = first.getClass()
+                }
+            }
+        }
+        if (object instanceof Map) {
+            if (object) {
+                final first = object.values().iterator().next()
+                if (first) {
+                    targetClass = first.getClass()
+                }
+            }
+        }
         def originalKey = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
 
         Renderer<C> renderer = (Renderer<C>)containerRendererCache.get(originalKey)
@@ -160,6 +180,14 @@ class DefaultRendererRegistry implements RendererRegistry{
         }
 
         return renderer
+    }
+
+    @Override
+    boolean isContainerType(Class<?> aClass) {
+        if (containerRenderers.keySet().any { ContainerRendererCacheKey key -> key.containerType.isAssignableFrom(aClass) }) {
+            return true
+        }
+        return false
     }
 
     protected <T> Renderer findRendererForType(Class<T> currentClass, MimeType mimeType) {

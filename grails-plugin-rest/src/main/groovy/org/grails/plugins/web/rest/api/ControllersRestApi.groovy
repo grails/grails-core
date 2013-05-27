@@ -26,9 +26,11 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
 import org.grails.datastore.mapping.validation.ValidationErrors
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.Errors
 
 import javax.servlet.http.HttpServletResponse
@@ -52,12 +54,17 @@ class ControllersRestApi {
     protected MimeType[] mimeTypes
 
 
+    @Autowired
+    GroovyPageLocator groovyPageLocator
+
     ControllersRestApi(RendererRegistry rendererRegistry, ControllersApi controllersApi, ControllersMimeTypesApi mimeTypesApi) {
         this.controllersApi = controllersApi
         this.mimeTypesApi = mimeTypesApi
         this.rendererRegistry = rendererRegistry
         mimeTypes = MimeType.getConfiguredMimeTypes()
     }
+
+
 
     /**
      * Same as {@link ControllersRestApi#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
@@ -77,7 +84,7 @@ class ControllersRestApi {
      * @param args The arguments
      * @return
      */
-    public <T> Object respond(Object controller, Object value, Map args = [:]) {
+    public  Object respond(Object controller, Object value, Map args = [:]) {
         def statusCode = args.status ?: null
         if (value == null) {
             return render(controller,[status:statusCode ?: 404 ])
@@ -97,7 +104,7 @@ class ControllersRestApi {
 
             Errors errors = value.hasProperty(GrailsDomainClassProperty.ERRORS) ? getDomainErrors(value) : null
 
-            Renderer<T> renderer
+            Renderer renderer
             if (errors && errors.hasErrors()) {
                 def target = errors instanceof ValidationErrors ? errors.getTarget() : ((grails.validation.ValidationErrors)errors).getTarget()
                 Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
@@ -109,12 +116,18 @@ class ControllersRestApi {
                 }
             }
             else {
-                renderer = (Renderer<T>)registry.findRenderer(mimeType, (T)value)
+                final valueType = value.getClass()
+                if (registry.isContainerType(valueType)) {
+                    renderer = registry.findContainerRenderer(mimeType,valueType, value)
+                }
+                else {
+                    renderer = registry.findRenderer(mimeType, value)
+                }
             }
 
 
             if (renderer) {
-                return renderer.render((T)value, new ServletRenderContext(webRequest))
+                return renderer.render(value, new ServletRenderContext(webRequest))
             }
             else {
                 // TODO: Check correct status code here

@@ -94,6 +94,21 @@ class RespondMethodSpec extends Specification{
 
     }
 
+    void "Test that the respond method produces XML for a list of domains and a content type of XML"() {
+        given:"A book instance"
+            def book = new Book(title: "The Stand").save(flush:true)
+
+        when:"The respond method is used to render a response"
+            response.format = 'xml'
+            def result = controller.index()
+
+
+        then:"A modelAndView and view is produced"
+            result == null
+            response.contentType == 'text/xml'
+
+    }
+
     void "Test that the respond method produces errors XML for a domain instance that has errors and a content type of XML"() {
         given:"A book instance"
             def book = new Book(title: "")
@@ -166,6 +181,10 @@ class RespondMethodSpec extends Specification{
 class BookController {
     def show(Book b) {
         respond b
+    }
+
+    def index() {
+        respond Book.list()
     }
 
     def showWithFormats(Long id) {

@@ -18,16 +18,33 @@ package org.grails.plugins.web.rest.render
 
 import grails.rest.render.RenderContext
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.Errors
 import spock.lang.Specification
 
 class DefaultRendererRegistrySpec extends Specification {
 
     void "Test that the registry returns an appropriate render for a container type"() {
-        given:"A registry with a specific renderer"
-        def registry = new DefaultRendererRegistry()
-        def mimeType = new MimeType("text/xml", 'xml')
+        when:"A registry with a specific renderer"
+            def registry = new DefaultRendererRegistry()
 
-        registry.addRenderer()
+
+        then:"An errors renderer can be found"
+            registry.findContainerRenderer(MimeType.XML, Errors, new BeanPropertyBindingResult("foo", "bar"))
+            !registry.findContainerRenderer(MimeType.XML, List, new URL("http://grails.org"))
+
+        when:"A collection renderer is specified"
+            registry.addContainerRenderer(URL, new AbstractRenderer(List, MimeType.XML) {
+                @Override
+                void render(Object object, RenderContext context) {
+                    //To change body of implemented methods use File | Settings | File Templates.
+                }
+            })
+            List<URL> list =  [new URL("http://grails.org")]
+
+        then:"A renderer is found"
+            registry.findContainerRenderer(MimeType.XML, List, new URL("http://grails.org"))
+            registry.findContainerRenderer(MimeType.XML, List, list)
     }
 
     void "Test that registry returns appropriate renderer for type"() {
