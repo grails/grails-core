@@ -93,11 +93,65 @@ class RespondMethodSpec extends Specification{
             response.xml.title.text() == 'The Stand'
 
     }
+
+    void "Test that the respond method produces JSON for a domain instance and a content type of JSON"() {
+        given:"A book instance"
+            def book = new Book(title: "The Stand").save(flush:true)
+
+        when:"The respond method is used to render a response"
+            response.format = 'json'
+
+        def result = controller.show(book.id)
+
+
+        then:"A modelAndView and view is produced"
+            result == null
+            response.contentType == 'application/json'
+            response.json.title == 'The Stand'
+
+    }
+
+    void "Test that the respond method produces a 404 for a format not supported"() {
+        given:"A book instance"
+            def book = new Book(title: "The Stand").save(flush:true)
+
+        when:"The respond method is used to render a response"
+            response.format = 'xml'
+
+            def result = controller.showWithFormats(book.id)
+
+
+        then:"A modelAndView and view is produced"
+            response.status == 404
+
+
+    }
+
+    void "Test that the respond method produces JSON for an action that specifies explicit formats"() {
+        given:"A book instance"
+            def book = new Book(title: "The Stand").save(flush:true)
+
+        when:"The respond method is used to render a response"
+            response.format = 'json'
+
+            def result = controller.showWithFormats(book.id)
+
+
+        then:"A modelAndView and view is produced"
+            result == null
+            response.contentType == 'application/json'
+            response.json.title == 'The Stand'
+
+    }
 }
 @Artefact("Controller")
 class BookController {
     def show(Long id) {
         respond Book.get(id)
+    }
+
+    def showWithFormats(Long id) {
+        respond Book.get(id), formats:['json', 'html']
     }
 }
 @Entity

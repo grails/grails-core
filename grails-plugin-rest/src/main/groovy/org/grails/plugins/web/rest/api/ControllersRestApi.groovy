@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse
 class ControllersRestApi {
 
 
+    public static final String PROPERTY_RESPONSE_FORMATS = "responseFormats"
     protected @Delegate ControllersApi controllersApi
     protected @Delegate ControllersMimeTypesApi mimeTypesApi
 
@@ -57,6 +58,12 @@ class ControllersRestApi {
     }
 
     /**
+     * Same as {@link ControllersRestApi#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
+     */
+    public <T> Object respond(Object controller, Map args, Object value) {
+        respond(controller, value, args)
+    }
+    /**
      * The respond method will attempt to delivery an appropriate response for the
      * requested response format and value.
      *
@@ -69,7 +76,6 @@ class ControllersRestApi {
      * @return
      */
     public <T> Object respond(Object controller, Object value, Map args = [:]) {
-        List<String> formats = args.formats ? (List<String>) args.formats  : MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
         def statusCode = args.status ?: null
         if (value == null) {
             return render(controller,[status:statusCode ?: 404 ])
@@ -77,6 +83,7 @@ class ControllersRestApi {
 
 
         final webRequest = getWebRequest(controller)
+        List<String> formats = calculateFormats(controller, webRequest.actionName, args)
         final response = webRequest.getCurrentResponse()
         MimeType mimeType = getResponseFormat(response)
         def registry = rendererRegistry
@@ -110,6 +117,33 @@ class ControllersRestApi {
             // TODO: Check correct status code here
             return render(controller,[status: statusCode ?: 404 ])
         }
+    }
+
+    List<String> calculateFormats(def controller, String actionName, Map args) {
+        if (args.formats) {
+            return (List<String>) args.formats
+        }
+        else if (controller.hasProperty(PROPERTY_RESPONSE_FORMATS)) {
+            final responseFormatsProperty = ((GroovyObject) controller).getProperty(PROPERTY_RESPONSE_FORMATS)
+            if (responseFormatsProperty instanceof List) {
+                return (List<String>) responseFormatsProperty
+            }
+            else if ((responseFormatsProperty instanceof Map) && actionName) {
+                Map<String, Object> responseFormatsMap = (Map<String, Object>) responseFormatsProperty
+
+                final responseFormatsForAction = responseFormatsMap.get(actionName)
+                if (responseFormatsForAction instanceof List) {
+                    return (List<String>) responseFormatsForAction
+                }
+                else {
+                    return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
+                }
+            }
+        }
+        else {
+            return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
+        }
+
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
