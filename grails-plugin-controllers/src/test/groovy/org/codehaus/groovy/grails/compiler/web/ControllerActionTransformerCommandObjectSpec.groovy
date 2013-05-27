@@ -8,6 +8,7 @@ import grails.validation.Validateable
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
+import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.springframework.mock.web.MockHttpServletRequest
@@ -194,6 +195,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
     def setup() {
         initRequest()
         testController = testControllerClass.newInstance()
+        testController.instanceControllersApi = new ControllersApi()
     }
 
     def initRequest() {
@@ -576,6 +578,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
     void 'Test overriding closure actions in subclass'() {
         given:
             def subclassController = subclassControllerClass.newInstance()
+            subclassController.instanceControllersApi = new ControllersApi()
 
         when:
             def model = subclassController.index()

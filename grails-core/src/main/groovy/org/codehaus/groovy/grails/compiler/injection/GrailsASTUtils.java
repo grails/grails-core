@@ -857,6 +857,15 @@ public class GrailsASTUtils {
         return null;
     }
 
+    public static boolean hasZeroArgsConstructor(ClassNode implementationNode) {
+        List<ConstructorNode> constructors = implementationNode.getDeclaredConstructors();
+        if(constructors.isEmpty()) return true;
+        for (ConstructorNode constructor : constructors) {
+            if(constructor.getParameters().length == 0 ) return true;
+        }
+        return false;
+    }
+
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)
     private static @interface GrailsDelegatingConstructor {}
