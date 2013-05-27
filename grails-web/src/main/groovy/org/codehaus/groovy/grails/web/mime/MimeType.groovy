@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.mime
 import groovy.transform.CompileStatic;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.context.ContextLoader
 
 /**
  * @author Graeme Rocher
@@ -31,12 +32,19 @@ class MimeType {
      */
     public static final String BEAN_NAME = "mimeTypes"
 
-    static final String XML = 'application/xml'
+    static final MimeType ALL = new MimeType("*/*", "all")
+    static final MimeType XML = new MimeType('application/xml', "xml")
 
     private static DEFAULTS = createDefaults()
 
-    MimeType(String n, Map params = [:]) {
-        name = n
+    MimeType(String name, Map params = [:]) {
+        this(name, null, params)
+    }
+
+    MimeType(String name, String extension, Map<String, String> params = [:]) {
+        this.name = name
+        this.extension = extension
+        this.name = name
         parameters.putAll(params)
     }
 
@@ -55,7 +63,10 @@ class MimeType {
      * @return An array of MimeTypes
      */
     static MimeType[] getConfiguredMimeTypes() {
-        def ctx = GrailsWebRequest.lookup()?.getApplicationContext()
+        def ctx = ContextLoader.getCurrentWebApplicationContext()
+        if(ctx == null) {
+            ctx = GrailsWebRequest.lookup()?.getApplicationContext()
+        }
         (MimeType[])ctx?.containsBean(MimeType.BEAN_NAME) ? ctx?.getBean(MimeType.BEAN_NAME, MimeType[]) : DEFAULTS
     }
 
