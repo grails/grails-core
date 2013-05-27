@@ -68,89 +68,89 @@ class Promises {
      * @see PromiseFactory#waitAll(grails.async.Promise[])
      */
     static<T> List<T> waitAll(Promise<T>...promises) {
-        promiseFactory.waitAll(promises)
+        getPromiseFactory().waitAll(promises)
     }
 
     /**
      * @see PromiseFactory#waitAll(java.util.List)
      */
     static<T> List<T> waitAll(List<Promise<T>> promises) {
-        promiseFactory.waitAll(promises)
+        getPromiseFactory().waitAll(promises)
     }
 
     /**
      * @see PromiseFactory#onComplete(java.util.List, groovy.lang.Closure)
      */
     static<T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure callable ) {
-        promiseFactory.onComplete(promises, callable)
+        getPromiseFactory().onComplete(promises, callable)
     }
     /**
      * @see PromiseFactory#onError(java.util.List, groovy.lang.Closure)
      */
     static<T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable ) {
-        promiseFactory.onError(promises, callable)
+        getPromiseFactory().onError(promises, callable)
     }
     /**
      * @see PromiseFactory#createPromise(java.util.Map)
      */
     static<K,V> Promise<Map<K,V>> createPromise(Map<K, Object> map) {
-        promiseFactory.createPromise(map)
+        getPromiseFactory().createPromise(map)
     }
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
     static<T> Promise<T> createPromise(Closure<T>... c) {
-        promiseFactory.createPromise(c)
+        getPromiseFactory().createPromise(c)
     }
 
     /**
      * @see PromiseFactory#createPromise(java.util.Map)
      */
     static<K,V> Promise<Map<K,V>> tasks(Map<K, Object> map) {
-        promiseFactory.createPromise(map)
+        getPromiseFactory().createPromise(map)
     }
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
     static<T> Promise<T> task(Closure<T> c) {
-        promiseFactory.createPromise(c)
+        getPromiseFactory().createPromise(c)
     }
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
     static<T> Promise<T> tasks(Closure<T>... c) {
-        promiseFactory.createPromise(c)
+        getPromiseFactory().createPromise(c)
     }
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure[])
      */
     static<T> Promise<List<T>> tasks(List<Closure<T>> closures) {
-        promiseFactory.createPromise(closures)
+        getPromiseFactory().createPromise(closures)
     }
 
     /**
      * @see PromiseFactory#createPromise(groovy.lang.Closure, java.util.List)
      */
     static<T> Promise<T> createPromise(Closure<T> c, List<PromiseDecorator> decorators) {
-        promiseFactory.createPromise(c, decorators)
+        getPromiseFactory().createPromise(c, decorators)
     }
     /**
      * @see PromiseFactory#createPromise(java.util.List, java.util.List)
      */
     static<T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
-        promiseFactory.createPromise(closures, decorators)
+        getPromiseFactory().createPromise(closures, decorators)
     }
     /**
      * @see PromiseFactory#createPromise(grails.async.Promise[])
      */
     static <T> Promise<List<T>> createPromise(Promise<T>...promises) {
-        promiseFactory.createPromise(promises)
+        getPromiseFactory().createPromise(promises)
     }
 
     /**
      * @see PromiseFactory#createBoundPromise(java.lang.Object)
      */
     static<T> Promise<T> createBoundPromise(T value) {
-        promiseFactory.createBoundPromise(value)
+        getPromiseFactory().createBoundPromise(value)
     }
 }
