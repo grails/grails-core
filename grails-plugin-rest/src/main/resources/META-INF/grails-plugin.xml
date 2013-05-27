@@ -1,0 +1,3 @@
+<plugin name='restResponder'>
+    <type>org.grails.plugins.web.rest.plugin.RestResponderGrailsPlugin</type>
+</plugin>
