@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.junit.Before
 import org.springframework.web.servlet.ModelAndView
+import spock.lang.Ignore
 import spock.lang.Specification
 
 import java.lang.reflect.Method
@@ -32,6 +33,7 @@ import java.lang.reflect.Method
  */
 @TestFor(BookController)
 @Mock(Book)
+@Ignore
 class RespondMethodSpec extends Specification{
 
     void setup() {
