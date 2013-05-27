@@ -18,6 +18,7 @@ package org.grails.plugins.web.rest.api
 
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
+import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -25,6 +26,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.datastore.mapping.validation.ValidationErrors
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.validation.Errors
@@ -97,8 +99,14 @@ class ControllersRestApi {
 
             Renderer<T> renderer
             if (errors && errors.hasErrors()) {
-                Renderer<Errors> errorsRenderer = registry.findRenderer(mimeType, errors)
-                return errorsRenderer.render(errors, new ServletRenderContext(webRequest))
+                def target = errors instanceof ValidationErrors ? errors.getTarget() : ((grails.validation.ValidationErrors)errors).getTarget()
+                Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
+                if (errorsRenderer) {
+                    return errorsRenderer.render(errors, new ServletRenderContext(webRequest))
+                }
+                else {
+                    return render(controller,[status: statusCode ?: 404 ])
+                }
             }
             else {
                 renderer = (Renderer<T>)registry.findRenderer(mimeType, (T)value)

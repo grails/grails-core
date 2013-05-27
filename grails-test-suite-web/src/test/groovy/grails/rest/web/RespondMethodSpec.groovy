@@ -65,7 +65,7 @@ class RespondMethodSpec extends Specification{
 
         when:"The respond method is used to render a response"
             webRequest.actionName = 'show'
-            controller.show(book.id)
+            controller.show(book)
             def modelAndView = webRequest.request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
 
         then:"A modelAndView and view is produced"
@@ -84,13 +84,31 @@ class RespondMethodSpec extends Specification{
         when:"The respond method is used to render a response"
             response.format = 'xml'
 
-            def result = controller.show(book.id)
+            def result = controller.show(book)
 
 
         then:"A modelAndView and view is produced"
             result == null
             response.contentType == 'text/xml'
             response.xml.title.text() == 'The Stand'
+
+    }
+
+    void "Test that the respond method produces errors XML for a domain instance that has errors and a content type of XML"() {
+        given:"A book instance"
+            def book = new Book(title: "")
+            book.validate()
+
+        when:"The respond method is used to render a response"
+            response.format = 'xml'
+
+            def result = controller.show(book)
+
+
+        then:"A modelAndView and view is produced"
+            result == null
+            response.contentType == 'text/xml'
+            response.xml.error.message.text() == 'Property [title] of class [class grails.rest.web.Book] cannot be null'
 
     }
 
@@ -101,7 +119,7 @@ class RespondMethodSpec extends Specification{
         when:"The respond method is used to render a response"
             response.format = 'json'
 
-        def result = controller.show(book.id)
+        def result = controller.show(book)
 
 
         then:"A modelAndView and view is produced"
@@ -146,8 +164,8 @@ class RespondMethodSpec extends Specification{
 }
 @Artefact("Controller")
 class BookController {
-    def show(Long id) {
-        respond Book.get(id)
+    def show(Book b) {
+        respond b
     }
 
     def showWithFormats(Long id) {
@@ -157,6 +175,10 @@ class BookController {
 @Entity
 class Book {
     String title
+
+    static constraints = {
+        title blank:false
+    }
 }
 
 

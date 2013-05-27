@@ -30,14 +30,22 @@ public interface RendererRegistry {
      *
      * @param renderer The renderer to add
      */
-     public <T> void addRenderer(Renderer<T> renderer)
+    public <T> void addRenderer(Renderer<T> renderer)
 
     /**
      * Adds a default renderer, which are fall backs if the type is not known
      *
      * @param renderer The renderer to add
      */
-     public void addDefaultRenderer(Renderer<Object> renderer)
+    public void addDefaultRenderer(Renderer<Object> renderer)
+
+    /**
+     * Adds a container renderer
+     *
+     * @param objectType The object type
+     * @param renderer The renderer
+     */
+    public void addContainerRenderer(Class objectType, Renderer renderer)
 
     /**
      * Finds a renderer
@@ -47,6 +55,16 @@ public interface RendererRegistry {
      *
      * @return The renderer
      */
-     public <T> Renderer<T>  findRenderer(MimeType contentType, T object)
+    public <T> Renderer<T> findRenderer(MimeType contentType, T object)
+
+    /**
+     * Finds a renderer for a container (List, Errors, Map etc.) for another object
+     *
+     * @param contentType The content type
+     * @param containerType The container type
+     * @param object The object to render, an instance of the container (list, map etc.)
+     * @return A renderer or null if non exists
+     */
+    public <C, T> Renderer<C> findContainerRenderer(MimeType contentType, Class<C> containerType, T object)
 
 }

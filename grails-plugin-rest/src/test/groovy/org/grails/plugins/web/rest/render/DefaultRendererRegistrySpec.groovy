@@ -22,6 +22,14 @@ import spock.lang.Specification
 
 class DefaultRendererRegistrySpec extends Specification {
 
+    void "Test that the registry returns an appropriate render for a container type"() {
+        given:"A registry with a specific renderer"
+        def registry = new DefaultRendererRegistry()
+        def mimeType = new MimeType("text/xml", 'xml')
+
+        registry.addRenderer()
+    }
+
     void "Test that registry returns appropriate renderer for type"() {
         given:"A registry with a specific renderer"
             def registry = new DefaultRendererRegistry()
@@ -77,3 +85,4 @@ class DefaultRendererRegistrySpec extends Specification {
             registry.findRenderer(mimeType, "foo").mimeType == mimeType
     }
 }
+

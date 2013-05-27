@@ -34,6 +34,9 @@ class MimeType {
 
     static final MimeType ALL = new MimeType("*/*", "all")
     static final MimeType XML = new MimeType('application/xml', "xml")
+    static final MimeType JSON = new MimeType('application/json', "json")
+    static final MimeType TEXT_XML = new MimeType('text/xml', "xml")
+    static final MimeType TEXT_JSON = new MimeType('text/json', "json")
 
     private static DEFAULTS = createDefaults()
 

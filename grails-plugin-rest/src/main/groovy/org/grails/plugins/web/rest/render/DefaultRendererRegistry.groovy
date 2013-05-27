@@ -26,6 +26,7 @@ import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.util.ClassUtils
+import org.springframework.validation.Errors
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -39,8 +40,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
 @CompileStatic
 class DefaultRendererRegistry implements RendererRegistry{
 
+    private Map<ContainerRendererCacheKey, Renderer> containerRenderers = new ConcurrentHashMap<>();
     private Map<Class, Collection<Renderer>> registeredRenderers = new ConcurrentHashMap<>();
     private Map<MimeType, Renderer> defaultRenderers = new ConcurrentHashMap<>();
+    private Map<ContainerRendererCacheKey, Renderer<?>> containerRendererCache = new ConcurrentLinkedHashMap.Builder<ContainerRendererCacheKey, Renderer<?>>()
+                                                                            .initialCapacity(500)
+                                                                            .maximumWeightedCapacity(1000)
+                                                                            .build();
     private Map<RendererCacheKey, Renderer<?>> rendererCache = new ConcurrentLinkedHashMap.Builder<RendererCacheKey, Renderer<?>>()
                                                             .initialCapacity(500)
                                                             .maximumWeightedCapacity(1000)
@@ -54,6 +60,10 @@ class DefaultRendererRegistry implements RendererRegistry{
             @Override
             MimeType getMimeType() { MimeType.ALL }
         })
+        containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.XML), new DefaultXmlRenderer(Errors))
+        containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_XML), new DefaultXmlRenderer(Errors))
+        containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.JSON), new DefaultJsonRenderer(Errors))
+        containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_JSON), new DefaultJsonRenderer(Errors))
     }
 
     @Override
@@ -71,6 +81,13 @@ class DefaultRendererRegistry implements RendererRegistry{
     @Override
     void addDefaultRenderer(Renderer<Object> renderer) {
         defaultRenderers.put(renderer.getMimeType(), renderer)
+    }
+
+    @Override
+    void addContainerRenderer(Class objectType, Renderer renderer) {
+        def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, renderer.getMimeType())
+
+        containerRenderers.put(key, renderer)
     }
 
     @Override
@@ -106,6 +123,45 @@ class DefaultRendererRegistry implements RendererRegistry{
         return renderer
     }
 
+    @Override
+    def <C, T> Renderer<C> findContainerRenderer(MimeType mimeType, Class<C> containerType, T object) {
+        if (object == null) return null
+        final targetClass = object instanceof Class ? (Class) object : object.getClass()
+        def originalKey = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
+
+        Renderer<C> renderer = (Renderer<C>)containerRendererCache.get(originalKey)
+
+        if (renderer == null) {
+
+            def key = originalKey
+            while(targetClass != null) {
+
+                renderer = containerRenderers.get(key)
+                if (renderer != null) break
+                else {
+                    if (targetClass == Object) break
+                    targetClass = targetClass.getSuperclass()
+                    key = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
+                }
+            }
+
+            if (renderer == null) {
+                final interfaces = ClassUtils.getAllInterfaces(object)
+                for(Class i in interfaces) {
+                    key = new ContainerRendererCacheKey(containerType, i, mimeType)
+                    renderer = containerRenderers.get(key)
+                    if (renderer) break
+                }
+            }
+
+            if (renderer) {
+                containerRendererCache.put(originalKey, renderer)
+            }
+        }
+
+        return renderer
+    }
+
     protected <T> Renderer findRendererForType(Class<T> currentClass, MimeType mimeType) {
         Renderer<T> renderer = null
         final rendererList = registeredRenderers.get(currentClass)
@@ -117,6 +173,13 @@ class DefaultRendererRegistry implements RendererRegistry{
 
     @Canonical
     class RendererCacheKey {
+        Class clazz
+        MimeType mimeType
+    }
+
+    @Canonical
+    class ContainerRendererCacheKey {
+        Class containerType
         Class clazz
         MimeType mimeType
     }
