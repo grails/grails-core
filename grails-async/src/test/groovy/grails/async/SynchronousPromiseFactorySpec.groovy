@@ -30,7 +30,7 @@ class SynchronousPromiseFactorySpec extends Specification {
     }
 
     void cleanup() {
-        Promises.promiseFactory = new ReactorPromiseFactory()
+        Promises.promiseFactory = null
     }
 
     void "Test add promise decorator"() {
