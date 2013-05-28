@@ -16,6 +16,9 @@
 
 package grails.rest.render
 
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
+
 /**
  * Passed to a renderer to provide context information
  *
@@ -27,6 +30,16 @@ public interface RenderContext {
      * @return The writer to render to
      */
     Writer getWriter()
+
+    /**
+     * @return The HTTP method
+     */
+    HttpMethod getHttpMethod();
+
+    /**
+     * @param status The status to set
+     */
+    void setStatus(HttpStatus status)
 
     /**
      * Sets the content type of the rendered response

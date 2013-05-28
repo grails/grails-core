@@ -21,6 +21,8 @@ import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.springframework.http.HttpStatus
+import org.springframework.validation.Errors
 
 /**
  * Default renderer for XML responses
@@ -40,7 +42,20 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
 
     @Override
     void render(T object, RenderContext context) {
+        if (object instanceof Errors) {
+            context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         context.setContentType(mimeType.name)
+        renderXml(object, context)
+    }
+
+    /**
+     * Subclasses should override to customize XML response rendering
+     *
+     * @param object
+     * @param context
+     */
+    protected void renderXml(T object, RenderContext context) {
         def converter = object as XML
         converter.render(context.getWriter())
     }

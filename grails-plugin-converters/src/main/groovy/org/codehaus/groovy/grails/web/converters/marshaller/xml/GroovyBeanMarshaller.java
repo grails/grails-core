@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
+import grails.persistence.Entity;
 import grails.persistence.PersistenceMethod;
 import grails.web.controllers.ControllerMethod;
 import groovy.lang.GroovyObject;
@@ -25,6 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.springframework.beans.BeanUtils;
@@ -41,10 +43,12 @@ public class GroovyBeanMarshaller implements ObjectMarshaller<XML> {
 
     public void marshalObject(Object o, XML xml) throws ConverterException {
         try {
+            boolean isEntity = o.getClass().getAnnotation(Entity.class)!=null;
             for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(o.getClass())) {
                 String name = property.getName();
+                if(isEntity && (name.equals(GrailsDomainClassProperty.ATTACHED) || name.equals(GrailsDomainClassProperty.ERRORS))) continue;
                 Method readMethod = property.getReadMethod();
-                if (readMethod != null && !(name.equals("metaClass"))) {
+                if (readMethod != null && !(name.equals("metaClass"))&& !(name.equals("class"))) {
                     if(readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
                     if(readMethod.getAnnotation(ControllerMethod.class) != null) continue;
                     Object value = readMethod.invoke(o, (Object[]) null);
@@ -56,7 +60,9 @@ public class GroovyBeanMarshaller implements ObjectMarshaller<XML> {
             for (Field field : o.getClass().getDeclaredFields()) {
                 int modifiers = field.getModifiers();
                 if (Modifier.isPublic(modifiers) && !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))) {
-                    xml.startNode(field.getName());
+                    String name = field.getName();
+                    if(isEntity && (name.equals(GrailsDomainClassProperty.ATTACHED) || name.equals(GrailsDomainClassProperty.ERRORS))) continue;
+                    xml.startNode(name);
                     xml.convertAnother(field.get(o));
                     xml.end();
                 }

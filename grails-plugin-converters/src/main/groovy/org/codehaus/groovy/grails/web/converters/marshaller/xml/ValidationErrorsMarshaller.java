@@ -58,7 +58,9 @@ public class ValidationErrorsMarshaller implements ObjectMarshaller<XML>, NameAw
                         xml.startNode("message").chars(applicationContext.getMessage(fe, locale)).end();
                     }
                     else {
-                        xml.startNode("message").chars(fe.getDefaultMessage()).end();
+                        String defaultMessage = fe.getDefaultMessage();
+                        if(defaultMessage != null)
+                            xml.startNode("message").chars(defaultMessage).end();
                     }
                     xml.end();
                 }

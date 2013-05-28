@@ -22,6 +22,8 @@ import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.springframework.http.HttpStatus
+import org.springframework.validation.Errors
 
 /**
  * Default renderer for JSON
@@ -41,7 +43,20 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
 
     @Override
     void render(T object, RenderContext context) {
+        if (object instanceof Errors) {
+            context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+        }
         context.setContentType(mimeType.name)
+        renderJson(object, context)
+    }
+
+    /**
+     * Subclasses should override to customize JSON response rendering
+     *
+     * @param object
+     * @param context
+     */
+    protected void renderJson(T object, RenderContext context) {
         def converter = object as JSON
         converter.render(context.getWriter())
     }

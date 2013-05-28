@@ -33,6 +33,7 @@ class MimeType {
     public static final String BEAN_NAME = "mimeTypes"
 
     static final MimeType ALL = new MimeType("*/*", "all")
+    static final MimeType HTML = new MimeType('text/html', "html")
     static final MimeType XML = new MimeType('application/xml', "xml")
     static final MimeType JSON = new MimeType('application/json', "json")
     static final MimeType TEXT_XML = new MimeType('text/xml', "xml")

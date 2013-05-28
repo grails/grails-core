@@ -21,12 +21,17 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod;
@@ -38,6 +43,7 @@ import org.codehaus.groovy.grails.web.metaclass.WithFormMethod;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
+import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -225,6 +231,32 @@ public class ControllersApi extends CommonWebApi {
      */
     public Object redirect(Object instance,Map args) {
         return redirect.invoke(instance, "redirect", new Object[]{ args });
+    }
+
+    /**
+     * Redirects for the given arguments.
+     *
+     * @param object A domain class
+     * @return null
+     */
+    public Object redirect(Object instance,Object object) {
+        if(object != null) {
+
+            Class<?> objectClass = object.getClass();
+            boolean isDomain = DomainClassArtefactHandler.isDomainClass(objectClass) && object instanceof GroovyObject;
+            if(isDomain) {
+
+                String controllerName = GrailsNameUtils.getPropertyName(objectClass);
+                Object id = ((GroovyObject)object).getProperty(GrailsDomainClassProperty.IDENTITY);
+                if(id != null) {
+                    Map args = new HashMap();
+                    args.put(GrailsControllerClass.CONTROLLER, controllerName);
+                    args.put(GrailsDomainClassProperty.IDENTITY, id.toString());
+                    return redirect(instance, args);
+                }
+            }
+        }
+        throw new CannotRedirectException("Cannot redirect for object ["+object+"] it is not a domain or has no identifier. Use an explicit redirect instead ");
     }
 
     /**

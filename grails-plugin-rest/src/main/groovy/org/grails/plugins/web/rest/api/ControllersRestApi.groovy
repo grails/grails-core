@@ -119,6 +119,9 @@ class ControllersRestApi {
                 final valueType = value.getClass()
                 if (registry.isContainerType(valueType)) {
                     renderer = registry.findContainerRenderer(mimeType,valueType, value)
+                    if(renderer == null) {
+                        renderer = registry.findRenderer(mimeType, value)
+                    }
                 }
                 else {
                     renderer = registry.findRenderer(mimeType, value)

@@ -20,6 +20,8 @@ import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.ModelAndView
 
 /**
@@ -40,6 +42,16 @@ class ServletRenderContext implements RenderContext{
     @Override
     Writer getWriter() {
         webRequest.currentResponse.writer
+    }
+
+    @Override
+    HttpMethod getHttpMethod() {
+        HttpMethod.valueOf(webRequest.currentRequest.method)
+    }
+
+    @Override
+    void setStatus(HttpStatus status) {
+        webRequest.response.setStatus(status.value())
     }
 
     @Override
