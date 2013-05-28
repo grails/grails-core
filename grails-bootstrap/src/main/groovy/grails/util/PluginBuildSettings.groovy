@@ -719,10 +719,6 @@ class PluginBuildSettings {
 
                 if (!pluginFile && pluginLocations) {
                     Map.Entry pluginLoc = (Map.Entry)pluginLocations.find { String key, value -> pluginName == key }
-                    // maybe the plugin name includes a version suffix so attempt startsWith
-                    if (!pluginLoc) {
-                        pluginLoc = (Map.Entry)pluginLocations.find { String key, value -> pluginName.startsWith(key) }
-                    }
                     if (pluginLoc?.value) pluginFile = new File(pluginLoc.value.toString())
                 }
 
