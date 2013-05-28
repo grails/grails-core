@@ -426,7 +426,7 @@ class SimpleDataBinder implements DataBinder {
         enumValue
     }
 
-    protected setPropertyValue(obj, Map source, MetaProperty metaProperty, propertyValue) {
+    protected setPropertyValue(obj, Map source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
         def propName = metaProperty.name
         def converter = getValueConverter obj, propName
         if(converter) {
@@ -466,7 +466,7 @@ class SimpleDataBinder implements DataBinder {
                     if(obj[propName] == null) {
                         initializeProperty(obj, propName, propertyType, source)
                     }
-                    bind obj[propName], propertyValue
+                    bind obj[propName], propertyValue, listener
                 }
             } else {
                 obj[propName] = convert(propertyType, propertyValue)
@@ -478,7 +478,7 @@ class SimpleDataBinder implements DataBinder {
         def propName = metaProperty.name
         if(listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
             try {
-                setPropertyValue obj, source, metaProperty, propertyValue
+                setPropertyValue obj, source, metaProperty, propertyValue, listener
             } catch (Exception e) {
                 addBindingError(obj, propName, propertyValue, e, listener)
             }

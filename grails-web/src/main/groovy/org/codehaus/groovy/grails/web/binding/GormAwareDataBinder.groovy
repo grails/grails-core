@@ -324,7 +324,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
     }
 
     @Override
-    protected setPropertyValue(obj, Map source, MetaProperty metaProperty, propertyValue) {
+    protected setPropertyValue(obj, Map source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
         def propName = metaProperty.name
         if(propertyValue instanceof CharSequence) {
             propertyValue = preprocessCharSequenceValue(obj, propName, propertyValue)
@@ -364,7 +364,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
             }
         }
         if(!isSet) {
-            super.setPropertyValue obj, source, metaProperty, propertyValue
+            super.setPropertyValue obj, source, metaProperty, propertyValue, listener
         }
     }
 
