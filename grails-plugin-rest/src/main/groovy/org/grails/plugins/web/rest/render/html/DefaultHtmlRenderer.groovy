@@ -21,7 +21,6 @@ import grails.rest.render.Renderer
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
-import org.springframework.web.servlet.ModelAndView
 
 /**
  * A default renderer for HTML that returns an appropriate model
@@ -32,25 +31,30 @@ import org.springframework.web.servlet.ModelAndView
 @CompileStatic
 class DefaultHtmlRenderer<T> implements Renderer<T> {
     protected Class<T> targetType
-    protected MimeType mimeType = new MimeType("text/html", "html")
+    protected MimeType mimeType = MimeType.HTML
 
     DefaultHtmlRenderer(Class<T> targetType) {
         this.targetType = targetType
+    }
+
+    DefaultHtmlRenderer(Class<T> targetType, MimeType mimeType) {
+        this.targetType = targetType
+        this.mimeType = mimeType
     }
 
     Class<T> getTargetType() {
         return targetType
     }
 
-    MimeType getMimeType() {
-        return mimeType
-    }
-
     @Override
     void render(T object, RenderContext context) {
-        final modelVariableName = GrailsNameUtils.getPropertyName(object.class)
-
         context.setViewName(context.actionName)
+        String modelVariableName = GrailsNameUtils.getPropertyNameConvention(object)
         context.setModel([(modelVariableName): object])
+    }
+
+
+    MimeType getMimeType() {
+        return mimeType
     }
 }

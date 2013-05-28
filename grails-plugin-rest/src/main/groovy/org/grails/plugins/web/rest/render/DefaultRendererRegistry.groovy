@@ -56,10 +56,7 @@ class DefaultRendererRegistry implements RendererRegistry{
         addDefaultRenderer(new DefaultXmlRenderer<Object>(Object.class))
         addDefaultRenderer(new DefaultJsonRenderer<Object>(Object.class))
         addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object.class))
-        addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object.class) {
-            @Override
-            MimeType getMimeType() { MimeType.ALL }
-        })
+        addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object.class, MimeType.ALL))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.XML), new DefaultXmlRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_XML), new DefaultXmlRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.JSON), new DefaultJsonRenderer(Errors))
@@ -81,12 +78,14 @@ class DefaultRendererRegistry implements RendererRegistry{
     @Override
     void addDefaultRenderer(Renderer<Object> renderer) {
         defaultRenderers.put(renderer.getMimeType(), renderer)
+        rendererCache.remove(new RendererCacheKey(renderer.getTargetType(), renderer.getMimeType()))
     }
 
     @Override
     void addContainerRenderer(Class objectType, Renderer renderer) {
         def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, renderer.getMimeType())
 
+        containerRendererCache.remove(key)
         containerRenderers.put(key, renderer)
     }
 

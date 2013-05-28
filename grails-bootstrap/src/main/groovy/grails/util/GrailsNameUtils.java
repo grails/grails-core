@@ -15,10 +15,7 @@
  */
 package grails.util;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Utility methods for converting between different name types,
@@ -392,5 +389,52 @@ public class GrailsNameUtils {
      */
     public static boolean isBlank(String str) {
         return str == null || str.trim().length() == 0;
+    }
+
+    public static String getPropertyNameConvention(Object object) {
+        if(object != null) {
+            Class<?> type = object.getClass();
+            if(type.isArray()) {
+                return getPropertyName(type.getComponentType()) + "Array";
+            }
+            else if(object instanceof Collection) {
+                Collection coll = (Collection) object;
+                if(coll.isEmpty()) {
+                    return "emptyCollection";
+                }
+                else {
+                    Object first = coll.iterator().next();
+                    if(coll instanceof List) {
+                        return getPropertyName(first.getClass()) + "List";
+                    }
+                    else if(coll instanceof Set) {
+                        return getPropertyName(first.getClass()) + "Set";
+                    }
+                    else {
+                        return getPropertyName(first.getClass()) + "Collection";
+                    }
+
+                }
+
+            }
+            else if(object instanceof Map) {
+                Map map = (Map)object;
+
+                if(map.isEmpty()) {
+                    return "emptyMap";
+                }
+                else {
+                    Object entry = map.values().iterator().next();
+                    if(entry != null) {
+                        return getPropertyName(entry.getClass()) + "Map";
+                    }
+                }
+            }
+            else {
+                return getPropertyName(object.getClass());
+            }
+
+        }
+        return null;
     }
 }
