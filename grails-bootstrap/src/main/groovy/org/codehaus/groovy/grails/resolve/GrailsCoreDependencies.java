@@ -76,12 +76,11 @@ public class GrailsCoreDependencies {
 
         compileDependencies = Arrays.asList(
             new Dependency("org.codehaus.groovy", "groovy-all", groovyVersion, true),
-            new Dependency("org.grails", "grails-plugin-controllers", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-datasource", grailsVersion, true),
+            new Dependency("org.grails", "grails-plugin-rest", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-databinding", grailsVersion, true),
+            new Dependency("org.grails", "grails-plugin-i18n", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-filters", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-gsp", grailsVersion, true),
-            new Dependency("org.grails", "grails-plugin-i18n", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-log4j", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-services", grailsVersion, true),
             new Dependency("org.grails", "grails-plugin-servlets", grailsVersion, true),
