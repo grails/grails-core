@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.mime
 
+import grails.util.Holders
 import groovy.transform.CompileStatic;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -67,7 +68,7 @@ class MimeType {
      * @return An array of MimeTypes
      */
     static MimeType[] getConfiguredMimeTypes() {
-        def ctx = ContextLoader.getCurrentWebApplicationContext()
+        def ctx = Holders.getApplicationContext()
         if(ctx == null) {
             ctx = GrailsWebRequest.lookup()?.getApplicationContext()
         }
