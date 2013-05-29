@@ -95,6 +95,46 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
 
     }
 
+    void "Test withFormat method with ACCEPT header only"() {
+        when: "The request ACCEPT header is 'text/xml' and withFormat is used"
+            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            def request = webRequest.currentRequest
+            def response = webRequest.currentResponse
+
+            request.addHeader('Accept', "text/xml")
+
+            def requestResult = request.withFormat {
+                html { "got html"}
+                xml { "got xml"}
+
+            }
+
+            def responseResult = response.withFormat {
+                html { 'got html' }
+                xml { 'got xml' }
+            }
+
+        then: 'The xml closure is invoked'
+            requestResult == 'got html'
+            responseResult == 'got xml'
+
+        when:"The ACCEPT header is JSON and there is a catch-all"
+            webRequest = GrailsWebUtil.bindMockWebRequest()
+            request = webRequest.currentRequest
+            response = webRequest.currentResponse
+            request.addHeader('Accept', "application/json")
+            responseResult = response.withFormat {
+                html { 'got html' }
+                xml { 'got xml' }
+                '*' { 'got everything' }
+            }
+        then: 'The * closure is invoked'
+            responseResult == 'got everything'
+
+    }
+
+
+
     void "Test withFormat returns first block if no format provided"() {
         when: "No Accept header, URI extension or format param"
         final webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -123,14 +163,14 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             }
 
         expect:
-        formatResponse == responseResult
+            formatResponse == responseResult
 
         where:
-        formatResponse  | acceptHeader
-        null            | 'application/xml, text/csv'
-        'got html'      | 'application/xml, text/html, */*'
-        'got json'      | 'application/xml, */*, text/html'
-        'got json'      | 'application/xml, text/csv, */*'
+            formatResponse  | acceptHeader
+            null            | 'application/xml, text/csv'
+            'got html'      | 'application/xml, text/html, */*'
+            'got json'      | 'application/xml, */*, text/html'
+            'got json'      | 'application/xml, text/csv, */*'
 
     }
 

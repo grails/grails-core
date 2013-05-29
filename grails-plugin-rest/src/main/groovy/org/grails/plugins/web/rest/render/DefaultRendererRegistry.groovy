@@ -61,6 +61,7 @@ class DefaultRendererRegistry implements RendererRegistry{
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_XML), new DefaultXmlRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.JSON), new DefaultJsonRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_JSON), new DefaultJsonRenderer(Errors))
+        containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.HTML), new DefaultHtmlRenderer(Errors))
     }
 
     @Override

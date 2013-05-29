@@ -1,6 +1,7 @@
 package org.grails.plugins.web.rest.render.html
 
 import grails.persistence.Entity
+import grails.validation.ValidationErrors
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.render.ServletRenderContext
@@ -51,19 +52,23 @@ class HtmlRendererSpec extends Specification {
 
     void "Test that HTML renderer sets the correct model for an error"() {
         when:"A domain instance is rendered"
-        def renderer = new DefaultHtmlRenderer(Book)
-        final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
-        webRequest.actionName = "test"
-        def renderContext = new ServletRenderContext(webRequest)
-        final books = [new Book(title: "The Stand")]
-        renderer.render(books,renderContext)
+            def renderer = new DefaultHtmlRenderer(Book)
+            final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
+            webRequest.actionName = "test"
+            def renderContext = new ServletRenderContext(webRequest)
+            final book = new Book(title: "The Stand")
+            final errors = new ValidationErrors(book)
+            book.errors = errors
+            errors.rejectValue("title", "title.blank.error")
+
+            renderer.render(book.errors,renderContext)
 
         ModelAndView modelAndView = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
-        then:"The model and view are populated correctly"
-        modelAndView
-        modelAndView.viewName == 'test'
-        modelAndView.model == [bookList:books]
-    }
+            then:"The model and view are populated correctly"
+            modelAndView
+            modelAndView.viewName == 'test'
+            modelAndView.model == [book:book]
+        }
 }
 @Entity
 class Book {

@@ -59,18 +59,24 @@ class MimeTypesApiSupport {
                 }
                 // otherwise look for the best match
                 else {
+                    boolean matchFound = false
                     for (MimeType mime in lookupMimeTypes(formatProvider)) {
                         if (formats.containsKey(mime.extension)) {
+                            matchFound = true
                             result = getResponseForFormat(formats[mime.extension], mime.extension, formatProvider)
                             break
                         }
                         else {
                             if (mime.extension == 'all') {
+                                matchFound = true
                                 def firstKey = formats.keySet().iterator().next()
                                 result = getResponseForFormat(formats[firstKey], firstKey, formatProvider)
                                 break
                             }
                         }
+                    }
+                    if (!matchFound && formats.containsKey('*')) {
+                        result = getResponseForFormat(formats['*'], format, formatProvider)
                     }
                 }
             }

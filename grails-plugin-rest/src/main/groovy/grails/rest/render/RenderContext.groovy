@@ -56,6 +56,11 @@ public interface RenderContext {
     void setViewName(String viewName)
 
     /**
+     * @return The view name to use
+     */
+    String getViewName()
+
+    /**
      * The model to use for the response
      * @param model The model
      */

@@ -18,19 +18,17 @@ package org.grails.plugins.web.rest.api
 
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
-import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
-import org.grails.datastore.mapping.validation.ValidationErrors
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
 import javax.servlet.http.HttpServletResponse
@@ -106,10 +104,14 @@ class ControllersRestApi {
 
             Renderer renderer
             if (errors && errors.hasErrors()) {
-                def target = errors instanceof ValidationErrors ? errors.getTarget() : ((grails.validation.ValidationErrors)errors).getTarget()
+                def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
                 Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
                 if (errorsRenderer) {
-                    return errorsRenderer.render(errors, new ServletRenderContext(webRequest))
+                    final context = new ServletRenderContext(webRequest)
+                    if (args.view) {
+                        context.viewName = args.view
+                    }
+                    return errorsRenderer.render(errors, context)
                 }
                 else {
                     return render(controller,[status: statusCode ?: 404 ])

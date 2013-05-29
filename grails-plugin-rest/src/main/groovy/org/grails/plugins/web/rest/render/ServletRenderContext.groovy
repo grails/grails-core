@@ -65,6 +65,16 @@ class ServletRenderContext implements RenderContext{
         modelAndView.setViewName(viewName)
     }
 
+    @Override
+    String getViewName() {
+        final request = webRequest.currentRequest
+        ModelAndView modelAndView = (ModelAndView) request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+        if (modelAndView) {
+            return modelAndView.viewName
+        }
+        return null
+    }
+
     protected ModelAndView getModelAndView() {
         final request = webRequest.currentRequest
         ModelAndView modelAndView = (ModelAndView) request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)

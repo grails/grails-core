@@ -21,6 +21,8 @@ import grails.rest.render.Renderer
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.Errors
 
 /**
  * A default renderer for HTML that returns an appropriate model
@@ -48,9 +50,24 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
 
     @Override
     void render(T object, RenderContext context) {
-        context.setViewName(context.actionName)
-        String modelVariableName = GrailsNameUtils.getPropertyNameConvention(object)
-        context.setModel([(modelVariableName): object])
+        if (!context.viewName) {
+            context.setViewName(context.actionName)
+        }
+
+        if(object instanceof Errors) {
+            Errors errors = (Errors)object
+            def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
+            if (target) {
+                String modelVariableName = GrailsNameUtils.getPropertyNameConvention(target)
+                context.setModel([(modelVariableName): target])
+            }
+        }
+        else {
+
+            context.setViewName(context.actionName)
+            String modelVariableName = GrailsNameUtils.getPropertyNameConvention(object)
+            context.setModel([(modelVariableName): object])
+        }
     }
 
 
