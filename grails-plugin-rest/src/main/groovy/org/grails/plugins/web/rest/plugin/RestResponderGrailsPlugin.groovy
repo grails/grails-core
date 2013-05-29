@@ -13,7 +13,8 @@ class RestResponderGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
 
     def doWithSpring = {
-        instanceControllersRestApi(ControllersRestApi, new DefaultRendererRegistry(), ref("instanceControllersApi"), new ControllersMimeTypesApi())
+        rendererRegistry(RendererRegistryFactoryBean)
+        instanceControllersRestApi(ControllersRestApi, ref("rendererRegistry"), ref("instanceControllersApi"), new ControllersMimeTypesApi())
     }
 
 }

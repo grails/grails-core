@@ -17,6 +17,7 @@
 package org.grails.plugins.web.rest.render
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
+import grails.rest.render.ContainerRenderer
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.Canonical
@@ -67,14 +68,20 @@ class DefaultRendererRegistry implements RendererRegistry{
 
     @Override
     def <T> void addRenderer(Renderer<T> renderer) {
-        Class targetType = renderer.targetType
-
-        final renderers = registeredRenderers.get(targetType)
-        if (renderers == null) {
-            renderers = new ConcurrentLinkedQueue<Renderer>()
-            registeredRenderers.put(targetType, renderers)
+        if (renderer instanceof ContainerRenderer) {
+            ContainerRenderer cr = (ContainerRenderer)renderer
+            addContainerRenderer(cr.componentType, cr)
         }
-        renderers.add(renderer)
+        else {
+            Class targetType = renderer.targetType
+
+            final renderers = registeredRenderers.get(targetType)
+            if (renderers == null) {
+                renderers = new ConcurrentLinkedQueue<Renderer>()
+                registeredRenderers.put(targetType, renderers)
+            }
+            renderers.add(renderer)
+        }
     }
 
     @Override
