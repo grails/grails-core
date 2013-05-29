@@ -49,8 +49,6 @@ class ControllersRestApi {
 
     protected RendererRegistry rendererRegistry
 
-    protected MimeType[] mimeTypes
-
 
     @Autowired
     GroovyPageLocator groovyPageLocator
@@ -59,7 +57,6 @@ class ControllersRestApi {
         this.controllersApi = controllersApi
         this.mimeTypesApi = mimeTypesApi
         this.rendererRegistry = rendererRegistry
-        mimeTypes = MimeType.getConfiguredMimeTypes()
     }
 
 
