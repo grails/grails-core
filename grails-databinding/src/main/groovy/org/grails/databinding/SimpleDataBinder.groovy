@@ -408,7 +408,7 @@ class SimpleDataBinder implements DataBinder {
         converter
     }
 
-    protected ValueConverter getValueConverter(obj, String propName) {
+    protected ValueConverter getValueConverter(obj, String propName, propValue) {
         def converter = getValueConverterForField obj, propName
         if(!converter) {
             converter = getValueConverterForClass obj, propName
@@ -428,10 +428,6 @@ class SimpleDataBinder implements DataBinder {
 
     protected setPropertyValue(obj, Map source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
         def propName = metaProperty.name
-        def converter = getValueConverter obj, propName
-        if(converter) {
-            propertyValue = converter.convert source
-        }
         def propertyType
         def propertyGetter
         if(metaProperty instanceof MetaBeanProperty) {
@@ -478,6 +474,10 @@ class SimpleDataBinder implements DataBinder {
         def propName = metaProperty.name
         if(listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
             try {
+                def converter = getValueConverter obj, propName, propertyValue
+                if(converter) {
+                    propertyValue = converter.convert source
+                }
                 setPropertyValue obj, source, metaProperty, propertyValue, listener
             } catch (Exception e) {
                 addBindingError(obj, propName, propertyValue, e, listener)

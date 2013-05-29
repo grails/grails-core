@@ -51,6 +51,7 @@ target
 /grails-plugin-i18n/bin/
 /grails-plugin-logging/bin/
 /grails-plugin-mimetypes/bin/
+/grails-plugin-rest/bin/
 /grails-plugin-services/bin/
 /grails-plugin-servlets/bin/
 /grails-plugin-testing/bin/

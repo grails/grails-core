@@ -38,33 +38,36 @@ class GormAwareDataBinderSpec extends Specification {
         def author = new Author()
         
         when:
-        binder.bind author, [name: '   Jeff Scott Brown ']
+        binder.bind author, [name: '   Jeff Scott Brown ', stringWithSpecialBinding: '   ']
         
         then:
         author.name == 'Jeff Scott Brown'
+        author.stringWithSpecialBinding == ''
         
         when:
         def actualName = 'Jeff Scott Brown'
         def space = ' '
-        binder.bind author, [name: "   ${actualName} "]
+        binder.bind author, [name: "   ${actualName} ", stringWithSpecialBinding: "${space}"]
         
         then:
         author.name == 'Jeff Scott Brown'
+        author.stringWithSpecialBinding == ''
         
         when:
         binder.trimStrings = false
-        binder.bind author, [name: '  Jeff Scott Brown   ']
+        binder.bind author, [name: '  Jeff Scott Brown   ', stringWithSpecialBinding: '   ']
         
         then:
         author.name == '  Jeff Scott Brown   '
+        author.stringWithSpecialBinding == ''
         
         when:
         binder.trimStrings = false
-        binder.bind author, [name: "  ${actualName}   "]
+        binder.bind author, [name: "  ${actualName}   ", stringWithSpecialBinding: "${space}"]
         
         then:
         author.name == '  Jeff Scott Brown   '
-
+        author.stringWithSpecialBinding == ''
     }
     
     void 'Test binding an invalid String to an object reference does not result in an empty instance being bound'() {
@@ -618,6 +621,11 @@ class Publication {
 @Entity
 class Author {
     String name
+    
+    @BindUsing({obj, source ->
+        source['stringWithSpecialBinding']?.trim()
+    })
+    String stringWithSpecialBinding
 
     @BindUsing({ obj, source ->
         // could have conditional logic here
@@ -633,6 +641,7 @@ class Author {
     
     static constraints = {
         widget nullable: true
+        stringWithSpecialBinding nullable: true
     }
 }
 

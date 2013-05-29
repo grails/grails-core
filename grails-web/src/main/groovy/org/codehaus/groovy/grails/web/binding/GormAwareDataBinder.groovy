@@ -36,6 +36,7 @@ import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
+import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.SimpleDataBinder
 import org.grails.databinding.converters.FormattedValueConverter
@@ -326,9 +327,6 @@ class GormAwareDataBinder extends SimpleDataBinder {
     @Override
     protected setPropertyValue(obj, Map source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
         def propName = metaProperty.name
-        if(propertyValue instanceof CharSequence) {
-            propertyValue = preprocessCharSequenceValue(obj, propName, propertyValue)
-        }
         boolean isSet = false
         if(grailsApplication != null) {
             def domainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
@@ -368,7 +366,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
         }
     }
 
-    protected preprocessCharSequenceValue(obj, String propName, CharSequence propertyValue) {
+    protected preprocessCharSequenceValue(CharSequence propertyValue) {
         String stringValue = propertyValue.toString()
         if(trimStrings) {
             stringValue = stringValue.trim()
@@ -428,4 +426,18 @@ class GormAwareDataBinder extends SimpleDataBinder {
         }
         super.convert typeToConvertTo, value
     }
+    
+    @Override
+    protected ValueConverter getValueConverter(obj, String propName, propValue) {
+        def converter = super.getValueConverter obj, propName, propValue
+        if(!converter && propValue instanceof CharSequence) {
+            Closure closure = { source ->
+                preprocessCharSequenceValue propValue
+            }
+            converter = new ClosureValueConverter(converterClosure: closure, targetType: String)
+        }
+        converter
+    }
 }
+
+
