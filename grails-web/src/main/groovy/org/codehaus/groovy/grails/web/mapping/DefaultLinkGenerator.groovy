@@ -128,6 +128,9 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                             id = getResourceId(resourceAttribute)
                         }
                     }
+                    else {
+                        resource = resourceAttribute.toString()
+                    }
                     List tokens = resource.contains('/') ?  resource.tokenize('/') :[resource]
                     controller = tokens[-1]
                     if (tokens.size()>1) {
