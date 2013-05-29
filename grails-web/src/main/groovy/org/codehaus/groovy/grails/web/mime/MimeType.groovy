@@ -68,7 +68,7 @@ class MimeType {
      * @return An array of MimeTypes
      */
     static MimeType[] getConfiguredMimeTypes() {
-        def ctx = Holders.getApplicationContext()
+        def ctx = Holders.findApplicationContext()
         if(ctx == null) {
             ctx = GrailsWebRequest.lookup()?.getApplicationContext()
         }

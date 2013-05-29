@@ -78,6 +78,14 @@ public class Holders {
         return WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
     }
 
+    /**
+     *
+     * @return The ApplicationContext or null if it doesn't exist
+     */
+    public static ApplicationContext findApplicationContext() {
+        return WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+    }
+
     public static GrailsApplication getGrailsApplication() {
         try {
             return (GrailsApplication)getApplicationContext().getBean(APPLICATION_BEAN_NAME);
