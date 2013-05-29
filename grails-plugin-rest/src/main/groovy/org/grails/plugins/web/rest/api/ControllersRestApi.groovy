@@ -142,7 +142,7 @@ class ControllersRestApi {
         }
     }
 
-    List<String> calculateFormats(def controller, String actionName, Map args) {
+    protected List<String> calculateFormats(def controller, String actionName, Map args) {
         if (args.formats) {
             return (List<String>) args.formats
         }

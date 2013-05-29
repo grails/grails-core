@@ -21,7 +21,7 @@ class RedirectToDomainSpec extends Specification {
             controller.index()
 
         then:"The correct link is produced"
-            response.redirectUrl == '/book/index/1'
+            response.redirectUrl == '/book/show/1'
     }
 }
 
