@@ -47,6 +47,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectExcep
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpMethod;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -246,12 +247,11 @@ public class ControllersApi extends CommonWebApi {
             boolean isDomain = DomainClassArtefactHandler.isDomainClass(objectClass) && object instanceof GroovyObject;
             if(isDomain) {
 
-                String controllerName = GrailsNameUtils.getPropertyName(objectClass);
                 Object id = ((GroovyObject)object).getProperty(GrailsDomainClassProperty.IDENTITY);
                 if(id != null) {
                     Map args = new HashMap();
-                    args.put(GrailsControllerClass.CONTROLLER, controllerName);
-                    args.put(GrailsDomainClassProperty.IDENTITY, id.toString());
+                    args.put(LinkGenerator.ATTRIBUTE_RESOURCE, object);
+                    args.put(LinkGenerator.ATTRIBUTE_METHOD, HttpMethod.GET.toString());
                     return redirect(instance, args);
                 }
             }
