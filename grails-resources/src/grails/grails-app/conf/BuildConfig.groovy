@@ -56,7 +56,7 @@ grails.project.dependency.resolution = {
         // plugins needed at runtime but not for compilation
         runtime ":hibernate:3.6.10.M3" // or ":hibernate4:4.1.11.BUILD-SNAPSHOT"
         runtime ":database-migration:1.3.3"
-        runtime ":jquery:1.9.1"
+        runtime ":jquery:1.10.0"
         runtime ":resources:1.2"
         // Uncomment these (or add new ones) to enable additional resources capabilities
         //runtime ":zipped-resources:1.0.1"
