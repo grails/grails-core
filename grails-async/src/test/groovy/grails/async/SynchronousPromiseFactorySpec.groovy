@@ -17,8 +17,12 @@ package grails.async
 
 import org.grails.async.decorator.PromiseDecorator
 import org.grails.async.factory.SynchronousPromiseFactory
-import org.grails.async.factory.reactor.ReactorPromiseFactory
+import org.grails.async.factory.gpars.GparsPromiseFactory
 import spock.lang.Specification
+
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+
 /**
  * @author Graeme Rocher
  * @since 2.3

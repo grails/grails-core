@@ -37,7 +37,7 @@ class PromiseListSpec extends Specification{
             sleep 500
 
         then:'then the result from onComplete is correct'
-            res.containsAll(1,2,3)
+            res == [1,2,3]
     }
 
     void "Test promise list handling with some async operations and some values"() {
@@ -53,7 +53,7 @@ class PromiseListSpec extends Specification{
             sleep 500
 
         then:'then the result from onComplete is correct'
-            res.containsAll(1,2,3)
+            res == [1,2,3]
     }
 
     void "Test promise list with then chaining"() {
@@ -63,7 +63,7 @@ class PromiseListSpec extends Specification{
             def promise = list.then { it << 2; it }.then { it << 3; it}
             def result = promise.get()
         then:"An appropriately populated list is produced"
-            result.containsAll(1,2,3)
+            result == [1,2,3]
 
     }
 

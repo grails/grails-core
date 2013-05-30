@@ -1,15 +1,5 @@
 dependencies {
-    compile ('org.codehaus.gpars:gpars:1.0.0'){
-        ext.notInPom = true
-    }
-    compile('reactor:reactor-groovy:1.0.0.BUILD-SNAPSHOT'){
-        exclude group:"org.codehaus.groovy", module:"groovy-all"
-        exclude group:"org.slf4j", module:"slf4j-api"
-        exclude group:"reactor", module:"reactor-core"
-    }
-    compile('reactor:reactor-core:1.0.0.BUILD-SNAPSHOT'){
-        exclude group:"org.slf4j", module:"slf4j-api"
-    }
+    compile 'org.codehaus.gpars:gpars:1.0.0'
 }
 
 eclipse {

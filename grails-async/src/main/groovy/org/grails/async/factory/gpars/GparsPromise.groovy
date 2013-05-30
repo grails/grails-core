@@ -17,6 +17,7 @@ package org.grails.async.factory.gpars
 
 import grails.async.Promise
 import groovy.transform.CompileStatic
+import groovyx.gpars.dataflow.Dataflow
 
 import java.util.concurrent.TimeUnit
 
@@ -36,7 +37,7 @@ class  GparsPromise<T> implements Promise<T> {
     }
 
     GparsPromise(Closure callable) {
-        internalPromise = groovyx.gpars.dataflow.Dataflow.task(callable)
+        internalPromise = Dataflow.task(callable)
     }
 
     T get() {
