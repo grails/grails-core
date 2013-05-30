@@ -17,6 +17,7 @@ package org.grails.async.factory.reactor
 
 import grails.async.Promise
 import groovy.transform.CompileStatic
+import reactor.core.Environment
 import reactor.core.Promise as P
 
 import java.util.concurrent.TimeUnit
@@ -36,8 +37,8 @@ class ReactorPromise<T> implements Promise<T> {
         this.internalPromise = internalPromise
     }
 
-    ReactorPromise(Closure<T> callable) {
-        internalPromise = reactor.core.Promise.<T> from(callable).build()
+    ReactorPromise(Closure<T> callable, Environment environment = null) {
+        internalPromise = reactor.core.Promise.<T> from(callable).using(environment).get()
     }
 
     T get() {
