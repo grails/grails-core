@@ -82,10 +82,9 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
         if(new File(location).exists()) {
             return "file:" + location;
         }
+        // don't mess with locations that are URLs (in other words, locations that have schemes)
+        if(HAS_SCHEME_PATTERN.matcher(location).matches()) return location;
         if (!location.startsWith(SLASH)) location = SLASH + location;
-
-		// don't mess with locations that are URLs (in other words, locations that have schemes)
-		if(HAS_SCHEME_PATTERN.matcher(location).matches()) return location;
 
 		// If the location (minus the "grails-app/.*" ending so that it matches the key value used in BuildSettings for
 		// the inline plugin map) matches an "inline" plugin, use the location as-is

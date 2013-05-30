@@ -326,7 +326,7 @@ class ValidationTagLib {
             }
         }
         if (text) {
-            return attrs.encodeAs ? text."encodeAs${attrs.encodeAs}"() : text
+            return (attrs.encodeAs && !attrs.encodeAs.equalsIgnoreCase('none')) ? text."encodeAs${attrs.encodeAs}"() : text
         }
         ''
     }
