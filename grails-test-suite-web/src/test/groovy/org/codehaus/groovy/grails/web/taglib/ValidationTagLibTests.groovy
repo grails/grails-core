@@ -409,6 +409,19 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertOutputEquals(expected, htmlCodecDirective + template, [book:b])
     }
     
+    void testMessageNoneEncodeAs() {
+        def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
+        b.properties = [title:"<b>bold</b> is ok"]
+
+        messageSource.addMessage("default.show.label", Locale.ENGLISH, ">{0}<")
+
+        def template = '''<title><g:message code="default.show.label" args="[book.title]" encodeAs="none"/></title>'''
+        def htmlCodecDirective = '<%@page defaultCodec="HTML" %>'
+        def expected = "<title>><b>bold</b> is ok<</title>"
+        assertOutputEquals(expected, template, [book:b])
+        assertOutputEquals(expected, htmlCodecDirective + template, [book:b])
+    }
+
     void testMessageHtmlEscapingWithFunctionSyntaxCall() {
         def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [title:"<script>alert('escape me')</script>"]
