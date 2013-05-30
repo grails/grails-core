@@ -5,7 +5,6 @@ import grails.async.PromiseList
 import org.grails.async.factory.AbstractPromiseFactory
 import org.grails.async.factory.gpars.GparsPromise
 import reactor.core.Composable
-import reactor.core.Environment
 import reactor.core.Promise
 import reactor.core.R
 
@@ -30,11 +29,9 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
         REACTOR_PRESENT
     }
 
-    Environment grailsEnvironment = new Environment()
-
     @Override
     def <T> grails.async.Promise<T> createBoundPromise(T value) {
-        final variable = R.promise(value).using(grailsEnvironment).get()
+        final variable = R.promise(value).build()
         return new ReactorPromise<T>(variable)
     }
 
@@ -43,7 +40,7 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
     def <T> P<T> createPromise(Closure<T>... closures) {
         if (closures.length == 1) {
             final callable = closures[0]
-            return new ReactorPromise<T>(applyDecorators(callable, null, grailsEnvironment))
+            return new ReactorPromise<T>(applyDecorators(callable, null))
         }
         def promiseList = new PromiseList()
         for (p in closures) {
@@ -63,9 +60,9 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
     @Override
     def <T> P<List<T>> onComplete(List<P<T>> promises, @SuppressWarnings("rawtypes") Closure callable) {
         final reactorPromises = promises.collect { (ReactorPromise) it }
-        def result = R.promise().merge(
+        def result = Promise.merge(
             reactorPromises.collect { ReactorPromise<T> it -> it.internalPromise }
-        ).using(grailsEnvironment).get().
+        ).
             onSuccess(callable)
         new ReactorPromise<List<T>>(
             result
@@ -75,9 +72,9 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
     @Override
     def <T> P<List<T>> onError(List<P<T>> promises, @SuppressWarnings("rawtypes") Closure callable) {
         final reactorPromises = promises.collect { (ReactorPromise) it }
-        def result = R.promise().merge(
+        def result = Promise.merge(
             reactorPromises.collect { ReactorPromise<T> it -> it.internalPromise }
-        ).using(grailsEnvironment).get().
+        ).
             onError(callable)
         new ReactorPromise<List<T>>(
             result
