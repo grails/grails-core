@@ -3,4 +3,5 @@ dependencies {
     compile project(":grails-web"),
     		project(":grails-plugin-controllers")
 
+    testCompile project(":grails-plugin-url-mappings")
 }

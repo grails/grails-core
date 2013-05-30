@@ -4,6 +4,7 @@ import grails.converters.XML
 import grails.validation.ValidationErrors
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
+import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -12,7 +13,6 @@ import org.grails.plugins.web.rest.render.html.Book
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
-import org.springframework.validation.Errors
 import spock.lang.Specification
 
 /**
@@ -23,14 +23,15 @@ class XmlRendererSpec extends Specification {
     void setup() {
         final initializer = new ConvertersConfigurationInitializer()
         initializer.initialize(new DefaultGrailsApplication())
-        Errors.metaClass.asType = { Class type ->
+        ValidationErrors.metaClass.asType = { Class type ->
             ConverterUtil.createConverter(type, delegate, null);
         }
         XML.registerObjectMarshaller(new ValidationErrorsMarshaller())
     }
 
     void cleanup() {
-        GroovySystem.metaClassRegistry.removeMetaClass(Errors)
+        GroovySystem.metaClassRegistry.removeMetaClass(ValidationErrors)
+        ConvertersConfigurationHolder.clear()
     }
 
     void "Test that XML renderer writes XML to the response for a domain instance"() {

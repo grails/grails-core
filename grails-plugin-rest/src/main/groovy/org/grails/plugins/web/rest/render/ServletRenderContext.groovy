@@ -40,6 +40,11 @@ class ServletRenderContext implements RenderContext{
     }
 
     @Override
+    Locale getLocale() {
+        webRequest.locale
+    }
+
+    @Override
     Writer getWriter() {
         webRequest.currentResponse.writer
     }

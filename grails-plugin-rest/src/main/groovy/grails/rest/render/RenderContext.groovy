@@ -26,6 +26,11 @@ import org.springframework.http.HttpStatus
  * @since 2.3
  */
 public interface RenderContext {
+
+    /**
+     * @return The locale
+     */
+    Locale getLocale()
     /**
      * @return The writer to render to
      */
