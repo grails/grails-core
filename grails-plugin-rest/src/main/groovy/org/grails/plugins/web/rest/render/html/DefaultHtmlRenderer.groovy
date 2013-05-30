@@ -33,7 +33,7 @@ import org.springframework.validation.Errors
 @CompileStatic
 class DefaultHtmlRenderer<T> implements Renderer<T> {
     protected Class<T> targetType
-    protected MimeType mimeType = MimeType.HTML
+    protected MimeType[] mimeTypes = [MimeType.XHTML, MimeType.HTML] as MimeType[]
 
     DefaultHtmlRenderer(Class<T> targetType) {
         this.targetType = targetType
@@ -41,7 +41,7 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
 
     DefaultHtmlRenderer(Class<T> targetType, MimeType mimeType) {
         this.targetType = targetType
-        this.mimeType = mimeType
+        this.mimeTypes = [mimeType] as MimeType[]
     }
 
     Class<T> getTargetType() {
@@ -50,6 +50,7 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
 
     @Override
     void render(T object, RenderContext context) {
+        final mimeType = context.acceptMimeType ?: MimeType.HTML
         if (!context.viewName) {
             context.setViewName(context.actionName)
         }
@@ -71,7 +72,7 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
     }
 
 
-    MimeType getMimeType() {
-        return mimeType
+    MimeType[] getMimeTypes() {
+        return mimeTypes
     }
 }

@@ -32,8 +32,8 @@ class VndErrorJsonRenderer implements ContainerRenderer<Errors, Object> {
     }
 
     @Override
-    MimeType getMimeType() {
-        return MimeType.JSON
+    MimeType[] getMimeTypes() {
+        return [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
     }
 
     @Override

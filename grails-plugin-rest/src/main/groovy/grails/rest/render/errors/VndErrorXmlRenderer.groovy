@@ -52,8 +52,8 @@ class VndErrorXmlRenderer implements ContainerRenderer<Errors, Object>{
     }
 
     @Override
-    MimeType getMimeType() {
-        return MimeType.XML
+    MimeType[] getMimeTypes() {
+        return [MimeType.XML, MimeType.TEXT_XML] as MimeType[]
     }
 
     @Override

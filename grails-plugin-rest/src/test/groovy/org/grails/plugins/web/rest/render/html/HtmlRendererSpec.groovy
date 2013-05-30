@@ -2,6 +2,7 @@ package org.grails.plugins.web.rest.render.html
 
 import grails.persistence.Entity
 import grails.validation.ValidationErrors
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.render.ServletRenderContext
@@ -23,7 +24,12 @@ class HtmlRendererSpec extends Specification {
             def renderer = new DefaultHtmlRenderer(Book)
             final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
             webRequest.actionName = "test"
-            def renderContext = new ServletRenderContext(webRequest)
+            def renderContext = new ServletRenderContext(webRequest) {
+                @Override
+                MimeType getAcceptMimeType() {
+                    MimeType.HTML
+                }
+            }
             final book = new Book(title: "The Stand")
             renderer.render(book,renderContext)
 
@@ -39,7 +45,12 @@ class HtmlRendererSpec extends Specification {
             def renderer = new DefaultHtmlRenderer(Book)
             final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
             webRequest.actionName = "test"
-            def renderContext = new ServletRenderContext(webRequest)
+            def renderContext = new ServletRenderContext(webRequest){
+                @Override
+                MimeType getAcceptMimeType() {
+                    MimeType.HTML
+                }
+            }
             final books = [new Book(title: "The Stand")]
             renderer.render(books,renderContext)
 
@@ -55,7 +66,12 @@ class HtmlRendererSpec extends Specification {
             def renderer = new DefaultHtmlRenderer(Book)
             final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
             webRequest.actionName = "test"
-            def renderContext = new ServletRenderContext(webRequest)
+            def renderContext = new ServletRenderContext(webRequest){
+                @Override
+                MimeType getAcceptMimeType() {
+                    MimeType.HTML
+                }
+            }
             final book = new Book(title: "The Stand")
             final errors = new ValidationErrors(book)
             book.errors = errors

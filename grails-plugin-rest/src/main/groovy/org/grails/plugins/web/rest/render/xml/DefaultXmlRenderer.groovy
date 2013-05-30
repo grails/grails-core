@@ -34,7 +34,7 @@ import org.springframework.validation.Errors
 class DefaultXmlRenderer<T> implements Renderer<T> {
 
     final Class<T> targetType
-    final MimeType mimeType = new MimeType("text/xml", "xml")
+    final MimeType[] mimeTypes = [MimeType.XML,MimeType.TEXT_XML] as MimeType[]
 
     DefaultXmlRenderer(Class<T> targetType) {
         this.targetType = targetType
@@ -45,6 +45,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         if (object instanceof Errors) {
             context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
         }
+        final mimeType = context.acceptMimeType ?: MimeType.XML
         context.setContentType(mimeType.name)
         renderXml(object, context)
     }

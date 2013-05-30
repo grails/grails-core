@@ -35,7 +35,7 @@ import org.springframework.validation.Errors
 class DefaultJsonRenderer<T> implements Renderer<T> {
 
     final Class<T> targetType
-    final MimeType mimeType = new MimeType("application/json", "json")
+    final MimeType[] mimeTypes = [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
 
     DefaultJsonRenderer(Class<T> targetType) {
         this.targetType = targetType
@@ -46,7 +46,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         if (object instanceof Errors) {
             context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
         }
-        context.setContentType(mimeType.name)
+        final mimeType = context.acceptMimeType ?: MimeType.JSON
+        context.setContentType( mimeType.name )
         renderJson(object, context)
     }
 

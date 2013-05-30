@@ -60,9 +60,9 @@ class DefaultRendererRegistrySpec extends Specification {
 
         expect:"A renderer is found"
             registry.findRenderer(mimeType, URL)
-            registry.findRenderer(mimeType, URL).mimeType == mimeType
+            registry.findRenderer(mimeType, URL).mimeTypes.contains mimeType
             registry.findRenderer(mimeType, new URL("http://grails.org"))
-            registry.findRenderer(mimeType, new URL("http://grails.org")).mimeType == mimeType
+            registry.findRenderer(mimeType, new URL("http://grails.org")).mimeTypes.contains mimeType
     }
 
     void "Test that registry returns appropriate renderer for subclass"() {
@@ -78,10 +78,10 @@ class DefaultRendererRegistrySpec extends Specification {
 
         expect:"A renderer is found"
             registry.findRenderer(mimeType, "foo")
-            registry.findRenderer(mimeType, "foo").mimeType == mimeType
+            registry.findRenderer(mimeType, "foo").mimeTypes.contains mimeType
 
             registry.findRenderer(mimeType, String)
-            registry.findRenderer(mimeType, String).mimeType == mimeType
+            registry.findRenderer(mimeType, String).mimeTypes.contains mimeType
     }
 
     void "Test that registry fallbacks to a default renderer if none found"() {
@@ -97,9 +97,9 @@ class DefaultRendererRegistrySpec extends Specification {
 
         expect:"A renderer is found"
             registry.findRenderer(mimeType, String)
-            registry.findRenderer(mimeType, String).mimeType == mimeType
+            registry.findRenderer(mimeType, String).mimeTypes.contains mimeType
             registry.findRenderer(mimeType, "foo")
-            registry.findRenderer(mimeType, "foo").mimeType == mimeType
+            registry.findRenderer(mimeType, "foo").mimeTypes.contains mimeType
     }
 }
 

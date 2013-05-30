@@ -31,11 +31,15 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 abstract class AbstractRenderer<T> implements Renderer<T>{
 
     Class<T> targetType
-    MimeType mimeType
+    MimeType[] mimeTypes
 
     AbstractRenderer(Class<T> targetType, MimeType mimeType) {
         this.targetType = targetType
-        this.mimeType = mimeType
+        this.mimeTypes = [mimeType] as MimeType[]
     }
 
+    AbstractRenderer(Class<T> targetType, MimeType[] mimeTypes) {
+        this.targetType = targetType
+        this.mimeTypes = mimeTypes
+    }
 }

@@ -7,6 +7,7 @@ import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.grails.plugins.web.rest.render.html.Book
@@ -40,7 +41,12 @@ class XmlRendererSpec extends Specification {
             final response = new MockHttpServletResponse()
             final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
             webRequest.actionName = "test"
-            def renderContext = new ServletRenderContext(webRequest)
+            def renderContext = new ServletRenderContext(webRequest) {
+                @Override
+                MimeType getAcceptMimeType() {
+                    MimeType.TEXT_XML
+                }
+            }
             final book = new Book(title: "The Stand")
             renderer.render(book,renderContext)
 
@@ -62,7 +68,12 @@ class XmlRendererSpec extends Specification {
             final response = new MockHttpServletResponse()
             final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), response, new MockServletContext())
             webRequest.actionName = "test"
-            def renderContext = new ServletRenderContext(webRequest)
+            def renderContext = new ServletRenderContext(webRequest) {
+                @Override
+                MimeType getAcceptMimeType() {
+                    MimeType.TEXT_XML
+                }
+            }
             final book = new Book(title: "")
             final errors = new ValidationErrors(book)
             book.errors = errors

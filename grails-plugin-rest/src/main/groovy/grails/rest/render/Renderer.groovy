@@ -34,7 +34,7 @@ interface Renderer<T> {
     /**
      * @return The {@link MimeType} of the renderer
      */
-    MimeType getMimeType()
+    MimeType[] getMimeTypes()
 
     /**
      * Renders the object

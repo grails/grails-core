@@ -26,6 +26,7 @@ import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.ClassUtils
 import org.springframework.validation.Errors
 
@@ -66,6 +67,13 @@ class DefaultRendererRegistry implements RendererRegistry{
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.ALL), new DefaultHtmlRenderer(Errors))
     }
 
+    @Autowired(required = false)
+    void setRenderers(Renderer[] renderers) {
+        for(Renderer r in renderers) {
+            addRenderer(r)
+        }
+    }
+
     @Override
     def <T> void addRenderer(Renderer<T> renderer) {
         if (renderer instanceof ContainerRenderer) {
@@ -86,16 +94,21 @@ class DefaultRendererRegistry implements RendererRegistry{
 
     @Override
     void addDefaultRenderer(Renderer<Object> renderer) {
-        defaultRenderers.put(renderer.getMimeType(), renderer)
-        rendererCache.remove(new RendererCacheKey(renderer.getTargetType(), renderer.getMimeType()))
+        for(MimeType mt in renderer.mimeTypes) {
+            defaultRenderers.put(mt, renderer)
+            rendererCache.remove(new RendererCacheKey(renderer.getTargetType(), mt))
+        }
     }
 
     @Override
     void addContainerRenderer(Class objectType, Renderer renderer) {
-        def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, renderer.getMimeType())
+        for(MimeType mt in renderer.mimeTypes) {
 
-        containerRendererCache.remove(key)
-        containerRenderers.put(key, renderer)
+            def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, mt)
+
+            containerRendererCache.remove(key)
+            containerRenderers.put(key, renderer)
+        }
     }
 
     @Override
@@ -202,7 +215,7 @@ class DefaultRendererRegistry implements RendererRegistry{
         Renderer<T> renderer = null
         final rendererList = registeredRenderers.get(currentClass)
         if (rendererList) {
-            renderer = rendererList.find { Renderer<T> r -> r.mimeType == mimeType }
+            renderer = rendererList.find { Renderer<T> r -> r.mimeTypes.any { MimeType mt -> mt  == mimeType  }}
         }
         renderer
     }

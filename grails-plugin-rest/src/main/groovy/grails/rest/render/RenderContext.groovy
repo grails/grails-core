@@ -16,6 +16,7 @@
 
 package grails.rest.render
 
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 
@@ -27,6 +28,10 @@ import org.springframework.http.HttpStatus
  */
 public interface RenderContext {
 
+    /**
+     * @return Returns the mime type accepted by the client or null if non specified
+     */
+    MimeType getAcceptMimeType()
     /**
      * @return The locale
      */
