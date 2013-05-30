@@ -19,10 +19,7 @@ import grails.util.Metadata;
 import grails.web.UrlConverter;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
@@ -51,10 +48,14 @@ import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -88,6 +89,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private StackTraceFilterer filterer;
 
     private UrlConverter urlConverter;
+    private Boolean allowHeaderForWrongHttpMethod;
 
     @Override
     protected void initFilterBean() throws ServletException {
@@ -107,6 +109,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         if (applicationContext.containsBean(MimeType.BEAN_NAME)) {
             mimeTypes = applicationContext.getBean(MimeType.BEAN_NAME, MimeType[].class);
         }
+        this.allowHeaderForWrongHttpMethod = grailsConfig.get(WebUtils.SEND_ALLOW_HEADER_FOR_INVALID_HTTP_METHOD, Boolean.TRUE);
         createStackTraceFilterer();
     }
 
@@ -149,28 +152,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     final String viewName;
                     try {
                         info.configure(webRequest);
-                        String action = info.getActionName() == null ? "" : info.getActionName();
                         viewName = info.getViewName();
                         if (viewName == null && info.getURI() == null) {
-                            final String controllerName = info.getControllerName();
-                            String pluginName = info.getPluginName();
-                            String namespace = info.getNamespace();
-                            String featureUri = WebUtils.SLASH + urlConverter.toUrlElement(controllerName) + WebUtils.SLASH + urlConverter.toUrlElement(action);
-
-                            Object featureId = null;
-                            if (pluginName != null || namespace != null) {
-                                Map featureIdMap = new HashMap();
-                                featureIdMap.put(UrlMapping.URI, featureUri);
-                                if(pluginName != null) {
-                                    featureIdMap.put("pluginName", pluginName);
-                                }
-                                if(namespace != null) {
-                                    featureIdMap.put(UrlMapping.NAMESPACE, namespace);
-                                }
-                                featureId = featureIdMap;
-                            } else {
-                                featureId = featureUri;
-                            }
+                            Object featureId = getFeatureId(info);
                             GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
                             if (controller == null) {
                                 continue;
@@ -221,11 +205,65 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
 
         if (!dispatched) {
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("No match found, processing remaining filter chain.");
+            Set<HttpMethod> allowedHttpMethods = allowHeaderForWrongHttpMethod ? holder.allowedMethods(uri) : Collections.EMPTY_SET;
+
+            if(allowedHttpMethods.isEmpty()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("No match found, processing remaining filter chain.");
+                }
+                processFilterChain(request, response, filterChain);
             }
-            processFilterChain(request, response, filterChain);
+            else {
+                UrlMappingInfo[] allowedInfos = holder.matchAll(uri, UrlMapping.ANY_HTTP_METHOD);
+                boolean hasBackingController = false;
+                for (UrlMappingInfo allowedInfo : allowedInfos) {
+                    Object featureId = getFeatureId(allowedInfo);
+                    GrailsClass controllerClass = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
+                    if(controllerClass != null) {
+                        hasBackingController = true; break;
+                    }
+                }
+
+                if(hasBackingController) {
+                    response.addHeader(HttpHeaders.ALLOW, DefaultGroovyMethods.join(allowedHttpMethods, ","));
+                    response.sendError(HttpStatus.METHOD_NOT_ALLOWED.value());
+                }
+                else {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("No match found, processing remaining filter chain.");
+                    }
+                    processFilterChain(request, response, filterChain);
+                }
+            }
         }
+    }
+
+    private Object getFeatureId(UrlMappingInfo info) {
+        final String action = info.getActionName() == null ? "" : info.getActionName();
+        final String controllerName = info.getControllerName();
+        final String pluginName = info.getPluginName();
+        final String namespace = info.getNamespace();
+        final String featureUri = getControllerFeatureURI(controllerName, action);
+
+        Object featureId;
+        if (pluginName != null || namespace != null) {
+            Map featureIdMap = new HashMap();
+            featureIdMap.put(UrlMapping.URI, featureUri);
+            if(pluginName != null) {
+                featureIdMap.put("pluginName", pluginName);
+            }
+            if(namespace != null) {
+                featureIdMap.put(UrlMapping.NAMESPACE, namespace);
+            }
+            featureId = featureIdMap;
+        } else {
+            featureId = featureUri;
+        }
+        return featureId;
+    }
+
+    private String getControllerFeatureURI(String controller, String action) {
+        return WebUtils.SLASH + urlConverter.toUrlElement(controller) + WebUtils.SLASH + urlConverter.toUrlElement(action);
     }
 
     public static boolean isUriExcluded(UrlMappingsHolder holder, String uri) {
@@ -252,15 +290,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         return isExcluded;
     }
 
-    private boolean areFileExtensionsEnabled() {
-        if (grailsConfig != null) {
-            final Boolean value = grailsConfig.get(WebUtils.ENABLE_FILE_EXTENSIONS, Boolean.class);
-            if (value != null) {
-                return value;
-            }
-        }
-        return true;
-    }
 
     private boolean noRegexMappings(UrlMappingsHolder holder) {
         for (UrlMapping mapping : holder.getUrlMappings()) {

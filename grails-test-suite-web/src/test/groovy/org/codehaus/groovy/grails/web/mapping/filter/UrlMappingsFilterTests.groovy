@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.web.mapping.AbstractGrailsMappingTests
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.multipart.ContentLengthAwareCommonsMultipartResolver
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.mock.web.MockFilterConfig
 import org.springframework.web.context.WebApplicationContext
@@ -131,6 +132,57 @@ mappings {
         filter.doFilterInternal(request, response, null)
 
         assertEquals "/test.dispatch", response.forwardedUrl
+    }
+
+    def resourceMappingScript = '''
+mappings {
+    "/tests"(resources:"book")
+}
+'''
+    def restController = '''
+@grails.artefact.Artefact("Controller")
+class BookController {
+  def index() {}
+}
+'''
+
+
+    void testMappingToInvalidHttpMethodProduces404Error() {
+        def mappings = evaluator.evaluateMappings(new ByteArrayResource(resourceMappingScript.bytes))
+        appCtx.registerMockBean(UrlMappingsHolder.BEAN_ID, new DefaultUrlMappingsHolder(mappings))
+
+        gcl.parseClass(restController)
+        def app = createGrailsApplication()
+
+        app.initialise()
+        app.getControllerClass("BookController").initialize()
+        appCtx.registerMockBean("grailsApplication", app)
+
+        servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
+
+        request.setMethod("GET")
+        request.setRequestURI("/tests")
+
+        filter = new UrlMappingsFilter()
+        filter.init(new MockFilterConfig(servletContext))
+
+        filter.doFilterInternal(request, response, null)
+
+        assertEquals "/grails/book/index.dispatch", response.forwardedUrl
+
+        response.reset()
+        request.setMethod("DELETE")
+
+        filter.doFilterInternal(request, response, null)
+
+        assert response.status == 405
+        final allowHeader = response.getHeader(HttpHeaders.ALLOW)
+        assert allowHeader != null
+        final allowedMethods = allowHeader.split(',')
+        assert allowedMethods.size() == 2
+        assert allowedMethods.contains("GET")
+        assert allowedMethods.contains("POST")
+
     }
 
     void testUrlMappingFilter() {

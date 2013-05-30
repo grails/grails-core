@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.web.mapping
 
 import grails.web.CamelCaseUrlConverter
+import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
 import spock.lang.Specification
+import static org.springframework.http.HttpMethod.*
 
 /**
  * @author Graeme Rocher
@@ -49,6 +51,8 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappings.size() == 8
 
         expect:"That the appropriate URLs are matched for the appropriate HTTP methods"
+            urlMappingsHolder.allowedMethods('/books') == [POST, GET] as Set
+            urlMappingsHolder.allowedMethods('/books/1') == [GET, DELETE, PUT] as Set
             urlMappingsHolder.matchAll('/books', 'GET')
             urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
             urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'

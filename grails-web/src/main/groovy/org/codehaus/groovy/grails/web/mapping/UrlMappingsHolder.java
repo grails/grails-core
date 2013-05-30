@@ -15,8 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
+import org.springframework.http.HttpMethod;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Main entry point of Grails URL mapping mechanism. This interface defines methods to match
@@ -150,6 +153,13 @@ public interface UrlMappingsHolder {
      * @return A UrlMappingInfo or null
      */
     UrlMappingInfo matchStatusCode(int responseCode);
+
+    /**
+     * Return the allowed HTTP methods for the given URI
+     * @param uri The URI
+     * @return The allowed methods
+     */
+    Set<HttpMethod> allowedMethods(String uri);
 
     /**
      * Match and return for first UrlMappingInfo for the give response code and exception

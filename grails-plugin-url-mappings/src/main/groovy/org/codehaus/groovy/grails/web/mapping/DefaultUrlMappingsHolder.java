@@ -19,16 +19,7 @@ import grails.util.CollectionUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,6 +29,7 @@ import org.springframework.core.style.ToStringCreator;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weigher;
+import org.springframework.http.HttpMethod;
 
 /**
  * Default implementation of the UrlMappingsHolder interface that takes a list of mappings and
@@ -414,6 +406,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     }
 
     public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
+        boolean anyHttpMethod = httpMethod != null && httpMethod.equalsIgnoreCase(UrlMapping.ANY_HTTP_METHOD);
         List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
         UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod);
         if (cachedListMatches.containsKey(cacheKey)) {
@@ -432,7 +425,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                     }
 
                     String mappingHttpMethod = current.getHttpMethod();
-                    if(mappingHttpMethod == null || mappingHttpMethod.equalsIgnoreCase(UrlMapping.ANY_HTTP_METHOD) || mappingHttpMethod.equalsIgnoreCase(httpMethod))
+                    if(mappingHttpMethod == null || anyHttpMethod || mappingHttpMethod.equalsIgnoreCase(UrlMapping.ANY_HTTP_METHOD) || mappingHttpMethod.equalsIgnoreCase(httpMethod))
                         matchingUrls.add(current);
                 }
             }
@@ -452,6 +445,24 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         }
 
         return null;
+    }
+
+    @Override
+    public Set<HttpMethod> allowedMethods(String uri) {
+        UrlMappingInfo[] urlMappingInfos = matchAll(uri, UrlMapping.ANY_HTTP_METHOD);
+        Set<HttpMethod> methods = new HashSet<HttpMethod>();
+
+        for (UrlMappingInfo urlMappingInfo : urlMappingInfos) {
+            if(urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
+                methods.addAll(Arrays.asList(HttpMethod.values())); break;
+            }
+            else {
+                HttpMethod method = HttpMethod.valueOf(urlMappingInfo.getHttpMethod().toUpperCase());
+                methods.add(method);
+            }
+        }
+
+        return Collections.unmodifiableSet(methods);
     }
 
     public UrlMappingInfo matchStatusCode(int responseCode, Throwable e) {
