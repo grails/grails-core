@@ -38,36 +38,35 @@ class GormAwareDataBinderSpec extends Specification {
         def author = new Author()
         
         when:
-        binder.bind author, [name: '   Jeff Scott Brown ', stringWithSpecialBinding: '   ']
+        binder.bind author, [name: '   Jeff Scott Brown ', stringWithSpecialBinding: '   Jeff Scott Brown ']
         
         then:
         author.name == 'Jeff Scott Brown'
-        author.stringWithSpecialBinding == ''
+        author.stringWithSpecialBinding == 'Jeff Scott Brown'
         
         when:
         def actualName = 'Jeff Scott Brown'
-        def space = ' '
-        binder.bind author, [name: "   ${actualName} ", stringWithSpecialBinding: "${space}"]
+        binder.bind author, [name: "   ${actualName} ", stringWithSpecialBinding: "   ${actualName} "]
         
         then:
         author.name == 'Jeff Scott Brown'
-        author.stringWithSpecialBinding == ''
+        author.stringWithSpecialBinding == 'Jeff Scott Brown'
         
         when:
         binder.trimStrings = false
-        binder.bind author, [name: '  Jeff Scott Brown   ', stringWithSpecialBinding: '   ']
+        binder.bind author, [name: '  Jeff Scott Brown   ', stringWithSpecialBinding: '  Jeff Scott Brown   ']
         
         then:
         author.name == '  Jeff Scott Brown   '
-        author.stringWithSpecialBinding == ''
+        author.stringWithSpecialBinding == 'Jeff Scott Brown'
         
         when:
         binder.trimStrings = false
-        binder.bind author, [name: "  ${actualName}   ", stringWithSpecialBinding: "${space}"]
+        binder.bind author, [name: "  ${actualName}   ", stringWithSpecialBinding: "  ${actualName}   "]
         
         then:
         author.name == '  Jeff Scott Brown   '
-        author.stringWithSpecialBinding == ''
+        author.stringWithSpecialBinding == 'Jeff Scott Brown'
     }
     
     void 'Test binding an invalid String to an object reference does not result in an empty instance being bound'() {
@@ -89,29 +88,33 @@ class GormAwareDataBinderSpec extends Specification {
         def obj = new Author()
         
         when:
-        binder.bind obj, [name: '']
+        binder.bind obj, [name: '', stringWithSpecialBinding:'']
         
         then:
         obj.name == null
+        obj.stringWithSpecialBinding == ''
         
         when:
-        binder.bind obj, [name: '  ']
+        binder.bind obj, [name: '  ', stringWithSpecialBinding: '  ']
         
         then:
         obj.name == null
+        obj.stringWithSpecialBinding == ''
         
         when:
         def emptyString = ''
-        binder.bind obj, [name: "${emptyString}"]
+        binder.bind obj, [name: "${emptyString}", stringWithSpecialBinding: "${emptyString}"]
         
         then:
         obj.name == null
+        obj.stringWithSpecialBinding == ''
         
         when:
-        binder.bind obj, [name: "  ${emptyString}  "]
+        binder.bind obj, [name: "  ${emptyString}  ", stringWithSpecialBinding: "  ${emptyString}  "]
         
         then:
         obj.name == null
+        obj.stringWithSpecialBinding == ''
     }
     
     void 'Test binding to primitives from Strings'() {
