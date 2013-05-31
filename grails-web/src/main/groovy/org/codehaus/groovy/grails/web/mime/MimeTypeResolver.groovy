@@ -14,24 +14,19 @@
  * limitations under the License.
  */
 
-package grails.rest
-
-import org.codehaus.groovy.grails.web.mime.MimeType
-
-import java.lang.annotation.ElementType
-import java.lang.annotation.Retention
-import java.lang.annotation.RetentionPolicy
-import java.lang.annotation.Target
+package org.codehaus.groovy.grails.web.mime
 
 /**
  *
- * Meta Annotation to applied to a domain class if it is a REST resource
+ * Resolves the response format
  *
  * @author Graeme Rocher
  * @since 2.3
- *
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target([ElementType.TYPE])
-public @interface Resource {
+public interface MimeTypeResolver {
+
+    /**
+     * @return The response format requested by the client
+     */
+    MimeType resolveResponseMimeType()
 }

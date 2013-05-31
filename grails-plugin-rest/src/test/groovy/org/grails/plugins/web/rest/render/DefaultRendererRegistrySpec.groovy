@@ -27,6 +27,7 @@ class DefaultRendererRegistrySpec extends Specification {
     void "Test that the registry returns an appropriate render for a container type"() {
         when:"A registry with a specific renderer"
             def registry = new DefaultRendererRegistry()
+            registry.initialize()
 
 
         then:"An errors renderer can be found"
@@ -50,6 +51,7 @@ class DefaultRendererRegistrySpec extends Specification {
     void "Test that registry returns appropriate renderer for type"() {
         given:"A registry with a specific renderer"
             def registry = new DefaultRendererRegistry()
+            registry.initialize()
             def mimeType = new MimeType("text/xml", 'xml')
             registry.addRenderer(new AbstractRenderer(URL,mimeType) {
                 @Override
@@ -67,14 +69,15 @@ class DefaultRendererRegistrySpec extends Specification {
 
     void "Test that registry returns appropriate renderer for subclass"() {
         given:"A registry with a specific renderer"
-        def registry = new DefaultRendererRegistry()
-        def mimeType = new MimeType("text/xml", 'xml')
-        registry.addRenderer(new AbstractRenderer(CharSequence,mimeType) {
-            @Override
-            void  render(Object object, RenderContext context) {
+            def registry = new DefaultRendererRegistry()
+            registry.initialize()
+            def mimeType = new MimeType("text/xml", 'xml')
+            registry.addRenderer(new AbstractRenderer(CharSequence,mimeType) {
+                @Override
+                void  render(Object object, RenderContext context) {
 
-            }
-        })
+                }
+            })
 
         expect:"A renderer is found"
             registry.findRenderer(mimeType, "foo")
@@ -87,6 +90,7 @@ class DefaultRendererRegistrySpec extends Specification {
     void "Test that registry fallbacks to a default renderer if none found"() {
         given:"A registry with a specific renderer"
             def registry = new DefaultRendererRegistry()
+            registry.initialize()
             def mimeType = new MimeType("text/xml", 'xml')
             registry.addDefaultRenderer(new AbstractRenderer(Object,mimeType) {
                 @Override

@@ -86,7 +86,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             return createGrailsView(viewName);
         }
 
-        String viewCacheKey = GrailsConventionGroovyPageLocator.resolveViewFormat(viewName);
+        String viewCacheKey = groovyPageLocator.resolveViewFormat(viewName);
 
         CacheEntry<View> entry = VIEW_CACHE.get(viewCacheKey);
 

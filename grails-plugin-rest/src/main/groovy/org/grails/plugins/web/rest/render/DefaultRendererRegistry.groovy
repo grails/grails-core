@@ -21,6 +21,7 @@ import grails.rest.render.ContainerRenderer
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.Canonical
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.ClassUtils
 import org.springframework.validation.Errors
 
+import javax.annotation.PostConstruct
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
@@ -53,12 +55,18 @@ class DefaultRendererRegistry implements RendererRegistry{
                                                             .initialCapacity(500)
                                                             .maximumWeightedCapacity(1000)
                                                             .build();
+    @Autowired(required = false)
+    GrailsConventionGroovyPageLocator groovyPageLocator
 
     DefaultRendererRegistry() {
-        addDefaultRenderer(new DefaultXmlRenderer<Object>(Object.class))
-        addDefaultRenderer(new DefaultJsonRenderer<Object>(Object.class))
-        addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object.class))
-        addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object.class, MimeType.ALL))
+    }
+
+    @PostConstruct
+    void initialize() {
+        addDefaultRenderer(new DefaultXmlRenderer<Object>(Object, groovyPageLocator))
+        addDefaultRenderer(new DefaultJsonRenderer<Object>(Object))
+        addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object))
+        addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object, MimeType.ALL))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.XML), new DefaultXmlRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_XML), new DefaultXmlRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.JSON), new DefaultJsonRenderer(Errors))

@@ -21,11 +21,14 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.web.mime.MimeType;
+import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Extended GroovyPageLocator that deals with the details of Grails' conventions
@@ -39,6 +42,13 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     private static final char DOT = '.';
 
     private GroovyPagesUriService uriService = new DefaultGroovyPagesUriService();
+
+    private MimeTypeResolver mimeTypeResolver;
+
+    @Autowired(required = false)
+    public void setMimeTypeResolver(MimeTypeResolver mimeTypeResolver) {
+        this.mimeTypeResolver = mimeTypeResolver;
+    }
 
     /**
      * Find a view for a path. For example /foo/bar will search for /WEB-INF/grails-app/views/foo/bar.gsp in production
@@ -65,9 +75,11 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
      * @return The GroovyPageScriptSource
      */
     public GroovyPageScriptSource findView(String controllerName, String viewName) {
+        return findView(controllerName, viewName, lookupRequestFormat());
+    }
 
-        String viewNameWithFormat = resolveViewFormat(viewName);
-        GroovyPageScriptSource scriptSource = findPage(uriService.getViewURI(controllerName, viewNameWithFormat));
+    public GroovyPageScriptSource findView(String controllerName, String viewName, String format) {
+        GroovyPageScriptSource scriptSource = findViewForFormat(controllerName, viewName, format);
         if (scriptSource == null) {
             scriptSource  = findPage(uriService.getViewURI(controllerName, viewName));
         }
@@ -75,8 +87,24 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         return scriptSource;
     }
 
-    public static String resolveViewFormat(String viewName) {
+    /**
+     * Finds a view for the given view name and format, otherwise returns null if it doesn't exist
+     * @param controllerName The controller name
+     * @param viewName The view name
+     * @param format The format
+     * @return The script source or null
+     */
+    public GroovyPageScriptSource findViewForFormat(String controllerName, String viewName, String format) {
+        String viewNameWithFormat = getViewNameWithFormat(viewName, format);
+        return findPage(uriService.getViewURI(controllerName, viewNameWithFormat));
+    }
+
+    public String resolveViewFormat(String viewName) {
         String format = lookupRequestFormat();
+        return getViewNameWithFormat(viewName, format);
+    }
+
+    private String getViewNameWithFormat(String viewName, String format) {
         if (format == null) {
             return viewName;
         }
@@ -209,15 +237,15 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
         return findPage(uriService.getAbsoluteTemplateURI(uri));
     }
 
-    static String lookupRequestFormat() {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if (webRequest == null) {
-            return null;
-        }
+    protected String lookupRequestFormat() {
+        if(mimeTypeResolver != null) {
+            MimeType mimeType = mimeTypeResolver.resolveResponseMimeType();
 
-        HttpServletRequest request = webRequest.getCurrentRequest();
-        Object format = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT);
-        return format == null ? null : format.toString();
+            if(mimeType != null) {
+                return mimeType.getExtension();
+            }
+        }
+        return null;
     }
 
     protected String getNameForController(Object controller) {
