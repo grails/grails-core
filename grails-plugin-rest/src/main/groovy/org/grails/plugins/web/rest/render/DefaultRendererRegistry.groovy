@@ -64,7 +64,7 @@ class DefaultRendererRegistry implements RendererRegistry{
     @PostConstruct
     void initialize() {
         addDefaultRenderer(new DefaultXmlRenderer<Object>(Object, groovyPageLocator))
-        addDefaultRenderer(new DefaultJsonRenderer<Object>(Object))
+        addDefaultRenderer(new DefaultJsonRenderer<Object>(Object, groovyPageLocator))
         addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object))
         addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object, MimeType.ALL))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.XML), new DefaultXmlRenderer(Errors))

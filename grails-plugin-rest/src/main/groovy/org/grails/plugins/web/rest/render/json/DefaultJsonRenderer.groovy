@@ -22,6 +22,8 @@ import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.springframework.http.HttpStatus
 import org.springframework.validation.Errors
 
@@ -37,18 +39,34 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     final Class<T> targetType
     final MimeType[] mimeTypes = [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
 
+    GrailsConventionGroovyPageLocator groovyPageLocator
+
     DefaultJsonRenderer(Class<T> targetType) {
         this.targetType = targetType
     }
 
+    DefaultJsonRenderer(Class<T> targetType, GrailsConventionGroovyPageLocator groovyPageLocator) {
+        this.targetType = targetType
+        this.groovyPageLocator = groovyPageLocator
+    }
+
     @Override
     void render(T object, RenderContext context) {
-        if (object instanceof Errors) {
-            context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
-        }
         final mimeType = context.acceptMimeType ?: MimeType.JSON
         context.setContentType( mimeType.name )
-        renderJson(object, context)
+        def viewName = context.viewName ?: context.actionName
+        final view = groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
+        if (view) {
+            new DefaultHtmlRenderer(targetType).render(object, context)
+        }
+        else {
+
+            if (object instanceof Errors) {
+                context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+            }
+            renderJson(object, context)
+        }
+
     }
 
     /**
