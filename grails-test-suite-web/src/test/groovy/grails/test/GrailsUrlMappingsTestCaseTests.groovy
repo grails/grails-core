@@ -457,6 +457,11 @@ class MockUrlMapping implements UrlMapping {
         null
     }
 
+    @Override
+    String getVersion() {
+        UrlMapping.ANY_VERSION
+    }
+
     void setParameterValues(Map parameterValues) {}
 
     void setParseRequest(boolean shouldParse) {
