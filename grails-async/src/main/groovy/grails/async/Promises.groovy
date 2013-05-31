@@ -19,6 +19,7 @@ import groovy.transform.CompileStatic
 import org.grails.async.decorator.PromiseDecorator
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.grails.async.factory.gpars.GparsPromiseFactory
+//import org.grails.async.factory.reactor.ReactorPromiseFactory
 
 /**
  * Factory class for working with {@link Promise} instances
@@ -45,7 +46,11 @@ class Promises {
 
     static PromiseFactory getPromiseFactory() {
         if (promiseFactory == null) {
-            if (GparsPromiseFactory.isGparsAvailable()) {
+//            if (ReactorPromiseFactory.isReactorAvailable()) {
+//                promiseFactory = new ReactorPromiseFactory()
+//            }
+//            else
+                if (GparsPromiseFactory.isGparsAvailable()) {
                 promiseFactory = new GparsPromiseFactory()
             }
             else {

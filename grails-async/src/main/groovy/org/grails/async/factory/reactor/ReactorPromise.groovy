@@ -13,66 +13,64 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.async.factory.gpars
+package org.grails.async.factory.reactor
 
 import grails.async.Promise
 import groovy.transform.CompileStatic
+import reactor.core.Promise as P
 
 import java.util.concurrent.TimeUnit
-
+import java.util.concurrent.TimeoutException
 /**
- * Implementation of {@link Promise} interface for Gpars
+ * Implementation of {@link P} interface for Reactor
  *
- * @author Graeme Rocher
+ * @author Stephane Maldini
  * @since 2.3
  */
 @CompileStatic
-class  GparsPromise<T> implements Promise<T> {
+class ReactorPromise<T> implements Promise<T> {
 
-    groovyx.gpars.dataflow.Promise internalPromise
+    P<T> internalPromise
 
-    GparsPromise(groovyx.gpars.dataflow.Promise internalPromise) {
+    ReactorPromise(P internalPromise) {
         this.internalPromise = internalPromise
     }
 
-    GparsPromise(Closure callable) {
-        internalPromise = groovyx.gpars.dataflow.Dataflow.task(callable)
+    ReactorPromise(Closure<T> callable) {
+        internalPromise = reactor.core.Promise.<T> from(callable).build()
     }
 
     T get() {
-        internalPromise.get()
+        internalPromise.await()
     }
 
     T get(long timeout, TimeUnit units) throws Throwable {
-        internalPromise.get(timeout, units)
+        T res = internalPromise.await(timeout, units)
+        if (!internalPromise.success) {
+            throw new TimeoutException()
+        } else {
+            res
+        }
     }
 
-    Promise<T> leftShift(Closure callable) {
+    Promise leftShift(Closure callable) {
         then callable
     }
 
     @SuppressWarnings("unchecked")
-    Promise onComplete(Closure callable) {
-        internalPromise.whenBound { val ->
-            if (!(val instanceof Throwable)) {
-                callable.call(val)
-            }
-        }
-        return this
+    Promise<T> onComplete(Closure callable) {
+        internalPromise.onSuccess(callable)
+        this
     }
 
     @SuppressWarnings("unchecked")
-    Promise onError(Closure callable) {
-        internalPromise.whenBound { val ->
-            if (val instanceof Throwable) {
-                callable.call(val)
-            }
-        }
-        return this
+    Promise<T> onError(Closure callable) {
+        internalPromise.onError(callable)
+        this
     }
 
     @SuppressWarnings("unchecked")
     Promise then(Closure callable) {
-        return new GparsPromise(internalPromise.then(callable))
+        new ReactorPromise(internalPromise.then(callable))
     }
 }

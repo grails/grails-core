@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit
  * Encapsulates the notion of a Promise, a Future-like interface designed to easy integration of asynchronous functions
  *
  * @author Graeme Rocher
+ * @author Stephane Maldini
  * @since 2.3
  */
 @CompileStatic
@@ -61,7 +62,7 @@ interface Promise<T> {
     Promise<T> onError(Closure callable)
 
     /**
-     * Same as #onComplete
+     * Map the result to a new Promise
      */
-    Promise<T> then(Closure callable)
+    public <E> Promise<E> then(Closure<E> callable)
 }
