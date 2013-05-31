@@ -62,6 +62,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     private Object uri;
     private UrlConverter urlConverter;
     private String httpMethod;
+    private String version;
 
     @SuppressWarnings({"unchecked","rawtypes"})
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
@@ -91,9 +92,9 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     @SuppressWarnings("rawtypes")
     public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, Map params,
             UrlMappingData urlData, ServletContext servletContext) {
-        this(controllerName, actionName, namespace, pluginName, viewName, null, params, urlData, servletContext);
+        this(controllerName, actionName, namespace, pluginName, viewName, null,UrlMapping.ANY_VERSION, params, urlData, servletContext);
     }
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, Map params,
+    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, Map params,
                                  UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
         Assert.isTrue(controllerName != null || viewName != null, "URL mapping must either provide a controller or view name to map to!");
@@ -103,9 +104,15 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this.pluginName = pluginName;
         this.namespace = namespace;
         this.httpMethod = httpMethod;
+        this.version = version;
         if (actionName == null) {
             this.viewName = viewName;
         }
+    }
+
+    @Override
+    public String getVersion() {
+        return this.version;
     }
 
     @SuppressWarnings("rawtypes")

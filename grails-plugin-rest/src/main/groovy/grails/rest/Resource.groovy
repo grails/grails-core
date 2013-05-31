@@ -16,6 +16,8 @@
 
 package grails.rest
 
+import org.codehaus.groovy.grails.web.mime.MimeType
+
 import java.lang.annotation.ElementType
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
@@ -32,4 +34,8 @@ import java.lang.annotation.Target
 @Retention(RetentionPolicy.RUNTIME)
 @Target([ElementType.TYPE])
 public @interface Resource {
+
+    String[] responseFormats() default [MimeType.XML.extension, MimeType.JSON.extension];
+
+    String[] excludesActions() default []
 }

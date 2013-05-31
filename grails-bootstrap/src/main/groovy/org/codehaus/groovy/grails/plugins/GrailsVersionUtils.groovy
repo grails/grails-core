@@ -15,22 +15,28 @@
  */
 package org.codehaus.groovy.grails.plugins
 
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.plugins.metadata.GrailsPlugin
 
+@CompileStatic
 class GrailsVersionUtils {
 
     /**
      * Get the name of the a plugin for a particular class.
      */
+    @CompileStatic
     static String getPluginName(Class clazz) {
-        clazz?.getAnnotation(GrailsPlugin)?.name()
+        GrailsPlugin ann = clazz?.getAnnotation(GrailsPlugin)
+        return ann?.name()
     }
 
     /**
      * Get the version of the a plugin for a particular class.
      */
+    @CompileStatic
     static String getPluginVersion(Class clazz) {
-        clazz?.getAnnotation(GrailsPlugin)?.version()
+        GrailsPlugin ann = clazz?.getAnnotation(GrailsPlugin)
+        return ann?.version()
     }
 
     /**
@@ -46,7 +52,7 @@ class GrailsVersionUtils {
 
         if (requiredVersion.indexOf('>') >- 1) {
             def tokens = requiredVersion.split(">")*.trim()
-            tokens = tokens.collect { trimTag(it) }
+            tokens = tokens.collect { String it -> trimTag(it) }
             tokens << pluginVersion
             tokens = tokens.sort(vc)
 
@@ -92,7 +98,7 @@ class GrailsVersionUtils {
         lowerVersion != '*' && isValidVersion(lowerVersion, "$requiredVersion > *")
     }
 
-    private static getPluginVersionInternal(String pluginVersion, index) {
+    private static getPluginVersionInternal(String pluginVersion, Integer index) {
         if (pluginVersion.indexOf('>') > -1) {
             def tokens = pluginVersion.split(">")*.trim()
             return tokens[index].trim()
@@ -108,15 +114,16 @@ class GrailsVersionUtils {
         }
         def tokens = pluginVersion.split(/\./)
 
-        return tokens.findAll { it ==~ /\d+/ || it =='*'}.join(".")
+        return tokens.findAll { String it -> it ==~ /\d+/ || it =='*'}.join(".")
     }
 }
 
-class VersionComparator implements Comparator {
+@CompileStatic
+class VersionComparator implements Comparator<String> {
 
-    static private final SNAPSHOT_SUFFIXES = ["-SNAPSHOT", ".BUILD-SNAPSHOT"].asImmutable()
+    static private final List<String> SNAPSHOT_SUFFIXES = ["-SNAPSHOT", ".BUILD-SNAPSHOT"].asImmutable()
 
-    int compare(o1, o2) {
+    int compare(String o1, String o2) {
         int result = 0
         if (o1 == '*') {
             result = 1
@@ -128,7 +135,7 @@ class VersionComparator implements Comparator {
             def nums1
             try {
                 def tokens = deSnapshot(o1).split(/\./)
-                tokens = tokens.findAll { it.trim() ==~ /\d+/ }
+                tokens = tokens.findAll { String it -> it.trim() ==~ /\d+/ }
                 nums1 = tokens*.toInteger()
             }
             catch (NumberFormatException e) {
@@ -137,7 +144,7 @@ class VersionComparator implements Comparator {
             def nums2
             try {
                 def tokens = deSnapshot(o2).split(/\./)
-                tokens = tokens.findAll { it.trim() ==~ /\d+/ }
+                tokens = tokens.findAll { String it -> it.trim() ==~ /\d+/ }
                 nums2 = tokens*.toInteger()
             }
             catch (NumberFormatException e) {
@@ -184,16 +191,18 @@ class VersionComparator implements Comparator {
     /**
      * Removes any suffixes that indicate that the version is a kind of snapshot
      */
-    protected deSnapshot(String version) {
-        def suffix = SNAPSHOT_SUFFIXES.find { version.endsWith(it) }
+    @CompileStatic
+    protected String deSnapshot(String version) {
+        String suffix = SNAPSHOT_SUFFIXES.find { String it -> version.endsWith(it) }
         if (suffix) {
-            version[0..-(suffix.size() + 1)]
+            return version[0..-(suffix.size() + 1)]
         } else {
-            version
+            return version
         }
     }
 
-    protected isSnapshot(String version) {
-        SNAPSHOT_SUFFIXES.any { version.endsWith(it) }
+    @CompileStatic
+    protected boolean isSnapshot(String version) {
+        SNAPSHOT_SUFFIXES.any { String it -> version.endsWith(it) }
     }
 }

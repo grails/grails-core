@@ -45,6 +45,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected String mappingName;
     protected boolean restful;
     protected String httpMethod = ANY_HTTP_METHOD;
+    protected String version = ANY_VERSION;
 
     /**
      * Base constructor required to construct a UrlMapping instance
@@ -79,6 +80,11 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     @Override
     public String getHttpMethod() {
         return httpMethod;
+    }
+
+    @Override
+    public String getVersion() {
+        return version;
     }
 
     /**

@@ -45,6 +45,11 @@ public interface UrlMappingInfo {
     String getHttpMethod();
 
     /**
+     * @return The version of the API (for REST)
+     */
+    String getVersion();
+
+    /**
      * The name of the controller that the URL mapping maps to
      *
      * @return The name of the controller
@@ -107,4 +112,6 @@ public interface UrlMappingInfo {
      * @return true if it is
      */
     boolean isParsingRequest();
+
+
 }

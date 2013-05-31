@@ -111,6 +111,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             String actionName = mapping.getActionName() instanceof String ? mapping.getActionName().toString() : null;
             String pluginName = mapping.getPluginName() instanceof String ? mapping.getPluginName().toString() : null;
             String httpMethod = mapping.getHttpMethod();
+            String version = mapping.getVersion();
             String namespace = mapping.getNamespace() instanceof String ? mapping.getNamespace().toString() : null;
 
             ConstrainedProperty[] params = mapping.getConstraints();
@@ -126,10 +127,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                     break;
                 }
             }
-            UrlMappingKey key = new UrlMappingKey(controllerName, actionName, namespace, pluginName,httpMethod, requiredParams);
+            UrlMappingKey key = new UrlMappingKey(controllerName, actionName, namespace, pluginName,httpMethod, version,requiredParams);
             mappingsLookup.put(key, mapping);
 
-            UrlMappingsListKey listKey = new UrlMappingsListKey(controllerName, actionName, namespace, pluginName,httpMethod);
+            UrlMappingsListKey listKey = new UrlMappingsListKey(controllerName, actionName, namespace, pluginName,httpMethod, version);
             mappingsListLookup.put(listKey, key);
 
             if (LOG.isDebugEnabled()) {
@@ -140,10 +141,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                 for (int j = optionalIndex; j < params.length; j++) {
                     ConstrainedProperty param = params[j];
                     requiredParamsAndOptionals.add(param.getPropertyName());
-                    key = new UrlMappingKey(controllerName, actionName, namespace, pluginName,httpMethod, new HashSet<String>(requiredParamsAndOptionals));
+                    key = new UrlMappingKey(controllerName, actionName, namespace, pluginName,httpMethod, version,new HashSet<String>(requiredParamsAndOptionals));
                     mappingsLookup.put(key, mapping);
 
-                    listKey = new UrlMappingsListKey(controllerName, actionName, namespace, pluginName,httpMethod);
+                    listKey = new UrlMappingsListKey(controllerName, actionName, namespace, pluginName,httpMethod, version);
                     mappingsListLookup.put(listKey, key);
 
                     if (LOG.isDebugEnabled()) {
@@ -190,13 +191,18 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     
     @Override
     public UrlCreator getReverseMapping(String controller, String action, String namespace, String pluginName, String httpMethod, Map params) {
+        return getReverseMapping(controller, action, namespace, pluginName, httpMethod, UrlMapping.ANY_VERSION, params);
+    }
+
+    @Override
+    public UrlCreator getReverseMapping(String controller, String action, String namespace, String pluginName, String httpMethod, String version, Map params) {
         if (params == null) params = Collections.EMPTY_MAP;
 
         if (urlCreatorCache != null) {
             UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, namespace, pluginName, httpMethod,params);
             UrlCreator creator=urlCreatorCache.lookup(key);
             if (creator==null) {
-                creator=resolveUrlCreator(controller, action, namespace, pluginName,httpMethod, params, true);
+                creator=resolveUrlCreator(controller, action, namespace, pluginName,httpMethod,version, params, true);
                 creator=urlCreatorCache.putAndDecorate(key, creator);
             }
             // preserve previous side-effect, remove mappingName from params
@@ -204,7 +210,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             return creator;
         }
         // cache is disabled
-        return resolveUrlCreator(controller, action, namespace, pluginName, httpMethod, params, true);
+        return resolveUrlCreator(controller, action, namespace, pluginName, httpMethod,version, params, true);
     }
 
     /**
@@ -220,13 +226,18 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
 
     @Override
     public UrlCreator getReverseMappingNoDefault(String controller, String action, String namespace, String pluginName, String httpMethod, Map params) {
+        return getReverseMappingNoDefault(controller, action, namespace, pluginName, httpMethod, UrlMapping.ANY_VERSION, params);
+    }
+
+    @Override
+    public UrlCreator getReverseMappingNoDefault(String controller, String action, String namespace, String pluginName, String httpMethod, String version, Map params) {
         if (params == null) params = Collections.EMPTY_MAP;
 
         if (urlCreatorCache != null) {
             UrlCreatorCache.ReverseMappingKey key=urlCreatorCache.createKey(controller, action, namespace, pluginName, httpMethod, params);
             UrlCreator creator=urlCreatorCache.lookup(key);
             if (creator==null) {
-                creator=resolveUrlCreator(controller, action, namespace, pluginName, httpMethod, params, false);
+                creator=resolveUrlCreator(controller, action, namespace, pluginName, httpMethod,version, params, false);
                 if (creator != null) {
                     creator = urlCreatorCache.putAndDecorate(key, creator);
                 }
@@ -236,7 +247,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             return creator;
         }
         // cache is disabled
-        return resolveUrlCreator(controller, action, namespace, pluginName, httpMethod, params, true);
+        return resolveUrlCreator(controller, action, namespace, pluginName, httpMethod,version, params, true);
     }
 
     @SuppressWarnings("unchecked")
@@ -244,7 +255,10 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                                          final String action,
                                          final String namespace, 
                                          final String pluginName,
-                                         String httpMethod, Map params, boolean useDefault) {
+                                         String httpMethod,
+                                         String version,
+                                         Map params,
+                                         boolean useDefault) {
         UrlMapping mapping = null;
 
         if(httpMethod == null) {
@@ -252,13 +266,13 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         }
         mapping = namedMappings.get(params.remove("mappingName"));
         if (mapping == null) {
-            mapping = lookupMapping(controller, action, namespace, pluginName,httpMethod, params);
+            mapping = lookupMapping(controller, action, namespace, pluginName,httpMethod, version, params);
             if(mapping == null) {
-                lookupMapping(controller,action,namespace,pluginName,UrlMapping.ANY_HTTP_METHOD, params);
+                lookupMapping(controller,action,namespace,pluginName,UrlMapping.ANY_HTTP_METHOD, version, params);
             }
         }
         if (mapping == null || (mapping instanceof ResponseCodeUrlMapping)) {
-            UrlMappingKey lookupKey = new UrlMappingKey(controller, action, namespace, pluginName, httpMethod, Collections.EMPTY_SET);
+            UrlMappingKey lookupKey = new UrlMappingKey(controller, action, namespace, pluginName, httpMethod,version, Collections.EMPTY_SET);
             mapping = mappingsLookup.get(lookupKey);
             if(mapping == null) {
                 lookupKey.httpMethod = UrlMapping.ANY_HTTP_METHOD;
@@ -270,7 +284,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             Set<String> paramKeys = new HashSet<String>(params.keySet());
             paramKeys.removeAll(lookupParams);
             lookupParams.addAll(paramKeys);
-            UrlMappingKey lookupKey = new UrlMappingKey(controller, null, namespace, pluginName, httpMethod, lookupParams);
+            UrlMappingKey lookupKey = new UrlMappingKey(controller, null, namespace, pluginName, httpMethod, version,lookupParams);
             mapping = mappingsLookup.get(lookupKey);
             if(mapping == null) {
                 lookupKey.httpMethod = UrlMapping.ANY_HTTP_METHOD;
@@ -278,7 +292,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             }
             if (mapping == null) {
                 lookupParams.removeAll(paramKeys);
-                UrlMappingKey lookupKeyModifiedParams = new UrlMappingKey(controller, null, namespace, pluginName, httpMethod, lookupParams);
+                UrlMappingKey lookupKeyModifiedParams = new UrlMappingKey(controller, null, namespace, pluginName, httpMethod,version, lookupParams);
                 mapping = mappingsLookup.get(lookupKeyModifiedParams);
                 if(mapping == null) {
                     lookupKeyModifiedParams.httpMethod = UrlMapping.ANY_HTTP_METHOD;
@@ -292,7 +306,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             paramKeys.removeAll(lookupParams);
 
             lookupParams.addAll(paramKeys);
-            UrlMappingKey lookupKey = new UrlMappingKey(null, null, namespace, pluginName, httpMethod, lookupParams);
+            UrlMappingKey lookupKey = new UrlMappingKey(null, null, namespace, pluginName, httpMethod, version,lookupParams);
             mapping = mappingsLookup.get(lookupKey);
             if(mapping == null) {
                 lookupKey.httpMethod = UrlMapping.ANY_HTTP_METHOD;
@@ -300,7 +314,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             }
             if (mapping == null) {
                 lookupParams.removeAll(paramKeys);
-                UrlMappingKey lookupKeyModifiedParams = new UrlMappingKey(null, null, namespace, pluginName, httpMethod, lookupParams);
+                UrlMappingKey lookupKeyModifiedParams = new UrlMappingKey(null, null, namespace, pluginName, httpMethod, version,lookupParams);
                 mapping = mappingsLookup.get(lookupKeyModifiedParams);
                 if(mapping == null) {
                     lookupKeyModifiedParams.httpMethod = UrlMapping.ANY_HTTP_METHOD;
@@ -328,12 +342,13 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
      *
      * @param controller The controller name
      * @param action The action name
-     * @param httpMethod
-     *@param params The params  @return A UrlMapping instance or null
+     * @param httpMethod The HTTP method
+     * @param version
+     * @param params The params  @return A UrlMapping instance or null
      */
     @SuppressWarnings("unchecked")
-    protected UrlMapping lookupMapping(String controller, String action, String namespace, String pluginName, String httpMethod, Map params) {
-        final UrlMappingsListKey lookupKey = new UrlMappingsListKey(controller, action, namespace, pluginName, httpMethod);
+    protected UrlMapping lookupMapping(String controller, String action, String namespace, String pluginName, String httpMethod, String version, Map params) {
+        final UrlMappingsListKey lookupKey = new UrlMappingsListKey(controller, action, namespace, pluginName, httpMethod, version);
         SortedSet mappingKeysSet = mappingsListLookup.get(lookupKey);
 
         final String actionName = lookupKey.action;
@@ -402,13 +417,13 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     }
 
     public UrlMappingInfo[] matchAll(String uri) {
-        return matchAll(uri, null);
+        return matchAll(uri, (String)null);
     }
 
     public UrlMappingInfo[] matchAll(String uri, String httpMethod) {
         boolean anyHttpMethod = httpMethod != null && httpMethod.equalsIgnoreCase(UrlMapping.ANY_HTTP_METHOD);
         List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
-        UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod);
+        UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod, UrlMapping.ANY_VERSION);
         if (cachedListMatches.containsKey(cacheKey)) {
             matchingUrls = cachedListMatches.get(cacheKey);
         }
@@ -432,6 +447,51 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             cachedListMatches.put(cacheKey, matchingUrls);
         }
         return matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
+    }
+
+    public UrlMappingInfo[] matchAll(String uri, String httpMethod, String version) {
+        boolean anyHttpMethod = httpMethod != null && httpMethod.equals(UrlMapping.ANY_HTTP_METHOD);
+        boolean anyVersion = version != null && version.equals(UrlMapping.ANY_VERSION);
+
+        List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
+        UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod, version);
+        if (cachedListMatches.containsKey(cacheKey)) {
+            matchingUrls = cachedListMatches.get(cacheKey);
+        }
+        else {
+            for (UrlMapping mapping : mappings) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Attempting to match URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "]");
+                }
+
+                UrlMappingInfo current = mapping.match(uri);
+                if (current != null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Matched URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "], adding to posibilities");
+                    }
+
+                    String mappingHttpMethod = current.getHttpMethod();
+                    String mappingVersion = current.getVersion();
+                    boolean isValidHttpMethod = mappingHttpMethod == null || anyHttpMethod || mappingHttpMethod.equalsIgnoreCase(UrlMapping.ANY_HTTP_METHOD) || mappingHttpMethod.equalsIgnoreCase(httpMethod);
+                    boolean isValidVersion = mappingVersion == null || anyVersion || mappingVersion.equals(UrlMapping.ANY_VERSION) || mappingVersion.equals(version);
+                    if(isValidHttpMethod && isValidVersion) {
+                        matchingUrls.add(current);
+                    }
+                }
+            }
+            cachedListMatches.put(cacheKey, matchingUrls);
+        }
+        return matchingUrls.toArray(new UrlMappingInfo[matchingUrls.size()]);
+    }
+
+    @Override
+    public UrlMappingInfo[] matchAll(String uri, HttpMethod httpMethod) {
+        return matchAll(uri, httpMethod.toString(), UrlMapping.ANY_VERSION);
+    }
+
+    @Override
+    public UrlMappingInfo[] matchAll(String uri, HttpMethod httpMethod, String version) {
+        return matchAll(uri, httpMethod.toString(), version);
     }
 
     public UrlMappingInfo matchStatusCode(int responseCode) {
@@ -497,10 +557,12 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     class UriToUrlMappingKey {
         String uri;
         String httpMethod;
+        String version;
 
-        UriToUrlMappingKey(String uri, String httpMethod) {
+        UriToUrlMappingKey(String uri, String httpMethod, String version) {
             this.uri = uri;
             this.httpMethod = httpMethod;
+            this.version = version;
         }
 
         @Override
@@ -517,6 +579,9 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             if (httpMethod != null ? !httpMethod.equals(that.httpMethod) : that.httpMethod != null) {
                 return false;
             }
+            if (version != null ? !version.equals(that.version) : that.version != null) {
+                return false;
+            }
             if (uri != null ? !uri.equals(that.uri) : that.uri != null) {
                 return false;
             }
@@ -528,6 +593,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         public int hashCode() {
             int result = uri != null ? uri.hashCode() : 0;
             result = 31 * result + (httpMethod != null ? httpMethod.hashCode() : 0);
+            result = 31 * result + (version != null ? version.hashCode() : 0);
             return result;
         }
     }
@@ -542,15 +608,19 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         String namespace;
         String pluginName;
         String httpMethod;
+        String version;
         Set<String> paramNames = Collections.EMPTY_SET;
 
-        public UrlMappingKey(String controller, String action, String namespace, String pluginName, String httpMethod, Set<String> paramNames) {
+        public UrlMappingKey(String controller, String action, String namespace, String pluginName, String httpMethod, String version,Set<String> paramNames) {
             this.controller = controller;
             this.action = action;
             this.namespace = namespace;
             this.pluginName = pluginName;
             if(httpMethod != null) {
                 this.httpMethod = httpMethod;
+            }
+            if(version != null) {
+                this.version = version;
             }
             this.paramNames = paramNames;
         }
@@ -567,6 +637,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             if (namespace != null && !namespace.equals(that.namespace)) return false;
             if (pluginName != null && !pluginName.equals(that.pluginName)) return false;
             if (httpMethod != null && !httpMethod.equals(that.httpMethod)) return false;
+            if (version != null && !version.equals(that.version)) return false;
             if (!paramNames.equals(that.paramNames)) return false;
 
             return true;
@@ -580,6 +651,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
             result = 31 * result + (pluginName != null ? pluginName.hashCode() : 0);
             result = 31 * result + (httpMethod != null ? httpMethod.hashCode() : 0);
+            result = 31 * result + (version != null ? version.hashCode() : 0);
             result = 31 * result + paramNames.hashCode();
             return result;
         }
@@ -636,14 +708,18 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         String namespace;
         String pluginName;
         String httpMethod;
+        String version;
 
-        public UrlMappingsListKey(String controller, String action, String namespace, String pluginName, String httpMethod) {
+        public UrlMappingsListKey(String controller, String action, String namespace, String pluginName, String httpMethod, String version) {
             this.controller = controller;
             this.action = action;
             this.namespace = namespace;
             this.pluginName = pluginName;
             if(httpMethod != null) {
                 this.httpMethod = httpMethod;
+            }
+            if(version != null) {
+                this.version = version;
             }
         }
 
@@ -659,6 +735,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             if (namespace != null && !namespace.equals(that.namespace)) return false;
             if (pluginName != null && !pluginName.equals(that.pluginName)) return false;
             if (httpMethod != null && !httpMethod.equals(that.httpMethod)) return false;
+            if (version != null && !version.equals(that.version)) return false;
 
             return true;
         }
@@ -671,6 +748,7 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
             result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
             result = 31 * result + (pluginName != null ? pluginName.hashCode() : 0);
             result = 31 * result + (httpMethod != null ? httpMethod.hashCode() : 0);
+            result = 31 * result + (version != null ? version.hashCode() : 0);
             return result;
         }
 
@@ -680,7 +758,8 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
                                             .append(UrlMapping.ACTION, action)
                                             .append(UrlMapping.NAMESPACE, namespace)
                                             .append(UrlMapping.PLUGIN, pluginName)
-                                            .append("httpMethod", httpMethod)
+                                            .append(UrlMapping.HTTP_METHOD, httpMethod)
+                                            .append(UrlMapping.VERSION, version)
                                             .toString();
         }
     }

@@ -60,9 +60,29 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * Constant used to define a Url mapping that matches any HTTP method
      */
     String ANY_HTTP_METHOD = "*";
-    public static final String URI = "uri";
-    public static final String PLUGIN = "plugin";
-    public static final String NAMESPACE = "namespace";
+
+    /**
+     * The version of the URL mapping
+     */
+    String VERSION = "version";
+
+    /**
+     * Constant used to define a Url mapping that matches any HTTP method
+     */
+    String ANY_VERSION = "*";
+
+    /**
+     * The URI of the URL mapping
+     */
+    String URI = "uri";
+    /**
+     * The plugin of the URL Mapping
+     */
+    String PLUGIN = "plugin";
+    /**
+     * The namespace of the URL mapping
+     */
+    String NAMESPACE = "namespace";
 
     /**
      * Matches the given URI and returns an instance of the UrlMappingInfo interface or null
@@ -135,6 +155,12 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return The HTTP method
      */
     String getHttpMethod();
+
+
+    /**
+     * @return The version of the URL mapping. Used for versioning of REST services
+     */
+    String getVersion();
 
     /**
      * Sets any parameter values that should be populated into the request

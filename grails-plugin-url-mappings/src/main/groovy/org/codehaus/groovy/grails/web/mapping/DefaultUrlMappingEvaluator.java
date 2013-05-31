@@ -401,6 +401,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         Object actionName;
                         Object pluginName;
                         String httpMethod = null;
+                        String version = null;
                         Object namespace;
                         Object viewName;
                         Object uri;
@@ -435,7 +436,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                 throw new UrlMappingException("Cannot map to invalid URI: " + e.getMessage(), e);
                             }
                         } else {
-                            urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, namespace, pluginName, viewName, httpMethod, constraints);
+                            urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version,constraints);
                         }
 
                         if (binding != null) {
@@ -452,7 +453,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                     if (args[0] instanceof Map) {
                         Map namedArguments = (Map) args[0];
                         String uri = mappedURI;
+                        String version = null;
 
+                        if(namedArguments.containsKey(UrlMapping.VERSION)) {
+                            version = namedArguments.get(UrlMapping.VERSION).toString();
+                        }
                         UrlMappingData urlData = createUrlMappingData(uri, isResponseCode);
 
                         if (namedArguments.containsKey(RESOURCE)) {
@@ -466,7 +471,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             }
                             if (controller != null) {
 
-                                createSingleResourceRestfulMappings(controllerName, pluginName, urlData, getCurrentConstraints(), calculateIncludes(namedArguments, DEFAULT_RESOURCE_INCLUDES));
+                                createSingleResourceRestfulMappings(controllerName, pluginName, version, urlData, getCurrentConstraints(), calculateIncludes(namedArguments, DEFAULT_RESOURCE_INCLUDES));
                             }
                         } else if (namedArguments.containsKey(RESOURCES)) {
                             Object controller = namedArguments.get(RESOURCES);
@@ -478,7 +483,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                 parentResources.pop();
                             }
                             if (controller != null) {
-                                createResourceRestfulMappings(controllerName, pluginName, urlData, getCurrentConstraints(), calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
+                                createResourceRestfulMappings(controllerName, pluginName, version,urlData, getCurrentConstraints(), calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
                             }
                         } else {
 
@@ -592,81 +597,81 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             }
         }
 
-        protected void createResourceRestfulMappings(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints, List<String> includes) {
+        protected void createResourceRestfulMappings(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints, List<String> includes) {
             ConstrainedProperty[] constraintArray = previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
 
 
             if(includes.contains(ACTION_INDEX)) {
                 // GET /$controller -> action:'index'
-                UrlMapping listUrlMapping = createIndexActionResourcesRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping listUrlMapping = createIndexActionResourcesRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(listUrlMapping);
             }
 
             if(includes.contains(ACTION_CREATE)) {
                 // GET /$controller/create -> action:'create'
-                UrlMapping createUrlMapping = createCreateActionResourcesRestfulMapping(controllerName, pluginName, urlData, constraintArray);
+                UrlMapping createUrlMapping = createCreateActionResourcesRestfulMapping(controllerName, pluginName, version, urlData, constraintArray);
                 configureUrlMapping(createUrlMapping);
             }
 
             if(includes.contains(ACTION_SAVE)) {
                 // POST /$controller -> action:'save'
-                UrlMapping saveUrlMapping = createSaveActionResourcesRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping saveUrlMapping = createSaveActionResourcesRestfulMapping(controllerName, pluginName, version, urlData, previousConstraints);
                 configureUrlMapping(saveUrlMapping);
             }
 
             if(includes.contains(ACTION_SHOW)) {
                 // GET /$controller/$id -> action:'show'
-                UrlMapping showUrlMapping = createShowActionResourcesRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping showUrlMapping = createShowActionResourcesRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(showUrlMapping);
             }
 
             if(includes.contains(ACTION_EDIT)) {
                 // GET /$controller/$id/edit -> action:'edit'
-                UrlMapping editUrlMapping = createEditActionResourcesRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping editUrlMapping = createEditActionResourcesRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(editUrlMapping);
             }
 
             if(includes.contains(ACTION_UPDATE)) {
                 // PUT /$controller/$id -> action:'update'
-                UrlMapping updateUrlMapping = createUpdateActionResourcesRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping updateUrlMapping = createUpdateActionResourcesRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(updateUrlMapping);
             }
 
             if(includes.contains(ACTION_DELETE)) {
                 // DELETE /$controller/$id -> action:'delete'
-                UrlMapping deleteUrlMapping = createDeleteActionResourcesRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping deleteUrlMapping = createDeleteActionResourcesRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(deleteUrlMapping);
             }
 
         }
 
-        protected UrlMapping createDeleteActionResourcesRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+        protected UrlMapping createDeleteActionResourcesRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
             UrlMappingData deleteUrlMappingData = createRelativeUrlDataWithIdAndFormat(urlData);
             List<ConstrainedProperty> deleteUrlMappingConstraints = createConstraintsWithIdAndFormat(previousConstraints);
 
-            return new RegexUrlMapping(deleteUrlMappingData,controllerName, ACTION_DELETE, null, pluginName, null, HttpMethod.DELETE.toString(),deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(deleteUrlMappingData,controllerName, ACTION_DELETE, null, pluginName, null, HttpMethod.DELETE.toString(), version,deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , servletContext);
         }
 
-        protected UrlMapping createUpdateActionResourcesRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+        protected UrlMapping createUpdateActionResourcesRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
             UrlMappingData updateUrlMappingData = createRelativeUrlDataWithIdAndFormat(urlData);
             List<ConstrainedProperty> updateUrlMappingConstraints = createConstraintsWithIdAndFormat(previousConstraints);
 
-            return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE, null, pluginName, null, HttpMethod.PUT.toString(),updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE, null, pluginName, null, HttpMethod.PUT.toString(),version,updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
         }
 
-        protected UrlMapping createEditActionResourcesRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+        protected UrlMapping createEditActionResourcesRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
             UrlMappingData editUrlMappingData = urlData.createRelative('/' + CAPTURING_WILD_CARD + "/edit");
             List<ConstrainedProperty> editUrlMappingConstraints = new ArrayList<ConstrainedProperty>(previousConstraints);
             editUrlMappingConstraints.add(new ConstrainedProperty(UrlMapping.class, "id", String.class));
 
-            return new RegexUrlMapping(editUrlMappingData,controllerName, ACTION_EDIT,null, pluginName, null, HttpMethod.GET.toString(), editUrlMappingConstraints.toArray(new ConstrainedProperty[editUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(editUrlMappingData,controllerName, ACTION_EDIT,null, pluginName, null, HttpMethod.GET.toString(), version,editUrlMappingConstraints.toArray(new ConstrainedProperty[editUrlMappingConstraints.size()]) , servletContext);
         }
 
-        protected UrlMapping createShowActionResourcesRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+        protected UrlMapping createShowActionResourcesRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
             UrlMappingData showUrlMappingData = createRelativeUrlDataWithIdAndFormat(urlData);
             List<ConstrainedProperty> showUrlMappingConstraints = createConstraintsWithIdAndFormat(previousConstraints);
 
-            return new RegexUrlMapping(showUrlMappingData,controllerName, ACTION_SHOW,null, pluginName, null, HttpMethod.GET.toString(), showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(showUrlMappingData,controllerName, ACTION_SHOW,null, pluginName, null, HttpMethod.GET.toString(), version,showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , servletContext);
         }
 
         private List<ConstrainedProperty> createConstraintsWithIdAndFormat(List<ConstrainedProperty> previousConstraints) {
@@ -686,23 +691,23 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
 
-        protected UrlMapping createSaveActionResourcesRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> constraints) {
+        protected UrlMapping createSaveActionResourcesRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> constraints) {
             UrlMappingData saveActionUrlMappingData = urlData.createRelative(UrlMapping.OPTIONAL_EXTENSION_WILDCARD + UrlMapping.QUESTION_MARK);
             List<ConstrainedProperty> saveUrlMappingConstraints = createFormatOnlyConstraints(constraints);
 
-            return new RegexUrlMapping(saveActionUrlMappingData,controllerName, ACTION_SAVE,null, pluginName, null, HttpMethod.POST.toString(),saveUrlMappingConstraints.toArray(new ConstrainedProperty[saveUrlMappingConstraints.size()]), servletContext);
+            return new RegexUrlMapping(saveActionUrlMappingData,controllerName, ACTION_SAVE,null, pluginName, null, HttpMethod.POST.toString(),version,saveUrlMappingConstraints.toArray(new ConstrainedProperty[saveUrlMappingConstraints.size()]), servletContext);
         }
 
-        protected UrlMapping createCreateActionResourcesRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, ConstrainedProperty[] constraintArray) {
+        protected UrlMapping createCreateActionResourcesRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, ConstrainedProperty[] constraintArray) {
             UrlMappingData createMappingData = urlData.createRelative("/create");
-            return new RegexUrlMapping(createMappingData,controllerName, ACTION_CREATE, null, pluginName, null, HttpMethod.GET.toString(), constraintArray, servletContext);
+            return new RegexUrlMapping(createMappingData,controllerName, ACTION_CREATE, null, pluginName, null, HttpMethod.GET.toString(), version,constraintArray, servletContext);
         }
 
-        protected UrlMapping createIndexActionResourcesRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> constraints) {
+        protected UrlMapping createIndexActionResourcesRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> constraints) {
             UrlMappingData indexActionUrlMappingData = urlData.createRelative(UrlMapping.OPTIONAL_EXTENSION_WILDCARD + UrlMapping.QUESTION_MARK);
             List<ConstrainedProperty> indexUrlMappingConstraints = createFormatOnlyConstraints(constraints);
 
-            return new RegexUrlMapping(indexActionUrlMappingData, controllerName, ACTION_INDEX, null, pluginName, null, HttpMethod.GET.toString(), indexUrlMappingConstraints.toArray(new ConstrainedProperty[indexUrlMappingConstraints.size()]), servletContext);
+            return new RegexUrlMapping(indexActionUrlMappingData, controllerName, ACTION_INDEX, null, pluginName, null, HttpMethod.GET.toString(), version,indexUrlMappingConstraints.toArray(new ConstrainedProperty[indexUrlMappingConstraints.size()]), servletContext);
         }
 
         private List<ConstrainedProperty> createFormatOnlyConstraints(List<ConstrainedProperty> constraints) {
@@ -718,79 +723,80 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
          *
          * @param controllerName The controller name
          * @param pluginName The name of the plugin
+         * @param version
          * @param urlData   The urlData instance
          * @param previousConstraints Any constraints
          * @param includes
          */
-        protected void createSingleResourceRestfulMappings(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints, List<String> includes) {
+        protected void createSingleResourceRestfulMappings(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints, List<String> includes) {
 
             ConstrainedProperty[] constraintArray = previousConstraints.toArray(new ConstrainedProperty[previousConstraints.size()]);
 
             if(includes.contains(ACTION_CREATE)) {
                 // GET /$controller/create -> action: 'create'
-                UrlMapping createUrlMapping = createCreateActionResourcesRestfulMapping(controllerName, pluginName, urlData, constraintArray);
+                UrlMapping createUrlMapping = createCreateActionResourcesRestfulMapping(controllerName, pluginName, version, urlData, constraintArray);
                 configureUrlMapping(createUrlMapping);
             }
 
             if(includes.contains(ACTION_SAVE)) {
 
                 // POST /$controller -> action:'save'
-                UrlMapping saveUrlMapping = createSaveActionResourcesRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping saveUrlMapping = createSaveActionResourcesRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(saveUrlMapping);
             }
 
             if(includes.contains(ACTION_SHOW)) {
                 // GET /$controller -> action:'show'
-                UrlMapping showUrlMapping = createShowActionResourceRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping showUrlMapping = createShowActionResourceRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(showUrlMapping);
             }
 
             if(includes.contains(ACTION_EDIT)) {
                 // GET /$controller/edit -> action:'edit'
-                UrlMapping editUrlMapping = createEditctionResourceRestfulMapping(controllerName, pluginName, urlData, constraintArray);
+                UrlMapping editUrlMapping = createEditctionResourceRestfulMapping(controllerName, pluginName, version,urlData, constraintArray);
                 configureUrlMapping(editUrlMapping);
             }
 
             if(includes.contains(ACTION_UPDATE)) {
                 // PUT /$controller -> action:'update'
-                UrlMapping updateUrlMapping = createUpdateActionResourceRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping updateUrlMapping = createUpdateActionResourceRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(updateUrlMapping);
             }
 
             if(includes.contains(ACTION_DELETE)) {
                 // DELETE /$controller -> action:'delete'
-                UrlMapping deleteUrlMapping = createDeleteActionResourceRestfulMapping(controllerName, pluginName, urlData, previousConstraints);
+                UrlMapping deleteUrlMapping = createDeleteActionResourceRestfulMapping(controllerName, pluginName, version,urlData, previousConstraints);
                 configureUrlMapping(deleteUrlMapping);
             }
 
         }
 
-        protected UrlMapping createDeleteActionResourceRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+        protected UrlMapping createDeleteActionResourceRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
             UrlMappingData deleteUrlMappingData = createFormatOnlyUrlMappingData(urlData);
             List<ConstrainedProperty> deleteUrlMappingConstraints = createFormatOnlyConstraints(previousConstraints);
 
-            return new RegexUrlMapping(deleteUrlMappingData,controllerName, ACTION_DELETE, null, pluginName, null, HttpMethod.DELETE.toString(),deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(deleteUrlMappingData,controllerName, ACTION_DELETE, null, pluginName, null, HttpMethod.DELETE.toString(), version, deleteUrlMappingConstraints.toArray(new ConstrainedProperty[deleteUrlMappingConstraints.size()]) , servletContext);
 
         }
 
 
-        protected UrlMapping createUpdateActionResourceRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+        protected UrlMapping createUpdateActionResourceRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
             UrlMappingData updateUrlMappingData = createFormatOnlyUrlMappingData(urlData);
             List<ConstrainedProperty> updateUrlMappingConstraints = createFormatOnlyConstraints(previousConstraints);
 
-            return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE, null, pluginName, null, HttpMethod.PUT.toString(),updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(updateUrlMappingData,controllerName, ACTION_UPDATE, null, pluginName, null, HttpMethod.PUT.toString(),version, updateUrlMappingConstraints.toArray(new ConstrainedProperty[updateUrlMappingConstraints.size()]) , servletContext);
         }
 
-        protected UrlMapping createEditctionResourceRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, ConstrainedProperty[] constraintArray) {
+        protected UrlMapping createEditctionResourceRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, ConstrainedProperty[] constraintArray) {
             UrlMappingData editMappingData = urlData.createRelative("/edit");
-            return new RegexUrlMapping(editMappingData,controllerName,ACTION_EDIT, null, pluginName, null, HttpMethod.GET.toString(),constraintArray, servletContext);
+            return new RegexUrlMapping(editMappingData,controllerName,ACTION_EDIT, null, pluginName, null, HttpMethod.GET.toString(),version, constraintArray, servletContext);
         }
 
-        protected UrlMapping createShowActionResourceRestfulMapping(String controllerName, Object pluginName, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
+        protected UrlMapping createShowActionResourceRestfulMapping(String controllerName, Object pluginName, String version, UrlMappingData urlData, List<ConstrainedProperty> previousConstraints) {
             UrlMappingData showUrlMappingData = createFormatOnlyUrlMappingData(urlData);
             List<ConstrainedProperty> showUrlMappingConstraints = createFormatOnlyConstraints(previousConstraints);
 
-            return new RegexUrlMapping(showUrlMappingData,controllerName, ACTION_SHOW,null, pluginName, null, HttpMethod.GET.toString(), showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , servletContext);
+            return new RegexUrlMapping(showUrlMappingData,controllerName, ACTION_SHOW,null, pluginName, null, HttpMethod.GET.toString(), version, showUrlMappingConstraints.toArray(new ConstrainedProperty[showUrlMappingConstraints.size()]) , servletContext);
         }
 
         @SuppressWarnings("unchecked")
@@ -852,6 +858,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             actionName = getActionName(namedArguments, bindingVariables);
             Object pluginName = getPluginName(namedArguments, bindingVariables);
             Object httpMethod = getHttpMethod(namedArguments, bindingVariables);
+            Object version = getVersion(namedArguments, bindingVariables);
             Object namespace = getNamespace(namedArguments, bindingVariables);
             
             Object viewName = getViewName(namedArguments, bindingVariables);
@@ -873,7 +880,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 }
             }
             else {
-                urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, namespace, pluginName, viewName, httpMethod != null ? httpMethod.toString() : null, constraints);
+                urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, namespace, pluginName, viewName, httpMethod != null ? httpMethod.toString() : null, version != null ? version.toString() : null, constraints);
             }
 
             Object exceptionArg = getException(namedArguments, bindingVariables);
@@ -930,6 +937,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Object getHttpMethod(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.HTTP_METHOD, pluginName);
         }
+
+        private Object getVersion(Map namedArguments, Map bindingVariables) {
+            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.VERSION, pluginName);
+        }
         
         private Object getNamespace(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.NAMESPACE, namespace);
@@ -949,9 +960,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
         private UrlMapping createURLMapping(UrlMappingData urlData, boolean isResponseCode,
                                             Object controllerName, Object actionName, Object namespace, Object pluginName,
-                                            Object viewName, String httpMethod, ConstrainedProperty[] constraints) {
+                                            Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints) {
             if (!isResponseCode) {
-                return new RegexUrlMapping(urlData, controllerName, actionName, namespace, pluginName, viewName, httpMethod,
+                return new RegexUrlMapping(urlData, controllerName, actionName, namespace, pluginName, viewName, httpMethod,  version,
                         constraints, sc);
             }
 

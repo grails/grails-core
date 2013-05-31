@@ -34,6 +34,7 @@ class ForwardUrlMappingInfo extends AbstractUrlMappingInfo {
     String URI
     String id
     String httpMethod
+    String version
     Map parameters = new HashMap()
 
     void setController(String controller) { controllerName = controller }

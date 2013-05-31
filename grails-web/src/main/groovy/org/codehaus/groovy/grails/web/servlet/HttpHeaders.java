@@ -82,4 +82,5 @@ public class HttpHeaders {
     public static final String SET_COOKIE2 = "Set-Cookie2";
     public static final String MIME_VERSION = "MIME-Version";
     public static final String IDENTITY = "identity";
+    public static final String ACCEPT_VERSION = "Accept-Version";
 }

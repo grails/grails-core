@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.plugins.VersionComparator;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -93,15 +94,18 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param pluginName The name of the plugin which provided the controller
      * @param viewName       The name of the view as an alternative to the name of the action. If the action is specified it takes precedence over the view name during mapping
      * @param httpMethod     The http method
+     * @param version     The version
      * @param constraints    A list of ConstrainedProperty instances that relate to tokens in the URL
      * @param servletContext
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
      */
-    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, ConstrainedProperty[] constraints, ServletContext servletContext) {
+    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
         super(controllerName, actionName, namespace, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
         grailsApplication = GrailsWebUtil.lookupApplication(servletContext);
         if(httpMethod != null)
             this.httpMethod = httpMethod;
+        if(version != null)
+            this.version = version;
         parse(data, constraints);
     }
 
@@ -630,7 +634,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             info = new DefaultUrlMappingInfo(viewName, params, urlData, servletContext);
         }
         else {
-            info = new DefaultUrlMappingInfo(controllerName, actionName, namespace, pluginName, getViewName(), getHttpMethod(), params, urlData, servletContext);
+            info = new DefaultUrlMappingInfo(controllerName, actionName, namespace, pluginName, getViewName(), getHttpMethod(),getVersion(), params, urlData, servletContext);
         }
 
         if (parseRequest) {
@@ -738,7 +742,20 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         int constraintDiff = getAppliedConstraintsCount(this) - getAppliedConstraintsCount(other);
         if (constraintDiff != 0) return constraintDiff;
 
-        return 0;
+        String thisVersion = getVersion();
+        String thatVersion = other.getVersion();
+        if((thisVersion.equals(thatVersion))) {
+            return 0;
+        }
+        else if(thisVersion.equals(UrlMapping.ANY_VERSION) && !thatVersion.equals(UrlMapping.ANY_VERSION)) {
+            return -1;
+        }
+        else if(!thisVersion.equals(UrlMapping.ANY_VERSION) && thatVersion.equals(UrlMapping.ANY_VERSION)) {
+            return 1;
+        }
+        else {
+            return new VersionComparator().compare(thisVersion, thatVersion);
+        }
     }
 
     private int getAppliedConstraintsCount(UrlMapping mapping) {

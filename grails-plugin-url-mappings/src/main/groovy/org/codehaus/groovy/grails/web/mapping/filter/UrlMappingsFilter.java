@@ -136,7 +136,10 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
 
         GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
-        UrlMappingInfo[] urlInfos = holder.matchAll(uri, webRequest.getCurrentRequest().getMethod());
+        HttpServletRequest currentRequest = webRequest.getCurrentRequest();
+        String version = currentRequest.getHeader(HttpHeaders.ACCEPT_VERSION);
+
+        UrlMappingInfo[] urlInfos = holder.matchAll(uri, currentRequest.getMethod(), version != null ? version : UrlMapping.ANY_VERSION);
         WrappedResponseHolder.setWrappedResponse(response);
         boolean dispatched = false;
         try {
