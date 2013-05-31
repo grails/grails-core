@@ -8,6 +8,7 @@ import org.grails.async.factory.gpars.GparsPromise
 import reactor.core.Composable
 import reactor.core.Environment
 import reactor.core.Promise
+import reactor.core.Promises
 import reactor.core.R
 
 /**
@@ -36,7 +37,7 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
 
     @Override
     def <T> grails.async.Promise<T> createBoundPromise(T value) {
-        final variable = R.promise(value).using(grailsEnvironment).get()
+        final variable = Promises.success(value).using(grailsEnvironment).get()
         return new ReactorPromise<T>(variable)
     }
 
@@ -58,14 +59,14 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
     @Override
     def <T> List<T> waitAll(List<P<T>> promises) {
         final reactorPromises = promises.collect { (ReactorPromise) it }
-        final Promise<T>[] _promises = reactorPromises.collect { ReactorPromise it -> it.internalPromise }
-        (List<T>)R.promise(_promises).get().await()
+        final Collection<Promise<T>> _promises = reactorPromises.collect { ReactorPromise it -> it.internalPromise }
+        (List<T>)Promises.when(_promises).get().await()
     }
 
     @Override
     def <T> P<List<T>> onComplete(List<P<T>> promises, @SuppressWarnings("rawtypes") Closure callable) {
         final reactorPromises = promises.collect { (ReactorPromise) it }
-        def result = R.promise(
+        def result = Promises.when(
             reactorPromises.collect { ReactorPromise<T> it -> it.internalPromise }
         ).using(grailsEnvironment).get().
             onSuccess(callable)
@@ -77,7 +78,7 @@ class ReactorPromiseFactory extends AbstractPromiseFactory {
     @Override
     def <T> P<List<T>> onError(List<P<T>> promises, @SuppressWarnings("rawtypes") Closure callable) {
         final reactorPromises = promises.collect { (ReactorPromise) it }
-        def result = R.promise(
+        def result = Promises.when(
             reactorPromises.collect { ReactorPromise<T> it -> it.internalPromise }
         ).using(grailsEnvironment).get().
             onError(callable)
