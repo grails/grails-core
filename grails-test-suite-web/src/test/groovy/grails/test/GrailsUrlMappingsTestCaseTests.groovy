@@ -481,7 +481,7 @@ class MockUrlMapping implements UrlMapping {
     public String createURL(String controller, String action,
             String pluginName, Map parameterValues, String encoding) { null }
 
-    public String getVersion() { null }
+
 }
 
 abstract class GrailsUrlMappingTestCaseTestsBaseController {
