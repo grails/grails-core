@@ -1329,7 +1329,7 @@ public class HibernateCriteriaBuilder extends GroovyObjectSupport implements org
         }
         propertyName = calculatePropertyName(propertyName);
         Order o;
-        if (direction.equals(ORDER_DESCENDING)) {
+        if (direction.equalsIgnoreCase(ORDER_DESCENDING)) {
             o = Order.desc(propertyName);
         }
         else {
