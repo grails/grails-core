@@ -89,6 +89,11 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         if(classNode instanceof InnerClassNode) return;
         // don't inject if already an @Artefact annotation is applied
         if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
+        performInjectionOnAnnotatedClass(source, classNode);
+    }
+
+    @Override
+    public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
         Class instanceImplementation = getInstanceImplementation();
 
         if (instanceImplementation != null) {

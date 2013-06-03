@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.web;
 
+import grails.artefact.Artefact;
 import groovy.lang.Closure;
 
 import java.lang.reflect.Modifier;
@@ -56,6 +57,17 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector {
     public static final String WITH_FORMAT_METHOD = "withFormat";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
+
+        performInjectionOnAnnotatedClass(source, classNode);
+    }
+
+    public void performInjection(SourceUnit source, ClassNode classNode) {
+        performInjection(source,null, classNode);
+    }
+
+    @Override
+    public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
         FieldNode field = classNode.getField(FIELD_MIME_TYPES_API);
         if (field == null) {
             final ClassNode mimeTypesApiClass = new ClassNode(ControllersMimeTypesApi.class);
@@ -70,10 +82,7 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector {
             methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression(FIELD_MIME_TYPES_API),  WITH_FORMAT_METHOD, args)));
             classNode.addMethod(new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody));
         }
-    }
 
-    public void performInjection(SourceUnit source, ClassNode classNode) {
-        performInjection(source,null, classNode);
     }
 
     public boolean shouldInject(URL url) {

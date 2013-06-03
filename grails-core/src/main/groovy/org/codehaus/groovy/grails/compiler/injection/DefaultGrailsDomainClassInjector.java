@@ -53,12 +53,12 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if (GrailsASTUtils.isDomainClass(classNode, source) && shouldInjectClass(classNode)) {
+            if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
             performInjectionOnAnnotatedEntity(classNode);
         }
     }
 
     public void performInjectionOnAnnotatedEntity(ClassNode classNode) {
-        if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
         injectIdProperty(classNode);
         injectVersionProperty(classNode);
         injectToStringMethod(classNode);
@@ -229,5 +229,10 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
+    }
+
+    @Override
+    public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
+        performInjectionOnAnnotatedEntity(classNode);
     }
 }

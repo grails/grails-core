@@ -401,8 +401,14 @@ class DefaultASTDatabindingHelperSpec extends Specification {
 
 class AstDatabindingInjector implements ClassInjector {
     void performInjection(SourceUnit source, ClassNode classNode) {
-        performInject(source, null, classNode)
+        performInjection(source, null, classNode)
     }
+
+    @Override
+    void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
+        performInjection( source, null, classNode)
+    }
+
     void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         new DefaultASTDatabindingHelper().injectDatabindingCode(source, context, classNode)
     }

@@ -52,6 +52,14 @@ public interface ClassInjector {
     void performInjection(SourceUnit source, ClassNode classNode);
 
     /**
+     * Handles injection of properties, methods etc. into a class.
+     *
+     * @param source The source unit
+     * @param classNode The ClassNode instance
+     */
+    void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode);
+
+    /**
      * Returns whether this injector should inject
      *
      * @param url The URL of the source file

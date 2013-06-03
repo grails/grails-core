@@ -178,6 +178,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
         }
     }
 
+    @Override
+    public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
+        performInjection(source, classNode);
+    }
+
+
     private void annotateCandidateActionMethods(ClassNode classNode, SourceUnit source,
             GeneratorContext context) {
 
@@ -792,6 +798,7 @@ if(request.contentType == 'application/json' || request.contentType == 'text/jso
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }
+
 
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();

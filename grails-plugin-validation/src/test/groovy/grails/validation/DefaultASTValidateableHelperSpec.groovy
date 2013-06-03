@@ -27,8 +27,14 @@ class DefaultASTValidateableHelperSpec extends Specification {
         def gcl = new GrailsAwareClassLoader()
         def transformer = new ClassInjector() {
             void performInjection(SourceUnit source, ClassNode classNode) {
-                performInject(source, null, classNode)
+                performInjection(source, null, classNode)
             }
+
+            @Override
+            void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
+                //To change body of implemented methods use File | Settings | File Templates.
+            }
+
             void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
                 new DefaultASTValidateableHelper().injectValidateableCode(classNode)
             }

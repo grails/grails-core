@@ -79,7 +79,7 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
             List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(
                 artefactType, GrailsAwareInjectionOperation.getClassInjectors());
             for (ClassInjector injector : injectors) {
-                injector.performInjection(sourceUnit, cNode);
+                injector.performInjectionOnAnnotatedClass(sourceUnit, cNode);
             }
         } catch (RuntimeException e) {
             GrailsConsole.getInstance().error("Error occurred calling AST injector: " + e.getMessage(), e);
