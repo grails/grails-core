@@ -245,6 +245,16 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
                 return mimeType.getExtension();
             }
         }
+        else {
+            GrailsWebRequest webRequest  =
+                GrailsWebRequest.lookup();
+            if(webRequest != null) {
+
+                HttpServletRequest request = webRequest.getCurrentRequest();
+                Object format = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT);
+                return format == null ? null : format.toString();
+            }
+        }
         return null;
     }
 
