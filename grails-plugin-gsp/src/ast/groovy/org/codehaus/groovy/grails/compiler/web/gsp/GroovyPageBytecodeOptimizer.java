@@ -48,6 +48,11 @@ public class GroovyPageBytecodeOptimizer implements GroovyPageInjector {
         performInjection(source, null, classNode);
     }
 
+    @Override
+    public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
+        performInjection(source, null, classNode);
+    }
+
     //Avoid other injection
     public boolean shouldInject(URL url) {
         return false;

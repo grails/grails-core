@@ -76,6 +76,11 @@ public class LoggingTransformer implements AllArtefactClassInjector{
         performInjection(source, null, classNode);
     }
 
+    @Override
+    public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
+        performInjection(source, null, classNode);
+    }
+
     public boolean shouldInject(URL url) {
         return true; // Add log property to all artifact types
     }
