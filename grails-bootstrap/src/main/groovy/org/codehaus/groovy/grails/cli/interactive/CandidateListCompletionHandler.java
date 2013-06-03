@@ -15,10 +15,9 @@
  */
 package org.codehaus.groovy.grails.cli.interactive;
 
-
-import jline.console.ConsoleReader;
-import jline.console.CursorBuffer;
-import jline.console.completer.CompletionHandler;
+import jline.CompletionHandler;
+import jline.ConsoleReader;
+import jline.CursorBuffer;
 
 import java.io.IOException;
 import java.util.List;
@@ -38,7 +37,7 @@ public class CandidateListCompletionHandler implements CompletionHandler {
         this.eagerNewlines = eagerNewlines;
     }
 
-    public boolean complete(ConsoleReader reader, @SuppressWarnings("rawtypes") List<CharSequence> candidates, int pos) throws IOException {
+    public boolean complete(ConsoleReader reader, @SuppressWarnings("rawtypes") List candidates, int pos) throws IOException {
         CursorBuffer buf = reader.getCursorBuffer();
 
         // if there is only one completion, then fill in the buffer
@@ -50,7 +49,7 @@ public class CandidateListCompletionHandler implements CompletionHandler {
                 return false;
             }
 
-            jline.console.completer.CandidateListCompletionHandler.setBuffer(reader, value, pos);
+            jline.CandidateListCompletionHandler.setBuffer(reader, value, pos);
 
             return true;
         }
@@ -58,13 +57,13 @@ public class CandidateListCompletionHandler implements CompletionHandler {
         if (candidates.size() > 1) {
             String value = getUnambiguousCompletions(candidates);
 
-            jline.console.completer.CandidateListCompletionHandler.setBuffer(reader, value, pos);
+            jline.CandidateListCompletionHandler.setBuffer(reader, value, pos);
         }
 
         if (eagerNewlines) {
-            reader.println();
+            reader.printNewline();
         }
-        jline.console.completer.CandidateListCompletionHandler.printCandidates(reader, candidates);
+        jline.CandidateListCompletionHandler.printCandidates(reader, candidates, eagerNewlines);
 
         // redraw the current console buffer
         reader.drawLine();

@@ -15,7 +15,7 @@
  */
 package grails.build.interactive.completors
 
-import jline.console.completer.Completer
+import jline.Completor
 
 import java.util.regex.Pattern
 
@@ -26,7 +26,7 @@ import java.util.regex.Pattern
  * @author Peter Ledbrook
  * @since 2.0
  */
-class RegexCompletor implements Completer {
+class RegexCompletor implements Completor {
     Pattern pattern
 
     RegexCompletor(String pattern) {
