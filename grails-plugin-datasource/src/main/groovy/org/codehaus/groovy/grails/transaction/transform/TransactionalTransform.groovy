@@ -48,7 +48,7 @@ import java.lang.reflect.Modifier
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 class TransactionalTransform implements ASTTransformation{
-    private static final ClassNode MY_TYPE = new ClassNode(Transactional);
+    public static final ClassNode MY_TYPE = new ClassNode(Transactional).getPlainNodeReference();
     private static final String PROPERTY_TRANSACTION_MANAGER = "transactionManager"
     private static final String METHOD_EXECUTE = "execute"
 
@@ -75,18 +75,35 @@ class TransactionalTransform implements ASTTransformation{
             weaveTransactionalMethod(annotationNode, methodNode)
         }
         else if (parent instanceof ClassNode) {
-            weaveTransactionManagerAware(parent)
-
-            ClassNode classNode = ((ClassNode)parent)
-            for(MethodNode md in classNode.methods) {
-                if (Modifier.isPublic(md.modifiers) && !Modifier.isAbstract(md.modifiers) ) {
-                    if (md.getAnnotations(MY_TYPE)) continue
-
-                    weaveTransactionalMethod(annotationNode,md)
-                }
-            }
+            weaveTransactionalBehavior(parent, annotationNode)
         }
 
+    }
+
+    public void weaveTransactionalBehavior(ClassNode classNode, AnnotationNode annotationNode) {
+        weaveTransactionManagerAware(classNode)
+
+        ClassNode controllerMethodAnn = getAnnotationClassNode("grails.web.controllers.ControllerMethod")
+
+
+        for (MethodNode md in classNode.methods) {
+            if (Modifier.isPublic(md.modifiers) && !Modifier.isAbstract(md.modifiers)) {
+                if (md.getAnnotations(MY_TYPE)) continue
+
+                if (controllerMethodAnn && md.getAnnotations(controllerMethodAnn)) continue
+                weaveTransactionalMethod(annotationNode, md)
+            }
+        }
+    }
+
+    ClassNode getAnnotationClassNode(String annotationName) {
+        try {
+            final classLoader = Thread.currentThread().contextClassLoader
+            final clazz = classLoader.loadClass(annotationName)
+            return new ClassNode(clazz)
+        } catch (e) {
+            return null
+        }
     }
 
     protected void weaveTransactionalMethod(AnnotationNode annotationNode, MethodNode methodNode) {
