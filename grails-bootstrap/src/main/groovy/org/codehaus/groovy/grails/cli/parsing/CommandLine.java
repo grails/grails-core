@@ -27,6 +27,7 @@ import java.util.Properties;
  */
 public interface CommandLine {
 
+    String DEBUG_FORK = "debug-fork";
     String OFFLINE_ARGUMENT = "offline";
     String VERBOSE_ARGUMENT = "verbose";
     String STACKTRACE_ARGUMENT = "stacktrace";

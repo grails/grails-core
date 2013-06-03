@@ -1477,26 +1477,19 @@ class BuildSettings extends AbstractBuildSettings {
         def result = config.grails.project.fork
         String syspropDebugArgs = System.getProperty("grails.project.fork.run.debugArgs")
         if (syspropDebugArgs) {
-            //TODO; some way to copy over existing properties
-            //  The code below doesn't appear to work in all cases and sometimes results in
-            //  errors like this:
-            //  org.codehaus.groovy.runtime.typehandling.GroovyCastException: Cannot cast
-            //object 'groovy.util.ConfigObject@8cf401' with class 'groovy.util.ConfigObject'
-//            def oldMap = result?.run;
-//            result.run = [
-//                maxMemory: oldMap?.maxMemory,
-//                minMemory: oldMap?.minMemory
-//            ];
-            result.run = [:]
+            if (result.run instanceof Boolean)
+                result.run = [:]
             result.run.debug = true
-            result.run.debugArgs = syspropDebugArgs
+            if (syspropDebugArgs != "true")
+                result.run.debugArgs = syspropDebugArgs
         }
         syspropDebugArgs = System.getProperty("grails.project.fork.test.debugArgs")
         if (syspropDebugArgs) {
-            //TODO; some way to copy over existing properties
-            result.test = [:]
+            if (result.run instanceof Boolean)
+                result.test = [:]
             result.test.debug = true
-            result.test.debugArgs = syspropDebugArgs
+            if (syspropDebugArgs != "true")
+                result.test.debugArgs = syspropDebugArgs
         }
         return result
     }

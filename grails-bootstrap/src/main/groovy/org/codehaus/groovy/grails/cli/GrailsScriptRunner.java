@@ -38,14 +38,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.apache.tools.ant.Project;
@@ -162,6 +155,12 @@ public class GrailsScriptRunner {
             build = new BuildSettings(new File(grailsHome));
             build.setModified(commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT));
             build.setOffline(commandLine.hasOption(CommandLine.OFFLINE_ARGUMENT));
+            if(commandLine.hasOption(CommandLine.DEBUG_FORK)) {
+                if(System.getProperty("grails.project.fork.run.debugArgs") == null)
+                    System.setProperty("grails.project.fork.run.debugArgs", "true");
+                if(System.getProperty("grails.project.fork.test.debugArgs") == null)
+                    System.setProperty("grails.project.fork.test.debugArgs", "true");
+            }
             if (build.getRootLoader() == null) {
                 build.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
             }
@@ -250,6 +249,7 @@ public class GrailsScriptRunner {
         parser.addOption(CommandLine.NON_INTERACTIVE_ARGUMENT, "Whether to allow the command line to request input");
         parser.addOption(CommandLine.VERSION_ARGUMENT, "Current Grails version");
         parser.addOption(CommandLine.NOANSI_ARGUMENT, "Disables ANSI output");
+        parser.addOption(CommandLine.DEBUG_FORK, "Whether to debug the forked JVM if using forked mode");
         return parser;
     }
 
