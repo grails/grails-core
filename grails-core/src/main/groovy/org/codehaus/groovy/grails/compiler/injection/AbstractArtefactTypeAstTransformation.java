@@ -34,16 +34,4 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public abstract class AbstractArtefactTypeAstTransformation implements ASTTransformation {
 
-    protected void performInjectionOnArtefactType(SourceUnit sourceUnit, ClassNode cNode, String artefactType) {
-        try {
-            List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(
-                    artefactType, GrailsAwareInjectionOperation.getClassInjectors());
-            for (ClassInjector injector : injectors) {
-                injector.performInjection(sourceUnit, cNode);
-            }
-        } catch (RuntimeException e) {
-            GrailsConsole.getInstance().error("Error occurred calling AST injector: " + e.getMessage(), e);
-            throw e;
-        }
-    }
 }

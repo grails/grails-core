@@ -94,6 +94,11 @@ class ControllersRestApi {
         if (registry == null) {
             registry = new DefaultRendererRegistry()
         }
+        if (mimeType == MimeType.ALL && formats) {
+            final allMimeTypes = MimeType.getConfiguredMimeTypes()
+            final firstFormat = formats[0]
+            mimeType = allMimeTypes.find { MimeType mt -> mt.extension == firstFormat}
+        }
 
         if (mimeType && formats.contains(mimeType.extension)) {
 

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.artefact.Artefact;
 import grails.artefact.Enhanced;
 import grails.util.GrailsUtil;
 import groovy.lang.Mixin;
@@ -86,6 +87,8 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if(classNode instanceof InnerClassNode) return;
+        // don't inject if already an @Artefact annotation is applied
+        if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
         Class instanceImplementation = getInstanceImplementation();
 
         if (instanceImplementation != null) {

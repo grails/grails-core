@@ -16,7 +16,10 @@
 
 package org.codehaus.groovy.grails.compiler.web.rest
 
+import grails.web.controllers.ControllerMethod
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.ast.AnnotationNode
+import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer
@@ -46,5 +49,10 @@ class ControllerRestTransformer extends AbstractGrailsArtefactTransformer{
 
     boolean shouldInject(URL url) {
         return url && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.file).find()
+    }
+
+    @Override
+    protected AnnotationNode getMarkerAnnotation() {
+        return new AnnotationNode(new ClassNode(ControllerMethod.class).getPlainNodeReference());
     }
 }

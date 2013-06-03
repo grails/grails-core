@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.artefact.Artefact;
 import grails.build.logging.GrailsConsole;
 
 import java.lang.reflect.Modifier;
@@ -57,6 +58,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
     }
 
     public void performInjectionOnAnnotatedEntity(ClassNode classNode) {
+        if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
         injectIdProperty(classNode);
         injectVersionProperty(classNode);
         injectToStringMethod(classNode);

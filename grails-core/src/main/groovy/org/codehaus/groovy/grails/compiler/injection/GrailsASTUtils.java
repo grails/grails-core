@@ -93,6 +93,11 @@ public class GrailsASTUtils {
     public static final ClassNode MISSING_METHOD_EXCEPTION = new ClassNode(MissingMethodException.class);
     public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
     public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
+    public static final ClassNode OBJECT_CLASS_NODE = new ClassNode(Object.class).getPlainNodeReference();
+    public static final ClassNode INTEGER_CLASS_NODE = new ClassNode(Integer.class).getPlainNodeReference();
+    public static final VariableExpression THIS_EXPR = new VariableExpression("this");
+    public static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
+    public static final ArgumentListExpression ZERO_ARGUMENTS = new ArgumentListExpression();
 
     public static void warning(final SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
         final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
