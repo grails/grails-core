@@ -16,7 +16,7 @@ import grails.rest.*
 import grails.persistence.*
 
 @Entity
-@Resource(responseFormats=['html','xml'])
+@Resource(formats=['html','xml'])
 class Book {
 }
 ''')
