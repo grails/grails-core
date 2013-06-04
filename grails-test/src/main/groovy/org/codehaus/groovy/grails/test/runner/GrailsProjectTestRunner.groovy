@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportProcessor
 import org.codehaus.groovy.grails.test.runner.phase.TestFeatureDiscoverySupport
 import org.codehaus.groovy.grails.test.runner.phase.TestPhaseConfigurer
+import org.codehaus.groovy.grails.test.spock.GrailsSpecTestType
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 
 /**
@@ -248,7 +249,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
                             new JUnit4GrailsTestType(rawTypeString, rawTypeString, mode)
                         }
                         else {
-                            new JUnit4GrailsTestType(rawTypeString, rawTypeString)
+                            new GrailsSpecTestType(rawTypeString, rawTypeString)
                         }
                     }
                     else {

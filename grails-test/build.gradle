@@ -23,4 +23,9 @@ dependencies {
     compile  "org.fusesource.jansi:jansi:$jansiVersion", {
         ext.notInPom = true
     }
+
+    compile("org.spockframework:spock-core:${spockVersion}") {
+        exclude group:'junit', module: 'junit-dep'
+        exclude group:'org.codehaus.groovy', module: 'groovy-all'
+    }
 }

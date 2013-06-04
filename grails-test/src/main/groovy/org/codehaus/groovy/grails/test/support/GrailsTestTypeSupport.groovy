@@ -90,6 +90,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Sets the appropriate instance variables from the parameters, and calls {@link #doPrepare()}
      */
+    @CompileStatic
     int prepare(GrailsTestTargetPattern[] testTargetPatterns, File compiledClassesDir, Binding buildBinding) {
         this.testTargetPatterns = testTargetPatterns
         this.compiledClassesDir = compiledClassesDir
@@ -164,13 +165,13 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Finds source based on the {@code testSuffixes} and {@code testExtensions} that match the {@code targetPattern}.
      */
-    protected List<File> findSourceFiles(GrailsTestTargetPattern targetPattern) {
-        def sourceFiles = []
+    protected Collection<File> findSourceFiles(GrailsTestTargetPattern targetPattern) {
+        Collection<File> sourceFiles = []
         def resolveResources = buildBinding['resolveResources']
         def suffixes = testSuffixes + [""] // support the target pattern containing the suffix
-        suffixes.each { suffix ->
-            testExtensions.each { extension ->
-                def resources = resolveResources("file:${sourceDir.absolutePath}/${targetPattern.filePattern}${suffix}.${extension}".toString())
+        for(String suffix in suffixes) {
+            for(String extension in testExtensions) {
+                def resources = resolveResources("file:${getSourceDir().absolutePath}/${targetPattern.filePattern}${suffix}.${extension}".toString())
 
                 def matches = resources*.file.findAll { file ->
                     if (!file.exists()) {
@@ -194,9 +195,10 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Calls {@code body} with the GrailsTestTargetPattern that matched the source, and the File for the source.
      */
+//    @CompileStatic
     protected void eachSourceFile(Closure body) {
         for(GrailsTestTargetPattern testTargetPattern in testTargetPatterns) {
-            findSourceFiles(testTargetPattern).each { File sourceFile ->
+            for(File sourceFile in findSourceFiles(testTargetPattern)) {
                 body.call(testTargetPattern, sourceFile)
             }
         }
@@ -205,6 +207,7 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
     /**
      * Gets the corresponding class name for a source file of this test type.
      */
+    @CompileStatic
     protected String sourceFileToClassName(File sourceFile) {
         def filePath = sourceFile.canonicalPath
         def basePath = getSourceDir().canonicalPath

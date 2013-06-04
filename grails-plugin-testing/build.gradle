@@ -56,6 +56,7 @@ dependencies {
 
     compile("org.spockframework:spock-core:${spockVersion}") {
         exclude group:'junit', module: 'junit-dep'
+        exclude group:'org.codehaus.groovy', module: 'groovy-all'
     }
     compile "junit:junit:${junitVersion}", {
         exclude group:'org.hamcrest', module: 'hamcrest-core'
