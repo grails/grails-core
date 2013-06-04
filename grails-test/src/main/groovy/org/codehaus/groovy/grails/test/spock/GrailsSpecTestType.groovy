@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.event.GrailsTestRunNotifier
+import org.codehaus.groovy.grails.test.junit4.runner.GrailsTestCaseRunnerBuilder
 import org.codehaus.groovy.grails.test.spock.listener.OverallRunListener
 
 /**
@@ -15,7 +16,7 @@ import org.codehaus.groovy.grails.test.GrailsTestTypeResult
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
 import org.codehaus.groovy.grails.test.support.GrailsTestTypeSupport
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
-
+import org.junit.runners.Suite
 import org.spockframework.runtime.SpecUtil
 
 import spock.config.RunnerConfiguration
@@ -47,28 +48,33 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
     protected int doPrepare() {
         eachSourceFile { GrailsTestTargetPattern testTargetPattern, File specSourceFile ->
             def specClass = sourceFileToClass(specSourceFile)
-            if (SpecUtil.isRunnableSpec(specClass)) specClasses << specClass
+            specClasses << specClass
+        }
+        def testClasses = specClasses
+        if (testClasses) {
+            Suite suite = createSuite(specClasses)
+            featureCount = suite.testCount()
+        }
+        else {
+            0
         }
 
-        optimizeSpecRunOrderIfEnabled()
-
-        featureCount = (Integer)specClasses.sum(0) { Class spec -> SpecUtil.getFeatureCount(spec) }
-        featureCount
+        return featureCount
     }
+
+    protected Suite createSuite(classes) {
+        new Suite(new GrailsTestCaseRunnerBuilder(testTargetPatterns), classes as Class[])
+    }
+
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected GrailsTestTypeResult doRun(GrailsTestEventPublisher eventPublisher) {
         def junit = new JUnitCore()
         def result = new GrailsSpecTestTypeResult()
 
-        try {
-            junit.addListener(new OverallRunListener(eventPublisher,
-                createJUnitReportsFactory(), createSystemOutAndErrSwapper(), result,
-                createGrails2TerminalListenerIfCan()))
-        } catch (Throwable e) {
-
-            println e.message
-        }
+        junit.addListener(new OverallRunListener(eventPublisher,
+            createJUnitReportsFactory(), createSystemOutAndErrSwapper(), result,
+            createGrails2TerminalListenerIfCan()))
 
         junit.run(specClasses as Class[])
         result

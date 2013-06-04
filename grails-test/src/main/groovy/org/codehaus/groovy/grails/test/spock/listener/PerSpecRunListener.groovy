@@ -72,6 +72,9 @@ class PerSpecRunListener {
     private final Map<Description, JUnit4TestCaseFacade> testsByDescription = [:]
 
     private Constructor<JUnit4TestCaseFacade> testCaseFacadeConstructor
+    private OutputStream outStream
+    private OutputStream errStream
+
 
     PerSpecRunListener(String name, GrailsTestEventPublisher eventPublisher, JUnitReports reports,
                        SystemOutAndErrSwapper outAndErrSwapper, GrailsSpecTestTypeResult result, GrailsTestRunNotifier grailsNotifier) {
@@ -92,7 +95,10 @@ class PerSpecRunListener {
         eventPublisher.testCaseStart(name)
         reports.startTestSuite(testSuite)
 
-        outAndErrSwapper.swapIn()
+        final streams = outAndErrSwapper.swapIn()
+        outStream = streams[0]
+        errStream = streams[1]
+
         startTime = System.currentTimeMillis()
     }
 
@@ -122,7 +128,9 @@ class PerSpecRunListener {
 
         reports.startTest(getTest(description))
 
-        [System.out, System.err]*.println("--Output from ${testName}--")
+        for(OutputStream os in [outStream, errStream]) {
+            new PrintStream(os).println("--Output from ${testName}--")
+        }
         testFailed = false
         runCount++
     }
