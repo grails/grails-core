@@ -7,7 +7,10 @@ dependencies {
     compile "org.apache.ant:ant-junit:${antVersion}"
 
     // Testing
-    compile "junit:junit:${junitVersion}", project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
+    compile "junit:junit:${junitVersion}", {
+        exclude group:'org.hamcrest', module: 'hamcrest-core'
+    }
+    compile project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
 
     compile project(":grails-web")
 

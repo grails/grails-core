@@ -132,7 +132,7 @@ createIntegrationTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GroovyTestCase"
     createArtifact(
             name: args["name"],
-            suffix: "${args['suffix']}Tests",
+            suffix: "${args['suffix']}Spec",
             type: args.testType ?: args['suffix'],
             path: "test/integration",
             superClass: superClass,
@@ -144,7 +144,7 @@ createUnitTest = { Map args = [:] ->
     def superClass = args["superClass"] ?: "GrailsUnitTestCase"
     createArtifact(
             name: args["name"],
-            suffix: "${args['suffix']}Tests",
+            suffix: "${args['suffix']}Spec",
             type: args.testType ?: args['suffix'],
             path: "test/unit",
             superClass: superClass,

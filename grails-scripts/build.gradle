@@ -4,7 +4,9 @@ configurations {
 
 dependencies {
     // Testing
-    compile "junit:junit:${junitVersion}"
+    compile "junit:junit:${junitVersion}", {
+        exclude group:'org.hamcrest', module: 'hamcrest-core'
+    }
 
     scripts project(":grails-web"),
             project(':grails-docs'),

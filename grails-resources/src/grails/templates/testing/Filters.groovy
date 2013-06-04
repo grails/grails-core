@@ -1,11 +1,15 @@
-@artifact.package@
-
-import grails.test.mixin.*
+@artifact.package@import grails.test.mixin.Mock
+import spock.lang.Specification
 
 @Mock(@artifact.testclass@)
-class @artifact.name@ {
+class @artifact.name@ extends Specification {
 
-    void testSomething() {
-        fail "Implement me"
+    def setup() {
+    }
+
+    def cleanup() {
+    }
+
+    void "test something"() {
     }
 }
