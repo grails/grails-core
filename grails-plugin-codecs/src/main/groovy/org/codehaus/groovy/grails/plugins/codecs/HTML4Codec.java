@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
  * Encodes and decodes strings to and from HTML. It uses escaping information
  * from Spring's HtmlUtils so that this is compatible with the previous
  * "encodeAsHTML" in older Grails versions.
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -33,19 +33,15 @@ public class HTML4Codec implements CodecFactory {
     private static Encoder encoder = new HTML4Encoder();
     private static Decoder decoder = new HTML4Decoder();
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.CodecFactory#getEncoder()
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecFactory#getEncoder()
      */
     public Encoder getEncoder() {
         return encoder;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.CodecFactory#getDecoder()
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecFactory#getDecoder()
      */
     public Decoder getDecoder() {
         return decoder;

@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,11 +21,10 @@ import org.grails.databinding.DataBindingSource
 
 /**
  * A factory for DataBindingSource instances
- * 
+ *
  * @since 2.3
  * @see DataBindingSourceRegistry
  * @see DataBindingSource
- *
  */
 interface DataBindingSourceCreator extends MimeTypeProvider {
 
@@ -33,9 +32,10 @@ interface DataBindingSourceCreator extends MimeTypeProvider {
      * @return The target type of this creator
      */
     Class getTargetType()
+
     /**
      * Creates a DataBindingSource suitable for binding bindingSource to bindingTarget
-     * 
+     *
      * @param mimeType a mime type
      * @param bindingTarget the target of the data binding
      * @param bindingSource the value being bound

@@ -1,10 +1,8 @@
 package grails.test.mixin
 
-import org.junit.Before
 import org.junit.Test
-import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
-import org.junit.BeforeClass
+import org.springframework.context.ApplicationContextAware
 
 /**
  * Tests that services can be autowired into controllers via defineBeans
@@ -22,7 +20,6 @@ class AutowireServiceViaDefineBeansTests {
         controller.index()
         controller.index()
     }
-
 }
 
 class SpringController implements ApplicationContextAware {
@@ -30,7 +27,8 @@ class SpringController implements ApplicationContextAware {
     SpringService springService
     def index() {
         applicationContext.getBean("springService") instanceof SpringService
-        assert springService != null
+        assert springService
     }
 }
+
 class SpringService {}

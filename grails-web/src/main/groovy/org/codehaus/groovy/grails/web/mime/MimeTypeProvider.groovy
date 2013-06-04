@@ -17,16 +17,15 @@
 package org.codehaus.groovy.grails.web.mime
 
 /**
- * An interface for objects that expose a Mime Type
+ * Objects that expose a Mime Type.
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface MimeTypeProvider {
+interface MimeTypeProvider {
 
     /**
      * @return The {@link MimeType} instances provided by this object
      */
     MimeType[] getMimeTypes()
-
 }

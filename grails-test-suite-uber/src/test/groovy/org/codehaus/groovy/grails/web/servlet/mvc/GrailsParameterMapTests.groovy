@@ -323,7 +323,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
             assertEquals("the clone should have the same value for $k as the original", theMap[k], theClone[k])
         }
     }
-    
+
     void testNestedKeyAutoGeneration() {
         def request = new MockHttpServletRequest()
         def params = new GrailsParameterMap(request)
@@ -334,23 +334,23 @@ class GrailsParameterMapTests extends GroovyTestCase {
         def secondKey = 'beta'
         params."${firstKey}.${secondKey}.foo" = 'omega'
         params.put "prefix.${firstKey}.${secondKey}", 'delta'
-        
+
         def company = params.company
         assert company instanceof Map
-        
+
         def department = company.department
         assert department instanceof Map
         assert department.numberOfEmployees == 2112
-        
+
         def team = department.team
         assert team instanceof Map
-        
+
         assert team.numberOfEmployees == 42
-        
+
         assert params['alpha'] instanceof Map
         assert params['alpha']['beta'] instanceof Map
         assert params['alpha']['beta'].foo == 'omega'
-        
+
         assert params['prefix'] instanceof Map
         assert params['prefix']['alpha'] instanceof Map
         assert params['prefix']['alpha'].beta == 'delta'

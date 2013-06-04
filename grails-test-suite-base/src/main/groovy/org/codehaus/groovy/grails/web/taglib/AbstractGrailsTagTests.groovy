@@ -71,7 +71,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     GrailsApplication ga
     GrailsPluginManager mockManager
     GroovyClassLoader gcl = new GroovyClassLoader()
-    
+
     boolean enableProfile = false
 
     GrailsApplication grailsApplication
@@ -128,7 +128,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                 fail("No tag library found for tag $tagName")
             }
             def go = tagLibrary.newInstance()
-            appCtx.autowireCapableBeanFactory.autowireBeanProperties(go, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+            appCtx.autowireCapableBeanFactory.autowireBeanProperties(go, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
             def gspTagLibraryLookup = appCtx.gspTagLibraryLookup
 
             GroovyPageOutputStack stack=GroovyPageOutputStack.currentStack(webRequest, true)
@@ -141,50 +141,50 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                 def tagWrapper = { Object[] args ->
                     def attrs = args?.size() > 0 ? args[0] : [:]
                     if (!(attrs instanceof GroovyPageAttributes)) {
-                        attrs = new GroovyPageAttributes(attrs);
+                        attrs = new GroovyPageAttributes(attrs)
                     }
-                    ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(true);
+                    ((GroovyPageAttributes)attrs).setGspTagSyntaxCall(true)
                     def body = args?.size() > 1 ? args[1] : null
-                    if(body && !(body instanceof Closure)) {
+                    if (body && !(body instanceof Closure)) {
                         body = new GroovyPage.ConstantClosure(body)
                     }
 
                     def tagresult = null
 
-                    boolean encodeAsPushedToStack=false;
+                    boolean encodeAsPushedToStack=false
                     try {
-                        boolean returnsObject=gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName);
-                        Object codecInfo=gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName);
-                        if(attrs.containsKey(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME)) {
-                            codecInfo = attrs.get(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME);
+                        boolean returnsObject=gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName)
+                        Object codecInfo=gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName)
+                        if (attrs.containsKey(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME)) {
+                            codecInfo = attrs.get(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME)
                         } else if (GroovyPage.DEFAULT_NAMESPACE.equals(tagNamespace) && GroovyPage.APPLY_CODEC_TAG_NAME.equals(tagName)) {
-                            codecInfo = attrs;
+                            codecInfo = attrs
                         }
-                        if(codecInfo != null) {
-                            stack.push(WithCodecHelper.createOutputStackAttributesBuilder(codecInfo, webRequest.getAttributes().getGrailsApplication()).build());
-                            encodeAsPushedToStack=true;
+                        if (codecInfo != null) {
+                            stack.push(WithCodecHelper.createOutputStackAttributesBuilder(codecInfo, webRequest.getAttributes().getGrailsApplication()).build())
+                            encodeAsPushedToStack=true
                         }
                         switch (tag.getParameterTypes().length) {
                             case 1:
-                                tagresult = tag.call(attrs);
-                                outputTagResult(stack.taglibWriter, returnsObject, tagresult);
+                                tagresult = tag.call(attrs)
+                                outputTagResult(stack.taglibWriter, returnsObject, tagresult)
                                 if (body) {
-                                    body.call();
+                                    body.call()
                                 }
-                                break;
+                                break
                             case 2:
-                                tagresult = tag.call(attrs, (body != null) ? body : GroovyPage.EMPTY_BODY_CLOSURE);
-                                outputTagResult(stack.taglibWriter, returnsObject, tagresult);
-                                break;
+                                tagresult = tag.call(attrs, (body != null) ? body : GroovyPage.EMPTY_BODY_CLOSURE)
+                                outputTagResult(stack.taglibWriter, returnsObject, tagresult)
+                                break
                         }
-                        
+
                         Encoder taglibEncoder = stack.taglibEncoder
                         if (returnsObject && tagresult && !(tagresult instanceof Writer) && taglibEncoder) {
-                            tagresult=taglibEncoder.encode(tagresult);
+                            tagresult=taglibEncoder.encode(tagresult)
                         }
                         tagresult
                     } finally {
-                        if(encodeAsPushedToStack) stack.pop();
+                        if (encodeAsPushedToStack) stack.pop()
                     }
                 }
                 result = callable.call(tagWrapper)
@@ -197,7 +197,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
     private void outputTagResult(Writer taglibWriter, boolean returnsObject, Object tagresult) {
         if (returnsObject && tagresult != null && !(tagresult instanceof Writer)) {
-            taglibWriter.print(tagresult);
+            taglibWriter.print(tagresult)
         }
     }
 

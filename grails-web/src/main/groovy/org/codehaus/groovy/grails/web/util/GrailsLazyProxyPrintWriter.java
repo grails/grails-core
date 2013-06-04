@@ -33,7 +33,7 @@ public class GrailsLazyProxyPrintWriter extends GrailsPrintWriter {
         super(null);
         this.factory = factory;
     }
-    
+
     @Override
     public Writer getOut() {
         if (!destinationActivated) {
@@ -63,6 +63,7 @@ public class GrailsLazyProxyPrintWriter extends GrailsPrintWriter {
         this.factory = f;
     }
 
+    @Override
     public boolean isDestinationActivated() {
         return destinationActivated;
     }

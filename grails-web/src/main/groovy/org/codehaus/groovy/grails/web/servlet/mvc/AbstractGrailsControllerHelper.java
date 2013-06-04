@@ -141,7 +141,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         if (attribute instanceof GrailsControllerClass) {
             controllerClass = (GrailsControllerClass) attribute;
             Boolean canUse = (Boolean)grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-            if(canUse == null) {
+            if (canUse == null) {
                 controllerClass = null;
             } else {
                 grailsWebRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
@@ -310,7 +310,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         if (!controllerClass.isInterceptedAfter(controller,actionName)) {
             return true;
         }
-            
+
         // Step 9: Check if there is after interceptor
         Object interceptorResult = null;
         Closure afterInterceptor = controllerClass.getAfterInterceptor(controller);
@@ -328,7 +328,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             default:
                 throw new ControllerExecutionException("AfterInterceptor closure must accept one or two parameters");
         }
-        
+
         return interceptorResult instanceof Boolean ? (Boolean)interceptorResult : true;
     }
 
@@ -344,7 +344,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     @SuppressWarnings("rawtypes")
     public Object handleAction(GroovyObject controller, Object action, HttpServletRequest request,
-            @SuppressWarnings("unused") HttpServletResponse response, Map params) {
+            HttpServletResponse response, Map params) {
         GrailsParameterMap paramsMap = (GrailsParameterMap)controller.getProperty("params");
         // if there are additional params add them to the params dynamic property
         if (params != null && !params.isEmpty()) {

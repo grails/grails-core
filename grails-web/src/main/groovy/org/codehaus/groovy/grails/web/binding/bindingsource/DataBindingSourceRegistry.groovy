@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,6 @@ import org.grails.databinding.bindingsource.DataBindingSourceCreator
 /**
  * Responsible for locating DataBindingSourceCreator instances and
  * using them to create DataBindingSource instances
- * 
  *
  * @author Jeff Brown
  * @author Graeme Rocher

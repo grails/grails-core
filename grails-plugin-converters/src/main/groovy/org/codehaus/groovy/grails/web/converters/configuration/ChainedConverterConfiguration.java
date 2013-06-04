@@ -57,7 +57,7 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
         public void marshalObject(Object object, C converter) throws ConverterException {
         }
     };
-    
+
     public ChainedConverterConfiguration(ConverterConfiguration<C> cfg) {
         this(cfg, new DefaultProxyHandler());
     }
@@ -85,16 +85,16 @@ public class ChainedConverterConfiguration<C extends Converter> implements Conve
 
     public ObjectMarshaller<C> getMarshaller(Object o) {
         ObjectMarshaller<C> marshaller = null;
-        
+
         Integer cacheKey = null;
-        if(!developmentMode && cacheObjectMarshallerByClass && o != null) {
+        if (!developmentMode && cacheObjectMarshallerByClass && o != null) {
             cacheKey = System.identityHashCode(o.getClass());
             marshaller = objectMarshallerForClassCache.get(cacheKey);
             if (marshaller != NULL_HOLDER && marshaller != null && !marshaller.supports(o)) {
                 marshaller = null;
             }
         }
-        if(marshaller==null) {
+        if (marshaller == null) {
             marshaller = root.findMarhallerFor(o);
             if (cacheKey != null) {
                 objectMarshallerForClassCache.put(cacheKey, marshaller != null ? marshaller : NULL_HOLDER);

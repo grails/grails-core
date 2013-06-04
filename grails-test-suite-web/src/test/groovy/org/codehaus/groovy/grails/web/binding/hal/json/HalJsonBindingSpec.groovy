@@ -11,7 +11,7 @@ class HalJsonBindingSpec extends Specification {
         when:
         request.json = '''
             {
-    "name": "Douglas", 
+    "name": "Douglas",
     "age": "42",
     "_embedded" : {
         "homeAddress" : { "state": "Missouri", "city": "O'Fallon"},
@@ -29,7 +29,7 @@ class HalJsonBindingSpec extends Specification {
         model.person.homeAddress.state == 'Missouri'
         model.person.workAddress.city == 'San Mateo'
         model.person.workAddress.state == 'California'
-    }    
+    }
 }
 
 class BindingController {

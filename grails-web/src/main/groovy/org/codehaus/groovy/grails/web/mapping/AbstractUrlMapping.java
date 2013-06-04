@@ -115,10 +115,9 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     public Object getNamespace() {
         return namespace;
     }
-    
+
     /**
      * @see org.codehaus.groovy.grails.web.mapping.UrlMapping#getViewName()
-     *
      */
     public Object getViewName() {
         return viewName;

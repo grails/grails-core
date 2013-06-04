@@ -132,7 +132,7 @@ public class UrlCreatorCache {
         public String createURL(String controller, String action, String pluginName, Map parameterValues, String encoding) {
             return createURL(controller, action, null, pluginName, parameterValues, encoding);
         }
-        
+
         public String createURL(String controller, String action, String namespace, String pluginName, Map parameterValues, String encoding, String fragment) {
             UrlCreatorKey key = new UrlCreatorKey(controller, action, namespace, pluginName,null, parameterValues, encoding, fragment, 1);
             String url = cache.get(key);
@@ -182,7 +182,7 @@ public class UrlCreatorCache {
             this.action = action;
             this.namespace = namespace;
             this.pluginName = pluginName;
-            if(httpMethod != null && !UrlMapping.ANY_HTTP_METHOD.equalsIgnoreCase(httpMethod)) {
+            if (httpMethod != null && !UrlMapping.ANY_HTTP_METHOD.equalsIgnoreCase(httpMethod)) {
                 this.httpMethod = httpMethod;
             }
             else {
@@ -294,10 +294,9 @@ public class UrlCreatorCache {
                     return false;
                 }
             }
-            else if(!httpMethod.equals(other.httpMethod)) {
+            else if (!httpMethod.equals(other.httpMethod)) {
                 return false;
             }
-
 
             if (!Arrays.equals(paramKeys, other.paramKeys)) {
                 return false;

@@ -16,18 +16,13 @@ package org.codehaus.groovy.grails.web.taglib
 
 import grails.test.mixin.TestFor
 
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.plugins.CodecsGrailsPlugin
-import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
-import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 
 import spock.lang.Specification
 
 @TestFor(ApplicationTagLib)
 class ApplyCodecTagSpec extends Specification {
-    
-        
+
     def "applyCodec tag should apply codecs to values"() {
         when:
             def output=applyTemplate('<g:applyCodec name="html">${"<script>"}</g:applyCodec>')

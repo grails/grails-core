@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import groovy.io.FileType
+
 includeTargets << grailsScript("_GrailsInit")
 
 USAGE = """
@@ -43,7 +45,7 @@ target (generateWrapper: "Generates the Grails wrapper") {
     targetDir = "${basedir}/${grailsWrapperDir}"
 
     supportFiles = []
-    new File("${grailsHome}/dist/").eachFileMatch( groovy.io.FileType.FILES, { it ==~ /grails-wrapper-support.*\.jar/ && !it.contains('-sources.jar') && !it.contains('-javadoc.jar')}) {
+    new File(grailsHome, "dist").eachFileMatch( FileType.FILES, { it ==~ /grails-wrapper-support.*\.jar/ && !it.contains('-sources.jar') && !it.contains('-javadoc.jar')}) {
         supportFiles << it
     }
     if (supportFiles.size() != 1) {
@@ -70,11 +72,11 @@ target (generateWrapper: "Generates the Grails wrapper") {
     ant.chmod(file: "${basedir}/grailsw", perm: 'u+x')
 
     springloadedFiles = []
-    new File("${grailsHome}/lib/org.springsource.springloaded/springloaded-core/jars/").eachFileMatch( groovy.io.FileType.FILES, { it ==~ /springloaded-core-.*/ }) {
+    new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars/").eachFileMatch( FileType.FILES, { it ==~ /springloaded-core-.*/ }) {
         springloadedFiles << it
     }
     springloadedFiles = springloadedFiles.findAll { !it.name.contains('sources') &&  !it.name.contains('javadoc')}
-    
+
     if (springloadedFiles.size() != 1) {
         if (springloadedFiles.size() == 0) {
             event("StatusError", ["An error occurred locating the springloaded-core jar file"])
@@ -91,4 +93,3 @@ target (generateWrapper: "Generates the Grails wrapper") {
     event("StatusUpdate", [ "Wrapper installed successfully"])
     event 'InstallWrapperEnd', [ 'Finished Installing Wrapper.' ]
 }
-

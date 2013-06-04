@@ -14,12 +14,10 @@ class MainContextTests {
         }
         //uncomment to make test works
         //grailsApplication.mainContext = applicationContext
-
-
     }
+
     @Test
-    void testGetBean(){
-        assert grailsApplication.mainContext.getBean('myService') != null
+    void testGetBean() {
+        assert grailsApplication.mainContext.getBean('myService')
     }
-
 }

@@ -42,7 +42,6 @@ class DependenciesConfiguration {
     public static final String SCOPE_BUILD = "build"
     public static final String ALL_SCOPES = [SCOPE_COMPILE, SCOPE_RUNTIME, SCOPE_PROVIDED, SCOPE_TEST, SCOPE_OPTIONAL,SCOPE_BUILD]
 
-
     AetherDependencyManager dependencyManager
     ExclusionDependencySelector exclusionDependencySelector
 

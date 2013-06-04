@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,43 +19,37 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class SimpleMapDataBindingSource implements DataBindingSource {
-    
+
     protected Map map
-    
-    public SimpleMapDataBindingSource(Map map) {
-        this.map = map    
+
+    SimpleMapDataBindingSource(Map map) {
+        this.map = map
     }
 
-    @Override
-    Set getPropertyNames() {
+    Set<String> getPropertyNames() {
         map.keySet()
     }
 
-    @Override
     Object getPropertyValue(String propertyName) {
         map.get propertyName
     }
-    
-    @Override
+
     Object getAt(String propertyName) {
         getPropertyValue propertyName
     }
 
-    @Override
     boolean containsProperty(String propertyName) {
         map.containsKey propertyName
     }
-    
-    @Override
+
     boolean hasIdentifier() {
         map.containsKey('id')
     }
-    
-    @Override getIdentifierValue() {
+
+    def getIdentifierValue() {
         map['id']
     }
-    
-    @Override
+
     int size() {
         map.size()
     }

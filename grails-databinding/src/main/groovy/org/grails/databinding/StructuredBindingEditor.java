@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,7 +60,7 @@ assert resident.workAddress
 assert resident.workAddress.state == "Scott's Work State"
 assert resident.workAddress.city == null
 </pre>
- * 
+ *
  * @author Jeff Brown
  * @since 2.3
  * @see SimpleDataBinder#registerStructuredEditor(Class, StructuredBindingEditor)
@@ -69,12 +69,11 @@ public interface StructuredBindingEditor<T> extends BindingHelper<T> {
     /**
      * The value returned from this method will be bound to
      * the property specified by propertyName.
-     * 
+     *
      * @param obj The object that data binding is being applied to
      * @param propertyName The name of the property data binding is being applied to
      * @param source The source containing all of the values being bound to this object
      * @return The value which should be bound to propertyName
      */
-    T getPropertyValue(Object obj, String propertyName,
-            DataBindingSource source);
+    T getPropertyValue(Object obj, String propertyName, DataBindingSource source);
 }

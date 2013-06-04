@@ -41,7 +41,7 @@ class GroovyPagesMetaUtils {
         }
         registerMethodMissingWorkaroundsForDefaultNamespace(emc, gspTagLibraryLookup)
     }
-    
+
     private static Object[] makeObjectArray(Object args) {
         args instanceof Object[] ? (Object[])args : [args] as Object[]
     }

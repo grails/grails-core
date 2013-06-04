@@ -251,7 +251,7 @@ public class GrailsConsole {
         if (!(System.out instanceof GrailsConsolePrintStream)) {
             System.setOut(new GrailsConsolePrintStream(instance.out));
         }
-        if(!(System.err instanceof GrailsConsoleErrorPrintStream )) {
+        if (!(System.err instanceof GrailsConsoleErrorPrintStream )) {
             System.setErr(new GrailsConsoleErrorPrintStream(instance.err));
         }
     }

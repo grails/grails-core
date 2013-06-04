@@ -27,7 +27,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
  * Abstract base class for implementing encoders that do character replacements
  * Implements the {@link StreamingEncoder} interface that enables efficient
  * streaming encoding
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -40,24 +40,20 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
 
     /**
      * Escape the character, return null if no replacement has to be made
-     * 
-     * @param ch
-     *            the character to escape
-     * @param previousChar
-     *            the previous char
+     *
+     * @param ch the character to escape
+     * @param previousChar  the previous char
      * @return the replacement string, null if no replacement has to be made
      */
     protected abstract String escapeCharacter(char ch, char previousChar);
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.Encoder#encode(java.lang.
-     * Object)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Encoder#encode(java.lang.Object)
      */
     public Object encode(Object o) {
-        if (o == null)
+        if (o == null) {
             return null;
+        }
 
         CharSequence str = null;
         if (o instanceof CharSequence) {
@@ -115,13 +111,8 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.StreamingEncoder#encodeToStream
-     * (java.lang.CharSequence, int, int,
-     * org.codehaus.groovy.grails.support.encoding.EncodedAppender,
-     * org.codehaus.groovy.grails.support.encoding.EncodingState)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.StreamingEncoder#encodeToStream(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence, int, int, org.codehaus.groovy.grails.support.encoding.EncodedAppender, org.codehaus.groovy.grails.support.encoding.EncodingState)
      */
     public void encodeToStream(Encoder thisInstance, CharSequence str, int off, int len, EncodedAppender appender, EncodingState encodingState)
             throws IOException {
@@ -154,25 +145,19 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.Encoder#markEncoded(java.
-     * lang.CharSequence)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Encoder#markEncoded(java.lang.CharSequence)
      */
     public void markEncoded(CharSequence string) {
         // no need to implement, wrapped automaticly
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.encoding.Encoder#isSafe()
      */
     public boolean isSafe() {
         return true;
     }
-    
-    
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.encoding.Encoder#isApplyToSafelyEncoded()
@@ -181,10 +166,8 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         return false;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifierProvider#
-     * getCodecIdentifier()
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifierProvider#getCodecIdentifier()
      */
     public CodecIdentifier getCodecIdentifier() {
         return codecIdentifier;

@@ -15,6 +15,16 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import groovy.transform.CompileStatic
+
+import java.util.regex.Pattern
+
+import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.databinding.DataBindingSource
+import org.grails.databinding.SimpleMapDataBindingSource
+import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
+import org.springframework.beans.factory.annotation.Autowired
+
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
@@ -22,18 +32,10 @@ import com.google.gson.JsonObject
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.stream.JsonReader
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mime.MimeType
-import org.grails.databinding.DataBindingSource
-import org.grails.databinding.SimpleMapDataBindingSource
-import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
-import org.springframework.beans.factory.annotation.Autowired
-
-import java.util.regex.Pattern
 
 /**
  * Creates DataBindingSource objects from JSON in the request body
- * 
+ *
  * @since 2.3
  * @author Jeff Brown
  * @author Graeme Rocher
@@ -50,10 +52,10 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     Gson gson = new Gson()
 
     @Override
-    public MimeType[] getMimeTypes() {
+    MimeType[] getMimeTypes() {
         [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
     }
-    
+
     @Override
     protected DataBindingSource createBindingSource(InputStream inputStream) {
         def jsonReader = new JsonReader(new InputStreamReader(inputStream))
@@ -76,25 +78,29 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         jsonElement instanceof JsonObject ? new JsonObjectMap(jsonElement, gson) : [:]
     }
 
-
     Object getValueForJsonElement(JsonElement value, Gson gson) {
         if (value == null || value.isJsonNull()) {
             return null
-        } else if (value.isJsonPrimitive()) {
+        }
+
+        if (value.isJsonPrimitive()) {
             JsonPrimitive prim = (JsonPrimitive) value
             if (prim.isNumber()) {
                 return value.asNumber
-            } else if (prim.isBoolean()) {
-                return value.asBoolean
-            } else {
-                return value.asString
             }
-        } else if (value.isJsonObject()) {
-            return createJsonObjectMap((JsonObject) value)
-        } else if(value.isJsonArray()) {
-            return new JsonArrayList((JsonArray)value, gson)
+            if (prim.isBoolean()) {
+                return value.asBoolean
+            }
+            return value.asString
         }
 
+        if (value.isJsonObject()) {
+            return createJsonObjectMap((JsonObject) value)
+        }
+
+        if (value.isJsonArray()) {
+            return new JsonArrayList((JsonArray)value, gson)
+        }
     }
 
     @CompileStatic
@@ -108,27 +114,22 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
             this.gson = gson
         }
 
-        @Override
         int size() {
             jsonObject.entrySet().size()
         }
 
-        @Override
         boolean isEmpty() {
             jsonObject.entrySet().isEmpty()
         }
 
-        @Override
         boolean containsKey(Object o) {
             jsonObject.has(o.toString())
         }
 
-        @Override
         boolean containsValue(Object o) {
             get(o) != null
         }
 
-        @Override
         Object get(Object o) {
             final key = o.toString()
             final value = jsonObject.get(key)
@@ -150,41 +151,34 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         }
 
 
-        @Override
         Object put(Object k, Object v) {
             jsonObject.add(k.toString(), gson.toJsonTree(v))
         }
 
-        @Override
         Object remove(Object o) {
             jsonObject.remove(o.toString())
         }
 
-        @Override
         void putAll(Map map) {
             for(entry in map.entrySet()) {
                 put(entry.key, entry.value)
             }
         }
 
-        @Override
         void clear() {
             for(entry in entrySet())  {
                 remove(entry.key)
             }
         }
 
-        @Override
         Set keySet() {
             jsonObject.entrySet().collect{ Map.Entry entry -> entry.key }.toSet()
         }
 
-        @Override
         Collection values() {
             jsonObject.entrySet().collect{ Map.Entry entry -> entry.value}
         }
 
-        @Override
         Set<Map.Entry> entrySet() {
             jsonObject.entrySet()
         }
@@ -201,12 +195,10 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
             this.gson = gson
         }
 
-        @Override
         int size() {
             jsonArray.size()
         }
 
-        @Override
         Object get(int i) {
             final jsonElement = jsonArray.get(i)
             return getValueForJsonElement(jsonElement, gson)

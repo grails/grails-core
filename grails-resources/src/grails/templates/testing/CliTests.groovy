@@ -12,7 +12,7 @@ class @artifact.name@ extends AbstractCliTestCase {
     void test@gant.class.name@() {
 
         execute(["@gant.script.name@"])
- 
+
         assertEquals 0, waitForProcess()
         verifyHeader()
     }

@@ -5,12 +5,12 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSo
 import spock.lang.Specification
 
 class HalJsonDataBindingSourceCreatorSpec extends Specification {
-    
+
     void 'Test JSON parsing'() {
         given:
         def json = '''
             {
-    "name": "Douglas", 
+    "name": "Douglas",
     "age": "42",
     "_embedded" : {
         "homeAddress" : { "state": "Missouri", "city": "O'Fallon"},
@@ -20,10 +20,10 @@ class HalJsonDataBindingSourceCreatorSpec extends Specification {
 '''
         def inputStream = new ByteArrayInputStream(json.bytes)
         def bindingSource = new HalJsonDataBindingSourceCreator().createBindingSource(inputStream)
-        
+
         when:
         def propertyNames = bindingSource.propertyNames
-        
+
         then:
         propertyNames.contains 'age'
         propertyNames.contains 'name'
@@ -33,7 +33,7 @@ class HalJsonDataBindingSourceCreatorSpec extends Specification {
         bindingSource.containsProperty 'age'
         bindingSource.containsProperty 'homeAddress'
         bindingSource.containsProperty 'workAddress'
-        
+
         bindingSource['name'] == 'Douglas'
         bindingSource['age'] == '42'
         bindingSource['homeAddress']['state'] == 'Missouri'

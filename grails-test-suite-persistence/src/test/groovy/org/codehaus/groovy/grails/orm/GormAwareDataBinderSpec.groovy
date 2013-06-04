@@ -38,87 +38,87 @@ class GormAwareDataBinderSpec extends Specification {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def author = new Author()
-        
+
         when:
         binder.bind author, new SimpleMapDataBindingSource([name: '   Jeff Scott Brown ', stringWithSpecialBinding: '   Jeff Scott Brown '])
-        
+
         then:
         author.name == 'Jeff Scott Brown'
         author.stringWithSpecialBinding == 'Jeff Scott Brown'
-        
+
         when:
         def actualName = 'Jeff Scott Brown'
         binder.bind author, new SimpleMapDataBindingSource([name: "   ${actualName} ", stringWithSpecialBinding: "   ${actualName} "])
-        
+
         then:
         author.name == 'Jeff Scott Brown'
         author.stringWithSpecialBinding == 'Jeff Scott Brown'
-        
+
         when:
         binder.trimStrings = false
         binder.bind author, new SimpleMapDataBindingSource([name: '  Jeff Scott Brown   ', stringWithSpecialBinding: '  Jeff Scott Brown   '])
-        
+
         then:
         author.name == '  Jeff Scott Brown   '
         author.stringWithSpecialBinding == 'Jeff Scott Brown'
-        
+
         when:
         binder.trimStrings = false
         binder.bind author, new SimpleMapDataBindingSource([name: "  ${actualName}   ", stringWithSpecialBinding: "  ${actualName}   "])
-        
+
         then:
         author.name == '  Jeff Scott Brown   '
         author.stringWithSpecialBinding == 'Jeff Scott Brown'
     }
-    
+
     void 'Test binding an invalid String to an object reference does not result in an empty instance being bound'() {
         // GRAILS-3159
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def publication = new Publication()
-        
+
         when:
         binder.bind publication, new SimpleMapDataBindingSource([author: '42'])
-        
+
         then:
         publication.author == null
     }
-    
+
     void 'Test binding empty and blank String'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def obj = new Author()
-        
+
         when:
         binder.bind obj, new SimpleMapDataBindingSource([name: '', stringWithSpecialBinding:''])
-        
+
         then:
         obj.name == null
         obj.stringWithSpecialBinding == ''
-        
+
         when:
         binder.bind obj, new SimpleMapDataBindingSource([name: '  ', stringWithSpecialBinding: '  '])
-        
+
         then:
         obj.name == null
         obj.stringWithSpecialBinding == ''
-        
+
         when:
         def emptyString = ''
         binder.bind obj, new SimpleMapDataBindingSource([name: "${emptyString}", stringWithSpecialBinding: "${emptyString}"])
-        
+
         then:
         obj.name == null
         obj.stringWithSpecialBinding == ''
-        
+
         when:
         binder.bind obj, new SimpleMapDataBindingSource([name: "  ${emptyString}  ", stringWithSpecialBinding: "  ${emptyString}  "])
-        
+
         then:
         obj.name == null
         obj.stringWithSpecialBinding == ''
     }
-    
+
     void 'Test binding to primitives from Strings'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -178,10 +178,10 @@ class GormAwareDataBinderSpec extends Specification {
 
         then:
         publication.author.name == 'David Foster Wallace'
-        
+
         when:
         binder.bind publication, new SimpleMapDataBindingSource([author: [id: '']])
-        
+
         then:
         publication.author == null
     }
@@ -253,28 +253,28 @@ class GormAwareDataBinderSpec extends Specification {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def book = new DataBindingBook()
-        
+
         when:
         binder.bind book, new SimpleMapDataBindingSource([topics: ['journalism', null, 'satire']])
         binder.bind book, new SimpleMapDataBindingSource(['topics[1]': 'counterculture'])
-        
+
         then:
         book.topics == ['journalism', 'counterculture', 'satire']
     }
-    
+
     void 'Test binding to a collection of Integer'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def book = new DataBindingBook()
-        
+
         when:
         binder.bind book, new SimpleMapDataBindingSource([importantPageNumbers: ['5', null, '42']])
         binder.bind book, new SimpleMapDataBindingSource(['importantPageNumbers[1]': '2112'])
-        
+
         then:
         book.importantPageNumbers == [5, 2112, 42]
     }
-    
+
     void 'Test binding to a collection of primitive'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -305,15 +305,15 @@ class GormAwareDataBinderSpec extends Specification {
         parent.child.someOtherIds.size() == 1
         parent.child.someOtherIds.contains(4)
     }
-    
+
     void 'Test unbinding a Map entry'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def team = new Team()
-        
+
         when:
         team.members = ['jeff': new Author(name: 'Jeff Scott Brown'),'betsy': new Author(name: 'Sarah Elizabeth Brown')]
-        
+
         then:
         team.members.size() == 2
         team.members.containsKey('betsy')
@@ -323,30 +323,29 @@ class GormAwareDataBinderSpec extends Specification {
 
         when:
         binder.bind team, new SimpleMapDataBindingSource(['members[jeff]': [id: 'null']])
-        
+
         then:
         team.members.size() == 1
         team.members.containsKey('betsy')
         'Sarah Elizabeth Brown' == team.members.betsy.name
     }
-    
+
     void 'Test binding to a Map for new instance with quoted key'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def team = new Team()
-        
+
         when:
         binder.bind team, new SimpleMapDataBindingSource(["members['jeff']": [name: 'Jeff Scott Brown'], 'members["betsy"]': [name: 'Sarah Elizabeth Brown']])
-        
+
         then:
         team.members.size() == 2
         assert team.members.jeff instanceof Author
         assert team.members.betsy instanceof Author
         team.members.jeff.name == 'Jeff Scott Brown'
         team.members.betsy.name == 'Sarah Elizabeth Brown'
-
     }
-    
+
     void 'Test autoGrowCollectionLimit with Maps of String'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -357,19 +356,18 @@ class GormAwareDataBinderSpec extends Specification {
         bindingSource['states[IL]'] = 'Illinois'
         bindingSource['states[VA]'] = 'Virginia'
         bindingSource['states[CA]'] = 'California'
-        
+
         when:
         binder.bind team, new SimpleMapDataBindingSource(bindingSource)
-        
+
         then:
         team.states.size() == 2
         team.states.containsKey('MO')
         team.states.containsKey('IL')
         team.states.MO == 'Missouri'
         team.states.IL == 'Illinois'
-
     }
-    
+
     void 'Test autoGrowCollectionLimit with Maps of domain objects'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -380,10 +378,10 @@ class GormAwareDataBinderSpec extends Specification {
         bindingSource['members[betsy]'] = [name: 'Sarah Elizabeth Brown']
         bindingSource['members[jake]'] = [name: 'Jacob Ray Brown']
         bindingSource['members[zack]'] = [name: 'Zachary Scott Brown']
-        
+
         when:
         binder.bind team, new SimpleMapDataBindingSource(bindingSource)
-        
+
         then:
         team.members.size() == 2
         team.members.containsKey('jeff')
@@ -393,66 +391,66 @@ class GormAwareDataBinderSpec extends Specification {
         team.members.jeff.name == 'Jeff Scott Brown'
         team.members.betsy.name == 'Sarah Elizabeth Brown'
     }
-    
+
     void 'Test binding to Set with subscript'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def pub = new Publisher()
         pub.addToAuthors(name: 'Author One')
-        
+
         when:
         binder.bind pub, new SimpleMapDataBindingSource(['authors[0]': [name: 'Author Uno'], 'authors[1]': [name: 'Author Dos']])
-        
+
         then:
         pub.authors.size() == 2
         pub.authors[0].name == 'Author Uno'
         pub.authors[1].name == 'Author Dos'
     }
-    
+
     void 'Test binding existing entities to a new Set'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        
+
         when:
         def a1 = new Author(name: 'Author One').save()
         def a2 = new Author(name: 'Author Two').save(flush:true)
-        
+
         then:
         a2
         a1
-        
+
         when:
         def pub = new Publisher()
         binder.bind pub, new SimpleMapDataBindingSource(['authors[0]': [id: a1.id], 'authors[1]': [id: a2.id]])
-        
+
         then:
         pub.authors.size() == 2
         pub.authors.find { it.name == 'Author One' } != null
         pub.authors.find { it.name == 'Author Two' } != null
     }
-    
+
     void 'Test binding a String to an domain class object reference in a Collection'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        
+
         when:
         def a1 = new Author(name: 'Author One').save()
         def a2 = new Author(name: 'Author Two').save(flush:true)
-        
+
         then:
         a2
         a1
-        
+
         when:
         def pub = new Publisher()
         String stringToBind = a2.id as String
         binder.bind pub, new SimpleMapDataBindingSource(['authors[0]': stringToBind])
-        
+
         then:
         pub.authors.size() == 1
         pub.authors.find { it.name == 'Author Two' } != null
     }
-    
+
     void 'Test updating Set elements by id and subscript operator'() {
         when:
         def a1 = new Author(name: 'Author One').save()
@@ -462,12 +460,12 @@ class GormAwareDataBinderSpec extends Specification {
         publisher.addToAuthors(a1)
         publisher.addToAuthors(a2)
         publisher.addToAuthors(a3)
-        
+
         then:
         a1.id != null
         a2.id != null
         a3.id != null
-        
+
         when:
         def binder = new GormAwareDataBinder(grailsApplication)
         // the subscript values are not important, the ids drive selection from the Set
@@ -477,13 +475,13 @@ class GormAwareDataBinderSpec extends Specification {
         def updatedA1 = publisher.authors.find { it.id == a1.id }
         def updatedA2 = publisher.authors.find { it.id == a2.id }
         def updatedA3 = publisher.authors.find { it.id == a3.id }
-        
+
         then:
         updatedA1.name == 'Author Uno'
         updatedA2.name == 'Author Dos'
         updatedA3.name == 'Author Tres'
-        
     }
+
     void 'Test updating a Set element by id that does not exist'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
@@ -491,27 +489,27 @@ class GormAwareDataBinderSpec extends Specification {
         def listener = { BindingError error ->
             bindingErrors << error
         } as DataBindingListener
-        
+
         when:
         def publisher = new Publisher(name: 'Apress').save()
         publisher.save(flush: true)
         binder.bind publisher,new SimpleMapDataBindingSource( ['authors[0]': [id: 42, name: 'Some Name']]), listener
-        
+
         then:
         bindingErrors?.size() == 1
-        
+
         when:
         def error = bindingErrors[0]
-        
+
         then:
         error.propertyName == 'authors'
         error.cause?.message == 'Illegal attempt to update element in [authors] Set with id [42]. No such record was found.'
     }
-    
+
     void 'Test updating nested entities retrieved by id'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
-        
+
         when:
         def publisher = new Publisher(name: 'Apress').save()
         def publication = new Publication(title: 'Definitive Guide To Grails', author: new Author(name: 'Author Name'))
@@ -520,10 +518,10 @@ class GormAwareDataBinderSpec extends Specification {
         then:
         publication.publisher != null
         publication.id != null
-        
+
         when:
         binder.bind publisher, new SimpleMapDataBindingSource(['publications[0]': [id: publication.id, title: 'Definitive Guide To Grails 2']])
-        
+
         then:
         publisher.publications[0].title == 'Definitive Guide To Grails 2'
     }
@@ -532,35 +530,35 @@ class GormAwareDataBinderSpec extends Specification {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def author = new Author()
-        
+
         when:
         binder.bind author, new SimpleMapDataBindingSource([widget: [name: 'Some Name', isBindable: 'Some Bindable String']])
-        
+
         then:
         // should be a Fidget, not a Widget
         author.widget instanceof Fidget
-        
+
         // property in Fidget
         author.widget.name == 'Some Name'
-        
+
         // property in Widget
         author.widget.isBindable == 'Some Bindable String'
     }
-    
+
     void 'Test binding to different collection types'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
         def obj = new CollectionContainer()
         def map = [:]
-        
+
 //        map['collectionOfWidgets[0]'] = [isBindable: 'Is Uno (Collection)', isNotBindable: 'Is Not Uno (Collection)']
 //        map['collectionOfWidgets[1]'] = [isBindable: 'Is Dos (Collection)', isNotBindable: 'Is Not Dos (Collection)']
 //        map['collectionOfWidgets[2]'] = [isBindable: 'Is Tres (Collection)', isNotBindable: 'Is Not Tres (Collection)']
-        
+
         map['listOfWidgets[0]'] = [isBindable: 'Is Uno (List)', isNotBindable: 'Is Not Uno (List)']
         map['listOfWidgets[1]'] = [isBindable: 'Is Dos (List)', isNotBindable: 'Is Not Dos (List)']
         map['listOfWidgets[2]'] = [isBindable: 'Is Tres (List)', isNotBindable: 'Is Not Tres (List)']
-        
+
         map['setOfWidgets[0]'] = [isBindable: 'Is Uno (Set)', isNotBindable: 'Is Not Uno (Set)']
         map['setOfWidgets[1]'] = [isBindable: 'Is Dos (Set)', isNotBindable: 'Is Not Dos (Set)']
         map['setOfWidgets[2]'] = [isBindable: 'Is Tres (Set)', isNotBindable: 'Is Not Tres (Set)']
@@ -568,14 +566,14 @@ class GormAwareDataBinderSpec extends Specification {
         map['sortedSetOfWidgets[0]'] = [isBindable: 'Is Uno (SortedSet)', isNotBindable: 'Is Not Uno (SortedSet)']
         map['sortedSetOfWidgets[1]'] = [isBindable: 'Is Dos (SortedSet)', isNotBindable: 'Is Not Dos (SortedSet)']
         map['sortedSetOfWidgets[2]'] = [isBindable: 'Is Tres (SortedSet)', isNotBindable: 'Is Not Tres (SortedSet)']
-        
+
         when:
         binder.bind obj, new SimpleMapDataBindingSource(map)
         def listOfWidgets = obj.listOfWidgets
         def setOfWidgets = obj.setOfWidgets
         def collectionOfWidgets = obj.collectionOfWidgets
         def sortedSetOfWidgets = obj.sortedSetOfWidgets
-        
+
         then:
         listOfWidgets instanceof List
         listOfWidgets.size() == 3
@@ -585,20 +583,19 @@ class GormAwareDataBinderSpec extends Specification {
         listOfWidgets[1].isNotBindable == null
         listOfWidgets[2].isBindable == 'Is Tres (List)'
         listOfWidgets[2].isNotBindable == null
-        
+
         setOfWidgets instanceof Set
         !(setOfWidgets instanceof SortedSet)
         setOfWidgets.size() == 3
         setOfWidgets.find { it.isBindable == 'Is Uno (Set)' && it.isNotBindable == null }
         setOfWidgets.find { it.isBindable == 'Is Dos (Set)' && it.isNotBindable == null }
         setOfWidgets.find { it.isBindable == 'Is Tres (Set)' && it.isNotBindable == null }
-        
+
         sortedSetOfWidgets instanceof SortedSet
         sortedSetOfWidgets.size() == 3
         sortedSetOfWidgets[0].isBindable == 'Is Dos (SortedSet)'
         sortedSetOfWidgets[1].isBindable == 'Is Tres (SortedSet)'
         sortedSetOfWidgets[2].isBindable == 'Is Uno (SortedSet)'
-        
     }
 }
 
@@ -626,7 +623,7 @@ class Publication {
 @Entity
 class Author {
     String name
-    
+
     @BindUsing({obj, source ->
         source['stringWithSpecialBinding']?.trim()
     })
@@ -634,16 +631,16 @@ class Author {
 
     @BindUsing({ obj, DataBindingSource source ->
         // could have conditional logic here
-        // that instantiates different types 
+        // that instantiates different types
         // based on entries in the source map
         // or some other criteria.
         // in this case, hardcoded to return a
         // particular type.
-        
+
         new Fidget(source['widget'])
     })
     Widget widget
-    
+
     static constraints = {
         widget nullable: true
         stringWithSpecialBinding nullable: true
@@ -659,9 +656,10 @@ class Widget implements Comparable {
         isNotBindable bindable: false
     }
 
-    public int compareTo(Object rhs) {
+    int compareTo(Object rhs) {
         new CompareToBuilder().append(isBindable, rhs.isBindable).append(isNotBindable, rhs.isNotBindable).toComparison()
-    }}
+    }
+}
 
 @Entity
 class Fidget extends Widget {
@@ -688,14 +686,15 @@ class DataBindingBook {
 
 @Entity
 class CollectionContainer {
-    static hasMany = [listOfWidgets: Widget, 
-                      setOfWidgets: Widget, 
-                      collectionOfWidgets: Widget, 
+    static hasMany = [listOfWidgets: Widget,
+                      setOfWidgets: Widget,
+                      collectionOfWidgets: Widget,
                       sortedSetOfWidgets: Widget]
     List listOfWidgets
     SortedSet sortedSetOfWidgets
     Collection collectionOfWidgets
 }
+
 class PrimitiveContainer {
     boolean someBoolean
     byte someByte

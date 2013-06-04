@@ -31,7 +31,7 @@ import org.springframework.web.util.HtmlUtils;
  * This encoder is for HTML4 documents. It uses escaping information from
  * Spring's HtmlUtils so that this is compatible with the previous
  * "encodeAsHTML" in older Grails versions.
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -56,7 +56,7 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
     protected String escapeCharacter(char ch, char previousChar) {
         Character key = Character.valueOf(ch);
         String replacement = replacements.get(key);
-        if(replacement==null) {
+        if (replacement == null) {
             replacement = StreamingHTMLEncoderHelper.convertToReference(ch);
             replacements.put(key, replacement != null ? replacement : NULL_MARKER);
         }
@@ -64,8 +64,7 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
     }
 
     /**
-     * Call's Spring's HtmlUtils's private method to convert characters to HTML
-     * entities
+     * Calls Spring's HtmlUtils's private method to convert characters to HTML entities.
      */
     private static final class StreamingHTMLEncoderHelper {
         private static Object instance;
@@ -88,25 +87,21 @@ public class HTML4Encoder extends AbstractCharReplacementEncoder {
 
         /**
          * Convert to html reference.
-         * 
-         * @param c
-         *            the character to convert
-         * @return the converted entity, returns null if the character doesn't
-         *         have a replacement
+         *
+         * @param c the character to convert
+         * @return the converted entity, returns null if the character doesn't have a replacement
          */
         public static final String convertToReference(char c) {
             if (!disabled) {
                 return (String)ReflectionUtils.invokeMethod(mapMethod, instance, c);
             }
-            else {
-                String charAsString = String.valueOf(c);
-                String replacement = HtmlUtils.htmlEscape(charAsString);
-                if(charAsString.equals(replacement)) {
-                    return null;
-                } else {
-                    return replacement;
-                }
+
+            String charAsString = String.valueOf(c);
+            String replacement = HtmlUtils.htmlEscape(charAsString);
+            if (charAsString.equals(replacement)) {
+                return null;
             }
+            return replacement;
         }
     }
 }

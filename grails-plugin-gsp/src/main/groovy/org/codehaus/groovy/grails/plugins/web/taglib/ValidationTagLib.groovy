@@ -28,7 +28,6 @@ import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.taglib.GroovyPageAttributes
-import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.beans.PropertyEditorRegistry
 import org.springframework.context.MessageSource
 import org.springframework.context.MessageSourceResolvable
@@ -46,7 +45,7 @@ import org.springframework.web.context.request.RequestContextHolder
 class ValidationTagLib {
 
     static returnObjectForTags = ['message', 'fieldError', 'formatValue']
-    
+
     MessageSource messageSource
     CodecLookup codecLookup
 
@@ -299,12 +298,12 @@ class ValidationTagLib {
         if (error) {
             if (!attrs.encodeAs && error instanceof MessageSourceResolvable) {
                 MessageSourceResolvable errorResolvable = (MessageSourceResolvable)error
-                if(errorResolvable.arguments) {
+                if (errorResolvable.arguments) {
                     error = new DefaultMessageSourceResolvable(errorResolvable.codes, encodeArgsIfRequired(errorResolvable.arguments) as Object[], errorResolvable.defaultMessage)
                 }
             }
             try {
-                if(error instanceof MessageSourceResolvable) {
+                if (error instanceof MessageSourceResolvable) {
                     text = messageSource.getMessage(error, locale)
                 } else {
                     text = messageSource.getMessage(error.toString(), null, locale)
@@ -322,7 +321,7 @@ class ValidationTagLib {
         else if (attrs.code) {
             String code = attrs.code?.toString()
             List args = []
-            if(attrs.args) {
+            if (attrs.args) {
                 args = attrs.encodeAs ? attrs.args as List : encodeArgsIfRequired(attrs.args)
             }
             String defaultMessage
@@ -351,7 +350,7 @@ class ValidationTagLib {
     @CompileStatic
     private List encodeArgsIfRequired(arguments) {
         arguments.collect { value ->
-            if(value == null || value instanceof Number || value instanceof Date) {
+            if (value == null || value instanceof Number || value instanceof Date) {
                 value
             } else {
                 codecLookup.lookupEncoder('HTML').encode(value)

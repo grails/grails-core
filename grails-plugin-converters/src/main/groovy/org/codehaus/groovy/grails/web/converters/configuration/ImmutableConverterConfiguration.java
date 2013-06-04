@@ -41,7 +41,7 @@ public class ImmutableConverterConfiguration<C extends Converter> implements Con
     private final boolean prettyPrint;
 
     private ProxyHandler proxyHandler;
-    
+
     private final boolean cacheObjectMarshallerByClass;
 
     public ImmutableConverterConfiguration(ConverterConfiguration<C> cfg) {

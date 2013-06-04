@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.cli.fork.compile
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProjectClassExecutor
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
@@ -28,7 +29,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
  * @since 2.3
  */
 @CompileStatic
-class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor{
+class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor {
 
     ForkedGrailsCompiler(BuildSettings buildSettings) {
         super(buildSettings)
@@ -49,7 +50,6 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor{
             GrailsConsole.getInstance().error("Error running forked compilation: " + e.getMessage(), e)
             System.exit(1)
         }
-
     }
 
     @Override
@@ -75,4 +75,3 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor{
         ((GroovyObject)instance).invokeMethod("compileAll", null)
     }
 }
-

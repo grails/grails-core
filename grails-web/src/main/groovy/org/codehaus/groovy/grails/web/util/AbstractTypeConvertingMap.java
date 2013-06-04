@@ -88,8 +88,8 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
         final Iterator it = wrappedMap.keySet().iterator();
         while (it.hasNext()) {
             final Object key = it.next();
-            Object thisValue=wrappedMap.get(key);
-            Object thatValue=thatMap.wrappedMap.get(key);
+            Object thisValue = wrappedMap.get(key);
+            Object thatValue = thatMap.wrappedMap.get(key);
             if (thisValue == null && thatValue != null) {
                 return false;
             }
@@ -103,7 +103,7 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     @Override
     public int hashCode() {
         HashCodeBuilder builder = new HashCodeBuilder(23, 31);
-        for (Object entry : this.wrappedMap.entrySet()) {
+        for (Object entry : wrappedMap.entrySet()) {
             builder.append(entry);
         }
         return builder.toHashCode();

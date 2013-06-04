@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,12 +32,12 @@ class ClosureValueConverter implements ValueConverter {
     Object convert(value) {
         converterClosure value
     }
-    
-    Class getTargetType() {
+
+    Class<?> getTargetType() {
         targetType
     }
 
-    public boolean canConvert(Object value) {
+    boolean canConvert(Object value) {
         true
     }
 }

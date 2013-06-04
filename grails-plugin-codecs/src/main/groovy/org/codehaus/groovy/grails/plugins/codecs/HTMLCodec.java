@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.support.encoding.Encoder;
 
 /**
  * Encodes and decodes strings to and from HTML.
- * 
+ *
  * @author Graeme Rocher
  * @author Lari Hotari
  * @since 1.1
@@ -46,7 +46,7 @@ public final class HTMLCodec implements CodecFactory, GrailsApplicationAware {
             return HTMLEncoder.HTML_CODEC_IDENTIFIER;
         }
     };
-    
+
     public HTMLCodec() {
         setUseLegacyEncoder(true);
     }
@@ -60,17 +60,21 @@ public final class HTMLCodec implements CodecFactory, GrailsApplicationAware {
     }
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
-        if(grailsApplication != null && grailsApplication.getFlatConfig() != null) {
-            Object htmlCodecSetting = grailsApplication.getFlatConfig().get(CONFIG_PROPERTY_GSP_HTMLCODEC);
-            if(htmlCodecSetting != null) {
-                String htmlCodecSettingStr = htmlCodecSetting.toString().toLowerCase();
-                if(htmlCodecSettingStr.startsWith("xml") || "xhtml".equalsIgnoreCase(htmlCodecSettingStr)) {
-                    setUseLegacyEncoder(false);
-                }
-            }
+        if (grailsApplication == null || grailsApplication.getFlatConfig() == null) {
+            return;
+        }
+
+        Object htmlCodecSetting = grailsApplication.getFlatConfig().get(CONFIG_PROPERTY_GSP_HTMLCODEC);
+        if (htmlCodecSetting == null) {
+            return;
+        }
+
+        String htmlCodecSettingStr = htmlCodecSetting.toString().toLowerCase();
+        if (htmlCodecSettingStr.startsWith("xml") || "xhtml".equalsIgnoreCase(htmlCodecSettingStr)) {
+            setUseLegacyEncoder(false);
         }
     }
-    
+
     public void setUseLegacyEncoder(boolean useLegacyEncoder) {
         encoder = useLegacyEncoder ? html4_encoder : xml_encoder;
     }

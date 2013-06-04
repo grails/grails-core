@@ -58,7 +58,6 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      */
     String VIEW = "view";
 
-    
     /**
      * The name of the namespace property
      */
@@ -142,9 +141,8 @@ public interface GrailsControllerClass extends InjectableGrailsClass {
      * @return The view for the specified closure action
      */
     String getViewByName(String closureName);
-    
+
     /**
-     * 
      * @return the namespace of this controller, null if none was specified
      */
     String getNamespace();

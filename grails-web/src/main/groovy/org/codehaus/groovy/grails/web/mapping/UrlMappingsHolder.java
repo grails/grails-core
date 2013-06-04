@@ -15,11 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
-import org.springframework.http.HttpMethod;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.springframework.http.HttpMethod;
 
 /**
  * Main entry point of Grails URL mapping mechanism. This interface defines methods to match
@@ -58,7 +58,7 @@ public interface UrlMappingsHolder {
      */
     @SuppressWarnings("rawtypes")
     UrlCreator getReverseMapping(String controller, String action, String pluginName, Map params);
-    
+
     /**
      * Retrieves the best guess of a URI for the given controller, action and parameters
      *

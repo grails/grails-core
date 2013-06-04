@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 /**
  * Generates a report of the URL mappings in a project
  *
@@ -27,32 +26,29 @@ import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 includeTargets << grailsScript("_GrailsBootstrap")
 
 target(urlMappingsReport:"Produces a URL mappings report for the current Grails application") {
-    depends(classpath, compile)
-    loadApp()
+    depends(classpath, compile, loadApp)
 
     def mappings = grailsApp.getArtefacts(UrlMappingsArtefactHandler.TYPE)
     def evaluator = classLoader.loadClass("org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator").newInstance(classLoader.loadClass('org.springframework.mock.web.MockServletContext').newInstance())
     def allMappings = []
 
     for(m in mappings) {
-        List grailsClassMappings;
-        if (Script.class.isAssignableFrom(m.getClazz())) {
-            grailsClassMappings = evaluator.evaluateMappings(m.getClazz());
+        List grailsClassMappings
+        if (Script.isAssignableFrom(m.getClazz())) {
+            grailsClassMappings = evaluator.evaluateMappings(m.getClazz())
         }
         else {
-            grailsClassMappings = evaluator.evaluateMappings(m.getMappingsClosure());
-        }        
+            grailsClassMappings = evaluator.evaluateMappings(m.getMappingsClosure())
+        }
         allMappings.addAll(grailsClassMappings)
     }
 
-    
     grailsConsole.addStatus "URL Mappings Configured for Application"
     grailsConsole.addStatus "---------------------------------------"
     def renderer = classLoader.loadClass("org.codehaus.groovy.grails.web.mapping.reporting.AnsiConsoleUrlMappingsRenderer").newInstance()
-    // renderer.isAnsiEnabled=false 
+    // renderer.isAnsiEnabled=false
     println()
     renderer.render(allMappings)
-
 }
 
 setDefaultTarget(urlMappingsReport)

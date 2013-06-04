@@ -118,7 +118,7 @@ class GPathResultMapSpec extends Specification {
         'baseball' in keys
         'country' in keys
     }
-    
+
     void 'Test id element'() {
         given:
         def xml = new XmlSlurper().parseText('''

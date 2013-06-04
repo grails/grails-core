@@ -15,18 +15,18 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
-import com.google.gson.Gson
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 
 /**
  * Creates DataBindingSource objects from HAL JSON in the request body
- * 
+ *
  * @since 2.3
  *
  * @author Jeff Brown
@@ -41,7 +41,7 @@ class HalJsonDataBindingSourceCreator extends JsonDataBindingSourceCreator {
     public static final String HAL_EMBEDDED_ELEMENT = "_embedded"
 
     @Override
-    public MimeType[] getMimeTypes() {
+    MimeType[] getMimeTypes() {
         [MimeType.HAL_JSON] as MimeType[]
     }
 
@@ -56,15 +56,17 @@ class HalJsonDataBindingSourceCreator extends JsonDataBindingSourceCreator {
         HalJsonObjectMap(JsonObject jsonObject, Gson gson) {
             super(jsonObject, gson)
 
-            if(jsonObject.has(HAL_EMBEDDED_ELEMENT)) {
-                final embeddedObject = jsonObject.get(HAL_EMBEDDED_ELEMENT)
-                jsonObject.remove(HAL_EMBEDDED_ELEMENT)
-                if(embeddedObject instanceof JsonObject) {
-                    JsonObject embeddedJson = (JsonObject)embeddedObject
+            if (!jsonObject.has(HAL_EMBEDDED_ELEMENT)) {
+                return
+            }
 
-                    for(entry in embeddedJson.entrySet()) {
-                        jsonObject.add(entry.key, entry.value)
-                    }
+            final embeddedObject = jsonObject.get(HAL_EMBEDDED_ELEMENT)
+            jsonObject.remove(HAL_EMBEDDED_ELEMENT)
+            if (embeddedObject instanceof JsonObject) {
+                JsonObject embeddedJson = (JsonObject)embeddedObject
+
+                for (entry in embeddedJson.entrySet()) {
+                    jsonObject.add(entry.key, entry.value)
                 }
             }
         }

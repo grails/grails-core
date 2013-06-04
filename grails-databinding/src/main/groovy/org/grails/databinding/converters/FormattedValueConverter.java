@@ -49,15 +49,14 @@ class FormattedStringValueConverter implements FormattedValueConverter {
 public interface FormattedValueConverter {
     /**
      * Return a formatted value
-     * 
+     *
      * @param value The value to be formatted
      * @param format The format String
      * @return the formatted value
      */
     Object convert(Object value, String format);
-    
+
     /**
-     * 
      * @return the output type of this converter
      */
     Class<?> getTargetType();

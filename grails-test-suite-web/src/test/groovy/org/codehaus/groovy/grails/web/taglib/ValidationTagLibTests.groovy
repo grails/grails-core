@@ -419,7 +419,6 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
         assertOutputEquals(expected, htmlCodecDirective + template, [book:b])
     }
 
-    
     void testMessageNoneEncodeAs() {
         def b = ga.getDomainClass("ValidationTagLibBook").newInstance()
         b.properties = [title:"<b>bold</b> is ok"]

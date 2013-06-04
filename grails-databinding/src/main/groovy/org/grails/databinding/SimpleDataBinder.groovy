@@ -83,7 +83,7 @@ class SimpleDataBinder implements DataBinder {
     ]
 
     static final INDEXED_PROPERTY_REGEX = /(.*)\[\s*([^\s]*)\s*\]\s*$/
-    
+
     int autoGrowCollectionLimit = 256
 
     SimpleDataBinder() {
@@ -161,32 +161,32 @@ class SimpleDataBinder implements DataBinder {
     void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
         def keys = source.getPropertyNames()
         for(String key in keys) {
-            if(!filter || key.startsWith(filter + '.')) {
+            if (!filter || key.startsWith(filter + '.')) {
                 String propName = key
-                if(filter) {
+                if (filter) {
                     propName = key[(1+filter.size())..-1]
                 }
                 def metaProperty = obj.metaClass.getMetaProperty propName
-            
-                if(metaProperty) { // normal property
-                    if(isOkToBind(metaProperty.name, whiteList, blackList)) {
+
+                if (metaProperty) { // normal property
+                    if (isOkToBind(metaProperty.name, whiteList, blackList)) {
                         def val = source[key]
                         processProperty obj, metaProperty, val, source, listener
                     }
                 } else {
                     def descriptor = getIndexedPropertyReferenceDescriptor propName
-                    if(descriptor) { // indexed property
+                    if (descriptor) { // indexed property
                         metaProperty = obj.metaClass.getMetaProperty descriptor.propertyName
-                        if(metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
+                        if (metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
                             def val = source.getPropertyValue key
                             processIndexedProperty obj, metaProperty, descriptor, val, source, listener
                         }
-                    } else if(propName.startsWith('_')) { // boolean special handling
+                    } else if (propName.startsWith('_')) { // boolean special handling
                         def restOfPropertyName = propName[1..-1]
-                        if(!source.containsProperty(restOfPropertyName)) {
+                        if (!source.containsProperty(restOfPropertyName)) {
                             metaProperty = obj.metaClass.getMetaProperty restOfPropertyName
-                            if(metaProperty && isOkToBind(restOfPropertyName, whiteList, blackList)) {
-                                if((Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type)) {
+                            if (metaProperty && isOkToBind(restOfPropertyName, whiteList, blackList)) {
+                                if ((Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type)) {
                                     bindProperty obj, source, metaProperty, false, listener
                                 }
                             }
@@ -204,10 +204,10 @@ class SimpleDataBinder implements DataBinder {
     protected IndexedPropertyReferenceDescriptor getIndexedPropertyReferenceDescriptor(propName) {
         IndexedPropertyReferenceDescriptor descriptor
         def matcher = propName =~ INDEXED_PROPERTY_REGEX
-        if(matcher) {
+        if (matcher) {
             def indexedPropertyName = matcher.group(1)
             def index = matcher.group(2)
-            if(index.size() > 2 && ((index.startsWith("'") && index.endsWith("'")) || (index.startsWith('"') && index.endsWith('"')))) {
+            if (index.size() > 2 && ((index.startsWith("'") && index.endsWith("'")) || (index.startsWith('"') && index.endsWith('"')))) {
                 index = index[1..-2]
             }
             descriptor = new IndexedPropertyReferenceDescriptor(propertyName: indexedPropertyName, index: index)
@@ -218,38 +218,38 @@ class SimpleDataBinder implements DataBinder {
     protected processProperty(obj, MetaProperty metaProperty, val, DataBindingSource source, DataBindingListener listener) {
         def propName = metaProperty.name
         def propertyType = metaProperty.type
-        if(structuredEditors.containsKey(propertyType) && ('struct' == val || 'date.struct' == val)) {
+        if (structuredEditors.containsKey(propertyType) && ('struct' == val || 'date.struct' == val)) {
             def structuredEditor = structuredEditors[propertyType]
             val = structuredEditor.getPropertyValue obj, propName, source
         }
         bindProperty obj, source, metaProperty, val, listener
     }
-    
+
     protected processIndexedProperty(obj, MetaProperty metaProperty, IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor, val, DataBindingSource source, DataBindingListener listener) {
         def propName = indexedPropertyReferenceDescriptor.propertyName
         def propertyType = metaProperty.type
-        if(propertyType.isArray()) {
+        if (propertyType.isArray()) {
             def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
             def array = initializeArray(obj, propName, propertyType.componentType, index)
-            if(array != null) {
+            if (array != null) {
                 addElementToArrayAt array, index, val
             }
-        } else if(Collection.isAssignableFrom(propertyType)) {
+        } else if (Collection.isAssignableFrom(propertyType)) {
             def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
             Collection collectionInstance = initializeCollection obj, propName, propertyType
             def indexedInstance = collectionInstance[index]
-            if(indexedInstance == null) {
+            if (indexedInstance == null) {
                 Class genericType = getReferencedTypeForCollection(propName, obj)
-                if(genericType) {
-                    if(genericType.isAssignableFrom(val?.getClass())) {
+                if (genericType) {
+                    if (genericType.isAssignableFrom(val?.getClass())) {
                         addElementToCollectionAt obj, propName, collectionInstance, index, val
-                    } else if(isBasicType(genericType)) {
+                    } else if (isBasicType(genericType)) {
                         addElementToCollectionAt obj, propName, collectionInstance, index, convert(genericType, val)
-                    } else if(val instanceof Map){
+                    } else if (val instanceof Map){
                         indexedInstance = genericType.newInstance()
                         bind indexedInstance, new SimpleMapDataBindingSource(val), listener
                         addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
-                    } else if(val instanceof DataBindingSource) {
+                    } else if (val instanceof DataBindingSource) {
                         indexedInstance = genericType.newInstance()
                         bind indexedInstance, val, listener
                         addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
@@ -258,19 +258,19 @@ class SimpleDataBinder implements DataBinder {
                     addElementToCollectionAt obj, propName, collectionInstance, index, val
                 }
             } else {
-                if(val instanceof Map) {
+                if (val instanceof Map) {
                     bind indexedInstance, new SimpleMapDataBindingSource(val), listener
-                } else if(val instanceof DataBindingSource) {
+                } else if (val instanceof DataBindingSource) {
                     bind indexedInstance, val, listener
                 } else if (val == null && indexedInstance != null) {
                     addElementToCollectionAt obj, propName, collectionInstance, index, null
                 }
             }
-        } else if(Map.isAssignableFrom(propertyType)) {
+        } else if (Map.isAssignableFrom(propertyType)) {
             Map mapInstance = initializeMap obj, propName
-            if(mapInstance.size() < autoGrowCollectionLimit || mapInstance.containsKey(indexedPropertyReferenceDescriptor.index)) {
+            if (mapInstance.size() < autoGrowCollectionLimit || mapInstance.containsKey(indexedPropertyReferenceDescriptor.index)) {
                 def referencedType = getReferencedTypeForCollection propName, obj
-                if(referencedType != null && val instanceof Map) {
+                if (referencedType != null && val instanceof Map) {
                     mapInstance[indexedPropertyReferenceDescriptor.index] = referencedType.newInstance(val)
                 } else {
                     mapInstance[indexedPropertyReferenceDescriptor.index] = val
@@ -278,13 +278,13 @@ class SimpleDataBinder implements DataBinder {
             }
         }
     }
-    
+
     protected initializeArray(obj, String propertyName, Class arrayType, int index) {
         Object[] array = obj[propertyName]
-        if(array == null && index < autoGrowCollectionLimit) {
+        if (array == null && index < autoGrowCollectionLimit) {
             array = Array.newInstance(arrayType, index + 1)
             obj[propertyName] = array
-        } else if(array != null && array.length <= index && index < autoGrowCollectionLimit) {
+        } else if (array != null && array.length <= index && index < autoGrowCollectionLimit) {
             def newArray = Array.newInstance(arrayType, index + 1)
             System.arraycopy(array, 0, newArray, 0, array.length)
             array = newArray
@@ -292,7 +292,7 @@ class SimpleDataBinder implements DataBinder {
         }
         array
     }
-    
+
     protected boolean isBasicType(Class c) {
         BASIC_TYPES.contains(c) || c.isPrimitive()
     }
@@ -302,7 +302,7 @@ class SimpleDataBinder implements DataBinder {
         def clazz = obj.getClass()
         def field = clazz.getDeclaredField(propertyName)
         def genericType = field.genericType
-        if(genericType instanceof ParameterizedType) {
+        if (genericType instanceof ParameterizedType) {
             contentType = ((ParameterizedType)genericType).getActualTypeArguments()[0]
         }
         contentType
@@ -310,7 +310,7 @@ class SimpleDataBinder implements DataBinder {
 
     protected boolean isOkToAddElementAt(Collection collection, int index) {
         boolean isOk
-        if(collection instanceof Set) {
+        if (collection instanceof Set) {
             isOk = collection.size() < autoGrowCollectionLimit
         } else {
             isOk = (index < autoGrowCollectionLimit || index < collection.size())
@@ -320,8 +320,8 @@ class SimpleDataBinder implements DataBinder {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected addElementToCollectionAt(obj, String propertyName, Collection collection, index, val) {
-        if(isOkToAddElementAt(collection, index)) {
-            if(collection instanceof Set) {
+        if (isOkToAddElementAt(collection, index)) {
+            if (collection instanceof Set) {
                 collection.add val
             } else {
                 collection[index] = val
@@ -331,21 +331,21 @@ class SimpleDataBinder implements DataBinder {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected addElementToArrayAt(array, index, val) {
-        if(array.length > index) {
+        if (array.length > index) {
             array[index] = convert(array.class.componentType, val)
         }
     }
 
     protected Map initializeMap(obj, String propertyName) {
-        if(obj[propertyName] == null) {
+        if (obj[propertyName] == null) {
             obj[propertyName] = [:]
         }
         return (Map)obj[propertyName]
     }
 
     protected Collection initializeCollection(obj, String propertyName, Class type) {
-        if(obj[propertyName] == null) {
-            if(List.isAssignableFrom(type)) {
+        if (obj[propertyName] == null) {
+            if (List.isAssignableFrom(type)) {
                 obj[propertyName] = new ArrayList()
             } else if (SortedSet.isAssignableFrom(type)) {
                 obj[propertyName] = new TreeSet()
@@ -367,7 +367,7 @@ class SimpleDataBinder implements DataBinder {
     protected ValueConverter getFormattedConverter(Field field, String formattingValue) {
         def converter
         def formattedConverter = formattedValueConvertersionHelpers[field.type]
-        if(formattedConverter) {
+        if (formattedConverter) {
             converter = { SimpleMapDataBindingSource source ->
                 def value = source.getPropertyValue field.name
                 formattedConverter.convert (value, formattingValue)
@@ -380,17 +380,17 @@ class SimpleDataBinder implements DataBinder {
         def converter
         try {
             def field = obj.getClass().getDeclaredField propName
-            if(field) {
+            if (field) {
                 def annotation = field.getAnnotation BindUsing
-                if(annotation) {
+                if (annotation) {
                     def valueClass = annotation.value()
-                    if(Closure.isAssignableFrom(valueClass)) {
+                    if (Closure.isAssignableFrom(valueClass)) {
                         Closure closure = (Closure)valueClass.newInstance(null, null)
                         converter = new ClosureValueConverter(converterClosure: closure.curry(obj), targetType: field.type)
                     }
                 } else {
                     annotation = field.getAnnotation BindingFormat
-                    if(annotation) {
+                    if (annotation) {
                         converter = getFormattedConverter field, annotation.value()
                     }
                 }
@@ -403,9 +403,9 @@ class SimpleDataBinder implements DataBinder {
     protected ValueConverter getValueConverterForClass(obj, String propName) {
         def converter
         def annotation = obj.getClass().getAnnotation BindUsing
-        if(annotation) {
+        if (annotation) {
             def valueClass = annotation.value()
-            if(BindingHelper.isAssignableFrom(valueClass)) {
+            if (BindingHelper.isAssignableFrom(valueClass)) {
                 BindingHelper dataConverter = (BindingHelper)valueClass.newInstance()
                 converter = new ClosureValueConverter(converterClosure: { DataBindingSource it -> dataConverter.getPropertyValue(obj, propName, it) })
             }
@@ -415,7 +415,7 @@ class SimpleDataBinder implements DataBinder {
 
     protected ValueConverter getValueConverter(obj, String propName, propValue) {
         def converter = getValueConverterForField obj, propName
-        if(!converter) {
+        if (!converter) {
             converter = getValueConverterForClass obj, propName
         }
         converter
@@ -435,49 +435,49 @@ class SimpleDataBinder implements DataBinder {
         def propName = metaProperty.name
         def propertyType
         def propertyGetter
-        if(metaProperty instanceof MetaBeanProperty) {
+        if (metaProperty instanceof MetaBeanProperty) {
             def mbp = (MetaBeanProperty)metaProperty
             propertyType = mbp.field?.type
             propertyGetter = mbp.getter
         }
-        if(propertyType == null) {
+        if (propertyType == null) {
             propertyType = metaProperty.type
         }
-        if(propertyValue == null || propertyType == Object || propertyType.isAssignableFrom(propertyValue.getClass())) {
-            if(!(propertyValue instanceof Range) && propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType) && propertyGetter) {
+        if (propertyValue == null || propertyType == Object || propertyType.isAssignableFrom(propertyValue.getClass())) {
+            if (!(propertyValue instanceof Range) && propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType) && propertyGetter) {
                 addElementsToCollection(obj, propName, propertyValue, true)
             } else {
                 obj[propName] = propertyValue
             }
-        } else if(propertyValue instanceof List &&
+        } else if (propertyValue instanceof List &&
                   Set.isAssignableFrom(propertyType) &&
                   !SortedSet.isAssignableFrom(propertyType)) {
             addElementsToCollection(obj, propName, propertyValue, true)
-        } else if(Enum.isAssignableFrom(propertyType) && propertyValue instanceof String) {
+        } else if (Enum.isAssignableFrom(propertyType) && propertyValue instanceof String) {
             obj[propName] = convertStringToEnum(propertyType, propertyValue)
         } else {
-            if(propertyValue instanceof Map) {
-                if(Collection.isAssignableFrom(propertyType) &&
+            if (propertyValue instanceof Map) {
+                if (Collection.isAssignableFrom(propertyType) &&
                    propertyValue.size() == 1 &&
                    ((Map)propertyValue)[propertyValue.keySet()[0]] instanceof List) {
                     def key = propertyValue.keySet()[0]
                     List list = (List)((Map)propertyValue)[key]
                     addElementsToCollection(obj, propName, list)
                 } else {
-                    if(obj[propName] == null) {
+                    if (obj[propName] == null) {
                         initializeProperty(obj, propName, propertyType, source)
                     }
                     bind obj[propName], new SimpleMapDataBindingSource(propertyValue), listener
                 }
-            } else if(propertyValue instanceof DataBindingSource) {
-                if(Collection.isAssignableFrom(propertyType) &&
+            } else if (propertyValue instanceof DataBindingSource) {
+                if (Collection.isAssignableFrom(propertyType) &&
                    propertyValue.size() == 1 &&
                    ((Map)propertyValue)[propertyValue.getPropertyNames()[0]] instanceof List) {
                     def key = propertyValue.getPropertyNames()[0]
                     List list = (List)((Map)propertyValue)[key]
                     addElementsToCollection(obj, propName, list)
                 } else {
-                    if(obj[propName] == null) {
+                    if (obj[propName] == null) {
                         initializeProperty(obj, propName, propertyType, source)
                     }
                     bind obj[propName], propertyValue, listener
@@ -490,24 +490,24 @@ class SimpleDataBinder implements DataBinder {
 
     protected bindProperty(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
         def propName = metaProperty.name
-        if(listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
+        if (listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
             try {
                 def converter = getValueConverter obj, propName, propertyValue
-                if(converter) {
+                if (converter) {
                     propertyValue = converter.convert source
                 }
                 setPropertyValue obj, source, metaProperty, propertyValue, listener
             } catch (Exception e) {
                 addBindingError(obj, propName, propertyValue, e, listener)
             }
-        } else if(listener != null && propertyValue instanceof Map && obj[propName] != null) {
+        } else if (listener != null && propertyValue instanceof Map && obj[propName] != null) {
             bind obj[propName], new SimpleMapDataBindingSource(propertyValue)
         }
         listener?.afterBinding obj, propName
     }
 
     protected addBindingError(obj, String propName, propertyValue, Exception e, DataBindingListener listener) {
-        if(listener) {
+        if (listener) {
             def error = new SimpleBindingError(obj, propName, propertyValue, e.cause ?: e)
             listener.bindingError error
         }
@@ -517,16 +517,14 @@ class SimpleDataBinder implements DataBinder {
         Class propertyType = obj.metaClass.getMetaProperty(collectionPropertyName).type
         def referencedType = getReferencedTypeForCollection(collectionPropertyName, obj)
         def coll = initializeCollection(obj, collectionPropertyName, propertyType)
-        if(removeExistingElements == true) {
+        if (removeExistingElements == true) {
             coll.clear()
         }
-        if(collection) {
-            for(element in collection) {
-                if(element == null || referencedType.isAssignableFrom(element.getClass())) {
-                    coll << element
-                } else {
-                    coll << convert(referencedType, element)
-                }
+        for(element in collection) {
+            if (element == null || referencedType.isAssignableFrom(element.getClass())) {
+                coll << element
+            } else {
+                coll << convert(referencedType, element)
             }
         }
     }
@@ -536,24 +534,24 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected convert(Class typeToConvertTo, value) {
-        if(typeToConvertTo.isAssignableFrom(value?.getClass())) {
+        if (typeToConvertTo.isAssignableFrom(value?.getClass())) {
             return value
         }
-        if(conversionHelpers.containsKey(typeToConvertTo)) {
+        if (conversionHelpers.containsKey(typeToConvertTo)) {
             ValueConverter converter = getConverter(typeToConvertTo, value)
-            if(converter) {
+            if (converter) {
                 return converter.convert(value)
             }
         }
-        if(conversionService?.canConvert(value.getClass(), typeToConvertTo)) {
+        if (conversionService?.canConvert(value.getClass(), typeToConvertTo)) {
             return conversionService.convert(value, typeToConvertTo)
-        } else if(Collection.isAssignableFrom(typeToConvertTo) && value instanceof String[]) {
-            if(Set == typeToConvertTo) {
+        } else if (Collection.isAssignableFrom(typeToConvertTo) && value instanceof String[]) {
+            if (Set == typeToConvertTo) {
                 return value as Set
-            } else if(List == typeToConvertTo) {
+            } else if (List == typeToConvertTo) {
                 return value as List
             }
-        } else if(typeToConvertTo.isPrimitive() || typeToConvertTo.isArray()) {
+        } else if (typeToConvertTo.isPrimitive() || typeToConvertTo.isArray()) {
             return value
         }
         typeToConvertTo.newInstance value

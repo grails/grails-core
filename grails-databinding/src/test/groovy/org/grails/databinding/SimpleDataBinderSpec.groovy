@@ -137,7 +137,7 @@ class SimpleDataBinderSpec extends Specification {
         obj.sqlDate == nowSqlDate
         obj.calendar == nowCalendar
     }
-    
+
     void 'Test listener is notified for properties in nested maps'() {
         given:
         def binder = new SimpleDataBinder()
@@ -147,11 +147,11 @@ class SimpleDataBinderSpec extends Specification {
             Boolean beforeBinding(Object o, String propertyName, Object value) {
                 true
             }
-            
+
             void afterBinding(Object o, String propertyName) {
                 afterBindingEvents << [object: o, propertyName: propertyName]
             }
-            
+
             void bindingError(BindingError error) {
             }
         }
@@ -171,7 +171,7 @@ class SimpleDataBinderSpec extends Specification {
         afterBindingEvents.find { it.object.is(f.gadget) && it.propertyName == 'alpha' }
         afterBindingEvents.find { it.object.is(f.gadget) && it.propertyName == 'gamma' }
     }
-    
+
     void 'Test invalid date format'() {
         given:
         def binder = new SimpleDataBinder()
@@ -181,18 +181,18 @@ class SimpleDataBinderSpec extends Specification {
             Boolean beforeBinding(Object o, String propertyName, Object value) {
                 true
             }
-            
+
             void afterBinding(Object o, String propertyName) {
             }
-            
+
             void bindingError(BindingError error) {
                 errors << error
             }
         }
-        
+
         when:
         binder.bind obj, new SimpleMapDataBindingSource([formattedUtilDate: 'BAD']), listener
-        
+
         then:
         obj.formattedUtilDate == null
         errors.size() == 1
@@ -351,23 +351,23 @@ class SimpleDataBinderSpec extends Specification {
         then:
         user.role == Role.USER
     }
-    
+
     void 'Test special boolean handling'() {
         given:
         def binder = new SimpleDataBinder()
         def factory = new Factory()
         factory.isActive = true
-        
+
         when:
         binder.bind factory, new SimpleMapDataBindingSource([_isActive: ''])
-        
+
         then:
         !factory.isActive
-        
+
         when:
         // the underscore one should be ignored since the real one is present
         binder.bind factory, new SimpleMapDataBindingSource([isActive: true, _isActive: ''])
-        
+
         then:
         factory.isActive
     }
@@ -423,70 +423,70 @@ class SimpleDataBinderSpec extends Specification {
         widget.numbers.contains 5
         widget.numbers.contains 6
     }
-    
+
     void 'Test binding to an array of Integer'() {
         given:
         def widget = new Widget()
         def binder = new SimpleDataBinder()
-        
+
         when:
         binder.bind widget, new SimpleMapDataBindingSource(['integers[0]': 42, 'integers[1]': '2112'])
-        
+
         then:
         widget.integers.length == 2
         widget.integers[0] == 42
         widget.integers[1] == 2112
     }
-    
+
     void 'Test binding ranges'() {
         given:
         def widget = new Widget()
         def binder = new SimpleDataBinder()
-        
+
         when:
         binder.bind widget, new SimpleMapDataBindingSource([validNumbers: 3..5])
-        
+
         then:
         widget.validNumbers == 3..5
-        
+
         when:
         binder.bind widget, new SimpleMapDataBindingSource([validNumbers: null])
-        
+
         then:
         widget.validNumbers == null
-        
+
         when:
         binder.bind widget, new SimpleMapDataBindingSource([validNumbers: 1..5])
-        
+
         then:
         widget.validNumbers == 1..5
-        
+
         when:
         binder.bind widget, new SimpleMapDataBindingSource([byteArray: 3..7])
-        
+
         then:
         widget.byteArray.length == 5
         widget.byteArray == ([3,4,5,6,7] as byte[])
     }
-    
+
     void 'Test auto grow collection limit'() {
         given:
         def binder = new SimpleDataBinder()
         def widget = new Widget()
         binder.autoGrowCollectionLimit = 3
-        
+
         when:
         binder.bind widget, new SimpleMapDataBindingSource(['integers[5]': 50, 'integers[0]': 10, 'integers[3]': 30, 'integers[2]': 20])
-        
+
         then:
         widget.integers.length == 3
         widget.integers[0] == 10
         widget.integers[1] == null
         widget.integers[2] == 20
-        
+
         when:
         binder.bind widget, new SimpleMapDataBindingSource(['names[5]': 'five', 'names[0]': 'zero', 'names[3]': 'three', 'names[2]': 'two'])
-        
+
         then:
         widget.names.size() == 3
         widget.names[0] == 'zero'

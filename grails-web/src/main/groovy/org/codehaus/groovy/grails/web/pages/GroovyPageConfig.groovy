@@ -33,15 +33,16 @@ class GroovyPageConfig {
     public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibdefault"
     /** allow inheriting codecs from parent levels */
     public static final String INHERIT_SETTING_NAME="inherit"
-    
-    public static final Set<String> VALID_CODEC_SETTING_NAMES = ([OUT_CODEC_NAME, EXPRESSION_CODEC_NAME, STATIC_CODEC_NAME, TAGLIB_CODEC_NAME, TAGLIB_DEFAULT_CODEC_NAME] as Set).asImmutable()
+
+    public static final Set<String> VALID_CODEC_SETTING_NAMES =
+        ([OUT_CODEC_NAME, EXPRESSION_CODEC_NAME, STATIC_CODEC_NAME, TAGLIB_CODEC_NAME, TAGLIB_DEFAULT_CODEC_NAME] as Set).asImmutable()
 
     private static final Map<String, String> defaultSettings =
-                                                        [(EXPRESSION_CODEC_NAME): 'html',
-                                                            (STATIC_CODEC_NAME): 'none',
-                                                            (OUT_CODEC_NAME): 'none',
-                                                            (TAGLIB_CODEC_NAME): 'none',
-                                                            (TAGLIB_DEFAULT_CODEC_NAME): 'none']
+        [(EXPRESSION_CODEC_NAME):     'html',
+         (STATIC_CODEC_NAME):         'none',
+         (OUT_CODEC_NAME):            'none',
+         (TAGLIB_CODEC_NAME):         'none',
+         (TAGLIB_DEFAULT_CODEC_NAME): 'none']
 
     Map flatConfig
 
@@ -49,27 +50,27 @@ class GroovyPageConfig {
         this.flatConfig = flatConfig
     }
 
-    public String getCodecSettings(GrailsPluginInfo pluginInfo, String codecWriterName) {
-        if(!codecWriterName) return null
+    String getCodecSettings(GrailsPluginInfo pluginInfo, String codecWriterName) {
+        if (!codecWriterName) return null
 
         String gspCodecsPrefix = "${pluginInfo ? pluginInfo.name + '.' : ''}${GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS}"
         Map codecSettings = (Map)flatConfig.get(gspCodecsPrefix)
         String codecInfo = null
-        if(!codecSettings) {
-            if(codecWriterName==EXPRESSION_CODEC_NAME) {
+        if (!codecSettings) {
+            if (codecWriterName==EXPRESSION_CODEC_NAME) {
                 codecInfo = flatConfig.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC)?.toString()
             }
         } else {
             codecInfo = codecSettings.get(codecWriterName)?.toString()
-            if(!codecInfo) {
+            if (!codecInfo) {
                 // case-insensitive fallback
-                codecInfo = codecSettings.find { k, v -> 
+                codecInfo = codecSettings.find { k, v ->
                     k.toString().equalsIgnoreCase(codecWriterName)
                 }?.value
             }
         }
-        
-        if(!codecInfo) {
+
+        if (!codecInfo) {
             codecInfo = defaultSettings.get(codecWriterName)
         }
 

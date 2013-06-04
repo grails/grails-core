@@ -65,7 +65,7 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
             context.setViewName(context.actionName)
         }
 
-        if(object instanceof Errors) {
+        if (object instanceof Errors) {
             Errors errors = (Errors)object
             def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
             if (target) {
@@ -78,7 +78,6 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
             context.setModel([(modelVariableName): object])
         }
     }
-
 
     MimeType[] getMimeTypes() {
         return mimeTypes

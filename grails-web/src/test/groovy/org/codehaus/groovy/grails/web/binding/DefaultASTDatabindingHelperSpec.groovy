@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.web.binding
 import grails.util.GrailsWebUtil
 
 import java.lang.reflect.Modifier
-import java.net.URL
 
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.classgen.GeneratorContext
@@ -20,7 +19,7 @@ class DefaultASTDatabindingHelperSpec extends Specification {
     static dateBindingClass
     static classWithHasMany
     static classWithNoBindableProperties
-    
+
     def setupSpec() {
         final gcl = new GrailsAwareClassLoader()
         final transformer = new AstDatabindingInjector()
@@ -121,11 +120,11 @@ class DefaultASTDatabindingHelperSpec extends Specification {
                         lastName bindable: false
                     }
                 }''')
-            
+
             // there must be a request bound in order for the structured date editor to be registered
             GrailsWebUtil.bindMockWebRequest()
     }
-    
+
     void 'Test class with hasMany'() {
         when:
         final whiteListField = classWithHasMany.getDeclaredField(DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST)
@@ -201,14 +200,14 @@ class DefaultASTDatabindingHelperSpec extends Specification {
            'person.*' in whiteList
            'person_*' in whiteList
     }
-    
+
     void 'Test binding to a class that has no bindable properties'() {
         given:
             def obj = classWithNoBindableProperties.newInstance()
-            
+
         when:
             obj.properties = [firstName: 'First Name', lastName: 'Last Name']
-            
+
         then:
             obj.firstName == null
             obj.lastName == null

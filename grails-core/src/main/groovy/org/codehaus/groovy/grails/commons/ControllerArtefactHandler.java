@@ -113,13 +113,13 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
                 if (((GrailsControllerClass) c).mapsToURI(uri)) {
                     boolean pluginMatches = false;
                     boolean namespaceMatches = false;
-                        
+
                     namespaceMatches = namespaceMatches((GrailsControllerClass)c, namespace);
-                        
-                    if(namespaceMatches) {
+
+                    if (namespaceMatches) {
                         pluginMatches = pluginMatches(c, pluginName, grailsPluginManager);
                     }
-                        
+
                     boolean foundController = pluginMatches && namespaceMatches;
                     if (foundController) {
                         controllerClass = c;
@@ -142,25 +142,24 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
         }
         return controllerClass;
     }
-    
+
     /**
-     * 
      * @param c the class to inspect
      * @param namespace a controller namespace
      * @return true if c is in namespace
      */
     protected boolean namespaceMatches(GrailsControllerClass c, String namespace) {
         boolean namespaceMatches;
-        if(namespace != null) {
+        if (namespace != null) {
             namespaceMatches = namespace.equals(c.getNamespace());
         } else {
             namespaceMatches = (c.getNamespace() == null);
         }
         return namespaceMatches;
     }
-    
+
     /**
-     * 
+     *
      * @param c the class to inspect
      * @param pluginName the name of a plugin
      * @param grailsPluginManager the plugin manager

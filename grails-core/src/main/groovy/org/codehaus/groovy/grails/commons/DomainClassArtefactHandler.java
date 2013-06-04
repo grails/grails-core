@@ -71,24 +71,24 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
     public boolean isArtefactClass(Class clazz) {
         return isDomainClass(clazz);
     }
-    
-    static final Map<Integer, Boolean> DOMAIN_CLASS_CHECK_CACHE=new ConcurrentHashMap<Integer, Boolean>();
+
+    static final Map<Integer, Boolean> DOMAIN_CLASS_CHECK_CACHE = new ConcurrentHashMap<Integer, Boolean>();
 
     public static boolean isDomainClass(Class<?> clazz) {
         Integer cacheKey = System.identityHashCode(clazz);
-        
+
         Boolean retval = DOMAIN_CLASS_CHECK_CACHE.get(cacheKey);
-        if(retval != null) {
+        if (retval != null) {
             return retval;
         }
-        
+
         retval = doIsDomainClassCheck(clazz);
-        if(!developmentMode) {
+        if (!developmentMode) {
             DOMAIN_CLASS_CHECK_CACHE.put(cacheKey, retval);
         }
         return retval;
     }
-    
+
     private static boolean doIsDomainClassCheck(Class<?> clazz) {
         // it's not a closure
         if (clazz == null) return false;

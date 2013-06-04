@@ -64,9 +64,9 @@ class UrlMappings {
 
     @Override
     protected Collection<Class> getControllerClasses() {
-        [NewsSignupController, 
-         RedirectController, 
-         AController, 
+        [NewsSignupController,
+         RedirectController,
+         AController,
          ABCController,
          org.codehaus.groovy.grails.web.servlet.mvc.alpha.NamespacedController,
          org.codehaus.groovy.grails.web.servlet.mvc.beta.NamespacedController]
@@ -77,37 +77,37 @@ class UrlMappings {
         webRequest.controllerName = 'namespaced'
         primary.redirectToSelf()
         assertEquals '/noNamespace/demo', response.redirectedUrl
-        
+
         request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
         primary.redirectToSecondary()
         assertEquals '/secondaryNamespace/demo', response.redirectedUrl
-        
+
         def secondary = new org.codehaus.groovy.grails.web.servlet.mvc.beta.NamespacedController()
         request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
         secondary.redirectToPrimary()
         assertEquals '/noNamespace/demo', response.redirectedUrl
-        
+
         request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
         secondary.redirectToSelfWithImplicitNamespace()
         assertEquals '/secondaryNamespace/demo', response.redirectedUrl
-        
+
         request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
         secondary.redirectToSelfWithExplicitNamespace()
         assertEquals '/secondaryNamespace/demo', response.redirectedUrl
-        
+
         request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
         secondary.redirectToAnotherPrimary()
         assertEquals '/anotherNoNamespace/demo', response.redirectedUrl
-        
+
         request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
         secondary.redirectToAnotherSecondaryWithImplicitNamespace()
         assertEquals '/anotherSecondaryNamespace/demo', response.redirectedUrl
-        
+
         request.removeAttribute(GrailsApplicationAttributes.REDIRECT_ISSUED)
         secondary.redirectToAnotherSecondaryWithExplicitNamespace()
         assertEquals '/anotherSecondaryNamespace/demo', response.redirectedUrl
     }
-    
+
     void testRedirectToDefaultActionOfAnotherController() {
         def c = new NewsSignupController()
         webRequest.controllerName = 'newsSignup'

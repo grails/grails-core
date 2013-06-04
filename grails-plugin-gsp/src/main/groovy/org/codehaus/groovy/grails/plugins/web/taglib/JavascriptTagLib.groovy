@@ -46,7 +46,7 @@ class JavascriptTagLib implements ApplicationContextAware {
 
     Class<JavascriptProvider> defaultProvider
     boolean hasResourceProcessor = false
-    
+
     static encodeAsForTags = [escapeJavascript: 'JavaScript']
 
     JavascriptTagLib() {

@@ -67,7 +67,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
         }
         return this;
     }
-    
+
     public boolean isDestinationActivated() {
         return out != null;
     }
@@ -138,7 +138,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
             return;
         }
 
-        if(isDestinationActivated()) {
+        if (isDestinationActivated()) {
             try {
                 getOut().flush();
             }
@@ -546,7 +546,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
         writeWritable(gstring);
         return this;
     }
-    
+
     public GrailsPrintWriter leftShift(final String string) {
         print(string);
         return this;
@@ -579,7 +579,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
 
     @Override
     public void close() {
-        if(isDestinationActivated()) {
+        if (isDestinationActivated()) {
             try {
                 getOut().close();
             }
@@ -609,7 +609,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
 
     public Writer getWriterForEncoder(Encoder encoder, EncodingStateRegistry encodingStateRegistry) {
         Writer target = null;
-        if(getOut() instanceof EncodedAppenderWriterFactory && getOut() != this) {
+        if (getOut() instanceof EncodedAppenderWriterFactory && getOut() != this) {
             target = getOut();
         } else {
             target = findStreamCharBufferTarget(false);
@@ -618,7 +618,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
             return ((EncodedAppenderWriterFactory)target).getWriterForEncoder(encoder, encodingStateRegistry);
         } else if (target instanceof EncodedAppenderFactory) {
             EncodedAppender encodedAppender=((EncodedAppenderFactory)target).getEncodedAppender();
-            if(encodedAppender != null) {
+            if (encodedAppender != null) {
                 return new EncodedAppenderWriter(encodedAppender, encoder, encodingStateRegistry);
             }
         }

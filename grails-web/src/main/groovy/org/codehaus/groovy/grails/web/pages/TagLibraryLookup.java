@@ -106,16 +106,16 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
             encodeAsForTagNamespace = new HashMap<String, Map<String, Object>>();
             encodeAsForTagNamespaces.put(namespace, encodeAsForTagNamespace);
         }
-        
+
         Map<String, Object> defaultEncodeAsForTagLib = null;
-        if(taglib.getDefaultEncodeAs() != null) {
+        if (taglib.getDefaultEncodeAs() != null) {
             defaultEncodeAsForTagLib = Collections.unmodifiableMap(WithCodecHelper.makeSettingsCanonical(taglib.getDefaultEncodeAs()));
         }
-                
+
         for (String tagName : taglib.getTagNames()) {
             Object codecInfo = taglib.getEncodeAsForTag(tagName);
             Map<String, Object> codecInfoMap = WithCodecHelper.mergeSettingsAndMakeCanonical(codecInfo, defaultEncodeAsForTagLib);
-            if(codecInfoMap != null) {
+            if (codecInfoMap != null) {
                 encodeAsForTagNamespace.put(tagName, codecInfoMap);
             }
         }

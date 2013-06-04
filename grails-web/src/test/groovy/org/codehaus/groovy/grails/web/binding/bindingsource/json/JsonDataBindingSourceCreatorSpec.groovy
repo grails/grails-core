@@ -1,12 +1,11 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource.json
 
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
-import org.grails.databinding.DataBindingSource
 
 import spock.lang.Specification
 
 class JsonDataBindingSourceCreatorSpec extends Specification {
-    
+
     void 'Test JSON parsing'() {
         given:
         def json = '''{
@@ -15,12 +14,12 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
   "languages" : [ {"name": "Groovy", "company": "GoPivotal"}, {"name": "Java", "company": "Oracle"}]
 }'''
 
-        def inputStream = new ByteArrayInputStream(json.bytes)      
+        def inputStream = new ByteArrayInputStream(json.bytes)
         def bindingSource = new JsonDataBindingSourceCreator().createBindingSource(inputStream)
-        
+
         when:
         def propertyNames = bindingSource.propertyNames
-        
+
         then:
         propertyNames.contains 'category'
         propertyNames.contains 'name'

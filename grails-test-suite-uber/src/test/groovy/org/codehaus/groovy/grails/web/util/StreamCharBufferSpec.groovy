@@ -22,7 +22,7 @@ import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
-import org.codehaus.groovy.grails.support.encoding.EncoderAware;
+import org.codehaus.groovy.grails.support.encoding.EncoderAware
 
 import spock.lang.Specification
 
@@ -58,7 +58,7 @@ class StreamCharBufferSpec extends Specification {
         then:
         buffer.toString() == "Hello world &amp; hi"
     }
-    
+
     def "stream char buffer should support connecting to writer"() {
         given:
         def connectedBuffer=new StreamCharBuffer()
@@ -70,7 +70,7 @@ class StreamCharBufferSpec extends Specification {
         then:
         connectedBuffer.toString() == "Hello world &amp; hi"
     }
-    
+
     def "stream char buffer should support automaticly encoding to connected writer"() {
         given:
         def connectedBuffer=new StreamCharBuffer()

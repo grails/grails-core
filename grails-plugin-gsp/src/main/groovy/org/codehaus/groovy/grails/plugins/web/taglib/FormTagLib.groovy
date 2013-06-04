@@ -257,12 +257,12 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
     @CompileStatic
     private void booleanToAttribute(Map attrs, String attrName) {
         def attrValue = attrs.remove(attrName)
-        if(attrValue instanceof CharSequence) {
+        if (attrValue instanceof CharSequence) {
             attrValue = attrValue.toString().trim()
         }
         // If the value is the same as the name or if it is a boolean value,
         // reintroduce the attribute to the map according to the w3c rules, so it is output later
-        if ((attrValue instanceof Boolean && attrValue) || 
+        if ((attrValue instanceof Boolean && attrValue) ||
             (attrValue instanceof String && (attrValue.equalsIgnoreCase("true") || attrValue.equalsIgnoreCase(attrName)))) {
             attrs.put(attrName, attrName)
         } else if (attrValue instanceof String && !attrValue.equalsIgnoreCase("false")) {

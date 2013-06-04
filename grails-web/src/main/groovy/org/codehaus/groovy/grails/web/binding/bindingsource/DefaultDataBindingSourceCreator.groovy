@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +31,7 @@ import org.grails.databinding.bindingsource.DataBindingSourceCreator
 class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
 
     @Override
-    public MimeType[] getMimeTypes() {
+    MimeType[] getMimeTypes() {
         [MimeType.ALL] as MimeType[]
     }
 

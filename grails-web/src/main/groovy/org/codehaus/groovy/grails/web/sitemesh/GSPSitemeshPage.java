@@ -54,7 +54,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
         reset();
         this.renderingLayout=renderingLayout;
     }
-    
+
     public void reset() {
         headBuffer=null;
         bodyBuffer=null;
@@ -86,7 +86,7 @@ public class GSPSitemeshPage extends AbstractHTMLPage implements Content{
             if (titleBuffer != null) {
                 int headlen = headBuffer.length();
                 titleBuffer.clear();
-                if(headBuffer.length() < headlen) {
+                if (headBuffer.length() < headlen) {
                     headBuffer.writeTo(out);
                     return;
                 }

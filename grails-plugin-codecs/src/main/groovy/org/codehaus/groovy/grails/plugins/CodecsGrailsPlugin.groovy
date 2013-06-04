@@ -18,22 +18,21 @@ package org.codehaus.groovy.grails.plugins
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.grails.plugins.codecs.Base64Codec
-import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup;
-import org.codehaus.groovy.grails.plugins.codecs.RawCodec;
-import org.codehaus.groovy.grails.plugins.codecs.XMLCodec
+import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Codec
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.HexCodec
 import org.codehaus.groovy.grails.plugins.codecs.JavaScriptCodec
 import org.codehaus.groovy.grails.plugins.codecs.MD5BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.MD5Codec
+import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA1BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA1Codec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256BytesCodec
 import org.codehaus.groovy.grails.plugins.codecs.SHA256Codec
 import org.codehaus.groovy.grails.plugins.codecs.URLCodec
+import org.codehaus.groovy.grails.plugins.codecs.XMLCodec
 
 /**
  * Configures pluggable codecs.
@@ -68,7 +67,7 @@ class CodecsGrailsPlugin {
             event.ctx.codecLookup.reInitialize()
         }
     }
-    
+
     def doWithSpring = {
         codecLookup(DefaultCodecLookup)
     }

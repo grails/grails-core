@@ -25,7 +25,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils
 class ValidationSupport {
 
     static final beforeValidateHelper = new BeforeValidateHelper()
-    
+
     static boolean validateInstance(object, List fieldsToValidate = null) {
         beforeValidateHelper.invokeBeforeValidate(object, fieldsToValidate)
 

@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  * default implementation of {@link EncodingStateRegistry}
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -40,10 +40,8 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
         return identityHashCodes;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#
-     * getEncodingStateFor(java.lang.CharSequence)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#getEncodingStateFor(java.lang.CharSequence)
      */
     public EncodingState getEncodingStateFor(CharSequence string) {
         int identityHashCode = System.identityHashCode(string);
@@ -64,31 +62,22 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
         return result != null ? new EncodingStateImpl(result) : EncodingStateImpl.UNDEFINED_ENCODING_STATE;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#
-     * isEncodedWith(org.codehaus.groovy.grails.support.encoding.Encoder,
-     * java.lang.CharSequence)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#isEncodedWith(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence)
      */
     public boolean isEncodedWith(Encoder encoder, CharSequence string) {
         return getIdentityHashCodesForEncoder(encoder).contains(System.identityHashCode(string));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#
-     * registerEncodedWith(org.codehaus.groovy.grails.support.encoding.Encoder,
-     * java.lang.CharSequence)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#registerEncodedWith(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence)
      */
     public void registerEncodedWith(Encoder encoder, CharSequence escaped) {
         getIdentityHashCodesForEncoder(encoder).add(System.identityHashCode(escaped));
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#
-     * shouldEncodeWith(org.codehaus.groovy.grails.support.encoding.Encoder,
-     * java.lang.CharSequence)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#shouldEncodeWith(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence)
      */
     public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string) {
         if(encoderToApply==NONE_ENCODER) return false;
@@ -98,7 +87,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
 
     /**
      * Checks if encoder should be applied to a input with given encoding state
-     * 
+     *
      * @param encoderToApply
      *            the encoder to apply
      * @param currentEncodingState
@@ -119,7 +108,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
 
     /**
      * Checks if is previous encoder is already "safe", equal or equivalent
-     * 
+     *
      * @param encoderToApply
      *            the encoder to apply
      * @param previousEncoder
@@ -127,7 +116,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
      * @return true, if previous encoder is already "safe", equal or equivalent
      */
     public static boolean isPreviousEncoderSafeOrEqual(Encoder encoderToApply, Encoder previousEncoder) {
-        return previousEncoder == encoderToApply || !encoderToApply.isApplyToSafelyEncoded() && previousEncoder.isSafe() && encoderToApply.isSafe() 
+        return previousEncoder == encoderToApply || !encoderToApply.isApplyToSafelyEncoded() && previousEncoder.isSafe() && encoderToApply.isSafe()
                 || previousEncoder.getCodecIdentifier().isEquivalent(encoderToApply.getCodecIdentifier());
     }
 }

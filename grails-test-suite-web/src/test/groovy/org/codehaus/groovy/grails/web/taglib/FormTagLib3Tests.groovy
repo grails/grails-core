@@ -195,7 +195,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             attrs.put("value", "<b>some text</b>")
 
             tag.call(attrs, {})
-        };
+        }
         { ->
             final String result = sw.toString()
             // need to inspect this as raw text so the DocumentHelper doesn't
@@ -222,7 +222,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             attrs.put("value", "<b>some text</b>")
 
             tag.call(attrs, {})
-        };
+        }
         {->
             final String result = sw.toString()
             // need to inspect this as raw text so the DocumentHelper doesn't
@@ -252,7 +252,7 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
 
             tag.call(attrs, {})
 
-        };
+        }
         { ->
             final String result = sw.toString()
             // need to inspect this as raw text so the DocumentHelper doesn't
@@ -279,8 +279,8 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
             attrs.put("value", "<b>some text</b>")
 
             tag.call(attrs, {})
-        };
-        
+        }
+
         { ->
             final String result = sw.toString()
             // need to inspect this as raw text so the DocumentHelper doesn't

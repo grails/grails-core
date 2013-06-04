@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -543,7 +542,6 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         String path = getPathForResource(res);
         try {
             parser = new GroovyPageParser(name, path, path, inputStream, null, null);
-                
 
             if (grailsApplication != null) {
                 Map<String,Object> config = grailsApplication.getFlatConfig();
@@ -665,12 +663,12 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         pageMeta.setContentType(parse.getContentType());
         pageMeta.setLineNumbers(parse.getLineNumberMatrix());
         pageMeta.setJspTags(parse.getJspTags());
-        
+
         pageMeta.setStaticCodecName(parse.getStaticCodecDirectiveValue());
         pageMeta.setExpressionCodecName(parse.getExpressionCodecDirectiveValue());
         pageMeta.setOutCodecName(parse.getOutCodecDirectiveValue());
         pageMeta.setTaglibCodecName(parse.getTaglibCodecDirectiveValue());
-        
+
         pageMeta.initialize();
         // just return groovy and don't compile if asked
         if (GrailsUtil.isDevelopmentEnv()) {

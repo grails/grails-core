@@ -19,7 +19,7 @@ class JsonBindingSpec extends Specification {
         model.person instanceof Person
         model.person.name == 'Douglas'
         model.person.age == 42
-    }    
+    }
 }
 
 class BindingController {

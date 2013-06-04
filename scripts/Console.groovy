@@ -29,13 +29,10 @@ import org.codehaus.groovy.grails.project.ui.GrailsProjectConsole
 
 includeTargets << grailsScript("_GrailsBootstrap")
 
-target ('default': "Load the Grails interactive Swing console") {
-    depends(checkVersion, configureProxy, enableExpandoMetaClass, classpath, console)
-}
-
 projectConsole = new GrailsProjectConsole(projectLoader)
 
-target(console:"The console implementation target") {
+target(console: "Load the Grails interactive Swing console") {
+    depends(checkVersion, configureProxy, enableExpandoMetaClass, classpath)
 
     def forkSettings = grailsSettings.forkSettings
     def forkConfig = forkSettings?.console
@@ -67,3 +64,5 @@ target(console:"The console implementation target") {
 createConsole = {
     projectConsole.createConsole()
 }
+
+setDefaultTarget 'console'

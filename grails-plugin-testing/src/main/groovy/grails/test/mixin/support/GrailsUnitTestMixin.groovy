@@ -116,7 +116,7 @@ class GrailsUnitTestMixin {
 
     protected static void registerBeans() {
         defineBeans(new DataBindingGrailsPlugin().doWithSpring)
-        
+
         defineBeans {
             grailsProxyHandler(DefaultProxyHandler)
             grailsApplication(DefaultGrailsApplication)

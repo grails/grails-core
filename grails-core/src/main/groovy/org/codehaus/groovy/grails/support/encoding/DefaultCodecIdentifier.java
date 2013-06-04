@@ -22,7 +22,7 @@ import java.util.Set;
 
 /**
  * default implementation of {@link CodecIdentifier}
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
@@ -35,7 +35,7 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
     }
 
     public DefaultCodecIdentifier(String codecName, String... codecAliases) {
-        this(codecName, (Set<String>)(codecAliases != null ? new HashSet<String>(Arrays.asList(codecAliases)) : null));
+        this(codecName, codecAliases != null ? new HashSet<String>(Arrays.asList(codecAliases)) : null);
     }
 
     public DefaultCodecIdentifier(String codecName, Set<String> codecAliases) {
@@ -43,28 +43,21 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         this.codecAliases = codecAliases != null ? Collections.unmodifiableSet(codecAliases) : null;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecName
-     * ()
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecName()
      */
     public String getCodecName() {
         return codecName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecAliases
-     * ()
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#getCodecAliases()
      */
     public Set<String> getCodecAliases() {
         return codecAliases;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
     @Override
@@ -76,8 +69,7 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         return result;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
     @Override
@@ -113,20 +105,17 @@ public class DefaultCodecIdentifier implements CodecIdentifier {
         return "DefaultCodecIdentifier [codecName=" + codecName + ", codecAliases=" + codecAliases + "]";
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.CodecIdentifier#isEquivalent
-     * (org.codehaus.groovy.grails.support.encoding.CodecIdentifier)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifier#isEquivalent(org.codehaus.groovy.grails.support.encoding.CodecIdentifier)
      */
     public boolean isEquivalent(CodecIdentifier other) {
         if (this.codecName.equals(other.getCodecName())) {
             return true;
         }
-        else if (this.codecAliases != null && this.codecAliases.contains(other.getCodecName())) {
+        if (this.codecAliases != null && this.codecAliases.contains(other.getCodecName())) {
             return true;
         }
-        else if (other.getCodecAliases() != null && other.getCodecAliases().contains(this.codecName)) {
+        if (other.getCodecAliases() != null && other.getCodecAliases().contains(this.codecName)) {
             return true;
         }
         return false;

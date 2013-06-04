@@ -75,9 +75,9 @@ public class DefaultGrailsTagLibClass extends AbstractInjectableGrailsClass impl
         }
 
         defaultEncodeAs = getStaticPropertyValue(DEFAULT_ENCODE_AS_FIELD_NAME, Object.class);
-        
+
         Map encodeAsForTagsMap = getStaticPropertyValue(ENCODE_AS_FOR_TAGS_FIELD_NAME, Map.class);
-        if(encodeAsForTagsMap != null) {
+        if (encodeAsForTagsMap != null) {
             for (@SuppressWarnings("unchecked")
             Iterator<Map.Entry> it = encodeAsForTagsMap.entrySet().iterator(); it.hasNext();) {
                 Map.Entry entry = it.next();

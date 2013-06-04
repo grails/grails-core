@@ -50,7 +50,7 @@ import org.springframework.web.multipart.MultipartHttpServletRequest;
  * @since Oct 24, 2005
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public class GrailsParameterMap extends TypeConvertingMap  implements Cloneable {
+public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
 
     private static final Log LOG = LogFactory.getLog(GrailsParameterMap.class);
     private static final Map<String, String> CACHED_DATE_FORMATS  = new ConcurrentHashMap<String, String>();
@@ -112,23 +112,23 @@ public class GrailsParameterMap extends TypeConvertingMap  implements Cloneable 
 
     @Override
     public Object clone() {
-        if(wrappedMap.size()==0) {
+        if (wrappedMap.isEmpty()) {
             return new GrailsParameterMap(new LinkedHashMap(), request);
         } else {
             Map clonedMap = new LinkedHashMap(wrappedMap);
             // deep clone nested entries
             for(Iterator it=clonedMap.entrySet().iterator();it.hasNext();) {
                 Map.Entry entry = (Map.Entry)it.next();
-                if(entry.getValue() instanceof GrailsParameterMap) {
+                if (entry.getValue() instanceof GrailsParameterMap) {
                     entry.setValue(((GrailsParameterMap)entry.getValue()).clone());
                 }
             }
             return new GrailsParameterMap(clonedMap, request);
         }
     }
-    
+
     public void addParametersFrom(GrailsParameterMap otherMap) {
-        this.wrappedMap.putAll((GrailsParameterMap)otherMap.clone());
+        wrappedMap.putAll((GrailsParameterMap)otherMap.clone());
     }
 
     private Object getParameterValue(Map requestMap, String key) {
@@ -259,9 +259,9 @@ public class GrailsParameterMap extends TypeConvertingMap  implements Cloneable 
         if (key instanceof CharSequence) key = key.toString();
         if (nestedDateMap.containsKey(key)) nestedDateMap.remove(key);
         Object returnValue =  wrappedMap.put(key, value);
-        if(key instanceof String) {
+        if (key instanceof String) {
             String keyString = (String)key;
-            if(keyString.indexOf(".") > -1) {
+            if (keyString.indexOf(".") > -1) {
                 processNestedKeys(this, keyString, keyString, wrappedMap);
             }
         }

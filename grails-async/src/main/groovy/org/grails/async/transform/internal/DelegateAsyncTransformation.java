@@ -90,7 +90,6 @@ public class DelegateAsyncTransformation implements ASTTransformation {
 
                 applyDelegateAsyncTransform(classNode, targetApi, fieldName);
             }
-
         }
         else if(parent instanceof FieldNode) {
             FieldNode fieldNode = (FieldNode)parent;
@@ -99,9 +98,6 @@ public class DelegateAsyncTransformation implements ASTTransformation {
             applyDelegateAsyncTransform(classNode, targetApi, fieldNode.getName());
         }
     }
-    
-    
-    
 
     private void applyDelegateAsyncTransform(ClassNode classNode, ClassNode targetApi, String fieldName) {
 
@@ -151,7 +147,7 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                     methodBody.addStatement(new ExpressionStatement(createPromiseWithDecorators));
 
                     final ArgumentListExpression arguments = new ArgumentListExpression();
-                    
+
                     Parameter[] parameters = copyParameters(StaticTypeCheckingSupport.parameterizeArguments(classNode, m));
                     for(Parameter p : parameters) {
                         p.setClosureSharedVariable(true);
@@ -168,10 +164,10 @@ public class DelegateAsyncTransformation implements ASTTransformation {
             }
         }
     }
-    
+
     private static ClassNode alignReturnType(final ClassNode receiver, final ClassNode originalReturnType) {
         ClassNode copiedReturnType = originalReturnType.getPlainNodeReference();
-        
+
         ClassNode actualReceiver = receiver;
         List<GenericsType> redirectTypes = new ArrayList<GenericsType>();
         if (actualReceiver.redirect().getGenericsTypes()!=null) {
@@ -179,25 +175,25 @@ public class DelegateAsyncTransformation implements ASTTransformation {
         }
         if (!redirectTypes.isEmpty()) {
             GenericsType[] redirectReceiverTypes = redirectTypes.toArray(new GenericsType[redirectTypes.size()]);
-            
+
             GenericsType[] receiverParameterizedTypes = actualReceiver.getGenericsTypes();
             if (receiverParameterizedTypes==null) {
                 receiverParameterizedTypes = redirectReceiverTypes;
             }
-            
+
             if (originalReturnType.isUsingGenerics()) {
                 GenericsType[] alignmentTypes = originalReturnType.getGenericsTypes();
                 GenericsType[] genericsTypes = GenericsUtils.alignGenericTypes(redirectReceiverTypes, receiverParameterizedTypes, alignmentTypes);
                 copiedReturnType.setGenericsTypes(genericsTypes);
             }
         }
-        
+
         return copiedReturnType;
     }
 
     protected DelegateAsyncTransactionalMethodTransformer lookupAsyncTransactionalMethodTransformer() {
         try {
-            Class transformerClass = getClass().getClassLoader().loadClass("org.grails.async.transform.internal.DefaultDelegateAsyncTransactionalMethodTransformer");
+            Class<?> transformerClass = getClass().getClassLoader().loadClass("org.grails.async.transform.internal.DefaultDelegateAsyncTransactionalMethodTransformer");
             return (DelegateAsyncTransactionalMethodTransformer) transformerClass.newInstance();
         } catch (Throwable e) {
             // ignore
@@ -234,6 +230,5 @@ public class DelegateAsyncTransformation implements ASTTransformation {
         public void transformTransactionalMethod(ClassNode classNode,ClassNode delegateClassNode, MethodNode methodNode, ListExpression promiseDecoratorLookupArguments) {
             // noop
         }
-
     }
 }

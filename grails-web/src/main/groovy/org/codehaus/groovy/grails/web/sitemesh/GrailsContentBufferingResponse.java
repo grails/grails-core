@@ -69,7 +69,7 @@ public class GrailsContentBufferingResponse extends HttpServletResponseWrapper {
     public boolean isActive() {
         return pageResponseWrapper.isSitemeshActive() || pageResponseWrapper.isGspSitemeshActive();
     }
-    
+
     public void deactivateSitemesh() {
         pageResponseWrapper.deactivateSiteMesh();
     }

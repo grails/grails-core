@@ -16,17 +16,17 @@
 package org.codehaus.groovy.grails.support.encoding;
 
 /**
- * interface for encoding methods
+ * Interface for encoding methods.
  *
  * @author Lari Hotari
  * @since 2.3
  */
 public interface Encoder extends CodecIdentifierProvider {
+
     /**
      * Encode given input object
      *
-     * @param o
-     *            the input object
+     * @param o the input object
      * @return the encoded object
      */
     Object encode(Object o);
@@ -39,13 +39,10 @@ public interface Encoder extends CodecIdentifierProvider {
      * @return true, if is safe
      */
     boolean isSafe();
-    
-    
+
     /**
-     * Should this codec be applied to a buffer part that is 
+     * @return <code>true</code> if this this codec should be applied to a buffer part that is
      * already encoded with a safe encoder
-     * 
-     * @return
      */
     boolean isApplyToSafelyEncoded();
 
@@ -53,8 +50,7 @@ public interface Encoder extends CodecIdentifierProvider {
      * Mark this instance as encoded with this encoder in the current
      * {@link EncodingStateRegistry}
      *
-     * @param string
-     *            a CharSequence to mark as encoded
+     * @param string a CharSequence to mark as encoded
      */
     void markEncoded(CharSequence string);
 }

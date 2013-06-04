@@ -91,19 +91,19 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
         final StreamCharBuffer streamBuffer = new StreamCharBuffer(max, 0, max);
         streamBuffer.setChunkMinSize(max/2);
         streamBuffer.setNotifyParentBuffersEnabled(false);
-        
+
         final StreamCharBuffer.LazyInitializingWriter lazyResponseWriter = new StreamCharBuffer.LazyInitializingWriter() {
             public Writer getWriter() throws IOException {
                 return response.getWriter();
             }
         };
-            
-        if(!(response instanceof GrailsContentBufferingResponse)) {
+
+        if (!(response instanceof GrailsContentBufferingResponse)) {
             streamBuffer.connectTo(new StreamCharBuffer.LazyInitializingMultipleWriter() {
                 public Writer getWriter() throws IOException {
                     return null;
                 }
-    
+
                 public LazyInitializingWriter[] initializeMultiple(StreamCharBuffer buffer, boolean autoFlush) throws IOException {
                     final StreamCharBuffer.LazyInitializingWriter[] lazyWriters;
                     if (CONTENT_LENGTH_COUNTING_ENABLED) {
@@ -123,8 +123,8 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
         } else {
             streamBuffer.connectTo(lazyResponseWriter);
         }
-        
-        if(instantiator != null) {
+
+        if (instantiator != null) {
             GSPResponseWriter instance = (GSPResponseWriter)instantiator.newInstance();
             instance.initialize(streamBuffer, response, bytesCounter);
             return instance;
@@ -149,14 +149,14 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
             streamBuffer.connectTo(target, false);
             target=streamBuffer.getWriter();
         }
-        
-        if(instantiator != null) {
-            GSPResponseWriter instance = (GSPResponseWriter)instantiator.newInstance();
-            instance.initialize(target);
-            return instance;
-        } else {
+
+        if (instantiator == null) {
             return new GSPResponseWriter(target);
         }
+
+        GSPResponseWriter instance = (GSPResponseWriter)instantiator.newInstance();
+        instance.initialize(target);
+        return instance;
     }
 
     /**
@@ -168,7 +168,7 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
      */
     private GSPResponseWriter(final StreamCharBuffer buffer, final ServletResponse response, BoundedCharsAsEncodedBytesCounter bytesCounter) {
         super(null);
-        
+
         initialize(buffer, response, bytesCounter);
     }
 
@@ -178,14 +178,13 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
             public Writer activateDestination() throws IOException {
                 final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
                 encoder = webRequest != null ? webRequest.lookupFilteringEncoder() : null;
-                if(encoder != null) {
+                if (encoder != null) {
                     return buffer.getWriterForEncoder(encoder, webRequest.getEncodingStateRegistry());
-                } else {
-                    return buffer.getWriter();
                 }
+                return buffer.getWriter();
             }
-        }; 
-        
+        };
+
         updateDestination(lazyTargetFactory);
         this.response = response;
         this.bytesCounter = bytesCounter;
@@ -241,7 +240,7 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
 
     private void flushResponse() {
         try {
-            if(isDestinationActivated()) {
+            if (isDestinationActivated()) {
                 response.getWriter().flush();
             }
         }
@@ -261,15 +260,16 @@ public class GSPResponseWriter extends GrailsRoutablePrintWriter implements Enco
     }
 
     public EncodedAppender getEncodedAppender() {
-        if(buffer != null) {
+        if (buffer != null) {
             return ((EncodedAppenderFactory)buffer.getWriter()).getEncodedAppender();
-        } else {
-            activateDestination();
-            Writer target = getTarget().unwrap();
-            if(target != this && target instanceof EncodedAppenderFactory) {
-                return ((EncodedAppenderFactory)target).getEncodedAppender();
-            }
         }
+
+        activateDestination();
+        Writer target = getTarget().unwrap();
+        if (target != this && target instanceof EncodedAppenderFactory) {
+            return ((EncodedAppenderFactory)target).getEncodedAppender();
+        }
+
         return null;
     }
 

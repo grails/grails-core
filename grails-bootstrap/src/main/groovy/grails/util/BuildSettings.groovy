@@ -393,8 +393,8 @@ class BuildSettings extends AbstractBuildSettings {
     Closure getGrailsScriptClosure() {
         return new OwnerlessClosure() {
             Object doCall(String name) {
-                def potentialScript = new File("${grailsHome}/scripts/${name}.groovy")
-                potentialScript = potentialScript.exists() ? potentialScript : new File("${grailsHome}/scripts/${name}_.groovy")
+                def potentialScript = new File(grailsHome, "scripts/${name}.groovy")
+                potentialScript = potentialScript.exists() ? potentialScript : new File(grailsHome, "scripts/${name}_.groovy")
                 if (potentialScript.exists()) {
                     return potentialScript
                 }
@@ -1109,7 +1109,7 @@ class BuildSettings extends AbstractBuildSettings {
                     IOUtils.computeChecksum(metadataFile, "md5")
             }
 
-            def cachedResolve = new File("${projectWorkDir}/${resolveChecksum}.resolve")
+            def cachedResolve = new File(projectWorkDir, "${resolveChecksum}.resolve")
             if (cachedResolve.exists()) {
 
                 cachedResolve.withInputStream { input ->
@@ -1201,14 +1201,13 @@ class BuildSettings extends AbstractBuildSettings {
             return
         }
 
-        // Try BuildConfig.groovy first, which should work
-        // work for in-place plugins.
+        // Try BuildConfig.groovy first, which should work work for in-place plugins.
         def path = dir.absolutePath
-        def pluginDependencyDescriptor = new File("${path}/grails-app/conf/BuildConfig.groovy")
+        def pluginDependencyDescriptor = new File(path, "grails-app/conf/BuildConfig.groovy")
 
         if (!pluginDependencyDescriptor.exists()) {
             // OK, that doesn't exist, so try dependencies.groovy.
-            pluginDependencyDescriptor = new File("$path/dependencies.groovy")
+            pluginDependencyDescriptor = new File(path, "dependencies.groovy")
         }
 
         if (pluginDependencyDescriptor.exists()) {
@@ -1277,8 +1276,7 @@ class BuildSettings extends AbstractBuildSettings {
                         proxySettings = slurper.parse(script)
                         def current = proxySettings.currentProxy
                         if (current) {
-                            proxySettings[current]?.each { it ->
-                                def entry = it as Map.Entry
+                            proxySettings[current]?.each { Map.Entry entry ->
                                 System.setProperty(entry.key as String, entry.value as String)
                             }
                         }
@@ -1344,10 +1342,9 @@ class BuildSettings extends AbstractBuildSettings {
 
     @CompileStatic
     private void establishProjectStructure() {
-        // The third argument to "getPropertyValue()" is either the
-        // existing value of the corresponding field, or if that's
-        // null, a default value. This ensures that we don't override
-        // settings provided by, for example, the Maven plugin.
+        // The third argument to "getPropertyValue()" is either the existing value of the corresponding
+        // field, or if that's null, a default value. This ensures that we don't override settings
+        // provided by, for example, the Maven plugin.
         def props = config.toProperties()
 
         final forkConfig = getForkConfig()
@@ -1365,8 +1362,8 @@ class BuildSettings extends AbstractBuildSettings {
         servletVersion = getPropertyValue(SERVLET_VERSION, props, "2.5")
         metadata.setServletVersion(servletVersion)
         compilerSourceLevel = getPropertyValue(COMPILER_SOURCE_LEVEL, props, "1.6")
-        dependencyResolver = getPropertyValue(DEPENDENCY_RESOLVER, props, "ivy")
         compilerTargetLevel = getPropertyValue(COMPILER_TARGET_LEVEL, props, "1.6")
+        dependencyResolver = getPropertyValue(DEPENDENCY_RESOLVER, props, "ivy")
 
         if (!projectWorkDirSet) {
             def workingDirName = metadata.getApplicationName() ?: CORE_WORKING_DIR_NAME
@@ -1475,19 +1472,23 @@ class BuildSettings extends AbstractBuildSettings {
         String syspropDebugArgs = System.getProperty("grails.project.fork.run.debugArgs")
         boolean debugFork = Boolean.getBoolean(ForkedGrailsProcess.DEBUG_FORK)
         if (syspropDebugArgs || debugFork) {
-            if (result.run instanceof Boolean)
+            if (result.run instanceof Boolean) {
                 result.run = [:]
+            }
             result.run.debug = true
-            if (syspropDebugArgs != "true")
+            if (syspropDebugArgs != "true") {
                 result.run.debugArgs = syspropDebugArgs
+            }
         }
         syspropDebugArgs = System.getProperty("grails.project.fork.test.debugArgs")
         if (syspropDebugArgs || debugFork) {
-            if (result.run instanceof Boolean)
+            if (result.run instanceof Boolean) {
                 result.test = [:]
+            }
             result.test.debug = true
-            if (syspropDebugArgs != "true")
+            if (syspropDebugArgs != "true") {
                 result.test.debugArgs = syspropDebugArgs
+            }
         }
         return result
     }

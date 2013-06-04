@@ -1,7 +1,7 @@
 dependencies {
-    
+
     compile project(":grails-web"),
-    		project(":grails-plugin-controllers"),
+            project(":grails-plugin-controllers"),
             project(":grails-plugin-datasource")
 
     compile 'com.google.code.gson:gson:2.2.4'

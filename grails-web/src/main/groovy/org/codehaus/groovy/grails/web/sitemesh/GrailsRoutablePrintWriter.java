@@ -55,7 +55,7 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
         super(new NullWriter());
         this.factory = factory;
     }
-    
+
     public static GrailsRoutablePrintWriter newInstance(DestinationFactory factory) {
         if (instantiator != null) {
             GrailsRoutablePrintWriter instance = (GrailsRoutablePrintWriter)instantiator.newInstance();
@@ -68,7 +68,7 @@ public class GrailsRoutablePrintWriter extends GrailsPrintWriterAdapter {
             return new GrailsRoutablePrintWriter(factory);
         }
     }
-    
+
     protected void activateDestination() {
         if (!destinationActivated && factory != null) {
             try {

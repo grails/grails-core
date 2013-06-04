@@ -127,7 +127,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         }
 
         class WidgetCommand {
-            Integer width 
+            Integer width
             Integer height
 
             static constraints = {
@@ -218,7 +218,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
         def servletContext = webRequest.servletContext
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
     }
-    
+
     void 'Test that rejected binding value survives validation'() {
         when:
             testController.params.width = 'some bad value'
@@ -226,7 +226,7 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             def model = testController.methodActionWithWidgetCommand()
             def widget = model.widget
             def err = widget.errors
-            
+
         then:
             widget.height == 42
             widget.width == null
@@ -344,12 +344,12 @@ class ControllerActionTransformerCommandObjectSpec extends Specification {
             nameErrorCodes
             'artistCommand.name.nullable.error' in nameErrorCodes
     }
-    
+
     void 'Test beforeValidate gets invoked'() {
         when:
         def model = testController.methodAction()
         def person = model.person
-        
+
         then:
         1 == person.beforeValidateCounter
     }

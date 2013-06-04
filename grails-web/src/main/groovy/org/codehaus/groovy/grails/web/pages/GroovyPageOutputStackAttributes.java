@@ -136,7 +136,7 @@ public class GroovyPageOutputStackAttributes {
             this.defaultTaglibEncoder = defaultTaglibEncoder;
             return this;
         }
-        
+
         public Builder allowCreate(boolean allowCreate) {
             this.allowCreate = allowCreate;
             return this;

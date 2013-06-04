@@ -221,7 +221,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
                 groovyPageLocator = ref("groovyPageLocator")
                 groovyPagesTemplateEngine = ref("groovyPagesTemplateEngine")
             }
-            
+
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, ref('grailsApplication'))
         }
         defineBeans(new CodecsGrailsPlugin().doWithSpring)
@@ -242,7 +242,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         new CodecsGrailsPlugin().providedArtefacts.each { Class codecClass ->
             mockCodec(codecClass)
         }
-        
+
         applicationContext.getBean(DefaultCodecLookup).reInitialize()
 
         if (webRequest != null) {

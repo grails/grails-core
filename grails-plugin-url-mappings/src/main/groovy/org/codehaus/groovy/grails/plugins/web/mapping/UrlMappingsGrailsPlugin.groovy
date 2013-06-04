@@ -62,15 +62,15 @@ class UrlMappingsGrailsPlugin {
         }
         grailsLinkGenerator(cacheUrls ? CachingLinkGenerator : DefaultLinkGenerator, serverURL)
 
-        if(Environment.isDevelopmentMode() || Environment.current.isReloadEnabled()) {
+        if (Environment.isDevelopmentMode() || Environment.current.isReloadEnabled()) {
             "org.grails.internal.URL_MAPPINGS_HOLDER"(UrlMappingsHolderFactoryBean) { bean ->
                 bean.lazyInit = true
             }
-    
+
             urlMappingsTargetSource(HotSwappableTargetSource, ref("org.grails.internal.URL_MAPPINGS_HOLDER")) { bean ->
                 bean.lazyInit = true
             }
-    
+
             grailsUrlMappingsHolder(ProxyFactoryBean) { bean ->
                 bean.lazyInit = true
                 targetSource = urlMappingsTargetSource

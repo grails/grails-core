@@ -28,73 +28,59 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
  * Codec that doesn't do any encoding or decoding. This is for marking some text
  * as "safe" in the buffer. "safe" part of the buffer won't be encoded later if
  * a codec is applied to the buffer
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */
 public class RawCodec implements Encoder, Decoder, StreamingEncoder {
     static final CodecIdentifier RAW_CODEC_IDENTIFIER = new DefaultCodecIdentifier("Raw");
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.Decoder#decode(java.lang.
-     * Object)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Decoder#decode(java.lang.Object)
      */
     public Object decode(Object o) {
         return o;
     }
 
-    /*
-     * (non-Javadoc)
+    /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.encoding.Encoder#isSafe()
      */
     public boolean isSafe() {
         return true;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.Encoder#encode(java.lang.
-     * Object)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Encoder#encode(java.lang.Object)
      */
     public Object encode(Object o) {
         return o;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.Encoder#markEncoded(java.
-     * lang.CharSequence)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Encoder#markEncoded(java.lang.CharSequence)
      */
     public void markEncoded(CharSequence string) {
 
     }
 
-    /*
-     * (non-Javadoc)
-     * @see
-     * org.codehaus.groovy.grails.support.encoding.StreamingEncoder#encodeToStream
-     * (java.lang.CharSequence, int, int,
-     * org.codehaus.groovy.grails.support.encoding.EncodedAppender,
-     * org.codehaus.groovy.grails.support.encoding.EncodingState)
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.StreamingEncoder#encodeToStream(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence, int, int, org.codehaus.groovy.grails.support.encoding.EncodedAppender, org.codehaus.groovy.grails.support.encoding.EncodingState)
      */
     public void encodeToStream(Encoder thisInstance, CharSequence source, int offset, int len, EncodedAppender appender,
             EncodingState encodingState) throws IOException {
         appender.appendEncoded(thisInstance, encodingState, source, offset, len);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifierProvider#
-     * getCodecIdentifier()
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.CodecIdentifierProvider#getCodecIdentifier()
      */
     public CodecIdentifier getCodecIdentifier() {
         return RAW_CODEC_IDENTIFIER;
     }
 
+    /* (non-Javadoc)
+     * @see org.codehaus.groovy.grails.support.encoding.Encoder#isApplyToSafelyEncoded()
+     */
     public boolean isApplyToSafelyEncoded() {
         return false;
     }

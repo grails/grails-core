@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.validation
 
 import grails.persistence.Entity
 import grails.test.mixin.Mock
-import spock.lang.Ignore
 import spock.lang.Specification
 
 @Mock(Person)
@@ -86,16 +85,16 @@ class TestingValidationSpec extends Specification {
 
     when:
         person.properties = [age: 'some string', name: 'Jeff Scott Brown', email: 'abcdefgh']
-        
+
     then:
         1 == person.errors.errorCount
-        
+
     when:
         def ageError = person.errors.getFieldError('age')
-        
+
     then:
         'some string' == ageError.rejectedValue
-        
+
     when:
         person.validate()
         def errorCount = person.errors.errorCount

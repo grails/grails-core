@@ -15,15 +15,15 @@
  */
 package org.codehaus.groovy.grails.web.mapping.reporting
 
+import static org.fusesource.jansi.Ansi.ansi
+import static org.fusesource.jansi.Ansi.Color.*
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping
+
 import org.codehaus.groovy.grails.web.mapping.ResponseCodeMappingData
 import org.codehaus.groovy.grails.web.mapping.ResponseCodeUrlMapping
 import org.codehaus.groovy.grails.web.mapping.UrlMapping
-import static org.fusesource.jansi.Ansi.ansi;
-import static org.fusesource.jansi.Ansi.Color.*;
-import org.fusesource.jansi.Ansi;
+import org.fusesource.jansi.Ansi
 
 /**
  * Renders URL mappings to the console
@@ -54,12 +54,11 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
             }
             return 0
         }
-        def tmp = longestActionName.actionName ? longestActionName.actionName?.toString()?.length() : 0
-        def longestAction = tmp + 10
+        int longestAction = (longestActionName.actionName ? longestActionName.actionName?.toString()?.length() : 0) + 10
         longestAction = longestAction < DEFAULT_ACTION.length() ? DEFAULT_ACTION.length() : longestAction
         final controllerNames = mappingsByController.keySet().sort()
 
-        for(controller in controllerNames) {
+        for (controller in controllerNames) {
             if (controller == null) {
                 targetStream.println(header("Dynamic Mappings"))
             }
@@ -67,10 +66,10 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
                 targetStream.println(header("Controller", controller.toString()))
             }
             final controllerUrlMappings = mappingsByController.get(controller)
-            for(UrlMapping urlMapping in controllerUrlMappings) {
+            for (UrlMapping urlMapping in controllerUrlMappings) {
                 def urlPattern = establishUrlPattern(urlMapping, isAnsiEnabled, longestMapping)
 
-                def actionName = urlMapping.actionName?.toString() ?: DEFAULT_ACTION
+                String actionName = urlMapping.actionName?.toString() ?: DEFAULT_ACTION
                 if (actionName && !urlMapping.viewName) {
                     targetStream.println("${yellowBar()}${urlMapping.httpMethod.center(8)}${yellowBar()}${urlPattern}${yellowBar()}${bold('Action: ')}${actionName.padRight(longestAction)}${endBar()}")
                 }
@@ -83,10 +82,10 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
     }
 
     String bold(String text) {
-        if (isAnsiEnabled)
+        if (isAnsiEnabled) {
             return ansi().a(Ansi.Attribute.INTENSITY_BOLD).a(text).a(Ansi.Attribute.INTENSITY_BOLD_OFF)
-        else
-            return text
+        }
+        return text
     }
 
     protected String establishUrlPattern(UrlMapping urlMapping, boolean withAnsi = isAnsiEnabled, int padding = -1) {
@@ -95,9 +94,7 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
             if (withAnsi) {
                 return padAnsi(error(errorCode), errorCode, padding)
             }
-            else {
-                return errorCode.padRight(padding)
-            }
+            return errorCode.padRight(padding)
         }
         final constraints = urlMapping.constraints
         final tokens = urlMapping.urlData.tokens
@@ -126,7 +123,6 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
                 urlPattern << token
             }
 
-
             if (i < (tokens.length-1)) {
                 urlPattern << UrlMapping.SLASH
             }
@@ -138,18 +134,13 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
         }
         if (padding) {
             if (withAnsi) {
-
                 final nonAnsiPattern = establishUrlPattern(urlMapping, false)
                 return padAnsi(urlPattern.toString(), nonAnsiPattern, padding)
+            }
+            return urlPattern.toString().padRight(padding)
+        }
 
-            }
-            else {
-                return urlPattern.toString().padRight(padding)
-            }
-        }
-        else {
-            return urlPattern.toString()
-        }
+        return urlPattern.toString()
     }
 
     protected String padAnsi(String ansiString, String nonAnsiString, int padding) {
@@ -157,17 +148,15 @@ class AnsiConsoleUrlMappingsRenderer implements UrlMappingsRenderer {
         if (toPad > 0) {
             final padText = getPadding(" ", toPad)
             return "${ansiString}$padText".toString()
-        } else {
-            return ansiString.toString()
         }
+        return ansiString.toString()
     }
 
     static String getPadding(String padding, int length) {
         if (padding.length() < length) {
-            return padding.multiply(length / padding.length() + 1).substring(0, length);
-        } else {
-            return padding.substring(0, length);
+            return padding.multiply(length / padding.length() + 1).substring(0, length)
         }
+        return padding.substring(0, length)
     }
 
     String error(String errorCode) {

@@ -61,12 +61,11 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
         else if (isReserveProcess()) {
             // don't wait if the resume directory already exists, another process exists
             if (!resumeDir.exists()) {
-                this.executionContext = readExecutionContext()
+                executionContext = readExecutionContext()
                 Object projectClassInstance = initializeProjectInstance()
                 waitForResume()
                 runInstance(projectClassInstance)
             }
-
         }
         else {
             Object projectClassInstance = initializeProjectInstance()
@@ -94,9 +93,9 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
         GrailsBuildEventListener eventListener = (GrailsBuildEventListener) executionContext.getVariable("eventListener")
         GrailsConsole grailsConsole = GrailsConsole.getInstance()
         eventListener.globalEventHooks = [
-            StatusFinal: [ {message -> grailsConsole.addStatus message.toString() } ],
+            StatusFinal:  [ {message -> grailsConsole.addStatus message.toString() } ],
             StatusUpdate: [ {message -> grailsConsole.updateStatus message.toString() } ],
-            StatusError: [ {message -> grailsConsole.error message.toString() } ]
+            StatusError:  [ {message -> grailsConsole.error message.toString() } ]
         ]
 
         eventListener.initialize()

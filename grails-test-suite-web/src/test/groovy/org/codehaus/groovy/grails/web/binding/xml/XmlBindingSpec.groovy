@@ -6,7 +6,7 @@ import spock.lang.Specification
 
 @TestFor(BindingController)
 class XmlBindingSpec extends Specification {
-    
+
     void 'Test binding XML body'() {
         when:
         request.xml = '''
@@ -24,7 +24,7 @@ class XmlBindingSpec extends Specification {
 </person>
 '''
         def model = controller.createPerson()
-        
+
     then:
         model.person instanceof Person
         model.person.name == 'Douglas'

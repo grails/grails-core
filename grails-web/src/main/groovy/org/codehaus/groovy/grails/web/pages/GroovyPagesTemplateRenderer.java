@@ -163,11 +163,11 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void makeTemplate(GrailsWebRequest webRequest, Template t, Map<String, Object> attrs, Object body, Writer out) throws IOException {
-        
+
         Writer newOut = wrapWriterWithEncoder(webRequest, attrs, out);
-        boolean writerWrapped = (newOut != out); 
+        boolean writerWrapped = (newOut != out);
         out = newOut;
-        
+
         String var = getStringValue(attrs, "var");
         Map b = new LinkedHashMap<String, Object>();
         b.put("body", body);
@@ -204,18 +204,18 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         } else {
             t.make(b).writeTo(out);
         }
-        
-        if(writerWrapped) {
+
+        if (writerWrapped) {
             out.flush();
         }
     }
 
     private Writer wrapWriterWithEncoder(GrailsWebRequest webRequest, Map<String, Object> attrs, Writer out) {
         Object encodeAs = attrs.get(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME);
-        if(encodeAs != null) {
+        if (encodeAs != null) {
             Map<String, Object> codecSettings=WithCodecHelper.makeSettingsCanonical(encodeAs);
             String codecForTaglibs = (String)codecSettings.get(GroovyPageConfig.TAGLIB_CODEC_NAME);
-            if(codecForTaglibs != null) {
+            if (codecForTaglibs != null) {
                 Encoder encoder = WithCodecHelper.lookupEncoder(webRequest.getAttributes().getGrailsApplication(), codecForTaglibs);
                 if (out instanceof EncodedAppenderWriterFactory) {
                     out = ((EncodedAppenderWriterFactory)out).getWriterForEncoder(encoder, webRequest.getEncodingStateRegistry());

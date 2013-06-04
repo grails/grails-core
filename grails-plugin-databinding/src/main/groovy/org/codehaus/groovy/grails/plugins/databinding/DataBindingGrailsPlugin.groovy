@@ -31,41 +31,41 @@ import org.grails.databinding.converters.DateConversionHelper
  * @since 2.3
  */
 class DataBindingGrailsPlugin {
-    
+
     def version = GrailsUtil.getGrailsVersion()
 
     def doWithSpring = {
-        def databindingConfig 
-        
+        def databindingConfig
+
         // TODO this try/catch is temporary
         try {
             databindingConfig = application?.config?.grails?.databinding
         } catch (Exception e) {}
-        
+
         def autoGrowCollectionLimitSetting = databindingConfig?.autoGrowCollectionLimit
-        
+
         "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GormAwareDataBinder, ref('grailsApplication')) {
-            
+
             // trimStrings defaults to TRUE
             trimStrings = !Boolean.FALSE.equals(databindingConfig?.trimStrings)
-            
+
             // convertEmptyStringsToNull defaults to TRUE
             convertEmptyStringsToNull = !Boolean.FALSE.equals(databindingConfig?.convertEmptyStringsToNull)
-        
+
             // autoGrowCollectionLimit defaults to 256
             if(autoGrowCollectionLimitSetting instanceof Integer) {
                 autoGrowCollectionLimit = autoGrowCollectionLimitSetting
             }
         }
-        
+
         defaultDateConverter(DateConversionHelper) {
             if(databindingConfig?.dateFormats instanceof List) {
                 formatStrings = databindingConfig.dateFormats
             }
         }
-        
+
         "${DataBindingSourceRegistry.BEAN_NAME}"(DefaultDataBindingSourceRegistry)
-        
+
         xmlDataBindingSourceCreator(XmlDataBindingSourceCreator)
         jsonDataBindingSourceCreator(JsonDataBindingSourceCreator)
         halJsonDataBindingSourceCreator(HalJsonDataBindingSourceCreator)

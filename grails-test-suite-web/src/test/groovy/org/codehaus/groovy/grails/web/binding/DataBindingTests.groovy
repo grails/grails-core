@@ -145,14 +145,14 @@ class AuthorBean {
 }
         ''')
     }
-    
+
     void testBindingPogoToDomainClass() {
         def authorClass = ga.getDomainClass('databindingtests.Author').clazz
         def author = authorClass.newInstance()
         def clown = new Clown(name: 'Bozo', hairColour: 'Orange')
-        
+
         author.properties = clown
-        
+
         assert !author.hasErrors()
         assert author.name == 'Bozo'
         assert author.hairColour == 'Orange'
@@ -161,18 +161,18 @@ class AuthorBean {
     void testDateFormatError() {
         def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
         def bean = myBeanClass.newInstance()
-        
+
         def req = new GrailsMockHttpServletRequest()
         req.addParameter 'formattedDate', 'BAD'
-        
+
         bean.properties = req
-        
+
         assert bean.hasErrors()
         assert bean.errors.errorCount == 1
-        
+
         def dateError = bean.errors.getFieldError('formattedDate')
         assert dateError != null
-        
+
         assert dateError.defaultMessage == 'Unparseable date: "BAD"'
     }
 
@@ -183,26 +183,26 @@ class AuthorBean {
             null
         }
         def city = cityClass.newInstance()
-        
+
         def req = new GrailsMockHttpServletRequest()
         req.addParameter 'people[0].id', '42'
-        
+
         city.properties = req
-        
+
         assert city.hasErrors()
         assert city.errors.errorCount == 1
-        
+
         def error = city.errors.getFieldError('people')
         assert error.defaultMessage == 'Illegal attempt to update element in [people] Set with id [42]. No such record was found.'
     }
-    
+
     void testBindingObjectsWithHashcodeAndEqualsToASet() {
         // GRAILS-9825 = this test fails with the spring binder
         // and passes with GormAwareDataBinder
-        
+
         def cityClass = ga.getDomainClass('databindingtests.City')
         def city = cityClass.newInstance()
-        
+
         def req = new GrailsMockHttpServletRequest()
         req.addParameter 'people[0].name', 'Jeff'
         req.addParameter 'people[1].name', 'Jake'
@@ -210,7 +210,7 @@ class AuthorBean {
         req.addParameter 'people[2].name', 'Zack'
 
         city.properties = req
-        
+
         assert city.people instanceof Set
         assert city.people.size() == 3
         assert city.people.find { it.name == 'Jeff' && it.birthDate == null} != null
@@ -223,12 +223,12 @@ class AuthorBean {
         def person = personClass.newInstance()
 
         person.properties['birthDate'] = '2013-04-15 21:26:31.973'
-        
-        assert person.birthDate instanceof Date   
+
+        assert person.birthDate instanceof Date
         def cal = Calendar.instance
         cal.time = person.birthDate
         assert Calendar.APRIL == cal.get(Calendar.MONTH)
-        assert 2013 == cal.get(Calendar.YEAR)     
+        assert 2013 == cal.get(Calendar.YEAR)
     }
 
     void testBindintToNestedArray() {
@@ -236,9 +236,9 @@ class AuthorBean {
         def author = authorCommandClass.newInstance()
         def req = new GrailsMockHttpServletRequest()
         req.addParameter 'beans[0].integers[0]', '42'
-        
+
         author.properties = req
-        
+
         assert author.beans.size() == 1
         assert author.beans[0].integers.length == 1
         assert author.beans[0].integers[0] == 42
@@ -247,7 +247,7 @@ class AuthorBean {
     void testFieldErrorObjectName() {
         def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
         def myBean = myBeanClass.newInstance()
-        
+
         def req = new GrailsMockHttpServletRequest()
         req.addParameter 'someIntProperty', 'bad integer'
         myBean.properties = req
@@ -258,16 +258,16 @@ class AuthorBean {
         assert fieldError.rejectedValue == 'bad integer'
         assert fieldError.objectName == 'databindingtests.MyBean'
     }
-    
+
     void testBindingMalformedNumber() {
         // GRAILS-6766
         def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
         def myBean = myBeanClass.newInstance()
-        
+
         def req = new GrailsMockHttpServletRequest()
         req.addParameter 'someFloatProperty', '21.12Rush'
         myBean.properties = req
-        
+
         def errors = myBean.errors
         def fieldError = errors.getFieldError('someFloatProperty')
 
@@ -275,25 +275,25 @@ class AuthorBean {
         assert myBean.someFloatProperty == null
         assert fieldError.rejectedValue == '21.12Rush'
     }
-    
+
     void testBinderDoesNotCreateExtraneousInstances() {
         // GRAILS-9914
         def bookReviewClass = ga.getDomainClass('databindingtests.BookReview')
         def bookClass = ga.getDomainClass('databindingtests.Book')
         def book = bookClass.clazz.newInstance(title: 'Some Book')
-        
+
         assert 1 == bookClass.clazz.instanceCount
-        
+
         def bookReview = bookReviewClass.clazz.newInstance(book: book)
-        
+
         assert 'Some Book' == bookReview.book.title
-        
+
         def req = new GrailsMockHttpServletRequest()
         req.addParameter 'book.title', 'Some New Book'
         bookReview.properties = req
-        
+
         assert 'Some New Book' == bookReview.book.title
-        
+
         // this fails with GrailsDataBinder and passes with GormAwareDataBinder
         assert 1 == bookClass.clazz.instanceCount
     }
@@ -452,7 +452,7 @@ class AuthorBean {
 
         // binding should fail for this one...
         request.addParameter("thirdIntProperty", "bar")
-        
+
         request.addParameter("someFloatProperty", "21.12")
 
         def params = c.params

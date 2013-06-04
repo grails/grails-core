@@ -76,7 +76,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private String baseUrl;
 
     private EncodingStateRegistry encodingStateRegistry;
-    
+
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, GrailsApplicationAttributes attributes) {
         super(request, response);
         this.attributes = attributes;
@@ -91,7 +91,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         this(request, response, servletContext);
         this.applicationContext = applicationContext;
     }
-    
+
     /**
      * Overriden to return the GrailsParameterMap instance,
      *
@@ -190,20 +190,20 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         }
         return params;
     }
-    
+
     /**
      * Reset params by re-reading & initializing parameters from request
      */
     public void resetParams() {
-        if(originalParams == null) {
+        if (originalParams == null) {
             originalParams = new GrailsParameterMap(getCurrentRequest());
         }
         params = (GrailsParameterMap)originalParams.clone();
     }
-    
+
     @SuppressWarnings("rawtypes")
     public void addParametersFrom(Map previousParams) {
-        if(previousParams instanceof GrailsParameterMap) {
+        if (previousParams instanceof GrailsParameterMap) {
             getParams().addParametersFrom((GrailsParameterMap)previousParams);
         } else {
             for (Object key : previousParams.keySet()) {
@@ -390,8 +390,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     public EncodingStateRegistry getEncodingStateRegistry() {
-        if(encodingStateRegistry==null) {
-            encodingStateRegistry=new DefaultEncodingStateRegistry();
+        if (encodingStateRegistry == null) {
+            encodingStateRegistry = new DefaultEncodingStateRegistry();
         }
         return encodingStateRegistry;
     }
@@ -399,17 +399,14 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private static final class DefaultEncodingStateRegistryLookup implements EncodingStateRegistryLookup {
         public EncodingStateRegistry lookup() {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if(webRequest != null) {
-                return webRequest.getEncodingStateRegistry();
-            } else {
-                return null;
-            }
+            return webRequest == null ? null : webRequest.getEncodingStateRegistry();
         }
     }
 
     static {
         DefaultGrailsCodecClass.setEncodingStateRegistryLookup(new DefaultEncodingStateRegistryLookup());
     }
+
     /**
      * @return true if grails.views.filteringCodecForMimeType settings should be ignored for this request
      */
@@ -427,9 +424,9 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     public void setFilteringCodec(String codecName) {
         filteringEncoder=codecName != null ? WithCodecHelper.lookupEncoder(attributes.getGrailsApplication(), codecName) : null;
     }
-    
+
     public Encoder lookupFilteringEncoder() {
-        if(filteringEncoder == null && applicationContext != null && applicationContext.containsBean(FilteringCodecsByContentTypeSettings.BEAN_NAME)) {
+        if (filteringEncoder == null && applicationContext != null && applicationContext.containsBean(FilteringCodecsByContentTypeSettings.BEAN_NAME)) {
             filteringEncoder = applicationContext.getBean(FilteringCodecsByContentTypeSettings.BEAN_NAME, FilteringCodecsByContentTypeSettings.class).getEncoderForContentType(getResponse().getContentType());
         }
         return filteringEncoder;

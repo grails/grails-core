@@ -15,15 +15,17 @@
  */
 package org.codehaus.groovy.grails.web.util
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 import grails.util.Environment
 import groovy.transform.CompileStatic
+
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
 import org.springframework.util.ClassUtils
 
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 
 /**
  * Abstract class for class that maintains a registry of mappings MimeType,Class and a particular object type. Used by RendererRegistry and DataBindingSourceRegistry
@@ -35,16 +37,15 @@ import java.util.concurrent.ConcurrentLinkedQueue
 abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
 
     private static final MimeTypeProvider NULL_RESOLVE = new MimeTypeProvider() {
-        @Override
         MimeType[] getMimeTypes() { null }
     }
 
-    private Map<Class, Collection<R >> registeredObjectsByType = new ConcurrentHashMap<>();
-    private Map<MimeType, R> defaultObjectsByMimeType = new ConcurrentHashMap<>();
+    private Map<Class, Collection<R >> registeredObjectsByType = new ConcurrentHashMap<>()
+    private Map<MimeType, R> defaultObjectsByMimeType = new ConcurrentHashMap<>()
     private Map<K, R > resolvedObjectCache = new ConcurrentLinkedHashMap.Builder<K, R>()
         .initialCapacity(500)
         .maximumWeightedCapacity(1000)
-        .build();
+        .build()
 
     void registerDefault(MimeType mt, R object) {
         defaultObjectsByMimeType.put(mt, object)
@@ -67,7 +68,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
         return registeredObjects
     }
 
-    def R findMatchingObjectForMimeType(MimeType mimeType, object) {
+    R findMatchingObjectForMimeType(MimeType mimeType, object) {
         if(object == null) return null
 
         final clazz = object instanceof Class ? (Class)object : object.getClass()

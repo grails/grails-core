@@ -196,14 +196,14 @@ public class DataBindingUtils {
         BindingResult bindingResult = null;
         boolean useSpringBinder = false;
         GrailsApplication grailsApplication = null;
-        if(domain != null) {
+        if (domain != null) {
             grailsApplication = domain.getGrailsApplication();
         }
-        if(grailsApplication == null) {
+        if (grailsApplication == null) {
             grailsApplication = GrailsWebRequest.lookupApplication();
         }
-        if(grailsApplication != null) {
-            if(Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.databinding.useSpringBinder"))) {
+        if (grailsApplication != null) {
+            if (Boolean.TRUE.equals(grailsApplication.getFlatConfig().get("grails.databinding.useSpringBinder"))) {
                 useSpringBinder = true;
             }
         }
@@ -317,13 +317,13 @@ public class DataBindingUtils {
 
     private static DataBinder createGormAwareDataBinder(final GrailsApplication grailsApplication) {
         DataBinder gormAwareDataBinder = null;
-        if(grailsApplication != null) {
+        if (grailsApplication != null) {
             final ApplicationContext mainContext = grailsApplication.getMainContext();
-            if(mainContext != null && mainContext.containsBean(DATA_BINDER_BEAN_NAME)) {
+            if (mainContext != null && mainContext.containsBean(DATA_BINDER_BEAN_NAME)) {
                 gormAwareDataBinder = mainContext.getBean(DATA_BINDER_BEAN_NAME, DataBinder.class);
             }
         }
-        if(gormAwareDataBinder == null) {
+        if (gormAwareDataBinder == null) {
             gormAwareDataBinder = new GormAwareDataBinder(grailsApplication);
         }
         return gormAwareDataBinder;

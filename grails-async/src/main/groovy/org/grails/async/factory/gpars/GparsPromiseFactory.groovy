@@ -73,7 +73,7 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
         }
         return promiseList
     }
-    
+
     private static Closure<List<?>> originalValuesClosure = { List<?> values -> values }
 
     @Override
@@ -99,4 +99,3 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
         )
     }
 }
-

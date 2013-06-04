@@ -51,7 +51,7 @@ public class ParseTests extends TestCase {
             + "public static final String EXPRESSION_CODEC = 'HTML'\n"
             + "public static final String STATIC_CODEC = 'none'\n"
             + "public static final String OUT_CODEC = 'none'\n"
-            + "public static final String TAGLIB_CODEC = 'none'\n" +            
+            + "public static final String TAGLIB_CODEC = 'none'\n" +
             "}\n";
 
     protected String makeImports() {

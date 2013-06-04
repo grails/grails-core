@@ -62,9 +62,8 @@ public interface UrlMappingInfo {
      * @return The name of the action or null if not known
      */
     String getActionName();
-    
+
     /**
-     * 
      * @return the namespace of the corresponding controller, null if none was specified
      */
     String getNamespace();

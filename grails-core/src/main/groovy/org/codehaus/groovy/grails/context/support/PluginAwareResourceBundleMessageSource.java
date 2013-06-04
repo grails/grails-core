@@ -60,6 +60,8 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
     private static final Log LOG = LogFactory.getLog(PluginAwareResourceBundleMessageSource.class);
 
+    private static final Resource[] NO_RESOURCES = {};
+
     private static final String WEB_INF_PLUGINS_PATH = "/WEB-INF/plugins/";
     protected GrailsApplication application;
     protected GrailsPluginManager pluginManager;
@@ -117,28 +119,27 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      *    an empty array if no files are found.
      */
     protected Resource[] getPluginBundles(GrailsPlugin grailsPlugin) {
+        if (grailsPlugin instanceof BinaryGrailsPlugin) {
+            return NO_RESOURCES;
+        }
+
         try {
-			String basePath = null;
+            String basePath;
 
-			// If the plugin is inline, use the absolute path to the internationalization files
-			// in order to convert to resources.  Otherwise, use the relative WEB-INF path.
-            if(!(grailsPlugin instanceof BinaryGrailsPlugin)) {
-
-                String inlinePath = getInlinePluginPath(grailsPlugin);
-                if(inlinePath != null) {
-                    basePath = inlinePath;
-                } else {
-                    basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
-                }
-                return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
+            // If the plugin is inline, use the absolute path to the internationalization files
+            // in order to convert to resources.  Otherwise, use the relative WEB-INF path.
+            String inlinePath = getInlinePluginPath(grailsPlugin);
+            if (inlinePath == null) {
+                basePath = WEB_INF_PLUGINS_PATH + grailsPlugin.getFileSystemName();
             }
             else {
-                return new Resource[0];
+                basePath = inlinePath;
             }
+            return resourceResolver.getResources(basePath + "/grails-app/i18n/*.properties");
         }
-        catch (Exception e) {
+        catch (IOException e) {
             LOG.debug("Could not resolve any resources for plugin " + grailsPlugin.getFileSystemName(), e);
-            return new Resource[0];
+            return NO_RESOURCES;
         }
     }
 
@@ -158,40 +159,28 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      * @param grailsPlugin The Grails plugin.
      * @return The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
      */
-	protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
-		String path = null;
-		try {
-			final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
-			if(pluginInfo != null) {
-                BuildSettings buildSettings = pluginBuildSettings.getBuildSettings();
-                File resourcesDir = buildSettings.getResourcesDir();
-
-                path = new File(resourcesDir, "plugins/"+pluginInfo.getFullName()).getCanonicalPath();
-			}
-		} catch(final IOException e) {
-			LOG.debug("Unable to retrieve plugin directory for plugin " + grailsPlugin.getFileSystemShortName() + ".", e);
-		}
-		return path;
-	}
+    protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
+        try {
+            final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
+            if (pluginInfo != null) {
+                return new File(pluginBuildSettings.getBuildSettings().getResourcesDir(), "plugins/" + pluginInfo.getFullName()).getCanonicalPath();
+            }
+        } catch(final IOException e) {
+            LOG.debug("Unable to retrieve plugin directory for plugin " + grailsPlugin.getFileSystemShortName(), e);
+        }
+        return null;
+    }
 
     @Override
     protected String resolveCodeWithoutArguments(String code, Locale locale) {
         String msg = super.resolveCodeWithoutArguments(code, locale);
-
-        if (msg == null) {
-            return resolveCodeWithoutArgumentsFromPlugins(code, locale);
-        }
-        return msg;
+        return msg == null ? resolveCodeWithoutArgumentsFromPlugins(code, locale) : msg;
     }
 
     @Override
     protected MessageFormat resolveCode(String code, Locale locale) {
         MessageFormat mf = super.resolveCode(code, locale);
-
-        if (mf == null) {
-            return resolveCodeFromPlugins(code, locale);
-        }
-        return mf;
+        return mf == null ? resolveCodeFromPlugins(code, locale) : mf;
     }
 
     /**
@@ -267,64 +256,62 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     }
 
     private String findCodeInBinaryPlugins(String code, Locale locale) {
-        String result = null;
         final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
         for (GrailsPlugin plugin : allPlugins) {
             if (plugin instanceof BinaryGrailsPlugin) {
                 BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
                 final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
                 if (binaryPluginProperties != null) {
-                    result = binaryPluginProperties.getProperty(code);
-                    if (result != null) break;
-                }
-            }
-        }
-        return result;
-    }
-
-    private String findMessageInSourcePlugins(String code, Locale locale) {
-        String result = null;
-        for (String pluginBaseName : pluginBaseNames) {
-            List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
-            for (String filename : filenames) {
-                PropertiesHolder holder = getProperties(filename);
-                result = holder.getProperty(code);
-                if (result != null) return result;
-            }
-        }
-        return result;
-    }
-
-    private MessageFormat findMessageFormatInBinaryPlugins(String code, Locale locale) {
-        MessageFormat result = null;
-        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
-        for (GrailsPlugin plugin : allPlugins) {
-            if (plugin instanceof BinaryGrailsPlugin) {
-                BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
-                final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
-                if (binaryPluginProperties != null) {
-                    String foundCode = binaryPluginProperties.getProperty(code);
-                    if (foundCode != null) {
-                        result = new MessageFormat(foundCode, locale);
-                    }
+                    String result = binaryPluginProperties.getProperty(code);
                     if (result != null) return result;
                 }
             }
         }
-        return result;
+        return null;
     }
 
-    private MessageFormat findMessageFormatInSourcePlugins(String code, Locale locale) {
-        MessageFormat result = null;
+    private String findMessageInSourcePlugins(String code, Locale locale) {
         for (String pluginBaseName : pluginBaseNames) {
             List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
             for (String filename : filenames) {
                 PropertiesHolder holder = getProperties(filename);
-                result = holder.getMessageFormat(code, locale);
+                String result = holder.getProperty(code);
                 if (result != null) return result;
             }
         }
-        return result;
+        return null;
+    }
+
+    private MessageFormat findMessageFormatInBinaryPlugins(String code, Locale locale) {
+        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
+        for (GrailsPlugin plugin : allPlugins) {
+            if (!(plugin instanceof BinaryGrailsPlugin)) {
+                continue;
+            }
+
+            BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+            final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
+            if (binaryPluginProperties != null) {
+                String foundCode = binaryPluginProperties.getProperty(code);
+                if (foundCode != null) {
+                    MessageFormat result = new MessageFormat(foundCode, locale);
+                    if (result != null) return result;
+                }
+            }
+        }
+        return null;
+    }
+
+    private MessageFormat findMessageFormatInSourcePlugins(String code, Locale locale) {
+        for (String pluginBaseName : pluginBaseNames) {
+            List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
+            for (String filename : filenames) {
+                PropertiesHolder holder = getProperties(filename);
+                MessageFormat result = holder.getMessageFormat(code, locale);
+                if (result != null) return result;
+            }
+        }
+        return null;
     }
 
     /**

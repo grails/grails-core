@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory;
  */
 public class FastStringPrintWriter extends GrailsPrintWriterAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(FastStringPrintWriter.class);
-    
-    private static ObjectInstantiator instantiator=null;
+
+    private static ObjectInstantiator instantiator;
     static {
         try {
             instantiator = new ObjenesisStd(false).getInstantiatorOf(FastStringPrintWriter.class);
@@ -53,28 +53,27 @@ public class FastStringPrintWriter extends GrailsPrintWriterAdapter {
         super(new StreamCharBuffer(initialChunkSize).getWriter());
         streamBuffer = ((StreamCharBuffer.StreamCharBufferWriter) getOut()).getBuffer();
     }
-    
+
     public static FastStringPrintWriter newInstance() {
         return newInstance(0);
     }
-    
+
     public static FastStringPrintWriter newInstance(int initialChunkSize) {
-        if(instantiator != null) {
-            FastStringPrintWriter instance = (FastStringPrintWriter)instantiator.newInstance();
-            if(initialChunkSize > 0) {
-                instance.streamBuffer = new StreamCharBuffer(initialChunkSize);
-            } else {
-                instance.streamBuffer = new StreamCharBuffer();
-            }
-            instance.setTarget(instance.streamBuffer.getWriter());
-            return instance;
-        } else {
-            if(initialChunkSize > 0) {
+        if (instantiator == null) {
+            if (initialChunkSize > 0) {
                 return new FastStringPrintWriter(initialChunkSize);
-            } else {
-                return new FastStringPrintWriter();
             }
+            return new FastStringPrintWriter();
         }
+
+        FastStringPrintWriter instance = (FastStringPrintWriter)instantiator.newInstance();
+        if (initialChunkSize > 0) {
+            instance.streamBuffer = new StreamCharBuffer(initialChunkSize);
+        } else {
+            instance.streamBuffer = new StreamCharBuffer();
+        }
+        instance.setTarget(instance.streamBuffer.getWriter());
+        return instance;
     }
 
     protected FastStringPrintWriter(Object o) {

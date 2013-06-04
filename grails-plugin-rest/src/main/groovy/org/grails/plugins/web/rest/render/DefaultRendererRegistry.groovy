@@ -16,26 +16,28 @@
 
 package org.grails.plugins.web.rest.render
 
-import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 import grails.rest.render.ContainerRenderer
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.Canonical
+import groovy.transform.CompileStatic
+
+import java.util.concurrent.ConcurrentHashMap
+
+import javax.annotation.PostConstruct
+
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.ClassUtils
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
-import javax.annotation.PostConstruct
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 
 /**
  * Default implementation of the {@link RendererRegistry} interface
@@ -46,11 +48,11 @@ import java.util.concurrent.ConcurrentLinkedQueue
 @CompileStatic
 class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, RendererCacheKey> implements RendererRegistry{
 
-    private Map<ContainerRendererCacheKey, Renderer> containerRenderers = new ConcurrentHashMap<>();
+    private Map<ContainerRendererCacheKey, Renderer> containerRenderers = new ConcurrentHashMap<>()
     private Map<ContainerRendererCacheKey, Renderer<?>> containerRendererCache = new ConcurrentLinkedHashMap.Builder<ContainerRendererCacheKey, Renderer<?>>()
         .initialCapacity(500)
         .maximumWeightedCapacity(1000)
-        .build();
+        .build()
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 

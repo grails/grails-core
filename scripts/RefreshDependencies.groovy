@@ -55,8 +55,8 @@ target(refreshDependencies:"Refreshes application dependencies, installing any n
                 }
                 xml.runtime {
                    if(grailsSettings.runtimeResolveReport) {
-                       handleArtifactReport(grailsSettings.runtimeResolveReport.resolvedArtifacts, xml) 
-                   }                   
+                       handleArtifactReport(grailsSettings.runtimeResolveReport.resolvedArtifacts, xml)
+                   }
                 }
                 xml.provided {
                     if(grailsSettings.providedResolveReport) {

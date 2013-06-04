@@ -20,16 +20,15 @@ import java.util.Set;
 /**
  * A DataBindingSource is a lot like a Map but is read-only and is
  * tailored to support data binding.
- * 
- * @since 2.3
  *
+ * @since 2.3
  */
 public interface DataBindingSource {
     /**
      * 
      * @return the names of properties represented
      */
-    Set getPropertyNames();
+    Set<String> getPropertyNames();
     
     /**
      * 

@@ -55,7 +55,6 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
                 grailsApplication = grailsApplication
                 servletContext = ControllerUnitTestMixin.servletContext
             }
-
         }
 
         getUrlMappingsHolder()
@@ -94,6 +93,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
             }
         }
     }
+
     /**
      * asserts a controller exists for the specified name and url
      *

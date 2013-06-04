@@ -60,7 +60,7 @@ public class DefaultCodecLookup implements GrailsApplicationAware, InitializingB
     public void reInitialize() {
         registerCodecs();
     }
-    
+
     public Encoder lookupEncoder(String codecName) {
         return lookupCodec(codecName, encoders, Encoder.class);
     }
@@ -69,10 +69,11 @@ public class DefaultCodecLookup implements GrailsApplicationAware, InitializingB
         return lookupCodec(codecName, decoders, Decoder.class);
     }
 
+    @SuppressWarnings("unchecked")
     private <T> T lookupCodec(String codecName, Map<String, T> map, Class<T> returnType) {
-        if(codecName != null && codecName.length() > 0) {
-            if(NONE_CODEC_NAME.equalsIgnoreCase(codecName)) {
-                if(returnType == Encoder.class) {   
+        if (codecName != null && codecName.length() > 0) {
+            if (NONE_CODEC_NAME.equalsIgnoreCase(codecName)) {
+                if (returnType == Encoder.class) {
                     return (T)NONE_ENCODER;
                 }
             } else {
@@ -81,28 +82,28 @@ public class DefaultCodecLookup implements GrailsApplicationAware, InitializingB
         }
         return null;
     }
-    
+
     protected void registerCodecs() {
         List<GrailsClass> codecs = Arrays.asList(grailsApplication.getArtefacts(CodecArtefactHandler.TYPE));
         Collections.sort(codecs, OrderComparator.INSTANCE);
         Collections.reverse(codecs);
-        
-        encoders=new HashMap<String, Encoder>();
-        decoders=new HashMap<String, Decoder>();
-        
+
+        encoders = new HashMap<String, Encoder>();
+        decoders = new HashMap<String, Decoder>();
+
         for (GrailsClass grailsClass : codecs) {
             registerCodec((GrailsCodecClass)grailsClass);
         }
     }
-    
+
     private void registerCodec(GrailsCodecClass grailsClass) {
         grailsClass.configureCodecMethods();
         Encoder encoder=grailsClass.getEncoder();
-        if(encoder != null) {
+        if (encoder != null) {
             registerWithNameVaritions(encoders, encoder);
         }
         Decoder decoder=grailsClass.getDecoder();
-        if(decoder != null) {
+        if (decoder != null) {
             registerWithNameVaritions(decoders, decoder);
         }
     }
@@ -111,8 +112,8 @@ public class DefaultCodecLookup implements GrailsApplicationAware, InitializingB
         String name=target.getCodecIdentifier().getCodecName();
         registerVariationsOfName(destinationMap, target, name);
         Set<String> aliases = target.getCodecIdentifier().getCodecAliases();
-        if(aliases != null)  {
-            for(String alias : aliases) {
+        if (aliases != null)  {
+            for (String alias : aliases) {
                 registerVariationsOfName(destinationMap, target, alias);
             }
         }

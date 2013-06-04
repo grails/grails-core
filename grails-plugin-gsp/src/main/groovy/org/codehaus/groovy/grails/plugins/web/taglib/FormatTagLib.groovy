@@ -45,7 +45,7 @@ import org.springframework.util.StringUtils
 class FormatTagLib {
 
     static returnObjectForTags = ['formatBoolean','formatDate','formatNumber','encodeAs']
-    
+
     MessageSource messageSource
     CodecLookup codecLookup
 
@@ -342,7 +342,7 @@ class FormatTagLib {
         return formatted
     }
 
-    @CompileStatic    
+    @CompileStatic
     static Locale resolveLocale(Object localeAttr) {
         Locale locale
         if (localeAttr instanceof Locale) {

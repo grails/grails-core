@@ -25,7 +25,7 @@ import org.grails.databinding.xml.GPathResultMap
 
 /**
  * Creates DataBindingSource objects from XML in the request body
- * 
+ *
  * @since 2.3
  * @see DataBindingSource
  * @see DataBindingSourceCreator
@@ -34,7 +34,7 @@ import org.grails.databinding.xml.GPathResultMap
 class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCreator {
 
     @Override
-    public MimeType[] getMimeTypes() {
+    MimeType[] getMimeTypes() {
         [MimeType.XML, MimeType.TEXT_XML] as MimeType[]
     }
 
@@ -45,4 +45,3 @@ class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
         new SimpleMapDataBindingSource(gpathMap)
     }
 }
-

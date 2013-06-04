@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
  */
 public class NoneEncoder implements StreamingEncoder {
     static final CodecIdentifier CODEC_IDENTIFIER = new DefaultCodecIdentifier("None");
-    
+
     public Object encode(Object o) {
         return o;
     }
@@ -38,13 +38,13 @@ public class NoneEncoder implements StreamingEncoder {
     public boolean isSafe() {
         return false;
     }
-    
+
     public boolean isApplyToSafelyEncoded() {
         return false;
     }
 
     public void markEncoded(CharSequence string) {
-        
+
     }
 
     public CodecIdentifier getCodecIdentifier() {
@@ -53,6 +53,6 @@ public class NoneEncoder implements StreamingEncoder {
 
     public void encodeToStream(Encoder thisInstance, CharSequence source, int offset, int len, EncodedAppender appender,
             EncodingState encodingState) throws IOException {
-        appender.append(null, encodingState, source, offset, len);        
+        appender.append(null, encodingState, source, offset, len);
     }
 }

@@ -54,8 +54,9 @@ class GrailsConsoleLoggerManager extends AbstractLoggerManager {
         logger.threshold = threshold
     }
 }
+
 @CompileStatic
-class GrailsConsoleLogger extends AbstractLogger{
+class GrailsConsoleLogger extends AbstractLogger {
 
     GrailsConsole grailsConsole = GrailsConsole.getInstance()
 

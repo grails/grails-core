@@ -45,9 +45,8 @@ public class BoundedCharsAsEncodedBytesCounter {
     private BoundedCharsAsEncodedBytesCounterWriter writer;
 
     public BoundedCharsAsEncodedBytesCounter() {
-        
     }
-    
+
     public BoundedCharsAsEncodedBytesCounter(int capacity, String encoding) {
         this.capacity = capacity;
         this.encoding = encoding;
@@ -93,7 +92,7 @@ public class BoundedCharsAsEncodedBytesCounter {
 
     private void terminateCalculation() {
         calculationActive = false;
-        if(bb != null) {
+        if (bb != null) {
             bb.clear();
             bb = null;
         }
@@ -112,7 +111,7 @@ public class BoundedCharsAsEncodedBytesCounter {
     }
 
     public Writer getCountingWriter() {
-        if(writer == null) {
+        if (writer == null) {
             ce = Charset.forName(encoding).newEncoder().onMalformedInput(CodingErrorAction.REPLACE)
                     .onUnmappableCharacter(CodingErrorAction.REPLACE);
             bb = ByteBuffer.allocate(capacity);

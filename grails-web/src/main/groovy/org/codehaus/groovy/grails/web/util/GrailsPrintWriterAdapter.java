@@ -34,8 +34,8 @@ import org.slf4j.LoggerFactory;
 public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrappedWriter {
     private static final Logger LOG = LoggerFactory.getLogger(GrailsPrintWriterAdapter.class);
     protected GrailsPrintWriter target;
-    
-    private static ObjectInstantiator instantiator=null;
+
+    private static ObjectInstantiator instantiator;
     static {
         try {
             instantiator = new ObjenesisStd(false).getInstantiatorOf(GrailsPrintWriterAdapter.class);
@@ -43,21 +43,19 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
             LOG.debug("Couldn't get direct performance optimized instantiator for GrailsPrintWriterAdapter. Using default instantiation.", e);
         }
     }
-    
 
     public GrailsPrintWriterAdapter(Writer wrapped) {
         super(new NullWriter());
         setTarget(wrapped);
     }
-    
+
     public static GrailsPrintWriterAdapter newInstance(Writer wrapped) {
-        if(instantiator != null) {
+        if (instantiator != null) {
             GrailsPrintWriterAdapter instance = (GrailsPrintWriterAdapter)instantiator.newInstance();
             instance.setTarget(wrapped);
             return instance;
-        } else {
-            return new GrailsPrintWriterAdapter(wrapped);
         }
+        return new GrailsPrintWriterAdapter(wrapped);
     }
 
     public void setTarget(Writer wrapped) {
