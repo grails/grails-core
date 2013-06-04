@@ -22,6 +22,7 @@ import grails.util.Metadata
 import grails.validation.DeferredBindingActions
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
+import groovy.transform.CompileStatic
 import junit.framework.AssertionFailedError
 
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
@@ -66,11 +67,12 @@ class GrailsUnitTestMixin {
     static ConfigObject config
     static MessageSource messageSource
 
-    private static metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
+    private static MetaClassRegistryCleaner metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
 
     Map validationErrorsMap = new IdentityHashMap()
     Set loadedCodecs = []
 
+    @CompileStatic
     static void defineBeans(Closure callable) {
         def bb = new BeanBuilder()
         def beans = bb.beans(callable)
@@ -78,6 +80,7 @@ class GrailsUnitTestMixin {
     }
 
     @BeforeClass
+    @CompileStatic
     static void initGrailsApplication() {
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.class.classLoader)
@@ -86,17 +89,10 @@ class GrailsUnitTestMixin {
             ExpandoMetaClass.enableGlobally()
             applicationContext = new GrailsWebApplicationContext()
             final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
-            autowiringPostProcessor.beanFactory = applicationContext.autowireCapableBeanFactory
+            autowiringPostProcessor.setBeanFactory( applicationContext.autowireCapableBeanFactory )
             applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
 
-            defineBeans {
-                grailsProxyHandler(DefaultProxyHandler)
-                grailsApplication(DefaultGrailsApplication)
-                pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
-                messageSource(StaticMessageSource)
-                "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
-                conversionService(ConversionServiceFactoryBean)
-            }
+            registerBeans()
             applicationContext.refresh()
             grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
             grailsApplication.metadata[Metadata.APPLICATION_NAME] =  GrailsUnitTestMixin.simpleName
@@ -114,6 +110,17 @@ class GrailsUnitTestMixin {
         }
     }
 
+    protected static void registerBeans() {
+        defineBeans {
+            grailsProxyHandler(DefaultProxyHandler)
+            grailsApplication(DefaultGrailsApplication)
+            pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
+            messageSource(StaticMessageSource)
+            "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
+            conversionService(ConversionServiceFactoryBean)
+        }
+    }
+
     @After
     void resetGrailsApplication() {
         MockUtils.TEST_INSTANCES.clear()
@@ -122,15 +129,18 @@ class GrailsUnitTestMixin {
         cleanupModifiedMetaClasses()
     }
 
+    @CompileStatic
     static void registerMetaClassRegistryWatcher() {
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
     }
 
+    @CompileStatic
     static void cleanupModifiedMetaClasses() {
         metaClassRegistryListener.clean()
     }
 
     @AfterClass
+    @CompileStatic
     static void deregisterMetaClassCleaner() {
         GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
     }
@@ -140,6 +150,7 @@ class GrailsUnitTestMixin {
      * so that a "validate()" method is added. This can then be used
      * to test the constraints on the class.
      */
+    @CompileStatic
     void mockForConstraintsTests(Class clazz, List instances = []) {
         ConstraintEvalUtils.clearDefaultConstraints()
         MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances, ConstraintEvalUtils.getDefaultConstraints(grailsApplication.config))
@@ -163,6 +174,7 @@ class GrailsUnitTestMixin {
      * @param code
      * @return the message of the thrown Throwable
      */
+    @CompileStatic
     String shouldFail(Closure code) {
         boolean failed = false
         String result = null
@@ -217,6 +229,7 @@ class GrailsUnitTestMixin {
      * methods to objects.
      * @param codecClass The codec to load, e.g. HTMLCodec.
      */
+    @CompileStatic
     void mockCodec(Class codecClass) {
         if (loadedCodecs.contains(codecClass)) {
             return
@@ -232,6 +245,7 @@ class GrailsUnitTestMixin {
     }
 
     @AfterClass
+    @CompileStatic
     static void shutdownApplicationContext() {
         if (applicationContext.isActive()) {
             applicationContext.close()

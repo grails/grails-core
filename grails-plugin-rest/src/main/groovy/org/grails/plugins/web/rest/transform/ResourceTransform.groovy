@@ -79,7 +79,7 @@ class ResourceTransform implements ASTTransformation{
     private static final ClassNode MY_TYPE = new ClassNode(Resource);
     public static final String ATTR_READY_ONLY = "readOnly"
     public static final String RESPOND_METHOD = "respond"
-    public static final String ATTR_RESPONSE_FORMATS = "responseFormats"
+    public static final String ATTR_RESPONSE_FORMATS = "formats"
     public static final String PARAMS_VARIABLE = "params"
     public static final ConstantExpression CONSTANT_STATUS = new ConstantExpression(ARGUMENT_STATUS)
     public static final String RENDER_METHOD = "render"
@@ -219,7 +219,7 @@ class ResourceTransform implements ASTTransformation{
         final respondArgs = new ArgumentListExpression()
         respondArgs.addExpression(new PropertyExpression(domainVar, "errors"))
         final viewArgs = new MapExpression()
-        viewArgs.addMapEntryExpression(new ConstantExpression("view"), new ConstantExpression("create"))
+        viewArgs.addMapEntryExpression(new ConstantExpression("view"), new ConstantExpression("edit"))
         respondArgs.addExpression(viewArgs)
 
         final respondStatement = new ExpressionStatement(new MethodCallExpression(THIS_EXPR, RESPOND_METHOD, respondArgs))

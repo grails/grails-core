@@ -36,9 +36,15 @@ import org.springframework.web.servlet.ModelAndView
 class ServletRenderContext implements RenderContext{
 
     GrailsWebRequest webRequest
+    Map internalModel
 
     ServletRenderContext(GrailsWebRequest webRequest) {
         this.webRequest = webRequest
+    }
+
+    ServletRenderContext(GrailsWebRequest webRequest, Map internalModel) {
+        this.webRequest = webRequest
+        this.internalModel = internalModel
     }
 
     @Override
@@ -101,7 +107,11 @@ class ServletRenderContext implements RenderContext{
     @Override
     void setModel(Map model) {
         ModelAndView modelAndView = getModelAndView()
-        modelAndView.model.putAll(model)
+        final viewModel = modelAndView.model
+        if (internalModel) {
+            viewModel.putAll(internalModel)
+        }
+        viewModel.putAll(model)
     }
 
     @Override

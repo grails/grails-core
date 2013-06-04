@@ -45,5 +45,5 @@ public @interface Resource {
     /**
      * @return The allowed response formats
      */
-    String[] responseFormats() default ["xml", 'json']
+    String[] formats() default ["xml", 'json']
 }

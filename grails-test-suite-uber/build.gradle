@@ -15,6 +15,7 @@ dependencies {
                 project(":grails-plugin-datasource"),
                 project(":grails-plugin-servlets"),
                 project(":grails-plugin-services"),
+                project(":grails-plugin-rest"),
                 project(":grails-plugin-i18n"),
                 project(":grails-plugin-log4j")
 

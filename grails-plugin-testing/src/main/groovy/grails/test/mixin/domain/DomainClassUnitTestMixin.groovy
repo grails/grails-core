@@ -17,7 +17,7 @@ package grails.test.mixin.domain
 
 import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
-
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -83,18 +83,24 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
             initGrailsApplication()
         }
 
-        simpleDatastore = new SimpleMapDatastore(applicationContext)
-        simpleDatastore.mappingContext.setCanInitializeEntities(false)
-        transactionManager = new DatastoreTransactionManager(datastore: simpleDatastore)
-        applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
-        applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
-        ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
 
         defineBeans {
+            grailsDatastore(SimpleMapDatastore, applicationContext)
+            transactionManager(DatastoreTransactionManager) {
+                datastore = ref("grailsDatastore")
+            }
             "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
                 defaultConstraints = DomainClassGrailsPlugin.getDefaultConstraints(grailsApplication.config)
             }
         }
+
+        simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
+        simpleDatastore.mappingContext.setCanInitializeEntities(false)
+        transactionManager = applicationContext.getBean(PlatformTransactionManager)
+        applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
+        applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
+        ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
+
     }
 
     @AfterClass
@@ -117,6 +123,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         simpleDatastore.clearData()
     }
 
+    @CompileStatic
     def mockDomains(Class... domainClassesToMock) {
         initialMockDomainSetup()
         Collection<PersistentEntity> entities = simpleDatastore.mappingContext.addPersistentEntities(domainClassesToMock)
@@ -127,12 +134,20 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
             simpleDatastore.mappingContext.addEntityValidator(entity, validator)
         }
         def enhancer = new GormEnhancer(simpleDatastore, transactionManager)
-        final failOnError = config?.grails?.gorm?.failOnError
+        final failOnError = getFailOnError()
         enhancer.failOnError = failOnError instanceof Boolean ? failOnError : false
 
-        simpleDatastore.mappingContext.initialize()
+        initializeMappingContext()
 
         enhancer.enhance()
+    }
+
+    protected void initializeMappingContext() {
+        simpleDatastore.mappingContext.initialize()
+    }
+
+    protected getFailOnError() {
+        config?.grails?.gorm?.failOnError
     }
 
     /**
@@ -142,22 +157,12 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
      * @param domainClassToMock The domain class to mock
      * @return An instance of the mocked domain class
      */
+    @CompileStatic
     def mockDomain(Class domainClassToMock, List domains = []) {
-        initialMockDomainSetup()
-        PersistentEntity entity = simpleDatastore.mappingContext.addPersistentEntity(domainClassToMock)
-        GrailsDomainClass domain = registerGrailsDomainClass(domainClassToMock)
-
-        Validator validator = registerDomainClassValidator(domain)
-        simpleDatastore.mappingContext.addEntityValidator(entity, validator)
-
-        simpleDatastore.mappingContext.initialize()
-
-        enhanceSingleEntity(entity)
+        mockDomains(domainClassToMock)
+        final entity = simpleDatastore.mappingContext.getPersistentEntity(domainClassToMock.name)
         if (domains) {
             saveDomainList(entity, domains)
-        }
-        else {
-            return applicationContext.getBean(domain.fullName)
         }
     }
 
@@ -205,8 +210,9 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         applicationContext.getBean(validationBeanName, Validator)
     }
 
+    @CompileStatic
     protected GrailsDomainClass registerGrailsDomainClass(Class domainClassToMock) {
-        GrailsDomainClass domain = grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, domainClassToMock)
+        GrailsDomainClass domain = (GrailsDomainClass)grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, domainClassToMock)
 
         final mc = GrailsClassUtils.getExpandoMetaClass(domainClassToMock)
 

@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -93,6 +94,7 @@ class ControllersRestApi {
         def registry = rendererRegistry
         if (registry == null) {
             registry = new DefaultRendererRegistry()
+            registry.initialize()
         }
         if (mimeType == MimeType.ALL && formats) {
             final allMimeTypes = MimeType.getConfiguredMimeTypes()
@@ -109,7 +111,7 @@ class ControllersRestApi {
                 def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
                 Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
                 if (errorsRenderer) {
-                    final context = new ServletRenderContext(webRequest)
+                    final context = new ServletRenderContext(webRequest, (Map)args.model)
                     if (args.view) {
                         context.viewName = args.view
                     }
@@ -132,18 +134,19 @@ class ControllersRestApi {
                 }
             }
 
-
             if (renderer) {
-                return renderer.render(value, new ServletRenderContext(webRequest))
+                final context = new ServletRenderContext(webRequest, (Map)args.model)
+                if (args.view) {
+                    context.viewName = args.view
+                }
+                return renderer.render(value, context)
             }
             else {
-                // TODO: Check correct status code here
-                return render(controller,[status: statusCode ?: 404 ])
+                return render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
             }
         }
         else {
-            // TODO: Check correct status code here
-            return render(controller,[status: statusCode ?: 404 ])
+            return render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
         }
     }
 
@@ -176,6 +179,9 @@ class ControllersRestApi {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected Errors getDomainErrors(def object) {
+        if (object instanceof Errors) {
+            return object
+        }
         final errors = object.errors
         if (errors instanceof Errors) {
             return errors

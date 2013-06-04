@@ -25,7 +25,9 @@ class RestResponderGrailsPlugin {
 
     def doWithSpring = {
         RestResponderGrailsPlugin.registryResourceControllers(application)
-        rendererRegistry(DefaultRendererRegistry)
+        rendererRegistry(DefaultRendererRegistry) { bean ->
+//            bean.initMethod = "initialize"
+        }
         instanceControllersRestApi(ControllersRestApi, ref("rendererRegistry"), ref("instanceControllersApi"), new ControllersMimeTypesApi())
     }
 
