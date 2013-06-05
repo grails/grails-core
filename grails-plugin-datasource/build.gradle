@@ -1,10 +1,12 @@
+def tomcatVersion = '7.0.40'
 dependencies {
 
     compile "org.springframework:spring-jdbc:${springVersion}"
 
-    compile 'org.apache.tomcat:tomcat-jdbc:7.0.40', {
+    compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion", {
         exclude group:'org.apache.tomcat', module:'tomcat-juli'
     }
+    runtime "org.apache.tomcat.embed:tomcat-embed-logging-log4j:$tomcatVersion"
 
     runtime 'hsqldb:hsqldb:1.8.0.10', {
         ext.notInPom = true
