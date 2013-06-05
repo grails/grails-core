@@ -2,7 +2,7 @@ dependencies {
 
     compile "org.springframework:spring-jdbc:${springVersion}"
 
-    compile 'org.apache.tomcat:tomcat-jdbc:7.0.37'
+    compile 'org.apache.tomcat:tomcat-jdbc:7.0.40'
 
     runtime 'hsqldb:hsqldb:1.8.0.10', {
         ext.notInPom = true
