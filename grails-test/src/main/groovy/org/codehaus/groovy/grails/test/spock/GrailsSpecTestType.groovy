@@ -50,7 +50,7 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
     protected int doPrepare() {
         eachSourceFile { GrailsTestTargetPattern testTargetPattern, File specSourceFile ->
             def specClass = sourceFileToClass(specSourceFile)
-            if(!Modifier.isAbstract(specClass))
+            if(!Modifier.isAbstract(specClass.getModifiers()))
                 specClasses << specClass
         }
         def testClasses = specClasses
