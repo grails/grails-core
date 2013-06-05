@@ -54,14 +54,14 @@ class DependenciesConfiguration {
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(dependency)) {
             final dependencyConfig = customizeDependency(customizer, dependency)
             dependency = dependencyConfig.dependency
-            dependencyManager.addDependency dependency, dependencyConfig
+            dependencyManager.addDependency dependencyConfig.dependency, dependencyConfig
         }
     }
 
     void addBuildDependency(Dependency dependency, Closure customizer = null) {
         if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(dependency)) {
             final dependencyConfig = customizeDependency(customizer, dependency)
-            dependencyManager.addBuildDependency dependency, dependencyConfig
+            dependencyManager.addBuildDependency dependencyConfig.dependency, dependencyConfig
         }
     }
 
