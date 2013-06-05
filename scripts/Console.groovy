@@ -41,6 +41,7 @@ target(console:"The console implementation target") {
     def forkConfig = forkSettings?.console
     if (forkConfig == false || forkConfig == 'false') {
         try {
+            compile()
             projectConsole.run()
         } catch (Exception e) {
             grailsConsole.error "Error starting console: ${e.message}", e
