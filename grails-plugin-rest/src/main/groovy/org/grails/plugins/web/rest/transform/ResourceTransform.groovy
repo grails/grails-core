@@ -20,12 +20,16 @@ import grails.rest.Resource
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.GrailsNameUtils
+import grails.web.controllers.ControllerMethod
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
+import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.FieldNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
+import org.codehaus.groovy.ast.PropertyNode
 import org.codehaus.groovy.ast.VariableScope
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.BinaryExpression
@@ -37,12 +41,14 @@ import org.codehaus.groovy.ast.expr.ConstructorCallExpression
 import org.codehaus.groovy.ast.expr.ElvisOperatorExpression
 import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.expr.ListExpression
+import org.codehaus.groovy.ast.expr.MapEntryExpression
 import org.codehaus.groovy.ast.expr.MapExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.NotExpression
 import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
+import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.IfStatement
 import org.codehaus.groovy.ast.stmt.ReturnStatement
@@ -55,11 +61,16 @@ import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.transaction.transform.TransactionalTransform
+import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
+
+import javax.annotation.PostConstruct
 
 import static java.lang.reflect.Modifier.*
 import static org.springframework.http.HttpMethod.*
@@ -80,11 +91,13 @@ class ResourceTransform implements ASTTransformation{
     public static final String ATTR_READY_ONLY = "readOnly"
     public static final String RESPOND_METHOD = "respond"
     public static final String ATTR_RESPONSE_FORMATS = "formats"
+    public static final String ATTR_URI = "uri"
     public static final String PARAMS_VARIABLE = "params"
     public static final ConstantExpression CONSTANT_STATUS = new ConstantExpression(ARGUMENT_STATUS)
     public static final String RENDER_METHOD = "render"
     public static final String ARGUMENT_STATUS = "status"
     public static final String REDIRECT_METHOD = "redirect"
+
 
     private ResourceLocator resourceLocator;
 
@@ -129,6 +142,8 @@ class ResourceTransform implements ASTTransformation{
             final newControllerClassNode = new ClassNode(className, PUBLIC, GrailsASTUtils.OBJECT_CLASS_NODE)
             final readOnlyAttr = annotationNode.getMember(ATTR_READY_ONLY)
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)
+            final uriAttr = annotationNode.getMember(ATTR_URI)
+            final domainPropertyName = GrailsNameUtils.getPropertyName(parent.getName())
 
             ListExpression responseFormatsExpression = new ListExpression()
             boolean hasHtml = false
@@ -151,13 +166,48 @@ class ResourceTransform implements ASTTransformation{
                 responseFormatsExpression.addExpression(new ConstantExpression("json"))
             }
 
-            final publicStaticFinal = PUBLIC & STATIC & FINAL
+            if (uriAttr != null) {
+                final uri = uriAttr.getText()
 
-            newControllerClassNode.addProperty("scope", publicStaticFinal, new ClassNode(String).getPlainNodeReference(), new ConstantExpression("singleton"), null, null);
+                final urlMappingsClassNode = new ClassNode(UrlMappings).getPlainNodeReference()
+                final urlMappingsField = new FieldNode('$urlMappings', PRIVATE, urlMappingsClassNode,newControllerClassNode, null)
+                newControllerClassNode.addField(urlMappingsField)
+                final urlMappingsSetterParam = new Parameter(urlMappingsClassNode, "um")
+                final controllerMethodAnnotation = new AnnotationNode(new ClassNode(ControllerMethod).getPlainNodeReference())
+                MethodNode urlMappingsSetter = new MethodNode("setUrlMappings", PUBLIC, VOID_CLASS_NODE, [urlMappingsSetterParam] as Parameter[], null, new ExpressionStatement(new BinaryExpression(new VariableExpression(urlMappingsField.name),Token.newSymbol(Types.EQUAL, 0, 0), new VariableExpression(urlMappingsSetterParam))))
+                final autowiredAnnotation = new AnnotationNode(new ClassNode(Autowired).getPlainNodeReference())
+                autowiredAnnotation.addMember("required", ConstantExpression.FALSE)
+
+                final qualifierAnnotation = new AnnotationNode(new ClassNode(Qualifier).getPlainNodeReference())
+                qualifierAnnotation.addMember("value", new ConstantExpression("grailsUrlMappingsHolder"))
+                urlMappingsSetter.addAnnotation(autowiredAnnotation)
+                urlMappingsSetter.addAnnotation(qualifierAnnotation)
+                urlMappingsSetter.addAnnotation(controllerMethodAnnotation)
+                newControllerClassNode.addMethod(urlMappingsSetter)
+
+
+                final methodBody = new BlockStatement()
+
+                final urlMappingsVar = new VariableExpression(urlMappingsField.name)
+                final resourcesUrlMapping = new MethodCallExpression(THIS_EXPR, uri, new MapExpression([ new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName))]))
+                final urlMappingsClosure = new ClosureExpression(null, new ExpressionStatement(resourcesUrlMapping))
+                urlMappingsClosure.setVariableScope(new VariableScope())
+
+                methodBody.addStatement(new IfStatement(new BooleanExpression(urlMappingsVar), new ExpressionStatement(new MethodCallExpression(urlMappingsVar, "addMappings", urlMappingsClosure)),new EmptyStatement()))
+                def initialiseUrlMappingsMethod = new MethodNode("initializeUrlMappings", PUBLIC, VOID_CLASS_NODE, ZERO_PARAMETERS, null, methodBody)
+                initialiseUrlMappingsMethod.addAnnotation(new AnnotationNode(new ClassNode(PostConstruct).getPlainNodeReference()))
+                initialiseUrlMappingsMethod.addAnnotation(controllerMethodAnnotation)
+                newControllerClassNode.addMethod(initialiseUrlMappingsMethod)
+
+            }
+
+            final publicStaticFinal = PUBLIC | STATIC | FINAL
+
+            newControllerClassNode.addProperty("scope", publicStaticFinal, ClassHelper.STRING_TYPE, new ConstantExpression("singleton"), null, null);
             newControllerClassNode.addProperty("responseFormats", publicStaticFinal, new ClassNode(List).getPlainNodeReference(), responseFormatsExpression, null, null)
 
             boolean isReadOnly = readOnlyAttr != null && readOnlyAttr.equals(ConstantExpression.TRUE);
-            final domainPropertyName = GrailsNameUtils.getPropertyName(parent.getName())
+
 
             List<MethodNode> weavedMethods = []
             weaveReadActions(parent, domainPropertyName,newControllerClassNode, annotationNode.lineNumber, weavedMethods)
@@ -166,7 +216,7 @@ class ResourceTransform implements ASTTransformation{
                 mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_SAVE),new ConstantExpression(POST.toString()))
                 mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_UPDATE),new ConstantExpression(PUT.toString()))
                 mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_DELETE),new ConstantExpression(DELETE.toString()))
-                newControllerClassNode.addProperty("allowedMethods", publicStaticFinal,new ClassNode(Map.class).getPlainNodeReference(), mapExpression, null, null)
+                newControllerClassNode.addField("allowedMethods", publicStaticFinal,new ClassNode(Map.class).getPlainNodeReference(), mapExpression)
                 weaveWriteActions(parent,domainPropertyName, newControllerClassNode, hasHtml, annotationNode.lineNumber,weavedMethods)
             }
 

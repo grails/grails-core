@@ -45,20 +45,20 @@ import org.springframework.web.context.WebApplicationContext;
  * @since 0.5
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappingsHolder>, InitializingBean, ApplicationContextAware, GrailsApplicationAware, PluginManagerAware {
+public class UrlMappingsHolderFactoryBean implements FactoryBean<UrlMappings>, InitializingBean, ApplicationContextAware, GrailsApplicationAware, PluginManagerAware {
     private static final String URL_MAPPING_CACHE_MAX_SIZE = "grails.urlmapping.cache.maxsize";
     private static final String URL_CREATOR_CACHE_MAX_SIZE = "grails.urlcreator.cache.maxsize";
     private GrailsApplication grailsApplication;
-    private UrlMappingsHolder urlMappingsHolder;
+    private UrlMappings urlMappingsHolder;
     private GrailsPluginManager pluginManager;
     private ApplicationContext applicationContext;
 
-    public UrlMappingsHolder getObject() throws Exception {
+    public UrlMappings getObject() throws Exception {
         return urlMappingsHolder;
     }
 
-    public Class<UrlMappingsHolder> getObjectType() {
-        return UrlMappingsHolder.class;
+    public Class<UrlMappings> getObjectType() {
+        return UrlMappings.class;
     }
 
     public boolean isSingleton() {

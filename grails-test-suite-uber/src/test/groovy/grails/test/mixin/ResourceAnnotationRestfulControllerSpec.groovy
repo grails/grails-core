@@ -21,7 +21,7 @@ import grails.persistence.*
 import grails.rest.*
 
 @Entity
-@Resource(formats=['html', 'xml'])
+@Resource(formats=['html', 'xml'], uri="/videos")
 class Video {
     String title
     static constraints = {

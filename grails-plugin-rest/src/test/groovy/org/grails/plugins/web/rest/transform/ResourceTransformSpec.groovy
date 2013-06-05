@@ -36,6 +36,7 @@ class Book {
             ctrl.getDeclaredMethod("create")
             ctrl.getDeclaredMethod("save", domain)
             ctrl.getDeclaredMethod("save")
+            ctrl.scope == "singleton"
 
     }
 }

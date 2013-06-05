@@ -167,7 +167,12 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         UrlMappingBuilder builder = new UrlMappingBuilder(null, servletContext);
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-        closure.call(applicationContext);
+        if(closure.getParameterTypes().length == 0) {
+            closure.call();
+        }
+        else {
+            closure.call(applicationContext);
+        }
         builder.urlDefiningMode = false;
         configureUrlMappingDynamicObjects(closure);
         return builder.getUrlMappings();

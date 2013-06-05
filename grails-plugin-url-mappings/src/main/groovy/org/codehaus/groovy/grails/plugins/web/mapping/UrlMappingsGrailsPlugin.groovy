@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.web.mapping.CachingLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
+import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
 import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
@@ -73,7 +74,7 @@ class UrlMappingsGrailsPlugin {
             grailsUrlMappingsHolder(ProxyFactoryBean) { bean ->
                 bean.lazyInit = true
                 targetSource = urlMappingsTargetSource
-                proxyInterfaces = [UrlMappingsHolder]
+                proxyInterfaces = [UrlMappings]
             }
         } else {
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) { bean ->
