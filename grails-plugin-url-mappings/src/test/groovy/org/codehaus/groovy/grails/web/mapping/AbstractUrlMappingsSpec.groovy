@@ -15,7 +15,7 @@ abstract class AbstractUrlMappingsSpec extends Specification{
         generator.urlMappingsHolder = getUrlMappingsHolder mappings
         return generator;
     }
-    UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
+    UrlMappings getUrlMappingsHolder(Closure mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         def allMappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(allMappings)

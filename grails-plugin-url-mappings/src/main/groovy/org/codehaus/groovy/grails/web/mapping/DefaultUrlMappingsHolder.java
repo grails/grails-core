@@ -21,15 +21,19 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.*;
 
+import grails.util.Holders;
+import groovy.lang.Closure;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.core.style.ToStringCreator;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weigher;
 import org.springframework.http.HttpMethod;
+import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Default implementation of the UrlMappingsHolder interface that takes a list of mappings and
@@ -42,7 +46,7 @@ import org.springframework.http.HttpMethod;
  * @since 0.4
  */
 @SuppressWarnings("rawtypes")
-public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
+public class DefaultUrlMappingsHolder implements UrlMappings {
 
     private static final transient Log LOG = LogFactory.getLog(DefaultUrlMappingsHolder.class);
     private static final int DEFAULT_MAX_WEIGHTED_CAPACITY = 5000;
@@ -50,6 +54,8 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
     private int maxWeightedCacheCapacity = DEFAULT_MAX_WEIGHTED_CAPACITY;
     private Map<String, UrlMappingInfo> cachedMatches;
     private Map<UriToUrlMappingKey, List<UrlMappingInfo>> cachedListMatches;
+
+
     private enum CustomListWeigher implements Weigher<List<UrlMappingInfo>> {
         INSTANCE;
         public int weightOf(List<UrlMappingInfo> values) {
@@ -84,6 +90,18 @@ public class DefaultUrlMappingsHolder implements UrlMappingsHolder {
         if (!doNotCallInit) {
             initialize();
         }
+    }
+
+    @Override
+    public Collection<UrlMapping> addMappings(Closure mappings) {
+        WebApplicationContext applicationContext = (WebApplicationContext) Holders.findApplicationContext();
+
+        UrlMappingEvaluator evaluator = new DefaultUrlMappingEvaluator(applicationContext);
+
+        List<UrlMapping> newMappings = evaluator.evaluateMappings(mappings);
+        this.urlMappings.addAll(newMappings);
+        initialize();
+        return newMappings;
     }
 
     public void initialize() {

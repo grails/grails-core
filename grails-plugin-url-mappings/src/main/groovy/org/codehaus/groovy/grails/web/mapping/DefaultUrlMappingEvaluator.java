@@ -107,7 +107,8 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     }
 
     public DefaultUrlMappingEvaluator(WebApplicationContext applicationContext) {
-        this.servletContext = applicationContext.getServletContext();
+        if(applicationContext != null)
+            this.servletContext = applicationContext.getServletContext();
         this.applicationContext = applicationContext;
     }
 
@@ -127,7 +128,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     }
 
     @SuppressWarnings({"unchecked","rawtypes"})
-    public List evaluateMappings(Class theClass) {
+    public List<UrlMapping> evaluateMappings(Class theClass) {
         GroovyObject obj = (GroovyObject) BeanUtils.instantiateClass(theClass);
 
         if (obj instanceof Script) {
@@ -150,7 +151,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 "]. A URL mapping must be an instance of groovy.lang.Script.");
     }
 
-    private List<?> evaluateMappings(GroovyObject go, Closure<?> mappings, Binding binding) {
+    private List<UrlMapping> evaluateMappings(GroovyObject go, Closure<?> mappings, Binding binding) {
         UrlMappingBuilder builder = new UrlMappingBuilder(binding, servletContext);
         mappings.setDelegate(builder);
         mappings.call();
@@ -162,7 +163,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
     }
 
     @SuppressWarnings("rawtypes")
-    public List evaluateMappings(Closure closure) {
+    public List<UrlMapping> evaluateMappings(Closure closure) {
         UrlMappingBuilder builder = new UrlMappingBuilder(null, servletContext);
         closure.setDelegate(builder);
         closure.setResolveStrategy(Closure.DELEGATE_FIRST);
