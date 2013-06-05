@@ -21,6 +21,8 @@ import org.spockframework.runtime.SpecUtil
 
 import spock.config.RunnerConfiguration
 
+import java.lang.reflect.Modifier
+
 @CompileStatic
 class GrailsSpecTestType extends GrailsTestTypeSupport {
     public static final List<String> TEST_SUFFIXES = ["Test", "Tests", "Spec", "Specification"].asImmutable()
@@ -48,7 +50,8 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
     protected int doPrepare() {
         eachSourceFile { GrailsTestTargetPattern testTargetPattern, File specSourceFile ->
             def specClass = sourceFileToClass(specSourceFile)
-            specClasses << specClass
+            if(!Modifier.isAbstract(specClass))
+                specClasses << specClass
         }
         def testClasses = specClasses
         if (testClasses) {
