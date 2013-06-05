@@ -111,7 +111,7 @@
         <dependency>
             <groupId>org.grails.plugins</groupId>
             <artifactId>tomcat</artifactId>
-            <version>7.0.37</version>
+            <version>7.0.40</version>
             <type>zip</type>
             <scope>provided</scope>
         </dependency>
