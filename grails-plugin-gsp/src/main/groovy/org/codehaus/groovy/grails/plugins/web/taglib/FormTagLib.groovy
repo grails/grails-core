@@ -382,7 +382,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         }
 
         // default to post
-        def method = attrs.remove('method')?.toUpperCase() ?: 'POST'
+        def method = linkAttrs[LinkGenerator.ATTRIBUTE_METHOD]?.toUpperCase() ?: 'POST'
         def httpMethod = HttpMethod.valueOf(method)
         boolean notGet = httpMethod != HttpMethod.GET
 
