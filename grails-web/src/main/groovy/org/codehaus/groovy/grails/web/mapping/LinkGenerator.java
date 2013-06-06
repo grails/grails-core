@@ -45,6 +45,8 @@ public interface LinkGenerator {
     String ATTRIBUTE_ELEMENT_ID = "elementId";
 
     Set<String> LINK_ATTRIBUTES = CollectionUtils.newSet(
+       ATTRIBUTE_RESOURCE,
+       ATTRIBUTE_METHOD,
        ATTRIBUTE_CONTROLLER,
        ATTRIBUTE_ACTION,
        ATTRIBUTE_URI,

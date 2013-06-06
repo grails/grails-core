@@ -45,12 +45,18 @@ class HalDomainClassJsonRendererSpec extends Specification {
             final author = new Author(name: "Stephen King")
             author.id = 2L
             def book = new Book(title:"The Stand", author: author)
+            book.authors = new HashSet()
+            book.authors << author
+            book.link(href:"/publisher", rel:"The Publisher")
+            final author2 = new Author(name: "King Stephen")
+            author2.id = 3L
+            book.authors << author2
             book.id = 1L
             renderer.render(book, renderContext)
 
         then:"The resulting HAL is correct"
             response.contentType == HalDomainClassJsonRenderer.MIME_TYPE.name
-            response.contentAsString == '{"_links":{"self":{"href":"/books/1","hreflang":"en"},"author":{"href":"/authors/2","hreflang":"en"}},"_embedded":{"author":{"_links":{"self":{"href":"/authors/2","hreflang":"en"}},"name":"\\"Stephen King\\""}}}'
+            response.contentAsString == '{"_links":{"self":{"href":"http://localhost/books/1","hreflang":"en","type":"application/hal+json"},"The Publisher":{"href":"/publisher","hreflang":"en"},"author":{"href":"http://localhost/authors/2","hreflang":"en"}},"_embedded":{"author":{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"\\"Stephen King\\""},"authors":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"\\"Stephen King\\""},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en"}},"name":"\\"King Stephen\\""}]}}'
 
 
     }
@@ -78,6 +84,8 @@ class HalDomainClassJsonRendererSpec extends Specification {
 @Resource
 class Book {
     Author author
+
+    static hasMany = [authors:Author]
 }
 
 @Entity

@@ -16,6 +16,7 @@
 package org.grails.plugins.web.rest.transform
 
 import grails.artefact.Artefact
+import grails.rest.Link
 import grails.rest.Resource
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
@@ -61,6 +62,7 @@ import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.transaction.transform.TransactionalTransform
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
@@ -97,6 +99,10 @@ class ResourceTransform implements ASTTransformation{
     public static final String RENDER_METHOD = "render"
     public static final String ARGUMENT_STATUS = "status"
     public static final String REDIRECT_METHOD = "redirect"
+    public static final ClassNode AUTOWIRED_CLASS_NODE = new ClassNode(Autowired).getPlainNodeReference()
+    public static final String LINK_METHOD = "link"
+    public static final String RESOURCE_LINKS_FIELD = '$resourceLinks'
+    public static final String LINKS_METHOD = "links"
 
 
     private ResourceLocator resourceLocator;
@@ -134,6 +140,28 @@ class ResourceTransform implements ASTTransformation{
         final resourceLocator = getResourceLocator()
         final className = "${parent.name}${ControllerArtefactHandler.TYPE}"
         final resource = resourceLocator.findResourceForClassName(className)
+
+        def linksField = new FieldNode(RESOURCE_LINKS_FIELD, PRIVATE | TRANSIENT, new ClassNode(Set).getPlainNodeReference(), parent, new ListExpression())
+        parent.addField(linksField)
+
+        final resourceLinksVariable = new VariableExpression('$resourceLinks')
+        if(parent.getMethods(LINK_METHOD).isEmpty()) {
+            final mapParameter = new Parameter(new ClassNode(Map), LINK_METHOD)
+            final linkMethodBody = new BlockStatement()
+            final linkArg = new MethodCallExpression(new ClassExpression(new ClassNode(Link)),"createLink", new VariableExpression(mapParameter))
+            linkMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(resourceLinksVariable, "add", linkArg)))
+            def linkMethod = new MethodNode(LINK_METHOD, PUBLIC, ClassHelper.VOID_TYPE, [mapParameter] as Parameter[], null, linkMethodBody)
+            parent.addMethod(linkMethod)
+
+            def linkParameter = new Parameter(new ClassNode(Link), LINK_METHOD)
+            def linkMethod2 = new MethodNode(LINK_METHOD, PUBLIC, ClassHelper.VOID_TYPE, [linkParameter] as Parameter[], null, new ExpressionStatement(new MethodCallExpression(resourceLinksVariable, "add", new VariableExpression(linkParameter))));
+            parent.addMethod(linkMethod2)
+        }
+        if(parent.getMethods(LINKS_METHOD).isEmpty()) {
+            def linksMethod = new MethodNode(LINKS_METHOD, PUBLIC, new ClassNode(Collection),ZERO_PARAMETERS, null, new ReturnStatement(resourceLinksVariable))
+            parent.addMethod(linksMethod)
+        }
+
 
         if (resource == null) {
 
@@ -175,7 +203,7 @@ class ResourceTransform implements ASTTransformation{
                     final urlMappingsSetterParam = new Parameter(urlMappingsClassNode, "um")
                     final controllerMethodAnnotation = new AnnotationNode(new ClassNode(ControllerMethod).getPlainNodeReference())
                     MethodNode urlMappingsSetter = new MethodNode("setUrlMappings", PUBLIC, VOID_CLASS_NODE, [urlMappingsSetterParam] as Parameter[], null, new ExpressionStatement(new BinaryExpression(new VariableExpression(urlMappingsField.name),Token.newSymbol(Types.EQUAL, 0, 0), new VariableExpression(urlMappingsSetterParam))))
-                    final autowiredAnnotation = new AnnotationNode(new ClassNode(Autowired).getPlainNodeReference())
+                    final autowiredAnnotation = new AnnotationNode(AUTOWIRED_CLASS_NODE)
                     autowiredAnnotation.addMember("required", ConstantExpression.FALSE)
 
                     final qualifierAnnotation = new AnnotationNode(new ClassNode(Qualifier).getPlainNodeReference())

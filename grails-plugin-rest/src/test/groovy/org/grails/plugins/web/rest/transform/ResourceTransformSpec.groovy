@@ -38,5 +38,13 @@ class Book {
             ctrl.getDeclaredMethod("save")
             ctrl.scope == "singleton"
 
+        when:"A link is added"
+            def book = domain.newInstance()
+            book.link(rel:'foos', href:"/foo")
+            def links = book.links()
+
+        then:"The link is added to the available links"
+            links[0].href == '/foo'
+
     }
 }

@@ -16,7 +16,6 @@
 
 package grails.rest
 
-import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.transform.GroovyASTTransformationClass
 
 import java.lang.annotation.ElementType
