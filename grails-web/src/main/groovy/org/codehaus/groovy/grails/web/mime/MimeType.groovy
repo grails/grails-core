@@ -40,6 +40,8 @@ class MimeType {
     static final MimeType JSON = new MimeType('application/json', "json")
     static final MimeType TEXT_XML = new MimeType('text/xml', "xml")
     static final MimeType TEXT_JSON = new MimeType('text/json', "json")
+    static final MimeType HAL_JSON = new MimeType('application/hal+json', "json")
+    static final MimeType HAL_XML = new MimeType('application/hal+xml', "xml")
 
     private static DEFAULTS = createDefaults()
 

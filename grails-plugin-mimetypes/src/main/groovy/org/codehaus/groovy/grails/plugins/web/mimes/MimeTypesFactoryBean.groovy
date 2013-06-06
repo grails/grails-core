@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.plugins.web.mimes
 
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.beans.factory.FactoryBean
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.InitializingBean
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplicationAware, InitializingBean {
 
     GrailsApplication grailsApplication
@@ -41,25 +44,28 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplication
 
     void afterPropertiesSet() {
         def config = grailsApplication?.config
-        def mimeConfig = config?.grails?.mime?.types
+        def mimeConfig = getMimeConfig(config)
         if (!mimeConfig) {
             mimeTypes = MimeType.createDefaults()
             return
         }
 
         def mimes = []
-        for (entry in mimeConfig) {
+        for (entry in mimeConfig.entrySet()) {
             if (entry.value instanceof List) {
                 for (i in entry.value) {
-                    mimes << new MimeType(i)
-                    mimes[-1].extension = entry.key
+                    mimes << new MimeType(i.toString(),entry.key.toString())
                 }
             }
             else {
-                mimes << new MimeType(entry.value)
-                mimes[-1].extension = entry.key
+                mimes << new MimeType(entry.value.toString(), entry.key.toString())
             }
         }
         mimeTypes = mimes
+    }
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected Map<CharSequence, CharSequence> getMimeConfig(ConfigObject config) {
+        config?.grails?.mime?.types
     }
 }

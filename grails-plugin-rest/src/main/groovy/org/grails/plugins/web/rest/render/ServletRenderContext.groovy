@@ -19,6 +19,7 @@ package org.grails.plugins.web.rest.render
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -37,9 +38,10 @@ class ServletRenderContext implements RenderContext{
 
     GrailsWebRequest webRequest
     Map internalModel
+    ResponseMimeTypesApi responseMimeTypesApi
 
     ServletRenderContext(GrailsWebRequest webRequest) {
-        this.webRequest = webRequest
+        this(webRequest, null)
     }
 
     ServletRenderContext(GrailsWebRequest webRequest, Map internalModel) {
@@ -50,7 +52,10 @@ class ServletRenderContext implements RenderContext{
     @Override
     @CompileStatic(TypeCheckingMode.SKIP)
     MimeType getAcceptMimeType() {
-        webRequest.response.mimeType
+        final response = webRequest.response
+        if (response.hasProperty('mimeType'))
+            return response.mimeType
+        return null
     }
 
     @Override
