@@ -50,5 +50,6 @@ public @interface Resource {
     /**
      * @return The URI of the resource. If specified a {@link org.codehaus.groovy.grails.web.mapping.UrlMapping} will automatically be registered for the resource
      */
-    String uri()
+    String uri() default ""
+
 }

@@ -12,8 +12,7 @@
 // }
 
 grails.project.groupId = appName // change this to alter the default package name and Maven publishing destination
-grails.mime.file.extensions = true // enables the parsing of file extensions from URLs into the request format
-grails.mime.use.accept.header = false
+grails.mime.use.accept.header = false // Whether to use the HTTP Accept header for content negotiation
 grails.mime.types = [
     all:           '*/*',
     atom:          'application/atom+xml',
@@ -26,6 +25,7 @@ grails.mime.types = [
     multipartForm: 'multipart/form-data',
     rss:           'application/rss+xml',
     text:          'text/plain',
+    hal:           ['application/hal+xml','application/hal+json'],
     xml:           ['text/xml', 'application/xml']
 ]
 

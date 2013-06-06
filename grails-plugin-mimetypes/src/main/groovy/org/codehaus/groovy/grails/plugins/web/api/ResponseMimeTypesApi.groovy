@@ -118,7 +118,7 @@ class ResponseMimeTypesApi {
                 request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, result)
             }
             else {
-                result = getMimeTypesInternal(request, response)[0]
+                result = getMimeTypesInternal(request)[0]
             }
         }
         return result
@@ -131,7 +131,7 @@ class ResponseMimeTypesApi {
      * @return The configured mime types
      */
     MimeType[] getMimeTypes(HttpServletResponse response) {
-        return getMimeTypesInternal(GrailsWebRequest.lookup().currentRequest, response)
+        return getMimeTypesInternal(GrailsWebRequest.lookup().currentRequest)
     }
 
     /**
@@ -145,7 +145,7 @@ class ResponseMimeTypesApi {
         apiSupport.withFormat(response, callable)
     }
 
-    private MimeType[] getMimeTypesInternal(HttpServletRequest request, HttpServletResponse response) {
+    private MimeType[] getMimeTypesInternal(HttpServletRequest request) {
         MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS)
         if (!result) {
 
