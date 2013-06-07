@@ -80,6 +80,14 @@ public class XML extends AbstractConverter<XMLStreamWriter> {
         this.target = target;
     }
 
+    public XML(XMLStreamWriter writer) {
+        this();
+        this.writer = writer;
+        this.isRendering = true;
+    }
+
+
+
     protected ConverterConfiguration<XML> initConfig() {
         return ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
     }
