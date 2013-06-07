@@ -133,10 +133,14 @@ class DefaultRendererRegistry implements RendererRegistry{
             while(currentClass != null) {
 
                 renderer = findRendererForType(currentClass, mimeType)
-                if (renderer) break
+                if (renderer) {
+                    rendererCache.put(cacheKey, renderer)
+                    return renderer
+                }
                 if (currentClass == Object) break
                 currentClass = currentClass.getSuperclass()
             }
+
             final interfaces = ClassUtils.getAllInterfaces(object)
             for(i in interfaces) {
                 renderer = findRendererForType(i, mimeType)

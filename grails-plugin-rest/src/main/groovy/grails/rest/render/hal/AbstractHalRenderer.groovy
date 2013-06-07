@@ -78,7 +78,7 @@ abstract class AbstractHalRenderer<T> implements Renderer<T> {
     }
 
     protected boolean isDomainResource(Class clazz) {
-        DomainClassArtefactHandler.isDomainClass(clazz) && clazz.getAnnotation(Resource)
+        DomainClassArtefactHandler.isDomainClass(clazz)
     }
 
     protected String getLinkTitle(PersistentEntity entity, Locale locale) {

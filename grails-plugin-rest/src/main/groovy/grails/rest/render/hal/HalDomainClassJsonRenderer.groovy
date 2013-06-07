@@ -25,6 +25,7 @@ import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ToOne
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpStatus
 
 /**
  * Renders domain instances in HAL JSON format (see http://tools.ietf.org/html/draft-kelly-json-hal-05)
@@ -90,6 +91,9 @@ class HalDomainClassJsonRenderer<T> extends AbstractHalRenderer<T> {
                 }
                 writer.endArray()
 
+            }
+            else {
+                context.setStatus(HttpStatus.NOT_IMPLEMENTED)
             }
         } finally {
             writer.flush()
