@@ -27,6 +27,8 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
+import java.util.regex.Pattern
+
 /**
  * Methods added to {@link javax.servlet.http.HttpServletResponse} for response format handling.
  *
@@ -38,7 +40,9 @@ class ResponseMimeTypesApi {
 
     GrailsApplication grailsApplication
     MimeType[] mimeTypes
-    private boolean useAcceptHeader
+    // The ACCEPT header will not be used for content negotiation for user agents containing the following strings (defaults to the 4 major rendering engines)
+    protected Pattern disableForUserAgents = ~/(Gecko(?i)|WebKit(?i)|Presto(?i)|Trident(?i))/
+    protected boolean useAcceptHeader
 
     MimeTypesApiSupport apiSupport = new MimeTypesApiSupport()
 
@@ -59,7 +63,15 @@ class ResponseMimeTypesApi {
     ResponseMimeTypesApi(GrailsApplication application, MimeType[] types) {
         grailsApplication = application
         mimeTypes = types
-        useAcceptHeader = grailsApplication.flatConfig.get("grails.mime.use.accept.header") ? true : false
+        final config = grailsApplication.flatConfig
+        final useAcceptHeader = config.get("grails.mime.use.accept.header")
+        this.useAcceptHeader = useAcceptHeader instanceof Boolean ? useAcceptHeader : true
+        final disableForUserAgentsConfig = config.get('grails.mime.disable.accept.header.userAgents')
+        if (disableForUserAgentsConfig instanceof Collection) {
+            final userAgents = disableForUserAgentsConfig.join('(?i)|')
+            this.disableForUserAgents = Pattern.compile("(${userAgents})")
+        }
+
     }
 
     /**
@@ -158,8 +170,10 @@ class ResponseMimeTypesApi {
             def parser = new DefaultAcceptHeaderParser(grailsApplication)
             parser.configuredMimeTypes = getMimeTypes()
             String header = null
+
+            boolean disabledForUserAgent = userAgent ? disableForUserAgents.matcher(userAgent).find() : false
             if (msie) header = "*/*"
-            if (!header && useAcceptHeader) header = request.getHeader(HttpHeaders.ACCEPT)
+            if (!header && useAcceptHeader && !disabledForUserAgent) header = request.getHeader(HttpHeaders.ACCEPT)
             result = parser.parse(header)
 
             // GRAILS-8341 - If no header the parser would have returned all configured mime types.  Since no format
