@@ -17,14 +17,10 @@ package grails.rest.render.errors
 
 import com.google.gson.Gson
 import com.google.gson.stream.JsonWriter
-import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.MessageSource
 import org.springframework.http.HttpMethod
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
@@ -37,34 +33,15 @@ import org.springframework.validation.ObjectError
  * @since 2.3
  */
 @CompileStatic
-class VndErrorJsonRenderer implements ContainerRenderer<Errors, Object> {
+class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
     public static final MimeType MIME_TYPE = new MimeType("application/vnd.error+json", "json")
-    public static final String LOGREF_ATTRIBUTE = 'logref'
-    public static final String MESSAGE_ATTRIBUTE = "message"
     public static final String LINKS_ATTRIBUTE = "_links"
-    public static final String RESOURCE_ATTRIBUTE = "resource"
-    public static final String HREF_ATTRIBUTE = "href"
+    public static final String FOUR_SPACES = '    '
 
-    boolean absoluteLinks = true
-
-    @Autowired
-    MessageSource messageSource
-
-    @Autowired
-    LinkGenerator linkGenerator
+    MimeType[] mimeTypes = [MIME_TYPE, MimeType.HAL_JSON, MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
 
     @Autowired(required = false)
     Gson gson = new Gson()
-
-    @Override
-    Class<Errors> getTargetType() {
-        Errors
-    }
-
-    @Override
-    MimeType[] getMimeTypes() {
-        return [MIME_TYPE, MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
-    }
 
     @Override
     void render(Errors object, RenderContext context) {
@@ -77,14 +54,18 @@ class VndErrorJsonRenderer implements ContainerRenderer<Errors, Object> {
 
 
             JsonWriter writer = new JsonWriter(context.writer)
+            if (prettyPrint) {
+                writer.indent = FOUR_SPACES
+            }
             writer.beginArray()
             for(ObjectError oe in object.allErrors) {
                 final msg = messageSource.getMessage(oe, locale)
                 writer
 
+                String logref = resolveLogRef(target, oe)
                 writer
                     .beginObject()
-                      .name(LOGREF_ATTRIBUTE).value(gson.toJson(getObjectId(target)))
+                      .name(LOGREF_ATTRIBUTE).value(gson.toJson(logref))
                       .name(MESSAGE_ATTRIBUTE).value(msg)
                       .name(LINKS_ATTRIBUTE)
                          .beginObject()
@@ -97,17 +78,10 @@ class VndErrorJsonRenderer implements ContainerRenderer<Errors, Object> {
             }
             writer.endArray()
 
+            writer.flush()
+
         }
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected Object getObjectId(target) {
-        target.id
-    }
 
-
-    @Override
-    Class<Object> getComponentType() {
-        Object
-    }
 }

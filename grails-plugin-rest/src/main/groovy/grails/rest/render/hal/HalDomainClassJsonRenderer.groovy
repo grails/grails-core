@@ -64,32 +64,37 @@ class HalDomainClassJsonRenderer<T> extends AbstractHalRenderer<T> {
 
         JsonWriter writer = new JsonWriter(context.writer)
 
-        if(prettyPrint)
-            writer.setIndent('  ')
+        try {
+            if(prettyPrint)
+                writer.setIndent('  ')
 
-        final clazz = object.class
+            final clazz = object.class
 
-        if (isDomainResource(clazz)) {
-            writeDomainWithEmbeddedAndLinks(clazz, object, writer, context.locale, mimeType, [] as Set)
-        } else if (object instanceof Collection) {
-            writer.beginObject()
-                  .name(LINKS_ATTRIBUTE)
-                  .beginObject()
-            final resourceRef = linkGenerator.link(uri:context.resourcePath, method: HttpMethod.GET.toString(), absolute: absoluteLinks)
-            final locale = context.locale
-            writeLink(RELATIONSHIP_SELF, getResourceTitle(resourceRef, locale),resourceRef, locale, mimeType ? mimeType.name : null, writer)
-            writer.endObject()
-                  .name(EMBEDDED_ATTRIBUTE)
-                  .beginArray()
+            if (isDomainResource(clazz)) {
+                writeDomainWithEmbeddedAndLinks(clazz, object, writer, context.locale, mimeType, [] as Set)
+            } else if (object instanceof Collection) {
+                writer.beginObject()
+                      .name(LINKS_ATTRIBUTE)
+                      .beginObject()
+                final resourceRef = linkGenerator.link(uri:context.resourcePath, method: HttpMethod.GET.toString(), absolute: absoluteLinks)
+                final locale = context.locale
+                writeLink(RELATIONSHIP_SELF, getResourceTitle(resourceRef, locale),resourceRef, locale, mimeType ? mimeType.name : null, writer)
+                writer.endObject()
+                      .name(EMBEDDED_ATTRIBUTE)
+                      .beginArray()
 
-            for(o in ((Collection)object)) {
-                if (o && isDomainResource(o.getClass())) {
-                    writeDomainWithEmbeddedAndLinks(o.class, o, writer, locale, mimeType, [] as Set)
+                for(o in ((Collection)object)) {
+                    if (o && isDomainResource(o.getClass())) {
+                        writeDomainWithEmbeddedAndLinks(o.class, o, writer, locale, mimeType, [] as Set)
+                    }
                 }
-            }
-            writer.endArray()
+                writer.endArray()
 
+            }
+        } finally {
+            writer.flush()
         }
+
     }
 
 

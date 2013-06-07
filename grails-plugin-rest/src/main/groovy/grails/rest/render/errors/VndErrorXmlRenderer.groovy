@@ -23,6 +23,9 @@ import groovy.transform.TypeCheckingMode
 import groovy.xml.MarkupBuilder
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter
+import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter
+import org.codehaus.groovy.grails.web.xml.XMLStreamWriter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.validation.BeanPropertyBindingResult
@@ -37,54 +40,46 @@ import org.springframework.validation.ObjectError
  * @since 2.3
  */
 @CompileStatic
-class VndErrorXmlRenderer implements ContainerRenderer<Errors, Object>{
-    public static final String CONTENT_TYPE = "application/vnd.error+xml"
+class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
+    public static final MimeType MIME_TYPE = new MimeType("application/vnd.error+xml", "xml")
+    public static final String ERRORS_TAG = "errors"
+    public static final String ERROR_TAG = "error"
+    public static final String LINK_TAG = "link"
 
-    @Autowired
-    MessageSource messageSource
+    MimeType[] mimeTypes = [MIME_TYPE, MimeType.HAL_XML, MimeType.XML, MimeType.TEXT_XML] as MimeType[]
 
-    @Autowired
-    LinkGenerator linkGenerator
-
-    @Override
-    Class<Errors> getTargetType() {
-        Errors
-    }
-
-    @Override
-    MimeType[] getMimeTypes() {
-        return [MimeType.XML, MimeType.TEXT_XML] as MimeType[]
-    }
 
     @Override
     void render(Errors object, RenderContext context) {
         if (object instanceof BeanPropertyBindingResult) {
 
-            context.setContentType(CONTENT_TYPE)
-            def mkp = new MarkupBuilder(context.getWriter())
+            context.setContentType(mimeTypes[0].name)
             Locale locale = context.locale
             final target = object.target
             final language = locale.language
 
-            writeXmlResponse(object, mkp, language, locale, target)
-        }
-    }
-
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected void writeXmlResponse(BeanPropertyBindingResult object, MarkupBuilder mkp, String language, Locale locale, target) {
-        final id = target.id
-        mkp.errors('xml:lang': language) {
+            final streamingWriter = new StreamingMarkupWriter(context.writer, encoding)
+            XMLStreamWriter w = prettyPrint ? new PrettyPrintXMLStreamWriter(streamingWriter) : new XMLStreamWriter(streamingWriter)
+            w.startDocument(encoding, "1.0")
+            w.startNode(ERRORS_TAG)
+                .attribute('xml:lang', language)
             for (ObjectError oe in object.allErrors) {
-                error(logref: id) {
-                    message messageSource.getMessage(oe, locale)
-                    link rel: "resource", href: linkGenerator.link(resource: target, method:"GET", absolute: true)
-                }
+                def logref = resolveLogRef(target, oe)
+                w.startNode(ERROR_TAG)
+                    .attribute(LOGREF_ATTRIBUTE, logref)
+                    .startNode(MESSAGE_ATTRIBUTE)
+                        .characters(messageSource.getMessage(oe, locale))
+                    .end()
+                    .startNode(LINK_TAG)
+                        .attribute("rel", "resource")
+                        .attribute("href", linkGenerator.link(resource: target, method: "GET", absolute: true))
+                    .end()
+                .end()
             }
+            w.end()
         }
-    }
-
-    @Override
-    Class<Object> getComponentType() {
-        Object
     }
 }
+
+
+
