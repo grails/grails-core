@@ -16,6 +16,7 @@
 package org.grails.async.factory.gpars
 
 import grails.async.Promise
+import grails.async.Promises
 import groovy.transform.CompileStatic
 import groovyx.gpars.dataflow.Dataflow
 
@@ -54,6 +55,7 @@ class  GparsPromise<T> implements Promise<T> {
 
     @SuppressWarnings("unchecked")
     Promise onComplete(Closure callable) {
+        callable = Promises.promiseFactory.applyDecorators(callable, null)
         internalPromise.whenBound { val ->
             if (!(val instanceof Throwable)) {
                 callable.call(val)
@@ -64,6 +66,7 @@ class  GparsPromise<T> implements Promise<T> {
 
     @SuppressWarnings("unchecked")
     Promise onError(Closure callable) {
+        callable = Promises.promiseFactory.applyDecorators(callable, null)
         internalPromise.whenBound { val ->
             if (val instanceof Throwable) {
                 callable.call(val)
@@ -74,6 +77,7 @@ class  GparsPromise<T> implements Promise<T> {
 
     @SuppressWarnings("unchecked")
     Promise then(Closure callable) {
+        callable = Promises.promiseFactory.applyDecorators(callable, null)
         return new GparsPromise(internalPromise.then(callable))
     }
 }
