@@ -46,6 +46,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.mime.MimeType;
+import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
@@ -85,9 +86,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private GrailsApplication application;
     private GrailsConfig grailsConfig;
     private ViewResolver viewResolver;
-    private MimeType[] mimeTypes;
     private StackTraceFilterer filterer;
-
+    private MimeTypeResolver mimeTypeResolver;
     private UrlConverter urlConverter;
     private Boolean allowHeaderForWrongHttpMethod;
 
@@ -106,8 +106,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             grailsConfig = new GrailsConfig(application);
         }
 
-        if (applicationContext.containsBean(MimeType.BEAN_NAME)) {
-            mimeTypes = applicationContext.getBean(MimeType.BEAN_NAME, MimeType[].class);
+        Map<String, MimeTypeResolver> mimeTypeResolvers = applicationContext.getBeansOfType(MimeTypeResolver.class);
+        if(!mimeTypeResolvers.isEmpty()) {
+            mimeTypeResolver = mimeTypeResolvers.values().iterator().next();
         }
         this.allowHeaderForWrongHttpMethod = grailsConfig.get(WebUtils.SEND_ALLOW_HEADER_FOR_INVALID_HTTP_METHOD, Boolean.TRUE);
         createStackTraceFilterer();
@@ -137,7 +138,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
         GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
         HttpServletRequest currentRequest = webRequest.getCurrentRequest();
-        String version = currentRequest.getHeader(HttpHeaders.ACCEPT_VERSION);
+        String version = findRequestedVersion(webRequest);
 
         UrlMappingInfo[] urlInfos = holder.matchAll(uri, currentRequest.getMethod(), version != null ? version : UrlMapping.ANY_VERSION);
         WrappedResponseHolder.setWrappedResponse(response);
@@ -239,6 +240,15 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 }
             }
         }
+    }
+
+    private String findRequestedVersion(GrailsWebRequest currentRequest) {
+        String version = currentRequest.getHeader(HttpHeaders.ACCEPT_VERSION);
+        if(version == null && mimeTypeResolver != null) {
+            MimeType mimeType = mimeTypeResolver.resolveResponseMimeType(currentRequest);
+            version = mimeType.getVersion();
+        }
+        return version;
     }
 
     private Object getFeatureId(UrlMappingInfo info) {

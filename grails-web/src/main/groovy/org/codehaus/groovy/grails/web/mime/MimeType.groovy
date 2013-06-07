@@ -44,6 +44,7 @@ class MimeType {
     static final MimeType HAL_XML = new MimeType('application/hal+xml', "xml")
 
     private static DEFAULTS = createDefaults()
+    public static final String QUALITY_RATING = "1.0"
 
     MimeType(String name, Map params = [:]) {
         this(name, null, params)
@@ -58,7 +59,21 @@ class MimeType {
 
     String name
     String extension
-    Map<String, String> parameters = [q: "1.0"]
+    Map<String, String> parameters = [q: QUALITY_RATING]
+
+    /**
+     * @return The quality of the Mime type
+     */
+    String getQuality() {
+        return parameters.q ?: QUALITY_RATING
+    }
+
+    /**
+     * @return The version of the Mime type
+     */
+    String getVersion() {
+        return parameters.v ?: null
+    }
 
     boolean equals(Object o) { o instanceof MimeType && name.equals(o.name) }
     int hashCode() { name.hashCode() }

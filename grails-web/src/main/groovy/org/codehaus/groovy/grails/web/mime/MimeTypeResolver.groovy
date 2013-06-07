@@ -16,6 +16,8 @@
 
 package org.codehaus.groovy.grails.web.mime
 
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+
 /**
  *
  * Resolves the response format
@@ -29,4 +31,9 @@ public interface MimeTypeResolver {
      * @return The response format requested by the client
      */
     MimeType resolveResponseMimeType()
+
+    /**
+     * @return The response format requested by the client
+     */
+    MimeType resolveResponseMimeType(GrailsWebRequest request)
 }

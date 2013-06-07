@@ -92,8 +92,12 @@ class ResponseMimeTypesApi {
     MimeType getMimeType(HttpServletResponse response) {
 
         final webRequest = GrailsWebRequest.lookup()
+        return getMimeType(webRequest)
+    }
+
+    MimeType getMimeType(GrailsWebRequest webRequest) {
         HttpServletRequest request = webRequest.getCurrentRequest()
-        MimeType result = (MimeType)request.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE)
+        MimeType result = (MimeType) request.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE)
         if (!result) {
             def formatOverride = webRequest?.params?.format
             if (!formatOverride) {
@@ -116,8 +120,7 @@ class ResponseMimeTypesApi {
                 //   - *before* the "format" parameter is added to the map
                 //   - so the saved format is wrong
                 request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, result)
-            }
-            else {
+            } else {
                 result = getMimeTypesInternal(request)[0]
             }
         }

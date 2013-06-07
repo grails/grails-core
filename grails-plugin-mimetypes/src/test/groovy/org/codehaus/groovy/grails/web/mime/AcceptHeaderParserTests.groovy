@@ -40,6 +40,19 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals "xml", mimes[0].extension
         assertEquals('UTF-8', mimes[0].parameters.charset)
         assertEquals('1.0', mimes[0].parameters.q)
+        assertEquals('1.0', mimes[0].quality)
+    }
+
+    void testXmlContentTypeWithCharsetAndVersion() {
+        def mimes = new DefaultAcceptHeaderParser(new DefaultGrailsApplication(config:config)).parse("text/xml; charset=UTF-8; v=1.1")
+
+        assertEquals 1, mimes.size()
+        assertEquals "application/xml", mimes[0].name
+        assertEquals "xml", mimes[0].extension
+        assertEquals('UTF-8', mimes[0].parameters.charset)
+        assertEquals('1.0', mimes[0].parameters.q)
+        assertEquals('1.0', mimes[0].quality)
+        assertEquals('1.1', mimes[0].version)
     }
 
     void testFirefox2AcceptHeaderOrdering() {
