@@ -36,7 +36,6 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -95,9 +94,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     @Override
     public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
-        if(classNode.isEnum()) return; // don't transform enums
-        // only transform the targeted artefact type
-        if(!DomainClassArtefactHandler.TYPE.equals(getArtefactType()) && !classNode.getName().endsWith(getArtefactType())) return;
         Class instanceImplementation = getInstanceImplementation();
 
         if (instanceImplementation != null) {
