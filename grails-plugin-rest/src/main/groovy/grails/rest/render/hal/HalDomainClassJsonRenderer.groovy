@@ -17,17 +17,11 @@ package grails.rest.render.hal
 
 import com.google.gson.Gson
 import com.google.gson.stream.JsonWriter
-import grails.rest.Link
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
-import org.apache.commons.beanutils.PropertyUtils
-import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.model.PersistentProperty
 import org.grails.datastore.mapping.model.types.Association
-import org.grails.datastore.mapping.model.types.Basic
-import org.grails.datastore.mapping.model.types.Embedded
 import org.grails.datastore.mapping.model.types.ToOne
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
