@@ -309,10 +309,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         attrs.remove('tagName') // Just in case one is left
         attrs.each { k, v ->
             if (v != null) {
-                writer << k
-                writer << '="'
-                writer << InvokerHelper.invokeMethod(v.toString(), "encodeAsHTML", null)
-                writer << '" '
+                writer << "$k=\"${InvokerHelper.invokeMethod(v.toString(), "encodeAsHTML", null)}\" "
             }
         }
         if (useNameAsIdIfIdDoesNotExist) {
@@ -393,6 +390,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
             writer << 'method="get" '
         }
 
+        attrs.remove('method')
         // process remaining attributes
         if (attrs.id == null) attrs.remove('id')
 
