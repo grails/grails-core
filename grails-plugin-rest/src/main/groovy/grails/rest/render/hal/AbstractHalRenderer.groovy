@@ -47,7 +47,7 @@ import org.springframework.http.HttpMethod
  */
 @CompileStatic
 abstract class AbstractHalRenderer<T> implements Renderer<T> {
-    public static final MimeType MIME_TYPE = new MimeType("application/hal+json", "json")
+
     public static final String RELATIONSHIP_SELF = "self"
     public static final String HREF_ATTRIBUTE = "href"
     public static final String TITLE_ATTRIBUTE = "title"

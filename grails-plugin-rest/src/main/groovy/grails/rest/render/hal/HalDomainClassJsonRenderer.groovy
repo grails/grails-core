@@ -34,6 +34,7 @@ import org.springframework.http.HttpMethod
  */
 @CompileStatic
 class HalDomainClassJsonRenderer<T> extends AbstractHalRenderer<T> {
+    public static final MimeType MIME_TYPE = MimeType.HAL_JSON
     public static final String LINKS_ATTRIBUTE = "_links"
     public static final String EMBEDDED_ATTRIBUTE = "_embedded"
 

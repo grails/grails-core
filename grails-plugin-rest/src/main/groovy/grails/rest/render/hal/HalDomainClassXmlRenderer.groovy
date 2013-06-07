@@ -34,7 +34,7 @@ import org.springframework.http.HttpMethod
  */
 @CompileStatic
 class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
-    public static final MimeType MIME_TYPE = new MimeType("application/hal+xml", "xml")
+    public static final MimeType MIME_TYPE = MimeType.HAL_XML
     public static final String RESOURCE_TAG = "resource"
     public static final String LINK_TAG = "link"
 
@@ -72,7 +72,7 @@ class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
             final locale = context.locale
             String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET)
             final title = getResourceTitle(context.resourcePath, locale)
-            XMLStreamWriter writer = xml.writer
+            XMLStreamWriter writer = xml.getWriter()
             startResourceTag(writer, resourceHref, locale, title)
             for(o in ((Collection)object)) {
                 final currentEntity = mappingContext.getPersistentEntity(o.class.name)
@@ -90,7 +90,7 @@ class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
         final locale = context.locale
         String resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET)
         final title = getLinkTitle(entity, locale)
-        XMLStreamWriter writer = xml.writer
+        XMLStreamWriter writer = xml.getWriter()
         startResourceTag(writer, resourceHref, locale, title)
         final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
         final associationMap = writeAssociationLinks(object, locale, xml, entity, metaClass)
@@ -139,7 +139,7 @@ class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
     }
 
     void writeLink(String rel, String title, String href, Locale locale, String contentType, writerObject) {
-        XMLStreamWriter writer = ((XML) writerObject).writer
+        XMLStreamWriter writer = ((XML) writerObject).getWriter()
         writer.startNode(LINK_TAG)
             .attribute("rel", rel)
             .attribute(HREF_ATTRIBUTE, href)
@@ -158,7 +158,7 @@ class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
     @Override
     protected void writeDomainProperty(value, String propertyName, writerObject) {
         final xml = (XML) writerObject
-        XMLStreamWriter writer = xml.writer
+        XMLStreamWriter writer = xml.getWriter()
 
         writer.startNode(propertyName)
         xml.convertAnother(value)
