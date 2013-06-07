@@ -45,7 +45,7 @@ class DefaultMimeTypeResolver implements MimeTypeResolver{
     @Override
     MimeType resolveResponseMimeType(GrailsWebRequest webRequest) {
         if (webRequest != null) {
-            return responseMimeTypesApi.getMimeType(webRequest.currentResponse)
+            return responseMimeTypesApi.getMimeTypeForRequest(webRequest)
         }
         return null
     }
