@@ -29,6 +29,10 @@ import org.springframework.http.HttpStatus
 public interface RenderContext {
 
     /**
+     * @return The path the the resource
+     */
+    String getResourcePath()
+    /**
      * @return Returns the mime type accepted by the client or null if non specified
      */
     MimeType getAcceptMimeType()

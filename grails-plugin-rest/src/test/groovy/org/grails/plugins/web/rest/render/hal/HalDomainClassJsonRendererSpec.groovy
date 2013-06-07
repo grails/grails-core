@@ -17,6 +17,7 @@ import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.util.WebUtils
 import spock.lang.Specification
 
 /**
@@ -30,13 +31,7 @@ class HalDomainClassJsonRendererSpec extends Specification {
     }
     void "Test that the HAL renderer renders domain objects with appropriate links"() {
         given:"A HAL renderer"
-            def renderer = new HalDomainClassJsonRenderer(Book)
-            renderer.mappingContext = mappingContext
-            renderer.messageSource = new StaticMessageSource()
-            renderer.linkGenerator = getLinkGenerator {
-                "/books"(resources:"book")
-                "/authors"(resources: "author")
-            }
+            HalDomainClassJsonRenderer renderer = getRenderer()
 
         when:"A domain object is rendered"
             def webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -60,6 +55,45 @@ class HalDomainClassJsonRendererSpec extends Specification {
 
 
     }
+
+    void "Test that the HAL renderer renders a list of domain objects with the appropriate links"() {
+        given:"A HAL renderer"
+            HalDomainClassJsonRenderer renderer = getRenderer()
+
+        when:"A domain object is rendered"
+            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            def response = webRequest.response
+            def renderContext = new ServletRenderContext(webRequest)
+            final author = new Author(name: "Stephen King")
+            author.id = 2L
+            def book = new Book(title:"The Stand", author: author)
+            book.authors = []
+            book.authors << author
+            book.link(href:"/publisher", rel:"The Publisher")
+            final author2 = new Author(name: "King Stephen")
+            author2.id = 3L
+            book.authors << author2
+            book.id = 1L
+            webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/authors")
+            renderer.render(book.authors, renderContext)
+        then:"The resulting HAL is correct"
+            response.contentType == HalDomainClassJsonRenderer.MIME_TYPE.name
+            response.contentAsString == '{"_links":{"self":{"href":"http://localhost/authors","hreflang":"en","type":"application/hal+json"}},"_embedded":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en","type":"application/hal+json"}},"name":"\\"Stephen King\\""},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en","type":"application/hal+json"}},"name":"\\"King Stephen\\""}]'
+
+    }
+
+    protected HalDomainClassJsonRenderer getRenderer() {
+        def renderer = new HalDomainClassJsonRenderer(Book)
+        renderer.mappingContext = mappingContext
+        renderer.messageSource = new StaticMessageSource()
+        renderer.linkGenerator = getLinkGenerator {
+            "/books"(resources: "book")
+            "/authors"(resources: "author")
+        }
+        renderer
+    }
+
+
 
     MappingContext getMappingContext() {
         final context = new KeyValueMappingContext("")

@@ -23,6 +23,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.ModelAndView
@@ -39,6 +40,7 @@ class ServletRenderContext implements RenderContext{
     GrailsWebRequest webRequest
     Map internalModel
     ResponseMimeTypesApi responseMimeTypesApi
+    private String resourcePath
 
     ServletRenderContext(GrailsWebRequest webRequest) {
         this(webRequest, null)
@@ -47,6 +49,18 @@ class ServletRenderContext implements RenderContext{
     ServletRenderContext(GrailsWebRequest webRequest, Map internalModel) {
         this.webRequest = webRequest
         this.internalModel = internalModel
+    }
+
+    @Override
+    String getResourcePath() {
+        if (resourcePath == null) {
+            return WebUtils.getForwardURI(webRequest.request)
+        }
+        return resourcePath
+    }
+
+    void setResourcePath(String resourcePath) {
+        this.resourcePath = resourcePath
     }
 
     @Override
