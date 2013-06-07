@@ -22,6 +22,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
 
 /**
+ *
  * @author Graeme Rocher
  */
 class VndErrorRenderingSpec extends Specification{
@@ -81,6 +82,7 @@ class VndErrorRenderingSpec extends Specification{
             final messageSource = new StaticMessageSource()
             final request = GrailsWebUtil.bindMockWebRequest()
             messageSource.addMessage("title.invalid", request.locale, "Bad Title")
+            messageSource.addMessage("title.bad", request.locale, "Title Bad")
             vndRenderer.messageSource = messageSource
             vndRenderer.linkGenerator = getLinkGenerator {
                 "/books"(resources:"book")
@@ -92,6 +94,7 @@ class VndErrorRenderingSpec extends Specification{
             book.id = 1
             def error = new BeanPropertyBindingResult(book, Book.name)
             error.rejectValue("title", "title.invalid")
+            error.rejectValue("title", "title.bad")
             final renderer = registry.findContainerRenderer(MimeType.JSON, Errors, book)
 
         then:"It is a VND error renderer"
@@ -102,8 +105,8 @@ class VndErrorRenderingSpec extends Specification{
             renderer.render(error, new ServletRenderContext(request))
 
             then:"The response is correct"
-            request.response.contentType == VndErrorJsonRenderer.CONTENT_TYPE
-            request.response.contentAsString == '[{"logref":1,"message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
+            request.response.contentType == VndErrorJsonRenderer.MIME_TYPE.name
+            request.response.contentAsString == '[{"logref":"1","message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"1","message":"Title Bad","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
 
     }
 

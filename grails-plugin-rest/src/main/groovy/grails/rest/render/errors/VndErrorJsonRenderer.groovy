@@ -15,7 +15,8 @@
  */
 package grails.rest.render.errors
 
-import grails.converters.JSON
+import com.google.gson.Gson
+import com.google.gson.stream.JsonWriter
 import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
@@ -24,23 +25,36 @@ import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
+import org.springframework.http.HttpMethod
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
 
 /**
+ * A JSON renderer that renders errors in in the Vnd.Error format (see https://github.com/blongden/vnd.error)
+ *
  * @author Graeme Rocher
  * @since 2.3
  */
 @CompileStatic
 class VndErrorJsonRenderer implements ContainerRenderer<Errors, Object> {
-    public static final String CONTENT_TYPE = "application/vnd.error+json"
+    public static final MimeType MIME_TYPE = new MimeType("application/vnd.error+json", "json")
+    public static final String LOGREF_ATTRIBUTE = 'logref'
+    public static final String MESSAGE_ATTRIBUTE = "message"
+    public static final String LINKS_ATTRIBUTE = "_links"
+    public static final String RESOURCE_ATTRIBUTE = "resource"
+    public static final String HREF_ATTRIBUTE = "href"
+
+    boolean absoluteLinks = true
 
     @Autowired
     MessageSource messageSource
 
     @Autowired
     LinkGenerator linkGenerator
+
+    @Autowired(required = false)
+    Gson gson = new Gson()
 
     @Override
     Class<Errors> getTargetType() {
@@ -49,7 +63,7 @@ class VndErrorJsonRenderer implements ContainerRenderer<Errors, Object> {
 
     @Override
     MimeType[] getMimeTypes() {
-        return [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
+        return [MIME_TYPE, MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
     }
 
     @Override
@@ -57,27 +71,32 @@ class VndErrorJsonRenderer implements ContainerRenderer<Errors, Object> {
         if (messageSource == null) throw new IllegalStateException("messageSource property null")
         if (object instanceof BeanPropertyBindingResult) {
 
-            context.setContentType(CONTENT_TYPE)
+            context.setContentType(MIME_TYPE.name)
             Locale locale = context.locale
             final target = object.target
 
 
-            def jsonMap = []
+            JsonWriter writer = new JsonWriter(context.writer)
+            writer.beginArray()
             for(ObjectError oe in object.allErrors) {
                 final msg = messageSource.getMessage(oe, locale)
+                writer
 
-                jsonMap << [
-                    logref: getObjectId(target),
-                    message: msg,
-                    '_links': [
-                        resource:[href: linkGenerator.link(resource: target, method:"GET", absolute: true)]
-                    ]
-                ]
+                writer
+                    .beginObject()
+                      .name(LOGREF_ATTRIBUTE).value(gson.toJson(getObjectId(target)))
+                      .name(MESSAGE_ATTRIBUTE).value(msg)
+                      .name(LINKS_ATTRIBUTE)
+                         .beginObject()
+                             .name(RESOURCE_ATTRIBUTE)
+                             .beginObject()
+                                .name(HREF_ATTRIBUTE).value(linkGenerator.link(resource: target, method:HttpMethod.GET, absolute: absoluteLinks))
+                             .endObject()
+                         .endObject()
+                      .endObject()
             }
+            writer.endArray()
 
-            def json = jsonMap as JSON
-
-            json.render(context.getWriter())
         }
     }
 

@@ -64,7 +64,6 @@ class HalDomainClassJsonRenderer<T> implements Renderer<T> {
     final Class<T> targetType
     private MimeType[] mimeTypes = [MIME_TYPE] as MimeType[]
 
-    Gson gson = new Gson()
     boolean absoluteLinks = true
     boolean prettyPrint = Environment.isDevelopmentMode()
     List<String> includes
@@ -77,6 +76,9 @@ class HalDomainClassJsonRenderer<T> implements Renderer<T> {
 
     @Autowired
     MappingContext mappingContext
+
+    @Autowired(required = false)
+    Gson gson = new Gson()
 
     @Autowired(required = false)
     ProxyHandler proxyHandler = new DefaultProxyHandler()
