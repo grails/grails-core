@@ -45,7 +45,7 @@ class HalDomainClassJsonRendererSpec extends Specification {
             final author = new Author(name: "Stephen King")
             author.id = 2L
             def book = new Book(title:"The Stand", author: author)
-            book.authors = new HashSet()
+            book.authors = []
             book.authors << author
             book.link(href:"/publisher", rel:"The Publisher")
             final author2 = new Author(name: "King Stephen")
@@ -85,6 +85,7 @@ class HalDomainClassJsonRendererSpec extends Specification {
 class Book {
     Author author
 
+    List authors
     static hasMany = [authors:Author]
 }
 
