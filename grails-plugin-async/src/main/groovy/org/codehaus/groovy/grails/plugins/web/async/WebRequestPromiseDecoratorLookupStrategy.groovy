@@ -65,7 +65,10 @@ class WebRequestPromsiseDecorator implements PromiseDecorator{
 
     @CompileStatic(TypeCheckingMode.SKIP)
     def invokeClosure(Closure c, args) {
-        if(args && args.class.isArray()) {
+        if (args == null) {
+            c.call(null)
+        }
+        else if(args && args.getClass().isArray()) {
             c.call(*args)
         }
         else if (args instanceof List) {

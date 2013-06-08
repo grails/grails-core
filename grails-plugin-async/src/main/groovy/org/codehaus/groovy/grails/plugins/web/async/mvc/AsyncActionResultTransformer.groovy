@@ -52,7 +52,13 @@ class AsyncActionResultTransformer implements ActionResultTransformer {
                         asyncContext.dispatch()
                     }
                     else {
-                        asyncContext.complete()
+                        final modelAndView = asyncContext.getRequest().getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+                        if(modelAndView) {
+                            asyncContext.dispatch()
+                        }
+                        else {
+                            asyncContext.complete()
+                        }
                     }
                 }
                 p.onError { Throwable t ->
