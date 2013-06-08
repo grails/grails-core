@@ -209,7 +209,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
 
         if (!dispatched) {
-            Set<HttpMethod> allowedHttpMethods = allowHeaderForWrongHttpMethod ? holder.allowedMethods(uri) : Collections.EMPTY_SET;
+            Set<HttpMethod> allowedHttpMethods = allowHeaderForWrongHttpMethod ? allowedMethods(holder, uri) : Collections.EMPTY_SET;
 
             if(allowedHttpMethods.isEmpty()) {
                 if (LOG.isDebugEnabled()) {
@@ -218,28 +218,31 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 processFilterChain(request, response, filterChain);
             }
             else {
-                UrlMappingInfo[] allowedInfos = holder.matchAll(uri, UrlMapping.ANY_HTTP_METHOD);
-                boolean hasBackingController = false;
-                for (UrlMappingInfo allowedInfo : allowedInfos) {
-                    Object featureId = getFeatureId(allowedInfo);
-                    GrailsClass controllerClass = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
-                    if(controllerClass != null) {
-                        hasBackingController = true; break;
-                    }
-                }
+                response.addHeader(HttpHeaders.ALLOW, DefaultGroovyMethods.join(allowedHttpMethods, ","));
+                response.sendError(HttpStatus.METHOD_NOT_ALLOWED.value());
+            }
+        }
+    }
 
-                if(hasBackingController) {
-                    response.addHeader(HttpHeaders.ALLOW, DefaultGroovyMethods.join(allowedHttpMethods, ","));
-                    response.sendError(HttpStatus.METHOD_NOT_ALLOWED.value());
+    protected Set<HttpMethod> allowedMethods(UrlMappingsHolder holder, String uri) {
+        UrlMappingInfo[] urlMappingInfos = holder.matchAll(uri, UrlMapping.ANY_HTTP_METHOD);
+        Set<HttpMethod> methods = new HashSet<HttpMethod>();
+
+        for (UrlMappingInfo urlMappingInfo : urlMappingInfos) {
+            Object featureId = getFeatureId(urlMappingInfo);
+            GrailsClass controllerClass = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
+            if(controllerClass != null) {
+                if(urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
+                    methods.addAll(Arrays.asList(HttpMethod.values())); break;
                 }
                 else {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("No match found, processing remaining filter chain.");
-                    }
-                    processFilterChain(request, response, filterChain);
+                    HttpMethod method = HttpMethod.valueOf(urlMappingInfo.getHttpMethod().toUpperCase());
+                    methods.add(method);
                 }
             }
         }
+
+        return Collections.unmodifiableSet(methods);
     }
 
     private String findRequestedVersion(GrailsWebRequest currentRequest) {
