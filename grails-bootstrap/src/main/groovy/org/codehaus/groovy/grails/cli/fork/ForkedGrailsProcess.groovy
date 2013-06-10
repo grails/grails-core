@@ -218,7 +218,9 @@ abstract class ForkedGrailsProcess {
                 try { is.close() } catch (IOException ignore) {}
 
                 GrailsConsole.instance.error("Forked Grails VM exited with error")
-                System.exit(1)
+                if(!InteractiveMode.active) {
+                    System.exit(1)
+                }
             }
         }
 
