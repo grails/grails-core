@@ -143,6 +143,7 @@ mappings {
 @grails.artefact.Artefact("Controller")
 class BookController {
   def index() {}
+  def save() {}
 }
 '''
 

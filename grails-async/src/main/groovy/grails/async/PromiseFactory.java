@@ -39,6 +39,13 @@ public interface PromiseFactory {
     void addPromiseDecoratorLookupStrategy(PromiseDecoratorLookupStrategy lookupStrategy);
 
     /**
+     * Applies the registered decorators to the given closure
+     * @param c The closure
+     * @param decorators The decorators
+     * @return The decorated closure
+     */
+    public Closure applyDecorators(Closure c, List<PromiseDecorator> decorators);
+    /**
      * Creates a promise with a value pre-bound to it
      * @param value The value
      * @param <T> The type of the value

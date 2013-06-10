@@ -61,7 +61,7 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    protected Closure applyDecorators(Closure c, List<PromiseDecorator> decorators) {
+    public Closure applyDecorators(Closure c, List<PromiseDecorator> decorators) {
         List<PromiseDecorator> allDecorators = decorators != null ? new ArrayList<PromiseDecorator>(decorators): new ArrayList<PromiseDecorator>();
         for (PromiseDecoratorLookupStrategy lookupStrategy : lookupStrategies) {
             allDecorators.addAll(lookupStrategy.findDecorators());

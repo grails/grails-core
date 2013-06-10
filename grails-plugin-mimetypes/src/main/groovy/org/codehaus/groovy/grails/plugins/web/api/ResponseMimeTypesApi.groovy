@@ -102,12 +102,11 @@ class ResponseMimeTypesApi {
      * @return The MimeType
      */
     MimeType getMimeType(HttpServletResponse response) {
-
         final webRequest = GrailsWebRequest.lookup()
-        return getMimeType(webRequest)
+        return getMimeTypeForRequest(webRequest)
     }
 
-    MimeType getMimeType(GrailsWebRequest webRequest) {
+    MimeType getMimeTypeForRequest(GrailsWebRequest webRequest) {
         HttpServletRequest request = webRequest.getCurrentRequest()
         MimeType result = (MimeType) request.getAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE)
         if (!result) {
