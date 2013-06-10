@@ -15,6 +15,7 @@
  */
 package grails.test.mixin.support
 
+import grails.async.Promises
 import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
@@ -40,6 +41,7 @@ import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
+import org.grails.async.factory.SynchronousPromiseFactory
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.BeforeClass
@@ -85,6 +87,7 @@ class GrailsUnitTestMixin {
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.class.classLoader)
         registerMetaClassRegistryWatcher()
+        Promises.promiseFactory = new SynchronousPromiseFactory()
         if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
             applicationContext = new GrailsWebApplicationContext()
@@ -142,6 +145,7 @@ class GrailsUnitTestMixin {
     @AfterClass
     @CompileStatic
     static void deregisterMetaClassCleaner() {
+        Promises.promiseFactory = null
         GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
     }
 
