@@ -60,9 +60,9 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
         else {
             // don't wait if the resume directory already exists, another process exists
             if (!resumeDir.exists()) {
+                this.executionContext = readExecutionContext()
                 Object projectClassInstance = initializeProjectInstance()
                 waitForResume()
-                this.executionContext = readExecutionContext()
                 runInstance(projectClassInstance)
             }
         }

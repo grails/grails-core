@@ -450,7 +450,13 @@ abstract class ForkedGrailsProcess {
             }
         }
         def buildSettings = new BuildSettings(ec.grailsHome, ec.baseDir)
+        buildSettings.setDependenciesExternallyConfigured(true)
         buildSettings.loadConfig()
+        buildSettings.setRuntimeDependencies(ec.runtimeDependencies)
+        buildSettings.setCompileDependencies(ec.runtimeDependencies)
+        buildSettings.setTestDependencies(ec.testDependencies)
+        buildSettings.setProvidedDependencies(ec.providedDependencies)
+        buildSettings.setBuildDependencies([])
 
         BuildSettingsHolder.settings = buildSettings
         buildSettings
@@ -532,9 +538,12 @@ class ExecutionContext implements Serializable {
         }
 
         buildDependencies = isolatedBuildDependencies
-        runtimeDependencies = settings.runtimeDependencies
-        providedDependencies = settings.providedDependencies
-        testDependencies = settings.testDependencies
+        runtimeDependencies = new ArrayList<>(settings.runtimeDependencies)
+        runtimeDependencies.addAll settings.pluginRuntimeDependencies
+        providedDependencies = new ArrayList<>(settings.providedDependencies)
+        providedDependencies.addAll settings.providedDependencies
+        testDependencies = new ArrayList<>(settings.testDependencies)
+        testDependencies.addAll settings.testDependencies
         baseDir = settings.baseDir
         env = Environment.current.name
         grailsHome = settings.grailsHome
