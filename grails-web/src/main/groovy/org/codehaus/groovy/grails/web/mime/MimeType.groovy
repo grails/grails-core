@@ -42,6 +42,7 @@ class MimeType {
     static final MimeType TEXT_JSON = new MimeType('text/json', "json")
     static final MimeType HAL_JSON = new MimeType('application/hal+json', "json")
     static final MimeType HAL_XML = new MimeType('application/hal+xml', "xml")
+    static final MimeType ATOM_XML = new MimeType('application/atom+xml', "atom")
 
     private static DEFAULTS = createDefaults()
     public static final String QUALITY_RATING = "1.0"

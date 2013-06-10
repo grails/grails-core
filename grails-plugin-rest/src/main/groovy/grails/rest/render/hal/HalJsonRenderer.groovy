@@ -18,6 +18,7 @@ package grails.rest.render.hal
 import com.google.gson.Gson
 import com.google.gson.stream.JsonWriter
 import grails.rest.render.RenderContext
+import grails.rest.render.util.AbstractLinkingRenderer
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.PersistentEntity
@@ -34,7 +35,7 @@ import org.springframework.http.HttpStatus
  * @since 2.3
  */
 @CompileStatic
-class HalDomainClassJsonRenderer<T> extends AbstractHalRenderer<T> {
+class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     public static final MimeType MIME_TYPE = MimeType.HAL_JSON
     public static final String LINKS_ATTRIBUTE = "_links"
     public static final String EMBEDDED_ATTRIBUTE = "_embedded"
@@ -44,11 +45,11 @@ class HalDomainClassJsonRenderer<T> extends AbstractHalRenderer<T> {
     @Autowired(required = false)
     Gson gson = new Gson()
 
-    HalDomainClassJsonRenderer(Class<T> targetType) {
+    HalJsonRenderer(Class<T> targetType) {
         super(targetType)
     }
 
-    HalDomainClassJsonRenderer(Class<T> targetType, MimeType... mimeTypes) {
+    HalJsonRenderer(Class<T> targetType, MimeType... mimeTypes) {
         super(targetType)
         this.mimeTypes = mimeTypes
     }
@@ -84,9 +85,10 @@ class HalDomainClassJsonRenderer<T> extends AbstractHalRenderer<T> {
                       .name(EMBEDDED_ATTRIBUTE)
                       .beginArray()
 
+                final writtenObjects = [] as Set
                 for(o in ((Collection)object)) {
                     if (o && isDomainResource(o.getClass())) {
-                        writeDomainWithEmbeddedAndLinks(o.class, o, writer, locale, mimeType, [] as Set)
+                        writeDomainWithEmbeddedAndLinks(o.class, o, writer, locale, mimeType, writtenObjects)
                     }
                 }
                 writer.endArray()

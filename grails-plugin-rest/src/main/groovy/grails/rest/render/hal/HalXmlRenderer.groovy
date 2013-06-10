@@ -17,6 +17,7 @@ package grails.rest.render.hal
 
 import grails.converters.XML
 import grails.rest.render.RenderContext
+import grails.rest.render.util.AbstractLinkingRenderer
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter
@@ -33,14 +34,15 @@ import org.springframework.http.HttpMethod
  * @since 2.3
  */
 @CompileStatic
-class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
+class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
     public static final MimeType MIME_TYPE = MimeType.HAL_XML
     public static final String RESOURCE_TAG = "resource"
     public static final String LINK_TAG = "link"
+    public static final String RELATIONSHIP_ATTRIBUTE = "rel"
 
     private MimeType[] mimeTypes = [MIME_TYPE] as MimeType[]
 
-    HalDomainClassXmlRenderer(Class<T> targetType) {
+    HalXmlRenderer(Class<T> targetType) {
         super(targetType)
     }
 
@@ -64,13 +66,14 @@ class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
         boolean isDomain = entity != null
 
         Set writtenObjects = []
+        w.startDocument(encoding, "1.0")
 
         if (isDomain) {
             writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects)
         }
         else if (object instanceof Collection) {
             final locale = context.locale
-            String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET)
+            String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET, absolute: absoluteLinks)
             final title = getResourceTitle(context.resourcePath, locale)
             XMLStreamWriter writer = xml.getWriter()
             startResourceTag(writer, resourceHref, locale, title)
@@ -88,7 +91,7 @@ class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
 
     protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, object, RenderContext context, XML xml, Set writtenObjects) {
         final locale = context.locale
-        String resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET)
+        String resourceHref = linkGenerator.link(resource: object, method: HttpMethod.GET, absolute: absoluteLinks)
         final title = getLinkTitle(entity, locale)
         XMLStreamWriter writer = xml.getWriter()
         startResourceTag(writer, resourceHref, locale, title)
@@ -141,7 +144,7 @@ class HalDomainClassXmlRenderer<T> extends AbstractHalRenderer<T> {
     void writeLink(String rel, String title, String href, Locale locale, String contentType, writerObject) {
         XMLStreamWriter writer = ((XML) writerObject).getWriter()
         writer.startNode(LINK_TAG)
-            .attribute("rel", rel)
+            .attribute(RELATIONSHIP_ATTRIBUTE, rel)
             .attribute(HREF_ATTRIBUTE, href)
             .attribute(HREFLANG_ATTRIBUTE, locale.language)
 

@@ -1,7 +1,6 @@
 package org.grails.plugins.web.rest.render.hal
 
-import grails.rest.render.hal.HalDomainClassJsonRenderer
-import grails.rest.render.hal.HalDomainClassXmlRenderer
+import grails.rest.render.hal.HalXmlRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
@@ -28,7 +27,7 @@ class HalDomainClassXmlRendererSpec extends Specification {
     }
     void "Test that the HAL renderer renders domain objects with appropriate links"() {
         given:"A HAL renderer"
-            HalDomainClassXmlRenderer renderer = getRenderer()
+            HalXmlRenderer renderer = getRenderer()
 
         when:"A domain object is rendered"
             def webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -47,15 +46,15 @@ class HalDomainClassXmlRendererSpec extends Specification {
             renderer.render(book, renderContext)
 
         then:"The resulting HAL is correct"
-            response.contentAsString == '<resource href="/books/1" hreflang="en"><link rel="The Publisher" href="/publisher" hreflang="en" /><link rel="author" href="http://localhost/authors/2" hreflang="en" /><title>The Stand</title><resource href="/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
-            response.contentType == HalDomainClassXmlRenderer.MIME_TYPE.name
+            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/books/1" hreflang="en"><link rel="The Publisher" href="/publisher" hreflang="en" /><link rel="author" href="http://localhost/authors/2" hreflang="en" /><title>The Stand</title><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
+            response.contentType == HalXmlRenderer.MIME_TYPE.name
 
 
     }
 
     void "Test that the HAL renderer renders a list of domain objects with the appropriate links"() {
         given:"A HAL renderer"
-            HalDomainClassXmlRenderer renderer = getRenderer()
+            HalXmlRenderer renderer = getRenderer()
 
         when:"A domain object is rendered"
             def webRequest = GrailsWebUtil.bindMockWebRequest()
@@ -74,13 +73,13 @@ class HalDomainClassXmlRendererSpec extends Specification {
             webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/authors")
             renderer.render(book.authors, renderContext)
         then:"The resulting HAL is correct"
-            response.contentAsString == '<resource href="/authors" hreflang="en"><resource href="/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
-            response.contentType == HalDomainClassXmlRenderer.MIME_TYPE.name
+            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/authors" hreflang="en"><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
+            response.contentType == HalXmlRenderer.MIME_TYPE.name
 
     }
 
-    protected HalDomainClassXmlRenderer getRenderer() {
-        def renderer = new HalDomainClassXmlRenderer(Book)
+    protected HalXmlRenderer getRenderer() {
+        def renderer = new HalXmlRenderer(Book)
         renderer.mappingContext = mappingContext
         renderer.messageSource = new StaticMessageSource()
         renderer.linkGenerator = getLinkGenerator {

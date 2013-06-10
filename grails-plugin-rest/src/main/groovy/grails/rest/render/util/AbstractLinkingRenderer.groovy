@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.rest.render.hal
+package grails.rest.render.util
 
 import grails.rest.Link
 import grails.rest.Resource
@@ -46,7 +46,7 @@ import org.springframework.http.HttpMethod
  * @since 2.3
  */
 @CompileStatic
-abstract class AbstractHalRenderer<T> implements Renderer<T> {
+abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
 
     public static final String RELATIONSHIP_SELF = "self"
     public static final String HREF_ATTRIBUTE = "href"
@@ -73,7 +73,7 @@ abstract class AbstractHalRenderer<T> implements Renderer<T> {
     List<String> includes
     String encoding = "UTF-8"
 
-    AbstractHalRenderer(Class<T> targetType) {
+    AbstractLinkingRenderer(Class<T> targetType) {
         this.targetType = targetType
     }
 
