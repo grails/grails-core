@@ -47,7 +47,7 @@ import java.lang.annotation.Target
 
 @Retention(RetentionPolicy.SOURCE)
 @Target([ElementType.TYPE])
-@GroovyASTTransformationClass("org.grails.plugins.web.rest.transform.ResourceTransform")
+@GroovyASTTransformationClass("org.grails.plugins.web.rest.transform.LinkableTransform")
 public @interface Linkable {
 
 }

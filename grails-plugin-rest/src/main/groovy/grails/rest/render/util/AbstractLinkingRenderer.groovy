@@ -102,10 +102,7 @@ abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
     }
 
     protected Map<Association, Object> writeAssociationLinks(object, Locale locale, writer, PersistentEntity entity, MetaClass metaClass) {
-        final extraLinks = getLinksForObject(object)
-        for (Link l in extraLinks) {
-            writeLink(l.rel, l.title, l.href, l.hreflang ?: locale, l.contentType, writer)
-        }
+        writeExtraLinks(object, locale, writer)
 
 
         Map<Association, Object> associationMap = [:]
@@ -145,6 +142,13 @@ abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
             }
         }
         associationMap
+    }
+
+    protected void writeExtraLinks(object, Locale locale, writer) {
+        final extraLinks = getLinksForObject(object)
+        for (Link l in extraLinks) {
+            writeLink(l.rel, l.title, l.href, l.hreflang ?: locale, l.contentType, writer)
+        }
     }
 
     /**

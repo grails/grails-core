@@ -16,6 +16,7 @@
 package grails.rest.render.hal
 
 import com.google.gson.Gson
+import com.google.gson.JsonObject
 import com.google.gson.stream.JsonWriter
 import grails.rest.render.RenderContext
 import grails.rest.render.util.AbstractLinkingRenderer
@@ -24,6 +25,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ToOne
+import org.springframework.beans.PropertyAccessorFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
@@ -41,6 +43,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     public static final String EMBEDDED_ATTRIBUTE = "_embedded"
 
     private MimeType[] mimeTypes = [MIME_TYPE] as MimeType[]
+    private static List<String> DEFAULT_EXCLUDES = ['metaClass', 'class']
 
     @Autowired(required = false)
     Gson gson = new Gson()
@@ -64,7 +67,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         final mimeType = context.acceptMimeType ?: mimeTypes[0]
         context.setContentType(mimeType.name)
 
-        JsonWriter writer = new JsonWriter(context.writer)
+        final responseWriter = context.writer
+        JsonWriter writer = new JsonWriter(responseWriter)
 
         try {
             if(prettyPrint)
@@ -75,12 +79,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             if (isDomainResource(clazz)) {
                 writeDomainWithEmbeddedAndLinks(clazz, object, writer, context.locale, mimeType, [] as Set)
             } else if (object instanceof Collection) {
-                writer.beginObject()
-                      .name(LINKS_ATTRIBUTE)
-                      .beginObject()
-                final resourceRef = linkGenerator.link(uri:context.resourcePath, method: HttpMethod.GET.toString(), absolute: absoluteLinks)
-                final locale = context.locale
-                writeLink(RELATIONSHIP_SELF, getResourceTitle(resourceRef, locale),resourceRef, locale, mimeType ? mimeType.name : null, writer)
+                beginLinks(writer)
+                writeLinkForCurrentPath(context, mimeType, writer)
                 writer.endObject()
                       .name(EMBEDDED_ATTRIBUTE)
                       .beginArray()
@@ -88,19 +88,47 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 final writtenObjects = [] as Set
                 for(o in ((Collection)object)) {
                     if (o && isDomainResource(o.getClass())) {
-                        writeDomainWithEmbeddedAndLinks(o.class, o, writer, locale, mimeType, writtenObjects)
+                        writeDomainWithEmbeddedAndLinks(o.class, o, writer, context.locale, mimeType, writtenObjects)
                     }
                 }
                 writer.endArray()
 
             }
             else {
-                context.setStatus(HttpStatus.NOT_IMPLEMENTED)
+                beginLinks(writer)
+                writeLinkForCurrentPath(context, mimeType, writer)
+                writeExtraLinks(object, context.locale, writer)
+                writer.endObject()
+                final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
+                final propertyDescriptors = bean.propertyDescriptors
+                for(pd in propertyDescriptors) {
+                    if (DEFAULT_EXCLUDES.contains(pd.name)) continue
+                    if (includes == null || includes.contains(pd.name)) {
+                        if (pd.readMethod && pd.writeMethod) {
+                            writer.name(pd.name).value(gson.toJson(bean.getPropertyValue(pd.name)))
+                        }
+                    }
+                }
+                writer.endObject()
+
             }
         } finally {
             writer.flush()
         }
 
+    }
+
+    protected void writeLinkForCurrentPath(RenderContext context, MimeType mimeType, JsonWriter writer) {
+        final href = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET.toString(), absolute: absoluteLinks)
+        final resourceRef = href
+        final locale = context.locale
+        writeLink(RELATIONSHIP_SELF, getResourceTitle(resourceRef, locale), resourceRef, locale, mimeType ? mimeType.name : null, writer)
+    }
+
+    protected void beginLinks(JsonWriter writer) {
+        writer.beginObject()
+            .name(LINKS_ATTRIBUTE)
+            .beginObject()
     }
 
 
