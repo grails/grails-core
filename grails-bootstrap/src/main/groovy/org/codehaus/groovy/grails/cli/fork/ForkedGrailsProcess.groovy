@@ -421,7 +421,18 @@ abstract class ForkedGrailsProcess {
         return classLoader
     }
 
+    /**
+     * @deprecated The project watcher should not be started in the forked JVM, but instead should be run from the JVM that launched the fork
+     *
+     * @param classLoader
+     * @param buildSettings
+     */
+    @Deprecated
     protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
+        // noop.. deprecated
+    }
+
+    protected void startProjectWatcher(URLClassLoader classLoader, BuildSettings buildSettings) {
         try {
             final projectCompiler = classLoader.loadClass("org.codehaus.groovy.grails.compiler.GrailsProjectCompiler").newInstance(new PluginBuildSettings(buildSettings), classLoader)
             projectCompiler.configureClasspath()

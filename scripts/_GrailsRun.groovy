@@ -86,7 +86,7 @@ target(runWarHttps: "Main implementation that executes a Grails application WAR"
  * want changes to artifacts automatically detected and loaded.
  */
 target(startPluginScanner: "Starts the plugin manager's scanner that detects changes to artifacts.") {
-    if (!GrailsProjectWatcher.isReloadingAgentPresent() || GrailsProjectWatcher.isActive() || !isReloading) {
+    if ( GrailsProjectWatcher.isActive() || !isReloading) {
         return
     }
 
