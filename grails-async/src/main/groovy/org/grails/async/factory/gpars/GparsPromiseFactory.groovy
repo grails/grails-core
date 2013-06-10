@@ -45,7 +45,11 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     }
 
     GparsPromiseFactory() {
-        GParsConfig.setPoolFactory(new LoggingPoolFactory())
+        try {
+            GParsConfig.setPoolFactory(new LoggingPoolFactory())
+        } catch (IllegalArgumentException iae) {
+            // ignore
+        }
     }
 
     @Override
