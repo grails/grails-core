@@ -18,6 +18,7 @@ package org.grails.async.factory.gpars
 import grails.async.Promise
 import grails.async.PromiseList
 import groovy.transform.CompileStatic
+import groovyx.gpars.GParsConfig
 import groovyx.gpars.dataflow.Dataflow
 import groovyx.gpars.dataflow.DataflowVariable
 
@@ -34,13 +35,17 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     static final boolean GPARS_PRESENT
     static {
         try {
-            GPARS_PRESENT = Thread.currentThread().contextClassLoader.loadClass("groovyx.gpars.dataflow.Dataflow") != null
+            GPARS_PRESENT = Thread.currentThread().contextClassLoader.loadClass("groovyx.gpars.GParsConfig") != null
         } catch (Throwable e) {
             GPARS_PRESENT = false
         }
     }
     static boolean isGparsAvailable() {
         GPARS_PRESENT
+    }
+
+    GparsPromiseFactory() {
+        GParsConfig.setPoolFactory(new LoggingPoolFactory())
     }
 
     @Override
@@ -87,3 +92,4 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
         )
     }
 }
+
