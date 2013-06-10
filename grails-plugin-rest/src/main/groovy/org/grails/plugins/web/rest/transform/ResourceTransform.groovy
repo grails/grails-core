@@ -100,9 +100,6 @@ class ResourceTransform implements ASTTransformation{
     public static final String ARGUMENT_STATUS = "status"
     public static final String REDIRECT_METHOD = "redirect"
     public static final ClassNode AUTOWIRED_CLASS_NODE = new ClassNode(Autowired).getPlainNodeReference()
-    public static final String LINK_METHOD = "link"
-    public static final String RESOURCE_LINKS_FIELD = '$resourceLinks'
-    public static final String LINKS_METHOD = "links"
 
 
     private ResourceLocator resourceLocator;
@@ -141,26 +138,7 @@ class ResourceTransform implements ASTTransformation{
         final className = "${parent.name}${ControllerArtefactHandler.TYPE}"
         final resource = resourceLocator.findResourceForClassName(className)
 
-        def linksField = new FieldNode(RESOURCE_LINKS_FIELD, PRIVATE | TRANSIENT, new ClassNode(Set).getPlainNodeReference(), parent, new ListExpression())
-        parent.addField(linksField)
-
-        final resourceLinksVariable = new VariableExpression('$resourceLinks')
-        if(parent.getMethods(LINK_METHOD).isEmpty()) {
-            final mapParameter = new Parameter(new ClassNode(Map), LINK_METHOD)
-            final linkMethodBody = new BlockStatement()
-            final linkArg = new MethodCallExpression(new ClassExpression(new ClassNode(Link)),"createLink", new VariableExpression(mapParameter))
-            linkMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(resourceLinksVariable, "add", linkArg)))
-            def linkMethod = new MethodNode(LINK_METHOD, PUBLIC, ClassHelper.VOID_TYPE, [mapParameter] as Parameter[], null, linkMethodBody)
-            parent.addMethod(linkMethod)
-
-            def linkParameter = new Parameter(new ClassNode(Link), LINK_METHOD)
-            def linkMethod2 = new MethodNode(LINK_METHOD, PUBLIC, ClassHelper.VOID_TYPE, [linkParameter] as Parameter[], null, new ExpressionStatement(new MethodCallExpression(resourceLinksVariable, "add", new VariableExpression(linkParameter))));
-            parent.addMethod(linkMethod2)
-        }
-        if(parent.getMethods(LINKS_METHOD).isEmpty()) {
-            def linksMethod = new MethodNode(LINKS_METHOD, PUBLIC, new ClassNode(Collection),ZERO_PARAMETERS, null, new ReturnStatement(resourceLinksVariable))
-            parent.addMethod(linksMethod)
-        }
+        LinkableTransform.addLinkingMethods(parent)
 
 
         if (resource == null) {
@@ -270,6 +248,8 @@ class ResourceTransform implements ASTTransformation{
             ast.classes.add(newControllerClassNode)
         }
     }
+
+
 
     void weaveWriteActions(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml, int annotationLineNumber,List<MethodNode> weavedMethods) {
         if (hasHtml) {
