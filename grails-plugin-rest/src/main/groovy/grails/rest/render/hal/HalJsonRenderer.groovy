@@ -43,7 +43,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     public static final String EMBEDDED_ATTRIBUTE = "_embedded"
 
     private MimeType[] mimeTypes = [MIME_TYPE] as MimeType[]
-    private static List<String> DEFAULT_EXCLUDES = ['metaClass', 'class']
+
 
     @Autowired(required = false)
     Gson gson = new Gson()

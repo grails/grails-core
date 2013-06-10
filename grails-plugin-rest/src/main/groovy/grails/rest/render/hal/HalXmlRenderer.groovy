@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter
 import org.codehaus.groovy.grails.web.xml.XMLStreamWriter
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.ToOne
+import org.springframework.beans.PropertyAccessorFactory
 import org.springframework.http.HttpMethod
 
 /**
@@ -72,11 +73,8 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
             writeDomainWithEmbeddedAndLinks(entity, object, context, xml, writtenObjects)
         }
         else if (object instanceof Collection) {
-            final locale = context.locale
-            String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET, absolute: absoluteLinks)
-            final title = getResourceTitle(context.resourcePath, locale)
             XMLStreamWriter writer = xml.getWriter()
-            startResourceTag(writer, resourceHref, locale, title)
+            startResourceTagForCurrentPath(context, writer)
             for(o in ((Collection)object)) {
                 final currentEntity = mappingContext.getPersistentEntity(o.class.name)
                 if (currentEntity) {
@@ -85,8 +83,34 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
             }
             writer.end()
         }
+        else {
+            XMLStreamWriter writer = xml.getWriter()
+            startResourceTagForCurrentPath(context, writer)
+            writeExtraLinks(object, context.locale, xml)
+            final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
+            final propertyDescriptors = bean.propertyDescriptors
+            for(pd in propertyDescriptors) {
+                if (DEFAULT_EXCLUDES.contains(pd.name)) continue
+                if (includes == null || includes.contains(pd.name)) {
+                    if (pd.readMethod && pd.writeMethod) {
+                        writer.startNode(pd.name)
+                        xml.convertAnother(bean.getPropertyValue(pd.name))
+                        writer.end()
+                    }
+                }
+            }
+            writer.end()
+
+        }
 
 
+    }
+
+    protected void startResourceTagForCurrentPath(RenderContext context, XMLStreamWriter writer) {
+        final locale = context.locale
+        String resourceHref = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET, absolute: absoluteLinks)
+        final title = getResourceTitle(context.resourcePath, locale)
+        startResourceTag(writer, resourceHref, locale, title)
     }
 
     protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, object, RenderContext context, XML xml, Set writtenObjects) {

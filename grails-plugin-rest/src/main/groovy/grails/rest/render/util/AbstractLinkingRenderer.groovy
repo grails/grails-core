@@ -48,6 +48,8 @@ import org.springframework.http.HttpMethod
 @CompileStatic
 abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
 
+    protected static List<String> DEFAULT_EXCLUDES = ['metaClass', 'class']
+
     public static final String RELATIONSHIP_SELF = "self"
     public static final String HREF_ATTRIBUTE = "href"
     public static final String TITLE_ATTRIBUTE = "title"
