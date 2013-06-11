@@ -28,14 +28,14 @@ import static org.springframework.http.HttpStatus.*
  */
 @Artefact("Controller")
 @Transactional
-class RestfulController {
+class RestfulController<T> {
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
     Class resource
     String resourceName
     String resourceClassName
 
-    RestfulController(Class resource) {
+    RestfulController(Class<T> resource) {
         this.resource = resource
         this.resourceClassName = resource.simpleName
         this.resourceName = GrailsNameUtils.getPropertyName(resource)
@@ -59,23 +59,24 @@ class RestfulController {
      * @param id The id of the resource
      * @return The rendered resource or a 404 if it doesn't exist
      */
-    def show(Long id) {
-        respond resource.get(id)
+    def show() {
+        respond queryForResource(params.id)
     }
 
     /**
      * Displays a form to create a new resource
      */
     def create() {
-        respond resource.newInstance(getParametersToBind())
+        respond createResource(getParametersToBind())
     }
+
 
     /**
      * Saves a resource
      */
     @Transactional
     def save() {
-        def instance = resource.newInstance(getParametersToBind())
+        def instance = createResource(getParametersToBind())
         instance.validate()
         if(instance.hasErrors()) {
             respond instance.errors, view:'create' // STATUS CODE 422
@@ -92,8 +93,8 @@ class RestfulController {
         }
     }
 
-    def edit(Long id) {
-        respond resource.get(id)
+    def edit() {
+        respond queryForResource(params.id)
     }
 
     /**
@@ -101,8 +102,8 @@ class RestfulController {
      * @param id
      */
     @Transactional
-    def update(Long id) {
-        def instance = resource.get(id)
+    def update() {
+        T instance = queryForResource(params.id)
         if(instance == null) {
             render status:404
             return
@@ -125,13 +126,15 @@ class RestfulController {
         }
     }
 
+
+
     /**
      * Deletes a resource for the given id
      * @param id The id
      */
     @Transactional
-    def delete(Long id ) {
-        def instance = resource.get(id)
+    def delete() {
+        def instance = queryForResource(params.id)
         if(instance) {
             instance.delete flush:true
             withFormat {
@@ -155,5 +158,26 @@ class RestfulController {
     protected Map getParametersToBind() {
         this.params
     }
+
+    /**
+     * Queries for a resource for the given id
+     *
+     * @param id The id
+     * @return The resource or null if it doesn't exist
+     */
+    protected T queryForResource(Serializable id) {
+        resource.get(id)
+    }
+
+    /**
+     * Creates a new instance of the resource for the given parameters
+     *
+     * @param params The parameters
+     * @return The resource instance
+     */
+    protected T createResource(Map params) {
+        resource.newInstance(params)
+    }
+
 
 }
