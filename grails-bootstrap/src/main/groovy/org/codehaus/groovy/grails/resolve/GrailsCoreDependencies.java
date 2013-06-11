@@ -106,7 +106,7 @@ public class GrailsCoreDependencies {
 
         if (java5compatible) {
             compileDependencies = new ArrayList<Dependency>(compileDependencies);
-            runtimeDependencies.add(new Dependency("javax.xml", "jaxb-api", jaxbVersion, true) );
+            compileDependencies.add(new Dependency("javax.xml", "jaxb-api", jaxbVersion, true) );
         }
     }
 
