@@ -16,6 +16,7 @@
 
 package org.grails.plugins.web.rest.render
 
+import grails.rest.render.AbstractRenderer
 import grails.rest.render.RenderContext
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.validation.BeanPropertyBindingResult

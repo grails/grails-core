@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.grails.plugins.web.rest.render
+package grails.rest.render
 
 import grails.rest.render.Renderer
 import groovy.transform.CompileStatic
