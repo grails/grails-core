@@ -104,6 +104,23 @@ class AetherDependencyManagerSpec extends Specification {
             !files.any { it.name.contains("tomcat-embed-logging-juli")}
     }
 
+    void "Test grails dependency with transitive disabled with plugins"() {
+        given:"A dependency manager with a dependency that contains exclusions"
+        def dependencyManager = new AetherDependencyManager()
+        dependencyManager.parseDependencies {
+            plugins {
+                compile("org.grails.plugins:tomcat:7.0.40") {
+                    transitive = false
+                }
+            }
+        }
+        when:"The grails dependencies are obtained"
+            def files = dependencyManager.resolve().allArtifacts
+
+        then:"The exclusions are present"
+            files.size() == 1
+    }
+
     void "Test resolve with source and javadocs"() {
         given: "A dependency manager instance"
             def dependencyManager = new AetherDependencyManager()

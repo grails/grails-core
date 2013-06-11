@@ -31,8 +31,9 @@ import org.sonatype.aether.graph.Exclusion
 @CompileStatic
 class DependencyConfiguration {
 
+    public static final String WILD_CARD = "*"
     @Delegate Dependency dependency
-    boolean transitive = true
+    private boolean transitive = true
     boolean exported = true
 
     DependencyConfiguration(Dependency dependency) {
@@ -50,6 +51,18 @@ class DependencyConfiguration {
         }
     }
 
+    boolean getTransitive() {
+        return transitive
+    }
+
+    void setTransitive(boolean transitive) {
+        List<Exclusion> exclusions = getExclusionList()
+        exclusions << new Exclusion(WILD_CARD, WILD_CARD, WILD_CARD, WILD_CARD)
+        dependency = dependency.setExclusions(exclusions)
+
+        this.transitive = transitive
+    }
+
     void exclude(Map<String,String> exc) {
         List<Exclusion> exclusions = getExclusionList()
         exclusions << new Exclusion(exc.group, exc.name, exc.classifier, exc.extension)
@@ -62,10 +75,10 @@ class DependencyConfiguration {
             final result = name.split(":")
             String group = result[0]
             String id = result[1]
-            exclusions << new Exclusion(group, id, "*",  "*")
+            exclusions << new Exclusion(group, id, WILD_CARD, WILD_CARD)
         }
         else {
-            exclusions << new Exclusion("*", name, "*",  "*")
+            exclusions << new Exclusion(WILD_CARD, name, WILD_CARD, WILD_CARD)
         }
         dependency = dependency.setExclusions(exclusions)
     }
