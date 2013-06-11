@@ -62,8 +62,7 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
     }
 
     @Override
-    void render(T object, RenderContext context) {
-        context.setContentType(mimeTypes[0].name)
+    void renderInternal(T object, RenderContext context) {
         final streamingWriter = new StreamingMarkupWriter(context.writer, encoding)
         XMLStreamWriter w = prettyPrint ? new PrettyPrintXMLStreamWriter(streamingWriter) : new XMLStreamWriter(streamingWriter)
         XML xml = new XML(w)

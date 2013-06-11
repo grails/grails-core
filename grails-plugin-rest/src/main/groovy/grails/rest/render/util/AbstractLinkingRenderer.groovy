@@ -17,6 +17,7 @@ package grails.rest.render.util
 
 import grails.rest.Link
 import grails.rest.Resource
+import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.util.Environment
 import groovy.transform.CompileStatic
@@ -28,6 +29,7 @@ import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.datastore.mapping.model.MappingContext
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.PersistentProperty
@@ -35,6 +37,7 @@ import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.Basic
 import org.grails.datastore.mapping.model.types.Embedded
 import org.grails.datastore.mapping.model.types.ToOne
+import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 import org.springframework.http.HttpMethod
@@ -68,6 +71,9 @@ abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     ProxyHandler proxyHandler = new DefaultProxyHandler()
 
+    @Autowired(required = false)
+    GrailsConventionGroovyPageLocator groovyPageLocator
+
     final Class<T> targetType
 
     boolean prettyPrint = Environment.isDevelopmentMode()
@@ -78,6 +84,24 @@ abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
     AbstractLinkingRenderer(Class<T> targetType) {
         this.targetType = targetType
     }
+
+    @Override
+    final void render(T object, RenderContext context) {
+        final mimeType = context.acceptMimeType ?: getMimeTypes()[0]
+        context.setContentType(mimeType.name)
+
+        def viewName = context.viewName ?: context.actionName
+        final view = groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
+        if (view) {
+            new DefaultHtmlRenderer(targetType).render(object, context)
+        }
+        else {
+            renderInternal(object, context)
+        }
+
+    }
+
+    abstract void renderInternal(T object, RenderContext context)
 
     protected boolean isDomainResource(Class clazz) {
         DomainClassArtefactHandler.isDomainClass(clazz)
