@@ -23,6 +23,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.validation.Errors
 
@@ -38,6 +39,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     final Class<T> targetType
     final MimeType[] mimeTypes = [MimeType.XML,MimeType.TEXT_XML] as MimeType[]
 
+    @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 
     DefaultXmlRenderer(Class<T> targetType) {

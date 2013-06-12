@@ -19,7 +19,7 @@ import spock.lang.Specification
 /**
  * @author Graeme Rocher
  */
-class XmlRendererSpec extends Specification {
+class DefaultXmlRendererSpec extends Specification {
 
     void setup() {
         final initializer = new ConvertersConfigurationInitializer()

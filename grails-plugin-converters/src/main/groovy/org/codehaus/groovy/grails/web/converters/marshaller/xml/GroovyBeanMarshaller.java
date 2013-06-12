@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.springframework.beans.BeanUtils;
 
@@ -35,7 +36,7 @@ import org.springframework.beans.BeanUtils;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-public class GroovyBeanMarshaller implements ObjectMarshaller<XML> {
+public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<XML> {
 
     public boolean supports(Object object) {
         return object instanceof GroovyObject;
@@ -46,6 +47,9 @@ public class GroovyBeanMarshaller implements ObjectMarshaller<XML> {
             boolean isEntity = o.getClass().getAnnotation(Entity.class)!=null;
             for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(o.getClass())) {
                 String name = property.getName();
+
+                if(!shouldInclude(o, name)) continue;
+
                 if(isEntity && (name.equals(GrailsDomainClassProperty.ATTACHED) || name.equals(GrailsDomainClassProperty.ERRORS))) continue;
                 Method readMethod = property.getReadMethod();
                 if (readMethod != null && !(name.equals("metaClass"))&& !(name.equals("class"))) {

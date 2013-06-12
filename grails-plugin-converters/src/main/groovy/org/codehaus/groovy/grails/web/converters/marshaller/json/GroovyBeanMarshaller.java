@@ -25,7 +25,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
+import org.codehaus.groovy.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
 import org.springframework.beans.BeanUtils;
@@ -34,7 +36,7 @@ import org.springframework.beans.BeanUtils;
  * @author Siegfried Puchbauer
  * @since 1.1
  */
-public class GroovyBeanMarshaller implements ObjectMarshaller<JSON> {
+public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON> {
 
     public boolean supports(Object object) {
         return object instanceof GroovyObject;
@@ -45,8 +47,11 @@ public class GroovyBeanMarshaller implements ObjectMarshaller<JSON> {
         try {
             writer.object();
             for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(o.getClass())) {
-                String name = property.getName();
+
                 Method readMethod = property.getReadMethod();
+                String name = property.getName();
+
+                if(!shouldInclude(o, name)) continue;
 
                 if (readMethod != null && !(name.equals("metaClass"))&& !(name.equals("class"))) {
                     if(readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
@@ -72,4 +77,5 @@ public class GroovyBeanMarshaller implements ObjectMarshaller<JSON> {
             throw new ConverterException("Error converting Bean with class " + o.getClass().getName(), e);
         }
     }
+
 }
