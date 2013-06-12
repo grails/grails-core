@@ -182,12 +182,12 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
             idValue = ((EntityProxyHandler) proxyHandler).getProxyIdentifier(refObj);
             if (idValue == null) {
                 ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(refObj.getClass());
-                idValue = propertyFetcher.getPropertyValue(idProperty.getName());
+                idValue = propertyFetcher.getPropertyValue(refObj, idProperty.getName());
             }
         }
         else {
             ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(refObj.getClass());
-            idValue = propertyFetcher.getPropertyValue(idProperty.getName());
+            idValue = propertyFetcher.getPropertyValue(refObj, idProperty.getName());
         }
         xml.attribute(GrailsDomainClassProperty.IDENTITY,String.valueOf(idValue));
     }

@@ -29,11 +29,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
@@ -220,8 +216,8 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
             return ((GroovyObject)domainObject).getProperty(property.getName());
         }
         else {
-            BeanWrapper beanWrapper = new BeanWrapperImpl(domainObject);
-            return beanWrapper.getPropertyValue(property.getName());
+            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(domainObject.getClass());
+            return propertyFetcher.getPropertyValue(domainObject, property.getName());
         }
     }
 
