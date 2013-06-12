@@ -42,7 +42,11 @@ import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
 /**
+ *
+ * Object marshaller for domain classes to XML
+ *
  * @author Siegfried Puchbauer
+ * @author Graeme Rocher
  * @since 1.1
  */
 public class DomainClassMarshaller implements ObjectMarshaller<XML> {
@@ -78,11 +82,13 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
 
         GrailsDomainClassProperty id = domainClass.getIdentifier();
-        Object idValue = beanWrapper.getPropertyValue(id.getName());
+        if(shouldInclude(domainClass, id.getName())) {
+            Object idValue = beanWrapper.getPropertyValue(id.getName());
 
-        if (idValue != null) xml.attribute("id", String.valueOf(idValue));
+            if (idValue != null) xml.attribute("id", String.valueOf(idValue));
+        }
 
-        if (includeVersion) {
+        if (shouldInclude(domainClass, GrailsDomainClassProperty.VERSION) && includeVersion) {
             Object versionValue = beanWrapper.getPropertyValue(domainClass.getVersion().getName());
             xml.attribute("version", String.valueOf(versionValue));
         }
@@ -90,14 +96,17 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
 
         for (GrailsDomainClassProperty property : properties) {
-            xml.startNode(property.getName());
+            String propertyName = property.getName();
+            if(!shouldInclude(domainClass, property.getName())) continue;
+
+            xml.startNode(propertyName);
             if (!property.isAssociation()) {
                 // Write non-relation property
-                Object val = beanWrapper.getPropertyValue(property.getName());
+                Object val = beanWrapper.getPropertyValue(propertyName);
                 xml.convertAnother(val);
             }
             else {
-                Object referenceObject = beanWrapper.getPropertyValue(property.getName());
+                Object referenceObject = beanWrapper.getPropertyValue(propertyName);
                 if (isRenderDomainClassRelations()) {
                     if (referenceObject != null) {
                         referenceObject = proxyHandler.unwrapIfProxy(referenceObject);
@@ -158,6 +167,32 @@ public class DomainClassMarshaller implements ObjectMarshaller<XML> {
             }
             xml.end();
         }
+    }
+
+    private boolean shouldInclude(GrailsDomainClass domainClass, String propertyName) {
+        return includesProperty(domainClass, propertyName) && !excludesProperty(domainClass, propertyName);
+    }
+
+    /**
+     * Override for custom exclude logic
+     *
+     * @param domainClass The domain class
+     * @param property The property
+     * @return True if it is excluded
+     */
+    protected boolean excludesProperty(GrailsDomainClass domainClass, String property) {
+        return false;
+    }
+
+    /**
+     * Override for custom include logic
+     *
+     * @param domainClass The domain class
+     * @param property The property
+     * @return True if it is included
+     */
+    protected boolean includesProperty(GrailsDomainClass domainClass, String property) {
+        return true;
     }
 
     protected void asShortObject(Object refObj, XML xml, GrailsDomainClassProperty idProperty,
