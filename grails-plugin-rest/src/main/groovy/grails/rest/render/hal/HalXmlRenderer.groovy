@@ -41,15 +41,18 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
     public static final String LINK_TAG = "link"
     public static final String RELATIONSHIP_ATTRIBUTE = "rel"
 
-    private MimeType[] mimeTypes = [MIME_TYPE] as MimeType[]
+    private static final MimeType[] DEFAULT_MIME_TYPES = [MIME_TYPE] as MimeType[]
 
     HalXmlRenderer(Class<T> targetType) {
-        super(targetType)
+        super(targetType, DEFAULT_MIME_TYPES)
     }
 
-    @Override
-    MimeType[] getMimeTypes() {
-        return mimeTypes
+    HalXmlRenderer(Class<T> targetType, MimeType mimeType) {
+        super(targetType, mimeType)
+    }
+
+    HalXmlRenderer(Class<T> targetType, MimeType[] mimeTypes) {
+        super(targetType, mimeTypes)
     }
 
     @Override
@@ -86,11 +89,12 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
             final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
             final propertyDescriptors = bean.propertyDescriptors
             for(pd in propertyDescriptors) {
-                if (DEFAULT_EXCLUDES.contains(pd.name)) continue
-                if (includes == null || includes.contains(pd.name)) {
+                final propertyName = pd.name
+                if (DEFAULT_EXCLUDES.contains(propertyName)) continue
+                if (shouldIncludeProperty(object, propertyName)) {
                     if (pd.readMethod && pd.writeMethod) {
-                        writer.startNode(pd.name)
-                        xml.convertAnother(bean.getPropertyValue(pd.name))
+                        writer.startNode(propertyName)
+                        xml.convertAnother(bean.getPropertyValue(propertyName))
                         writer.end()
                     }
                 }

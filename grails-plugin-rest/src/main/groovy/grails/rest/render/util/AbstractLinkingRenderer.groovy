@@ -17,6 +17,7 @@ package grails.rest.render.util
 
 import grails.rest.Link
 import grails.rest.Resource
+import grails.rest.render.AbstractIncludeExcludeRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.util.Environment
@@ -49,7 +50,7 @@ import org.springframework.http.HttpMethod
  * @since 2.3
  */
 @CompileStatic
-abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
+abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer<T> {
 
     protected static List<String> DEFAULT_EXCLUDES = ['metaClass', 'class']
 
@@ -78,11 +79,14 @@ abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
 
     boolean prettyPrint = Environment.isDevelopmentMode()
     boolean absoluteLinks = true
-    List<String> includes
     String encoding = "UTF-8"
 
-    AbstractLinkingRenderer(Class<T> targetType) {
-        this.targetType = targetType
+    AbstractLinkingRenderer(Class<T> targetType, MimeType mimeType) {
+        super(targetType, mimeType)
+    }
+
+    AbstractLinkingRenderer(Class<T> targetType, MimeType[] mimeTypes) {
+        super(targetType, mimeTypes)
     }
 
     @Override
@@ -134,7 +138,7 @@ abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
         Map<Association, Object> associationMap = [:]
         for (Association a in entity.associations) {
             final propertyName = a.name
-            if (includes != null && !includes.contains(a.name)) {
+            if (!shouldIncludeProperty(object, propertyName)) {
                 continue
             }
             final associatedEntity = a.associatedEntity
@@ -189,10 +193,10 @@ abstract class AbstractLinkingRenderer<T> implements Renderer<T> {
 
         if (entity) {
             for (PersistentProperty p in entity.persistentProperties) {
-                if (includes != null && !includes.contains(p.name)) {
+                final propertyName = p.name
+                if (!shouldIncludeProperty(object, propertyName)) {
                     continue
                 }
-                final propertyName = p.name
                 if ((p instanceof Basic) || !(p instanceof Association)) {
                     final value = metaClass.getProperty(object, propertyName)
                     if (value != null) {

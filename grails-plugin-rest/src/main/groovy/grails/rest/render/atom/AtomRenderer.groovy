@@ -52,13 +52,10 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
     public static final String ATOM_NAMESPACE = "http://www.w3.org/2005/Atom"
     public static final SimpleDateFormat ID_DATE_FORMAT = new SimpleDateFormat('yyyy-MM-dd')
     public static final String RELATIONSHIP_ALTERNATE = "alternate"
+    public static final MimeType[] DEFAULT_ATOM_MIME_TYPES = [MIME_TYPE] as MimeType[]
 
     AtomRenderer(Class<T> targetType) {
-        super(targetType)
-    }
-
-    MimeType[] getMimeTypes() {
-        [MIME_TYPE] as MimeType[]
+        super(targetType, DEFAULT_ATOM_MIME_TYPES)
     }
 
     @Override

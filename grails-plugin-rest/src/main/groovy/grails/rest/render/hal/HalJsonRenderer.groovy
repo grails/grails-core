@@ -42,25 +42,20 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     public static final String LINKS_ATTRIBUTE = "_links"
     public static final String EMBEDDED_ATTRIBUTE = "_embedded"
 
-    private MimeType[] mimeTypes = [MIME_TYPE] as MimeType[]
+    private static final MimeType[] DEFAULT_MIME_TYPES = [MIME_TYPE] as MimeType[]
 
 
     @Autowired(required = false)
     Gson gson = new Gson()
 
     HalJsonRenderer(Class<T> targetType) {
-        super(targetType)
+        super(targetType, DEFAULT_MIME_TYPES)
     }
 
     HalJsonRenderer(Class<T> targetType, MimeType... mimeTypes) {
-        super(targetType)
-        this.mimeTypes = mimeTypes
+        super(targetType, mimeTypes)
     }
 
-    @Override
-    MimeType[] getMimeTypes() {
-        return mimeTypes
-    }
 
     @Override
     void renderInternal(T object, RenderContext context) {
@@ -100,10 +95,11 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
                 final propertyDescriptors = bean.propertyDescriptors
                 for(pd in propertyDescriptors) {
-                    if (DEFAULT_EXCLUDES.contains(pd.name)) continue
-                    if (includes == null || includes.contains(pd.name)) {
+                    final propertyName = pd.name
+                    if (DEFAULT_EXCLUDES.contains(propertyName)) continue
+                    if (shouldIncludeProperty(object, propertyName)) {
                         if (pd.readMethod && pd.writeMethod) {
-                            writer.name(pd.name).value(gson.toJson(bean.getPropertyValue(pd.name)))
+                            writer.name(propertyName).value(gson.toJson(bean.getPropertyValue(propertyName)))
                         }
                     }
                 }
