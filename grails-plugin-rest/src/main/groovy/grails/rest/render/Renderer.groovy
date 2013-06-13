@@ -17,6 +17,7 @@
 package grails.rest.render
 
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
 
 /**
  * Interface for class that render RESTful responses to implement
@@ -24,7 +25,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
  * @author Graeme Rocher
  * @since 2.3
  */
-interface Renderer<T> {
+interface Renderer<T> extends MimeTypeProvider{
 
     /**
      * @return The target type

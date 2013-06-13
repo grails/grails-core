@@ -135,18 +135,15 @@ class ControllersRestApi {
             }
 
             if (renderer) {
-                final context = new ServletRenderContext(webRequest, (Map)args.model)
-                if (args.view) {
-                    context.viewName = args.view
-                }
-                return renderer.render(value, context)
+                final context = new ServletRenderContext(webRequest, args)
+                renderer.render(value, context)
             }
             else {
-                return render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
+                render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
             }
         }
         else {
-            return render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
+            render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
         }
     }
 

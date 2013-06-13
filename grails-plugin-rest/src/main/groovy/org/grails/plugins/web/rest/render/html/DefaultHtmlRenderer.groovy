@@ -55,6 +55,10 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
             context.setContentType(mimeType.name)
         }
 
+        if(context.arguments?.view) {
+            context.viewName = context.arguments.view.toString()
+        }
+
         if (!context.viewName) {
             context.setViewName(context.actionName)
         }
@@ -68,8 +72,6 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
             }
         }
         else {
-
-            context.setViewName(context.actionName)
             String modelVariableName = GrailsNameUtils.getPropertyNameConvention(object)
             context.setModel([(modelVariableName): object])
         }

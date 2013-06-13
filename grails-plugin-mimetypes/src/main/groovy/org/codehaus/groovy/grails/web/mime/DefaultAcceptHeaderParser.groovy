@@ -34,29 +34,26 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
 
     static final Log LOG = LogFactory.getLog(DefaultAcceptHeaderParser)
 
-    GrailsApplication application
     MimeType[] configuredMimeTypes
 
     DefaultAcceptHeaderParser() {}
 
-    DefaultAcceptHeaderParser(GrailsApplication application) {
-        this.application = application
+    DefaultAcceptHeaderParser(MimeType[] configuredMimeTypes) {
+        this.configuredMimeTypes = configuredMimeTypes
     }
 
     MimeType[] parse(String header) {
-        def config = application?.getConfig()
         List<MimeType> mimes = []
-        Map mimeConfig = getMimeConfig(config)
+        MimeType[] mimeConfig = configuredMimeTypes
         if (!mimeConfig) {
-            LOG.debug "No mime types configured, defaulting to 'text/html'"
+            if (LOG.isDebugEnabled()) {
+                LOG.debug "No mime types configured, defaulting to 'text/html'"
+            }
             return MimeType.createDefaults()
         }
 
         if (!header) {
-            if (configuredMimeTypes != null) {
-                return configuredMimeTypes
-            }
-            return MimeType.getConfiguredMimeTypes()
+            return mimeConfig
         }
 
         String[] tokens = header.split(',')
@@ -119,20 +116,12 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         return mimes.sort(new QualityComparator()) as MimeType[]
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected Map getMimeConfig(ConfigObject config) {
-        config?.grails?.mime?.types
-    }
 
-    protected void createMimeTypeAndAddToList(String name, Map mimeConfig, List<MimeType> mimes, Map<String,String> params = null) {
+    protected void createMimeTypeAndAddToList(String name, MimeType[] mimeConfig, List<MimeType> mimes, Map<String,String> params = null) {
         def mime = params ? new MimeType(name, params) : new MimeType(name)
-        def ext = mimeConfig.find { key, value -> value == name }
-        if (!ext) {
-            def multiMimeFormats = mimeConfig.findAll { key, value -> value instanceof List}
-            ext = multiMimeFormats?.find { key, value -> value?.find { it == name } }
-        }
-        if (ext) {
-            mime.extension = ext.key
+        def foundMime = mimeConfig.find { MimeType mt -> mt.name == name }
+        if (foundMime) {
+            mime.extension = foundMime.extension
             mimes << mime
         }
     }

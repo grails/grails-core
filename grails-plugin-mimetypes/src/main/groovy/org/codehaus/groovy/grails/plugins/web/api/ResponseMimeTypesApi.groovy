@@ -130,9 +130,11 @@ class ResponseMimeTypesApi {
                 //   - which initialises the CONTENT_FORMAT attribute
                 //   - *before* the "format" parameter is added to the map
                 //   - so the saved format is wrong
-                request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, result)
             } else {
                 result = getMimeTypesInternal(request)[0]
+            }
+            if (result) {
+                request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, result)
             }
         }
         return result
@@ -166,8 +168,7 @@ class ResponseMimeTypesApi {
             def userAgent = request.getHeader(HttpHeaders.USER_AGENT)
             def msie = userAgent && userAgent ==~ /msie(?i)/ ?: false
 
-            def parser = new DefaultAcceptHeaderParser(grailsApplication)
-            parser.configuredMimeTypes = getMimeTypes()
+            def parser = new DefaultAcceptHeaderParser(getMimeTypes())
             String header = null
 
             boolean disabledForUserAgent = userAgent ? disableForUserAgents.matcher(userAgent).find() : false

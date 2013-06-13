@@ -29,6 +29,11 @@ import org.springframework.http.HttpStatus
 public interface RenderContext {
 
     /**
+     * @return Arguments passed by the user
+     */
+    Map<String, Object> getArguments()
+
+    /**
      * @return The path the the resource
      */
     String getResourcePath()

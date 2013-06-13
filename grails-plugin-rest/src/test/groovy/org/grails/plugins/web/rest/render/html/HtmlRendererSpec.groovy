@@ -40,6 +40,27 @@ class HtmlRendererSpec extends Specification {
             modelAndView.model == [book:book]
     }
 
+    void "Test that HTML renderer sets a model and view correctly for a domain instance and custom view and model"() {
+        when:"A domain instance is rendered"
+            def renderer = new DefaultHtmlRenderer(Book)
+            final webRequest = new GrailsWebRequest(new MockHttpServletRequest(), new MockHttpServletResponse(), new MockServletContext())
+            webRequest.actionName = "test"
+            def renderContext = new ServletRenderContext(webRequest, [model:[foo:'bar'],view:"foo"]) {
+                @Override
+                MimeType getAcceptMimeType() {
+                    MimeType.HTML
+                }
+            }
+            final book = new Book(title: "The Stand")
+            renderer.render(book,renderContext)
+
+            ModelAndView modelAndView = webRequest.currentRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+        then:"The model and view are populated correctly"
+            modelAndView
+            modelAndView.viewName == 'foo'
+            modelAndView.model == [foo: "bar", book:book]
+    }
+
     void "Test that HTML renderer sets the correct model for a list of domains"() {
         when:"A domain instance is rendered"
             def renderer = new DefaultHtmlRenderer(Book)

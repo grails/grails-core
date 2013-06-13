@@ -38,17 +38,17 @@ import org.springframework.web.servlet.ModelAndView
 class ServletRenderContext implements RenderContext{
 
     GrailsWebRequest webRequest
-    Map internalModel
+    Map<String, Object> arguments
     ResponseMimeTypesApi responseMimeTypesApi
     private String resourcePath
 
     ServletRenderContext(GrailsWebRequest webRequest) {
-        this(webRequest, null)
+        this(webRequest, Collections.emptyMap())
     }
 
-    ServletRenderContext(GrailsWebRequest webRequest, Map internalModel) {
+    ServletRenderContext(GrailsWebRequest webRequest, Map<String, Object> arguments) {
         this.webRequest = webRequest
-        this.internalModel = internalModel
+        this.arguments = Collections.unmodifiableMap(arguments)
     }
 
     @Override
@@ -127,8 +127,8 @@ class ServletRenderContext implements RenderContext{
     void setModel(Map model) {
         ModelAndView modelAndView = getModelAndView()
         final viewModel = modelAndView.model
-        if (internalModel) {
-            viewModel.putAll(internalModel)
+        if (arguments?.model instanceof Map) {
+            viewModel.putAll((Map)arguments.model)
         }
         viewModel.putAll(model)
     }

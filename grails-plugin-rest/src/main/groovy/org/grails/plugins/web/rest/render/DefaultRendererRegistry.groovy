@@ -29,6 +29,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.util.ClassUtils
+import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
 import javax.annotation.PostConstruct
@@ -161,26 +162,7 @@ class DefaultRendererRegistry implements RendererRegistry{
     def <C, T> Renderer<C> findContainerRenderer(MimeType mimeType, Class<C> containerType, T object) {
         if (object == null) return null
         def targetClass = object instanceof Class ? (Class) object : object.getClass()
-        if (targetClass.isArray()) {
-            targetClass = targetClass.getComponentType()
-        }
-        if (object instanceof Iterable) {
-            if (object) {
-                final iterator = object.iterator()
-                final first = iterator.next()
-                if (first) {
-                    targetClass = first.getClass()
-                }
-            }
-        }
-        if (object instanceof Map) {
-            if (object) {
-                final first = object.values().iterator().next()
-                if (first) {
-                    targetClass = first.getClass()
-                }
-            }
-        }
+        targetClass = getTargetClassForContainer(targetClass, object)
         def originalKey = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
 
         Renderer<C> renderer = (Renderer<C>)containerRendererCache.get(originalKey)
@@ -188,6 +170,7 @@ class DefaultRendererRegistry implements RendererRegistry{
         if (renderer == null) {
 
             def key = originalKey
+
             while(targetClass != null) {
 
                 renderer = containerRenderers.get(key)
@@ -196,6 +179,16 @@ class DefaultRendererRegistry implements RendererRegistry{
                     if (targetClass == Object) break
                     targetClass = targetClass.getSuperclass()
                     key = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
+                    renderer = containerRenderers.get(key)
+                    if (renderer != null) break
+                    else {
+                        final containerInterfaces = ClassUtils.getAllInterfacesForClass(containerType)
+                        for(Class i in containerInterfaces) {
+                            key = new ContainerRendererCacheKey(i, targetClass, mimeType)
+                            renderer = containerRenderers.get(key)
+                            if (renderer != null) break
+                        }
+                    }
                 }
             }
 
@@ -205,6 +198,14 @@ class DefaultRendererRegistry implements RendererRegistry{
                     key = new ContainerRendererCacheKey(containerType, i, mimeType)
                     renderer = containerRenderers.get(key)
                     if (renderer) break
+                    else {
+                        final containerInterfaces = ClassUtils.getAllInterfacesForClass(containerType)
+                        for(Class ci in containerInterfaces) {
+                            key = new ContainerRendererCacheKey(ci, i, mimeType)
+                            renderer = containerRenderers.get(key)
+                            if (renderer != null) break
+                        }
+                    }
                 }
             }
 
@@ -214,6 +215,34 @@ class DefaultRendererRegistry implements RendererRegistry{
         }
 
         return renderer
+    }
+
+    protected Class<? extends Object> getTargetClassForContainer(Class containerClass, Object object) {
+        Class targetClass = containerClass
+        if (containerClass.isArray()) {
+            targetClass = containerClass.getComponentType()
+        } else if (object instanceof Iterable) {
+            if (object) {
+                final iterator = object.iterator()
+                final first = iterator.next()
+                if (first) {
+                    targetClass = first.getClass()
+                }
+            }
+        } else if (object instanceof Map) {
+            if (object) {
+                final first = object.values().iterator().next()
+                if (first) {
+                    targetClass = first.getClass()
+                }
+            }
+        } else if (object instanceof BeanPropertyBindingResult) {
+            final target = ((BeanPropertyBindingResult) object).target
+            if (target) {
+                targetClass = target.getClass()
+            }
+        }
+        return targetClass
     }
 
     @Override

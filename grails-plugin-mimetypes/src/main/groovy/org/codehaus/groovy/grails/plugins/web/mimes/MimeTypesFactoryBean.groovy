@@ -18,10 +18,12 @@ package org.codehaus.groovy.grails.plugins.web.mimes
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
 import org.springframework.beans.factory.FactoryBean
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.beans.factory.InitializingBean
+import org.springframework.beans.factory.annotation.Autowired
 
 /**
  * Creates the MimeType[] object that defines the configured mime types.
@@ -35,12 +37,18 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplication
     GrailsApplication grailsApplication
 
     private MimeType[] mimeTypes
+    private MimeTypeProvider[] mimeTypeProviders = [] as MimeTypeProvider[]
 
     MimeType[] getObject() { mimeTypes }
 
     Class<?> getObjectType() { MimeType[] }
 
     boolean isSingleton() { true }
+
+    @Autowired(required = false)
+    void setMimeTypeProviders(MimeTypeProvider[] mimeTypeProviders) {
+        this.mimeTypeProviders = mimeTypeProviders
+    }
 
     void afterPropertiesSet() {
         def config = grailsApplication?.config
@@ -61,8 +69,17 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplication
                 mimes << new MimeType(entry.value.toString(), entry.key.toString())
             }
         }
+        for(MimeTypeProvider mtp in mimeTypeProviders) {
+           for(MimeType mt in mtp.mimeTypes) {
+               if (!mimes.contains(mt)) {
+                   mimes << mt
+               }
+           }
+        }
         mimeTypes = mimes
     }
+
+
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected Map<CharSequence, CharSequence> getMimeConfig(ConfigObject config) {
