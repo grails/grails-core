@@ -130,12 +130,11 @@ class ResponseMimeTypesApi {
                 //   - which initialises the CONTENT_FORMAT attribute
                 //   - *before* the "format" parameter is added to the map
                 //   - so the saved format is wrong
+                request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, result)
             } else {
                 result = getMimeTypesInternal(request)[0]
             }
-            if (result) {
-                request.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, result)
-            }
+
         }
         return result
     }
