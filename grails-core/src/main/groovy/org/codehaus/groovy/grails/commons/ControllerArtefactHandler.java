@@ -42,7 +42,7 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
 
     public static final String TYPE = "Controller";
     public static final String PLUGIN_NAME = "controllers";
-    private ConcurrentLinkedHashMap<String, GrailsClass> uriToControllerClassCache;
+    private ConcurrentLinkedHashMap<ControllerCacheKey, GrailsClass> uriToControllerClassCache;
     private ArtefactInfo artefactInfo;
 
     private GrailsApplication grailsApplication;
@@ -59,7 +59,7 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
             cacheSize = 10000;
         }
 
-        uriToControllerClassCache = new ConcurrentLinkedHashMap.Builder<String, GrailsClass>()
+        uriToControllerClassCache = new ConcurrentLinkedHashMap.Builder<ControllerCacheKey, GrailsClass>()
                 .initialCapacity(500)
                 .maximumWeightedCapacity(new Integer(cacheSize.toString()))
                 .build();
@@ -83,16 +83,18 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
         String pluginName = null;
         String namespace = null;
 
-        if (featureId instanceof Map) {
-            Map featureIdMap = (Map)featureId;
-            uri = (String)featureIdMap.get("uri");
-            pluginName = (String)featureIdMap.get("pluginName");
-            namespace = (String)featureIdMap.get("namespace");
+        ControllerCacheKey cacheKey;
+        if (featureId instanceof ControllerCacheKey) {
+            cacheKey = (ControllerCacheKey)featureId;
+            pluginName = cacheKey.plugin;
+            namespace = cacheKey.namespace;
+            uri = cacheKey.uri;
         } else {
             uri = featureId.toString();
+            cacheKey = new ControllerCacheKey(uri, null,null);
         }
 
-        String cacheKey = (namespace != null ? namespace : "") + ":" + (pluginName != null ? pluginName : "") + ":" + uri;
+//        String cacheKey = (namespace != null ? namespace : "") + ":" + (pluginName != null ? pluginName : "") + ":" + uri;
 
         GrailsClass controllerClass = uriToControllerClassCache.get(cacheKey);
         if (controllerClass == null) {
@@ -179,5 +181,49 @@ public class ControllerArtefactHandler extends ArtefactHandlerAdapter implements
 
     public void setGrailsApplication(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication;
+    }
+
+    public static class ControllerCacheKey {
+        private String uri;
+        private String plugin;
+        private String namespace;
+
+        public ControllerCacheKey(String uri, String plugin, String namespace) {
+            this.uri = uri;
+            this.plugin = plugin;
+            this.namespace = namespace;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            ControllerCacheKey that = (ControllerCacheKey) o;
+
+            if (namespace != null ? !namespace.equals(that.namespace) : that.namespace != null) {
+                return false;
+            }
+            if (plugin != null ? !plugin.equals(that.plugin) : that.plugin != null) {
+                return false;
+            }
+            if (!uri.equals(that.uri)) {
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = uri.hashCode();
+            result = 31 * result + (plugin != null ? plugin.hashCode() : 0);
+            result = 31 * result + (namespace != null ? namespace.hashCode() : 0);
+            return result;
+        }
     }
 }

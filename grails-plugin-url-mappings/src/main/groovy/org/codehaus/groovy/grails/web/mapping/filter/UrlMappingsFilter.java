@@ -158,7 +158,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         info.configure(webRequest);
                         viewName = info.getViewName();
                         if (viewName == null && info.getURI() == null) {
-                            Object featureId = getFeatureId(info);
+                            ControllerArtefactHandler.ControllerCacheKey featureId = getFeatureId(info);
                             GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
                             if (controller == null) {
                                 continue;
@@ -254,28 +254,14 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         return version;
     }
 
-    private Object getFeatureId(UrlMappingInfo info) {
+    private ControllerArtefactHandler.ControllerCacheKey getFeatureId(UrlMappingInfo info) {
         final String action = info.getActionName() == null ? "" : info.getActionName();
         final String controllerName = info.getControllerName();
         final String pluginName = info.getPluginName();
         final String namespace = info.getNamespace();
         final String featureUri = getControllerFeatureURI(controllerName, action);
 
-        Object featureId;
-        if (pluginName != null || namespace != null) {
-            Map featureIdMap = new HashMap();
-            featureIdMap.put(UrlMapping.URI, featureUri);
-            if(pluginName != null) {
-                featureIdMap.put("pluginName", pluginName);
-            }
-            if(namespace != null) {
-                featureIdMap.put(UrlMapping.NAMESPACE, namespace);
-            }
-            featureId = featureIdMap;
-        } else {
-            featureId = featureUri;
-        }
-        return featureId;
+        return new ControllerArtefactHandler.ControllerCacheKey(featureUri, pluginName, namespace);
     }
 
     private String getControllerFeatureURI(String controller, String action) {
