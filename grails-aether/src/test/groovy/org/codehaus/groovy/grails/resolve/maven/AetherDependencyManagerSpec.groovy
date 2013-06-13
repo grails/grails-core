@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.RemoteRepository
-
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
@@ -104,6 +104,7 @@ class AetherDependencyManagerSpec extends Specification {
             !files.any { it.name.contains("tomcat-embed-logging-juli")}
     }
 
+    @Ignore
     void "Test grails dependency with transitive disabled with plugins"() {
         given:"A dependency manager with a dependency that contains exclusions"
         def dependencyManager = new AetherDependencyManager()
