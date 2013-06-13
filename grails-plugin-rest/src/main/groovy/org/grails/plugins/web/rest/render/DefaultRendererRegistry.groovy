@@ -166,7 +166,8 @@ class DefaultRendererRegistry implements RendererRegistry{
         }
         if (object instanceof Iterable) {
             if (object) {
-                final first = object.iterator().next()
+                final iterator = object.iterator()
+                final first = iterator.next()
                 if (first) {
                     targetClass = first.getClass()
                 }
