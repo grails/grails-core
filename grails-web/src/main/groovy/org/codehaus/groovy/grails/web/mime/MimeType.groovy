@@ -76,8 +76,32 @@ class MimeType {
         return parameters.v ?: null
     }
 
-    boolean equals(Object o) { o instanceof MimeType && name.equals(o.name) }
-    int hashCode() { name.hashCode() }
+    boolean equals(o) {
+        if (this.is(o)) {
+            return true
+        }
+        if (getClass() != o.class) {
+            return false
+        }
+
+        MimeType mimeType = (MimeType) o
+
+        if (name != mimeType.name) {
+            return false
+        }
+
+        if (version && version != mimeType.version) {
+            return false
+        }
+
+        return true
+    }
+
+    int hashCode() {
+        final result = name.hashCode()
+        result = 31 * result + (version != null ? version.hashCode() : 0);
+        return result
+    }
 
     String toString() {
         "MimeType { name=$name,extension=$extension,parameters=$parameters }"
