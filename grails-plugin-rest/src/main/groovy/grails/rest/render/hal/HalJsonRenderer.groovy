@@ -18,6 +18,7 @@ package grails.rest.render.hal
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.google.gson.stream.JsonWriter
+import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.util.AbstractLinkingRenderer
 import groovy.transform.CompileStatic
@@ -116,7 +117,11 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         final href = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET.toString(), absolute: absoluteLinks)
         final resourceRef = href
         final locale = context.locale
-        writeLink(RELATIONSHIP_SELF, getResourceTitle(resourceRef, locale), resourceRef, locale, mimeType ? mimeType.name : null, writer)
+        def link = new Link(RELATIONSHIP_SELF, href)
+        link.title = getResourceTitle(resourceRef, locale)
+        link.contentType = mimeType ? mimeType.name : null
+
+        writeLink(link, locale, writer)
     }
 
     protected void beginLinks(JsonWriter writer) {
@@ -180,7 +185,11 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         final title = getLinkTitle(entity, locale)
 
 
-        writeLink(RELATIONSHIP_SELF, title, entityHref, locale, contentType ? contentType.name : null, writer)
+        def link = new Link(RELATIONSHIP_SELF, entityHref)
+        link.contentType = contentType ? contentType.name : null
+        link.title = title
+        link.hreflang = locale
+        writeLink(link, locale, writer)
         Map<Association, Object> associationMap = writeAssociationLinks(object, locale, writer, entity, metaClass)
         writer.endObject()
         associationMap
@@ -188,17 +197,25 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
 
 
-    protected void writeLink(String rel, String title, String href, Locale locale, String type, writerObject) {
+    protected void writeLink(Link link, Locale locale, writerObject) {
         JsonWriter writer = (JsonWriter)writerObject
-        writer.name(rel)
+        writer.name(link.rel)
             .beginObject()
-            .name(HREF_ATTRIBUTE).value(href)
-            .name(HREFLANG_ATTRIBUTE).value(locale.language)
+            .name(HREF_ATTRIBUTE).value(link.href)
+            .name(HREFLANG_ATTRIBUTE).value((link.hreflang ?: locale).language)
+        final title = link.title
         if (title) {
             writer.name(TITLE_ATTRIBUTE).value(title)
         }
+        final type = link.contentType
         if (type) {
             writer.name(TYPE_ATTRIBUTE).value(type)
+        }
+        if (link.templated) {
+            writer.name(TEMPLATED_ATTRIBUTE).value(true)
+        }
+        if (link.deprecated) {
+            writer.name(DEPRECATED_ATTRIBUTE).value(true)
         }
         writer.endObject()
 

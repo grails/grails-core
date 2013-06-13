@@ -16,6 +16,7 @@
 package grails.rest.render.hal
 
 import grails.converters.XML
+import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.util.AbstractLinkingRenderer
 import groovy.transform.CompileStatic
@@ -165,20 +166,28 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
         }
     }
 
-    void writeLink(String rel, String title, String href, Locale locale, String contentType, writerObject) {
+    void writeLink(Link link, Locale locale, writerObject) {
         XMLStreamWriter writer = ((XML) writerObject).getWriter()
         writer.startNode(LINK_TAG)
-            .attribute(RELATIONSHIP_ATTRIBUTE, rel)
-            .attribute(HREF_ATTRIBUTE, href)
-            .attribute(HREFLANG_ATTRIBUTE, locale.language)
+            .attribute(RELATIONSHIP_ATTRIBUTE, link.rel)
+            .attribute(HREF_ATTRIBUTE, link.href)
+            .attribute(HREFLANG_ATTRIBUTE, (link.hreflang ?: locale).language)
 
+        final title = link.title
         if (title) {
             writer.attribute(TITLE_ATTRIBUTE, title)
         }
+        final contentType = link.contentType
         if (contentType) {
             writer.attribute(TYPE_ATTRIBUTE, contentType)
         }
 
+        if (link.templated) {
+            writer.attribute(TEMPLATED_ATTRIBUTE,"true")
+        }
+        if (link.deprecated) {
+            writer.attribute(DEPRECATED_ATTRIBUTE,"true")
+        }
         writer.end()
     }
 

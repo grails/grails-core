@@ -59,6 +59,8 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     public static final String TITLE_ATTRIBUTE = "title"
     public static final String HREFLANG_ATTRIBUTE = "hreflang"
     public static final String TYPE_ATTRIBUTE = "type"
+    public static final String TEMPLATED_ATTRIBUTE = "templated"
+    public static final String DEPRECATED_ATTRIBUTE = "deprecated"
 
     @Autowired
     MessageSource messageSource
@@ -154,7 +156,10 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
                     } else if (value != null) {
                         final href = linkGenerator.link(resource: value, method: HttpMethod.GET, absolute: absoluteLinks)
                         final associationTitle = getLinkTitle(associatedEntity, locale)
-                        writeLink(propertyName, associationTitle, href, locale, null, writer)
+                        final link = new Link(propertyName, href)
+                        link.title = associationTitle
+                        link.hreflang = locale
+                        writeLink(link, locale, writer)
                         associationMap[a] = value
                     }
                 } else if (!(a instanceof Basic)) {
@@ -167,7 +172,10 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
                     final id = proxyHandler.getProxyIdentifier(proxy)
                     final href = linkGenerator.link(resource: associatedEntity.decapitalizedName, id: id, method: HttpMethod.GET, absolute: absoluteLinks)
                     final associationTitle = getLinkTitle(associatedEntity, locale)
-                    writeLink(propertyName, associationTitle, href, locale, null, writer)
+                    def link = new Link(propertyName, href)
+                    link.title = associationTitle
+                    link.hreflang = locale
+                    writeLink(link, locale, writer)
                 }
             }
         }
@@ -177,7 +185,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     protected void writeExtraLinks(object, Locale locale, writer) {
         final extraLinks = getLinksForObject(object)
         for (Link l in extraLinks) {
-            writeLink(l.rel, l.title, l.href, l.hreflang ?: locale, l.contentType, writer)
+            writeLink(l, locale, writer)
         }
     }
 
@@ -207,6 +215,6 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
         }
     }
 
-    protected abstract void writeLink(String rel, String title, String href, Locale locale, String type, writerObject)
+    protected abstract void writeLink(Link link, Locale locale, writerObject)
     protected abstract  void writeDomainProperty(value, String propertyName, writer)
 }

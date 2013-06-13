@@ -17,6 +17,7 @@
 package grails.rest.render.atom
 
 import grails.converters.XML
+import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.hal.HalXmlRenderer
 import groovy.transform.CompileStatic
@@ -86,8 +87,16 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
                     .startNode(ID_TAG)
                     .characters(generateIdForURI(resourceHref))
                     .end()
-            writeLink(RELATIONSHIP_SELF, title, resourceHref, locale, mimeTypes[0].name, xml)
-            writeLink(RELATIONSHIP_ALTERNATE, title, resourceHref, locale, null, xml)
+
+            def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
+            linkSelf.title = title
+            linkSelf.contentType=mimeTypes[0].name
+            linkSelf.hreflang = locale
+            writeLink(linkSelf, locale, xml)
+            def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
+            linkAlt.title = title
+            linkAlt.hreflang = locale
+            writeLink(linkAlt, locale, xml)
 
 
             for (o in ((Collection) object)) {
@@ -158,8 +167,17 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
         writer.startNode(ID_TAG)
             .characters(getObjectId(entity, object))
             .end()
-        writeLink(RELATIONSHIP_SELF, title, resourceHref, locale, mimeTypes[0].name, xml)
-        writeLink(RELATIONSHIP_ALTERNATE, title, resourceHref, locale, null, xml)
+
+        def linkSelf = new Link(RELATIONSHIP_SELF, resourceHref)
+        linkSelf.title = title
+        linkSelf.contentType=mimeTypes[0].name
+        linkSelf.hreflang = locale
+        writeLink(linkSelf, locale, xml)
+        def linkAlt = new Link(RELATIONSHIP_ALTERNATE, resourceHref)
+        linkAlt.title = title
+        linkAlt.hreflang = locale
+
+        writeLink(linkAlt,locale, xml)
         final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
         final associationMap = writeAssociationLinks(object, locale, xml, entity, metaClass)
         writeDomain(metaClass, entity, object, xml)
