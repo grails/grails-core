@@ -51,13 +51,14 @@ class WebRequestPromsiseDecorator implements PromiseDecorator{
     def <D> Closure<D> decorate(Closure<D> c) {
         return (Closure<D>) {  args ->
             def newWebRequest = new GrailsWebRequest(webRequest.currentRequest, webRequest.currentResponse, webRequest.servletContext,webRequest.applicationContext)
+            newWebRequest.addParametersFrom(webRequest.params)
             WebUtils.storeGrailsWebRequest(newWebRequest)
             try {
                 return invokeClosure(c, args)
             }
             finally {
                 newWebRequest.requestCompleted()
-                WebUtils.clearGrailsWebRequest()
+                WebUtils.storeGrailsWebRequest(webRequest)
 
             }
         }
