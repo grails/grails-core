@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.DeepDomainClassMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.GroovyBeanMarshaller
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -56,6 +57,10 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
 
     XmlRenderer(Class<T> targetType) {
         super(targetType)
+    }
+
+    XmlRenderer(Class<T> targetType, MimeType... mimeTypes) {
+        super(targetType, mimeTypes)
     }
 
     @PostConstruct

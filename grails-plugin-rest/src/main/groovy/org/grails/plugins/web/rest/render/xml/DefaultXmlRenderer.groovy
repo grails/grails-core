@@ -37,13 +37,18 @@ import org.springframework.validation.Errors
 class DefaultXmlRenderer<T> implements Renderer<T> {
 
     final Class<T> targetType
-    final MimeType[] mimeTypes = [MimeType.XML,MimeType.TEXT_XML] as MimeType[]
+    MimeType[] mimeTypes = [MimeType.XML,MimeType.TEXT_XML] as MimeType[]
 
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 
     DefaultXmlRenderer(Class<T> targetType) {
         this.targetType = targetType
+    }
+
+    DefaultXmlRenderer(Class<T> targetType, MimeType...mimeTypes) {
+        this.targetType = targetType
+        this.mimeTypes = mimeTypes
     }
 
     DefaultXmlRenderer(Class<T> targetType, GrailsConventionGroovyPageLocator groovyPageLocator) {

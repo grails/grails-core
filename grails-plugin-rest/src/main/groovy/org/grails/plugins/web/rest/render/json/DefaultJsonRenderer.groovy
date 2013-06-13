@@ -38,13 +38,18 @@ import org.springframework.validation.Errors
 class DefaultJsonRenderer<T> implements Renderer<T> {
 
     final Class<T> targetType
-    final MimeType[] mimeTypes = [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
+    MimeType[] mimeTypes = [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
 
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 
     DefaultJsonRenderer(Class<T> targetType) {
         this.targetType = targetType
+    }
+
+    DefaultJsonRenderer(Class<T> targetType, MimeType...mimeTypes) {
+        this.targetType = targetType
+        this.mimeTypes = mimeTypes
     }
 
     DefaultJsonRenderer(Class<T> targetType, GrailsConventionGroovyPageLocator groovyPageLocator) {
