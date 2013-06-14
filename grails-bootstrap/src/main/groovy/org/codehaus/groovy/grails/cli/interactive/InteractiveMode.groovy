@@ -190,8 +190,12 @@ class InteractiveMode {
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
     }
 
+    boolean backgroundTestRunnerStarted = false
     @CompileStatic
     protected void startBackgroundTestRunner() {
+        if (backgroundTestRunnerStarted) return
+
+        backgroundTestRunnerStarted = true
         Thread.start {
             // start a background JVM ready to run tests
             if (settings.forkSettings.test) {
