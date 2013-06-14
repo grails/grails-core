@@ -37,7 +37,6 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
     ForkedGrailsTestRunner(BuildSettings buildSettings) {
         super(buildSettings)
-        setReloading(false)
         setForkReserve(true)
     }
 

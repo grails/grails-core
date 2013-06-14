@@ -316,7 +316,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected boolean shouldRunWithDaemon() {
-        daemon && !isDebugForkEnabled()
+        daemon && InteractiveMode.active && !isDebugForkEnabled()
     }
 
     @CompileStatic
@@ -326,6 +326,10 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     void forkReserve(ExecutionContext executionContext = getExecutionContext()) {
+        if (reloading) {
+            discoverAndSetAgent(executionContext)
+        }
+
         String classpathString = getBoostrapClasspath(executionContext)
         List<String> cmd = buildProcessCommand(executionContext, classpathString, true)
 
@@ -334,6 +338,10 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     void forkDaemon(ExecutionContext executionContext = getExecutionContext()) {
+        if (reloading) {
+            discoverAndSetAgent(executionContext)
+        }
+
         String classpathString = getBoostrapClasspath(executionContext)
         List<String> cmd = buildProcessCommand(executionContext, classpathString, false, true)
 
@@ -342,6 +350,10 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     void restartDaemon(ExecutionContext executionContext = getExecutionContext()) {
+        if (reloading) {
+            discoverAndSetAgent(executionContext)
+        }
+
         final console = GrailsConsole.instance
         console.updateStatus("Stopping daemon...")
         while(isDaemonRunning()) {

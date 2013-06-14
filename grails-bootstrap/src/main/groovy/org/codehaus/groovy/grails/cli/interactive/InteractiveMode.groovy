@@ -203,7 +203,7 @@ class InteractiveMode {
                     runner.forkReserve()
                 }
                 else if (runner.daemon) {
-                    runner.forkDaemon()
+                    runner.restartDaemon()
                 }
             }
         }
