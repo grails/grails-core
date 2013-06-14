@@ -734,7 +734,7 @@ class ExecutionContext implements Serializable {
     String env
     File grailsHome
     Map<String, String> systemProps = [:]
-    Map<String, Object> forkConfig = [:]
+    Map forkConfig = [:]
     Map argsMap = new LinkedHashMap()
 
     transient ForkedGrailsProcess process
@@ -773,7 +773,17 @@ class ExecutionContext implements Serializable {
         projectWorkDir = settings.projectWorkDir
         projectPluginsDir = settings.projectPluginsDir
         testClassesDir = settings.testClassesDir
-        forkConfig = (Map<String,Object>)settings.getForkSettings()
+        final currentForkConfig = (Map<String, Object>) settings.getForkSettings()
+        currentForkConfig.each { key, value ->
+            def forkConf = [:]
+            if(value instanceof Boolean) {
+                forkConf = value
+            }
+            else if (value instanceof Map) {
+                forkConf.putAll(value)
+            }
+            forkConfig[key] = forkConf
+        }
     }
 
     @CompileStatic
