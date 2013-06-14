@@ -20,6 +20,7 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.cli.fork.testing.ForkedGrailsTestRunner
 
 import java.awt.Desktop
@@ -131,6 +132,12 @@ class InteractiveMode {
                     } else if ("exit".equals(trimmed)) {
                         exit()
                     }
+                    else if ("restart-daemon".equals(trimmed)) {
+                        restartDaemon()
+                    }
+                    else if ("start-daemon".equals(trimmed)) {
+                        restartDaemon()
+                    }
                     else if (scriptName.startsWith("open ")) {
                         open scriptName
                     }
@@ -189,14 +196,27 @@ class InteractiveMode {
             // start a background JVM ready to run tests
             if (settings.forkSettings.test) {
                 final runner = new ForkedGrailsTestRunner(settings)
-                runner.forkReserve()
                 if (settings.forkSettings.test instanceof Map) {
                     runner.configure((Map) settings.forkSettings.test)
+                }
+                if (runner.isForkingReserveEnabled()) {
+                    runner.forkReserve()
+                }
+                else if (runner.daemon) {
+                    runner.forkDaemon()
                 }
             }
         }
     }
 
+    @CompileStatic
+    void restartDaemon() {
+        final runner = new ForkedGrailsTestRunner(settings)
+        if (settings.forkSettings.test instanceof Map) {
+            runner.configure((Map) settings.forkSettings.test)
+        }
+        runner.restartDaemon()
+    }
     protected void quit() {
         exit true
     }
@@ -303,6 +323,12 @@ class InteractiveMode {
         def parser = GrailsScriptRunner.getCommandLineParser()
         def commandLine = parser.parseString(scriptName)
         prepareConsole(commandLine)
+        if (commandLine.hasOption(CommandLine.DEBUG_FORK)) {
+            System.setProperty(ForkedGrailsProcess.DEBUG_FORK, "true")
+        }
+        else {
+            System.setProperty(ForkedGrailsProcess.DEBUG_FORK, "false")
+        }
         scriptRunner.executeScriptWithCaching(commandLine)
     }
 

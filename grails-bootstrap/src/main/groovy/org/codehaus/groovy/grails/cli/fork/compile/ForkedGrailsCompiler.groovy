@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.cli.fork.compile
 
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProjectClassExecutor
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
@@ -26,6 +27,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
  * @author Graeme Rocher
  * @since 2.3
  */
+@CompileStatic
 class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor{
 
     ForkedGrailsCompiler(BuildSettings buildSettings) {
@@ -46,6 +48,13 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor{
             System.exit(1)
         }
 
+    }
+
+    @Override
+    protected void configureFork(BuildSettings buildSettings) {
+        final runConfig = buildSettings.forkSettings.compile
+        if (runConfig instanceof Map)
+            configure(runConfig)
     }
 
     @Override

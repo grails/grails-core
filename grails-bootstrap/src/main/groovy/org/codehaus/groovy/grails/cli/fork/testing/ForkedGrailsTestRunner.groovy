@@ -50,6 +50,13 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
     }
 
     @Override
+    protected void configureFork(BuildSettings buildSettings) {
+        final runConfig = buildSettings.forkSettings.test
+        if (runConfig instanceof Map)
+            configure(runConfig)
+    }
+
+    @Override
     protected GroovyClassLoader createClassLoader(BuildSettings buildSettings) {
         final classLoader = super.createClassLoader(buildSettings)
         final urls = classLoader.URLs.toList()

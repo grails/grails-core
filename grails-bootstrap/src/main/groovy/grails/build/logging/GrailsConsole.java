@@ -105,7 +105,7 @@ public class GrailsConsole {
     Terminal terminal;
 
     PrintStream out;
-    OutputStream err;
+    PrintStream err;
 
     History history;
 
@@ -136,7 +136,7 @@ public class GrailsConsole {
         originalSystemOut = System.out;
         originalSystemErr = System.err;
         out = new PrintStream(ansiWrap(originalSystemOut));
-        err = ansiWrap(originalSystemErr);
+        err = new PrintStream(ansiWrap(originalSystemErr));
 
         System.setOut(new GrailsConsolePrintStream(out));
         System.setErr(new GrailsConsoleErrorPrintStream(err));
@@ -161,7 +161,18 @@ public class GrailsConsole {
         // bit of a WTF this, but see no other way to allow a customization indicator
         maxIndicatorString = new StringBuilder(indicator).append(indicator).append(indicator).append(indicator).append(indicator);
 
-        out.println();
+    }
+
+    public PrintStream getErr() {
+        return err;
+    }
+
+    public void setErr(PrintStream err) {
+        this.err = err;
+    }
+
+    public void setOut(PrintStream out) {
+        this.out = out;
     }
 
     private boolean isInteractiveEnabled() {

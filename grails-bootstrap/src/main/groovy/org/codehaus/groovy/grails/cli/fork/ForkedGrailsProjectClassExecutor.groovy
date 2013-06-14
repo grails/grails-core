@@ -52,12 +52,13 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
 
     protected final void run() {
 
-        if (!isReserveProcess()) {
-            Object projectClassInstance = initializeProjectInstance()
-
-            runInstance(projectClassInstance)
+        if (isDaemonProcess()) {
+            startDaemon { cmd ->
+                def projectClassInstance = initializeProjectInstance()
+                runInstance(projectClassInstance)
+            }
         }
-        else {
+        else if (isReserveProcess()) {
             // don't wait if the resume directory already exists, another process exists
             if (!resumeDir.exists()) {
                 this.executionContext = readExecutionContext()
@@ -65,6 +66,11 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
                 waitForResume()
                 runInstance(projectClassInstance)
             }
+
+        }
+        else {
+            Object projectClassInstance = initializeProjectInstance()
+            runInstance(projectClassInstance)
         }
     }
 

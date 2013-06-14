@@ -16,6 +16,7 @@
 package grails.util
 
 import grails.build.logging.GrailsConsole
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 
 import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import groovy.transform.CompileStatic
@@ -1470,7 +1471,8 @@ class BuildSettings extends AbstractBuildSettings {
     private getForkConfig() {
         def result = config.grails.project.fork
         String syspropDebugArgs = System.getProperty("grails.project.fork.run.debugArgs")
-        if (syspropDebugArgs) {
+        boolean debugFork = Boolean.getBoolean(ForkedGrailsProcess.DEBUG_FORK)
+        if (syspropDebugArgs || debugFork) {
             if (result.run instanceof Boolean)
                 result.run = [:]
             result.run.debug = true
@@ -1478,7 +1480,7 @@ class BuildSettings extends AbstractBuildSettings {
                 result.run.debugArgs = syspropDebugArgs
         }
         syspropDebugArgs = System.getProperty("grails.project.fork.test.debugArgs")
-        if (syspropDebugArgs) {
+        if (syspropDebugArgs || debugFork) {
             if (result.run instanceof Boolean)
                 result.test = [:]
             result.test.debug = true

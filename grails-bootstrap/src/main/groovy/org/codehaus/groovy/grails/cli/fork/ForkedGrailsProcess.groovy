@@ -22,6 +22,8 @@ import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream
+import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream
 
 import java.lang.reflect.Method
 
@@ -38,6 +40,8 @@ import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport
  */
 abstract class ForkedGrailsProcess {
 
+    public static final String DEBUG_FORK = "grails.debug.fork"
+
     int maxMemory = 1024
     int minMemory = 64
     int maxPerm = 256
@@ -45,6 +49,8 @@ abstract class ForkedGrailsProcess {
     String debugArgs = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
     boolean reloading = true
     boolean forkReserve
+    boolean daemon
+    int daemonPort = 8091
     File reloadingAgent
     List<String> jvmArgs
     ClassLoader forkedClassLoader
@@ -70,11 +76,107 @@ abstract class ForkedGrailsProcess {
         }
     }
 
+
+    @CompileStatic
+    void startDaemon(Closure callable) {
+
+        if (!isDaemonRunning()) {
+            def serverSocket = new ServerSocket(daemonPort)
+            try {
+
+                Thread.start {
+                    killAfterTimeout()
+                }
+                final currentOut = System.out
+                final currentErr = System.err
+                final grailsConsole = GrailsConsole.instance
+                final consoleOut = grailsConsole.out
+                final consoleErr = grailsConsole.err
+
+
+                while(true) {
+                    final clientSocket = serverSocket.accept()
+                    try {
+                        try {
+                            clientSocket.withStreams { InputStream sockIn, OutputStream sockOut ->
+                                final outStream = new GrailsConsolePrintStream(sockOut)
+                                final errStream = new GrailsConsoleErrorPrintStream(sockOut)
+                                System.out = outStream
+                                System.err = errStream
+                                grailsConsole.out = new PrintStream(sockOut)
+                                grailsConsole.err = new PrintStream(sockOut)
+
+
+                                final contextFile = readLine(sockIn)
+                                if (contextFile) {
+                                    if ("exit" == contextFile) {
+                                        System.exit(0)
+                                    }
+                                    else {
+                                        this.executionContext = readExecutionContext(contextFile)
+                                        callable.call(clientSocket)
+                                    }
+                                }
+                            }
+                        } catch (Throwable e) {
+                            GrailsConsole.instance.error("Error executing daemon: ${e.message}")
+                        }
+                    }
+                    finally {
+                        clientSocket.close()
+                        System.out = currentOut
+                        System.err = currentErr
+                        grailsConsole.out = consoleOut
+                        grailsConsole.err = consoleErr
+
+                    }
+                }
+            } catch (SocketException se) {
+                // ignore
+            }
+        }
+
+    }
+
+    boolean isDaemonRunning() {
+        try {
+            def clientSocket = new Socket("localhost", daemonPort)
+            clientSocket.withStreams { InputStream sockIn, OutputStream sockOut ->
+                sockOut << '\n'
+                sockOut.flush()
+            }
+            return true
+        } catch (SocketException e) {
+            return false
+        }
+
+    }
+
+    @CompileStatic
+    static String readLine(InputStream inputStream) {
+        def out = new ByteArrayOutputStream()
+        int ch
+        while ((ch = inputStream.read()) != -1) {
+            if (ch == '\n') {
+                break
+            }
+            out.write(ch)
+        }
+        return out.toString().trim()
+    }
+
     /**
      * @return Whether this process is a reserve process. A reserve process is an additional JVM, bootstrapped and idle that can resume execution at a later date
      */
     protected boolean isReserveProcess() {
         System.getProperty("grails.fork.reserve")!=null
+    }
+
+    /**
+     * @return Whether this process is a reserve process. A reserve process is an additional JVM, bootstrapped and idle that can resume execution at a later date
+     */
+    protected boolean isDaemonProcess() {
+        System.getProperty("grails.fork.daemon")!=null
     }
 
     @CompileStatic
@@ -153,26 +255,76 @@ abstract class ForkedGrailsProcess {
             forkReserve(executionContext)
         }
         else {
-            String classpathString = getBoostrapClasspath(executionContext)
-            List<String> cmd = buildProcessCommand(executionContext, classpathString)
 
-            def processBuilder = new ProcessBuilder()
-            processBuilder
-                .directory(executionContext.getBaseDir())
-                .redirectErrorStream(false)
-                .command(cmd)
+            boolean connectedToDaemon = false
+            if (shouldRunWithDaemon()) {
+                try {
+                    final contextFile = storeExecutionContext(executionContext)
+                    final daemonCmd = contextFile.absolutePath
+                    runDaemonCommand(daemonCmd)
+                    connectedToDaemon = true
+                } catch (SocketException e) {
+                    connectedToDaemon = false
+                }
 
-            def process = processBuilder.start()
+            }
+            if (!connectedToDaemon) {
+                if (daemon && !connectedToDaemon) {
+                    GrailsConsole.instance.updateStatus("Running without daemon...")
+                }
+                String classpathString = getBoostrapClasspath(executionContext)
+                List<String> cmd = buildProcessCommand(executionContext, classpathString)
 
-            if (isForkingReserveEnabled()) {
-                List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
-                forkReserveProcess(reserveCmd, executionContext)
+                def processBuilder = new ProcessBuilder()
+                processBuilder
+                    .directory(executionContext.getBaseDir())
+                    .redirectErrorStream(false)
+                    .command(cmd)
+
+                def process = processBuilder.start()
+
+                if (isForkingReserveEnabled()) {
+                    List<String> reserveCmd = buildProcessCommand(executionContext, classpathString, true)
+                    forkReserveProcess(reserveCmd, executionContext)
+                }
+                else if(shouldRunWithDaemon()) {
+                    GrailsConsole.instance.updateStatus("Starting daemon...")
+                    forkDaemon(executionContext)
+                }
+
+                return attachOutputListener(process)
+            }
+            else {
+                return null
             }
 
-            return attachOutputListener(process)
         }
     }
 
+    @CompileStatic
+    protected void runDaemonCommand(String daemonCmd) {
+        def clientSocket = new Socket("localhost", daemonPort)
+        GrailsConsole.instance.updateStatus("Running with daemon...")
+        clientSocket.withStreams { InputStream sockIn, OutputStream sockOut ->
+
+            sockOut << daemonCmd << '\n'
+            sockOut.flush()
+
+            new TextDumper(sockIn).run()
+        }
+    }
+
+    @CompileStatic
+    protected boolean shouldRunWithDaemon() {
+        daemon && !isDebugForkEnabled()
+    }
+
+    @CompileStatic
+    protected boolean isDebugForkEnabled() {
+        debug || Boolean.getBoolean(DEBUG_FORK)
+    }
+
+    @CompileStatic
     void forkReserve(ExecutionContext executionContext = getExecutionContext()) {
         String classpathString = getBoostrapClasspath(executionContext)
         List<String> cmd = buildProcessCommand(executionContext, classpathString, true)
@@ -180,12 +332,36 @@ abstract class ForkedGrailsProcess {
         forkReserveProcess(cmd, executionContext)
     }
 
-    protected boolean isForkingReserveEnabled() {
-        forkReserve && InteractiveMode.isActive() && !debug
+    @CompileStatic
+    void forkDaemon(ExecutionContext executionContext = getExecutionContext()) {
+        String classpathString = getBoostrapClasspath(executionContext)
+        List<String> cmd = buildProcessCommand(executionContext, classpathString, false, true)
+
+        forkReserveProcess(cmd, executionContext)
     }
 
     @CompileStatic
-    protected void forkReserveProcess(List<String> cmd, ExecutionContext executionContext) {
+    void restartDaemon(ExecutionContext executionContext = getExecutionContext()) {
+        final console = GrailsConsole.instance
+        console.updateStatus("Stopping daemon...")
+        while(isDaemonRunning()) {
+            runDaemonCommand("exit")
+        }
+        console.updateStatus("Starting daemon...")
+        forkDaemon(executionContext)
+        while(!isDaemonRunning()) {
+            console.indicateProgress()
+        }
+        console.updateStatus("Daemon Started")
+    }
+
+    @CompileStatic
+    boolean isForkingReserveEnabled() {
+        return forkReserve && InteractiveMode.isActive() && !debug && !daemon
+    }
+
+    @CompileStatic
+    protected void forkReserveProcess(List<String> cmd, ExecutionContext executionContext, boolean attachListener =true) {
         final builder = new ProcessBuilder()
             .directory(executionContext.getBaseDir())
             .redirectErrorStream(false)
@@ -196,7 +372,9 @@ abstract class ForkedGrailsProcess {
             sleep 2000
             final p2 = builder.start()
 
-            attachOutputListener(p2)
+            if (attachListener) {
+                attachOutputListener(p2)
+            }
         }
     }
 
@@ -250,7 +428,7 @@ abstract class ForkedGrailsProcess {
     }
 
     @CompileStatic
-    protected List<String> buildProcessCommand(ExecutionContext executionContext, String classpathString, boolean isReserve = false) {
+    protected List<String> buildProcessCommand(ExecutionContext executionContext, String classpathString, boolean isReserve = false, boolean isDaemon = false) {
         File tempFile = storeExecutionContext(executionContext)
         final javaHomeEnv = System.getenv("JAVA_HOME")
 
@@ -272,12 +450,15 @@ abstract class ForkedGrailsProcess {
             "-XX:MaxPermSize=${maxPerm}m".toString(), "-Dgrails.fork.active=true",
             "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString])
 
-        if (debug && !isReserve) {
+        if (isDebugForkEnabled() && !isReserve) {
             cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", debugArgs])
         }
         final console = GrailsConsole.getInstance()
         if (isReserve) {
             cmd.add "-Dgrails.fork.reserve=true"
+        }
+        else if (isDaemon) {
+            cmd.add "-Dgrails.fork.daemon=true"
         }
         if (console.isVerbose()) {
             cmd.add("-Dgrails.verbose=true")
@@ -303,6 +484,7 @@ abstract class ForkedGrailsProcess {
         File tempFile = File.createTempFile(baseName, "grails-execution-context")
 
         tempFile.deleteOnExit()
+        tempFile.delete()
 
         tempFile.withOutputStream { OutputStream fos ->
             new ObjectOutputStream(fos).writeObject(executionContext)
@@ -314,12 +496,17 @@ abstract class ForkedGrailsProcess {
     ExecutionContext readExecutionContext() {
         String location = System.getProperty("grails.build.execution.context")
 
+        return readExecutionContext(location)
+    }
+
+    @CompileStatic
+    protected ExecutionContext readExecutionContext(String location) {
         if (location != null) {
             final file = new File(location)
             if (file.exists()) {
-                return (ExecutionContext)file.withInputStream { InputStream fis ->
+                return (ExecutionContext) file.withInputStream { InputStream fis ->
                     def ois = new ObjectInputStream(fis)
-                    ExecutionContext executionContext = (ExecutionContext)ois.readObject()
+                    ExecutionContext executionContext = (ExecutionContext) ois.readObject()
                     executionContext.process = this
                     return executionContext
                 }
@@ -470,9 +657,17 @@ abstract class ForkedGrailsProcess {
         buildSettings.setTestDependencies(ec.testDependencies)
         buildSettings.setProvidedDependencies(ec.providedDependencies)
         buildSettings.setBuildDependencies([])
+        buildSettings.setForkSettings(ec.forkConfig)
 
         BuildSettingsHolder.settings = buildSettings
+        configureFork(buildSettings)
         buildSettings
+    }
+
+    protected void configureFork(BuildSettings buildSettings) {
+        final runConfig = buildSettings.forkSettings.run
+        if (runConfig instanceof Map)
+            configure(runConfig)
     }
 
     protected void initializeLogging(File grailsHome, ClassLoader classLoader) {
@@ -527,6 +722,7 @@ class ExecutionContext implements Serializable {
     String env
     File grailsHome
     Map<String, String> systemProps = [:]
+    Map<String, Object> forkConfig = [:]
     Map argsMap = new LinkedHashMap()
 
     transient ForkedGrailsProcess process
@@ -565,6 +761,7 @@ class ExecutionContext implements Serializable {
         projectWorkDir = settings.projectWorkDir
         projectPluginsDir = settings.projectPluginsDir
         testClassesDir = settings.testClassesDir
+        forkConfig = (Map<String,Object>)settings.getForkSettings()
     }
 
     @CompileStatic

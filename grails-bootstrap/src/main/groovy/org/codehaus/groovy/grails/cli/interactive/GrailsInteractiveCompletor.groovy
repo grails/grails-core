@@ -86,6 +86,11 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
         scriptNames.remove('install-plugin')
         scriptNames.remove('uninstall-plugin')
         scriptNames << "open"
+        scriptNames << "exit"
+        scriptNames << "restart-daemon"
+        scriptNames << "start-daemon"
+        scriptNames << "quit"
+        scriptNames << "stop-app"
         scriptNames as String[]
     }
 }

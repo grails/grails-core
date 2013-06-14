@@ -44,6 +44,7 @@ import java.util.regex.Pattern;
 import org.apache.tools.ant.Project;
 import org.codehaus.gant.GantBinding;
 import org.codehaus.gant.GantMetaClass;
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess;
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode;
 import org.codehaus.groovy.grails.cli.parsing.CommandLine;
 import org.codehaus.groovy.grails.cli.parsing.CommandLineParser;
@@ -156,10 +157,7 @@ public class GrailsScriptRunner {
             build.setModified(commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT));
             build.setOffline(commandLine.hasOption(CommandLine.OFFLINE_ARGUMENT));
             if(commandLine.hasOption(CommandLine.DEBUG_FORK)) {
-                if(System.getProperty("grails.project.fork.run.debugArgs") == null)
-                    System.setProperty("grails.project.fork.run.debugArgs", "true");
-                if(System.getProperty("grails.project.fork.test.debugArgs") == null)
-                    System.setProperty("grails.project.fork.test.debugArgs", "true");
+                System.setProperty(ForkedGrailsProcess.DEBUG_FORK, "true");
             }
             if (build.getRootLoader() == null) {
                 build.setRootLoader((URLClassLoader) GrailsScriptRunner.class.getClassLoader());
