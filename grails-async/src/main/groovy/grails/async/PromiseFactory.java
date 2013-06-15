@@ -16,11 +16,12 @@
 package grails.async;
 
 import groovy.lang.Closure;
-import org.grails.async.decorator.PromiseDecorator;
-import org.grails.async.decorator.PromiseDecoratorLookupStrategy;
 
 import java.util.List;
 import java.util.Map;
+
+import org.grails.async.decorator.PromiseDecorator;
+import org.grails.async.decorator.PromiseDecoratorLookupStrategy;
 
 /**
  * An interface capable of creating {@link Promise} instances. The {@link Promises} static methods use this
@@ -44,7 +45,7 @@ public interface PromiseFactory {
      * @param decorators The decorators
      * @return The decorated closure
      */
-    public Closure applyDecorators(Closure c, List<PromiseDecorator> decorators);
+    <T> Closure<T> applyDecorators(Closure<T> c, List<PromiseDecorator> decorators);
     /**
      * Creates a promise with a value pre-bound to it
      * @param value The value
@@ -58,7 +59,7 @@ public interface PromiseFactory {
      * @param map The map
      * @return A promise
      */
-     <K,V> Promise<Map<K,V>> createPromise(Map<K, Object> map);
+     <K,V> Promise<Map<K,V>> createPromise(Map<K, V> map);
 
     /**
      * Creates a promise from one or more other promises
@@ -121,12 +122,12 @@ public interface PromiseFactory {
      * @param promises The promises
      * @param callable The callback to execute
      */
-    <T> Promise<List<T>> onComplete(List<Promise<T>> promises, @SuppressWarnings("rawtypes") Closure callable);
+    <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure<?> callable);
     /**
      * Executes the given callback if an error occurs for the list of promises
      *
      * @param promises The promises The promises
      * @param callable The error callback to execute
      */
-    <T> Promise<List<T>> onError(List<Promise<T>> promises, @SuppressWarnings("rawtypes") Closure callable);
+    <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure<?> callable);
 }

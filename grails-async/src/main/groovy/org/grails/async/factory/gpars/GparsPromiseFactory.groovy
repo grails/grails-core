@@ -73,26 +73,29 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
         }
         return promiseList
     }
+    
+    private static Closure<List<?>> originalValuesClosure = { List<?> values -> values }
 
     @Override
     def <T> List<T> waitAll(List<Promise<T>> promises) {
-        final gparsPromises = promises.collect { (GparsPromise) it }
-        final List<groovyx.gpars.dataflow.Promise<T>> dataflowPromises = gparsPromises.collect() { GparsPromise it -> it.internalPromise }
-        final groovyx.gpars.dataflow.Promise<List<T>> promise = Dataflow.whenAllBound(dataflowPromises, { List<T> values -> values })
+        final groovyx.gpars.dataflow.Promise<List<T>> promise = (groovyx.gpars.dataflow.Promise<List<T>>)Dataflow.whenAllBound(toGparsPromises(promises), originalValuesClosure)
         return promise.get()
     }
 
-    def <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure callable) {
-        final gparsPromises = promises.collect { (GparsPromise) it }
+    def <T> List<groovyx.gpars.dataflow.Promise<T>> toGparsPromises(List<Promise<T>> promises) {
+        final List<groovyx.gpars.dataflow.Promise<T>> dataflowPromises = promises.collect() { it -> (groovyx.gpars.dataflow.Promise<T>)((GparsPromise<T>)it).internalPromise }
+        dataflowPromises
+    }
+
+    def <T> Promise<List<T>> onComplete(List<Promise<T>> promises, Closure<?> callable) {
         new GparsPromise<List<T>>(
-            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, callable)
+            Dataflow.whenAllBound(toGparsPromises(promises), callable)
         )
     }
 
-    def <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure callable) {
-        final gparsPromises = promises.collect { (GparsPromise) it }
+    def <T> Promise<List<T>> onError(List<Promise<T>> promises, Closure<?> callable) {
         new GparsPromise<List<T>>(
-            Dataflow.whenAllBound( (List<groovyx.gpars.dataflow.Promise>)gparsPromises.collect { GparsPromise it -> it.internalPromise }, {List l ->}, callable)
+            Dataflow.whenAllBound(toGparsPromises(promises), {List l ->}, callable)
         )
     }
 }

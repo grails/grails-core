@@ -61,7 +61,7 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Closure applyDecorators(Closure c, List<PromiseDecorator> decorators) {
+    public <T> Closure<T> applyDecorators(Closure<T> c, List<PromiseDecorator> decorators) {
         List<PromiseDecorator> allDecorators = decorators != null ? new ArrayList<PromiseDecorator>(decorators): new ArrayList<PromiseDecorator>();
         for (PromiseDecoratorLookupStrategy lookupStrategy : lookupStrategies) {
             allDecorators.addAll(lookupStrategy.findDecorators());
@@ -115,9 +115,9 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
      * @see PromiseFactory#createPromise(java.util.Map)
      */
     @SuppressWarnings("unchecked")
-    public <K, V> Promise<Map<K, V>> createPromise(Map<K, Object> map) {
+    public <K, V> Promise<Map<K, V>> createPromise(Map<K, V> map) {
         PromiseMap<K,V> promiseMap = new PromiseMap<K,V>();
-        for (Map.Entry<K, Object> entry : map.entrySet()) {
+        for (Map.Entry<K, V> entry : map.entrySet()) {
             K key = entry.getKey();
             Object value = entry.getValue();
             if (value instanceof Promise) {
