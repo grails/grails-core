@@ -19,20 +19,41 @@ import grails.async.Promise;
 import grails.async.Promises;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObjectSupport;
+
+import java.beans.Introspector;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.codehaus.groovy.GroovyBugError;
-import org.codehaus.groovy.ast.*;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.GenericsType;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.VariableScope;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.tools.GenericsUtils;
 import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-
-import java.beans.Introspector;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
+import org.codehaus.groovy.transform.stc.StaticTypeCheckingSupport;
 
 /**
  * Implementation of {@link grails.async.DelegateAsync} transformation
@@ -78,6 +99,9 @@ public class DelegateAsyncTransformation implements ASTTransformation {
             applyDelegateAsyncTransform(classNode, targetApi, fieldNode.getName());
         }
     }
+    
+    
+    
 
     private void applyDelegateAsyncTransform(ClassNode classNode, ClassNode targetApi, String fieldName) {
 
@@ -92,8 +116,14 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                 MethodNode existingMethod = classNode.getMethod(m.getName(), m.getParameters());
                 if (existingMethod == null) {
                     ClassNode promiseNode = ClassHelper.make(Promise.class).getPlainNodeReference();
-                    ClassNode returnType = m.getReturnType().getPlainNodeReference();
-                    if(!returnType.getNameWithoutPackage().equals(VOID)) {
+                    ClassNode originalReturnType = m.getReturnType();
+                    if(!originalReturnType.getNameWithoutPackage().equals(VOID)) {
+                        ClassNode returnType;
+                        if(ClassHelper.isPrimitiveType(originalReturnType.redirect())) {
+                            returnType = ClassHelper.getWrapper(originalReturnType.redirect());
+                        } else {
+                            returnType = alignReturnType(classNode, originalReturnType);
+                        }
                         promiseNode.setGenericsTypes( new GenericsType[]{ new GenericsType(returnType) });
                     }
                     final BlockStatement methodBody = new BlockStatement();
@@ -121,7 +151,8 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                     methodBody.addStatement(new ExpressionStatement(createPromiseWithDecorators));
 
                     final ArgumentListExpression arguments = new ArgumentListExpression();
-                    Parameter[] parameters = copyParameters(m.getParameters());
+                    
+                    Parameter[] parameters = copyParameters(StaticTypeCheckingSupport.parameterizeArguments(classNode, m));
                     for(Parameter p : parameters) {
                         p.setClosureSharedVariable(true);
                         variableScope.putReferencedLocalVariable(p);
@@ -136,6 +167,32 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                 }
             }
         }
+    }
+    
+    private static ClassNode alignReturnType(final ClassNode receiver, final ClassNode originalReturnType) {
+        ClassNode copiedReturnType = originalReturnType.getPlainNodeReference();
+        
+        ClassNode actualReceiver = receiver;
+        List<GenericsType> redirectTypes = new ArrayList<GenericsType>();
+        if (actualReceiver.redirect().getGenericsTypes()!=null) {
+            Collections.addAll(redirectTypes,actualReceiver.redirect().getGenericsTypes());
+        }
+        if (!redirectTypes.isEmpty()) {
+            GenericsType[] redirectReceiverTypes = redirectTypes.toArray(new GenericsType[redirectTypes.size()]);
+            
+            GenericsType[] receiverParameterizedTypes = actualReceiver.getGenericsTypes();
+            if (receiverParameterizedTypes==null) {
+                receiverParameterizedTypes = redirectReceiverTypes;
+            }
+            
+            if (originalReturnType.isUsingGenerics()) {
+                GenericsType[] alignmentTypes = originalReturnType.getGenericsTypes();
+                GenericsType[] genericsTypes = GenericsUtils.alignGenericTypes(redirectReceiverTypes, receiverParameterizedTypes, alignmentTypes);
+                copiedReturnType.setGenericsTypes(genericsTypes);
+            }
+        }
+        
+        return copiedReturnType;
     }
 
     protected DelegateAsyncTransactionalMethodTransformer lookupAsyncTransactionalMethodTransformer() {
@@ -161,13 +218,17 @@ public class DelegateAsyncTransformation implements ASTTransformation {
         Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Parameter parameterType = parameterTypes[i];
-            Parameter newParameter = new Parameter(parameterType.getType().getPlainNodeReference(), parameterType.getName(), parameterType.getInitialExpression());
+            ClassNode parameterTypeCN = parameterType.getType();
+            ClassNode newParameterTypeCN = parameterTypeCN.getPlainNodeReference();
+            if(parameterTypeCN.isUsingGenerics()) {
+                newParameterTypeCN.setGenericsTypes(parameterTypeCN.getGenericsTypes());
+            }
+            Parameter newParameter = new Parameter(newParameterTypeCN, parameterType.getName(), parameterType.getInitialExpression());
             newParameter.addAnnotations(parameterType.getAnnotations());
             newParameterTypes[i] = newParameter;
         }
         return newParameterTypes;
     }
-
 
     private class NoopDelegateAsyncTransactionalMethodTransformer implements DelegateAsyncTransactionalMethodTransformer {
         public void transformTransactionalMethod(ClassNode classNode,ClassNode delegateClassNode, MethodNode methodNode, ListExpression promiseDecoratorLookupArguments) {
