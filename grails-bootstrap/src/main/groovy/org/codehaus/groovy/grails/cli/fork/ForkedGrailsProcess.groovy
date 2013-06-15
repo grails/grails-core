@@ -775,12 +775,12 @@ class ExecutionContext implements Serializable {
         testClassesDir = settings.testClassesDir
         final currentForkConfig = (Map<String, Object>) settings.getForkSettings()
         currentForkConfig.each { key, value ->
-            def forkConf = [:]
+            def forkConf
             if(value instanceof Boolean) {
                 forkConf = value
             }
             else if (value instanceof Map) {
-                forkConf.putAll(value)
+                forkConf = [:] + (Map)value
             }
             forkConfig[key] = forkConf
         }
