@@ -39,19 +39,29 @@ target(refreshDependencies:"Refreshes application dependencies, installing any n
             def xml = new MarkupBuilder(writer)
             xml.dependencies {
                 xml.build {
-                   handleArtifactReport(grailsSettings.buildResolveReport.resolvedArtifacts, xml)
+                   if(grailsSettings.buildResolveReport) {
+                       handleArtifactReport(grailsSettings.buildResolveReport.resolvedArtifacts, xml)
+                   }
                 }
                 xml.compile {
-                   handleArtifactReport(grailsSettings.compileResolveReport.resolvedArtifacts, xml)
+                   if(grailsSettings.compileResolveReport) {
+                       handleArtifactReport(grailsSettings.compileResolveReport.resolvedArtifacts, xml)
+                   }
                 }
                 xml.test {
-                   handleArtifactReport(grailsSettings.testResolveReport.resolvedArtifacts, xml)
+                   if(grailsSettings.testResolveReport) {
+                       handleArtifactReport(grailsSettings.testResolveReport.resolvedArtifacts, xml)
+                   }
                 }
                 xml.runtime {
-                   handleArtifactReport(grailsSettings.runtimeResolveReport.resolvedArtifacts, xml)
+                   if(grailsSettings.runtimeResolveReport) {
+                       handleArtifactReport(grailsSettings.runtimeResolveReport.resolvedArtifacts, xml) 
+                   }                   
                 }
                 xml.provided {
-                   handleArtifactReport(grailsSettings.providedResolveReport.resolvedArtifacts, xml)
+                    if(grailsSettings.providedResolveReport) {
+                       handleArtifactReport(grailsSettings.providedResolveReport.resolvedArtifacts, xml)
+                    }
                 }
             }
         }

@@ -32,15 +32,7 @@ import java.util.*;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotationNode;
-import org.codehaus.groovy.ast.ClassHelper;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -871,6 +863,15 @@ public class GrailsASTUtils {
             if(constructor.getParameters().length == 0 ) return true;
         }
         return false;
+    }
+    /**
+     * Whether the given class node is an inner class
+     *
+     * @param classNode The class node
+     * @return True if it is
+     */
+    public static boolean isInnerClassNode(ClassNode classNode) {
+        return (classNode instanceof InnerClassNode) || classNode.getName().contains("$");
     }
 
     @Target(ElementType.CONSTRUCTOR)

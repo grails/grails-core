@@ -311,15 +311,18 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
                     // We've run out of options. The given "mappedBy"
                     // setting is invalid.
-                    if (pd == null) {
+                    boolean isNone = "none".equals(mappingProperty);
+                    if (pd == null && !isNone) {
                         throw new GrailsDomainException("Non-existent mapping property ["+mappingProperty+"] specified for property ["+property.getName()+"] in class ["+getClazz()+"]");
                     }
-
-                    // Tie the properties together.
-                    relatedClassPropertyType = pd.getPropertyType();
-                    property.setReferencePropertyName(pd.getName());
+                    else if (pd != null) {
+                        // Tie the properties together.
+                        relatedClassPropertyType = pd.getPropertyType();
+                        property.setReferencePropertyName(pd.getName());
+                    }
                 }
                 else {
+                    if(mappedBy.containsKey(property.getName()) && mappedBy.get(property.getName()) == null) return;
                     // if the related type has a relationships map it may be a many-to-many
                     // figure out if there is a many-to-many relationship defined
                     if (isRelationshipManyToMany(property, relatedClassType, relatedClassRelationships)) {
@@ -509,9 +512,12 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
         Class<?> relatedClassPropertyType = null;
 
+        if(mappedBy.containsKey(property.getName()) && mappedBy.get(property.getName()) == null) return;
+
         // if there is a relationships map use that to find out
         // whether it is mapped to a Set
         if (relatedClassRelationships != null && !relatedClassRelationships.isEmpty()) {
+
 
             String relatedClassPropertyName = findOneToManyThatMatchesType(property, relatedClassRelationships);
             PropertyDescriptor[] descriptors = GrailsClassUtils.getPropertiesOfType(getClazz(), property.getType());

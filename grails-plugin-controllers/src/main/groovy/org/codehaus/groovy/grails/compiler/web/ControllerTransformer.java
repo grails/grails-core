@@ -25,6 +25,7 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
@@ -74,6 +75,11 @@ public class ControllerTransformer extends AbstractGrailsArtefactTransformer{
     @Override
     protected AnnotationNode getMarkerAnnotation() {
         return new AnnotationNode(new ClassNode(ControllerMethod.class).getPlainNodeReference());
+    }
+
+    @Override
+    protected String getArtefactType() {
+        return ControllerArtefactHandler.TYPE;
     }
 
     @Override

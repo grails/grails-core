@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.web;
 
+import grails.artefact.Artefact;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
 import grails.validation.ASTValidateableHelper;
@@ -65,6 +66,7 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
@@ -128,7 +130,7 @@ class TestController{
 */
 
 @AstTransformer
-public class ControllerActionTransformer implements GrailsArtefactClassInjector {
+public class ControllerActionTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector {
 
     private static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
     public static final AnnotationNode ACTION_ANNOTATION_NODE = new AnnotationNode(
@@ -171,18 +173,27 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        // don't inject if already an @Artefact annotation is applied
+        if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
+
+        performInjectionOnAnnotatedClass(source, context, classNode);
+
+    }
+
+    @Override
+    public void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         final String className = classNode.getName();
         if (className.endsWith(ControllerArtefactHandler.TYPE)) {
             annotateCandidateActionMethods(classNode, source, context);
             processClosures(classNode, source, context);
         }
+
     }
 
     @Override
     public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
         performInjection(source, classNode);
     }
-
 
     private void annotateCandidateActionMethods(ClassNode classNode, SourceUnit source,
             GeneratorContext context) {
@@ -514,7 +525,16 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector 
                     "to this command object but the instance will not be validateable.";
             GrailsASTUtils.warning(source, actionNode, warningMessage);
         }
-        new DefaultASTDatabindingHelper().injectDatabindingCode(source, context, commandObjectNode);
+        if(GrailsASTUtils.isInnerClassNode(commandObjectNode)) {
+            final String warningMessage = "The [" + actionName + "] action accepts a parameter of type [" +
+                commandObjectNode.getName() +
+                "] which is an inner class. Command object classes should not be inner classes.";
+            GrailsASTUtils.warning(source, actionNode, warningMessage);
+
+        }
+        else {
+            new DefaultASTDatabindingHelper().injectDatabindingCode(source, context, commandObjectNode);
+        }
     }
 
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
@@ -803,4 +823,5 @@ if(request.contentType == 'application/json' || request.contentType == 'text/jso
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
+
 }

@@ -54,8 +54,12 @@ class CoreGrailsPlugin {
         xmlns context:"http://www.springframework.org/schema/context"
         xmlns grailsContext:"http://grails.org/schema/context"
 
+
         addBeanFactoryPostProcessor(new MapBasedSmartPropertyOverrideConfigurer(application))
-        addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer(application))
+        final springEnvironment = getUnrefreshedApplicationContext().getEnvironment()
+        final placeholderConfigurer = new GrailsPlaceholderConfigurer(application)
+        placeholderConfigurer.environment = springEnvironment
+        addBeanFactoryPostProcessor(placeholderConfigurer)
 
         // replace AutoProxy advisor with Groovy aware one
         def grailsConfig = application.config.grails

@@ -22,10 +22,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -35,6 +32,7 @@ import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
@@ -47,7 +45,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi;
  * @since 2.0
  */
 @AstTransformer
-public class MimeTypesTransformer implements GrailsArtefactClassInjector {
+public class MimeTypesTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector {
 
     public static Pattern CONTROLLER_PATTERN = Pattern.compile(".+/" +
               GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
@@ -57,9 +55,10 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector {
     public static final String WITH_FORMAT_METHOD = "withFormat";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        // don't inject if already an @Artefact annotation is applied
         if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
 
-        performInjectionOnAnnotatedClass(source, classNode);
+        performInjectionOnAnnotatedClass(source, context,classNode);
     }
 
     public void performInjection(SourceUnit source, ClassNode classNode) {
@@ -68,6 +67,20 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector {
 
     @Override
     public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
+        performInjectionOnAnnotatedClass(source, null,classNode);
+    }
+
+    public boolean shouldInject(URL url) {
+        return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
+    }
+
+    public String[] getArtefactTypes() {
+        return new String[]{ControllerArtefactHandler.TYPE};
+    }
+
+    public void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        if(classNode instanceof InnerClassNode) return;
+        if(classNode.isEnum()) return;
         FieldNode field = classNode.getField(FIELD_MIME_TYPES_API);
         if (field == null) {
             final ClassNode mimeTypesApiClass = new ClassNode(ControllersMimeTypesApi.class);
@@ -82,14 +95,5 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector {
             methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression(FIELD_MIME_TYPES_API),  WITH_FORMAT_METHOD, args)));
             classNode.addMethod(new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody));
         }
-
-    }
-
-    public boolean shouldInject(URL url) {
-        return url != null && CONTROLLER_PATTERN.matcher(url.getFile()).find();
-    }
-
-    public String[] getArtefactTypes() {
-        return new String[]{ControllerArtefactHandler.TYPE};
     }
 }

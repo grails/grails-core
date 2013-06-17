@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.commons.cfg
 
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.GrailsApplication
 
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
@@ -33,6 +35,7 @@ import org.springframework.beans.factory.BeanCreationException
  *
  * @author Luke Daley
  */
+@CompileStatic
 class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcessor {
 
     final GrailsApplication application
@@ -46,16 +49,22 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
         if (!beans) {
             return
         }
-
-        beans.each { beanName, beanProperties ->
+        for(beanName in beans.keySet()) {
+            def beanProperties = beans.get(beanName)
             if (!(beanProperties instanceof Map)) {
                 throw new IllegalArgumentException("Entry in bean config for bean '" + beanName + "' must be a Map")
             }
+            else {
+                final beanPropertiesMap = (Map) beanProperties
+                for(beanPropertyName in beanPropertiesMap.keySet()) {
+                    final beanPropertyValue = beanPropertiesMap.get(beanPropertyName)
+                    applyPropertyValue(factory, beanName.toString(), beanPropertyName.toString(), beanPropertyValue)
+                }
 
-            beanProperties.each { beanPropertyName, beanPropertyValue ->
-                applyPropertyValue(factory, beanName, beanPropertyName, beanPropertyValue)
             }
+
         }
+
     }
 
     protected void applyPropertyValue(ConfigurableListableBeanFactory factory, String beanName, String property, Object value) {
@@ -65,6 +74,7 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
         }
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
     protected ConfigObject getBeansConfig() {
         application.config.beans
     }
@@ -110,7 +120,7 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
 
         if (TransactionProxyFactoryBean.isAssignableFrom(beanClass)) {
             getTargetBeanDefinition(factory, beanName,
-                    beanDefinition.propertyValues.getPropertyValue("target").value)
+                    (BeanDefinition)beanDefinition.propertyValues.getPropertyValue("target").value)
         }
         else {
             throw new BeanCreationException(beanName,

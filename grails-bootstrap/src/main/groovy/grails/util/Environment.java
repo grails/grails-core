@@ -100,7 +100,7 @@ public enum Environment {
     }
 
     private void initialize() {
-        name = toString().toLowerCase(Locale.getDefault());
+        name = toString().toLowerCase(Locale.ENGLISH);
     }
 
     /**

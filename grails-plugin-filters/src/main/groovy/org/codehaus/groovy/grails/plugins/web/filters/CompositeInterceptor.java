@@ -22,6 +22,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -44,7 +45,13 @@ public class CompositeInterceptor implements HandlerInterceptor {
         if (log.isDebugEnabled()) log.debug("preHandle " + request + ", " + response + ", " + o);
 
         for (HandlerInterceptor handler : handlers) {
-            if (!handler.preHandle(request, response, o)) return false;
+            if (!handler.preHandle(request, response, o)) {
+                return false;
+            }
+            // if forward is called, bail out
+            if (request.getAttribute(ForwardMethod.CALLED) != null) {
+                return false;
+            }
         }
         return true;
     }
