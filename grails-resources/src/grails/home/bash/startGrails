@@ -182,7 +182,7 @@ fi
 if [ -z "$GRAILS_AGENT_CACHE_DIR" ]; then
     GRAILS_AGENT_CACHE_DIR=~/.grails/@grails.version@/
 fi
-SPRINGLOADED_PARAMS=profile=grails;cacheDir=$GRAILS_AGENT_CACHE_DIR
+SPRINGLOADED_PARAMS=profile=grails\;cacheDir=$GRAILS_AGENT_CACHE_DIR
 if [ ! -d "$GRAILS_AGENT_CACHE_DIR" ]; then
     mkdir -p "$GRAILS_AGENT_CACHE_DIR"
 fi
