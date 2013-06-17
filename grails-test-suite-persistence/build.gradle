@@ -55,14 +55,6 @@ task testGrailsDomainBinder(type: Test) { includes = [
         '**/GrailsDomainBinderTests.class'
     ] }
 
-task testIsolatedPersistentOne(type: Test) {
-    includes = [
-        '**/ComponentValidationTests.class',
-        '**/HibernateMappingUniqueConstraintTests.class',
-        '**/InheritedUniqueConstraintTests.class',
-        '**/BidirectionalOneToOneWithProxyTests.class'
-    ]
-}
 
 task testIsolatedPersistentOne(type: Test) {
     includes = ['**/ComponentValidationTests.class']
