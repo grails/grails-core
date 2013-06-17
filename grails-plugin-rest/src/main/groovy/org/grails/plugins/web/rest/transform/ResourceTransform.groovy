@@ -233,7 +233,8 @@ class ResourceTransform implements ASTTransformation{
             final transactionalAnn = new AnnotationNode(TransactionalTransform.MY_TYPE)
             transactionalAnn.addMember(ATTR_READY_ONLY,ConstantExpression.PRIM_TRUE)
             newControllerClassNode.addAnnotation(transactionalAnn)
-            ArtefactTypeAstTransformation.performInjectionOnArtefactType(source, newControllerClassNode, ControllerArtefactHandler.TYPE);
+            ArtefactTypeAstTransformation.doP
+            erformInjectionOnArtefactType(source, newControllerClassNode, ControllerArtefactHandler.TYPE);
             for(MethodNode mn in weavedMethods) {
                 if(!mn.getAnnotations(ControllerActionTransformer.ACTION_ANNOTATION_NODE.classNode))
                     mn.addAnnotation(ControllerActionTransformer.ACTION_ANNOTATION_NODE)

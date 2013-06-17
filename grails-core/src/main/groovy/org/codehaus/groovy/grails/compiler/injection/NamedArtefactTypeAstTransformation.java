@@ -38,7 +38,7 @@ public class NamedArtefactTypeAstTransformation extends AbstractArtefactTypeAstT
 
     public void visit(ASTNode[] nodes, SourceUnit source) {
         for (ClassNode node : source.getAST().getClasses()) {
-            ArtefactTypeAstTransformation.performInjectionOnArtefactType(source, node, artefactType);
+            performInjectionOnArtefactType(source, node, artefactType);
         }
     }
 }
