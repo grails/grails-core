@@ -2,6 +2,10 @@ dependencies {
 
     compile project(":grails-core"), project(":grails-spring")
 
+    compile project(":grails-async"), {
+        ext.notInPom = true
+    }
+
     // Datastore APIs
     compile("org.grails:grails-datastore-gorm:$datastoreVersion") {
         transitive = false
