@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.plugins.web.filters
 
+import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.web.metaclass.ForwardMethod
+
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -29,17 +32,26 @@ import org.springframework.web.servlet.ModelAndView
  * @author mike
  * @author Graeme Rocher
  */
+@CompileStatic
 class CompositeInterceptor implements HandlerInterceptor {
 
     static final Log LOG = LogFactory.getLog(CompositeInterceptor)
 
-    def handlers
+    List<HandlerInterceptor> handlers
 
     boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) {
         if (LOG.isDebugEnabled()) LOG.debug "preHandle ${request}, ${response}, ${o}"
 
         for (handler in handlers) {
-            if (!handler.preHandle(request, response, o)) return false
+            if (!handler.preHandle(request, response, o)) {
+                return false
+            }
+
+            // if forward is called, bail out
+            if (request.getAttribute(ForwardMethod.CALLED) != null) {
+                return false
+            }
+
         }
         return true
     }
@@ -47,7 +59,7 @@ class CompositeInterceptor implements HandlerInterceptor {
     void postHandle(HttpServletRequest request, HttpServletResponse response,Object o, ModelAndView modelAndView) throws Exception {
         if (LOG.isDebugEnabled()) LOG.debug "postHandle ${request}, ${response}, ${o}, ${modelAndView}"
 
-        handlers.reverseEach { handler ->
+        handlers.reverseEach { HandlerInterceptor handler ->
             handler.postHandle(request, response, o, modelAndView)
         }
     }
@@ -55,7 +67,7 @@ class CompositeInterceptor implements HandlerInterceptor {
     void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws Exception {
         if (LOG.isDebugEnabled()) LOG.debug "afterCompletion ${request}, ${response}, ${o}, ${e}"
 
-        handlers.reverseEach { handler ->
+        handlers.reverseEach { HandlerInterceptor handler ->
             handler.afterCompletion(request, response, o, e)
         }
     }
