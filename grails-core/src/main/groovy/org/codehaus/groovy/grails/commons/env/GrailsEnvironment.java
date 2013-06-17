@@ -19,7 +19,9 @@ package org.codehaus.groovy.grails.commons.env;
 import grails.util.Environment;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.SystemEnvironmentPropertySource;
 import org.springframework.web.context.support.StandardServletEnvironment;
 
 import java.util.Set;
@@ -43,6 +45,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
     protected void customizePropertySources(MutablePropertySources propertySources) {
         super.customizePropertySources(propertySources);
         getPropertySources().addFirst(new GrailsConfigPropertySource(grailsApplication));
+        getPropertySources().addFirst(new PropertiesPropertySource("systemProperties", System.getProperties()));
     }
 
     @Override
