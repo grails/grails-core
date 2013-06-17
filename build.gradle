@@ -37,7 +37,7 @@ ext {
     slf4jVersion = "1.6.2"
 
     spockVersion = '0.7-groovy-2.0'
-    springLoadedVersion = "1.1.1"
+    springLoadedVersion = "1.1.2"
     springVersion = "3.1.4.RELEASE"
     springWebflowVersion= "2.0.8.RELEASE"
     hibernateVersion = "3.6.10.Final"
