@@ -64,12 +64,9 @@ task testIsolatedPersistentOne(type: Test) {
     ]
 }
 
-<<<<<<< HEAD
 task testIsolatedPersistentOne(type: Test) {
     includes = ['**/ComponentValidationTests.class']
     includes = ['**/HibernateMappingUniqueConstraintTests.class']
 }
 
-=======
->>>>>>> 2.2.x
 test.dependsOn testGrailsDomainBinder, testIsolatedPersistentOne
