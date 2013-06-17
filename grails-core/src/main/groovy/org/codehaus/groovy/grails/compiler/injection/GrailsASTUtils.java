@@ -848,6 +848,16 @@ public class GrailsASTUtils {
         return associationMap;
     }
 
+    /**
+     * Whether the given class node is an inner class
+     *
+     * @param classNode The class node
+     * @return True if it is
+     */
+    public static boolean isInnerClassNode(ClassNode classNode) {
+        return (classNode instanceof InnerClassNode) || classNode.getName().contains("$");
+    }
+
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)
     private static @interface GrailsDelegatingConstructor {}

@@ -39,7 +39,12 @@ public abstract class AbstractArtefactTypeAstTransformation implements ASTTransf
             List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(artefactType, classInjectors);
             if (!injectors.isEmpty()) {
                 for (ClassInjector injector : injectors) {
-                    injector.performInjection(sourceUnit,cNode);
+                    if(injector instanceof AllArtefactClassInjector) {
+                        injector.performInjection(sourceUnit,cNode);
+                    }
+                    else if(injector instanceof AnnotatedClassInjector) {
+                        ((AnnotatedClassInjector)injector).performInjectionOnAnnotatedClass(sourceUnit,null, cNode);
+                    }
                 }
             }
         } catch (RuntimeException e) {

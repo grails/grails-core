@@ -51,6 +51,7 @@ public interface ClassInjector {
      */
     void performInjection(SourceUnit source, ClassNode classNode);
 
+
     /**
      * Returns whether this injector should inject
      *

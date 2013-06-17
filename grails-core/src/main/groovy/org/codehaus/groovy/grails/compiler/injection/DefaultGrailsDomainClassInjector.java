@@ -35,6 +35,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 
@@ -46,7 +47,7 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
  * @since 0.2
  */
 @AstTransformer
-public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInjector {
+public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInjector, GrailsArtefactClassInjector {
 
     private List<ClassNode> classesWithInjectedToString = new ArrayList<ClassNode>();
 
@@ -227,5 +228,10 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
+    }
+
+    @Override
+    public String[] getArtefactTypes() {
+        return new String[] {DomainClassArtefactHandler.TYPE};
     }
 }

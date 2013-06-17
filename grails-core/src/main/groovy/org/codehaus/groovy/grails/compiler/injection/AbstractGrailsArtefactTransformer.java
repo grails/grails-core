@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.artefact.Artefact;
 import grails.artefact.Enhanced;
 import grails.util.GrailsUtil;
 import groovy.lang.Mixin;
@@ -35,6 +36,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,7 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author  Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, Comparable {
+public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefactClassInjector, AnnotatedClassInjector, Comparable {
 
     private static final String INSTANCE_PREFIX = "instance";
     private static final String STATIC_PREFIX = "static";
@@ -66,11 +68,11 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected String getArtefactType() {
-         String simpleName = getClass().getSimpleName();
-        if (simpleName.length() > 11) {
-            return simpleName.substring(0, simpleName.length() - 11);
+        String name = getClass().getSimpleName();
+        if(name.endsWith("Transformer")) {
+            return name.substring(0, name.length() - 11);
         }
-        return simpleName;
+        return name;
     }
 
     /**
@@ -86,6 +88,17 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if(classNode instanceof InnerClassNode) return;
+        // don't inject if already an @Artefact annotation is applied
+        if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
+        performInjectionOnAnnotatedClass(source, context,classNode);
+    }
+
+    public void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode) {
+        if(classNode.isEnum()) return; // don't transform enums
+        if(classNode instanceof InnerClassNode) return;
+        if(classNode.getName().contains("$")) return;
+        // only transform the targeted artefact type
+        if(!DomainClassArtefactHandler.TYPE.equals(getArtefactType()) && !isValidArtefactTypeByConvention(classNode)) return;
         Class instanceImplementation = getInstanceImplementation();
 
         if (instanceImplementation != null) {
@@ -179,6 +192,15 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                 }
             }
         }
+    }
+
+    private boolean isValidArtefactTypeByConvention(ClassNode classNode) {
+        String[] artefactTypes = getArtefactTypes();
+        for (String artefactType : artefactTypes) {
+            if(artefactType.equals("*")) return true;
+            if(classNode.getName().endsWith(artefactType)) return true;
+        }
+        return false;
     }
 
     protected boolean isCandidateInstanceMethod(ClassNode classNode, MethodNode declaredMethod) {

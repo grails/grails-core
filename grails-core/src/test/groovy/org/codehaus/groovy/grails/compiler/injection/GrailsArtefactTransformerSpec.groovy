@@ -169,6 +169,11 @@ class TestTransformer extends AbstractGrailsArtefactTransformer {
     protected boolean requiresAutowiring() { false }
 
     @Override
+    protected String getArtefactType() {
+        "*"
+    }
+
+    @Override
     protected AnnotationNode getMarkerAnnotation() {
         return new AnnotationNode(new ClassNode(PersistenceMethod).getPlainNodeReference())
     }
