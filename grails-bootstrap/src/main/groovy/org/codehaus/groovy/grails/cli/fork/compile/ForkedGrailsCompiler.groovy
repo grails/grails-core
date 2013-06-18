@@ -32,8 +32,10 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor{
 
     ForkedGrailsCompiler(BuildSettings buildSettings) {
         super(buildSettings)
-        this.reloading = false
-        this.forkReserve = true
+        setReloading(false)
+        setDaemon(true)
+        setDaemonPort(DEFAULT_DAEMON_PORT + 1)
+        setForkReserve(false)
     }
 
     protected ForkedGrailsCompiler() {

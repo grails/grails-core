@@ -129,11 +129,15 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
     }
 }
 
+@CompileStatic
 class TestExecutionContext extends ExecutionContext {
     private static final long serialVersionUID = 1
 
     TestExecutionContext(ForkedGrailsProcess process) {
         super(process)
+    }
+
+    TestExecutionContext() {
     }
 
     @Override

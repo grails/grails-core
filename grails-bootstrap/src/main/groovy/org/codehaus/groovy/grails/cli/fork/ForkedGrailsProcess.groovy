@@ -41,6 +41,7 @@ import org.codehaus.groovy.grails.cli.support.PluginPathDiscoverySupport
 abstract class ForkedGrailsProcess {
 
     public static final String DEBUG_FORK = "grails.debug.fork"
+    public static final int DEFAULT_DAEMON_PORT = 8091
 
     int maxMemory = 1024
     int minMemory = 64
@@ -50,7 +51,7 @@ abstract class ForkedGrailsProcess {
     boolean reloading = true
     boolean forkReserve
     boolean daemon
-    int daemonPort = 8091
+    int daemonPort = DEFAULT_DAEMON_PORT
     File reloadingAgent
     List<String> jvmArgs
     ClassLoader forkedClassLoader
@@ -74,6 +75,8 @@ abstract class ForkedGrailsProcess {
                 // ignore
             }
         }
+
+        executionContext.daemonPort = this.daemonPort
     }
 
 
@@ -188,7 +191,7 @@ abstract class ForkedGrailsProcess {
             final grailsHome = executionContext.grailsHome
             if (grailsHome && grailsHome.exists()) {
                 def agentHome = new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars")
-                final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar")}
+                final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar") && !f.name.contains('sources') && !f.name.contains('javadoc')}
                 if (agentJar) {
                     setReloadingAgent(agentJar)
                 }
@@ -304,7 +307,6 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     protected void runDaemonCommand(String daemonCmd) {
         def clientSocket = new Socket("localhost", daemonPort)
-        GrailsConsole.instance.updateStatus("Running with daemon...")
         clientSocket.withStreams { InputStream sockIn, OutputStream sockOut ->
 
             sockOut << daemonCmd << '\n'
@@ -342,6 +344,7 @@ abstract class ForkedGrailsProcess {
             discoverAndSetAgent(executionContext)
         }
 
+        executionContext.daemonPort = daemonPort
         String classpathString = getBoostrapClasspath(executionContext)
         List<String> cmd = buildProcessCommand(executionContext, classpathString, false, true)
 
@@ -520,6 +523,7 @@ abstract class ForkedGrailsProcess {
                     def ois = new ObjectInputStream(fis)
                     ExecutionContext executionContext = (ExecutionContext) ois.readObject()
                     executionContext.process = this
+                    this.daemonPort = executionContext.daemonPort
                     return executionContext
                 }
             }
@@ -736,6 +740,7 @@ class ExecutionContext implements Serializable {
     Map<String, String> systemProps = [:]
     Map forkConfig = [:]
     Map argsMap = new LinkedHashMap()
+    int daemonPort = ForkedGrailsProcess.DEFAULT_DAEMON_PORT
 
     transient ForkedGrailsProcess process
 
@@ -745,6 +750,7 @@ class ExecutionContext implements Serializable {
 
     ExecutionContext(ForkedGrailsProcess process) {
         this.process = process
+        this.daemonPort = process.daemonPort
     }
 
     void initialize(BuildSettings settings) {
