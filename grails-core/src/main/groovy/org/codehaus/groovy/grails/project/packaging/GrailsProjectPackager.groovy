@@ -389,31 +389,35 @@ class GrailsProjectPackager extends BaseSettingsApi {
         }
 
         ExecutorService pool = Executors.newFixedThreadPool(5)
-        for (Resource r in i18nPluginDirs) {
-            pool.execute({ Resource srcDir ->
-                if (!srcDir.exists()) {
-                    return
-                }
+        try {
+            for (Resource r in i18nPluginDirs) {
+                pool.execute({ Resource srcDir ->
+                    if (!srcDir.exists()) {
+                        return
+                    }
 
-                def file = srcDir.file
-                def pluginDir = file.parentFile.parentFile
-                def info = settings.getPluginInfo(pluginDir.absolutePath)
-                if (!info) {
-                    return
-                }
+                    def file = srcDir.file
+                    def pluginDir = file.parentFile.parentFile
+                    def info = settings.getPluginInfo(pluginDir.absolutePath)
+                    if (!info) {
+                        return
+                    }
 
-                def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
-                try {
-                    def localAnt = new GrailsConsoleAntBuilder(ant.project)
-                    localAnt.project.defaultInputStream = System.in
-                    localAnt.mkdir(dir: destDir)
-                    localAnt.native2ascii(src: file, dest: destDir,
-                                          includes: "**/*.properties", encoding: "UTF-8")
-                }
-                catch (e) {
-                    grailsConsole.error "native2ascii error converting i18n bundles for plugin [$pluginDir.name] $e.message"
-                }
-            }.curry(r))
+                    def destDir = "$resourcesDirPath/plugins/${info.name}-${info.version}/grails-app/i18n"
+                    try {
+                        def localAnt = new GrailsConsoleAntBuilder(ant.project)
+                        localAnt.project.defaultInputStream = System.in
+                        localAnt.mkdir(dir: destDir)
+                        localAnt.native2ascii(src: file, dest: destDir,
+                                              includes: "**/*.properties", encoding: "UTF-8")
+                    }
+                    catch (e) {
+                        grailsConsole.error "native2ascii error converting i18n bundles for plugin [$pluginDir.name] $e.message"
+                    }
+                }.curry(r))
+            }
+        } finally {
+            pool.shutdown()
         }
     }
 
@@ -476,25 +480,29 @@ class GrailsProjectPackager extends BaseSettingsApi {
      * Packages plugins for development mode
      */
     void packagePlugins() {
-        def pluginInfos = pluginSettings.getSupportedPluginInfos()
         ExecutorService pool = Executors.newFixedThreadPool(5)
-        def futures = []
-        for (GrailsPluginInfo gpi in pluginInfos) {
-            futures << pool.submit({ GrailsPluginInfo info ->
-                try {
-                    def pluginDir = info.pluginDir
-                    if (pluginDir) {
-                        def pluginBase = pluginDir.file
-                        packageConfigFiles(pluginBase.path)
+        try {
+            def pluginInfos = pluginSettings.getSupportedPluginInfos()
+            def futures = []
+            for (GrailsPluginInfo gpi in pluginInfos) {
+                futures << pool.submit({ GrailsPluginInfo info ->
+                    try {
+                        def pluginDir = info.pluginDir
+                        if (pluginDir) {
+                            def pluginBase = pluginDir.file
+                            packageConfigFiles(pluginBase.path)
+                        }
                     }
-                }
-                catch (Exception e) {
-                    grailsConsole.error "Error packaging plugin [${info.name}] : ${e.message}"
-                }
-            }.curry(gpi) as Runnable)
-        }
+                    catch (Exception e) {
+                        grailsConsole.error "Error packaging plugin [${info.name}] : ${e.message}"
+                    }
+                }.curry(gpi) as Runnable)
+            }
 
-        futures.each {  Future it -> it.get() }
+            futures.each {  Future it -> it.get() }
+        } finally {
+            pool.shutdown()
+        }
     }
 
     @CompileStatic
