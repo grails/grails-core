@@ -192,7 +192,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     @Override
     public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
-        performInjection(source, classNode);
+        performInjectionOnAnnotatedClass(source,null, classNode);
     }
 
     private void annotateCandidateActionMethods(ClassNode classNode, SourceUnit source,
