@@ -57,8 +57,11 @@ target ('default': "Installs the Grails wrapper") {
     new File("${grailsHome}/lib/org.springsource.springloaded/springloaded-core/jars/").eachFileMatch( groovy.io.FileType.FILES, { it ==~ /springloaded-core-.*/ }) {
         springloadedFiles << it
     }
-    if(springloadedFiles.size() != 1) {
-        if(springloadedFiles.size() == 0) {
+
+    springloadedFiles = springloadedFiles.findAll { !it.name.contains('sources') &&  !it.name.contains('sources')}
+
+    if (springloadedFiles.size() != 1) {
+        if (springloadedFiles.size() == 0) {
             event("StatusError", ["An error occurred locating the springloaded-core jar file"])
         } else {
             event("StatusError", ["Multiple springloaded-core jar files were found ${springloadedFiles.absolutePath}"])
