@@ -113,7 +113,14 @@ abstract class ForkedGrailsProcess {
                                         System.exit(0)
                                     }
                                     else {
-                                        this.executionContext = readExecutionContext(contextFile)
+                                        def loadedContext = readExecutionContext(contextFile)
+                                        if (loadedContext) {
+                                            this.executionContext = loadedContext
+                                        } else {
+                                            // Forked daemon is regarded as command when contextFile cannot be loaded.
+                                            executionContext.argsMap["params"] = contextFile.split(/\s/)
+                                        }
+
                                         callable.call(clientSocket)
                                     }
                                 }
