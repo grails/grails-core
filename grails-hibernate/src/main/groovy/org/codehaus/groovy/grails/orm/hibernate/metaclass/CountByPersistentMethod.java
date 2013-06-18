@@ -18,11 +18,14 @@ import grails.gorm.DetachedCriteria;
 import groovy.lang.Closure;
 
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.orm.hibernate.HibernateDatastore;
+import org.codehaus.groovy.grails.orm.hibernate.cfg.GrailsHibernateUtil;
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
@@ -55,7 +58,7 @@ public class CountByPersistentMethod extends AbstractClausedStaticPersistentMeth
 
     @SuppressWarnings("rawtypes")
     @Override
-    protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, Object[] arguments,
+    protected Object doInvokeInternalWithExpressions(final Class clazz, String methodName, final Object[] arguments,
             final List expressions, String operatorInUse, final DetachedCriteria detachedCriteria, final Closure additionalCriteria) {
 
         final String operator = OPERATOR_OR.equals(operatorInUse) ? OPERATOR_OR : OPERATOR_AND;
@@ -64,6 +67,8 @@ public class CountByPersistentMethod extends AbstractClausedStaticPersistentMeth
             public Object doInHibernate(Session session) throws HibernateException, SQLException {
                 final Criteria crit = getCriteria(datastore, application, session, detachedCriteria, additionalCriteria, clazz);
                 crit.setProjection(Projections.rowCount());
+                Map argsMap = (arguments.length > 1 && (arguments[1] instanceof Map)) ? (Map) arguments[1] : Collections.EMPTY_MAP;
+                GrailsHibernateUtil.populateArgumentsForCriteria(application, clazz, crit, argsMap);
                 populateCriteriaWithExpressions(crit, operator, expressions);
                 return crit.uniqueResult();
             }
