@@ -31,15 +31,19 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.collections.CollectionUtils;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceHelper;
+import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry;
+import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry;
+import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.databinding.DataBinder;
+import org.grails.databinding.DataBindingSource;
 import org.grails.databinding.events.DataBindingListener;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
@@ -204,15 +208,7 @@ public class DataBindingUtils {
             }
         }
         if (!useSpringBinder) {
-            Map bindingSource = null;
-            if(source instanceof HttpServletRequest) {
-                HttpServletRequest req = (HttpServletRequest)source;
-                bindingSource = new GrailsParameterMap(req);
-            } else if(source instanceof Map) {
-                bindingSource = convertPotentialGStrings((Map) source);
-            } else {
-                bindingSource = new BeanMap(source);    
-            }
+            final DataBindingSource bindingSource = createDataBindingSource(object, source);
             final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
             final DataBindingListener listener = new GormAwareDataBindingListener(tmpBindingResult);
@@ -281,6 +277,32 @@ public class DataBindingUtils {
         return bindingResult;
     }
 
+    protected static DataBindingSource createDataBindingSource(Object bindingTarget, Object bindingSource) {
+        // TODO: obviously temporary, work in progress
+        // TODO: use mime type resolver
+        final DataBindingSourceRegistry registry = new DefaultDataBindingSourceRegistry();
+        final MimeType mimeType;
+        if(bindingSource instanceof HttpServletRequest) {
+            HttpServletRequest req = (HttpServletRequest) bindingSource;
+            String contentType = req.getContentType();
+            if("application/json".equals(contentType)) {
+                mimeType = MimeType.JSON;
+            } else if("application/hal+json".equals(contentType)) {
+                mimeType = MimeType.HAL_JSON;
+            } else if("application/xml".equals(contentType)) {
+                mimeType = MimeType.XML;
+            } else if("text/xml".equals(contentType)) {
+                mimeType = MimeType.TEXT_XML;
+            } else {
+                mimeType = MimeType.ALL;
+            }
+        } else {
+            mimeType = MimeType.ALL;
+        }
+        final DataBindingSourceHelper dataBindingSourceHelper = registry.getDataBindingSourceHelper(mimeType, bindingTarget.getClass(), bindingSource);
+        return dataBindingSourceHelper.createDataBindingSource(mimeType, bindingTarget, bindingSource);
+    }
+
     private static DataBinder createGormAwareDataBinder(final GrailsApplication grailsApplication) {
         DataBinder gormAwareDataBinder = null;
         if(grailsApplication != null) {
@@ -326,7 +348,7 @@ public class DataBindingUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map convertPotentialGStrings(Map<Object, Object> args) {
+    public static Map convertPotentialGStrings(Map<Object, Object> args) {
         Map newArgs = new HashMap(args.size());
         for (Map.Entry<Object, Object> entry : args.entrySet()) {
             newArgs.put(unwrapGString(entry.getKey()), unwrapGString(entry.getValue()));

@@ -24,7 +24,8 @@ class CollectionBindingSpec extends Specification {
         def company = new Company()
 
         when:
-        binder.bind company, [name: 'Some Company', 'departments[0]': [name: 'Department Zero'], 'departments[1]': [name: 'Department One'], 'departments[9]': [name: 'Department Nine']]
+        Map map = [name: 'Some Company', 'departments[0]': [name: 'Department Zero'], 'departments[1]': [name: 'Department One'], 'departments[9]': [name: 'Department Nine']]
+        binder.bind company, new SimpleMapBindingSource(map)
 
         then:
         company.name == 'Some Company'
@@ -55,12 +56,12 @@ class CollectionBindingSpec extends Specification {
         company.departments[3] = new Department(name: 'Original Department Three')
 
         when:
-        binder.bind company, [name: 'Some Company',
+        binder.bind company, new SimpleMapBindingSource([name: 'Some Company',
             'departments[0]': [name: 'Department Zero'],
             'departments[1]': [name: 'Department One'],
             'departments[2]': [numberOfEmployees: '99'],
             'departments[3]': null,
-            'departments[9]': [name: 'Department Nine', numberOfEmployees: '42']]
+            'departments[9]': [name: 'Department Nine', numberOfEmployees: '42']])
 
         then:
         company.name == 'Some Company'
@@ -90,8 +91,8 @@ class CollectionBindingSpec extends Specification {
         company.departments = []
 
         when:
-        binder.bind company, [name: 'Some Company',
-                              'departments[ 2  ]': [numberOfEmployees: '99', name: 'Department Two']]
+        binder.bind company, new SimpleMapBindingSource([name: 'Some Company',
+                              'departments[ 2  ]': [numberOfEmployees: '99', name: 'Department Two']])
 
         then:
         company.name == 'Some Company'
@@ -110,10 +111,10 @@ class CollectionBindingSpec extends Specification {
         def dept = new Department()
 
         when:
-        binder.bind dept, ['listOfCodes[1]': 'Herman',
+        binder.bind dept, new SimpleMapBindingSource(['listOfCodes[1]': 'Herman',
                            'listOfCodes[3]': 42,
                            'setOfCodes[0]': 2112,
-                           'setOfCodes[1]': 'Rush']
+                           'setOfCodes[1]': 'Rush'])
 
         then:
         dept.listOfCodes.size() == 4
@@ -132,7 +133,7 @@ class CollectionBindingSpec extends Specification {
         def obj = new Store()
 
         when:
-        binder.bind obj, ['mapOfStuff[name]': 'Herman', 'mapOfStuff[show]': 'The Munsters']
+        binder.bind obj, new SimpleMapBindingSource(['mapOfStuff[name]': 'Herman', 'mapOfStuff[show]': 'The Munsters'])
 
         then:
         obj.mapOfStuff.name == 'Herman'

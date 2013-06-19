@@ -27,7 +27,7 @@ class BindingListenerSpec extends Specification {
         def listener = new EmployeeBindingListener()
 
         when:
-        binder.bind p, [recipient: [name: 'Jenny', employeeNumber: '8675309']], listener
+        binder.bind p, new SimpleMapBindingSource([recipient: [name: 'Jenny', employeeNumber: '8675309']]), listener
 
         then:
         p.recipient instanceof Employee
@@ -42,7 +42,7 @@ class BindingListenerSpec extends Specification {
         def listener = new PersonBindingListener()
 
         when:
-        binder.bind(p, [name: 'Phil'], listener)
+        binder.bind(p, new SimpleMapBindingSource([name: 'Phil']), listener)
 
         then:
         listener.valuesAfterBinding.name == 'Phil'
@@ -55,27 +55,27 @@ class BindingListenerSpec extends Specification {
         def listener = new PersonBindingListener2()
 
         when:
-        binder.bind p, [name: 'one'], listener
+        binder.bind p, new SimpleMapBindingSource([name: 'one']), listener
 
         then:
         p.name == 'one'
 
         when:
         p.name = null
-        binder.bind p, [name: 'two'], listener
+        binder.bind p, new SimpleMapBindingSource([name: 'two']), listener
 
         then:
         p.name == 'two'
 
         when:
         p.name = null
-        binder.bind p, [name: 'three'], listener
+        binder.bind p, new SimpleMapBindingSource([name: 'three']), listener
 
         then:
         p.name == null
 
         when:
-        binder.bind p, [name: 'four'], listener
+        binder.bind p, new SimpleMapBindingSource([name: 'four']), listener
 
         then:
         p.name == null

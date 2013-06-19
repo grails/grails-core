@@ -18,7 +18,6 @@ package org.grails.databinding;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.util.List;
-import java.util.Map;
 
 import org.grails.databinding.events.DataBindingListener;
 
@@ -28,18 +27,18 @@ import org.grails.databinding.events.DataBindingListener;
  */
 public interface DataBinder {
 
-    void bind(Object obj, Map<String, Object> source, String filter, List<String> whiteList,
+    void bind(Object obj, DataBindingSource source, String filter, List<String> whiteList,
             List<String> blackList, DataBindingListener listener);
 
     public abstract void bind(Object obj, GPathResult gpath);
 
-    public abstract void bind(Object obj, Map<String, Object> source, List<String> whiteList,
+    public abstract void bind(Object obj, DataBindingSource source, List<String> whiteList,
             List<String> blackList);
 
-    public abstract void bind(Object obj, Map<String, Object> source, List<String> whiteList);
+    public abstract void bind(Object obj, DataBindingSource source, List<String> whiteList);
 
-    public abstract void bind(Object obj, Map<String, Object> source, DataBindingListener listener);
+    public abstract void bind(Object obj, DataBindingSource source, DataBindingListener listener);
 
-    public abstract void bind(Object obj, Map<String, Object> source);
+    public abstract void bind(Object obj, DataBindingSource source);
 
 }

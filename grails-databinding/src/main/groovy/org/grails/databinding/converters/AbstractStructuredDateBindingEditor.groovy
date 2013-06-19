@@ -18,6 +18,7 @@ package org.grails.databinding.converters
 import groovy.transform.CompileStatic
 
 import org.apache.commons.lang.StringUtils
+import org.grails.databinding.DataBindingSource
 import org.grails.databinding.StructuredBindingEditor
 
 /**
@@ -27,15 +28,15 @@ import org.grails.databinding.StructuredBindingEditor
 @CompileStatic
 abstract class AbstractStructuredDateBindingEditor<T> implements StructuredBindingEditor<T> {
 
-    public T assemble(String propertyName, Map fieldValues) throws IllegalArgumentException {
+    public T assemble(String propertyName, DataBindingSource fieldValues) throws IllegalArgumentException {
         final prefix = propertyName + '_'
-        assert fieldValues.containsKey(prefix + "year"), "Can't populate a date without a year"
+        assert fieldValues.containsProperty(prefix + "year"), "Can't populate a date without a year"
 
-        def yearString = (String)fieldValues.get(prefix + "year")
-        def monthString = (String) fieldValues.get(prefix + "month")
-        def dayString = (String) fieldValues.get(prefix + "day")
-        def hourString = (String) fieldValues.get(prefix + "hour")
-        def minuteString = (String) fieldValues.get(prefix + "minute")
+        def yearString = (String)fieldValues.getPropertyValue(prefix + "year")
+        def monthString = (String) fieldValues.getPropertyValue(prefix + "month")
+        def dayString = (String) fieldValues.getPropertyValue(prefix + "day")
+        def hourString = (String) fieldValues.getPropertyValue(prefix + "hour")
+        def minuteString = (String) fieldValues.getPropertyValue(prefix + "minute")
         if (StringUtils.isBlank(yearString) &&
             StringUtils.isBlank(monthString) &&
             StringUtils.isBlank(dayString) &&
@@ -70,13 +71,13 @@ abstract class AbstractStructuredDateBindingEditor<T> implements StructuredBindi
         ['month', 'day', 'hour', 'minute']
     }
 
-    public T getPropertyValue(obj, String propertyName, Map<String, Object> source) {
+    public T getPropertyValue(obj, String propertyName, DataBindingSource source) {
         assemble(propertyName, source)
     }
 
-    private int getIntegerValue(Map values, String name, int defaultValue) throws NumberFormatException {
-        if (values.get(name) != null) {
-            return Integer.parseInt((String) values.get(name))
+    private int getIntegerValue(DataBindingSource values, String name, int defaultValue) throws NumberFormatException {
+        if (values.getPropertyValue(name) != null) {
+            return Integer.parseInt((String) values.getPropertyValue(name))
         }
         defaultValue
     }

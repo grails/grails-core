@@ -28,7 +28,7 @@ class BindingErrorSpec extends Specification {
         def listener = new BoxBindingListener()
 
         when:
-        binder.bind box, [width: 42, height: 'nine'], listener
+        binder.bind box, new SimpleMapBindingSource([width: 42, height: 'nine']), listener
 
         then:
         box.width == 42

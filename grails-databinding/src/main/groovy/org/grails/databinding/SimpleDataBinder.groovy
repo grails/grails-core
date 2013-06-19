@@ -109,7 +109,7 @@ class SimpleDataBinder implements DataBinder {
      * @param obj the object to perform data binding on
      * @param source a Map containg the values to be bound to obj
      */
-    void bind(obj, Map source) {
+    void bind(obj, DataBindingSource source) {
         bind obj, source, null, null, null, null
     }
 
@@ -118,7 +118,7 @@ class SimpleDataBinder implements DataBinder {
      * @param source a Map containg the values to be bound to obj
      * @param listener will be notified of data binding events
      */
-    void bind(obj, Map source, DataBindingListener listener) {
+    void bind(obj, DataBindingSource source, DataBindingListener listener) {
         bind obj, source, null, null, null, listener
     }
 
@@ -128,7 +128,7 @@ class SimpleDataBinder implements DataBinder {
      * @param whiteList A list of properties that are eligible for binding, if
      * null all properties are eligible for binding
      */
-    void bind(obj, Map source, List whiteList) {
+    void bind(obj, DataBindingSource source, List whiteList) {
         bind obj, source, null, whiteList, null, null
     }
 
@@ -139,7 +139,7 @@ class SimpleDataBinder implements DataBinder {
      * null all properties are eligible for binding
      * @param blackList A list of properties to exclude from binding
      */
-    void bind(obj, Map source, List whiteList, List blackList) {
+    void bind(obj, DataBindingSource source, List whiteList, List blackList) {
         bind obj, source, null, whiteList, blackList, null
     }
 
@@ -148,7 +148,7 @@ class SimpleDataBinder implements DataBinder {
      * @param gpath contains an XML representation of the data to be bound to obj
      */
     void bind(obj, GPathResult gpath) {
-        bind obj, new GPathResultMap(gpath)
+        bind obj, new SimpleMapBindingSource(new GPathResultMap(gpath))
     }
 
     /**
@@ -158,8 +158,8 @@ class SimpleDataBinder implements DataBinder {
      * null all properties are eligible for binding
      * @param blackList A list of properties to exclude from binding
      */
-    void bind(obj, Map<String, Object> source, String filter, List whiteList, List blackList, DataBindingListener listener) {
-        def keys = source.keySet()
+    void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
+        def keys = source.getPropertyNames()
         keys.each { String key ->
             if(filter && !key.startsWith(filter + '.')) {
                 return
@@ -180,12 +180,12 @@ class SimpleDataBinder implements DataBinder {
                 if(descriptor) { // indexed property
                     metaProperty = obj.metaClass.getMetaProperty descriptor.propertyName
                     if(metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
-                        def val = source[key]
+                        def val = source.getPropertyValue key
                         processIndexedProperty obj, metaProperty, descriptor, val, source, listener
                     }
                 } else if(propName.startsWith('_')) { // boolean special handling
                     def restOfPropertyName = propName[1..-1]
-                    if(!source.containsKey(restOfPropertyName)) {
+                    if(!source.containsProperty(restOfPropertyName)) {
                         metaProperty = obj.metaClass.getMetaProperty restOfPropertyName
                         if(metaProperty && isOkToBind(restOfPropertyName, whiteList, blackList)) {
                             if((Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type)) {
@@ -216,7 +216,7 @@ class SimpleDataBinder implements DataBinder {
         descriptor
     }
 
-    protected processProperty(obj, MetaProperty metaProperty, val, Map source, DataBindingListener listener) {
+    protected processProperty(obj, MetaProperty metaProperty, val, DataBindingSource source, DataBindingListener listener) {
         def propName = metaProperty.name
         def propertyType = metaProperty.type
         if(structuredEditors.containsKey(propertyType) && ('struct' == val || 'date.struct' == val)) {
@@ -226,7 +226,7 @@ class SimpleDataBinder implements DataBinder {
         bindProperty obj, source, metaProperty, val, listener
     }
     
-    protected processIndexedProperty(obj, MetaProperty metaProperty, IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor, val, Map source, DataBindingListener listener) {
+    protected processIndexedProperty(obj, MetaProperty metaProperty, IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor, val, DataBindingSource source, DataBindingListener listener) {
         def propName = indexedPropertyReferenceDescriptor.propertyName
         def propertyType = metaProperty.type
         if(propertyType.isArray()) {
@@ -248,6 +248,10 @@ class SimpleDataBinder implements DataBinder {
                         addElementToCollectionAt obj, propName, collectionInstance, index, convert(genericType, val)
                     } else if(val instanceof Map){
                         indexedInstance = genericType.newInstance()
+                        bind indexedInstance, new SimpleMapBindingSource(val), listener
+                        addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
+                    } else if(val instanceof DataBindingSource) {
+                        indexedInstance = genericType.newInstance()
                         bind indexedInstance, val, listener
                         addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
                     }
@@ -256,7 +260,9 @@ class SimpleDataBinder implements DataBinder {
                 }
             } else {
                 if(val instanceof Map) {
-                    bind indexedInstance, (Map)val, listener
+                    bind indexedInstance, new SimpleMapBindingSource(val), listener
+                } else if(val instanceof DataBindingSource) {
+                    bind indexedInstance, val, listener
                 } else if (val == null && indexedInstance != null) {
                     addElementToCollectionAt obj, propName, collectionInstance, index, null
                 }
@@ -363,8 +369,8 @@ class SimpleDataBinder implements DataBinder {
         def converter
         def formattedConverter = formattedValueConvertersionHelpers[field.type]
         if(formattedConverter) {
-            converter = { Map source ->
-                def value = source[field.name]
+            converter = { SimpleMapBindingSource source ->
+                def value = source.getPropertyValue field.name
                 formattedConverter.convert (value, formattingValue)
             } as ValueConverter
         }
@@ -402,7 +408,7 @@ class SimpleDataBinder implements DataBinder {
             def valueClass = annotation.value()
             if(BindingHelper.isAssignableFrom(valueClass)) {
                 BindingHelper dataConverter = (BindingHelper)valueClass.newInstance()
-                converter = new ClosureValueConverter(converterClosure: { Map it -> dataConverter.getPropertyValue(obj, propName, it) })
+                converter = new ClosureValueConverter(converterClosure: { DataBindingSource it -> dataConverter.getPropertyValue(obj, propName, it) })
             }
         }
         converter
@@ -426,7 +432,7 @@ class SimpleDataBinder implements DataBinder {
         enumValue
     }
 
-    protected setPropertyValue(obj, Map source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
+    protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
         def propName = metaProperty.name
         def propertyType
         def propertyGetter
@@ -462,6 +468,19 @@ class SimpleDataBinder implements DataBinder {
                     if(obj[propName] == null) {
                         initializeProperty(obj, propName, propertyType, source)
                     }
+                    bind obj[propName], new SimpleMapBindingSource(propertyValue), listener
+                }
+            } else if(propertyValue instanceof DataBindingSource) {
+                if(Collection.isAssignableFrom(propertyType) &&
+                   propertyValue.size() == 1 &&
+                   ((Map)propertyValue)[propertyValue.getPropertyNames()[0]] instanceof List) {
+                    def key = propertyValue.getPropertyNames()[0]
+                    List list = (List)((Map)propertyValue)[key]
+                    addElementsToCollection(obj, propName, list)
+                } else {
+                    if(obj[propName] == null) {
+                        initializeProperty(obj, propName, propertyType, source)
+                    }
                     bind obj[propName], propertyValue, listener
                 }
             } else {
@@ -470,7 +489,7 @@ class SimpleDataBinder implements DataBinder {
         }
     }
 
-    protected bindProperty(obj, Map source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
+    protected bindProperty(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
         def propName = metaProperty.name
         if(listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
             try {
@@ -483,7 +502,7 @@ class SimpleDataBinder implements DataBinder {
                 addBindingError(obj, propName, propertyValue, e, listener)
             }
         } else if(listener != null && propertyValue instanceof Map && obj[propName] != null) {
-            bind obj[propName], propertyValue
+            bind obj[propName], new SimpleMapBindingSource(propertyValue)
         }
         listener?.afterBinding obj, propName
     }
@@ -511,7 +530,7 @@ class SimpleDataBinder implements DataBinder {
         }
     }
 
-    protected initializeProperty(obj, String propName, Class propertyType, Map<String, Object> source) {
+    protected initializeProperty(obj, String propName, Class propertyType, DataBindingSource source) {
         obj[propName] = propertyType.newInstance()
     }
 

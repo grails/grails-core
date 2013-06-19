@@ -33,6 +33,9 @@ dependencies {
         exclude group: 'javax.servlet', module:'servlet-api'
     }
     compile 'xpp3:xpp3_min:1.1.4c'
+
+    compile 'com.google.code.gson:gson:2.2.4'
+
     runtime 'taglibs:standard:1.1.2'
     runtime "javax.servlet:jstl:1.1.2"
 
