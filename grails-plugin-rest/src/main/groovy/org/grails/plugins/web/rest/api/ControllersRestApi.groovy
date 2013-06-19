@@ -16,6 +16,7 @@
 
 package org.grails.plugins.web.rest.api
 
+import grails.rest.Resource
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
@@ -88,7 +89,7 @@ class ControllersRestApi {
 
 
         final webRequest = getWebRequest(controller)
-        List<String> formats = calculateFormats(controller, webRequest.actionName, args)
+        List<String> formats = calculateFormats(controller, webRequest.actionName, value, args)
         final response = webRequest.getCurrentResponse()
         MimeType mimeType = getResponseFormat(response)
         def registry = rendererRegistry
@@ -147,10 +148,11 @@ class ControllersRestApi {
         }
     }
 
-    protected List<String> calculateFormats(def controller, String actionName, Map args) {
+    protected List<String> calculateFormats(def controller, String actionName, Object value, Map args) {
         if (args.formats) {
             return (List<String>) args.formats
         }
+
         else if (controller.hasProperty(PROPERTY_RESPONSE_FORMATS)) {
             final responseFormatsProperty = ((GroovyObject) controller).getProperty(PROPERTY_RESPONSE_FORMATS)
             if (responseFormatsProperty instanceof List) {
@@ -164,14 +166,27 @@ class ControllersRestApi {
                     return (List<String>) responseFormatsForAction
                 }
                 else {
-                    return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
+                    return getDefaultResponseFormats(value)
                 }
             }
+            else {
+                return getDefaultResponseFormats(value)
+            }
+        }
+        else {
+            return getDefaultResponseFormats(value)
+        }
+
+    }
+
+    protected List<String> getDefaultResponseFormats(Object value) {
+        Resource resAnn = value != null ? value.getClass().getAnnotation(Resource) : null
+        if (resAnn) {
+            return resAnn.formats().toList()
         }
         else {
             return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
         }
-
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
