@@ -15,6 +15,8 @@
  */
 package grails.util
 
+import org.codehaus.groovy.grails.io.support.IOUtils
+
 import grails.build.logging.GrailsConsole
 import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 
@@ -1597,11 +1599,45 @@ class BuildSettings extends AbstractBuildSettings {
     /**
      * @return The path to the Config.groovy file (not to be confused with BuildConfig.groovy)
      */
+    @CompileStatic
     String getConfigFilePath() {
         configFile.absolutePath
     }
 
+    @CompileStatic
     File getConfigFile() {
         new File(baseDir, "grails-app/conf/Config.groovy")
+    }
+
+    @CompileStatic
+    void initializeResourcesDir() {
+        def targetPath = resourcesDir.path
+        def dir = new File(baseDir, "grails-app/conf")
+        resourcesDir.mkdirs()
+        if (dir.exists()) {
+            try {
+                copyDirectoryContentsToTarget(dir, targetPath)
+            } catch (e) {
+                GrailsConsole.getInstance().error("Error initializing resources from grails-app/conf: ${e.message}", e)
+            }
+        }
+
+    }
+
+    @CompileStatic
+    protected void copyDirectoryContentsToTarget(File dir, String targetPath) {
+        dir.eachFile { File f ->
+            final isFile = !f.isDirectory()
+            final isHidden = f.isHidden()
+            if (isFile && !isHidden && !f.name.endsWith('.groovy')) {
+                IOUtils.copy(f, new File(targetPath, f.name))
+            }
+            else if (!isFile && !isHidden) {
+                final fileName = f.name
+                if (fileName != 'hibernate' && fileName != 'spring') {
+                    copyDirectoryContentsToTarget(f, new File(targetPath, fileName).path)
+                }
+            }
+        }
     }
 }
