@@ -54,7 +54,7 @@ abstract class ForkedGrailsProcess {
     int daemonPort = DEFAULT_DAEMON_PORT
     File reloadingAgent
     List<String> jvmArgs
-    ClassLoader forkedClassLoader
+    URLClassLoader forkedClassLoader
     ExecutionContext executionContext
 
     private String resumeIndicatorName
@@ -659,9 +659,14 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected URLClassLoader initializeClassLoader(BuildSettings buildSettings) {
-        URLClassLoader classLoader = createClassLoader(buildSettings)
-        forkedClassLoader = classLoader
-        classLoader
+        URLClassLoader newClassLoader = createClassLoader(buildSettings)
+        if (forkedClassLoader && forkedClassLoader.URLs.toList().containsAll(newClassLoader.URLs.toList())) {
+            // If the existing class loader includes all URLs of new class loader, the existing one should be used.
+            // Otherwise a level of nested class loaders would become so deep that slow test causes.
+            return forkedClassLoader
+        }
+        forkedClassLoader = newClassLoader
+        return newClassLoader
     }
 
     @CompileStatic
