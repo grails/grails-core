@@ -58,7 +58,7 @@ target ('default': "Installs the Grails wrapper") {
         springloadedFiles << it
     }
 
-    springloadedFiles = springloadedFiles.findAll { !it.name.contains('sources') &&  !it.name.contains('sources')}
+    springloadedFiles = springloadedFiles.findAll { !it.name.contains('sources') &&  !it.name.contains('javadoc')}
 
     if (springloadedFiles.size() != 1) {
         if (springloadedFiles.size() == 0) {
