@@ -20,6 +20,7 @@ import grails.rest.Resource
 import grails.rest.render.AbstractIncludeExcludeRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
+import grails.rest.render.RendererRegistry
 import grails.util.Environment
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
@@ -71,6 +72,9 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     @Autowired
     MappingContext mappingContext
 
+    @Autowired
+    RendererRegistry rendererRegistry
+
     @Autowired(required = false)
     ProxyHandler proxyHandler = new DefaultProxyHandler()
 
@@ -99,7 +103,12 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
         def viewName = context.viewName ?: context.actionName
         final view = groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
         if (view) {
-            new DefaultHtmlRenderer(targetType).render(object, context)
+            // if a view is provided, we use the HTML renderer to return an appropriate model to the view
+            Renderer htmlRenderer = rendererRegistry?.findRenderer(MimeType.HTML, object)
+            if (htmlRenderer == null) {
+                htmlRenderer = new DefaultHtmlRenderer(targetType)
+            }
+            htmlRenderer.render(object, context)
         }
         else {
             renderInternal(object, context)

@@ -25,8 +25,9 @@ class RestResponderGrailsPlugin {
 
     def doWithSpring = {
         RestResponderGrailsPlugin.registryResourceControllers(application)
+
         rendererRegistry(DefaultRendererRegistry) { bean ->
-//            bean.initMethod = "initialize"
+            modelSuffix = application.flatConfig.get('grails.scaffolding.templates.domainSuffix') ?: ''
         }
         instanceControllersRestApi(ControllersRestApi, ref("rendererRegistry"), ref("instanceControllersApi"), new ControllersMimeTypesApi())
     }

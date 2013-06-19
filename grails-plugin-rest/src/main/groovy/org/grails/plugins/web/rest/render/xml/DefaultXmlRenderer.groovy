@@ -19,6 +19,7 @@ package org.grails.plugins.web.rest.render.xml
 import grails.converters.XML
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
+import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
@@ -42,6 +43,10 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 
+    @Autowired(required = false)
+    RendererRegistry rendererRegistry
+
+
     DefaultXmlRenderer(Class<T> targetType) {
         this.targetType = targetType
     }
@@ -56,6 +61,12 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         this.groovyPageLocator = groovyPageLocator
     }
 
+    DefaultXmlRenderer(Class<T> targetType, GrailsConventionGroovyPageLocator groovyPageLocator, RendererRegistry rendererRegistry) {
+        this.targetType = targetType
+        this.groovyPageLocator = groovyPageLocator
+        this.rendererRegistry = rendererRegistry
+    }
+
     @Override
     void render(T object, RenderContext context) {
         final mimeType = context.acceptMimeType ?: MimeType.XML
@@ -64,7 +75,12 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         def viewName = context.viewName ?: context.actionName
         final view = groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
         if (view) {
-            new DefaultHtmlRenderer(targetType).render(object, context)
+            // if a view is provided, we use the HTML renderer to return an appropriate model to the view
+            Renderer htmlRenderer = rendererRegistry?.findRenderer(MimeType.HTML, object)
+            if (htmlRenderer == null) {
+                htmlRenderer = new DefaultHtmlRenderer(targetType)
+            }
+            htmlRenderer.render(object, context)
         }
         else {
             if (object instanceof Errors) {

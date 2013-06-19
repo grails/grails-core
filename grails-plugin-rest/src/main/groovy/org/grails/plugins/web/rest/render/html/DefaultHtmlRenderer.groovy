@@ -35,6 +35,8 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
     protected Class<T> targetType
     protected MimeType[] mimeTypes = [MimeType.XHTML, MimeType.HTML] as MimeType[]
 
+    String suffix = ""
+
     DefaultHtmlRenderer(Class<T> targetType) {
         this.targetType = targetType
     }
@@ -67,12 +69,12 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
             Errors errors = (Errors)object
             def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
             if (target) {
-                String modelVariableName = GrailsNameUtils.getPropertyNameConvention(target)
+                String modelVariableName = GrailsNameUtils.getPropertyNameConvention(target, suffix)
                 context.setModel([(modelVariableName): target])
             }
         }
         else {
-            String modelVariableName = GrailsNameUtils.getPropertyNameConvention(object)
+            String modelVariableName = GrailsNameUtils.getPropertyNameConvention(object, suffix)
             context.setModel([(modelVariableName): object])
         }
     }

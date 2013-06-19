@@ -62,7 +62,7 @@ grails {
  
 grails.converters.encoding = "UTF-8"
 // scaffolding templates configuration
-grails.scaffolding.templates.domainSuffix = ''
+grails.scaffolding.templates.domainSuffix = 'Instance'
 
 // Set to false to use the new Grails 1.2 JSONBuilder in the render method
 grails.json.legacy.builder = false

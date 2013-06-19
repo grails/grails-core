@@ -59,15 +59,21 @@ class DefaultRendererRegistry implements RendererRegistry{
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 
+    String modelSuffix = ''
+
     DefaultRendererRegistry() {
     }
 
     @PostConstruct
     void initialize() {
-        addDefaultRenderer(new DefaultXmlRenderer<Object>(Object, groovyPageLocator))
-        addDefaultRenderer(new DefaultJsonRenderer<Object>(Object, groovyPageLocator))
-        addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object))
-        addDefaultRenderer(new DefaultHtmlRenderer<Object>(Object, MimeType.ALL))
+        addDefaultRenderer(new DefaultXmlRenderer<Object>(Object, groovyPageLocator, this))
+        addDefaultRenderer(new DefaultJsonRenderer<Object>(Object, groovyPageLocator, this))
+        final defaultHtmlRenderer = new DefaultHtmlRenderer<Object>(Object)
+        defaultHtmlRenderer.suffix = modelSuffix
+        addDefaultRenderer(defaultHtmlRenderer)
+        final allHtmlRenderer = new DefaultHtmlRenderer<Object>(Object, MimeType.ALL)
+        allHtmlRenderer.suffix = modelSuffix
+        addDefaultRenderer(allHtmlRenderer)
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.XML), new DefaultXmlRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_XML), new DefaultXmlRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.JSON), new DefaultJsonRenderer(Errors))

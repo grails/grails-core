@@ -391,11 +391,28 @@ public class GrailsNameUtils {
         return str == null || str.trim().length() == 0;
     }
 
+    /**
+     * Returns an appropriate property name for the given object. If the object is a collection will append List, Set, Collection or Map to the property name
+     * @param object The object
+     * @return The property name convention
+     */
     public static String getPropertyNameConvention(Object object) {
+        String suffix = "";
+
+        return getPropertyNameConvention(object, suffix);
+    }
+
+    /**
+     * Returns an appropriate property name for the given object. If the object is a collection will append List, Set, Collection or Map to the property name
+     * @param object The object
+     * @param suffix The suffix to append to the name.
+     * @return The property name convention
+     */
+    public static String getPropertyNameConvention(Object object, String suffix) {
         if(object != null) {
             Class<?> type = object.getClass();
             if(type.isArray()) {
-                return getPropertyName(type.getComponentType()) + "Array";
+                return getPropertyName(type.getComponentType()) + suffix + "Array";
             }
             else if(object instanceof Collection) {
                 Collection coll = (Collection) object;
@@ -405,13 +422,13 @@ public class GrailsNameUtils {
                 else {
                     Object first = coll.iterator().next();
                     if(coll instanceof List) {
-                        return getPropertyName(first.getClass()) + "List";
+                        return getPropertyName(first.getClass()) + suffix + "List";
                     }
                     else if(coll instanceof Set) {
-                        return getPropertyName(first.getClass()) + "Set";
+                        return getPropertyName(first.getClass()) + suffix + "Set";
                     }
                     else {
-                        return getPropertyName(first.getClass()) + "Collection";
+                        return getPropertyName(first.getClass()) + suffix + "Collection";
                     }
 
                 }
@@ -426,12 +443,12 @@ public class GrailsNameUtils {
                 else {
                     Object entry = map.values().iterator().next();
                     if(entry != null) {
-                        return getPropertyName(entry.getClass()) + "Map";
+                        return getPropertyName(entry.getClass()) + suffix + "Map";
                     }
                 }
             }
             else {
-                return getPropertyName(object.getClass());
+                return getPropertyName(object.getClass()) + suffix;
             }
 
         }
