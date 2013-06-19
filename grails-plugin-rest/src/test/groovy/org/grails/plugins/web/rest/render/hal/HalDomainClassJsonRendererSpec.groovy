@@ -1,11 +1,11 @@
 package org.grails.plugins.web.rest.render.hal
 
 import grails.persistence.Entity
-import grails.rest.Linkable
 import grails.rest.Resource
 import grails.rest.render.hal.HalJsonRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
+
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
@@ -18,6 +18,7 @@ import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.util.WebUtils
+
 import spock.lang.Specification
 
 /**
@@ -52,42 +53,6 @@ class HalDomainClassJsonRendererSpec extends Specification {
         then:"The resulting HAL is correct"
             response.contentType == HalJsonRenderer.MIME_TYPE.name
             response.contentAsString == '{"_links":{"self":{"href":"http://localhost/books/1","hreflang":"en","type":"application/hal+json"},"The Publisher":{"href":"/publisher","hreflang":"en"},"author":{"href":"http://localhost/authors/2","hreflang":"en"}},"title":"\\"The Stand\\"","_embedded":{"author":{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"\\"Stephen King\\""},"authors":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"\\"Stephen King\\""},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en"}},"name":"\\"King Stephen\\""}]}}'
-
-
-    }
-
-    void "Test that the HAL renderer renders regular linkable groovy objects with appropriate links"() {
-        given:"A HAL renderer"
-            HalJsonRenderer renderer = getRenderer()
-            renderer.prettyPrint = true
-
-        when:"A domain object is rendered"
-            def webRequest = GrailsWebUtil.bindMockWebRequest()
-            webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
-            def response = webRequest.response
-            def renderContext = new ServletRenderContext(webRequest)
-            def product = new Product(name: "MacBook", category: new Category(name: "laptop"))
-            product.link(rel:"company",href: "http://apple.com", title: "Made by Apple")
-            renderer.render(product, renderContext)
-
-        then:"The resulting HAL is correct"
-            response.contentType == HalJsonRenderer.MIME_TYPE.name
-            response.contentAsString == '''{
-  "_links": {
-    "self": {
-      "href": "http://localhost/product/Macbook",
-      "hreflang": "en",
-      "type": "application/hal+json"
-    },
-    "company": {
-      "href": "http://apple.com",
-      "hreflang": "en",
-      "title": "Made by Apple"
-    }
-  },
-  "category": "{\\"name\\":\\"laptop\\"}",
-  "name": "\\"MacBook\\""
-}'''
 
 
     }
@@ -150,14 +115,6 @@ class HalDomainClassJsonRendererSpec extends Specification {
     }
 }
 
-@Linkable
-class Product {
-    String name
-    Category category
-}
-class Category {
-    String name
-}
 @Entity
 @Resource
 class Book {
