@@ -18,9 +18,10 @@ import org.springframework.context.support.StaticMessageSource
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.util.WebUtils
 
+import spock.lang.Ignore
 import spock.lang.Specification
 
-
+@Ignore
 class RenderLinkableSpec extends Specification {
     
     void setup() {
