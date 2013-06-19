@@ -96,6 +96,19 @@ allprojects {
             }
         }
     }
+// this will apply the javadoc fix tool to all generated javadocs
+// we use it to make sure that the javadocs are not vulnerable independently of the JDK used to build
+    [Javadoc, Groovydoc].each {
+        tasks.withType(it).all {
+            doLast {
+                def javadocFix = new JavadocFixTool()
+                javadocFix.recursive = true
+                javadocFix.doPatch = true
+                javadocFix.searchAndPatch(destinationDir)
+            }
+        }
+
+    }
 }
 
 apply from: "gradle/idea.gradle"
