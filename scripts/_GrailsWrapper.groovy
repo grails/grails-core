@@ -73,7 +73,7 @@ target (generateWrapper: "Generates the Grails wrapper") {
     new File("${grailsHome}/lib/org.springsource.springloaded/springloaded-core/jars/").eachFileMatch( groovy.io.FileType.FILES, { it ==~ /springloaded-core-.*/ }) {
         springloadedFiles << it
     }
-    springloadedFiles = springloadedFiles.findAll { !it.name.contains('sources') &&  !it.name.contains('sources')}
+    springloadedFiles = springloadedFiles.findAll { !it.name.contains('sources') &&  !it.name.contains('javadoc')}
     
     if (springloadedFiles.size() != 1) {
         if (springloadedFiles.size() == 0) {
