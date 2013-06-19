@@ -195,4 +195,9 @@ public class FileSystemResource implements Resource {
             throw new IllegalArgumentException(message);
         }
     }
+
+    @Override
+    public String toString() {
+        return file.toString();
+    }
 }

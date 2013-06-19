@@ -190,4 +190,8 @@ public class UrlResource extends AbstractFileResolvingResource {
         return cleanedUrl.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return getDescription();
+    }
 }

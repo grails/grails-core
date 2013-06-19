@@ -350,6 +350,7 @@ public class GrailsScriptRunner {
 
             console.updateStatus("Loading Grails " + settings.getGrailsVersion());
             settings.loadConfig();
+            settings.initializeResourcesDir();
 
             System.setProperty("springloaded.directoriesContainingReloadableCode",
                    settings.getClassesDir().getAbsolutePath() + ',' +

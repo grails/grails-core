@@ -245,6 +245,11 @@ class GrailsProjectPackager extends BaseSettingsApi {
      */
     @CompileStatic
     ConfigObject packageApplication() {
+        try {
+            packageConfigFiles(basedir)
+        } catch (Throwable e) {
+            throw new PackagingException("Error occurred packaging configuration files: ${e.message}", e)
+        }
 
         if (doCompile) {
             projectCompiler.compilePlugins()
@@ -276,11 +281,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
             throw new PackagingException("Error occurred processing message bundles: ${e.message}", e)
         }
 
-        try {
-            packageConfigFiles(basedir)
-        } catch (Throwable e) {
-            throw new PackagingException("Error occurred packaging configuration files: ${e.message}", e)
-        }
+
 
         packageMetadataFile()
 
