@@ -41,8 +41,9 @@ ext {
     slf4jVersion = "1.7.4"
 
     spockVersion = '0.7-groovy-2.0'
+    springLoadedVersion = "1.1.3"
+    springLoadedCommonOptions = "-noverify -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "3.2.3.RELEASE"
-    springLoadedVersion = "1.1.2"
     ehcacheVersion = "2.4.6"
     junitVersion = "4.11"
     concurrentlinkedhashmapVersion = "1.3.1"

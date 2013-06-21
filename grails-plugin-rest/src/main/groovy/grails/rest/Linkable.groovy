@@ -23,7 +23,7 @@ import java.lang.annotation.RetentionPolicy
 import java.lang.annotation.Target
 
 /**
- * A transform that makes it possible to attack {@link Link} instances to any class. Two methods are added, one called link(Map args) and another called links() to retrieve the links.
+ * A transform that makes it possible to attach {@link Link} instances to any class. Two methods are added, one called link(Map args) and another called links() to retrieve the links.
  *
  * Example:
  *

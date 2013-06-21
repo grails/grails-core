@@ -1,6 +1,5 @@
 package org.grails.plugins.web.rest.render.hal
 
-import grails.rest.render.hal.HalJsonRenderer
 import grails.rest.render.hal.HalXmlRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
