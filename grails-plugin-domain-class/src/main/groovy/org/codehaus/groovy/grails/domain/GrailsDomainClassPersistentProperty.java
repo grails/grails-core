@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.domain;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.grails.datastore.mapping.config.Property;
 import org.grails.datastore.mapping.model.ClassMapping;
 import org.grails.datastore.mapping.model.PersistentEntity;
 import org.grails.datastore.mapping.model.PersistentProperty;
@@ -43,7 +44,7 @@ public class GrailsDomainClassPersistentProperty implements PersistentProperty {
                 return owner.getMapping();
             }
 
-            public Object getMappedForm() {
+            public Property getMappedForm() {
                 return null;
             }
         };

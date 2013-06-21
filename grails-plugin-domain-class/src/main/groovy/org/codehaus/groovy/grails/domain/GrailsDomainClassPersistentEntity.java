@@ -22,6 +22,8 @@ import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.grails.datastore.mapping.config.Entity;
+import org.grails.datastore.mapping.config.Property;
 import org.grails.datastore.mapping.model.AbstractClassMapping;
 import org.grails.datastore.mapping.model.ClassMapping;
 import org.grails.datastore.mapping.model.IdentityMapping;
@@ -148,10 +150,12 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
     }
 
     public ClassMapping getMapping() {
+        final Entity e = new Entity();
         return new AbstractClassMapping(this, getMappingContext()) {
             @Override
-            public Object getMappedForm() {
-                return null;
+            public Entity getMappedForm() {
+
+                return e;
             }
 
             @Override
@@ -164,9 +168,8 @@ public class GrailsDomainClassPersistentEntity implements PersistentEntity {
                     public ClassMapping getClassMapping() {
                         return entity.getMapping();
                     }
-
-                    public Object getMappedForm() {
-                        return null;
+                    public Property getMappedForm() {
+                        return new Property();
                     }
                 };
             }
