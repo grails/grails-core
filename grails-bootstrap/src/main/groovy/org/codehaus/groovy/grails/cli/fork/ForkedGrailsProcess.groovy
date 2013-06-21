@@ -108,7 +108,7 @@ abstract class ForkedGrailsProcess {
         if (reloadingAgent != null) {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded.synchronize=true", "-Djdk.reflect.allowGetCallerClass=true"])
             def cacheDir=System.getenv("GRAILS_AGENT_CACHE_DIR") ?: BuildSettingsHolder.settings.grailsWorkDir.canonicalPath
-            cmd.add("-Dspringloaded=profile=grails;cacheDir=${cacheDir}")
+            cmd.add("-Dspringloaded=profile=grails;cacheDir=${cacheDir}".toString())
         }
         cmd << getClass().name
         if (jvmArgs) {
