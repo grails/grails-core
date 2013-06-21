@@ -255,7 +255,7 @@ fi
 # For Darwin, use classes.jar for TOOLS_JAR
 TOOLS_JAR="$JAVA_HOME/lib/tools.jar"
 if $darwin; then
-    JAVA_OPTS="-Xdock:name=Grails -Xdock:icon=$GRAILS_HOME/media/icons/grails.icns $JAVA_OPTS"
+    JAVA_OPTS="-Xdock:name=Grails -Xdock:icon=$GRAILS_HOME/media/icons/grails.icns -Djava.awt.headless=true $JAVA_OPTS"
 #   TOOLS_JAR="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Classes/classes.jar"
 fi
 
