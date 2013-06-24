@@ -35,7 +35,7 @@ class JsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHe
 
     @Override
     public MimeType[] getMimeTypes() {
-        [MimeType.JSON] as MimeType[]
+        [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
     }
     
     @Override
