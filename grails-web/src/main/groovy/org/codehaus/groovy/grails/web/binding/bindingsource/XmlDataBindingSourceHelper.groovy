@@ -34,7 +34,7 @@ class XmlDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHel
     protected DataBindingSource convertStringToBindingSource(String bodyText) {
         def gpath = new XmlSlurper().parseText(bodyText)
         def gpathMap = new GPathResultMap(gpath)
-        return new SimpleMapDataBindingSource(gpathMap)
+        new SimpleMapDataBindingSource(gpathMap)
     }
 }
 
