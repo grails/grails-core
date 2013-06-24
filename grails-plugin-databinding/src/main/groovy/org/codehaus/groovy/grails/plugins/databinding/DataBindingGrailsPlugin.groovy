@@ -19,6 +19,11 @@ import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
+import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
+import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry
+import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceHelper
+import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceHelper
+import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceHelper
 
 /**
  * @author Jeff Brown
@@ -29,7 +34,12 @@ class DataBindingGrailsPlugin {
     def version = GrailsUtil.getGrailsVersion()
 
     def doWithSpring = {
-        def databindingConfig = application?.config?.grails?.databinding
+        def databindingConfig 
+        
+        // TODO this try/catch is temporary
+        try {
+            databindingConfig = application?.config?.grails?.databinding
+        } catch (Exception e) {}
         
         def autoGrowCollectionLimitSetting = databindingConfig?.autoGrowCollectionLimit
         
@@ -46,5 +56,11 @@ class DataBindingGrailsPlugin {
                 autoGrowCollectionLimit = autoGrowCollectionLimitSetting
             }
         }
+        
+        "${DataBindingSourceRegistry.BEAN_NAME}"(DefaultDataBindingSourceRegistry)
+        
+        xmlDataBindingSourceHelper(XmlDataBindingSourceHelper)
+        jsonDataBindingSourceHelper(JsonDataBindingSourceHelper)
+        halJsonDataBindingSourceHelper(HalJsonDataBindingSourceHelper)
     }
 }

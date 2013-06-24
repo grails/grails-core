@@ -25,5 +25,6 @@ import org.codehaus.groovy.grails.web.mime.MimeType
  * @see DataBindingSourceHelper
  */
 interface DataBindingSourceRegistry {
+    String BEAN_NAME = 'dataBindingSourceRegistry'
     DataBindingSourceHelper getDataBindingSourceHelper(MimeType mimeType, Class targetType, Object bindingSource)
 }

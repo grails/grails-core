@@ -18,22 +18,18 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic
 class DefaultDataBindingSourceRegistry implements DataBindingSourceRegistry {
 
-    Set<DataBindingSourceHelper> helpers = new HashSet<DataBindingSourceHelper>()
-
-    DefaultDataBindingSourceRegistry() {
-        helpers.add(new XmlDataBindingSourceHelper())
-        helpers.add(new JsonDataBindingSourceHelper())
-        helpers.add(new HalJsonDataBindingSourceHelper())
-    }
-
+    @Autowired(required=false)
+    Set<DataBindingSourceHelper> helpers
+    
     @Override
     DataBindingSourceHelper getDataBindingSourceHelper(MimeType mimeType, Class targetType, Object bindingSource) {
         def helper = null
-        helper = helpers.find { DataBindingSourceHelper dbsh -> dbsh.mimeTypes.any { MimeType mt -> mt  == mimeType  }}
+        helper = helpers?.find { DataBindingSourceHelper dbsh -> dbsh.mimeTypes.any { MimeType mt -> mt  == mimeType  }}
         if(helper == null) {
             helper = new DefaultDataBindingSourceHelper()
         }

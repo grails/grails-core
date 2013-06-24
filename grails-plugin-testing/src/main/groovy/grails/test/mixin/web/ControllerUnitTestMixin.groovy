@@ -23,6 +23,7 @@ import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
@@ -43,7 +44,6 @@ import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesGrailsPlugin
-import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean

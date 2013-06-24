@@ -208,7 +208,7 @@ public class DataBindingUtils {
             }
         }
         if (!useSpringBinder) {
-            final DataBindingSource bindingSource = createDataBindingSource(object, source);
+            final DataBindingSource bindingSource = createDataBindingSource(grailsApplication, object, source);
             final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
             final DataBindingListener listener = new GormAwareDataBindingListener(tmpBindingResult);
@@ -277,10 +277,21 @@ public class DataBindingUtils {
         return bindingResult;
     }
 
-    protected static DataBindingSource createDataBindingSource(Object bindingTarget, Object bindingSource) {
+    protected static DataBindingSource createDataBindingSource(GrailsApplication grailsApplication, Object bindingTarget, Object bindingSource) {
         // TODO: obviously temporary, work in progress
         // TODO: use mime type resolver
-        final DataBindingSourceRegistry registry = new DefaultDataBindingSourceRegistry();
+        DataBindingSourceRegistry registry = null;
+        if(grailsApplication != null) {
+            ApplicationContext context = grailsApplication.getMainContext();
+            if(context != null) {
+                if(context.containsBean(DataBindingSourceRegistry.BEAN_NAME)) {
+                    registry = context.getBean(DataBindingSourceRegistry.BEAN_NAME, DataBindingSourceRegistry.class);
+                }
+            }
+        }
+        if(registry == null) {
+            registry = new DefaultDataBindingSourceRegistry();
+        }
         final MimeType mimeType;
         if(bindingSource instanceof HttpServletRequest) {
             HttpServletRequest req = (HttpServletRequest) bindingSource;

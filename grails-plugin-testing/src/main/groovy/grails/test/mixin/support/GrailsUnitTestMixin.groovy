@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
@@ -114,6 +115,8 @@ class GrailsUnitTestMixin {
     }
 
     protected static void registerBeans() {
+        defineBeans(new DataBindingGrailsPlugin().doWithSpring)
+        
         defineBeans {
             grailsProxyHandler(DefaultProxyHandler)
             grailsApplication(DefaultGrailsApplication)
