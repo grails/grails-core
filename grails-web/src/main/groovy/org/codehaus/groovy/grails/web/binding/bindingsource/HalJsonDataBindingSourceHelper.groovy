@@ -39,7 +39,7 @@ class HalJsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourc
     }
 
     @Override    
-    protected DataBindingSource convertStringToBindingSource(InputStream inputStream) {
+    protected DataBindingSource createBindingSource(InputStream inputStream) {
         return new HalJsonDataBindingSourceCreator().createDataBindingSource(inputStream)
     }
 }

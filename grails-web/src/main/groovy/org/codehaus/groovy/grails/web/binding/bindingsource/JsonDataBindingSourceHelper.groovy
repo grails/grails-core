@@ -39,7 +39,7 @@ class JsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHe
     }
     
     @Override
-    protected DataBindingSource convertStringToBindingSource(InputStream inputStream) {
+    protected DataBindingSource createBindingSource(InputStream inputStream) {
         return new JsonDataBindingSourceCreator().createDataBindingSource(inputStream)
     }
 
