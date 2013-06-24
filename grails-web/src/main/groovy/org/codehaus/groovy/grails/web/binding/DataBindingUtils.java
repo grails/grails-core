@@ -305,7 +305,7 @@ public class DataBindingUtils {
             } else if("text/xml".equals(contentType)) {
                 mimeType = MimeType.TEXT_XML;
             } else {
-                mimeType = MimeType.ALL;
+                mimeType = new MimeType(contentType);
             }
         } else {
             mimeType = MimeType.ALL;
