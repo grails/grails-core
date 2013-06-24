@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
@@ -36,20 +36,20 @@ class DefaultDataBindingSourceHelper implements DataBindingSourceHelper {
     
     @Override
     DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {
-        final DataBindingSource dataBindingSource;
+        final DataBindingSource dataBindingSource
         if(bindingSource instanceof DataBindingSource) {
-            dataBindingSource = (DataBindingSource) bindingSource;
+            dataBindingSource = (DataBindingSource) bindingSource
         } else if(bindingSource instanceof HttpServletRequest) {
-            dataBindingSource = createDataBindingSource(bindingTarget, (HttpServletRequest)bindingSource);
+            dataBindingSource = createDataBindingSource(bindingTarget, (HttpServletRequest)bindingSource)
         } else if(bindingSource instanceof Map) {
-            dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource));
+            dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource))
         } else {
-            dataBindingSource = new SimpleMapDataBindingSource(new BeanMap(bindingSource));
+            dataBindingSource = new SimpleMapDataBindingSource(new BeanMap(bindingSource))
         }
-        return dataBindingSource;
+        dataBindingSource
     }
 
     protected  DataBindingSource createDataBindingSource(Object bindingTarget, HttpServletRequest req) {
-        return new SimpleMapDataBindingSource(new GrailsParameterMap(req));
+        new SimpleMapDataBindingSource(new GrailsParameterMap(req))
     }
 }

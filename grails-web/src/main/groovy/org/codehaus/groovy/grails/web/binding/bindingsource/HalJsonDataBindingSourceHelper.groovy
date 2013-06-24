@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.binding.bindingsource.hal.json.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.mime.MimeType

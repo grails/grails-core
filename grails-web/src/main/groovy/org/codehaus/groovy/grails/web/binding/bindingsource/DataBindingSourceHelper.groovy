@@ -25,5 +25,5 @@ interface DataBindingSourceHelper {
      */
     MimeType[] getMimeTypes()
     
-    DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource);
+    DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource)
 }

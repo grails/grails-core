@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
@@ -25,20 +25,14 @@ import org.grails.databinding.DataBindingSource
 
 @CompileStatic
 abstract class AbstractRequestBodyDataBindingSourceHelper implements DataBindingSourceHelper {
-    
+
     @Override
     public DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {
-        final DataBindingSource dataBindingSource;
-        try {
-            HttpServletRequest req = (HttpServletRequest)bindingSource;
-            InputStream is = req.getInputStream();
-            Reader reader = new InputStreamReader(is);
-            String bodyText = IOUtils.toString(reader);
-            dataBindingSource = convertStringToBindingSource(bodyText);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return dataBindingSource
+        def req = (HttpServletRequest)bindingSource
+        def is = req.getInputStream()
+        def reader = new InputStreamReader(is)
+        def bodyText = IOUtils.toString(reader)
+        convertStringToBindingSource(bodyText)
     }
 
     protected abstract DataBindingSource convertStringToBindingSource(String bodyText)
