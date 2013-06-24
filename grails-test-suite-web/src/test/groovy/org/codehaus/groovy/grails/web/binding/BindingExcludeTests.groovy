@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.binding
 
-import grails.test.mixin.TestFor
 import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
 
 @TestFor(ExcludingController)
 @Mock([Person, Location])
@@ -35,7 +35,7 @@ class BindingExcludeTests {
 class ExcludingController {
     def bind() {
         def p = new Person()
-        bindData(p, params['person'],[exclude:"locations"])
+        bindData(p, request, [exclude:"locations"])
         return [person:p]
     }
 }

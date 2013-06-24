@@ -23,7 +23,7 @@ import org.grails.databinding.SimpleMapDataBindingSource
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 
-@CompileStatic
+//@CompileStatic
 class JsonDataBindingSourceCreator {
 
     DataBindingSource createDataBindingSource(String json) {
@@ -53,7 +53,14 @@ class JsonDataBindingSourceCreator {
 
     protected processToken(JsonReader reader, Map map, String name) {
         def tokenAfterName = reader.peek()
-        map[name] = getValueForToken(tokenAfterName, reader)
+        def valueToAdd = getValueForToken(tokenAfterName, reader)
+        if(valueToAdd instanceof List) {
+            valueToAdd.eachWithIndex { item, idx ->
+                map["${name}[${idx}]".toString()] = item
+            }
+        } else {
+            map[name] = valueToAdd
+        }
     }
 
     protected getValueForToken(JsonToken currentToken, JsonReader reader) {
@@ -82,6 +89,7 @@ class JsonDataBindingSourceCreator {
                    list << getValueForToken(nextToken, reader)
                }
                valueToAdd = list
+               reader.endArray()
                break
         }
          valueToAdd

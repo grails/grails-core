@@ -105,17 +105,11 @@ class NestedXmlBindingTests {
     void testBindToArrayOfDomainsWithJson() {
         request.json = '''
 {
-'class': 'Person',
-"person": {
 "name": "John Doe",
-"locations": {
-"location": [
+"locations": [
 { "shipppingAddress": "foo", "billingAddress": "bar" },
-
 { "shipppingAddress": "foo2", "billingAddress": "bar2" }
 ]
-}
-}
 }
 '''
         def result = controller.bind()
@@ -131,14 +125,15 @@ class NestedXmlBindingTests {
 }
 class NestedXmlController {
     def bind() {
-        println params['person']
-        def person = new Person(params['person'])
+        def person = new Person()
+        person.properties = request
 
         [person: person]
     }
 
     def bindToOne() {
-        def fooInstance = new Foo(params['foo'])
+        def fooInstance = new Foo()
+        fooInstance.properties = request
         return  fooInstance
     }
 }
