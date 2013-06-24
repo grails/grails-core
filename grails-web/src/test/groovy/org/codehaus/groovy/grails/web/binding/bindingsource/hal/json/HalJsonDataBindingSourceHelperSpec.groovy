@@ -16,8 +16,8 @@ class HalJsonDataBindingSourceHelperSpec extends Specification {
     }
 }
 '''
-      
-        def bindingSource = new HalJsonDataBindingSourceCreator().createDataBindingSource(json)
+        def reader = new StringReader(json)
+        def bindingSource = new HalJsonDataBindingSourceCreator().createDataBindingSource(reader)
         
         when:
         def propertyNames = bindingSource.propertyNames

@@ -28,8 +28,8 @@ import com.google.gson.stream.JsonToken
 @CompileStatic
 class JsonDataBindingSourceCreator {
 
-    DataBindingSource createDataBindingSource(String json) {
-        def jsonReader = new JsonReader(new StringReader(json))
+    DataBindingSource createDataBindingSource(Reader json) {
+        def jsonReader = new JsonReader(json)
         jsonReader.setLenient true
         jsonToBindingSource(jsonReader)
     }

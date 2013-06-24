@@ -14,7 +14,8 @@ class DefaultJsonDataBindingSourceHelperSpec extends Specification {
   "languages" : [ {"name": "Groovy", "company": "GoPivotal"}, {"name": "Java", "company": "Oracle"}]
 }'''
       
-        def bindingSource = new JsonDataBindingSourceCreator().createDataBindingSource(json)
+        def reader = new StringReader(json)
+        def bindingSource = new JsonDataBindingSourceCreator().createDataBindingSource(reader)
         
         when:
         def propertyNames = bindingSource.propertyNames

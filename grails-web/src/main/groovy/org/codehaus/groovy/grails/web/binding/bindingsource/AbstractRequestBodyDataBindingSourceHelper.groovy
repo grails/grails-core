@@ -19,7 +19,6 @@ import groovy.transform.CompileStatic
 
 import javax.servlet.http.HttpServletRequest
 
-import org.apache.commons.io.IOUtils
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 
@@ -31,9 +30,8 @@ abstract class AbstractRequestBodyDataBindingSourceHelper implements DataBinding
         def req = (HttpServletRequest)bindingSource
         def is = req.getInputStream()
         def reader = new InputStreamReader(is)
-        def bodyText = IOUtils.toString(reader)
-        convertStringToBindingSource(bodyText)
+        convertStringToBindingSource(reader)
     }
 
-    protected abstract DataBindingSource convertStringToBindingSource(String bodyText)
+    protected abstract DataBindingSource convertStringToBindingSource(Reader body)
 }
