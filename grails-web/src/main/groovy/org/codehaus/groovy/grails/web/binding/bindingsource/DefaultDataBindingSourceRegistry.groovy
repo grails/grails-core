@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.databinding.bindingsource.DataBindingSourceHelper
 import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic

@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.databinding.bindingsource.DataBindingSourceHelper
 
 /**
  * A registry for DataBindingSourceHelper instances

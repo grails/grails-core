@@ -25,6 +25,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
+import org.grails.databinding.bindingsource.DataBindingSourceHelper
 
 @CompileStatic
 class DefaultDataBindingSourceHelper implements DataBindingSourceHelper {

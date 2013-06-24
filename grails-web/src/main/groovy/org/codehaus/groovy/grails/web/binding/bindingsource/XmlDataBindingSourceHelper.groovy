@@ -20,6 +20,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
+import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceHelper
 import org.grails.databinding.xml.GPathResultMap
 
 /**
