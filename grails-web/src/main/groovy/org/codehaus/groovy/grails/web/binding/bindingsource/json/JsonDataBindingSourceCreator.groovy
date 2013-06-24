@@ -27,7 +27,9 @@ import com.google.gson.stream.JsonToken
 class JsonDataBindingSourceCreator {
 
     DataBindingSource createDataBindingSource(String json) {
-        jsonToBindingSource(new JsonReader(new StringReader(json)))
+        def jsonReader = new JsonReader(new StringReader(json))
+        jsonReader.setLenient true
+        jsonToBindingSource(jsonReader)
     }
     
     protected DataBindingSource jsonToBindingSource(JsonReader reader) {
