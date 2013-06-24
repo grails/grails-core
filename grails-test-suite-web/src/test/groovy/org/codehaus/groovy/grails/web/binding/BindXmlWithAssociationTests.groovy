@@ -41,7 +41,8 @@ class BindXmlWithAssociationTests {
 class PersonController {
 
     def save = {
-        def person = new TargetPerson(params['person'])
+        def person = new TargetPerson()
+        person.properties = request
 
         // uncomment next line to avoid error
         //person.merge()
