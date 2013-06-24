@@ -24,7 +24,7 @@ class BindUsingSpec extends Specification {
         def obj = new ClassWithBindUsingOnProperty()
 
         when:
-        binder.bind(obj, new SimpleMapBindingSource([name: 'Jeff Was Here']))
+        binder.bind(obj, new SimpleMapDataBindingSource([name: 'Jeff Was Here']))
 
         then:
         'JEFF WAS HERE' == obj.name
@@ -36,7 +36,7 @@ class BindUsingSpec extends Specification {
         def obj = new ClassWithBindUsing()
 
         when:
-        binder.bind(obj, new SimpleMapBindingSource([doubleIt: 9, tripleIt: 20, leaveIt: 30]))
+        binder.bind(obj, new SimpleMapDataBindingSource([doubleIt: 9, tripleIt: 20, leaveIt: 30]))
 
         then:
         obj.doubleIt == 18

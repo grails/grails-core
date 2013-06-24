@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.binding.bindingsource.json
 import groovy.transform.CompileStatic
 
 import org.grails.databinding.DataBindingSource
-import org.grails.databinding.SimpleMapBindingSource
+import org.grails.databinding.SimpleMapDataBindingSource
 
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
@@ -46,7 +46,7 @@ class JsonDataBindingSourceCreator {
                     reader.skipValue()
             }
         }
-        new SimpleMapBindingSource(map)
+        new SimpleMapDataBindingSource(map)
     }
 
     protected processToken(JsonReader reader, Map map, String name) {

@@ -148,7 +148,7 @@ class SimpleDataBinder implements DataBinder {
      * @param gpath contains an XML representation of the data to be bound to obj
      */
     void bind(obj, GPathResult gpath) {
-        bind obj, new SimpleMapBindingSource(new GPathResultMap(gpath))
+        bind obj, new SimpleMapDataBindingSource(new GPathResultMap(gpath))
     }
 
     /**
@@ -248,7 +248,7 @@ class SimpleDataBinder implements DataBinder {
                         addElementToCollectionAt obj, propName, collectionInstance, index, convert(genericType, val)
                     } else if(val instanceof Map){
                         indexedInstance = genericType.newInstance()
-                        bind indexedInstance, new SimpleMapBindingSource(val), listener
+                        bind indexedInstance, new SimpleMapDataBindingSource(val), listener
                         addElementToCollectionAt obj, propName, collectionInstance, index, indexedInstance
                     } else if(val instanceof DataBindingSource) {
                         indexedInstance = genericType.newInstance()
@@ -260,7 +260,7 @@ class SimpleDataBinder implements DataBinder {
                 }
             } else {
                 if(val instanceof Map) {
-                    bind indexedInstance, new SimpleMapBindingSource(val), listener
+                    bind indexedInstance, new SimpleMapDataBindingSource(val), listener
                 } else if(val instanceof DataBindingSource) {
                     bind indexedInstance, val, listener
                 } else if (val == null && indexedInstance != null) {
@@ -369,7 +369,7 @@ class SimpleDataBinder implements DataBinder {
         def converter
         def formattedConverter = formattedValueConvertersionHelpers[field.type]
         if(formattedConverter) {
-            converter = { SimpleMapBindingSource source ->
+            converter = { SimpleMapDataBindingSource source ->
                 def value = source.getPropertyValue field.name
                 formattedConverter.convert (value, formattingValue)
             } as ValueConverter
@@ -468,7 +468,7 @@ class SimpleDataBinder implements DataBinder {
                     if(obj[propName] == null) {
                         initializeProperty(obj, propName, propertyType, source)
                     }
-                    bind obj[propName], new SimpleMapBindingSource(propertyValue), listener
+                    bind obj[propName], new SimpleMapDataBindingSource(propertyValue), listener
                 }
             } else if(propertyValue instanceof DataBindingSource) {
                 if(Collection.isAssignableFrom(propertyType) &&
@@ -502,7 +502,7 @@ class SimpleDataBinder implements DataBinder {
                 addBindingError(obj, propName, propertyValue, e, listener)
             }
         } else if(listener != null && propertyValue instanceof Map && obj[propName] != null) {
-            bind obj[propName], new SimpleMapBindingSource(propertyValue)
+            bind obj[propName], new SimpleMapDataBindingSource(propertyValue)
         }
         listener?.afterBinding obj, propName
     }

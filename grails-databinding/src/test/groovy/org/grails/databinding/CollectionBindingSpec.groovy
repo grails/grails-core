@@ -25,7 +25,7 @@ class CollectionBindingSpec extends Specification {
 
         when:
         Map map = [name: 'Some Company', 'departments[0]': [name: 'Department Zero'], 'departments[1]': [name: 'Department One'], 'departments[9]': [name: 'Department Nine']]
-        binder.bind company, new SimpleMapBindingSource(map)
+        binder.bind company, new SimpleMapDataBindingSource(map)
 
         then:
         company.name == 'Some Company'
@@ -56,7 +56,7 @@ class CollectionBindingSpec extends Specification {
         company.departments[3] = new Department(name: 'Original Department Three')
 
         when:
-        binder.bind company, new SimpleMapBindingSource([name: 'Some Company',
+        binder.bind company, new SimpleMapDataBindingSource([name: 'Some Company',
             'departments[0]': [name: 'Department Zero'],
             'departments[1]': [name: 'Department One'],
             'departments[2]': [numberOfEmployees: '99'],
@@ -91,7 +91,7 @@ class CollectionBindingSpec extends Specification {
         company.departments = []
 
         when:
-        binder.bind company, new SimpleMapBindingSource([name: 'Some Company',
+        binder.bind company, new SimpleMapDataBindingSource([name: 'Some Company',
                               'departments[ 2  ]': [numberOfEmployees: '99', name: 'Department Two']])
 
         then:
@@ -111,7 +111,7 @@ class CollectionBindingSpec extends Specification {
         def dept = new Department()
 
         when:
-        binder.bind dept, new SimpleMapBindingSource(['listOfCodes[1]': 'Herman',
+        binder.bind dept, new SimpleMapDataBindingSource(['listOfCodes[1]': 'Herman',
                            'listOfCodes[3]': 42,
                            'setOfCodes[0]': 2112,
                            'setOfCodes[1]': 'Rush'])
@@ -133,7 +133,7 @@ class CollectionBindingSpec extends Specification {
         def obj = new Store()
 
         when:
-        binder.bind obj, new SimpleMapBindingSource(['mapOfStuff[name]': 'Herman', 'mapOfStuff[show]': 'The Munsters'])
+        binder.bind obj, new SimpleMapDataBindingSource(['mapOfStuff[name]': 'Herman', 'mapOfStuff[show]': 'The Munsters'])
 
         then:
         obj.mapOfStuff.name == 'Herman'

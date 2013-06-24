@@ -25,7 +25,7 @@ class IncludeExcludeBindingSpec extends Specification {
         def whiteList = ['alpha', 'beta']
 
         when:
-        binder.bind greek, new SimpleMapBindingSource([alpha: 1, beta: 2, gamma: 3, delta: 4]), whiteList
+        binder.bind greek, new SimpleMapDataBindingSource([alpha: 1, beta: 2, gamma: 3, delta: 4]), whiteList
 
         then:
         greek.alpha == 1
@@ -41,7 +41,7 @@ class IncludeExcludeBindingSpec extends Specification {
         def blackList = ['alpha', 'beta']
 
         when:
-        binder.bind greek, new SimpleMapBindingSource([alpha: 1, beta: 2, gamma: 3, delta: 4]), null, blackList
+        binder.bind greek, new SimpleMapDataBindingSource([alpha: 1, beta: 2, gamma: 3, delta: 4]), null, blackList
 
         then:
         greek.alpha == null
@@ -58,7 +58,7 @@ class IncludeExcludeBindingSpec extends Specification {
         def whiteList = ['alpha', 'gamma', 'delta']
 
         when:
-        binder.bind greek, new SimpleMapBindingSource([alpha: 1, beta: 2, gamma: 3, delta: 4]), whiteList, blackList
+        binder.bind greek, new SimpleMapDataBindingSource([alpha: 1, beta: 2, gamma: 3, delta: 4]), whiteList, blackList
 
         then:
         greek.alpha == null

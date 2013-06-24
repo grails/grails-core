@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.orm.support
 
 import grails.spring.BeanBuilder
 
-import org.grails.databinding.SimpleMapBindingSource
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.PlatformTransactionManager

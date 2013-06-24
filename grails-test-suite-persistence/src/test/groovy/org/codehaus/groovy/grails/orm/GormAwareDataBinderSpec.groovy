@@ -24,7 +24,7 @@ import org.apache.commons.lang.builder.CompareToBuilder
 import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
 import org.grails.databinding.BindUsing
 import org.grails.databinding.DataBindingSource
-import org.grails.databinding.SimpleMapBindingSource
+import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListener
 
@@ -40,7 +40,7 @@ class GormAwareDataBinderSpec extends Specification {
         def author = new Author()
         
         when:
-        binder.bind author, new SimpleMapBindingSource([name: '   Jeff Scott Brown ', stringWithSpecialBinding: '   Jeff Scott Brown '])
+        binder.bind author, new SimpleMapDataBindingSource([name: '   Jeff Scott Brown ', stringWithSpecialBinding: '   Jeff Scott Brown '])
         
         then:
         author.name == 'Jeff Scott Brown'
@@ -48,7 +48,7 @@ class GormAwareDataBinderSpec extends Specification {
         
         when:
         def actualName = 'Jeff Scott Brown'
-        binder.bind author, new SimpleMapBindingSource([name: "   ${actualName} ", stringWithSpecialBinding: "   ${actualName} "])
+        binder.bind author, new SimpleMapDataBindingSource([name: "   ${actualName} ", stringWithSpecialBinding: "   ${actualName} "])
         
         then:
         author.name == 'Jeff Scott Brown'
@@ -56,7 +56,7 @@ class GormAwareDataBinderSpec extends Specification {
         
         when:
         binder.trimStrings = false
-        binder.bind author, new SimpleMapBindingSource([name: '  Jeff Scott Brown   ', stringWithSpecialBinding: '  Jeff Scott Brown   '])
+        binder.bind author, new SimpleMapDataBindingSource([name: '  Jeff Scott Brown   ', stringWithSpecialBinding: '  Jeff Scott Brown   '])
         
         then:
         author.name == '  Jeff Scott Brown   '
@@ -64,7 +64,7 @@ class GormAwareDataBinderSpec extends Specification {
         
         when:
         binder.trimStrings = false
-        binder.bind author, new SimpleMapBindingSource([name: "  ${actualName}   ", stringWithSpecialBinding: "  ${actualName}   "])
+        binder.bind author, new SimpleMapDataBindingSource([name: "  ${actualName}   ", stringWithSpecialBinding: "  ${actualName}   "])
         
         then:
         author.name == '  Jeff Scott Brown   '
@@ -78,7 +78,7 @@ class GormAwareDataBinderSpec extends Specification {
         def publication = new Publication()
         
         when:
-        binder.bind publication, new SimpleMapBindingSource([author: '42'])
+        binder.bind publication, new SimpleMapDataBindingSource([author: '42'])
         
         then:
         publication.author == null
@@ -90,14 +90,14 @@ class GormAwareDataBinderSpec extends Specification {
         def obj = new Author()
         
         when:
-        binder.bind obj, new SimpleMapBindingSource([name: '', stringWithSpecialBinding:''])
+        binder.bind obj, new SimpleMapDataBindingSource([name: '', stringWithSpecialBinding:''])
         
         then:
         obj.name == null
         obj.stringWithSpecialBinding == ''
         
         when:
-        binder.bind obj, new SimpleMapBindingSource([name: '  ', stringWithSpecialBinding: '  '])
+        binder.bind obj, new SimpleMapDataBindingSource([name: '  ', stringWithSpecialBinding: '  '])
         
         then:
         obj.name == null
@@ -105,14 +105,14 @@ class GormAwareDataBinderSpec extends Specification {
         
         when:
         def emptyString = ''
-        binder.bind obj, new SimpleMapBindingSource([name: "${emptyString}", stringWithSpecialBinding: "${emptyString}"])
+        binder.bind obj, new SimpleMapDataBindingSource([name: "${emptyString}", stringWithSpecialBinding: "${emptyString}"])
         
         then:
         obj.name == null
         obj.stringWithSpecialBinding == ''
         
         when:
-        binder.bind obj, new SimpleMapBindingSource([name: "  ${emptyString}  ", stringWithSpecialBinding: "  ${emptyString}  "])
+        binder.bind obj, new SimpleMapDataBindingSource([name: "  ${emptyString}  ", stringWithSpecialBinding: "  ${emptyString}  "])
         
         then:
         obj.name == null
@@ -125,7 +125,7 @@ class GormAwareDataBinderSpec extends Specification {
         def obj = new PrimitiveContainer()
 
         when:
-        binder.bind(obj, new SimpleMapBindingSource([someBoolean: 'true',
+        binder.bind(obj, new SimpleMapDataBindingSource([someBoolean: 'true',
             someByte: '1',
             someChar: 'a',
             someShort: '2',
@@ -152,21 +152,21 @@ class GormAwareDataBinderSpec extends Specification {
         def publication = new Publication()
 
         when:
-        binder.bind publication, new SimpleMapBindingSource([title: 'Infinite Jest', author: [id: author.id]])
+        binder.bind publication, new SimpleMapDataBindingSource([title: 'Infinite Jest', author: [id: author.id]])
 
         then:
         publication.title == 'Infinite Jest'
         publication.author.name == 'David Foster Wallace'
 
         when:
-        binder.bind publication, new SimpleMapBindingSource([author: [id: 'null']])
+        binder.bind publication, new SimpleMapDataBindingSource([author: [id: 'null']])
 
         then:
         publication.author == null
 
         when:
         publication.title = null
-        binder.bind publication, new SimpleMapBindingSource([title: 'Infinite Jest', author: [id: author.id]]), [], ['author']
+        binder.bind publication, new SimpleMapDataBindingSource([title: 'Infinite Jest', author: [id: author.id]]), [], ['author']
 
         then:
         publication.title == 'Infinite Jest'
@@ -174,13 +174,13 @@ class GormAwareDataBinderSpec extends Specification {
 
         when:
         publication.author = null
-        binder.bind publication, new SimpleMapBindingSource([title: 'Infinite Jest 2', author: [id: author.id]])
+        binder.bind publication, new SimpleMapDataBindingSource([title: 'Infinite Jest 2', author: [id: author.id]])
 
         then:
         publication.author.name == 'David Foster Wallace'
         
         when:
-        binder.bind publication, new SimpleMapBindingSource([author: [id: '']])
+        binder.bind publication, new SimpleMapDataBindingSource([author: [id: '']])
         
         then:
         publication.author == null
@@ -193,7 +193,7 @@ class GormAwareDataBinderSpec extends Specification {
         def pub = new Publication(title: 'DGG', author: author)
 
         when:
-        binder.bind pub, new SimpleMapBindingSource([publisher: [name: 'Apress']])
+        binder.bind pub, new SimpleMapDataBindingSource([publisher: [name: 'Apress']])
 
         // pending investigation...
         DeferredBindingActions.runActions()
@@ -220,7 +220,7 @@ class GormAwareDataBinderSpec extends Specification {
         def publisher = new Publisher()
 
         when:
-        binder.bind publisher, new SimpleMapBindingSource([name: 'Apress',
+        binder.bind publisher, new SimpleMapDataBindingSource([name: 'Apress',
             'publications[0]': [title: 'DGG', author: [name: 'Graeme']],
             'publications[1]': [title: 'DGG2', author: [name: 'Jeff']]])
 
@@ -242,7 +242,7 @@ class GormAwareDataBinderSpec extends Specification {
         def widget = new Widget()
 
         when:
-        binder.bind widget, new SimpleMapBindingSource([isBindable: 'Should Be Bound', isNotBindable: 'Should Not Be Bound'])
+        binder.bind widget, new SimpleMapDataBindingSource([isBindable: 'Should Be Bound', isNotBindable: 'Should Not Be Bound'])
 
         then:
         widget.isBindable == 'Should Be Bound'
@@ -255,8 +255,8 @@ class GormAwareDataBinderSpec extends Specification {
         def book = new DataBindingBook()
         
         when:
-        binder.bind book, new SimpleMapBindingSource([topics: ['journalism', null, 'satire']])
-        binder.bind book, new SimpleMapBindingSource(['topics[1]': 'counterculture'])
+        binder.bind book, new SimpleMapDataBindingSource([topics: ['journalism', null, 'satire']])
+        binder.bind book, new SimpleMapDataBindingSource(['topics[1]': 'counterculture'])
         
         then:
         book.topics == ['journalism', 'counterculture', 'satire']
@@ -268,8 +268,8 @@ class GormAwareDataBinderSpec extends Specification {
         def book = new DataBindingBook()
         
         when:
-        binder.bind book, new SimpleMapBindingSource([importantPageNumbers: ['5', null, '42']])
-        binder.bind book, new SimpleMapBindingSource(['importantPageNumbers[1]': '2112'])
+        binder.bind book, new SimpleMapDataBindingSource([importantPageNumbers: ['5', null, '42']])
+        binder.bind book, new SimpleMapDataBindingSource(['importantPageNumbers[1]': '2112'])
         
         then:
         book.importantPageNumbers == [5, 2112, 42]
@@ -281,7 +281,7 @@ class GormAwareDataBinderSpec extends Specification {
         def parent = new Parent()
 
         when:
-        binder.bind parent, new SimpleMapBindingSource([child: [someOtherIds: '4']])
+        binder.bind parent, new SimpleMapDataBindingSource([child: [someOtherIds: '4']])
 
         then:
         parent.child.someOtherIds.size() == 1
@@ -289,7 +289,7 @@ class GormAwareDataBinderSpec extends Specification {
 
         when:
         parent.child = null
-        binder.bind(parent,  new SimpleMapBindingSource([child: [someOtherIds: ['4', '5', '6']]]))
+        binder.bind(parent,  new SimpleMapDataBindingSource([child: [someOtherIds: ['4', '5', '6']]]))
 
         then:
         parent.child.someOtherIds.size() == 3
@@ -299,7 +299,7 @@ class GormAwareDataBinderSpec extends Specification {
 
         when:
         parent.child = null
-        binder.bind(parent,  new SimpleMapBindingSource([child: [someOtherIds: 4]]))
+        binder.bind(parent,  new SimpleMapDataBindingSource([child: [someOtherIds: 4]]))
 
         then:
         parent.child.someOtherIds.size() == 1
@@ -322,7 +322,7 @@ class GormAwareDataBinderSpec extends Specification {
         'Jeff Scott Brown' == team.members.jeff.name
 
         when:
-        binder.bind team, new SimpleMapBindingSource(['members[jeff]': [id: 'null']])
+        binder.bind team, new SimpleMapDataBindingSource(['members[jeff]': [id: 'null']])
         
         then:
         team.members.size() == 1
@@ -336,7 +336,7 @@ class GormAwareDataBinderSpec extends Specification {
         def team = new Team()
         
         when:
-        binder.bind team, new SimpleMapBindingSource(["members['jeff']": [name: 'Jeff Scott Brown'], 'members["betsy"]': [name: 'Sarah Elizabeth Brown']])
+        binder.bind team, new SimpleMapDataBindingSource(["members['jeff']": [name: 'Jeff Scott Brown'], 'members["betsy"]': [name: 'Sarah Elizabeth Brown']])
         
         then:
         team.members.size() == 2
@@ -359,7 +359,7 @@ class GormAwareDataBinderSpec extends Specification {
         bindingSource['states[CA]'] = 'California'
         
         when:
-        binder.bind team, new SimpleMapBindingSource(bindingSource)
+        binder.bind team, new SimpleMapDataBindingSource(bindingSource)
         
         then:
         team.states.size() == 2
@@ -382,7 +382,7 @@ class GormAwareDataBinderSpec extends Specification {
         bindingSource['members[zack]'] = [name: 'Zachary Scott Brown']
         
         when:
-        binder.bind team, new SimpleMapBindingSource(bindingSource)
+        binder.bind team, new SimpleMapDataBindingSource(bindingSource)
         
         then:
         team.members.size() == 2
@@ -401,7 +401,7 @@ class GormAwareDataBinderSpec extends Specification {
         pub.addToAuthors(name: 'Author One')
         
         when:
-        binder.bind pub, new SimpleMapBindingSource(['authors[0]': [name: 'Author Uno'], 'authors[1]': [name: 'Author Dos']])
+        binder.bind pub, new SimpleMapDataBindingSource(['authors[0]': [name: 'Author Uno'], 'authors[1]': [name: 'Author Dos']])
         
         then:
         pub.authors.size() == 2
@@ -423,7 +423,7 @@ class GormAwareDataBinderSpec extends Specification {
         
         when:
         def pub = new Publisher()
-        binder.bind pub, new SimpleMapBindingSource(['authors[0]': [id: a1.id], 'authors[1]': [id: a2.id]])
+        binder.bind pub, new SimpleMapDataBindingSource(['authors[0]': [id: a1.id], 'authors[1]': [id: a2.id]])
         
         then:
         pub.authors.size() == 2
@@ -446,7 +446,7 @@ class GormAwareDataBinderSpec extends Specification {
         when:
         def pub = new Publisher()
         String stringToBind = a2.id as String
-        binder.bind pub, new SimpleMapBindingSource(['authors[0]': stringToBind])
+        binder.bind pub, new SimpleMapDataBindingSource(['authors[0]': stringToBind])
         
         then:
         pub.authors.size() == 1
@@ -471,7 +471,7 @@ class GormAwareDataBinderSpec extends Specification {
         when:
         def binder = new GormAwareDataBinder(grailsApplication)
         // the subscript values are not important, the ids drive selection from the Set
-        binder.bind publisher, new SimpleMapBindingSource(['authors[123]': [id: a3.id, name: 'Author Tres'],
+        binder.bind publisher, new SimpleMapDataBindingSource(['authors[123]': [id: a3.id, name: 'Author Tres'],
                                 'authors[456]': [id: a1.id, name: 'Author Uno'],
                                 'authors[789]': [id: a2.id, name: 'Author Dos']])
         def updatedA1 = publisher.authors.find { it.id == a1.id }
@@ -495,7 +495,7 @@ class GormAwareDataBinderSpec extends Specification {
         when:
         def publisher = new Publisher(name: 'Apress').save()
         publisher.save(flush: true)
-        binder.bind publisher,new SimpleMapBindingSource( ['authors[0]': [id: 42, name: 'Some Name']]), listener
+        binder.bind publisher,new SimpleMapDataBindingSource( ['authors[0]': [id: 42, name: 'Some Name']]), listener
         
         then:
         bindingErrors?.size() == 1
@@ -522,7 +522,7 @@ class GormAwareDataBinderSpec extends Specification {
         publication.id != null
         
         when:
-        binder.bind publisher, new SimpleMapBindingSource(['publications[0]': [id: publication.id, title: 'Definitive Guide To Grails 2']])
+        binder.bind publisher, new SimpleMapDataBindingSource(['publications[0]': [id: publication.id, title: 'Definitive Guide To Grails 2']])
         
         then:
         publisher.publications[0].title == 'Definitive Guide To Grails 2'
@@ -534,7 +534,7 @@ class GormAwareDataBinderSpec extends Specification {
         def author = new Author()
         
         when:
-        binder.bind author, new SimpleMapBindingSource([widget: [name: 'Some Name', isBindable: 'Some Bindable String']])
+        binder.bind author, new SimpleMapDataBindingSource([widget: [name: 'Some Name', isBindable: 'Some Bindable String']])
         
         then:
         // should be a Fidget, not a Widget
@@ -570,7 +570,7 @@ class GormAwareDataBinderSpec extends Specification {
         map['sortedSetOfWidgets[2]'] = [isBindable: 'Is Tres (SortedSet)', isNotBindable: 'Is Not Tres (SortedSet)']
         
         when:
-        binder.bind obj, new SimpleMapBindingSource(map)
+        binder.bind obj, new SimpleMapDataBindingSource(map)
         def listOfWidgets = obj.listOfWidgets
         def setOfWidgets = obj.setOfWidgets
         def collectionOfWidgets = obj.collectionOfWidgets

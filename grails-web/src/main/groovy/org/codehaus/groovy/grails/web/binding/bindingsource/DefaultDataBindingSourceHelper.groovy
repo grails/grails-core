@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.databinding.DataBindingSource
-import org.grails.databinding.SimpleMapBindingSource
+import org.grails.databinding.SimpleMapDataBindingSource
 
 @CompileStatic
 class DefaultDataBindingSourceHelper implements DataBindingSourceHelper {
@@ -42,14 +42,14 @@ class DefaultDataBindingSourceHelper implements DataBindingSourceHelper {
         } else if(bindingSource instanceof HttpServletRequest) {
             dataBindingSource = createDataBindingSource(bindingTarget, (HttpServletRequest)bindingSource);
         } else if(bindingSource instanceof Map) {
-            dataBindingSource = new SimpleMapBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource));
+            dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource));
         } else {
-            dataBindingSource = new SimpleMapBindingSource(new BeanMap(bindingSource));
+            dataBindingSource = new SimpleMapDataBindingSource(new BeanMap(bindingSource));
         }
         return dataBindingSource;
     }
 
     protected  DataBindingSource createDataBindingSource(Object bindingTarget, HttpServletRequest req) {
-        return new SimpleMapBindingSource(new GrailsParameterMap(req));
+        return new SimpleMapDataBindingSource(new GrailsParameterMap(req));
     }
 }

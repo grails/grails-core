@@ -18,11 +18,11 @@ package org.grails.databinding
 import groovy.transform.CompileStatic
 
 @CompileStatic
-class SimpleMapBindingSource implements DataBindingSource {
+class SimpleMapDataBindingSource implements DataBindingSource {
     
     protected Map map
     
-    public SimpleMapBindingSource(Map map) {
+    public SimpleMapDataBindingSource(Map map) {
         this.map = map    
     }
 

@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic;
 
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
-import org.grails.databinding.SimpleMapBindingSource
+import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.xml.GPathResultMap
 
 @CompileStatic
@@ -34,7 +34,7 @@ class XmlDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHel
     protected DataBindingSource convertStringToBindingSource(String bodyText) {
         def gpath = new XmlSlurper().parseText(bodyText)
         def gpathMap = new GPathResultMap(gpath)
-        return new SimpleMapBindingSource(gpathMap)
+        return new SimpleMapDataBindingSource(gpathMap)
     }
 }
 

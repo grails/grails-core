@@ -28,7 +28,7 @@ class SimpleDataBinderSpec extends Specification {
         def w = new Widget()
 
         when:
-        binder.bind(w, new SimpleMapBindingSource(alpha: 1, beta: 2))
+        binder.bind(w, new SimpleMapDataBindingSource(alpha: 1, beta: 2))
 
         then:
         w.alpha == 1
@@ -41,7 +41,7 @@ class SimpleDataBinderSpec extends Specification {
         def g = new Gadget()
 
         when:
-        binder.bind(g, new SimpleMapBindingSource([alpha: 1, beta: 2, gamma: 3]))
+        binder.bind(g, new SimpleMapDataBindingSource([alpha: 1, beta: 2, gamma: 3]))
 
         then:
         g.alpha == 1
@@ -56,7 +56,7 @@ class SimpleDataBinderSpec extends Specification {
         def f = new Fidget()
 
         when:
-        binder.bind(f, new SimpleMapBindingSource([name: 'Stuff', 'gadget.gamma': 42, 'gadget.alpha': 43]))
+        binder.bind(f, new SimpleMapDataBindingSource([name: 'Stuff', 'gadget.gamma': 42, 'gadget.alpha': 43]))
 
         then:
         f.name == 'Stuff'
@@ -71,7 +71,7 @@ class SimpleDataBinderSpec extends Specification {
         def f = new Fidget()
 
         when:
-        binder.bind f, new SimpleMapBindingSource([name: 'Stuff', gadget: [gamma: 42, alpha: 43]])
+        binder.bind f, new SimpleMapDataBindingSource([name: 'Stuff', gadget: [gamma: 42, alpha: 43]])
 
         then:
         f.name == 'Stuff'
@@ -86,7 +86,7 @@ class SimpleDataBinderSpec extends Specification {
         def w = new Widget()
 
         when:
-        binder.bind(w, new SimpleMapBindingSource([alpha: 1, beta: 2, delta: '42']))
+        binder.bind(w, new SimpleMapDataBindingSource([alpha: 1, beta: 2, delta: '42']))
 
         then:
         w.alpha == 1
@@ -99,7 +99,7 @@ class SimpleDataBinderSpec extends Specification {
         def w = new Widget()
 
         when:
-        binder.bind(w, new SimpleMapBindingSource([epsilon: 42]))
+        binder.bind(w, new SimpleMapDataBindingSource([epsilon: 42]))
 
         then:
         w.epsilon == 42
@@ -111,7 +111,7 @@ class SimpleDataBinderSpec extends Specification {
         def obj = new Widget()
 
         when:
-        binder.bind obj, new SimpleMapBindingSource([widgetChildren: ['Child 1', 'Child 2', 'Child 3'] as String[]])
+        binder.bind obj, new SimpleMapDataBindingSource([widgetChildren: ['Child 1', 'Child 2', 'Child 3'] as String[]])
 
         then:
         3 == obj.widgetChildren?.size()
@@ -129,7 +129,7 @@ class SimpleDataBinderSpec extends Specification {
         def nowCalendar = Calendar.instance
 
         when:
-        binder.bind(obj, new SimpleMapBindingSource([utilDate: nowUtilDate, sqlDate: nowSqlDate, calendar: nowCalendar]))
+        binder.bind(obj, new SimpleMapDataBindingSource([utilDate: nowUtilDate, sqlDate: nowSqlDate, calendar: nowCalendar]))
 
         then:
         obj.utilDate == nowUtilDate
@@ -157,7 +157,7 @@ class SimpleDataBinderSpec extends Specification {
         def f = new Fidget()
 
         when:
-        binder.bind f, new SimpleMapBindingSource([name: 'Stuff', gadget: [gamma: 42, alpha: 43]]), listener
+        binder.bind f, new SimpleMapDataBindingSource([name: 'Stuff', gadget: [gamma: 42, alpha: 43]]), listener
 
         then:
         f.name == 'Stuff'
@@ -190,7 +190,7 @@ class SimpleDataBinderSpec extends Specification {
         }
         
         when:
-        binder.bind obj, new SimpleMapBindingSource([formattedUtilDate: 'BAD']), listener
+        binder.bind obj, new SimpleMapDataBindingSource([formattedUtilDate: 'BAD']), listener
         
         then:
         obj.formattedUtilDate == null
@@ -205,7 +205,7 @@ class SimpleDataBinderSpec extends Specification {
         def obj = new DateContainer()
 
         when:
-        binder.bind obj, new SimpleMapBindingSource([utilDate: '2013-04-15 21:26:31.973', formattedUtilDate: '11151969'])
+        binder.bind obj, new SimpleMapDataBindingSource([utilDate: '2013-04-15 21:26:31.973', formattedUtilDate: '11151969'])
 
         then:
         Calendar.APRIL == obj.utilDate.month
@@ -220,7 +220,7 @@ class SimpleDataBinderSpec extends Specification {
 
         when:
         obj.utilDate = null
-        binder.bind obj, new SimpleMapBindingSource([utilDate: "2011-03-12T09:24:22Z"])
+        binder.bind obj, new SimpleMapDataBindingSource([utilDate: "2011-03-12T09:24:22Z"])
 
         then:
         Calendar.MARCH == obj.utilDate.month
@@ -237,7 +237,7 @@ class SimpleDataBinderSpec extends Specification {
         def obj = new DateContainer()
 
         when:
-        binder.bind(obj, new SimpleMapBindingSource([utilDate_month: '11',
+        binder.bind(obj, new SimpleMapDataBindingSource([utilDate_month: '11',
             utilDate_day: '15',
             utilDate_year: '1969',
             calendar_month: '4',
@@ -266,7 +266,7 @@ class SimpleDataBinderSpec extends Specification {
 
         when:
         obj.utilDate = obj.calendar = obj.sqlDate = null
-        binder.bind(obj, new SimpleMapBindingSource([utilDate_month: '11',
+        binder.bind(obj, new SimpleMapDataBindingSource([utilDate_month: '11',
             utilDate_day: '15',
             utilDate_year: '1969',
             calendar_month: '4',
@@ -295,7 +295,7 @@ class SimpleDataBinderSpec extends Specification {
 
         when:
         obj.utilDate = obj.calendar = obj.sqlDate = null
-        binder.bind(obj, new SimpleMapBindingSource([utilDate_month: '11',
+        binder.bind(obj, new SimpleMapDataBindingSource([utilDate_month: '11',
             utilDate_day: '15',
             utilDate_year: '1969',
             calendar_month: '4',
@@ -325,25 +325,25 @@ class SimpleDataBinderSpec extends Specification {
         def user = new SystemUser()
 
         when:
-        binder.bind user, new SimpleMapBindingSource([role: 'ADMIN'])
+        binder.bind user, new SimpleMapDataBindingSource([role: 'ADMIN'])
 
         then:
         user.role == Role.ADMIN
 
         when:
-        binder.bind user, new SimpleMapBindingSource([role: null])
+        binder.bind user, new SimpleMapDataBindingSource([role: null])
 
         then:
         user.role == null
 
         when:
-        binder.bind user, new SimpleMapBindingSource([role: 'BAD'])
+        binder.bind user, new SimpleMapDataBindingSource([role: 'BAD'])
 
         then:
         user.role == null
 
         when:
-        binder.bind user, new SimpleMapBindingSource([role: 'USER'])
+        binder.bind user, new SimpleMapDataBindingSource([role: 'USER'])
 
         then:
         user.role == Role.USER
@@ -356,14 +356,14 @@ class SimpleDataBinderSpec extends Specification {
         factory.isActive = true
         
         when:
-        binder.bind factory, new SimpleMapBindingSource([_isActive: ''])
+        binder.bind factory, new SimpleMapDataBindingSource([_isActive: ''])
         
         then:
         !factory.isActive
         
         when:
         // the underscore one should be ignored since the real one is present
-        binder.bind factory, new SimpleMapBindingSource([isActive: true, _isActive: ''])
+        binder.bind factory, new SimpleMapDataBindingSource([isActive: true, _isActive: ''])
         
         then:
         factory.isActive
@@ -380,7 +380,7 @@ class SimpleDataBinderSpec extends Specification {
         def factory = new Factory()
 
         when:
-        binder.bind factory, new SimpleMapBindingSource(bindingSource)
+        binder.bind factory, new SimpleMapDataBindingSource(bindingSource)
 
         then:
         factory.name == 'My Factory'
@@ -402,7 +402,7 @@ class SimpleDataBinderSpec extends Specification {
         def widget = new Widget()
 
         when:
-        binder.bind widget, new SimpleMapBindingSource([numbers: ['4', '5', '6']])
+        binder.bind widget, new SimpleMapDataBindingSource([numbers: ['4', '5', '6']])
 
         then:
         widget.numbers.size() == 3
@@ -412,7 +412,7 @@ class SimpleDataBinderSpec extends Specification {
 
         when:
         widget.numbers = [1, 2, 3]
-        binder.bind widget, new SimpleMapBindingSource([numbers: ['4', '5', '6']])
+        binder.bind widget, new SimpleMapDataBindingSource([numbers: ['4', '5', '6']])
 
         then:
         widget.numbers.size() == 3
@@ -427,7 +427,7 @@ class SimpleDataBinderSpec extends Specification {
         def binder = new SimpleDataBinder()
         
         when:
-        binder.bind widget, new SimpleMapBindingSource(['integers[0]': 42, 'integers[1]': '2112'])
+        binder.bind widget, new SimpleMapDataBindingSource(['integers[0]': 42, 'integers[1]': '2112'])
         
         then:
         widget.integers.length == 2
@@ -441,25 +441,25 @@ class SimpleDataBinderSpec extends Specification {
         def binder = new SimpleDataBinder()
         
         when:
-        binder.bind widget, new SimpleMapBindingSource([validNumbers: 3..5])
+        binder.bind widget, new SimpleMapDataBindingSource([validNumbers: 3..5])
         
         then:
         widget.validNumbers == 3..5
         
         when:
-        binder.bind widget, new SimpleMapBindingSource([validNumbers: null])
+        binder.bind widget, new SimpleMapDataBindingSource([validNumbers: null])
         
         then:
         widget.validNumbers == null
         
         when:
-        binder.bind widget, new SimpleMapBindingSource([validNumbers: 1..5])
+        binder.bind widget, new SimpleMapDataBindingSource([validNumbers: 1..5])
         
         then:
         widget.validNumbers == 1..5
         
         when:
-        binder.bind widget, new SimpleMapBindingSource([byteArray: 3..7])
+        binder.bind widget, new SimpleMapDataBindingSource([byteArray: 3..7])
         
         then:
         widget.byteArray.length == 5
@@ -473,7 +473,7 @@ class SimpleDataBinderSpec extends Specification {
         binder.autoGrowCollectionLimit = 3
         
         when:
-        binder.bind widget, new SimpleMapBindingSource(['integers[5]': 50, 'integers[0]': 10, 'integers[3]': 30, 'integers[2]': 20])
+        binder.bind widget, new SimpleMapDataBindingSource(['integers[5]': 50, 'integers[0]': 10, 'integers[3]': 30, 'integers[2]': 20])
         
         then:
         widget.integers.length == 3
@@ -482,7 +482,7 @@ class SimpleDataBinderSpec extends Specification {
         widget.integers[2] == 20
         
         when:
-        binder.bind widget, new SimpleMapBindingSource(['names[5]': 'five', 'names[0]': 'zero', 'names[3]': 'three', 'names[2]': 'two'])
+        binder.bind widget, new SimpleMapDataBindingSource(['names[5]': 'five', 'names[0]': 'zero', 'names[3]': 'three', 'names[2]': 'two'])
         
         then:
         widget.names.size() == 3

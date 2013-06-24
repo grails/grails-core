@@ -40,7 +40,7 @@ import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.SimpleDataBinder
-import org.grails.databinding.SimpleMapBindingSource
+import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.converters.FormattedValueConverter
 import org.grails.databinding.converters.ValueConverter
 import org.grails.databinding.events.DataBindingListener
@@ -82,7 +82,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
      * @param gpath contains an XML representation of the data to be bound to obj
      */
     void bind(obj, GPathResult gpath) {
-        bind obj, new SimpleMapBindingSource(new GPathResultMap(gpath)), getBindingIncludeList(obj)
+        bind obj, new SimpleMapDataBindingSource(new GPathResultMap(gpath)), getBindingIncludeList(obj)
     }
 
     @Override
@@ -173,7 +173,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                         bindProperty obj, source, metaProperty, persistedInstance, listener
                         if(persistedInstance != null) {
                             if(val instanceof Map) {
-                                bind persistedInstance, new SimpleMapBindingSource(val), listener
+                                bind persistedInstance, new SimpleMapDataBindingSource(val), listener
                             } else if(val instanceof DataBindingSource) {
                                 bind persistedInstance, val, listener
                             }
@@ -223,7 +223,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                     }
                     if(instance != null) {
                         if(val instanceof Map) {
-                            bind instance, new SimpleMapBindingSource(val), listener
+                            bind instance, new SimpleMapDataBindingSource(val), listener
                         } else if(val instanceof DataBindingSource) {
                             bind instance, val, listener
                         }
@@ -234,7 +234,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                     addElementToCollectionAt obj, propName, collection, Integer.parseInt(indexedPropertyReferenceDescriptor.index), instance
                     if(instance != null) {
                         if(val instanceof Map) {
-                            bind instance, new SimpleMapBindingSource(val), listener
+                            bind instance, new SimpleMapDataBindingSource(val), listener
                         } else if(val instanceof DataBindingSource) {
                             bind instance, val, listener
                         }
@@ -252,7 +252,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
                             if(map.size() < autoGrowCollectionLimit || map.containsKey(indexedPropertyReferenceDescriptor.index)) {
                                 map[indexedPropertyReferenceDescriptor.index] = persistedInstance
                                 if(val instanceof Map) {
-                                    bind persistedInstance, new SimpleMapBindingSource(val), listener
+                                    bind persistedInstance, new SimpleMapDataBindingSource(val), listener
                                 } else if(val instanceof DataBindingSource) {
                                     bind persistedInstance, val, listener
                                 }
