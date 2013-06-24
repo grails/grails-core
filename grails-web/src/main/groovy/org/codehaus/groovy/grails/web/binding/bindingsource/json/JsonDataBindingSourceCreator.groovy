@@ -74,6 +74,15 @@ class JsonDataBindingSourceCreator {
                 valueToAdd = null
                 reader.nextNull()
                 break
+            case JsonToken.BEGIN_ARRAY:
+               reader.beginArray()
+               def list = []
+               while(reader.hasNext()) {
+                   def nextToken = reader.peek()
+                   list << getValueForToken(nextToken, reader)
+               }
+               valueToAdd = list
+               break
         }
          valueToAdd
     }

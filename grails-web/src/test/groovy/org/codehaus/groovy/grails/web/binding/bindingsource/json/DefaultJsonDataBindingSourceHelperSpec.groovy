@@ -10,7 +10,8 @@ class DefaultJsonDataBindingSourceHelperSpec extends Specification {
         given:
         def json = '''{
   "category": {"name":"laptop", "shouldBeNull": null, "shouldBeTrue": true, "shouldBeFalse": false, "someNumber": 42},
-  "name": "MacBook"
+  "name": "MacBook",
+  "languages" : [ {"name": "Groovy", "company": "GoPivotal"}, {"name": "Java", "company": "Oracle"}]
 }'''
       
         def bindingSource = new JsonDataBindingSourceCreator().createDataBindingSource(json)
@@ -31,5 +32,11 @@ class DefaultJsonDataBindingSourceHelperSpec extends Specification {
         bindingSource['category']['shouldBeFalse'] == false
         bindingSource['category']['someNumber'] == '42'
         bindingSource['category']['shouldBeNull'] == null
+        bindingSource['languages[0]'] instanceof DataBindingSource
+        bindingSource['languages[1]'] instanceof DataBindingSource
+        bindingSource['languages[0]']['name'] == 'Groovy'
+        bindingSource['languages[0]']['company'] == 'GoPivotal'
+        bindingSource['languages[1]']['name'] == 'Java'
+        bindingSource['languages[1]']['company'] == 'Oracle'
     }
 }
