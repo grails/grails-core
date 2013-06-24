@@ -29,9 +29,8 @@ abstract class AbstractRequestBodyDataBindingSourceHelper implements DataBinding
     public DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {
         def req = (HttpServletRequest)bindingSource
         def is = req.getInputStream()
-        def reader = new InputStreamReader(is)
-        convertStringToBindingSource(reader)
+        convertStringToBindingSource(is)
     }
 
-    protected abstract DataBindingSource convertStringToBindingSource(Reader body)
+    protected abstract DataBindingSource convertStringToBindingSource(InputStream body)
 }

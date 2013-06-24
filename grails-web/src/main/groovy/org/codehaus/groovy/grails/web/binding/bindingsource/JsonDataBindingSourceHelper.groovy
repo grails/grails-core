@@ -38,8 +38,8 @@ class JsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHe
     }
     
     @Override
-    protected DataBindingSource convertStringToBindingSource(Reader json) {
-        return new JsonDataBindingSourceCreator().createDataBindingSource(json)
+    protected DataBindingSource convertStringToBindingSource(InputStream inputStream) {
+        return new JsonDataBindingSourceCreator().createDataBindingSource(inputStream)
     }
 
 }
