@@ -20,7 +20,6 @@ import grails.converters.XML
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
-import org.codehaus.groovy.grails.web.converters.JSONParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.XMLParsingParameterCreationListener
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
 import org.codehaus.groovy.grails.web.converters.configuration.ObjectMarshallerRegisterer
@@ -51,8 +50,6 @@ class ConvertersGrailsPlugin {
 
     def doWithSpring = {
         xmlParsingParameterCreationListener(XMLParsingParameterCreationListener)
-
-        jsonParsingParameterCreationListener(JSONParsingParameterCreationListener)
 
         jsonErrorsMarshaller(JsonErrorsMarshaller)
 
