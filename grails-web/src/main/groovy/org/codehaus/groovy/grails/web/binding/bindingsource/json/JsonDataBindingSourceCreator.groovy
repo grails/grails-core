@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource.json
 
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
@@ -52,6 +53,8 @@ class JsonDataBindingSourceCreator {
         new SimpleMapDataBindingSource(map)
     }
 
+    // turn off static compilation per https://jira.codehaus.org/browse/GROOVY-6215
+    @CompileStatic(TypeCheckingMode.SKIP)
     protected processToken(JsonReader reader, Map map, String name) {
         def tokenAfterName = reader.peek()
         def valueToAdd = getValueForToken(tokenAfterName, reader)
