@@ -23,7 +23,8 @@ import org.grails.databinding.SimpleMapDataBindingSource
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 
-//@CompileStatic
+
+@CompileStatic
 class JsonDataBindingSourceCreator {
 
     DataBindingSource createDataBindingSource(String json) {

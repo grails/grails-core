@@ -21,6 +21,14 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.json.JsonDataBinding
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 
+/**
+ * Creates DataBindingSource objects from JSON in the request body
+ * 
+ * @since 2.3
+ * @see DataBindingSource
+ * @see DataBindingSourceHelper
+ * @see JsonDataBindingSourceCreator
+ */
 @CompileStatic
 class JsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHelper {
 

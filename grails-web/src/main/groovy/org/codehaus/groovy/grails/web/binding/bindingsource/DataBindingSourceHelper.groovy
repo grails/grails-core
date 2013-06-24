@@ -18,12 +18,28 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 
+/**
+ * A factory for DataBindingSource instances
+ * 
+ * @since 2.3
+ * @see DataBindingSourceRegistry
+ * @see DataBindingSource
+ *
+ */
 interface DataBindingSourceHelper {
     
     /**
-     * @return The {@link MimeType} of the renderer
+     * @return All of the {@link MimeType} supported by this helper
      */
     MimeType[] getMimeTypes()
     
+    /**
+     * Creates a DataBindingSource suitable for binding bindingSource to bindingTarget
+     * 
+     * @param mimeType a mime type
+     * @param bindingTarget the target of the data binding
+     * @param bindingSource the value being bound
+     * @return a DataBindingSource
+     */
     DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource)
 }

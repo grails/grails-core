@@ -22,6 +22,13 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.xml.GPathResultMap
 
+/**
+ * Creates DataBindingSource objects from XML in the request body
+ * 
+ * @since 2.3
+ * @see DataBindingSource
+ * @see DataBindingSourceHelper
+ */
 @CompileStatic
 class XmlDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHelper {
 

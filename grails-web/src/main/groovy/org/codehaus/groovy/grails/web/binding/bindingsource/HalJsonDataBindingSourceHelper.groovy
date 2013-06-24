@@ -21,6 +21,14 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.hal.json.HalJsonData
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 
+/**
+ * Creates DataBindingSource objects from HAL JSON in the request body
+ * 
+ * @since 2.3
+ * @see DataBindingSource
+ * @see DataBindingSourceHelper
+ * @see HalJsonDataBindingSourceCreator
+ */
 @CompileStatic
 class HalJsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHelper {
 
