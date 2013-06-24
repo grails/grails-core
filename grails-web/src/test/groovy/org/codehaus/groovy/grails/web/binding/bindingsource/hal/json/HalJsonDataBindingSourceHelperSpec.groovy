@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource.hal.json
 
+import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceHelper
+
 import spock.lang.Specification
 
 class HalJsonDataBindingSourceHelperSpec extends Specification {
@@ -17,7 +19,7 @@ class HalJsonDataBindingSourceHelperSpec extends Specification {
 }
 '''
         def inputStream = new ByteArrayInputStream(json.bytes)
-        def bindingSource = new HalJsonDataBindingSourceCreator().createDataBindingSource(inputStream)
+        def bindingSource = new HalJsonDataBindingSourceHelper().createBindingSource(inputStream)
         
         when:
         def propertyNames = bindingSource.propertyNames

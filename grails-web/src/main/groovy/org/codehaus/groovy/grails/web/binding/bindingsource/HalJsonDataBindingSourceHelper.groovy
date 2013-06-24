@@ -17,10 +17,10 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.web.binding.bindingsource.hal.json.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
-import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceHelper
+
+import com.google.gson.stream.JsonReader
 
 /**
  * Creates DataBindingSource objects from HAL JSON in the request body
@@ -28,18 +28,19 @@ import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSource
  * @since 2.3
  * @see DataBindingSource
  * @see DataBindingSourceHelper
- * @see HalJsonDataBindingSourceCreator
  */
 @CompileStatic
-class HalJsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHelper {
+class HalJsonDataBindingSourceHelper extends JsonDataBindingSourceHelper {
 
     @Override
     public MimeType[] getMimeTypes() {
         [MimeType.HAL_JSON] as MimeType[]
     }
 
-    @Override    
-    protected DataBindingSource createBindingSource(InputStream inputStream) {
-        return new HalJsonDataBindingSourceCreator().createDataBindingSource(inputStream)
+    protected processToken(JsonReader reader, Map map, String name) {
+        if(!'_embedded'.equals(name)) {
+            def tokenAfterName = reader.peek()
+            map[name] = getValueForToken(tokenAfterName, reader)
+        }
     }
 }
