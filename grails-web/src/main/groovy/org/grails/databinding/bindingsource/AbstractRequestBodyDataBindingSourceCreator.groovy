@@ -26,6 +26,11 @@ import org.grails.databinding.DataBindingSource
 abstract class AbstractRequestBodyDataBindingSourceCreator implements DataBindingSourceCreator {
 
     @Override
+    Class getTargetType() {
+        Object
+    }
+
+    @Override
     public DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {
         def req = (HttpServletRequest)bindingSource
         def is = req.getInputStream()

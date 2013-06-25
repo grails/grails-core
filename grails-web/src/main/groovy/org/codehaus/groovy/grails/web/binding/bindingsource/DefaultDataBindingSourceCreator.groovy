@@ -34,7 +34,12 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
     public MimeType[] getMimeTypes() {
         [MimeType.ALL] as MimeType[]
     }
-    
+
+    @Override
+    Class getTargetType() {
+        Object
+    }
+
     @Override
     DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {
         final DataBindingSource dataBindingSource

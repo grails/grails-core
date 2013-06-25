@@ -15,26 +15,31 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 import org.springframework.beans.factory.annotation.Autowired
 
 @CompileStatic
-class DefaultDataBindingSourceRegistry implements DataBindingSourceRegistry {
+class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBindingSourceCreator, DataBindingSourceCreatorCacheKey> implements DataBindingSourceRegistry {
 
-    @Autowired(required=false)
-    Set<DataBindingSourceCreator> helpers
+    @Autowired(required = false)
+    void setDataBindingSourceCreators(DataBindingSourceCreator[] dataBindingSourceCreators) {
+        for(dbsc in dataBindingSourceCreators) {
+            addToRegisteredObjects(dbsc.targetType, dbsc)
+        }
+    }
 
     protected DataBindingSourceCreator getDataBindingSourceCreator(MimeType mimeType, Class targetType, Object bindingSource) {
-        def creator = null
-        creator = helpers?.find { DataBindingSourceCreator dbsh -> dbsh.mimeTypes.any { MimeType mt -> mt  == mimeType  }}
-        if(creator == null) {
-            creator = new DefaultDataBindingSourceCreator()
+        def bindingSourceCreator = findMatchingObjectForMimeType(mimeType, targetType)
+        if(bindingSourceCreator == null) {
+            bindingSourceCreator = new DefaultDataBindingSourceCreator()
         }
-        creator
+        return bindingSourceCreator
     }
 
     @Override
@@ -42,5 +47,16 @@ class DefaultDataBindingSourceRegistry implements DataBindingSourceRegistry {
             Object bindingTarget, Object bindingSource) {
         def helper = getDataBindingSourceCreator(mimeType, bindingTarget.getClass(), bindingSource)
         helper.createDataBindingSource(mimeType, bindingTarget, bindingSource)
+    }
+
+    @Override
+    DataBindingSourceCreatorCacheKey createCacheKey(Class type, MimeType mimeType) {
+        return new DataBindingSourceCreatorCacheKey(type, mimeType)
+    }
+
+    @Canonical
+    static class DataBindingSourceCreatorCacheKey {
+        Class type
+        MimeType mimeType
     }
 }

@@ -21,11 +21,22 @@ import org.grails.databinding.DataBindingSource
 /**
  * A registry for DataBindingSourceHelper instances
  * 
- * 
+ *
+ * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @since 2.3
  * @see DataBindingSourceHelper
  */
 interface DataBindingSourceRegistry {
     String BEAN_NAME = 'dataBindingSourceRegistry'
-    DataBindingSource createDataBindingSource(MimeType mimeType, bindingTarget, bindingSource)
+
+    /**
+     * Locates a {@link DataBindingSource} for the given MimeType and binding target
+     * @param mimeType The MimeType
+     * @param bindingTarget The binding target
+     * @param bindingSource The binding source
+     * @return The {@link DataBindingSource}
+     */
+    DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource)
 }

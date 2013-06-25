@@ -22,6 +22,7 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.Canonical
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
+import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
@@ -43,19 +44,13 @@ import java.util.concurrent.ConcurrentLinkedQueue
  * @since 2.3
  */
 @CompileStatic
-class DefaultRendererRegistry implements RendererRegistry{
+class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, RendererCacheKey> implements RendererRegistry{
 
     private Map<ContainerRendererCacheKey, Renderer> containerRenderers = new ConcurrentHashMap<>();
-    private Map<Class, Collection<Renderer>> registeredRenderers = new ConcurrentHashMap<>();
-    private Map<MimeType, Renderer> defaultRenderers = new ConcurrentHashMap<>();
     private Map<ContainerRendererCacheKey, Renderer<?>> containerRendererCache = new ConcurrentLinkedHashMap.Builder<ContainerRendererCacheKey, Renderer<?>>()
-                                                                            .initialCapacity(500)
-                                                                            .maximumWeightedCapacity(1000)
-                                                                            .build();
-    private Map<RendererCacheKey, Renderer<?>> rendererCache = new ConcurrentLinkedHashMap.Builder<RendererCacheKey, Renderer<?>>()
-                                                            .initialCapacity(500)
-                                                            .maximumWeightedCapacity(1000)
-                                                            .build();
+        .initialCapacity(500)
+        .maximumWeightedCapacity(1000)
+        .build();
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 
@@ -97,23 +92,19 @@ class DefaultRendererRegistry implements RendererRegistry{
         }
         else {
             Class targetType = renderer.targetType
-
-            final renderers = registeredRenderers.get(targetType)
-            if (renderers == null) {
-                renderers = new ConcurrentLinkedQueue<Renderer>()
-                registeredRenderers.put(targetType, renderers)
-            }
-            renderers.add(renderer)
+            addToRegisteredObjects(targetType, renderer)
         }
     }
 
     @Override
     void addDefaultRenderer(Renderer<Object> renderer) {
         for(MimeType mt in renderer.mimeTypes) {
-            defaultRenderers.put(mt, renderer)
-            rendererCache.remove(new RendererCacheKey(renderer.getTargetType(), mt))
+            registerDefault(mt, renderer)
+            removeFromCache(renderer.getTargetType(), mt)
         }
     }
+
+
 
     @Override
     void addContainerRenderer(Class objectType, Renderer renderer) {
@@ -128,40 +119,7 @@ class DefaultRendererRegistry implements RendererRegistry{
 
     @Override
     def <T> Renderer<T> findRenderer(MimeType mimeType, T object) {
-        if(object == null) return null
-
-        final clazz = object instanceof Class ? (Class)object : object.getClass()
-
-        final cacheKey = new RendererCacheKey(clazz, mimeType)
-        Renderer<T> renderer = (Renderer<T>)rendererCache.get(cacheKey)
-        if (renderer == null) {
-
-            Class currentClass = clazz
-            while(currentClass != null) {
-
-                renderer = findRendererForType(currentClass, mimeType)
-                if (renderer) {
-                    rendererCache.put(cacheKey, renderer)
-                    return renderer
-                }
-                if (currentClass == Object) break
-                currentClass = currentClass.getSuperclass()
-            }
-
-            final interfaces = ClassUtils.getAllInterfaces(object)
-            for(i in interfaces) {
-                renderer = findRendererForType(i, mimeType)
-                if (renderer) break
-            }
-
-            if (renderer == null) {
-                renderer = defaultRenderers.get(mimeType)
-            }
-        }
-        if (renderer != null) {
-            rendererCache.put(cacheKey, renderer)
-        }
-        return renderer
+        return findMatchingObjectForMimeType(mimeType, object)
     }
 
     @Override
@@ -259,13 +217,9 @@ class DefaultRendererRegistry implements RendererRegistry{
         return false
     }
 
-    protected <T> Renderer findRendererForType(Class<T> currentClass, MimeType mimeType) {
-        Renderer<T> renderer = null
-        final rendererList = registeredRenderers.get(currentClass)
-        if (rendererList) {
-            renderer = rendererList.find { Renderer<T> r -> r.mimeTypes.any { MimeType mt -> mt  == mimeType  }}
-        }
-        renderer
+    @Override
+    RendererCacheKey createCacheKey(Class type, MimeType mimeType) {
+        return new RendererCacheKey(type, mimeType)
     }
 
     @Canonical

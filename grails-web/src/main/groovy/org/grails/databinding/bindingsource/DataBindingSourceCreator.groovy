@@ -16,6 +16,7 @@
 package org.grails.databinding.bindingsource
 
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
 import org.grails.databinding.DataBindingSource
 
 /**
@@ -26,13 +27,12 @@ import org.grails.databinding.DataBindingSource
  * @see DataBindingSource
  *
  */
-interface DataBindingSourceCreator {
-    
+interface DataBindingSourceCreator extends MimeTypeProvider {
+
     /**
-     * @return All of the {@link MimeType} supported by this helper
+     * @return The target type of this creator
      */
-    MimeType[] getMimeTypes()
-    
+    Class getTargetType()
     /**
      * Creates a DataBindingSource suitable for binding bindingSource to bindingTarget
      * 
