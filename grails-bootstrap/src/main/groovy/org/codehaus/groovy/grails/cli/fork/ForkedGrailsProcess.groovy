@@ -42,12 +42,13 @@ abstract class ForkedGrailsProcess {
 
     public static final String DEBUG_FORK = "grails.debug.fork"
     public static final int DEFAULT_DAEMON_PORT = 8091
+    public static final String DEFAULT_DEBUG_ARGS = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
 
     int maxMemory = 1024
     int minMemory = 64
     int maxPerm = 256
     boolean debug = false
-    String debugArgs = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+    String debugArgs = DEFAULT_DEBUG_ARGS
     boolean reloading = true
     boolean forkReserve
     boolean daemon
@@ -473,7 +474,8 @@ abstract class ForkedGrailsProcess {
             "-Dgrails.build.execution.context=${tempFile.canonicalPath}".toString(), "-cp", classpathString])
 
         if (isDebugForkEnabled() && !isReserve) {
-            cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE", debugArgs])
+            cmd.addAll(["-Xdebug", "-Xnoagent", "-Dgrails.full.stacktrace=true", "-Djava.compiler=NONE"])
+            cmd << (debugArgs ?: DEFAULT_DEBUG_ARGS)
         }
         final console = GrailsConsole.getInstance()
         if (isReserve) {
