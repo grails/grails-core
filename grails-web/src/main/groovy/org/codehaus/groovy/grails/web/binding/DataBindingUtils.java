@@ -297,7 +297,8 @@ public class DataBindingUtils {
         }
         final MimeType mimeType;
         if(mimeTypeResolver != null) {
-             mimeType = mimeTypeResolver.resolveRequestMimeType();
+            MimeType resolvedMimeType = mimeTypeResolver.resolveRequestMimeType();
+            mimeType = resolvedMimeType != null ? resolvedMimeType : MimeType.ALL;
         }
         else if(bindingSource instanceof HttpServletRequest) {
             HttpServletRequest req = (HttpServletRequest) bindingSource;
