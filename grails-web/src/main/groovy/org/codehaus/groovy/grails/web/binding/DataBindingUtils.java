@@ -43,7 +43,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.databinding.DataBinder;
 import org.grails.databinding.DataBindingSource;
-import org.grails.databinding.bindingsource.DataBindingSourceHelper;
 import org.grails.databinding.events.DataBindingListener;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
@@ -310,8 +309,7 @@ public class DataBindingUtils {
         } else {
             mimeType = MimeType.ALL;
         }
-        final DataBindingSourceHelper dataBindingSourceHelper = registry.getDataBindingSourceHelper(mimeType, bindingTarget.getClass(), bindingSource);
-        return dataBindingSourceHelper.createDataBindingSource(mimeType, bindingTarget, bindingSource);
+        return registry.createDataBindingSource(mimeType, bindingTarget, bindingSource);
     }
 
     private static DataBinder createGormAwareDataBinder(final GrailsApplication grailsApplication) {
