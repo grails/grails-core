@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.util
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
+import grails.util.Environment
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
@@ -32,6 +33,11 @@ import java.util.concurrent.ConcurrentLinkedQueue
  */
 @CompileStatic
 abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
+
+    private static final MimeTypeProvider NULL_RESOLVE = new MimeTypeProvider() {
+        @Override
+        MimeType[] getMimeTypes() { null }
+    }
 
     private Map<Class, Collection<R >> registeredObjectsByType = new ConcurrentHashMap<>();
     private Map<MimeType, R> defaultObjectsByMimeType = new ConcurrentHashMap<>();
@@ -67,16 +73,16 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
         final clazz = object instanceof Class ? (Class)object : object.getClass()
 
         final K cacheKey = createCacheKey(clazz, mimeType)
-        R renderer = (R)resolvedObjectCache.get(cacheKey)
-        if (renderer == null) {
+        R registeredObject = (R)resolvedObjectCache.get(cacheKey)
+        if (registeredObject == null) {
 
             Class currentClass = clazz
             while(currentClass != null) {
 
-                renderer = findRendererForType(currentClass, mimeType)
-                if (renderer) {
-                    resolvedObjectCache.put(cacheKey, renderer)
-                    return renderer
+                registeredObject = findRegisteredObjectForType(currentClass, mimeType)
+                if (registeredObject) {
+                    resolvedObjectCache.put(cacheKey, registeredObject)
+                    return registeredObject
                 }
                 if (currentClass == Object) break
                 currentClass = currentClass.getSuperclass()
@@ -84,21 +90,28 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
 
             final interfaces = ClassUtils.getAllInterfaces(object)
             for(i in interfaces) {
-                renderer = findRendererForType(i, mimeType)
-                if (renderer) break
+                registeredObject = findRegisteredObjectForType(i, mimeType)
+                if (registeredObject) break
             }
 
-            if (renderer == null) {
-                renderer = (R)defaultObjectsByMimeType.get(mimeType)
+            if (registeredObject == null) {
+                registeredObject = (R)defaultObjectsByMimeType.get(mimeType)
+            }
+            if (registeredObject != null) {
+                resolvedObjectCache.put(cacheKey, registeredObject)
             }
         }
-        if (renderer != null) {
-            resolvedObjectCache.put(cacheKey, renderer)
+
+        if(registeredObject == null && !Environment.isDevelopmentMode()) {
+            resolvedObjectCache.put(cacheKey, (R)NULL_RESOLVE)
         }
-        return renderer
+        else if(NULL_RESOLVE.is(registeredObject)) {
+            return null
+        }
+        return registeredObject
     }
 
-    protected R findRendererForType(Class currentClass, MimeType mimeType) {
+    protected R findRegisteredObjectForType(Class currentClass, MimeType mimeType) {
         R findObject = null
         final objectList = registeredObjectsByType.get(currentClass)
         if (objectList) {
