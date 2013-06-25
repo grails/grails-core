@@ -163,35 +163,34 @@ class SimpleDataBinder implements DataBinder {
     void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
         def keys = source.getPropertyNames()
         for(String key in keys) {
-            if(filter && !key.startsWith(filter + '.')) {
-                return
-            }
-            String propName = key
-            if(filter) {
-                propName = key[(1+filter.size())..-1]
-            }
-            def metaProperty = obj.metaClass.getMetaProperty propName
-            
-            if(metaProperty) { // normal property
-                if(isOkToBind(metaProperty.name, whiteList, blackList)) {
-                    def val = source[key]
-                    processProperty obj, metaProperty, val, source, listener
+            if(!filter || key.startsWith(filter + '.')) {
+                String propName = key
+                if(filter) {
+                    propName = key[(1+filter.size())..-1]
                 }
-            } else {
-                def descriptor = getIndexedPropertyReferenceDescriptor propName
-                if(descriptor) { // indexed property
-                    metaProperty = obj.metaClass.getMetaProperty descriptor.propertyName
-                    if(metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
-                        def val = source.getPropertyValue key
-                        processIndexedProperty obj, metaProperty, descriptor, val, source, listener
+                def metaProperty = obj.metaClass.getMetaProperty propName
+            
+                if(metaProperty) { // normal property
+                    if(isOkToBind(metaProperty.name, whiteList, blackList)) {
+                        def val = source[key]
+                        processProperty obj, metaProperty, val, source, listener
                     }
-                } else if(propName.startsWith('_')) { // boolean special handling
-                    def restOfPropertyName = propName[1..-1]
-                    if(!source.containsProperty(restOfPropertyName)) {
-                        metaProperty = obj.metaClass.getMetaProperty restOfPropertyName
-                        if(metaProperty && isOkToBind(restOfPropertyName, whiteList, blackList)) {
-                            if((Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type)) {
-                                bindProperty obj, source, metaProperty, false, listener
+                } else {
+                    def descriptor = getIndexedPropertyReferenceDescriptor propName
+                    if(descriptor) { // indexed property
+                        metaProperty = obj.metaClass.getMetaProperty descriptor.propertyName
+                        if(metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
+                            def val = source.getPropertyValue key
+                            processIndexedProperty obj, metaProperty, descriptor, val, source, listener
+                        }
+                    } else if(propName.startsWith('_')) { // boolean special handling
+                        def restOfPropertyName = propName[1..-1]
+                        if(!source.containsProperty(restOfPropertyName)) {
+                            metaProperty = obj.metaClass.getMetaProperty restOfPropertyName
+                            if(metaProperty && isOkToBind(restOfPropertyName, whiteList, blackList)) {
+                                if((Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type)) {
+                                    bindProperty obj, source, metaProperty, false, listener
+                                }
                             }
                         }
                     }
