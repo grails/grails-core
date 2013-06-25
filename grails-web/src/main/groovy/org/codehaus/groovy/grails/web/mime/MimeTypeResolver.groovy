@@ -36,4 +36,14 @@ public interface MimeTypeResolver {
      * @return The response format requested by the client
      */
     MimeType resolveResponseMimeType(GrailsWebRequest request)
+
+    /**
+     * @return The request format sent by the client
+     */
+    MimeType resolveRequestMimeType()
+
+    /**
+     * @return The request format sent by the client
+     */
+    MimeType resolveRequestMimeType(GrailsWebRequest request)
 }
