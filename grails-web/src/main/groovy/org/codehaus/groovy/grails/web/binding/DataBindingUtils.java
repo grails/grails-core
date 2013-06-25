@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry;
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry;
 import org.codehaus.groovy.grails.web.mime.MimeType;
+import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.databinding.DataBinder;
@@ -278,13 +279,16 @@ public class DataBindingUtils {
 
     protected static DataBindingSource createDataBindingSource(GrailsApplication grailsApplication, Object bindingTarget, Object bindingSource) {
         // TODO: obviously temporary, work in progress
-        // TODO: use mime type resolver
         DataBindingSourceRegistry registry = null;
+        MimeTypeResolver mimeTypeResolver = null;
         if(grailsApplication != null) {
             ApplicationContext context = grailsApplication.getMainContext();
             if(context != null) {
                 if(context.containsBean(DataBindingSourceRegistry.BEAN_NAME)) {
                     registry = context.getBean(DataBindingSourceRegistry.BEAN_NAME, DataBindingSourceRegistry.class);
+                }
+                if(context.containsBean(MimeTypeResolver.BEAN_NAME)) {
+                    mimeTypeResolver = context.getBean(MimeTypeResolver.BEAN_NAME, MimeTypeResolver.class);
                 }
             }
         }
@@ -292,19 +296,17 @@ public class DataBindingUtils {
             registry = new DefaultDataBindingSourceRegistry();
         }
         final MimeType mimeType;
-        if(bindingSource instanceof HttpServletRequest) {
+        if(mimeTypeResolver != null) {
+             mimeType = mimeTypeResolver.resolveRequestMimeType();
+        }
+        else if(bindingSource instanceof HttpServletRequest) {
             HttpServletRequest req = (HttpServletRequest) bindingSource;
             String contentType = req.getContentType();
-            if("application/json".equals(contentType)) {
-                mimeType = MimeType.JSON;
-            } else if("application/hal+json".equals(contentType)) {
-                mimeType = MimeType.HAL_JSON;
-            } else if("application/xml".equals(contentType)) {
-                mimeType = MimeType.XML;
-            } else if("text/xml".equals(contentType)) {
-                mimeType = MimeType.TEXT_XML;
-            } else {
+            if(contentType != null) {
                 mimeType = new MimeType(contentType);
+            }
+            else {
+                mimeType = MimeType.ALL;
             }
         } else {
             mimeType = MimeType.ALL;

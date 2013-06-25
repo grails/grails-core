@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.mimes
 
 import grails.util.GrailsUtil
 import org.codehaus.groovy.grails.web.mime.DefaultMimeTypeResolver
+import org.codehaus.groovy.grails.web.mime.MimeTypeResolver
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
@@ -49,7 +50,7 @@ class MimeTypesGrailsPlugin {
         grailsMimeUtility(DefaultMimeUtility, mimeTypesBeanRef)
         requestMimeTypesApi(RequestMimeTypesApi, grailsAppBeanRef, mimeTypesBeanRef)
         responseMimeTypesApi(ResponseMimeTypesApi, grailsAppBeanRef, mimeTypesBeanRef)
-        mimeTypeResolver(DefaultMimeTypeResolver)
+        "${MimeTypeResolver.BEAN_NAME}"(DefaultMimeTypeResolver)
     }
 
     def doWithDynamicMethods = { ApplicationContext ctx ->

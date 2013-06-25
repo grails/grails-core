@@ -27,6 +27,8 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
  */
 public interface MimeTypeResolver {
 
+    String BEAN_NAME = "mimeTypeResolver"
+
     /**
      * @return The response format requested by the client
      */
