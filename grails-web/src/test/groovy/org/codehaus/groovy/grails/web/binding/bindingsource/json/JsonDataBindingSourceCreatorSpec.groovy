@@ -27,15 +27,15 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
         bindingSource.containsProperty 'category'
         bindingSource.containsProperty 'name'
         bindingSource['name'] == 'MacBook'
-        bindingSource['category'] instanceof DataBindingSource
+        bindingSource['category'] instanceof Map
         bindingSource['category'].size() == 5
         bindingSource['category']['name'] == 'laptop'
         bindingSource['category']['shouldBeTrue'] == true
         bindingSource['category']['shouldBeFalse'] == false
         bindingSource['category']['someNumber'].intValue() == 42
         bindingSource['category']['shouldBeNull'] == null
-        bindingSource['languages[0]'] instanceof DataBindingSource
-        bindingSource['languages[1]'] instanceof DataBindingSource
+        bindingSource['languages[0]'] instanceof Map
+        bindingSource['languages[1]'] instanceof Map
         bindingSource['languages[0]']['name'] == 'Groovy'
         bindingSource['languages[0]']['company'] == 'GoPivotal'
         bindingSource['languages[1]']['name'] == 'Java'

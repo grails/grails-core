@@ -3,11 +3,13 @@ package org.codehaus.groovy.grails.web.binding
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
+import org.junit.Test
 
 @TestFor(NestedXmlController)
 @Mock([Person, Location, Foo, Bar])
 class NestedXmlBindingTests {
 
+    @Test
     void testNestedXmlBinding() {
         request.xml = '''
 <person>
@@ -31,6 +33,7 @@ class NestedXmlBindingTests {
         assert p.location.billingAddress == 'bar'
     }
 
+    @Test
     void testNestedXmlBindingWithId() {
         request.xml = '''
 <person>
@@ -55,6 +58,7 @@ class NestedXmlBindingTests {
         assert p.location.billingAddress == 'bar'
     }
 
+    @Test
     void testBindToArrayOfDomains() {
         request.xml = '''
 <person>
@@ -87,6 +91,7 @@ class NestedXmlBindingTests {
 
     }
 
+    @Test
     void testBindToOne() {
         request.xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <foo>
@@ -102,6 +107,7 @@ class NestedXmlBindingTests {
         assert result.bar.id == 1
     }
 
+    @Test
     void testBindToArrayOfDomainsWithJson() {
         request.json = '''
 {

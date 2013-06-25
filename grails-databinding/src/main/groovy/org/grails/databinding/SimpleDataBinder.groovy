@@ -521,11 +521,13 @@ class SimpleDataBinder implements DataBinder {
         if(removeExistingElements == true) {
             coll.clear()
         }
-        collection?.each { element ->
-            if(element == null || referencedType.isAssignableFrom(element.getClass())) {
-                coll << element
-            } else {
-                coll << convert(referencedType, element)
+        if(collection) {
+            for(element in collection) {
+                if(element == null || referencedType.isAssignableFrom(element.getClass())) {
+                    coll << element
+                } else {
+                    coll << convert(referencedType, element)
+                }
             }
         }
     }

@@ -90,7 +90,7 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
                 return value.asString
             }
         } else if (value.isJsonObject()) {
-            return new SimpleMapDataBindingSource(createJsonObjectMap((JsonObject) value))
+            return createJsonObjectMap((JsonObject) value)
         } else if(value.isJsonArray()) {
             return new JsonArrayList((JsonArray)value, gson)
         }
