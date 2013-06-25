@@ -42,7 +42,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         this.configuredMimeTypes = configuredMimeTypes
     }
 
-    MimeType[] parse(String header) {
+    MimeType[] parse(String header, MimeType fallbackMimeType = null) {
         List<MimeType> mimes = []
         MimeType[] mimeConfig = configuredMimeTypes
         if (!mimeConfig) {
@@ -82,7 +82,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
 
         if (!mimes) {
             LOG.debug "No configured mime types found for Accept header: $header"
-            return MimeType.createDefaults()
+            return fallbackMimeType ? [fallbackMimeType] as MimeType[] : MimeType.createDefaults()
         }
 
         // remove duplicate text/xml and application/xml entries

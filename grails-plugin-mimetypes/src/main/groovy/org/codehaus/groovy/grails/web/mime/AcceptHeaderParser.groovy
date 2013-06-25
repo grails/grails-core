@@ -31,4 +31,9 @@ interface AcceptHeaderParser {
      * Parses an Accept header into an ordered array of MimeType definitions
      */
     MimeType[] parse(String header)
+
+    /**
+     * Parses an Accept header into an ordered array of MimeType definitions
+     */
+    MimeType[] parse(String header, MimeType fallbackMimeType)
 }

@@ -77,7 +77,7 @@ class RequestMimeTypesApi {
             def parser = new DefaultAcceptHeaderParser(getMimeTypes())
             def header = request.contentType
             if (!header) header = request.getHeader(HttpHeaders.CONTENT_TYPE)
-            result = parser.parse(header)
+            result = parser.parse(header, new MimeType(header))
 
             request.setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, result)
         }
