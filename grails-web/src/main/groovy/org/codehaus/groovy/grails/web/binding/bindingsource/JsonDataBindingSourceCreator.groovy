@@ -39,7 +39,7 @@ import java.util.regex.Pattern
  * @author Graeme Rocher
  *
  * @see DataBindingSource
- * @see DataBindingSourceHelper
+ * @see DataBindingSourceCreator
  */
 @CompileStatic
 class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCreator {

@@ -33,7 +33,7 @@ import org.grails.databinding.DataBindingSource
  * @author Graeme Rocher
  *
  * @see DataBindingSource
- * @see DataBindingSourceHelper
+ * @see DataBindingSourceCreator
  */
 @CompileStatic
 class HalJsonDataBindingSourceCreator extends JsonDataBindingSourceCreator {

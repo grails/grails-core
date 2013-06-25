@@ -28,7 +28,7 @@ import org.grails.databinding.xml.GPathResultMap
  * 
  * @since 2.3
  * @see DataBindingSource
- * @see DataBindingSourceHelper
+ * @see DataBindingSourceCreator
  */
 @CompileStatic
 class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCreator {
