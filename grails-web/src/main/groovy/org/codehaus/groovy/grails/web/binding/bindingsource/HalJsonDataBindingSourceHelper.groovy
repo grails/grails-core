@@ -15,32 +15,58 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import com.google.gson.Gson
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 
-import com.google.gson.stream.JsonReader
 
 /**
  * Creates DataBindingSource objects from HAL JSON in the request body
  * 
  * @since 2.3
+ *
+ * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @see DataBindingSource
  * @see DataBindingSourceHelper
  */
 @CompileStatic
 class HalJsonDataBindingSourceHelper extends JsonDataBindingSourceHelper {
 
+    public static final String HAL_EMBEDDED_ELEMENT = "_embedded"
+
     @Override
     public MimeType[] getMimeTypes() {
         [MimeType.HAL_JSON] as MimeType[]
     }
 
-    protected processToken(JsonReader reader, Map map, String name) {
-        if(!'_embedded'.equals(name)) {
-            def tokenAfterName = reader.peek()
-            map[name] = getValueForToken(tokenAfterName, reader)
+    @Override
+    protected Map createJsonObjectMap(JsonElement jsonElement) {
+        jsonElement instanceof JsonObject ? new HalJsonObjectMap(jsonElement, gson) : [:]
+    }
+
+    @CompileStatic
+    class HalJsonObjectMap extends JsonDataBindingSourceHelper.JsonObjectMap {
+
+        HalJsonObjectMap(JsonObject jsonObject, Gson gson) {
+            super(jsonObject, gson)
+
+            if(jsonObject.has(HAL_EMBEDDED_ELEMENT)) {
+                final embeddedObject = jsonObject.get(HAL_EMBEDDED_ELEMENT)
+                jsonObject.remove(HAL_EMBEDDED_ELEMENT)
+                if(embeddedObject instanceof JsonObject) {
+                    JsonObject embeddedJson = (JsonObject)embeddedObject
+
+                    for(entry in embeddedJson.entrySet()) {
+                        jsonObject.add(entry.key, entry.value)
+                    }
+                }
+            }
         }
     }
 }

@@ -15,26 +15,39 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import com.google.gson.Gson
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
+import com.google.gson.JsonPrimitive
+import com.google.gson.stream.JsonReader
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceHelper
+import org.springframework.beans.factory.annotation.Autowired
 
-import com.google.gson.stream.JsonReader
-import com.google.gson.stream.JsonToken
+import java.util.regex.Pattern
 
 /**
  * Creates DataBindingSource objects from JSON in the request body
  * 
  * @since 2.3
+ * @author Jeff Brown
+ * @author Graeme Rocher
+ *
  * @see DataBindingSource
  * @see DataBindingSourceHelper
  */
 @CompileStatic
 class JsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHelper {
+
+    private static final Pattern INDEX_PATTERN = ~/^(\S+)\[(\d+)\]$/
+
+    @Autowired(required = false)
+    Gson gson = new Gson()
 
     @Override
     public MimeType[] getMimeTypes() {
@@ -45,72 +58,159 @@ class JsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHe
     protected DataBindingSource createBindingSource(InputStream inputStream) {
         def jsonReader = new JsonReader(new InputStreamReader(inputStream))
         jsonReader.setLenient true
-        jsonToBindingSource jsonReader
-    }
-    
-    protected DataBindingSource jsonToBindingSource(JsonReader reader) {
-        def map = [:]
-        while(reader.hasNext()) {
-            def nextToken = reader.peek()
-            switch(nextToken) {
-                case JsonToken.NAME:
-                    def name = reader.nextName()
-                    processToken(reader, map, name)
-                    break
-                case JsonToken.BEGIN_OBJECT:
-                    reader.beginObject()
-                    break
-                default:
-                    reader.skipValue()
-            }
-        }
-        new SimpleMapDataBindingSource(map)
+        def parser = new JsonParser()
+        final jsonElement = parser.parse(jsonReader)
+
+        Map result = createJsonObjectMap(jsonElement)
+
+        return new SimpleMapDataBindingSource(result)
     }
 
-    // turn off static compilation per https://jira.codehaus.org/browse/GROOVY-6215
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected processToken(JsonReader reader, Map map, String name) {
-        def tokenAfterName = reader.peek()
-        def valueToAdd = getValueForToken(tokenAfterName, reader)
-        if(valueToAdd instanceof List) {
-            valueToAdd.eachWithIndex { item, idx ->
-                map["${name}[${idx}]".toString()] = item
+    /**
+     * Returns a map for the given JsonElement. Subclasses can override to customize the format of the map
+     *
+     * @param jsonElement The JSON element
+     * @return The map
+     */
+    protected Map createJsonObjectMap(JsonElement jsonElement) {
+        jsonElement instanceof JsonObject ? new JsonObjectMap(jsonElement, gson) : [:]
+    }
+
+
+    Object getValueForJsonElement(JsonElement value, Gson gson) {
+        if (value == null || value.isJsonNull()) {
+            return null
+        } else if (value.isJsonPrimitive()) {
+            JsonPrimitive prim = (JsonPrimitive) value
+            if (prim.isNumber()) {
+                return value.asNumber
+            } else if (prim.isBoolean()) {
+                return value.asBoolean
+            } else {
+                return value.asString
             }
-        } else {
-            map[name] = valueToAdd
+        } else if (value.isJsonObject()) {
+            return new SimpleMapDataBindingSource(createJsonObjectMap((JsonObject) value))
+        } else if(value.isJsonArray()) {
+            return new JsonArrayList((JsonArray)value, gson)
+        }
+
+    }
+
+    @CompileStatic
+    class JsonObjectMap implements Map {
+
+        JsonObject jsonObject
+        Gson gson
+
+        JsonObjectMap(JsonObject jsonObject, Gson gson) {
+            this.jsonObject = jsonObject
+            this.gson = gson
+        }
+
+        @Override
+        int size() {
+            jsonObject.entrySet().size()
+        }
+
+        @Override
+        boolean isEmpty() {
+            jsonObject.entrySet().isEmpty()
+        }
+
+        @Override
+        boolean containsKey(Object o) {
+            jsonObject.has(o.toString())
+        }
+
+        @Override
+        boolean containsValue(Object o) {
+            get(o) != null
+        }
+
+        @Override
+        Object get(Object o) {
+            final key = o.toString()
+            final value = jsonObject.get(key)
+            if(value != null) {
+                return getValueForJsonElement(value, gson)
+            }
+            else {
+                final matcher = INDEX_PATTERN.matcher(key)
+                if(matcher.find()) {
+                    String newKey = matcher.group(1)
+                    final listValue = jsonObject.get(newKey)
+                    if(listValue.isJsonArray()) {
+                        JsonArray array = (JsonArray)listValue
+                        int index = matcher.group(2).toInteger()
+                        getValueForJsonElement(array.get(index), gson)
+                    }
+                }
+            }
+        }
+
+
+        @Override
+        Object put(Object k, Object v) {
+            jsonObject.add(k.toString(), gson.toJsonTree(v))
+        }
+
+        @Override
+        Object remove(Object o) {
+            jsonObject.remove(o.toString())
+        }
+
+        @Override
+        void putAll(Map map) {
+            for(entry in map.entrySet()) {
+                put(entry.key, entry.value)
+            }
+        }
+
+        @Override
+        void clear() {
+            for(entry in entrySet())  {
+                remove(entry.key)
+            }
+        }
+
+        @Override
+        Set keySet() {
+            jsonObject.entrySet().collect{ Map.Entry entry -> entry.key }.toSet()
+        }
+
+        @Override
+        Collection values() {
+            jsonObject.entrySet().collect{ Map.Entry entry -> entry.value}
+        }
+
+        @Override
+        Set<Map.Entry> entrySet() {
+            jsonObject.entrySet()
         }
     }
 
-    protected getValueForToken(JsonToken currentToken, JsonReader reader) {
-        def valueToAdd
-        switch(currentToken) {
-            case JsonToken.BEGIN_OBJECT:
-                valueToAdd = jsonToBindingSource reader
-                reader.endObject()
-                break
-            case JsonToken.STRING:
-            case JsonToken.NUMBER:
-                valueToAdd = reader.nextString()
-                break
-            case JsonToken.BOOLEAN:
-                valueToAdd = reader.nextBoolean()
-                break
-            case JsonToken.NULL:
-                valueToAdd = null
-                reader.nextNull()
-                break
-            case JsonToken.BEGIN_ARRAY:
-               reader.beginArray()
-               def list = []
-               while(reader.hasNext()) {
-                   def nextToken = reader.peek()
-                   list << getValueForToken(nextToken, reader)
-               }
-               valueToAdd = list
-               reader.endArray()
-               break
+    @CompileStatic
+    class JsonArrayList extends AbstractList {
+
+        JsonArray jsonArray
+        Gson gson
+
+        JsonArrayList(JsonArray jsonArray, Gson gson) {
+            this.jsonArray = jsonArray
+            this.gson = gson
         }
-         valueToAdd
+
+        @Override
+        int size() {
+            jsonArray.size()
+        }
+
+        @Override
+        Object get(int i) {
+            final jsonElement = jsonArray.get(i)
+            return getValueForJsonElement(jsonElement, gson)
+        }
     }
 }
 

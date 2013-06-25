@@ -32,7 +32,7 @@ class JsonDataBindingSourceHelperSpec extends Specification {
         bindingSource['category']['name'] == 'laptop'
         bindingSource['category']['shouldBeTrue'] == true
         bindingSource['category']['shouldBeFalse'] == false
-        bindingSource['category']['someNumber'] == '42'
+        bindingSource['category']['someNumber'].intValue() == 42
         bindingSource['category']['shouldBeNull'] == null
         bindingSource['languages[0]'] instanceof DataBindingSource
         bindingSource['languages[1]'] instanceof DataBindingSource
