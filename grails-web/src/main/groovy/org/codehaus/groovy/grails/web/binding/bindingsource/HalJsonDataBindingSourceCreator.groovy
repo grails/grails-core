@@ -36,7 +36,7 @@ import org.grails.databinding.DataBindingSource
  * @see DataBindingSourceHelper
  */
 @CompileStatic
-class HalJsonDataBindingSourceHelper extends JsonDataBindingSourceHelper {
+class HalJsonDataBindingSourceCreator extends JsonDataBindingSourceCreator {
 
     public static final String HAL_EMBEDDED_ELEMENT = "_embedded"
 
@@ -51,7 +51,7 @@ class HalJsonDataBindingSourceHelper extends JsonDataBindingSourceHelper {
     }
 
     @CompileStatic
-    class HalJsonObjectMap extends JsonDataBindingSourceHelper.JsonObjectMap {
+    class HalJsonObjectMap extends JsonDataBindingSourceCreator.JsonObjectMap {
 
         HalJsonObjectMap(JsonObject jsonObject, Gson gson) {
             super(jsonObject, gson)

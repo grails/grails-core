@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 
 @CompileStatic
-abstract class AbstractRequestBodyDataBindingSourceHelper implements DataBindingSourceHelper {
+abstract class AbstractRequestBodyDataBindingSourceCreator implements DataBindingSourceCreator {
 
     @Override
     public DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {

@@ -20,7 +20,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
-import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceHelper
+import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
 import org.grails.databinding.xml.GPathResultMap
 
 /**
@@ -31,7 +31,7 @@ import org.grails.databinding.xml.GPathResultMap
  * @see DataBindingSourceHelper
  */
 @CompileStatic
-class XmlDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHelper {
+class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCreator {
 
     @Override
     public MimeType[] getMimeTypes() {

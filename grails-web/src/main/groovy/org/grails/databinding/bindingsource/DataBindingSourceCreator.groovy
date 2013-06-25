@@ -26,7 +26,7 @@ import org.grails.databinding.DataBindingSource
  * @see DataBindingSource
  *
  */
-interface DataBindingSourceHelper {
+interface DataBindingSourceCreator {
     
     /**
      * @return All of the {@link MimeType} supported by this helper

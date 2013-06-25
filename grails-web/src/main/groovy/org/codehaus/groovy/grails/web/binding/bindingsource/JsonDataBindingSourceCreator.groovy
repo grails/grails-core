@@ -26,7 +26,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
-import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceHelper
+import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
 import org.springframework.beans.factory.annotation.Autowired
 
 import java.util.regex.Pattern
@@ -42,7 +42,7 @@ import java.util.regex.Pattern
  * @see DataBindingSourceHelper
  */
 @CompileStatic
-class JsonDataBindingSourceHelper extends AbstractRequestBodyDataBindingSourceHelper {
+class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCreator {
 
     private static final Pattern INDEX_PATTERN = ~/^(\S+)\[(\d+)\]$/
 

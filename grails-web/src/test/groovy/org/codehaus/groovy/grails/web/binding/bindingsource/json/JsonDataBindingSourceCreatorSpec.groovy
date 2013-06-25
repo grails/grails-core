@@ -1,11 +1,11 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource.json
 
-import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceHelper
+import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.grails.databinding.DataBindingSource
 
 import spock.lang.Specification
 
-class JsonDataBindingSourceHelperSpec extends Specification {
+class JsonDataBindingSourceCreatorSpec extends Specification {
     
     void 'Test JSON parsing'() {
         given:
@@ -16,7 +16,7 @@ class JsonDataBindingSourceHelperSpec extends Specification {
 }'''
 
         def inputStream = new ByteArrayInputStream(json.bytes)      
-        def bindingSource = new JsonDataBindingSourceHelper().createBindingSource(inputStream)
+        def bindingSource = new JsonDataBindingSourceCreator().createBindingSource(inputStream)
         
         when:
         def propertyNames = bindingSource.propertyNames

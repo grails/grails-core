@@ -25,10 +25,10 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
-import org.grails.databinding.bindingsource.DataBindingSourceHelper
+import org.grails.databinding.bindingsource.DataBindingSourceCreator
 
 @CompileStatic
-class DefaultDataBindingSourceHelper implements DataBindingSourceHelper {
+class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
 
     @Override
     public MimeType[] getMimeTypes() {
