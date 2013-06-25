@@ -81,8 +81,6 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
 
-    final Class<T> targetType
-
     boolean prettyPrint = Environment.isDevelopmentMode()
     boolean absoluteLinks = true
     String encoding = "UTF-8"

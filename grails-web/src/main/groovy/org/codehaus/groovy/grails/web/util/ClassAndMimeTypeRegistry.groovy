@@ -46,10 +46,13 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
 
     void addToRegisteredObjects(Class targetType, R object) {
         Collection<R> rendererList = getRegisteredObjects(targetType)
-        rendererList.add(object)
+        rendererList?.add(object)
     }
 
     Collection<R> getRegisteredObjects(Class targetType) {
+        if(targetType == null) {
+            return null
+        }
         final registeredObjects = registeredObjectsByType.get(targetType)
         if (registeredObjects == null) {
             registeredObjects = new ConcurrentLinkedQueue<R>()
@@ -99,7 +102,18 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
         R findObject = null
         final objectList = registeredObjectsByType.get(currentClass)
         if (objectList) {
-            findObject = (R)objectList.find { MimeTypeProvider r -> r.mimeTypes.any { MimeType mt -> mt  == mimeType  }}
+            findObject = (R)objectList.find { MimeTypeProvider r ->
+                r.mimeTypes.any { MimeType mt ->
+                    mt  == mimeType
+                }
+            }
+            if(findObject == null) {
+                findObject = (R)objectList.find { MimeTypeProvider r ->
+                    r.mimeTypes.any { MimeType mt ->
+                        mt.name == mimeType.name
+                    }
+                }
+            }
         }
         findObject
     }

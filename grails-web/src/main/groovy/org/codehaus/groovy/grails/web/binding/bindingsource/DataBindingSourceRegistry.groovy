@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
+import org.grails.databinding.bindingsource.DataBindingSourceCreator
 
 /**
  * A registry for DataBindingSourceHelper instances
@@ -30,6 +31,12 @@ import org.grails.databinding.DataBindingSource
  */
 interface DataBindingSourceRegistry {
     String BEAN_NAME = 'dataBindingSourceRegistry'
+
+    /**
+     * Adds a new {@link DataBindingSourceCreator} to the registry
+     * @param creator The {@link DataBindingSourceCreator}
+     */
+    void addDataBindingSourceCreator(DataBindingSourceCreator creator )
 
     /**
      * Locates a {@link DataBindingSource} for the given MimeType and binding target

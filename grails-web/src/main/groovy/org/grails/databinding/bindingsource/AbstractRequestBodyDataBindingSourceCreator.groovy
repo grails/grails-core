@@ -16,6 +16,8 @@
 package org.grails.databinding.bindingsource
 
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceCreator
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.databinding.SimpleMapDataBindingSource
 
 import javax.servlet.http.HttpServletRequest
@@ -24,7 +26,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 
 @CompileStatic
-abstract class AbstractRequestBodyDataBindingSourceCreator implements DataBindingSourceCreator {
+abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBindingSourceCreator {
 
     @Override
     Class getTargetType() {
@@ -33,13 +35,18 @@ abstract class AbstractRequestBodyDataBindingSourceCreator implements DataBindin
 
     @Override
     public DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {
-        if(bindingSource instanceof HttpServletRequest) {
+        if(bindingSource instanceof GrailsParameterMap) {
+            def req = bindingSource.getRequest()
+            def is = req.getInputStream()
+            return createBindingSource(is)
+        }
+        else if(bindingSource instanceof HttpServletRequest) {
             def req = (HttpServletRequest)bindingSource
             def is = req.getInputStream()
             return createBindingSource(is)
         }
-        else if(bindingSource instanceof Map) {
-            return new SimpleMapDataBindingSource(bindingSource)
+        else  {
+            return super.createDataBindingSource(mimeType, bindingTarget, bindingSource)
         }
     }
 

@@ -43,6 +43,11 @@ class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBind
     }
 
     @Override
+    void addDataBindingSourceCreator(DataBindingSourceCreator creator) {
+        addToRegisteredObjects(creator.targetType, creator)
+    }
+
+    @Override
     public DataBindingSource createDataBindingSource(MimeType mimeType,
             Object bindingTarget, Object bindingSource) {
         def helper = getDataBindingSourceCreator(mimeType, bindingTarget.getClass(), bindingSource)

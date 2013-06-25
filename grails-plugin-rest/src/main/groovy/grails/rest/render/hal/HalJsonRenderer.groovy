@@ -16,12 +16,13 @@
 package grails.rest.render.hal
 
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.google.gson.stream.JsonWriter
 import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.util.AbstractLinkingRenderer
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
+import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.Association
@@ -29,7 +30,8 @@ import org.grails.datastore.mapping.model.types.ToOne
 import org.springframework.beans.PropertyAccessorFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
+
+import javax.annotation.PostConstruct
 
 /**
  * Renders domain instances in HAL JSON format (see http://tools.ietf.org/html/draft-kelly-json-hal-05)
@@ -46,8 +48,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     private static final MimeType[] DEFAULT_MIME_TYPES = [MIME_TYPE] as MimeType[]
 
 
-    @Autowired(required = false)
-    Gson gson = new Gson()
+    private Gson gson = new Gson()
 
     HalJsonRenderer(Class<T> targetType) {
         super(targetType, DEFAULT_MIME_TYPES)
@@ -57,6 +58,35 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         super(targetType, mimeTypes)
     }
 
+    @Autowired(required = false)
+    void setGson(Gson gson) {
+        this.gson = gson
+    }
+
+    @Autowired(required = false)
+    DataBindingSourceRegistry dataBindingSourceRegistry
+
+    @PostConstruct
+    void initialize() {
+        if(dataBindingSourceRegistry != null) {
+
+            final thisType = getTargetType()
+            final thisMimeTypes = getMimeTypes()
+            final halDataBindingSourceCreator = new HalJsonDataBindingSourceCreator() {
+                @Override
+                Class getTargetType() {
+                    thisType
+                }
+
+                @Override
+                MimeType[] getMimeTypes() {
+                    thisMimeTypes
+                }
+            }
+            halDataBindingSourceCreator.gson = gson
+            dataBindingSourceRegistry.addDataBindingSourceCreator(halDataBindingSourceCreator)
+        }
+    }
 
     @Override
     void renderInternal(T object, RenderContext context) {
@@ -226,4 +256,5 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     protected void writeDomainProperty(value, String propertyName, writer) {
         ((JsonWriter)writer).name(propertyName).value(gson.toJson(value))
     }
+
 }
