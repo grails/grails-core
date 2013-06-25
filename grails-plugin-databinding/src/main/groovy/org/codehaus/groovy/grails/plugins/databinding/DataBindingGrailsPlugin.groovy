@@ -59,8 +59,8 @@ class DataBindingGrailsPlugin {
         
         "${DataBindingSourceRegistry.BEAN_NAME}"(DefaultDataBindingSourceRegistry)
         
-        xmlDataBindingSourceHelper(XmlDataBindingSourceCreator)
-        jsonDataBindingSourceHelper(JsonDataBindingSourceCreator)
-        halJsonDataBindingSourceHelper(HalJsonDataBindingSourceCreator)
+        xmlDataBindingSourceCreator(XmlDataBindingSourceCreator)
+        jsonDataBindingSourceCreator(JsonDataBindingSourceCreator)
+        halJsonDataBindingSourceCreator(HalJsonDataBindingSourceCreator)
     }
 }

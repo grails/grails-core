@@ -20,14 +20,15 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 
 /**
- * A registry for DataBindingSourceHelper instances
+ * Responsible for locating DataBindingSourceCreator instances and
+ * using them to create DataBindingSource instances
  * 
  *
  * @author Jeff Brown
  * @author Graeme Rocher
  *
  * @since 2.3
- * @see DataBindingSourceHelper
+ * @see DataBindingSourceCreator
  */
 interface DataBindingSourceRegistry {
     String BEAN_NAME = 'dataBindingSourceRegistry'
