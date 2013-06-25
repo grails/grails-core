@@ -59,8 +59,6 @@ import org.grails.databinding.xml.GPathResultMap
  </pre>
  *
  * @author Jeff Brown
- * @author Graeme Rocher
- *
  * @since 2.3
  */
 @CompileStatic
@@ -162,7 +160,7 @@ class SimpleDataBinder implements DataBinder {
      */
     void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
         def keys = source.getPropertyNames()
-        for(String key in keys) {
+        keys.each { String key ->
             if(filter && !key.startsWith(filter + '.')) {
                 return
             }
@@ -311,14 +309,14 @@ class SimpleDataBinder implements DataBinder {
         contentType
     }
 
-    protected boolean isOkToAddElementAt(Collection collection, int index) {
-        boolean isOk
+    protected isOkToAddElementAt(Collection collection, int index) {
+        boolean isOk = true
         if(collection instanceof Set) {
             isOk = collection.size() < autoGrowCollectionLimit
         } else {
             isOk = (index < autoGrowCollectionLimit || index < collection.size())
         }
-        return isOk
+        isOk
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
@@ -343,7 +341,7 @@ class SimpleDataBinder implements DataBinder {
         if(obj[propertyName] == null) {
             obj[propertyName] = [:]
         }
-        return (Map)obj[propertyName]
+        obj[propertyName]
     }
 
     protected Collection initializeCollection(obj, String propertyName, Class type) {
@@ -356,7 +354,7 @@ class SimpleDataBinder implements DataBinder {
                 obj[propertyName] = new HashSet()
             }
         }
-        return (Collection)obj[propertyName]
+        obj[propertyName]
     }
 
     /**
