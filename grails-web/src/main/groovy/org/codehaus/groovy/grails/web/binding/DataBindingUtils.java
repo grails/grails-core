@@ -209,7 +209,7 @@ public class DataBindingUtils {
         }
         if (!useSpringBinder) {
             final DataBindingSource bindingSource = createDataBindingSource(grailsApplication, object, source);
-            final DataBinder gormAwareDataBinder = createGormAwareDataBinder(grailsApplication);
+            final DataBinder gormAwareDataBinder = getGormAwareDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
             final DataBindingListener listener = new GormAwareDataBindingListener(tmpBindingResult);
             gormAwareDataBinder.bind(object, bindingSource, filter, include, exclude, listener);
@@ -319,7 +319,7 @@ public class DataBindingUtils {
         return mimeType;
     }
 
-    private static DataBinder createGormAwareDataBinder(final GrailsApplication grailsApplication) {
+    private static DataBinder getGormAwareDataBinder(final GrailsApplication grailsApplication) {
         DataBinder gormAwareDataBinder = null;
         if (grailsApplication != null) {
             final ApplicationContext mainContext = grailsApplication.getMainContext();
@@ -328,6 +328,8 @@ public class DataBindingUtils {
             }
         }
         if (gormAwareDataBinder == null) {
+            // this should really never happen in the running app as the binder
+            // should always be found in the context
             gormAwareDataBinder = new GormAwareDataBinder(grailsApplication);
         }
         return gormAwareDataBinder;
