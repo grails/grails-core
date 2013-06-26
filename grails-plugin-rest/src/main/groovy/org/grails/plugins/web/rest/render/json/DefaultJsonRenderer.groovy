@@ -47,6 +47,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     RendererRegistry rendererRegistry
 
+    String namedConfiguration
+
     DefaultJsonRenderer(Class<T> targetType) {
         this.targetType = targetType
     }
@@ -98,7 +100,14 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
      * @param context
      */
     protected void renderJson(T object, RenderContext context) {
-        def converter = object as JSON
+        JSON converter
+        if (namedConfiguration) {
+            JSON.use(namedConfiguration) {
+                converter = object as JSON
+            }
+        } else {
+            converter = object as JSON
+        }
         converter.render(context.getWriter())
     }
 }

@@ -46,6 +46,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     @Autowired(required = false)
     RendererRegistry rendererRegistry
 
+    String namedConfiguration
 
     DefaultXmlRenderer(Class<T> targetType) {
         this.targetType = targetType
@@ -98,7 +99,16 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
      * @param context
      */
     protected void renderXml(T object, RenderContext context) {
-        def converter = object as XML
+        XML converter
+
+        if(namedConfiguration) {
+            XML.use(namedConfiguration) {
+                converter = object as XML
+            }
+        }
+        else {
+            converter = object as XML
+        }
         converter.render(context.getWriter())
     }
 }
