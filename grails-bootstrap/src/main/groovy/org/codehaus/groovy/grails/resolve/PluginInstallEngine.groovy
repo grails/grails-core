@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.GrailsVersionUtils
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -416,7 +417,8 @@ class PluginInstallEngine {
             return true
         }
 
-        if (!isInteractive || isSnapshotUpdate || confirmInput("You currently already have a version of the plugin installed [${pluginDir.name}]. Do you want to update to [$name-$version]? ")) {
+        def upgradeOrDowngrade = !pluginInfo || GrailsVersionUtils.isVersionGreaterThan(pluginInfo.version, version) ? 'upgrade' : 'downgrade'
+        if (!isInteractive || isSnapshotUpdate || confirmInput("You currently already have a version of the plugin installed [${pluginDir.name}]. Do you want to $upgradeOrDowngrade to [$name-$version]? ")) {
             if (isSnapshotUpdate) {
                 GrailsConsole.instance.addStatus("Updating snapshot plugin '$name' with version '${pluginInfo?.version}'")
             }
