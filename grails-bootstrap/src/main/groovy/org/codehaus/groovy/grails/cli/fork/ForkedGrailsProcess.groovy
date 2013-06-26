@@ -380,7 +380,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     boolean isForkingReserveEnabled() {
-        return forkReserve && InteractiveMode.isActive() && !debug && !daemon
+        return forkReserve && InteractiveMode.isActive() && !isDebugForkEnabled() && !daemon
     }
 
     @CompileStatic
