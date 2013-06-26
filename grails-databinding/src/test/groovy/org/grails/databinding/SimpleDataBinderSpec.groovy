@@ -14,6 +14,7 @@
  */
 package org.grails.databinding
 
+import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListener
 
@@ -202,6 +203,8 @@ class SimpleDataBinderSpec extends Specification {
     void 'Test binding string to date'() {
         given:
         def binder = new SimpleDataBinder()
+        binder.registerConverter new DateConversionHelper()
+        
         def obj = new DateContainer()
 
         when:

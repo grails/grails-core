@@ -25,16 +25,23 @@ import java.text.SimpleDateFormat
  */
 @CompileStatic
 class DateConversionHelper implements ValueConverter {
+    
+    /**
+     * A List of String which represent date formats compatible with {@link SimpleDateFormat}.  When
+     * This converter attempts to convert a String to a Date, these formats will be tried in
+     * the order in which they appear in the List.
+     */
+    List<String> formatStrings = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'hh:mm:ss'Z'"]
+    
+    protected final Map<String, SimpleDateFormat> formatters = [:].withDefault { String formatString -> new SimpleDateFormat(formatString) }
 
     Object convert(value) {
         Date dateValue
         if (value instanceof String) {
-            // TODO - fix this...
-            def formatStrings = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'hh:mm:ss'Z'"]
             def firstException
             formatStrings.each { String format ->
                 if (dateValue == null) {
-                    def formatter = new SimpleDateFormat(format)
+                    def formatter = formatters.get(format)
                     try {
                         dateValue = formatter.parse(value)
                     } catch (Exception e) {

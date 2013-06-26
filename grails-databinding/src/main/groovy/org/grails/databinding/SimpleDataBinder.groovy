@@ -87,8 +87,6 @@ class SimpleDataBinder implements DataBinder {
     int autoGrowCollectionLimit = 256
 
     SimpleDataBinder() {
-        registerConverter new DateConversionHelper()
-
         registerStructuredEditor Date, new StructuredDateBindingEditor()
         registerStructuredEditor java.sql.Date, new StructuredSqlDateBindingEditor()
         registerStructuredEditor Calendar, new StructuredCalendarBindingEditor()

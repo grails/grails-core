@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSo
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
+import org.grails.databinding.converters.DateConversionHelper
 
 /**
  * @author Jeff Brown
@@ -54,6 +55,12 @@ class DataBindingGrailsPlugin {
             // autoGrowCollectionLimit defaults to 256
             if(autoGrowCollectionLimitSetting instanceof Integer) {
                 autoGrowCollectionLimit = autoGrowCollectionLimitSetting
+            }
+        }
+        
+        defaultDateConverter(DateConversionHelper) {
+            if(databindingConfig?.dateFormats instanceof List) {
+                formatStrings = databindingConfig.dateFormats
             }
         }
         
