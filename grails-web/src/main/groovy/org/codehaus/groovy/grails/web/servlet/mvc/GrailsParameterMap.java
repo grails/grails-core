@@ -29,11 +29,18 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.binding.StructuredDateEditor;
+import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry;
+import org.codehaus.groovy.grails.web.mime.MimeType;
+import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.grails.databinding.DataBindingSource;
+import org.grails.databinding.SimpleMapDataBindingSource;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.web.multipart.MultipartFile;
@@ -99,6 +106,26 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         }
 
         updateNestedKeys(requestMap);
+    }
+
+    /**
+     * Converts the params object to a binding source for the given target type
+     * @param targetType The target type to bind to
+     * @return A {@link DataBindingSource}
+     */
+    DataBindingSource toBindingSource(Class targetType) {
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+        ApplicationContext context = webRequest.getApplicationContext();
+        DataBindingSourceRegistry dataBindingSourceRegistry = null;
+        if(context.containsBean(DataBindingSourceRegistry.BEAN_NAME))
+            dataBindingSourceRegistry = context.getBean(DataBindingSourceRegistry.BEAN_NAME, DataBindingSourceRegistry.class);
+
+        MimeTypeResolver mimeTypeResolver = null;
+        if(context.containsBean(MimeTypeResolver.BEAN_NAME))
+            mimeTypeResolver = context.getBean(MimeTypeResolver.BEAN_NAME, MimeTypeResolver.class);
+
+        MimeType mimeType = DataBindingUtils.resolveMimeType(this, mimeTypeResolver);
+        return dataBindingSourceRegistry != null ? dataBindingSourceRegistry.createDataBindingSource(mimeType, targetType, this) : new SimpleMapDataBindingSource(this);
     }
 
     void updateNestedKeys(Map keys) {

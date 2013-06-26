@@ -278,7 +278,6 @@ public class DataBindingUtils {
     }
 
     protected static DataBindingSource createDataBindingSource(GrailsApplication grailsApplication, Object bindingTarget, Object bindingSource) {
-        // TODO: obviously temporary, work in progress
         DataBindingSourceRegistry registry = null;
         MimeTypeResolver mimeTypeResolver = null;
         if(grailsApplication != null) {
@@ -295,6 +294,11 @@ public class DataBindingUtils {
         if(registry == null) {
             registry = new DefaultDataBindingSourceRegistry();
         }
+        final MimeType mimeType = resolveMimeType(bindingSource, mimeTypeResolver);
+        return registry.createDataBindingSource(mimeType, bindingTarget, bindingSource);
+    }
+
+    public static MimeType resolveMimeType(Object bindingSource, MimeTypeResolver mimeTypeResolver) {
         final MimeType mimeType;
         if(mimeTypeResolver != null) {
             MimeType resolvedMimeType = mimeTypeResolver.resolveRequestMimeType();
@@ -312,7 +316,7 @@ public class DataBindingUtils {
         } else {
             mimeType = MimeType.ALL;
         }
-        return registry.createDataBindingSource(mimeType, bindingTarget, bindingSource);
+        return mimeType;
     }
 
     private static DataBinder createGormAwareDataBinder(final GrailsApplication grailsApplication) {
