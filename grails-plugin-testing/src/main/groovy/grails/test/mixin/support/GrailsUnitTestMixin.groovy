@@ -78,6 +78,9 @@ class GrailsUnitTestMixin {
     @CompileStatic
     static void defineBeans(Closure callable) {
         def bb = new BeanBuilder()
+        def binding = new Binding()
+        binding.setVariable "application", grailsApplication
+        bb.setBinding binding
         def beans = bb.beans(callable)
         beans.registerBeans(applicationContext)
     }

@@ -37,10 +37,7 @@ class DataBindingGrailsPlugin {
     def doWithSpring = {
         def databindingConfig
 
-        // TODO this try/catch is temporary
-        try {
-            databindingConfig = application?.config?.grails?.databinding
-        } catch (Exception e) {}
+        databindingConfig = application?.config?.grails?.databinding
 
         def autoGrowCollectionLimitSetting = databindingConfig?.autoGrowCollectionLimit
 
