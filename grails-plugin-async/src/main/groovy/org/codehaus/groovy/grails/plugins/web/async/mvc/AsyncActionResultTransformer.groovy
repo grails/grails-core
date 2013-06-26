@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.plugins.web.async.GrailsAsyncContext
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.ModelAndView
 
 /**
@@ -62,6 +63,8 @@ class AsyncActionResultTransformer implements ActionResultTransformer {
                     }
                 }
                 p.onError { Throwable t ->
+                    if(!response.isCommitted())
+                        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value())
                     asyncContext.complete()
                     throw t
                 }
