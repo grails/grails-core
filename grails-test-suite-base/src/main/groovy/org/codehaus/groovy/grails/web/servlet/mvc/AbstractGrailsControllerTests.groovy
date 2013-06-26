@@ -20,9 +20,12 @@ import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils
+import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.grails.databinding.converters.DateConversionHelper
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
@@ -78,6 +81,12 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ctx = new MockApplicationContext()
         onSetUp()
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
+        
+        def binder = new GormAwareDataBinder(ga)
+        binder.registerConverter new DateConversionHelper()
+        
+        ctx.registerMockBean(DataBindingUtils.DATA_BINDER_BEAN_NAME, binder)
+
         ga.metadata[Metadata.APPLICATION_NAME] = getClass().name
         mockManager = new MockGrailsPluginManager(ga)
         ctx.registerMockBean("manager", mockManager)
