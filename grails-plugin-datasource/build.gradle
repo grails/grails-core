@@ -1,4 +1,4 @@
-def tomcatVersion = '7.0.40'
+def tomcatVersion = '7.0.41'
 dependencies {
 
     compile "org.springframework:spring-jdbc:${springVersion}"
