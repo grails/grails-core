@@ -70,8 +70,7 @@ class Video {
             controller.save(video)
 
         then:"A redirect is issued to the show action"
-            response.redirectedUrl == '/video/show/1'
-            controller.flash.message != null
+            response.status == 201
             domainClass.count() == 1
     }
 
@@ -127,12 +126,15 @@ class Video {
 
         when:"A valid domain instance is passed to the update action"
             response.reset()
-            video = domainClass.newInstance(title: 'Game of Thrones').save(flush: true)
+            video = domainClass.newInstance(title: 'Game of Thrones')
+            video.validate()
+            request.contentType = 'application/x-www-form-urlencoded'
             controller.update(video)
+            video.discard()
 
         then:"A redirect is issues to the show action"
-            response.redirectedUrl == "/video/show/$video.id"
-            flash.message != null
+            response.status == 200
+            domainClass.get(video.id).title == 'Game of Thrones'
 
     }
 
@@ -154,9 +156,8 @@ class Video {
             controller.delete(video)
 
         then:"The instance is deleted"
+            response.status == 204
             domainClass.count() == 0
-            response.redirectedUrl == '/video/index'
-            flash.message != null
 
     }
 }

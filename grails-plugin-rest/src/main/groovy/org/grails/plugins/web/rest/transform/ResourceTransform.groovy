@@ -295,7 +295,7 @@ class ResourceTransform implements ASTTransformation{
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
         withFormatClosure.variableScope = variableScope
-        elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, "withFormat", withFormatClosure)))
+        elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
 
         domainParameter.setClosureSharedVariable(true)
@@ -311,7 +311,7 @@ class ResourceTransform implements ASTTransformation{
             closureBody.addStatement(redirect)
             final htmlFormatClosure = new ClosureExpression(null, closureBody)
             htmlFormatClosure.variableScope = variableScope
-            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, 'html', htmlFormatClosure)))
+            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, 'form', htmlFormatClosure)))
 
         }
         final renderArgs = new ArgumentListExpression()
@@ -368,7 +368,7 @@ class ResourceTransform implements ASTTransformation{
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
         withFormatClosure.variableScope = variableScope
-        elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, "withFormat", withFormatClosure)))
+        elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
 
         domainParameter.setClosureSharedVariable(true)
@@ -386,7 +386,7 @@ class ResourceTransform implements ASTTransformation{
             closureBody.addStatement(redirect)
             final htmlFormatClosure = new ClosureExpression(null, closureBody)
             htmlFormatClosure.variableScope = variableScope
-            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, 'html', htmlFormatClosure)))
+            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, 'form', htmlFormatClosure)))
 
         }
         final renderArgs = new ArgumentListExpression()
@@ -429,7 +429,7 @@ class ResourceTransform implements ASTTransformation{
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
         withFormatClosure.variableScope = variableScope
-        elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, "withFormat", withFormatClosure)))
+        elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
 
         domainParameter.setClosureSharedVariable(true)
@@ -444,7 +444,7 @@ class ResourceTransform implements ASTTransformation{
             closureBody.addStatement(redirect)
             final htmlFormatClosure = new ClosureExpression(null, closureBody)
             htmlFormatClosure.variableScope = variableScope
-            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, 'html', htmlFormatClosure)))
+            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, 'form', htmlFormatClosure)))
 
         }
         final renderArgs = new ArgumentListExpression()
