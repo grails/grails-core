@@ -34,7 +34,7 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
     }
 
     @Override
-    public DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {
+    public DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
         if(bindingSource instanceof GrailsParameterMap) {
             def req = bindingSource.getRequest()
             def is = req.getInputStream()
@@ -46,7 +46,7 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
             return createBindingSource(is)
         }
         else  {
-            return super.createDataBindingSource(mimeType, bindingTarget, bindingSource)
+            return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
         }
     }
 

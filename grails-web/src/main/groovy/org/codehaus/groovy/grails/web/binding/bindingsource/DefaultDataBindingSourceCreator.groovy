@@ -41,12 +41,12 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
     }
 
     @Override
-    DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource) {
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
         final DataBindingSource dataBindingSource
         if(bindingSource instanceof DataBindingSource) {
             dataBindingSource = (DataBindingSource) bindingSource
         } else if(bindingSource instanceof HttpServletRequest) {
-            dataBindingSource = createDataBindingSource(bindingTarget, (HttpServletRequest)bindingSource)
+            dataBindingSource = createDataBindingSource(bindingTargetType, (HttpServletRequest)bindingSource)
         } else if(bindingSource instanceof Map) {
             dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource))
         } else {

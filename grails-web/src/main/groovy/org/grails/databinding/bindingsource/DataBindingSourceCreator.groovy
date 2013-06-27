@@ -37,9 +37,9 @@ interface DataBindingSourceCreator extends MimeTypeProvider {
      * Creates a DataBindingSource suitable for binding bindingSource to bindingTarget
      *
      * @param mimeType a mime type
-     * @param bindingTarget the target of the data binding
+     * @param bindingTarget the type of the target of the data binding
      * @param bindingSource the value being bound
      * @return a DataBindingSource
      */
-    DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource)
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource)
 }

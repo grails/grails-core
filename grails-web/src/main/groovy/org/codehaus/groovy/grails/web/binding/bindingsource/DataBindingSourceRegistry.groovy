@@ -41,9 +41,9 @@ interface DataBindingSourceRegistry {
     /**
      * Locates a {@link DataBindingSource} for the given MimeType and binding target
      * @param mimeType The MimeType
-     * @param bindingTarget The binding target
+     * @param bindingTarget The type of the binding target
      * @param bindingSource The binding source
      * @return The {@link DataBindingSource}
      */
-    DataBindingSource createDataBindingSource(MimeType mimeType, Object bindingTarget, Object bindingSource)
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource)
 }
