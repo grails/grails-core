@@ -70,11 +70,12 @@ import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
-import org.grails.databinding.xml.GPathResultMap;
+import org.grails.databinding.DataBindingSource;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.validation.MapBindingResult;
 
@@ -138,7 +139,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     private static final String ACTION_MEMBER_TARGET = "commandObjects";
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
-    private static final VariableExpression BINDING_MAP_EXPRESSION = new VariableExpression("$bindingMap", new ClassNode(Map.class));
+    private static final VariableExpression DATA_BINDING_SOURCE_EXPRESSION = new VariableExpression("$dataBindingSource", new ClassNode(DataBindingSource.class));
 
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
     @SuppressWarnings({"unchecked"})
@@ -415,7 +416,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         if (actionParameters != null) {
             if (parametersContainAtLeastOneCommandObject(actionParameters)) {
-                initializeCommandObjectBindingMap(wrapper);
+                final DeclarationExpression declareBindingMapExpression = new DeclarationExpression(
+                        DATA_BINDING_SOURCE_EXPRESSION, Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
+                wrapper.addStatement(new ExpressionStatement(declareBindingMapExpression));
             }
             for (Parameter param : actionParameters) {
                 initializeMethodParameter(classNode, wrapper, actionNode, actionName,
@@ -544,12 +547,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         wrapper.addStatement(new ExpressionStatement(declareCoExpression));
 
         final BlockStatement intializeCommandObjectBlock = new BlockStatement();
-
+        
         final Statement instantiateCommandObjectStatement = getStatementToInstantiateCommandObject(commandObjectNode, paramName);
         if (GrailsASTUtils.isDomainClass(commandObjectNode, source)) {
             final Statement retrieveFromDatabaseExpression = creatStatementToRetrieveCommandObjectFromDatabase(commandObjectNode, paramName);
 
-            final BooleanExpression bindingMapContainsId = new BooleanExpression(new MethodCallExpression(BINDING_MAP_EXPRESSION, "containsKey", new ConstantExpression("id")));
+            final BooleanExpression bindingMapContainsId = new BooleanExpression(new MethodCallExpression(DATA_BINDING_SOURCE_EXPRESSION, "hasIdentifier", EMPTY_TUPLE));
             final Statement initializeCommandObjectStatement = new IfStatement(bindingMapContainsId,
                     retrieveFromDatabaseExpression, instantiateCommandObjectStatement);
 
@@ -560,17 +563,23 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         wrapper.addStatement(intializeCommandObjectBlock);
 
-        final ArgumentListExpression getCommandObjectBindingParamsArgs = new ArgumentListExpression();
-        getCommandObjectBindingParamsArgs.addExpression(new MethodCallExpression(
-                new VariableExpression(paramName), "getClass", ZERO_ARGS));
-        getCommandObjectBindingParamsArgs.addExpression(BINDING_MAP_EXPRESSION);
-        final Expression invokeGetCommandObjectBindingParamsExpression = new StaticMethodCallExpression(
-                new ClassNode(WebMetaUtils.class), "getCommandObjectBindingParams",
-                getCommandObjectBindingParamsArgs);
-
         final BlockStatement dataBindAndAutoWire = new BlockStatement();
+        
+        final ArgumentListExpression createDataBindingSourceArgs = new ArgumentListExpression();
+        createDataBindingSourceArgs.addExpression(new VariableExpression("grailsApplication"));
+        createDataBindingSourceArgs.addExpression(new ClassExpression(commandObjectNode));
+        createDataBindingSourceArgs.addExpression(new VariableExpression("request"));
+        final Expression createDataBindingSourceMethodCall = new StaticMethodCallExpression(new ClassNode(DataBindingUtils.class), "createDataBindingSource", createDataBindingSourceArgs);
+        
+        final ArgumentListExpression getCommandObjectBindingSourceArgs = new ArgumentListExpression();
+        getCommandObjectBindingSourceArgs.addExpression(new ClassExpression(commandObjectNode));
+        getCommandObjectBindingSourceArgs.addExpression(createDataBindingSourceMethodCall);
+        final Expression getCommandObjectBindingSourceMethodCall = new StaticMethodCallExpression(new ClassNode(WebMetaUtils.class), "getCommandObjectBindingSource", getCommandObjectBindingSourceArgs);
+        
+        final Expression initializeBindingSource = new BinaryExpression(DATA_BINDING_SOURCE_EXPRESSION, Token.newSymbol(Types.EQUALS, 0, 0), getCommandObjectBindingSourceMethodCall);
+        dataBindAndAutoWire.addStatement(new ExpressionStatement(initializeBindingSource));
 
-        final Expression doDatabinding = getExpressionToDoDataBinding(paramName, invokeGetCommandObjectBindingParamsExpression);
+        final Expression doDatabinding = getExpressionToDoDataBinding(paramName, DATA_BINDING_SOURCE_EXPRESSION);
         dataBindAndAutoWire.addStatement(new ExpressionStatement(doDatabinding));
 
         final Statement autoWireCommandObjectStatement = getAutoWireCommandObjectStatement(paramName);
@@ -582,70 +591,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     protected Statement creatStatementToRetrieveCommandObjectFromDatabase(final ClassNode commandObjectNode, final String paramName) {
         final ArgumentListExpression argumentsForCallToGet = new ArgumentListExpression();
-        final MethodCallExpression getIdExpression = new MethodCallExpression(BINDING_MAP_EXPRESSION, "get", new ConstantExpression("id"));
+        final MethodCallExpression getIdExpression = new MethodCallExpression(DATA_BINDING_SOURCE_EXPRESSION, "getIdentifierValue", EMPTY_TUPLE);
         argumentsForCallToGet.addExpression(getIdExpression);
         final Expression retrieveEntityExpressin = new StaticMethodCallExpression(commandObjectNode, "get", argumentsForCallToGet);
 
         final Expression expr = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), retrieveEntityExpressin);
         return new ExpressionStatement(expr);
-    }
-
-    /**
-     * Generate code that does this:
-<pre>
-Map $bindingMap
-if (request.contentType == 'application/json' || request.contentType == 'text/json') {
-    $bindingMap = request.JSON
-} else if (request.contentType == 'application/xml' || request.contentType == 'text/xml') {
-    $bindingMap = new GPathResultMap(request.XML)
-} else {
-    $bindingMap = params
-}
-</pre>
-     * @param wrapper The block to add the instructions to
-     */
-    protected void initializeCommandObjectBindingMap(
-            final BlockStatement wrapper) {
-        final DeclarationExpression declareBindingMapExpression = new DeclarationExpression(
-                BINDING_MAP_EXPRESSION, Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
-
-        wrapper.addStatement(new ExpressionStatement(declareBindingMapExpression));
-
-        final Expression contentTypeExpression = new PropertyExpression(new VariableExpression("request"), "contentType");
-
-        final Expression isApplicationJsonRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
-                new ConstantExpression("application/json"));
-
-        final Expression isTextJsonRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
-                new ConstantExpression("text/json"));
-
-        final Expression isJsonRequestExpression = new BinaryExpression(isApplicationJsonRequestExpression, Token.newSymbol(Types.LOGICAL_OR, 0, 0), isTextJsonRequestExpression);
-
-        final Expression isApplicationXmlRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
-                new ConstantExpression("application/xml"));
-
-        final Expression isTextXmlRequestExpression = new BinaryExpression(contentTypeExpression, Token.newSymbol(Types.COMPARE_EQUAL, 0, 0),
-                new ConstantExpression("text/xml"));
-
-        final Expression isXmlRequestExpression = new BinaryExpression(isApplicationXmlRequestExpression, Token.newSymbol(Types.LOGICAL_OR, 0, 0), isTextXmlRequestExpression);
-
-        final Expression assignParamsToBindingMap = new BinaryExpression(BINDING_MAP_EXPRESSION, Token.newSymbol(Types.EQUALS, 0, 0), PARAMS_EXPRESSION);
-
-        final Expression requestJsonProperty = new PropertyExpression(new VariableExpression("request"), "JSON");
-        final Expression assignJSONToBindingMap = new BinaryExpression(BINDING_MAP_EXPRESSION, Token.newSymbol(Types.EQUALS, 0, 0), requestJsonProperty);
-
-        final Expression requestXmlProperty = new PropertyExpression(new VariableExpression("request"), "XML");
-        final Expression newGPathResultMapExpression = new ConstructorCallExpression(new ClassNode(GPathResultMap.class), requestXmlProperty);
-        final Expression assignXMLToBindingMap = new BinaryExpression(BINDING_MAP_EXPRESSION, Token.newSymbol(Types.EQUALS, 0, 0), newGPathResultMapExpression);
-
-        final Statement initializeBindingMapStatement = new IfStatement(
-                new BooleanExpression(isJsonRequestExpression),
-                new ExpressionStatement(assignJSONToBindingMap),
-                new IfStatement(new BooleanExpression(isXmlRequestExpression),
-                        new ExpressionStatement(assignXMLToBindingMap),
-                        new ExpressionStatement(assignParamsToBindingMap)));
-
-        wrapper.addStatement(initializeBindingMapStatement);
     }
 
     /**

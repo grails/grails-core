@@ -23,6 +23,7 @@ import org.apache.commons.beanutils.BeanMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
@@ -56,6 +57,8 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
     }
 
     protected  DataBindingSource createDataBindingSource(Object bindingTarget, HttpServletRequest req) {
-        new SimpleMapDataBindingSource(new GrailsParameterMap(req))
+        final GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup(req);
+        final GrailsParameterMap parameterMap = grailsWebRequest.getParams();
+        new SimpleMapDataBindingSource(parameterMap)
     }
 }

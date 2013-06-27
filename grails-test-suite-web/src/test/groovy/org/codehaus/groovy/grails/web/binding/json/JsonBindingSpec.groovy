@@ -2,7 +2,6 @@ package org.codehaus.groovy.grails.web.binding.json
 
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
-import spock.lang.Ignore
 import spock.lang.Specification
 
 @TestFor(BindingController)
@@ -22,7 +21,6 @@ class JsonBindingSpec extends Specification {
         model.person.age == 42
     }
     
-    @Ignore
     void 'Test binding nested collection elements'() {
         given:
         request.json = '''

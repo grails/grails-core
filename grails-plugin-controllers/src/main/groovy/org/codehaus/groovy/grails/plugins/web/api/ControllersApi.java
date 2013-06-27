@@ -19,6 +19,7 @@ import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,10 +28,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;

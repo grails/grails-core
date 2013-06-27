@@ -277,7 +277,7 @@ public class DataBindingUtils {
         return bindingResult;
     }
 
-    protected static DataBindingSource createDataBindingSource(GrailsApplication grailsApplication, Class bindingTargetType, Object bindingSource) {
+    public static DataBindingSource createDataBindingSource(GrailsApplication grailsApplication, Class bindingTargetType, Object bindingSource) {
         DataBindingSourceRegistry registry = null;
         MimeTypeResolver mimeTypeResolver = null;
         if(grailsApplication != null) {
