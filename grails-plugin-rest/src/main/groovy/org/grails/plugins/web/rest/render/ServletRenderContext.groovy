@@ -48,7 +48,12 @@ class ServletRenderContext implements RenderContext{
 
     ServletRenderContext(GrailsWebRequest webRequest, Map<String, Object> arguments) {
         this.webRequest = webRequest
-        this.arguments = Collections.unmodifiableMap(arguments)
+        if(arguments != null) {
+            this.arguments = Collections.unmodifiableMap(arguments)
+        }
+        else {
+            this.arguments = Collections.emptyMap()
+        }
     }
 
     @Override
