@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.binding
 
-import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
@@ -162,10 +161,9 @@ class AuthorBean {
         def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
         def bean = myBeanClass.newInstance()
 
-        def req = new GrailsMockHttpServletRequest()
-        req.addParameter 'formattedDate', 'BAD'
+        request.addParameter 'formattedDate', 'BAD'
 
-        bean.properties = req
+        bean.properties = request
 
         assert bean.hasErrors()
         assert bean.errors.errorCount == 1
@@ -184,10 +182,9 @@ class AuthorBean {
         }
         def city = cityClass.newInstance()
 
-        def req = new GrailsMockHttpServletRequest()
-        req.addParameter 'people[0].id', '42'
+        request.addParameter 'people[0].id', '42'
 
-        city.properties = req
+        city.properties = request
 
         assert city.hasErrors()
         assert city.errors.errorCount == 1
@@ -203,13 +200,12 @@ class AuthorBean {
         def cityClass = ga.getDomainClass('databindingtests.City')
         def city = cityClass.newInstance()
 
-        def req = new GrailsMockHttpServletRequest()
-        req.addParameter 'people[0].name', 'Jeff'
-        req.addParameter 'people[1].name', 'Jake'
-        req.addParameter 'people[1].birthDate', '2000-08-26 21:26:31.973'
-        req.addParameter 'people[2].name', 'Zack'
+        request.addParameter 'people[0].name', 'Jeff'
+        request.addParameter 'people[1].name', 'Jake'
+        request.addParameter 'people[1].birthDate', '2000-08-26 21:26:31.973'
+        request.addParameter 'people[2].name', 'Zack'
 
-        city.properties = req
+        city.properties = request
 
         assert city.people instanceof Set
         assert city.people.size() == 3
@@ -234,10 +230,9 @@ class AuthorBean {
     void testBindintToNestedArray() {
         def authorCommandClass = ga.getDomainClass('databindingtests.AuthorCommand')
         def author = authorCommandClass.newInstance()
-        def req = new GrailsMockHttpServletRequest()
-        req.addParameter 'beans[0].integers[0]', '42'
+        request.addParameter 'beans[0].integers[0]', '42'
 
-        author.properties = req
+        author.properties = request
 
         assert author.beans.size() == 1
         assert author.beans[0].integers.length == 1
@@ -248,9 +243,8 @@ class AuthorBean {
         def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
         def myBean = myBeanClass.newInstance()
 
-        def req = new GrailsMockHttpServletRequest()
-        req.addParameter 'someIntProperty', 'bad integer'
-        myBean.properties = req
+        request.addParameter 'someIntProperty', 'bad integer'
+        myBean.properties = request
         def errors = myBean.errors
         def fieldError = errors.getFieldError('someIntProperty')
 
@@ -264,9 +258,9 @@ class AuthorBean {
         def myBeanClass = ga.getDomainClass('databindingtests.MyBean')
         def myBean = myBeanClass.newInstance()
 
-        def req = new GrailsMockHttpServletRequest()
-        req.addParameter 'someFloatProperty', '21.12Rush'
-        myBean.properties = req
+        request.addParameter 'someFloatProperty', '21.12Rush'
+        
+        myBean.properties = request
 
         def errors = myBean.errors
         def fieldError = errors.getFieldError('someFloatProperty')
@@ -288,9 +282,8 @@ class AuthorBean {
 
         assert 'Some Book' == bookReview.book.title
 
-        def req = new GrailsMockHttpServletRequest()
-        req.addParameter 'book.title', 'Some New Book'
-        bookReview.properties = req
+        request.addParameter 'book.title', 'Some New Book'
+        bookReview.properties = request
 
         assert 'Some New Book' == bookReview.book.title
 
@@ -302,14 +295,13 @@ class AuthorBean {
         def withEncodingClass = ga.getDomainClass("databindingtests.WithEncoding")
 
         def e = withEncodingClass.newInstance()
-        def multipartRequest = new GrailsMockHttpServletRequest()
-        multipartRequest.addFile(new GrailsMockMultipartFile("eDate.aFile", "foo".bytes))
-        multipartRequest.addParameter("eDate.aDate", "struct")
-        multipartRequest.addParameter("eDate.aDate_year", "1980")
-        multipartRequest.addParameter("eDate.aDate_month", "02")
-        multipartRequest.addParameter("eDate.aDate_day", "03")
+        request.addFile(new GrailsMockMultipartFile("eDate.aFile", "foo".bytes))
+        request.addParameter("eDate.aDate", "struct")
+        request.addParameter("eDate.aDate_year", "1980")
+        request.addParameter("eDate.aDate_month", "02")
+        request.addParameter("eDate.aDate_day", "03")
 
-        e.properties = multipartRequest
+        e.properties = request
 
         assert e.eDate.aFile != null
         assert e.eDate.aDate != null
