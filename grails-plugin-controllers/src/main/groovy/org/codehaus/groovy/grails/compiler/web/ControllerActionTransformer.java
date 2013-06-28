@@ -27,12 +27,10 @@ import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections.Predicate;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
@@ -53,8 +51,6 @@ import org.codehaus.groovy.ast.expr.EmptyExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
-import org.codehaus.groovy.ast.expr.StaticMethodCallExpression;
 import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -70,13 +66,9 @@ import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
-import org.grails.databinding.DataBindingSource;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.validation.MapBindingResult;
 
 /**
@@ -139,7 +131,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     private static final String ACTION_MEMBER_TARGET = "commandObjects";
     private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
-    private static final VariableExpression DATA_BINDING_SOURCE_EXPRESSION = new VariableExpression("$dataBindingSource", new ClassNode(DataBindingSource.class));
 
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
     @SuppressWarnings({"unchecked"})
@@ -415,32 +406,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         wrapper.addStatement(new ExpressionStatement(errorsAssignmentExpression));
 
         if (actionParameters != null) {
-            if (parametersContainAtLeastOneCommandObject(actionParameters)) {
-                final DeclarationExpression declareBindingMapExpression = new DeclarationExpression(
-                        DATA_BINDING_SOURCE_EXPRESSION, Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
-                wrapper.addStatement(new ExpressionStatement(declareBindingMapExpression));
-            }
             for (Parameter param : actionParameters) {
                 initializeMethodParameter(classNode, wrapper, actionNode, actionName,
                         param, source, context);
             }
         }
         return wrapper;
-    }
-
-    protected boolean parametersContainAtLeastOneCommandObject(Parameter[] actionParameters) {
-        final List<Parameter> parameterList = Arrays.asList(actionParameters);
-
-        return org.apache.commons.collections.CollectionUtils.exists(parameterList, new Predicate() {
-            public boolean evaluate(Object object) {
-                Parameter param = (Parameter) object;
-                ClassNode type = param.getType();
-                return !PRIMITIVE_CLASS_NODES.contains(type) &&
-                       !TYPE_WRAPPER_CLASS_TO_CONVERSION_METHOD_NAME.containsKey(type) &&
-                       !type.equals(new ClassNode(String.class)) &&
-                       !type.equals(OBJECT_CLASS);
-            }
-        });
     }
 
     protected void initializeMethodParameter(final ClassNode classNode, final BlockStatement wrapper,
@@ -545,83 +516,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final DeclarationExpression declareCoExpression = new DeclarationExpression(
                 new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
         wrapper.addStatement(new ExpressionStatement(declareCoExpression));
-
-        final BlockStatement intializeCommandObjectBlock = new BlockStatement();
-        
-        final Statement instantiateCommandObjectStatement = getStatementToInstantiateCommandObject(commandObjectNode, paramName);
-        if (GrailsASTUtils.isDomainClass(commandObjectNode, source)) {
-            final Statement retrieveFromDatabaseExpression = creatStatementToRetrieveCommandObjectFromDatabase(commandObjectNode, paramName);
-
-            final BooleanExpression bindingMapContainsId = new BooleanExpression(new MethodCallExpression(DATA_BINDING_SOURCE_EXPRESSION, "hasIdentifier", EMPTY_TUPLE));
-            final Statement initializeCommandObjectStatement = new IfStatement(bindingMapContainsId,
-                    retrieveFromDatabaseExpression, instantiateCommandObjectStatement);
-
-            intializeCommandObjectBlock.addStatement(initializeCommandObjectStatement);
-        } else {
-            intializeCommandObjectBlock.addStatement(instantiateCommandObjectStatement);
-        }
-
-        wrapper.addStatement(intializeCommandObjectBlock);
-
-        final BlockStatement dataBindAndAutoWire = new BlockStatement();
-        
-        final ArgumentListExpression createDataBindingSourceArgs = new ArgumentListExpression();
-        createDataBindingSourceArgs.addExpression(new VariableExpression("grailsApplication"));
-        createDataBindingSourceArgs.addExpression(new ClassExpression(commandObjectNode));
-        createDataBindingSourceArgs.addExpression(new VariableExpression("request"));
-        final Expression createDataBindingSourceMethodCall = new StaticMethodCallExpression(new ClassNode(DataBindingUtils.class), "createDataBindingSource", createDataBindingSourceArgs);
-        
-        final ArgumentListExpression getCommandObjectBindingSourceArgs = new ArgumentListExpression();
-        getCommandObjectBindingSourceArgs.addExpression(new ClassExpression(commandObjectNode));
-        getCommandObjectBindingSourceArgs.addExpression(createDataBindingSourceMethodCall);
-        final Expression getCommandObjectBindingSourceMethodCall = new StaticMethodCallExpression(new ClassNode(WebMetaUtils.class), "getCommandObjectBindingSource", getCommandObjectBindingSourceArgs);
-        
-        final Expression initializeBindingSource = new BinaryExpression(DATA_BINDING_SOURCE_EXPRESSION, Token.newSymbol(Types.EQUALS, 0, 0), getCommandObjectBindingSourceMethodCall);
-        dataBindAndAutoWire.addStatement(new ExpressionStatement(initializeBindingSource));
-
-        final Expression doDatabinding = getExpressionToDoDataBinding(paramName, DATA_BINDING_SOURCE_EXPRESSION);
-        dataBindAndAutoWire.addStatement(new ExpressionStatement(doDatabinding));
-
-        final Statement autoWireCommandObjectStatement = getAutoWireCommandObjectStatement(paramName);
-        dataBindAndAutoWire.addStatement(autoWireCommandObjectStatement);
-
-        final Statement ifCommandObjectIsNotNull = new IfStatement(new BooleanExpression(new VariableExpression(paramName)), dataBindAndAutoWire, new ExpressionStatement(new EmptyExpression()));
-        wrapper.addStatement(ifCommandObjectIsNotNull);
-    }
-
-    protected Statement creatStatementToRetrieveCommandObjectFromDatabase(final ClassNode commandObjectNode, final String paramName) {
-        final ArgumentListExpression argumentsForCallToGet = new ArgumentListExpression();
-        final MethodCallExpression getIdExpression = new MethodCallExpression(DATA_BINDING_SOURCE_EXPRESSION, "getIdentifierValue", EMPTY_TUPLE);
-        argumentsForCallToGet.addExpression(getIdExpression);
-        final Expression retrieveEntityExpressin = new StaticMethodCallExpression(commandObjectNode, "get", argumentsForCallToGet);
-
-        final Expression expr = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), retrieveEntityExpressin);
-        return new ExpressionStatement(expr);
-    }
-
-    /**
-     * Returns a statement that will initialize variableName with
-     * a call to the no-arg constructor of classNode
-     *
-     * @param classNode type to instantiate
-     * @param variableName the name of the variable to initialize
-     * @return a Statement which does all that is described above
-     */
-    protected Statement getStatementToInstantiateCommandObject(
-            final ClassNode classNode, final String variableName) {
-        final Expression ctorCall = new ConstructorCallExpression(classNode, EMPTY_TUPLE);
-
-        final Expression intitializeObjectExpression = new BinaryExpression(
-                new VariableExpression(variableName), Token.newSymbol(Types.EQUALS, 0, 0), ctorCall);
-
-        return new ExpressionStatement(intitializeObjectExpression);
-    }
-
-    protected Expression getExpressionToDoDataBinding(final String variableName, final Expression valueToBind) {
-        final ArgumentListExpression arguments = new ArgumentListExpression();
-        arguments.addExpression(new VariableExpression(variableName));
-        arguments.addExpression(valueToBind);
-        return new MethodCallExpression(THIS_EXPRESSION, "bindData", arguments);
+        final Expression initializeCommandObjectMethodCall = new MethodCallExpression(THIS_EXPRESSION, "initializeCommandObject", new ClassExpression(commandObjectNode));
+        final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
+        wrapper.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
     }
 
     /**
@@ -643,21 +540,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             substringFoundInDescription = commandObjectModuleDescription.contains(substring);
         }
         return substringFoundInDescription;
-    }
-
-    protected Statement getAutoWireCommandObjectStatement(
-            final String paramName) {
-        final ArgumentListExpression autowireBeanPropertiesArgs = new ArgumentListExpression();
-        autowireBeanPropertiesArgs.addExpression(new VariableExpression(paramName));
-        autowireBeanPropertiesArgs.addExpression(new ConstantExpression(
-                AutowireCapableBeanFactory.AUTOWIRE_BY_NAME));
-        autowireBeanPropertiesArgs.addExpression(new ConstantExpression(false));
-        final VariableExpression applicatonContextVariable = new VariableExpression("applicationContext");
-        final PropertyExpression autowireCapableBeanFactoryProperty = new PropertyExpression(
-                applicatonContextVariable, "autowireCapableBeanFactory");
-        final MethodCallExpression invokeAutowireBeanPropertiesMethodExpression = new MethodCallExpression(
-                autowireCapableBeanFactoryProperty, "autowireBeanProperties", autowireBeanPropertiesArgs);
-        return new ExpressionStatement(invokeAutowireBeanPropertiesMethodExpression);
     }
 
     protected void initializeStringParameter(final BlockStatement wrapper, final Parameter param,
