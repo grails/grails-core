@@ -368,6 +368,22 @@ public class ControllersApi extends CommonWebApi {
         return forwardMethod.forward(getRequest(instance), getResponse(instance), params);
     }
     
+    /**
+     * Initializes a command object.
+     *
+     * If type is a domain class and the request body or parameters include an id, the id is used to retrieve
+     * the command object instance from the database, otherwise the no-arg constructor on type is invoke.  If
+     * an attempt is made to retrieve the command object instance from the database and no corresponding
+     * record is found, null is returned.
+     *
+     * The command object is then subjected to data binding and dependency injection before being returned.
+     *
+     *
+     * @param controllerInstance The controller instance
+     * @param type The type of the command object
+     * @return the initialized command object or null if the command object is a domain class, the body or
+     * parameters included an id and no corresponding record was found in the database.
+     */
     public Object initializeCommandObject(final Object controllerInstance, final Class type) throws Exception {
         final HttpServletRequest request = getRequest(controllerInstance);
         final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(controllerInstance), type, request);
