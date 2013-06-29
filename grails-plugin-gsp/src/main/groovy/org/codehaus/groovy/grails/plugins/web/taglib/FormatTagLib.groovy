@@ -104,10 +104,18 @@ class FormatTagLib {
 
         def locale = resolveLocale(attrs.locale)
         if (b) {
-            return attrs["true"] ?: messageHelper('boolean.true', { messageHelper('default.boolean.true', 'True', null, locale) }, null, locale)
+            if(attrs.containsKey('true')) {
+                return attrs['true']
+            } else {
+                return messageHelper('boolean.true', { messageHelper('default.boolean.true', 'True', null, locale) }, null, locale)
+            }
         }
-
-        return attrs["false"] ?: messageHelper('boolean.false', { messageHelper('default.boolean.false', 'False', null, locale) }, null, locale)
+        
+        if(attrs.containsKey('false')) {
+            return attrs['false']
+        } else {
+            return messageHelper('boolean.false', { messageHelper('default.boolean.false', 'False', null, locale) }, null, locale)
+        }
     }
 
     /**

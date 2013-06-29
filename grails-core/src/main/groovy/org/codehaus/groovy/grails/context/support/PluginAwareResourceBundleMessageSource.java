@@ -88,6 +88,10 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         this.pluginManager = pluginManager;
     }
 
+    public void setResourceResolver(PathMatchingResourcePatternResolver resourceResolver) {
+        this.resourceResolver = resourceResolver;
+    }
+
     public void afterPropertiesSet() throws Exception {
         if (pluginManager == null || localResourceLoader == null) {
             return;
@@ -364,6 +368,9 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             }
         }
         super.setResourceLoader(localResourceLoader);
-        resourceResolver = new PathMatchingResourcePatternResolver(localResourceLoader);
+
+        if (resourceResolver == null) {
+            resourceResolver = new PathMatchingResourcePatternResolver(localResourceLoader);
+        }
     }
 }
