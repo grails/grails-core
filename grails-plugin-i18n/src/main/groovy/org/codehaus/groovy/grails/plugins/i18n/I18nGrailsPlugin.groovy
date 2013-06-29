@@ -72,7 +72,9 @@ class I18nGrailsPlugin {
 
         LOG.debug "Creating messageSource with basenames: $baseNames"
 
-        servletContextResourceResolver(ServletContextResourcePatternResolver, ref('servletContext'))
+        if (Environment.isWarDeployed()) {
+            servletContextResourceResolver(ServletContextResourcePatternResolver, ref('servletContext'))
+        }
 
         messageSource(PluginAwareResourceBundleMessageSource) {
             basenames = baseNames.toArray()
