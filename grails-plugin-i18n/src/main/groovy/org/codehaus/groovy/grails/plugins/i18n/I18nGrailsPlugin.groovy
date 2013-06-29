@@ -38,6 +38,7 @@ import org.springframework.core.io.ContextResource
 import org.springframework.core.io.Resource;
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.util.ResourceUtils
+import org.springframework.web.context.support.ServletContextResourcePatternResolver
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 
@@ -71,6 +72,8 @@ class I18nGrailsPlugin {
 
         LOG.debug "Creating messageSource with basenames: $baseNames"
 
+        servletContextResourceResolver(ServletContextResourcePatternResolver, ref('servletContext'))
+
         messageSource(PluginAwareResourceBundleMessageSource) {
             basenames = baseNames.toArray()
             fallbackToSystemLocale = false
@@ -82,6 +85,9 @@ class I18nGrailsPlugin {
                 } else {
                     cacheSeconds = 5
                 }
+            }
+            if (Environment.isWarDeployed()) {
+                resourceResolver = ref('servletContextResourceResolver')
             }
         }
 
