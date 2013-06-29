@@ -62,12 +62,6 @@ class CommandObjectsSpec extends Specification {
         expectedDate == birthday
     }
 
-
-    // marked with @Ignore as this won't be supported on the 2.2.x branch
-    // until/unless it is updated to use g-d-m 2.0 or later.
-    // See http://jira.grails.org/browse/GRAILS-6710
-    // See https://github.com/SpringSource/grails-data-mapping/commit/4540ded5cf99a3c045b9f9310021261c389de2a7
-    @spock.lang.Ignore
     void 'Test that rejected binding value survives validation'() {
         when:
         controller.params.width = 'some bad value'
