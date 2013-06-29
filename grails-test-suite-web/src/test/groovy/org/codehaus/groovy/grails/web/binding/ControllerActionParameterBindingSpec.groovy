@@ -1,116 +1,12 @@
-package org.codehaus.groovy.grails.compiler.web
+package org.codehaus.groovy.grails.web.binding
 
-import grails.util.GrailsWebUtil
-
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
-import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import org.springframework.web.context.request.RequestContextHolder
-
+import grails.artefact.Artefact
+import grails.test.mixin.TestFor
+import grails.web.RequestParameter
 import spock.lang.Specification
 
-class ControllerActionTransformerParameterBindingSpec extends Specification {
-
-    static controllerClass
-    def controller
-
-    void setupSpec() {
-        def gcl = new GrailsAwareClassLoader()
-        def transformer = new ControllerActionTransformer() {
-            boolean shouldInject(URL url) { true }
-        }
-        def transformer2 = new ControllerTransformer() {
-            boolean shouldInject(URL url) { true }
-        }
-        gcl.classInjectors = [transformer,transformer2] as ClassInjector[]
-        controllerClass = gcl.parseClass('''
-        import grails.web.RequestParameter
-
-        class TestBindingController {
-            def methodAction(String stringParam,
-                             Short shortParam,
-                             short primitiveShortParam,
-                             Integer integerParam,
-                             int primitiveIntParam,
-                             Long longParam,
-                             long primitiveLongParam,
-                             Float floatParam,
-                             float primitiveFloatParam,
-                             Double doubleParam,
-                             double primitiveDoubleParam,
-                             Boolean booleanParam,
-                             boolean primitiveBooleanParam,
-                             Byte byteParam,
-                             byte primitiveByteParam,
-                             Character charParam,
-                             char primitiveCharParam) {
-                [ stringParam: stringParam,
-                  integerParam: integerParam,
-                  primitiveIntParam: primitiveIntParam,
-                  shortParam: shortParam,
-                  primitiveShortParam: primitiveShortParam,
-                  longParam: longParam,
-                  primitiveLongParam: primitiveLongParam,
-                  floatParam: floatParam,
-                  primitiveFloatParam: primitiveFloatParam,
-                  doubleParam: doubleParam,
-                  primitiveDoubleParam: primitiveDoubleParam,
-                  booleanParam: booleanParam,
-                  primitiveBooleanParam: primitiveBooleanParam,
-                  byteParam: byteParam,
-                  primitiveByteParam: primitiveByteParam,
-                  charParam: charParam,
-                  primitiveCharParam: primitiveCharParam ]
-            }
-            def methodActionWithRequestMapping(@RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age) {
-                [name: name, age: age]
-            }
-            def closureAction(String stringParam,
-                             Short shortParam,
-                             short primitiveShortParam,
-                             Integer integerParam,
-                             int primitiveIntParam,
-                             Long longParam,
-                             long primitiveLongParam,
-                             Float floatParam,
-                             float primitiveFloatParam,
-                             Double doubleParam,
-                             double primitiveDoubleParam,
-                             Boolean booleanParam,
-                             boolean primitiveBooleanParam,
-                             Byte byteParam,
-                             byte primitiveByteParam,
-                             Character charParam,
-                             char primitiveCharParam) {
-                [ stringParam: stringParam,
-                  integerParam: integerParam,
-                  primitiveIntParam: primitiveIntParam,
-                  shortParam: shortParam,
-                  primitiveShortParam: primitiveShortParam,
-                  longParam: longParam,
-                  primitiveLongParam: primitiveLongParam,
-                  floatParam: floatParam,
-                  primitiveFloatParam: primitiveFloatParam,
-                  doubleParam: doubleParam,
-                  primitiveDoubleParam: primitiveDoubleParam,
-                  booleanParam: booleanParam,
-                  primitiveBooleanParam: primitiveBooleanParam,
-                  byteParam: byteParam,
-                  primitiveByteParam: primitiveByteParam,
-                  charParam: charParam,
-                  primitiveCharParam: primitiveCharParam ]
-            }
-            def closureActionWithRequestMapping(@RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age) {
-                [name: name, age: age]
-            }
-        }
-        ''')
-    }
-
-    def setup() {
-        GrailsWebUtil.bindMockWebRequest()
-        controller = controllerClass.newInstance()
-    }
-
+@TestFor(TestBindingController)
+class ControllerActionParameterBindingSpec extends Specification {
     void "Test request parameter name matching argument name but not matching @RequestParameter name"() {
         when:
             controller.params.name = 'Herbert'
@@ -389,8 +285,88 @@ class ControllerActionTransformerParameterBindingSpec extends Specification {
             null == model.charParam
             0 == model.primitiveCharParam
     }
+}
 
-    def cleanupSpec() {
-        RequestContextHolder.setRequestAttributes(null)
+@Artefact('Controller')
+class TestBindingController {
+    
+    def methodAction(String stringParam,
+            Short shortParam,
+            short primitiveShortParam,
+            Integer integerParam,
+            int primitiveIntParam,
+            Long longParam,
+            long primitiveLongParam,
+            Float floatParam,
+            float primitiveFloatParam,
+            Double doubleParam,
+            double primitiveDoubleParam,
+            Boolean booleanParam,
+            boolean primitiveBooleanParam,
+            Byte byteParam,
+            byte primitiveByteParam,
+            Character charParam,
+            char primitiveCharParam) {
+        [ stringParam: stringParam,
+            integerParam: integerParam,
+            primitiveIntParam: primitiveIntParam,
+            shortParam: shortParam,
+            primitiveShortParam: primitiveShortParam,
+            longParam: longParam,
+            primitiveLongParam: primitiveLongParam,
+            floatParam: floatParam,
+            primitiveFloatParam: primitiveFloatParam,
+            doubleParam: doubleParam,
+            primitiveDoubleParam: primitiveDoubleParam,
+            booleanParam: booleanParam,
+            primitiveBooleanParam: primitiveBooleanParam,
+            byteParam: byteParam,
+            primitiveByteParam: primitiveByteParam,
+            charParam: charParam,
+            primitiveCharParam: primitiveCharParam ]
+    }
+            
+    def methodActionWithRequestMapping(@RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age) {
+        [name: name, age: age]
+    }
+    
+    def closureAction = {String stringParam,
+            Short shortParam,
+            short primitiveShortParam,
+            Integer integerParam,
+            int primitiveIntParam,
+            Long longParam,
+            long primitiveLongParam,
+            Float floatParam,
+            float primitiveFloatParam,
+            Double doubleParam,
+            double primitiveDoubleParam,
+            Boolean booleanParam,
+            boolean primitiveBooleanParam,
+            Byte byteParam,
+            byte primitiveByteParam,
+            Character charParam,
+            char primitiveCharParam ->
+        [ stringParam: stringParam,
+            integerParam: integerParam,
+            primitiveIntParam: primitiveIntParam,
+            shortParam: shortParam,
+            primitiveShortParam: primitiveShortParam,
+            longParam: longParam,
+            primitiveLongParam: primitiveLongParam,
+            floatParam: floatParam,
+            primitiveFloatParam: primitiveFloatParam,
+            doubleParam: doubleParam,
+            primitiveDoubleParam: primitiveDoubleParam,
+            booleanParam: booleanParam,
+            primitiveBooleanParam: primitiveBooleanParam,
+            byteParam: byteParam,
+            primitiveByteParam: primitiveByteParam,
+            charParam: charParam,
+            primitiveCharParam: primitiveCharParam ]
+    }
+            
+    def closureActionWithRequestMapping = { @RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age ->
+        [name: name, age: age]
     }
 }
