@@ -553,6 +553,10 @@ class SimpleDataBinder implements DataBinder {
             }
         } else if (typeToConvertTo.isPrimitive() || typeToConvertTo.isArray()) {
             return value
+        } else if (value instanceof Map) {
+            def obj = typeToConvertTo.newInstance()
+            bind obj, new SimpleMapDataBindingSource(value)
+            return obj
         }
         typeToConvertTo.newInstance value
     }

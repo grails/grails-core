@@ -19,20 +19,21 @@ import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
+import groovy.lang.GroovyObject;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ChainMethod;
@@ -40,11 +41,14 @@ import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.RenderDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.WithFormMethod;
+import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
+import org.grails.databinding.DataBindingSource;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
@@ -362,5 +366,42 @@ public class ControllersApi extends CommonWebApi {
      */
     public String forward(Object instance, Map params) {
         return forwardMethod.forward(getRequest(instance), getResponse(instance), params);
+    }
+    
+    /**
+     * Initializes a command object.
+     *
+     * If type is a domain class and the request body or parameters include an id, the id is used to retrieve
+     * the command object instance from the database, otherwise the no-arg constructor on type is invoke.  If
+     * an attempt is made to retrieve the command object instance from the database and no corresponding
+     * record is found, null is returned.
+     *
+     * The command object is then subjected to data binding and dependency injection before being returned.
+     *
+     *
+     * @param controllerInstance The controller instance
+     * @param type The type of the command object
+     * @return the initialized command object or null if the command object is a domain class, the body or
+     * parameters included an id and no corresponding record was found in the database.
+     */
+    public Object initializeCommandObject(final Object controllerInstance, final Class type) throws Exception {
+        final HttpServletRequest request = getRequest(controllerInstance);
+        final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(controllerInstance), type, request);
+        final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSource(type, dataBindingSource);
+        final Object commandObjectInstance;
+        if(commandObjectBindingSource.hasIdentifier() && DomainClassArtefactHandler.isDomainClass(type)) {
+            commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", commandObjectBindingSource.getIdentifierValue());
+        } else {
+            commandObjectInstance = type.newInstance();
+        }
+        
+        if(commandObjectInstance != null) {
+            bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource);
+            
+            final ApplicationContext applicationContext = getApplicationContext(controllerInstance);
+            final AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory();
+            autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+        }
+        return commandObjectInstance;
     }
 }

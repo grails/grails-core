@@ -30,9 +30,11 @@ import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import org.grails.databinding.DataBindingSource
+import org.grails.databinding.SimpleMapDataBindingSource
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.Errors
@@ -150,11 +152,16 @@ class WebMetaUtils {
         }
     }
 
-    static Map getCommandObjectBindingParams(Class commandObjectClass, Map params) {
+    static DataBindingSource getCommandObjectBindingSource(Class commandObjectClass, DataBindingSource params) {
         def commandParamsKey = convertTypeNameToParamsPrefix(commandObjectClass)
         def commandParams = params
-        if (params != null && commandParamsKey != null && params[commandParamsKey] instanceof Map) {
-            commandParams = params[commandParamsKey]
+        if (params != null && commandParamsKey != null) {
+            def innerValue = params[commandParamsKey]
+            if(innerValue instanceof DataBindingSource) {
+                commandParams = innerValue
+            } else if(innerValue instanceof Map) {
+                commandParams = new SimpleMapDataBindingSource(innerValue)
+            }
         }
         commandParams
     }

@@ -25,6 +25,14 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
 
         assertOutputEquals "Yippeee!", template, [theBoolean:true]
         assertOutputEquals "Urghh!", template, [theBoolean:false]
+        
+        template = '<g:formatBoolean boolean="${somebool}" true="X" false=""/>'
+        assertOutputEquals 'X', template, [somebool: true]
+        assertOutputEquals '', template, [somebool: false]
+        
+        template = '<g:formatBoolean boolean="${somebool}" true="" false="X"/>'
+        assertOutputEquals '', template, [somebool: true]
+        assertOutputEquals 'X', template, [somebool: false]
     }
 
     void testFormatDate() {

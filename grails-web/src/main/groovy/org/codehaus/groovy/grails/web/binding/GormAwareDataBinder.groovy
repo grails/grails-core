@@ -106,8 +106,9 @@ class GormAwareDataBinder extends SimpleDataBinder {
         def isDomainClass = isDomainClass propertyType
         if (isDomainClass && source.containsProperty(propName)) {
             def val = source.getPropertyValue propName
-            if (val instanceof Map && val.containsKey('id')) {
-                def persistentInstance = getPersistentInstance(propertyType, val['id'])
+            def idValue = getIdentifierValueFrom(val)
+            if (idValue != null) {
+                def persistentInstance = getPersistentInstance(propertyType, idValue)
                 if (persistentInstance != null) {
                     obj[propName] = persistentInstance
                     isInitialized = true
@@ -151,16 +152,28 @@ class GormAwareDataBinder extends SimpleDataBinder {
         return DomainClassArtefactHandler.isDomainClass(clazz) || AnnotationDomainClassArtefactHandler.isJPADomainClass(clazz)
     }
 
+    protected getIdentifierValueFrom(source) {
+        def idValue = null
+        if(source instanceof DataBindingSource && source.hasIdentifier()) {
+            idValue = source.getIdentifierValue()
+        } else if(source instanceof CharSequence){
+            idValue = source
+        } else if(source instanceof Map && source.containsKey('id')) {
+            idValue = source['id']
+        } 
+        if (idValue instanceof GString) {
+            idValue = idValue.toString()
+        }
+        idValue
+    }
+
     @Override
     protected processProperty(obj, MetaProperty metaProperty, val, DataBindingSource source, DataBindingListener listener) {
         boolean needsBinding = true
 
         def propName = metaProperty.name
-        if ((val instanceof Map && val.containsKey('id')) || (val instanceof CharSequence)) {
-            def idValue = val instanceof Map ? val['id'] : val
-            if (idValue instanceof GString) {
-                idValue = idValue.toString()
-            }
+        def idValue = getIdentifierValueFrom(val)
+        if (idValue != null) {
             def propertyType = getDomainClassType(obj, metaProperty.name)
             if (propertyType) {
                 needsBinding = false
@@ -196,11 +209,8 @@ class GormAwareDataBinder extends SimpleDataBinder {
         boolean needsBinding = true
         def propName = indexedPropertyReferenceDescriptor.propertyName
 
-        if ((val instanceof Map && val.containsKey('id')) || (val instanceof CharSequence)) {
-            def idValue = val instanceof Map ? val['id'] : val
-            if (idValue instanceof GString) {
-                idValue = idValue.toString()
-            }
+        def idValue = getIdentifierValueFrom(val)
+        if (idValue != null) {
             def propertyType = getDomainClassType(obj, propName)
             def referencedType = getReferencedTypeForCollection propName, obj
             if (referencedType != null && isDomainClass(referencedType)) {

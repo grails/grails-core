@@ -34,6 +34,9 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource
 import org.springframework.core.io.Resource
+import org.springframework.context.support.ReloadableResourceBundleMessageSource
+import org.springframework.util.ResourceUtils
+import org.springframework.web.context.support.ServletContextResourcePatternResolver
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
 /**
@@ -68,6 +71,10 @@ class I18nGrailsPlugin {
 
         LOG.debug "Creating messageSource with basenames: $baseNames"
 
+        if (Environment.isWarDeployed()) {
+            servletContextResourceResolver(ServletContextResourcePatternResolver, ref('servletContext'))
+        }
+
         messageSource(PluginAwareResourceBundleMessageSource) {
             basenames = baseNames.toArray()
             fallbackToSystemLocale = false
@@ -75,6 +82,9 @@ class I18nGrailsPlugin {
             if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD)) {
                 def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
                 cacheSeconds = cacheSecondsSetting == null ? 5 : cacheSecondsSetting as Integer
+            }
+            if (Environment.isWarDeployed()) {
+                resourceResolver = ref('servletContextResourceResolver')
             }
         }
 
