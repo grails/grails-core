@@ -69,7 +69,8 @@ createArtifact = { Map args = [:] ->
     propertyName = GrailsNameUtils.getPropertyNameRepresentation(name)
     artifactFile = "${basedir}/${artifactPath}/${pkgPath}${className}${suffix}.groovy"
 
-    if (new File(artifactFile).exists()) {
+    File destination = new File(artifactFile)
+    if (destination.exists()) {
         if (!confirmInput("${type} ${className}${suffix}.groovy already exists. Overwrite?","${name}.${suffix}.overwrite")) {
             return
         }
@@ -117,6 +118,11 @@ createArtifact = { Map args = [:] ->
     args.replacements.each { token, value ->
         ant.replace(file: artifactFile, token: token, value: value)
     }
+
+    String lineSeparator = System.getProperty('line.separator')
+    StringBuilder fixed = new StringBuilder()
+    destination.text.eachLine { fixed << it << lineSeparator }
+    destination.withWriter { it.write fixed.toString() }
 
     event("CreatedFile", [artifactFile])
     event("CreatedArtefact", [ artifactFile, className])
