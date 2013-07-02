@@ -1,5 +1,4 @@
 dependencies {
-    compile "junit:junit:${junitVersion}"
     compile "commons-lang:commons-lang:$commonsLangVersion"
     compile "commons-collections:commons-collections:$commonsCollectionsVersion"
 }
