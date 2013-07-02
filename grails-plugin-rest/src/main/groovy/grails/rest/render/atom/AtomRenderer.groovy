@@ -202,10 +202,12 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
                 } else {
                     final associatedEntity = property.associatedEntity
                     if (associatedEntity) {
+                        writer.startNode(property.name)
                         for (obj in entry.value) {
                             writtenObjects << obj
                             writeDomainWithEmbeddedAndLinks(associatedEntity, obj, context, xml, writtenObjects, false)
                         }
+                        writer.end()
                     }
                 }
 
