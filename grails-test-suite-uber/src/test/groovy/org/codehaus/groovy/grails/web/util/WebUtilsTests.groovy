@@ -71,19 +71,19 @@ grails.mime.file.extensions=true
         RequestContextHolder.setRequestAttributes(webRequest)
     }
 
-//    void testGetFormatFromURI() {
-//        def ga = new DefaultGrailsApplication(config:config)
-//        bindMockRequest(ga)
-//
-//        assertNull WebUtils.getFormatFromURI("/foo/bar/")
-//        assertNull WebUtils.getFormatFromURI("/foo/bar")
-//        assertNull WebUtils.getFormatFromURI("/foo/bar.")
-//        assertNull WebUtils.getFormatFromURI("/foo/bar.suff/bar")
-//        assertNull WebUtils.getFormatFromURI("/foo/bar.suff/bar.")
-//        assertEquals "xml", WebUtils.getFormatFromURI("/foo/bar.xml")
-//        assertEquals "xml", WebUtils.getFormatFromURI("/foo.xml")
-//        assertEquals "xml", WebUtils.getFormatFromURI("/foo/bar.suff/bar.xml")
-//    }
+    void testGetFormatFromURI() {
+        def ga = new DefaultGrailsApplication(config:config)
+        bindMockRequest(ga)
+
+        assertNull WebUtils.getFormatFromURI("/foo/bar/")
+        assertNull WebUtils.getFormatFromURI("/foo/bar")
+        assertNull WebUtils.getFormatFromURI("/foo/bar.")
+        assertNull WebUtils.getFormatFromURI("/foo/bar.suff/bar")
+        assertNull WebUtils.getFormatFromURI("/foo/bar.suff/bar.")
+        assertEquals "xml", WebUtils.getFormatFromURI("/foo/bar.xml")
+        assertEquals "xml", WebUtils.getFormatFromURI("/foo.xml")
+        assertEquals "xml", WebUtils.getFormatFromURI("/foo/bar.suff/bar.xml")
+    }
 
     void testGetRequestURIForGrailsDispatchURI() {
         def request = new MockHttpServletRequest()
