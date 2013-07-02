@@ -389,14 +389,34 @@ public class ControllersApi extends CommonWebApi {
         final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(controllerInstance), type, request);
         final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSource(type, dataBindingSource);
         final Object commandObjectInstance;
+        boolean queryWasUsedToRetrieveDomainObject = false;
         if(commandObjectBindingSource.hasIdentifier() && DomainClassArtefactHandler.isDomainClass(type)) {
+            queryWasUsedToRetrieveDomainObject = true; 
             commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", commandObjectBindingSource.getIdentifierValue());
         } else {
             commandObjectInstance = type.newInstance();
         }
         
         if(commandObjectInstance != null) {
-            bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource);
+            final boolean shouldDoDataBinding;
+            
+            if(queryWasUsedToRetrieveDomainObject) {
+                final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
+                switch(requestMethod) {
+                case POST:
+                case PUT:
+                    shouldDoDataBinding = true;
+                    break;
+                default:
+                    shouldDoDataBinding = false;
+                }
+            } else {
+                shouldDoDataBinding = true;
+            }
+            
+            if(shouldDoDataBinding) {
+                bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource);
+            }
             
             final ApplicationContext applicationContext = getApplicationContext(controllerInstance);
             final AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory();
