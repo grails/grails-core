@@ -50,8 +50,8 @@ class RestfulController<T> {
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
         def model = [:]
-        model.put("${resourceName}".toString(), resource.count())
-        respond resource.list(params), model:model
+        model.put("${resourceName}".toString(), countResources())
+        respond listAllResources(params), model:model
     }
 
     /**
@@ -179,5 +179,21 @@ class RestfulController<T> {
         resource.newInstance(params)
     }
 
+    /**
+     * List all of resource based on parameters
+     *
+     * @return List of resources or empty if it doesn't exist
+     */
+    protected List<T> listAllResources() {
+        resource.list(this.params)
+    }
 
+    /**
+     * Counts all of resources
+     *
+     * @return List of resources or empty if it doesn't exist
+     */
+    protected Integer countResources() {
+        resource.count()
+    }
 }
