@@ -83,8 +83,8 @@ class RestfulController<T> {
         }
         else {
             instance.save flush:true
-            withFormat {
-                html {
+            request.withFormat {
+                form {
                     flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
                     redirect instance
                 }
@@ -116,8 +116,8 @@ class RestfulController<T> {
         }
         else {
             instance.save flush:true
-            withFormat {
-                html {
+            request.withFormat {
+                form {
                     flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
                     redirect instance
                 }
@@ -137,8 +137,8 @@ class RestfulController<T> {
         def instance = queryForResource(params.id)
         if(instance) {
             instance.delete flush:true
-            withFormat {
-                html {
+            request.withFormat {
+                form {
                     flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
                     redirect action:"index", method:"GET"
                 }
