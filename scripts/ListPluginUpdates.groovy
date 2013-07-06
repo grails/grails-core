@@ -62,6 +62,7 @@ eachRepository = { Closure callable ->
         }
     }
     else {
+        pluginsList = dependencyManager.downloadPluginList(new File(grailsWorkDir, "plugins-list-grailsCentral.xml"))
         dependencyManager.repositories.each { r ->
             callable.call(r.id, r.url)
         }
