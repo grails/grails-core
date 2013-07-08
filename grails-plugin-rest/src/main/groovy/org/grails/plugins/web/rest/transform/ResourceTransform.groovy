@@ -317,8 +317,9 @@ class ResourceTransform implements ASTTransformation{
         final renderArgs = new ArgumentListExpression()
         final renderNamedArgs = new MapExpression()
         renderNamedArgs.addMapEntryExpression(CONSTANT_STATUS, new ConstantExpression(HttpStatus.OK.value()))
+        renderArgs.addExpression(domainVar)
         renderArgs.addExpression(renderNamedArgs)
-        final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(THIS_EXPR, RENDER_METHOD, renderArgs)))
+        final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(THIS_EXPR, RESPOND_METHOD, renderArgs)))
         allFormatsClosure.variableScope = variableScope
         withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, '*', allFormatsClosure)))
 
@@ -450,8 +451,9 @@ class ResourceTransform implements ASTTransformation{
         final renderArgs = new ArgumentListExpression()
         final renderNamedArgs = new MapExpression()
         renderNamedArgs.addMapEntryExpression(CONSTANT_STATUS, new ConstantExpression(HttpStatus.CREATED.value()))
+        renderArgs.addExpression(domainVar)
         renderArgs.addExpression(renderNamedArgs)
-        final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(THIS_EXPR, RENDER_METHOD, renderArgs)))
+        final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(THIS_EXPR, RESPOND_METHOD, renderArgs)))
         allFormatsClosure.variableScope = variableScope
         withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, '*', allFormatsClosure)))
 

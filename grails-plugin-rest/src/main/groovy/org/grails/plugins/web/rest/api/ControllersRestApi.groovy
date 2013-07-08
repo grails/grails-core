@@ -82,7 +82,16 @@ class ControllersRestApi {
      * @return
      */
     public  Object respond(Object controller, Object value, Map args = [:]) {
-        def statusCode = args.status ?: null
+        Integer statusCode = null
+        if( args.status ) {
+            final Object statusValue = args.status
+            if(statusValue instanceof Number) {
+                statusCode = statusValue.intValue()
+            }
+            else {
+                statusCode = statusValue.toString().toInteger()
+            }
+        }
         if (value == null) {
             return render(controller,[status:statusCode ?: 404 ])
         }
@@ -116,6 +125,9 @@ class ControllersRestApi {
                     if (args.view) {
                         context.viewName = args.view
                     }
+                    if(statusCode != null) {
+                        context.setStatus(HttpStatus.valueOf(statusCode))
+                    }
                     return errorsRenderer.render(errors, context)
                 }
                 else {
@@ -137,6 +149,9 @@ class ControllersRestApi {
 
             if (renderer) {
                 final context = new ServletRenderContext(webRequest, args)
+                if(statusCode != null) {
+                    context.setStatus(HttpStatus.valueOf(statusCode))
+                }
                 renderer.render(value, context)
             }
             else {

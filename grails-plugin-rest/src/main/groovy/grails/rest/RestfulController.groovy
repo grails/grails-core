@@ -88,7 +88,7 @@ class RestfulController<T> {
                     flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
                     redirect instance
                 }
-                '*' { render status: CREATED }
+                '*' { respond instance, [status: CREATED] }
             }
         }
     }
@@ -121,7 +121,7 @@ class RestfulController<T> {
                     flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
                     redirect instance
                 }
-                '*'{ render status: OK }
+                '*'{ respond instance, [status: OK] }
             }
         }
     }
