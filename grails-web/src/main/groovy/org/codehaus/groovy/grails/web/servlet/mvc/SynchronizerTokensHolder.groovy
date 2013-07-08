@@ -26,9 +26,9 @@ import javax.servlet.http.HttpSession
  */
 class SynchronizerTokensHolder implements Serializable {
 
-    public static final String HOLDER = "org.codehaus.groovy.grails.SYNCHRONIZER_TOKENS_HOLDER"
-    public static final String TOKEN_KEY = "org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN"
-    public static final String TOKEN_URI = "org.codehaus.groovy.grails.SYNCHRONIZER_URI"
+    public static final String HOLDER = "SYNCHRONIZER_TOKENS_HOLDER"
+    public static final String TOKEN_KEY = "SYNCHRONIZER_TOKEN"
+    public static final String TOKEN_URI = "SYNCHRONIZER_URI"
 
     protected Map<String, Set<UUID>> currentTokens = [:]
 
