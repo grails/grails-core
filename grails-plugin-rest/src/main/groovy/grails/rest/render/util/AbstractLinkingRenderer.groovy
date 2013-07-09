@@ -107,8 +107,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
                 htmlRenderer = new DefaultHtmlRenderer(targetType)
             }
             htmlRenderer.render(object, context)
-        }
-        else {
+        } else {
             renderInternal(object, context)
         }
 
@@ -205,7 +204,6 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
      * @return Any associations embedded within the object
      */
     protected void writeDomain(MetaClass metaClass, PersistentEntity entity, Object object, writer) {
-
         if (entity) {
             for (PersistentProperty p in entity.persistentProperties) {
                 final propertyName = p.name

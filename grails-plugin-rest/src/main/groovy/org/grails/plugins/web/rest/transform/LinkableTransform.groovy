@@ -55,7 +55,6 @@ class LinkableTransform implements ASTTransformation{
     public static final String RESOURCE_LINKS_FIELD = '$resourceLinks'
     public static final String LINKS_METHOD = "links"
 
-
     public static void addLinkingMethods(ClassNode classNode) {
         def linksField = new FieldNode(RESOURCE_LINKS_FIELD, PRIVATE | TRANSIENT, new ClassNode(Set).getPlainNodeReference(), classNode, new ListExpression())
         classNode.addField(linksField)
