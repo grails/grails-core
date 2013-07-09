@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import groovy.transform.CompileStatic
-
+import groovy.util.slurpersupport.GPathResult
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
@@ -39,9 +39,20 @@ class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
     }
 
     @Override
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
+        if(bindingSource instanceof GPathResult) {
+            def gpathMap = new GPathResultMap((GPathResult)bindingSource)
+            return new SimpleMapDataBindingSource(gpathMap)
+        }
+        else {
+            return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
+        }
+    }
+
+    @Override
     protected DataBindingSource createBindingSource(Reader reader) {
         def gpath = new XmlSlurper().parse(reader)
         def gpathMap = new GPathResultMap(gpath)
-        new SimpleMapDataBindingSource(gpathMap)
+        return new SimpleMapDataBindingSource(gpathMap)
     }
 }

@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.web.json.JSONObject
 
 import java.util.regex.Pattern
 
@@ -54,6 +55,19 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     @Override
     MimeType[] getMimeTypes() {
         [MimeType.JSON, MimeType.TEXT_JSON] as MimeType[]
+    }
+
+    @Override
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
+        if(bindingSource instanceof JsonObject) {
+            return new SimpleMapDataBindingSource(createJsonObjectMap((JsonObject)bindingSource))
+        }
+        else if(bindingSource instanceof JSONObject) {
+            return new SimpleMapDataBindingSource((JSONObject)bindingSource)
+        }
+        else {
+            return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
+        }
     }
 
     @Override
