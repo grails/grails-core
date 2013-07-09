@@ -32,8 +32,6 @@ ext {
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "2.1.5"
-    gradleGroovyVersion = groovyVersion
-    gradleGroovyVersion = "1.8.2"
     ivyVersion = "2.3.0"
     jansiVersion = "1.2.1"
     jlineVersion = "1.0"
