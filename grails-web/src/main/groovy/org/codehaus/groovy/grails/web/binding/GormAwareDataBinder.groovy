@@ -62,7 +62,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
 
     /**
      * @param obj the object to perform data binding on
-     * @param source a Map containg the values to be bound to obj
+     * @param source a Map containing the values to be bound to obj
      */
     void bind(obj, DataBindingSource source) {
         bind obj, source, null, getBindingIncludeList(obj), null, null
@@ -70,7 +70,7 @@ class GormAwareDataBinder extends SimpleDataBinder {
 
     /**
      * @param obj the object to perform data binding on
-     * @param source a Map containg the values to be bound to obj
+     * @param source a Map containing the values to be bound to obj
      * @param listener will be notified of data binding events
      */
     void bind(obj, DataBindingSource source, DataBindingListener listener) {
