@@ -144,6 +144,45 @@ class GormAwareDataBinderSpec extends Specification {
         obj.someFloat == 5.5
         obj.someDouble == 6.6
     }
+    
+    void 'Test binding null to id of element nested in a List'() {
+        given:
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def obj = new CollectionContainer()
+        def map = [:]
+
+        map['listOfWidgets[0]'] = [isBindable: 'Is Uno (List)', isNotBindable: 'Is Not Uno (List)']
+        map['listOfWidgets[1]'] = [isBindable: 'Is Dos (List)', isNotBindable: 'Is Not Dos (List)']
+        map['listOfWidgets[2]'] = [isBindable: 'Is Tres (List)', isNotBindable: 'Is Not Tres (List)']
+
+        when:
+        binder.bind obj, new SimpleMapDataBindingSource(map)
+        def listOfWidgets = obj.listOfWidgets
+
+        then:
+        listOfWidgets instanceof List
+        listOfWidgets.size() == 3
+        listOfWidgets[0].isBindable == 'Is Uno (List)'
+        listOfWidgets[0].isNotBindable == null
+        listOfWidgets[1].isBindable == 'Is Dos (List)'
+        listOfWidgets[1].isNotBindable == null
+        listOfWidgets[2].isBindable == 'Is Tres (List)'
+        listOfWidgets[2].isNotBindable == null
+        
+        when:
+        map = ['listOfWidgets[1]': [id: 'null']]
+        binder.bind obj, new SimpleMapDataBindingSource(map)
+
+        listOfWidgets = obj.listOfWidgets
+        
+        then:
+        listOfWidgets instanceof List
+        listOfWidgets.size() == 2
+        listOfWidgets[0].isBindable == 'Is Uno (List)'
+        listOfWidgets[0].isNotBindable == null
+        listOfWidgets[1].isBindable == 'Is Tres (List)'
+        listOfWidgets[1].isNotBindable == null
+    }
 
     void 'Test id binding'() {
         given:

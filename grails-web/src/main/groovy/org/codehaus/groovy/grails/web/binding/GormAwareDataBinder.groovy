@@ -241,14 +241,24 @@ class GormAwareDataBinder extends SimpleDataBinder {
                         }
                     }
                 } else if (Collection.isAssignableFrom(metaProperty.type)) {
-                    def instance = 'null' == idValue ? null : getPersistentInstance(referencedType, idValue)
                     def collection = initializeCollection obj, propName, metaProperty.type
-                    addElementToCollectionAt obj, propName, collection, Integer.parseInt(indexedPropertyReferenceDescriptor.index), instance
-                    if (instance != null) {
-                        if (val instanceof Map) {
-                            bind instance, new SimpleMapDataBindingSource(val), listener
-                        } else if (val instanceof DataBindingSource) {
-                            bind instance, val, listener
+                    def idx = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
+                    if('null' == idValue) {
+                        if(idx < collection.size()) {
+                            def element = collection[idx]
+                            if(element != null) {
+                                collection.remove element
+                            }
+                        }
+                    } else {
+                        def instance = getPersistentInstance(referencedType, idValue)
+                        addElementToCollectionAt obj, propName, collection, idx, instance
+                        if (instance != null) {
+                            if (val instanceof Map) {
+                                bind instance, new SimpleMapDataBindingSource(val), listener
+                            } else if (val instanceof DataBindingSource) {
+                                bind instance, val, listener
+                            }
                         }
                     }
                 } else if (Map.isAssignableFrom(metaProperty.type)) {
