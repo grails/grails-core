@@ -41,7 +41,7 @@ import com.google.gson.stream.JsonReader
  * @author Graeme Rocher
  *
  * @see DataBindingSource
- * @see DataBindingSourceCreator
+ * @see org.grails.databinding.bindingsource.DataBindingSourceCreator
  */
 @CompileStatic
 class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCreator {
@@ -57,8 +57,8 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     }
 
     @Override
-    protected DataBindingSource createBindingSource(InputStream inputStream) {
-        def jsonReader = new JsonReader(new InputStreamReader(inputStream))
+    protected DataBindingSource createBindingSource(Reader reader) {
+        def jsonReader = new JsonReader(reader)
         jsonReader.setLenient true
         def parser = new JsonParser()
         final jsonElement = parser.parse(jsonReader)
@@ -66,9 +66,9 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         Map result = createJsonObjectMap(jsonElement)
 
         return new SimpleMapDataBindingSource(result)
-    }
 
-    /**
+    }
+/**
      * Returns a map for the given JsonElement. Subclasses can override to customize the format of the map
      *
      * @param jsonElement The JSON element

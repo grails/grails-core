@@ -45,10 +45,22 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
             def is = req.getInputStream()
             return createBindingSource(is)
         }
+        else if(bindingSource instanceof InputStream) {
+            def is = (InputStream)bindingSource
+            return createBindingSource(is)
+        }
+        else if(bindingSource instanceof Reader) {
+            def is = (Reader)bindingSource
+            return createBindingSource(is)
+        }
         else  {
             return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
         }
     }
 
-    protected abstract DataBindingSource createBindingSource(InputStream inputStream)
+    protected DataBindingSource createBindingSource(InputStream inputStream){
+        return createBindingSource(new InputStreamReader(inputStream))
+    }
+
+    protected abstract DataBindingSource createBindingSource(Reader reader)
 }

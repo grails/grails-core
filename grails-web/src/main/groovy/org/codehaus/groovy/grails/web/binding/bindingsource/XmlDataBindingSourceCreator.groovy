@@ -39,8 +39,8 @@ class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
     }
 
     @Override
-    protected DataBindingSource createBindingSource(InputStream inputStream) {
-        def gpath = new XmlSlurper().parse(inputStream)
+    protected DataBindingSource createBindingSource(Reader reader) {
+        def gpath = new XmlSlurper().parse(reader)
         def gpathMap = new GPathResultMap(gpath)
         new SimpleMapDataBindingSource(gpathMap)
     }
