@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.grails.plugins.web.rest.api
 
 import grails.rest.Resource
@@ -43,14 +42,10 @@ import javax.servlet.http.HttpServletResponse
  */
 @CompileStatic
 class ControllersRestApi {
-
-
     public static final String PROPERTY_RESPONSE_FORMATS = "responseFormats"
     protected @Delegate ControllersApi controllersApi
     protected @Delegate ControllersMimeTypesApi mimeTypesApi
-
     protected RendererRegistry rendererRegistry
-
 
     @Autowired
     GroovyPageLocator groovyPageLocator
@@ -61,14 +56,13 @@ class ControllersRestApi {
         this.rendererRegistry = rendererRegistry
     }
 
-
-
     /**
      * Same as {@link ControllersRestApi#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
      */
     public <T> Object respond(Object controller, Map args, Object value) {
         respond(controller, value, args)
     }
+
     /**
      * The respond method will attempt to delivery an appropriate response for the
      * requested response format and value.
@@ -81,14 +75,13 @@ class ControllersRestApi {
      * @param args The arguments
      * @return
      */
-    public  Object respond(Object controller, Object value, Map args = [:]) {
+    public Object respond(Object controller, Object value, Map args = [:]) {
         Integer statusCode = null
-        if( args.status ) {
+        if (args.status) {
             final Object statusValue = args.status
-            if(statusValue instanceof Number) {
+            if (statusValue instanceof Number) {
                 statusCode = statusValue.intValue()
-            }
-            else {
+            } else {
                 statusCode = statusValue.toString().toInteger()
             }
         }
@@ -113,7 +106,6 @@ class ControllersRestApi {
         }
 
         if (mimeType && formats.contains(mimeType.extension)) {
-
             Errors errors = value.hasProperty(GrailsDomainClassProperty.ERRORS) ? getDomainErrors(value) : null
 
             Renderer renderer
@@ -129,20 +121,17 @@ class ControllersRestApi {
                         context.setStatus(HttpStatus.valueOf(statusCode))
                     }
                     return errorsRenderer.render(errors, context)
-                }
-                else {
+                } else {
                     return render(controller,[status: statusCode ?: 404 ])
                 }
-            }
-            else {
+            } else {
                 final valueType = value.getClass()
                 if (registry.isContainerType(valueType)) {
                     renderer = registry.findContainerRenderer(mimeType,valueType, value)
-                    if(renderer == null) {
+                    if (renderer == null) {
                         renderer = registry.findRenderer(mimeType, value)
                     }
-                }
-                else {
+                } else {
                     renderer = registry.findRenderer(mimeType, value)
                 }
             }
@@ -153,12 +142,10 @@ class ControllersRestApi {
                     context.setStatus(HttpStatus.valueOf(statusCode))
                 }
                 renderer.render(value, context)
-            }
-            else {
+            } else {
                 render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
             }
-        }
-        else {
+        } else {
             render(controller,[status: statusCode ?: HttpStatus.UNSUPPORTED_MEDIA_TYPE.value() ])
         }
     }
@@ -179,16 +166,13 @@ class ControllersRestApi {
                 final responseFormatsForAction = responseFormatsMap.get(actionName)
                 if (responseFormatsForAction instanceof List) {
                     return (List<String>) responseFormatsForAction
-                }
-                else {
+                } else {
                     return getDefaultResponseFormats(value)
                 }
-            }
-            else {
+            } else {
                 return getDefaultResponseFormats(value)
             }
-        }
-        else {
+        } else {
             return getDefaultResponseFormats(value)
         }
 
@@ -198,8 +182,7 @@ class ControllersRestApi {
         Resource resAnn = value != null ? value.getClass().getAnnotation(Resource) : null
         if (resAnn) {
             return resAnn.formats().toList()
-        }
-        else {
+        } else {
             return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
         }
     }

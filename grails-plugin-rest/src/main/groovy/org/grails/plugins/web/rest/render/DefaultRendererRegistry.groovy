@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.grails.plugins.web.rest.render
 
 import grails.rest.render.ContainerRenderer
@@ -58,8 +57,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     String modelSuffix = ''
 
-    DefaultRendererRegistry() {
-    }
+    DefaultRendererRegistry() { }
 
     @PostConstruct
     void initialize() {
@@ -93,8 +91,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         if (renderer instanceof ContainerRenderer) {
             ContainerRenderer cr = (ContainerRenderer)renderer
             addContainerRenderer(cr.componentType, cr)
-        }
-        else {
+        } else {
             Class targetType = renderer.targetType
             addToRegisteredObjects(targetType, renderer)
         }
@@ -108,12 +105,9 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         }
     }
 
-
-
     @Override
     void addContainerRenderer(Class objectType, Renderer renderer) {
         for(MimeType mt in renderer.mimeTypes) {
-
             def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, mt)
 
             containerRendererCache.remove(key)
@@ -136,10 +130,9 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         Renderer<C> renderer = (Renderer<C>)containerRendererCache.get(originalKey)
 
         if (renderer == null) {
-
             def key = originalKey
 
-            while(targetClass != null) {
+            while (targetClass != null) {
 
                 renderer = containerRenderers.get(key)
                 if (renderer != null) break

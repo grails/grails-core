@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.grails.plugins.web.rest.render.xml
 
 import grails.converters.XML
@@ -36,7 +35,6 @@ import org.springframework.validation.Errors
  */
 @CompileStatic
 class DefaultXmlRenderer<T> implements Renderer<T> {
-
     final Class<T> targetType
     MimeType[] mimeTypes = [MimeType.XML,MimeType.TEXT_XML] as MimeType[]
 
@@ -82,8 +80,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
                 htmlRenderer = new DefaultHtmlRenderer(targetType)
             }
             htmlRenderer.render(object, context)
-        }
-        else {
+        } else {
             if (object instanceof Errors) {
                 context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
             }
@@ -105,8 +102,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             XML.use(namedConfiguration) {
                 converter = object as XML
             }
-        }
-        else {
+        } else {
             converter = object as XML
         }
         converter.render(context.getWriter())

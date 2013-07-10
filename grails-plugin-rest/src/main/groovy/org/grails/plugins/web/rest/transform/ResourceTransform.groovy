@@ -101,7 +101,6 @@ class ResourceTransform implements ASTTransformation{
     public static final String REDIRECT_METHOD = "redirect"
     public static final ClassNode AUTOWIRED_CLASS_NODE = new ClassNode(Autowired).getPlainNodeReference()
 
-
     private ResourceLocator resourceLocator;
 
     public ResourceLocator getResourceLocator() {
@@ -111,8 +110,7 @@ class ResourceTransform implements ASTTransformation{
             String basedir;
             if (buildSettings != null) {
                 basedir = buildSettings.getBaseDir().getAbsolutePath();
-            }
-            else {
+            } else {
                 basedir = ".";
             }
 
@@ -133,18 +131,15 @@ class ResourceTransform implements ASTTransformation{
             return;
         }
 
-
         final resourceLocator = getResourceLocator()
         final className = "${parent.name}${ControllerArtefactHandler.TYPE}"
         final resource = resourceLocator.findResourceForClassName(className)
 
         LinkableTransform.addLinkingMethods(parent)
 
-
         if (resource == null) {
 
             final ast = source.getAST()
-
             final newControllerClassNode = new ClassNode(className, PUBLIC, GrailsASTUtils.OBJECT_CLASS_NODE)
             final readOnlyAttr = annotationNode.getMember(ATTR_READY_ONLY)
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)
@@ -166,8 +161,7 @@ class ResourceTransform implements ASTTransformation{
                         if (expr.text.equalsIgnoreCase('html')) hasHtml = true; break
                     }
                 }
-            }
-            else {
+            } else {
                 responseFormatsExpression.addExpression(new ConstantExpression("xml"))
                 responseFormatsExpression.addExpression(new ConstantExpression("json"))
             }
@@ -205,8 +199,6 @@ class ResourceTransform implements ASTTransformation{
                     initialiseUrlMappingsMethod.addAnnotation(controllerMethodAnnotation)
                     newControllerClassNode.addMethod(initialiseUrlMappingsMethod)
                 }
-
-
             }
 
             final publicStaticFinal = PUBLIC | STATIC | FINAL
@@ -215,7 +207,6 @@ class ResourceTransform implements ASTTransformation{
             newControllerClassNode.addProperty("responseFormats", publicStaticFinal, new ClassNode(List).getPlainNodeReference(), responseFormatsExpression, null, null)
 
             boolean isReadOnly = readOnlyAttr != null && readOnlyAttr.equals(ConstantExpression.TRUE);
-
 
             List<MethodNode> weavedMethods = []
             weaveReadActions(parent, domainPropertyName,newControllerClassNode, annotationNode.lineNumber, weavedMethods)
@@ -227,8 +218,6 @@ class ResourceTransform implements ASTTransformation{
                 newControllerClassNode.addField("allowedMethods", publicStaticFinal,new ClassNode(Map.class).getPlainNodeReference(), mapExpression)
                 weaveWriteActions(parent,domainPropertyName, newControllerClassNode, hasHtml, annotationNode.lineNumber,weavedMethods)
             }
-
-
 
             final transactionalAnn = new AnnotationNode(TransactionalTransform.MY_TYPE)
             transactionalAnn.addMember(ATTR_READY_ONLY,ConstantExpression.PRIM_TRUE)
@@ -249,8 +238,6 @@ class ResourceTransform implements ASTTransformation{
         }
     }
 
-
-
     void weaveWriteActions(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml, int annotationLineNumber,List<MethodNode> weavedMethods) {
         if (hasHtml) {
             // the edit action
@@ -262,7 +249,6 @@ class ResourceTransform implements ASTTransformation{
         weaveSaveAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
         weaveDeleteAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
         weaveUpdateAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
-
     }
 
     void weaveUpdateAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml,int annotationLineNumber,List<MethodNode> weavedMethods) {
@@ -297,11 +283,10 @@ class ResourceTransform implements ASTTransformation{
         withFormatClosure.variableScope = variableScope
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
-
         domainParameter.setClosureSharedVariable(true)
         variableScope.putReferencedLocalVariable(domainParameter);
+        
         if (hasHtml) {
-
             // add html specific method call
             final messageKey = "default.updated.message"
             final message = getFlashMessage(messageKey, domainPropertyName, domainClass, domainVar)
@@ -322,8 +307,6 @@ class ResourceTransform implements ASTTransformation{
         final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(THIS_EXPR, RESPOND_METHOD, renderArgs)))
         allFormatsClosure.variableScope = variableScope
         withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, '*', allFormatsClosure)))
-
-
 
         final updateMethod = new MethodNode(ACTION_UPDATE, PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
         updateMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
@@ -371,11 +354,10 @@ class ResourceTransform implements ASTTransformation{
         withFormatClosure.variableScope = variableScope
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
-
         domainParameter.setClosureSharedVariable(true)
         variableScope.putReferencedLocalVariable(domainParameter);
+        
         if (hasHtml) {
-
             // add html specific method call
             final message = getFlashMessage('default.deleted.message', domainPropertyName, domainClass, domainVar)
             final redirectArgs = new MapExpression()
@@ -397,8 +379,6 @@ class ResourceTransform implements ASTTransformation{
         final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(THIS_EXPR, RENDER_METHOD, renderArgs)))
         allFormatsClosure.variableScope = variableScope
         withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, '*', allFormatsClosure)))
-
-
 
         final deleteMethod = new MethodNode(ACTION_DELETE, PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
         deleteMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
@@ -435,8 +415,8 @@ class ResourceTransform implements ASTTransformation{
 
         domainParameter.setClosureSharedVariable(true)
         variableScope.putReferencedLocalVariable(domainParameter);
+        
         if (hasHtml) {
-
             // add html specific method call
             final message = getFlashMessage('default.created.message', domainPropertyName, domainClass, domainVar)
             final redirect = new ExpressionStatement(new MethodCallExpression(THIS_EXPR, REDIRECT_METHOD, domainVar))
@@ -457,8 +437,6 @@ class ResourceTransform implements ASTTransformation{
         allFormatsClosure.variableScope = variableScope
         withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPR, '*', allFormatsClosure)))
 
-
-
         final saveMethod = new MethodNode("save", PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
         saveMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
         saveMethod.lineNumber = annotationLineNumber
@@ -475,7 +453,6 @@ class ResourceTransform implements ASTTransformation{
         final method = new MethodNode(ACTION_CREATE, PUBLIC, OBJECT_CLASS_NODE, ZERO_PARAMETERS, null, methodBody)
         weavedMethods << method
         controllerClass.addMethod(method)
-
     }
 
     void weaveReadActions(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, int annotationLineNumber,List<MethodNode> weavedMethods) {
