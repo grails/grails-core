@@ -24,6 +24,8 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 import org.springframework.beans.factory.annotation.Autowired
 
+import javax.annotation.PostConstruct
+
 @CompileStatic
 class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBindingSourceCreator, DataBindingSourceCreatorCacheKey> implements DataBindingSourceRegistry {
 
@@ -32,6 +34,14 @@ class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBind
         for(dbsc in dataBindingSourceCreators) {
             addToRegisteredObjects(dbsc.targetType, dbsc)
         }
+    }
+
+    @PostConstruct
+    void initialize() {
+        registerDefault(MimeType.JSON, new JsonDataBindingSourceCreator())
+        registerDefault(MimeType.TEXT_JSON, new JsonDataBindingSourceCreator())
+        registerDefault(MimeType.XML, new XmlDataBindingSourceCreator())
+        registerDefault(MimeType.TEXT_XML, new XmlDataBindingSourceCreator())
     }
 
     protected DataBindingSourceCreator getDataBindingSourceCreator(MimeType mimeType, Class targetType, Object bindingSource) {
