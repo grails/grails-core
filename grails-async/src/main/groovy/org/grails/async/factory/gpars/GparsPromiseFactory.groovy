@@ -24,6 +24,8 @@ import groovyx.gpars.dataflow.DataflowVariable
 
 import org.grails.async.factory.AbstractPromiseFactory
 
+import java.util.concurrent.TimeUnit
+
 /**
  * GPars implementation of the {@link grails.async.PromiseFactory} interface
  *
@@ -80,6 +82,13 @@ class GparsPromiseFactory extends AbstractPromiseFactory{
     def <T> List<T> waitAll(List<Promise<T>> promises) {
         final groovyx.gpars.dataflow.Promise<List<T>> promise = (groovyx.gpars.dataflow.Promise<List<T>>)Dataflow.whenAllBound(toGparsPromises(promises), originalValuesClosure)
         return promise.get()
+    }
+
+    @Override
+    def <T> List<T> waitAll(List<Promise<T>> promises, long timeout, TimeUnit units) {
+        final groovyx.gpars.dataflow.Promise<List<T>> promise = (groovyx.gpars.dataflow.Promise<List<T>>)Dataflow.whenAllBound(toGparsPromises(promises), originalValuesClosure)
+        return promise.get(timeout, units)
+
     }
 
     def <T> List<groovyx.gpars.dataflow.Promise<T>> toGparsPromises(List<Promise<T>> promises) {

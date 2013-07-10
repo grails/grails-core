@@ -19,6 +19,7 @@ import groovy.lang.Closure;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.grails.async.decorator.PromiseDecorator;
 import org.grails.async.decorator.PromiseDecoratorLookupStrategy;
@@ -115,6 +116,14 @@ public interface PromiseFactory {
      * @return The list of bound values
      */
     <T> List<T> waitAll(List<Promise<T>> promises);
+
+    /**
+     * Synchronously waits for all promises to complete returning a list of values
+     *
+     * @param promises The promises
+     * @return The list of bound values
+     */
+    <T> List<T> waitAll(List<Promise<T>> promises, final long timeout, final TimeUnit units);
 
     /**
      * Executes the given callback when the list of promises completes

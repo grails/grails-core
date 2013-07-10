@@ -19,6 +19,8 @@ import grails.async.Promise
 import grails.async.PromiseList
 import groovy.transform.CompileStatic
 
+import java.util.concurrent.TimeUnit
+
 /**
  * A {@link grails.async.PromiseFactory} implementation that constructors promises that execute synchronously.
  * Useful for testing environments.
@@ -43,6 +45,11 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
 
     @Override
     def <T> List<T> waitAll(List<Promise<T>> promises) {
+        return promises.collect() { Promise<T> p -> p.get() }
+    }
+
+    @Override
+    def <T> List<T> waitAll(List<Promise<T>> promises, long timeout, TimeUnit units) {
         return promises.collect() { Promise<T> p -> p.get() }
     }
 

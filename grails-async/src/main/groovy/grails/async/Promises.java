@@ -20,6 +20,7 @@ import groovy.lang.Closure;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.grails.async.decorator.PromiseDecorator;
 import org.grails.async.factory.SynchronousPromiseFactory;
@@ -75,6 +76,13 @@ public class Promises {
      */
     public static<T> List<T> waitAll(List<Promise<T>> promises) {
         return getPromiseFactory().waitAll(promises);
+    }
+
+    /**
+     * @see PromiseFactory#waitAll(java.util.List)
+     */
+    public static<T> List<T> waitAll(List<Promise<T>> promises, final long timeout, final TimeUnit units) {
+        return getPromiseFactory().waitAll(promises, timeout, units);
     }
 
     /**
