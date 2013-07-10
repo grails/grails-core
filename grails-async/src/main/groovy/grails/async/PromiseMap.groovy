@@ -207,9 +207,10 @@ class PromiseMap<K,V> implements Promise<Map<K,V>> {
      */
     Map<K, V> get(long timeout, TimeUnit units) throws Throwable {
         def promises = promises.values()
+        Promises.waitAll(new ArrayList<>(promises), timeout, units)
         Map<K,V> newMap = [:]
         for(Promise<V> p in promises) {
-            def value = p.get(timeout,units)
+            def value = p.get()
             newMap[promisesKeys.get(p)] = value
         }
         return newMap

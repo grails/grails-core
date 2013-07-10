@@ -122,6 +122,6 @@ class PromiseList<T> implements Promise<List<T>> {
 
     @Override
     List get(long timeout, TimeUnit units) throws Throwable {
-        iterator().collect { Promise p -> p.get(timeout, units) }
+        Promises.waitAll(promises, timeout, units)
     }
 }
