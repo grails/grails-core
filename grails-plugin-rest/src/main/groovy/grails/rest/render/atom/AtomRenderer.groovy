@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package grails.rest.render.atom
 
 import grails.converters.XML
@@ -103,14 +102,12 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
                 final currentEntity = mappingContext.getPersistentEntity(o.class.name)
                 if (currentEntity) {
                     writeDomainWithEmbeddedAndLinks(currentEntity, o, context, xml, writtenObjects, false)
-                }
-                else {
+                } else {
                     throw new IllegalArgumentException("Cannot render object [$o] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
                 }
             }
             writer.end()
-        }
-        else {
+        } else {
             throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
         }
 
@@ -129,7 +126,6 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
             }
             url = "${url.substring(0, i)}${dateCreatedId}:${ id ?: url.substring(i, url.length())}"
         }
-
 
         return "tag:$url"
     }
@@ -245,6 +241,4 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
         def dateFormat = ATOM_DATE_FORMAT.format(dateCreated)
         return dateFormat.substring(0, 19) + dateFormat.substring(22, dateFormat.length())
     }
-
-
 }

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.grails.plugins.web.rest.render.html
 
 import grails.rest.render.RenderContext
@@ -57,7 +56,7 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
             context.setContentType(mimeType.name)
         }
 
-        if(context.arguments?.view) {
+        if (context.arguments?.view) {
             context.viewName = context.arguments.view.toString()
         }
 
@@ -72,8 +71,7 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
                 String modelVariableName = GrailsNameUtils.getPropertyNameConvention(target, suffix)
                 context.setModel([(modelVariableName): target])
             }
-        }
-        else {
+        } else {
             String modelVariableName = GrailsNameUtils.getPropertyNameConvention(object, suffix)
             context.setModel([(modelVariableName): object])
         }

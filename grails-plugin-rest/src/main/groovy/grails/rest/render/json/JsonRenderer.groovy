@@ -83,8 +83,7 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
                     return excludes.contains(property)
                 }
             }
-        }
-        else {
+        } else {
             marshaller = (ObjectMarshaller<JSON>)new GroovyBeanMarshaller() {
                 @Override
                 protected boolean includesProperty(Object o, String property) {

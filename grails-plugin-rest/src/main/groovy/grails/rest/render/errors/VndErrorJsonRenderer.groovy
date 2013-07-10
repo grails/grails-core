@@ -82,6 +82,4 @@ class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
 
         }
     }
-
-
 }
