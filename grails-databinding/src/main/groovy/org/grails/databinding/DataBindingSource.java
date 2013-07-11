@@ -68,4 +68,8 @@ public interface DataBindingSource {
      * @return the number of properties represented by this binding source
      */
     int size();
+    
+    boolean isDataSourceAware();
+    
+    void setDataSourceAware(boolean b);
 }

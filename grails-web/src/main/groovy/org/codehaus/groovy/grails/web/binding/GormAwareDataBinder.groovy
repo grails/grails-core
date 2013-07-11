@@ -103,15 +103,17 @@ class GormAwareDataBinder extends SimpleDataBinder {
     @Override
     protected initializeProperty(obj, String propName, Class propertyType, DataBindingSource source) {
         def isInitialized = false
-        def isDomainClass = isDomainClass propertyType
-        if (isDomainClass && source.containsProperty(propName)) {
-            def val = source.getPropertyValue propName
-            def idValue = getIdentifierValueFrom(val)
-            if (idValue != null) {
-                def persistentInstance = getPersistentInstance(propertyType, idValue)
-                if (persistentInstance != null) {
-                    obj[propName] = persistentInstance
-                    isInitialized = true
+        if(source.dataSourceAware) {
+            def isDomainClass = isDomainClass propertyType
+            if (isDomainClass && source.containsProperty(propName)) {
+                def val = source.getPropertyValue propName
+                def idValue = getIdentifierValueFrom(val)
+                if (idValue != null) {
+                    def persistentInstance = getPersistentInstance(propertyType, idValue)
+                    if (persistentInstance != null) {
+                        obj[propName] = persistentInstance
+                        isInitialized = true
+                    }
                 }
             }
         }
@@ -171,29 +173,31 @@ class GormAwareDataBinder extends SimpleDataBinder {
     protected processProperty(obj, MetaProperty metaProperty, val, DataBindingSource source, DataBindingListener listener) {
         boolean needsBinding = true
 
-        def propName = metaProperty.name
-        def idValue = getIdentifierValueFrom(val)
-        if (idValue != null) {
-            def propertyType = getDomainClassType(obj, metaProperty.name)
-            if (propertyType) {
-                needsBinding = false
-                def persistedInstance = null
-                if (idValue != 'null' && idValue != null && idValue != '') {
-                    persistedInstance = getPersistentInstance(propertyType, idValue)
-                    if (persistedInstance == null) {
-                        needsBinding = true
-                    } else {
-                        bindProperty obj, source, metaProperty, persistedInstance, listener
-                        if (persistedInstance != null) {
-                            if (val instanceof Map) {
-                                bind persistedInstance, new SimpleMapDataBindingSource(val), listener
-                            } else if (val instanceof DataBindingSource) {
-                                bind persistedInstance, val, listener
+        if (source.dataSourceAware) {
+            def propName = metaProperty.name
+            def idValue = getIdentifierValueFrom(val)
+            if (idValue != null) {
+                def propertyType = getDomainClassType(obj, metaProperty.name)
+                if (propertyType) {
+                    needsBinding = false
+                    def persistedInstance = null
+                    if (idValue != 'null' && idValue != null && idValue != '') {
+                        persistedInstance = getPersistentInstance(propertyType, idValue)
+                        if (persistedInstance == null) {
+                            needsBinding = true
+                        } else {
+                            bindProperty obj, source, metaProperty, persistedInstance, listener
+                            if (persistedInstance != null) {
+                                if (val instanceof Map) {
+                                    bind persistedInstance, new SimpleMapDataBindingSource(val), listener
+                                } else if (val instanceof DataBindingSource) {
+                                    bind persistedInstance, val, listener
+                                }
                             }
                         }
+                    } else {
+                        bindProperty obj, source, metaProperty, null, listener
                     }
-                } else {
-                    bindProperty obj, source, metaProperty, null, listener
                 }
             }
         }
@@ -207,52 +211,33 @@ class GormAwareDataBinder extends SimpleDataBinder {
             DataBindingSource source, DataBindingListener listener) {
 
         boolean needsBinding = true
-        def propName = indexedPropertyReferenceDescriptor.propertyName
+        if (source.dataSourceAware) {
+            def propName = indexedPropertyReferenceDescriptor.propertyName
 
-        def idValue = getIdentifierValueFrom(val)
-        if (idValue != null) {
-            def propertyType = getDomainClassType(obj, propName)
-            def referencedType = getReferencedTypeForCollection propName, obj
-            if (referencedType != null && isDomainClass(referencedType)) {
-                needsBinding = false
-                if (Set.isAssignableFrom(metaProperty.type)) {
-                    def collection = initializeCollection obj, propName, metaProperty.type
-                    def instance
-                    if (collection != null) {
-                        instance = findAlementWithId((Set)collection, idValue)
-                    }
-                    if (instance == null) {
-                        if ('null' != idValue) {
-                            instance = getPersistentInstance(referencedType, idValue)
+            def idValue = getIdentifierValueFrom(val)
+            if (idValue != null) {
+                def propertyType = getDomainClassType(obj, propName)
+                def referencedType = getReferencedTypeForCollection propName, obj
+                if (referencedType != null && isDomainClass(referencedType)) {
+                    needsBinding = false
+                    if (Set.isAssignableFrom(metaProperty.type)) {
+                        def collection = initializeCollection obj, propName, metaProperty.type
+                        def instance
+                        if (collection != null) {
+                            instance = findAlementWithId((Set)collection, idValue)
                         }
                         if (instance == null) {
-                            def message = "Illegal attempt to update element in [${propName}] Set with id [${idValue}]. No such record was found."
-                            Exception e = new IllegalArgumentException(message)
-                            addBindingError(obj, propName, idValue, e, listener)
-                        } else {
-                            addElementToCollectionAt obj, propName, collection, Integer.parseInt(indexedPropertyReferenceDescriptor.index), instance
-                        }
-                    }
-                    if (instance != null) {
-                        if (val instanceof Map) {
-                            bind instance, new SimpleMapDataBindingSource(val), listener
-                        } else if (val instanceof DataBindingSource) {
-                            bind instance, val, listener
-                        }
-                    }
-                } else if (Collection.isAssignableFrom(metaProperty.type)) {
-                    def collection = initializeCollection obj, propName, metaProperty.type
-                    def idx = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
-                    if('null' == idValue) {
-                        if(idx < collection.size()) {
-                            def element = collection[idx]
-                            if(element != null) {
-                                collection.remove element
+                            if ('null' != idValue) {
+                                instance = getPersistentInstance(referencedType, idValue)
+                            }
+                            if (instance == null) {
+                                def message = "Illegal attempt to update element in [${propName}] Set with id [${idValue}]. No such record was found."
+                                Exception e = new IllegalArgumentException(message)
+                                addBindingError(obj, propName, idValue, e, listener)
+                            } else {
+                                addElementToCollectionAt obj, propName, collection, Integer.parseInt(indexedPropertyReferenceDescriptor.index), instance
                             }
                         }
-                    } else {
-                        def instance = getPersistentInstance(referencedType, idValue)
-                        addElementToCollectionAt obj, propName, collection, idx, instance
                         if (instance != null) {
                             if (val instanceof Map) {
                                 bind instance, new SimpleMapDataBindingSource(val), listener
@@ -260,27 +245,48 @@ class GormAwareDataBinder extends SimpleDataBinder {
                                 bind instance, val, listener
                             }
                         }
-                    }
-                } else if (Map.isAssignableFrom(metaProperty.type)) {
-                    Map map = (Map)obj[propName]
-                    if (idValue == 'null' || idValue == null || idValue == '') {
-                        if (map != null) {
-                            map.remove indexedPropertyReferenceDescriptor.index
-                        }
-                    } else {
-                        map = initializeMap obj, propName
-                        def persistedInstance = getPersistentInstance referencedType, idValue
-                        if (persistedInstance != null) {
-                            if (map.size() < autoGrowCollectionLimit || map.containsKey(indexedPropertyReferenceDescriptor.index)) {
-                                map[indexedPropertyReferenceDescriptor.index] = persistedInstance
-                                if (val instanceof Map) {
-                                    bind persistedInstance, new SimpleMapDataBindingSource(val), listener
-                                } else if (val instanceof DataBindingSource) {
-                                    bind persistedInstance, val, listener
+                    } else if (Collection.isAssignableFrom(metaProperty.type)) {
+                        def collection = initializeCollection obj, propName, metaProperty.type
+                        def idx = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
+                        if('null' == idValue) {
+                            if(idx < collection.size()) {
+                                def element = collection[idx]
+                                if(element != null) {
+                                    collection.remove element
                                 }
                             }
                         } else {
-                            map.remove indexedPropertyReferenceDescriptor.index
+                            def instance = getPersistentInstance(referencedType, idValue)
+                            addElementToCollectionAt obj, propName, collection, idx, instance
+                            if (instance != null) {
+                                if (val instanceof Map) {
+                                    bind instance, new SimpleMapDataBindingSource(val), listener
+                                } else if (val instanceof DataBindingSource) {
+                                    bind instance, val, listener
+                                }
+                            }
+                        }
+                    } else if (Map.isAssignableFrom(metaProperty.type)) {
+                        Map map = (Map)obj[propName]
+                        if (idValue == 'null' || idValue == null || idValue == '') {
+                            if (map != null) {
+                                map.remove indexedPropertyReferenceDescriptor.index
+                            }
+                        } else {
+                            map = initializeMap obj, propName
+                            def persistedInstance = getPersistentInstance referencedType, idValue
+                            if (persistedInstance != null) {
+                                if (map.size() < autoGrowCollectionLimit || map.containsKey(indexedPropertyReferenceDescriptor.index)) {
+                                    map[indexedPropertyReferenceDescriptor.index] = persistedInstance
+                                    if (val instanceof Map) {
+                                        bind persistedInstance, new SimpleMapDataBindingSource(val), listener
+                                    } else if (val instanceof DataBindingSource) {
+                                        bind persistedInstance, val, listener
+                                    }
+                                }
+                            } else {
+                                map.remove indexedPropertyReferenceDescriptor.index
+                            }
                         }
                     }
                 }

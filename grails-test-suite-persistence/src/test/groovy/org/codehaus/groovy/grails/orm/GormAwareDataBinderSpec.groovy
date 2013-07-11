@@ -225,6 +225,30 @@ class GormAwareDataBinderSpec extends Specification {
         publication.author == null
     }
 
+    void 'Test id binding with a non dataSource aware binding source'() {
+        given:
+        def binder = new GormAwareDataBinder(grailsApplication)
+        def author = new Author(name: 'David Foster Wallace').save(flush: true)
+        def publication = new Publication()
+
+        when:
+        def bindingSource = new SimpleMapDataBindingSource([title: 'Infinite Jest', author: [id: author.id]])
+        bindingSource.dataSourceAware = false
+        binder.bind publication, bindingSource
+
+        then:
+        publication.title == 'Infinite Jest'
+        publication.author.name == null
+
+        when:
+        bindingSource.dataSourceAware = true
+        binder.bind publication, bindingSource
+
+        then:
+        publication.title == 'Infinite Jest'
+        publication.author.name == 'David Foster Wallace'
+    }
+
     void 'Test binding to the one side of a one to many'() {
         given:
         def binder = new GormAwareDataBinder(grailsApplication)
