@@ -33,9 +33,11 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.web.binding.converters.ByteArrayMultipartFileValueConverter
 import org.codehaus.groovy.grails.web.json.JSONObject
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
+import org.grails.databinding.BindingFormat
 import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
@@ -46,11 +48,13 @@ import org.grails.databinding.converters.ValueConverter
 import org.grails.databinding.events.DataBindingListener
 import org.grails.databinding.xml.GPathResultMap
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.MessageSource
 
 @CompileStatic
 class GormAwareDataBinder extends SimpleDataBinder {
     protected static final Map<Class, List> CLASS_TO_BINDING_INCLUDE_LIST = new ConcurrentHashMap<Class, List>()
     protected GrailsApplication grailsApplication
+    protected MessageSource messageSource
     boolean trimStrings = true
     boolean convertEmptyStringsToNull = true
 
@@ -481,5 +485,35 @@ class GormAwareDataBinder extends SimpleDataBinder {
             converter = new ClosureValueConverter(converterClosure: closure, targetType: String)
         }
         converter
+    }
+    
+    @Autowired
+    public setMessageSource(MessageSource messageSource) {
+        this.messageSource = messageSource
+    }
+
+    @Override    
+    protected String getFormatString(BindingFormat annotation) {
+        def formatString
+        def code = annotation.code()
+        if(code) {
+            def locale = getLocale()
+            formatString = messageSource.getMessage(code, [] as Object[], locale)
+        }
+        if(!formatString) {
+            formatString = super.getFormatString(annotation)
+        }
+        formatString
+    }
+
+    protected Locale getLocale() {
+        def locale
+        def request = GrailsWebRequest.lookup()
+        if(request) {
+            locale = request.getLocale()
+        } else {
+            locale = Locale.getDefault()
+        }
+        return locale
     }
 }

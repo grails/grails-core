@@ -23,10 +23,12 @@ import grails.validation.DeferredBindingActions
 import org.apache.commons.lang.builder.CompareToBuilder
 import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
 import org.grails.databinding.BindUsing
+import org.grails.databinding.BindingFormat
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListener
+import org.springframework.context.support.StaticMessageSource
 
 import spock.lang.Specification
 
@@ -660,6 +662,45 @@ class GormAwareDataBinderSpec extends Specification {
         sortedSetOfWidgets[1].isBindable == 'Is Tres (SortedSet)'
         sortedSetOfWidgets[2].isBindable == 'Is Uno (SortedSet)'
     }
+    
+    void 'Test binding format code'() {
+        given:
+        def messageSource = new StaticMessageSource()
+        messageSource.addMessage 'my.date.format', Locale.US, 'MMddyyyy'
+        messageSource.addMessage 'my.date.format', Locale.UK, 'ddMMyyyy'
+        def child = new Child()
+        
+        when:
+        def binder = new GormAwareDataBinder(grailsApplication)  {
+            Locale getLocale() {
+                Locale.US
+            }
+        }
+        binder.messageSource = messageSource
+        binder.bind child, new SimpleMapDataBindingSource([birthDate: '11151969'])
+        def birthDate = child.birthDate
+        
+        then:
+        Calendar.NOVEMBER == birthDate.month
+        15 == birthDate.date
+        69 == birthDate.year
+        
+        when:
+        binder = new GormAwareDataBinder(grailsApplication) {
+            Locale getLocale() {
+                Locale.UK
+            }
+        }
+        binder.messageSource = messageSource
+        child.birthDate = null
+        binder.bind child, new SimpleMapDataBindingSource([birthDate: '15111969'])
+        birthDate = child.birthDate
+        
+        then:
+        Calendar.NOVEMBER == birthDate.month
+        15 == birthDate.date
+        69 == birthDate.year
+    }
 }
 
 @Entity
@@ -736,6 +777,8 @@ class Parent {
 
 @Entity
 class Child {
+    @BindingFormat(code='my.date.format')
+    Date birthDate
     static hasMany = [someOtherIds: Integer]
 }
 
