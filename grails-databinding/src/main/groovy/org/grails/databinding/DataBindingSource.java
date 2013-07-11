@@ -69,7 +69,15 @@ public interface DataBindingSource {
      */
     int size();
     
+    /**
+     * 
+     * @return true if GORM operations should be enabled when binding with this DataBindingSource
+     */
     boolean isDataSourceAware();
     
-    void setDataSourceAware(boolean b);
+    /**
+     * 
+     * @param isDataSourceAware true if GORM operations should be enabled when binding with this DataBindingSource
+     */
+    void setDataSourceAware(boolean isDataSourceAware);
 }
