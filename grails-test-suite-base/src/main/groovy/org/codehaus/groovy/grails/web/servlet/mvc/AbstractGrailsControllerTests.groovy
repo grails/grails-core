@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
-import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
+import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -82,7 +82,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         onSetUp()
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
         
-        def binder = new GormAwareDataBinder(ga)
+        def binder = new GrailsWebDataBinder(ga)
         binder.registerConverter new DateConversionHelper()
         
         ctx.registerMockBean(DataBindingUtils.DATA_BINDER_BEAN_NAME, binder)

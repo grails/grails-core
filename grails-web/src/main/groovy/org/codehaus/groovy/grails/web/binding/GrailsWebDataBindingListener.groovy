@@ -25,10 +25,10 @@ import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 
 @CompileStatic
-class GormAwareDataBindingListener extends DataBindingListenerAdapter {
+class GrailsWebDataBindingListener extends DataBindingListenerAdapter {
     private final BindingResult bindingResult
 
-    GormAwareDataBindingListener(BindingResult bindingResult) {
+    GrailsWebDataBindingListener(BindingResult bindingResult) {
         this.bindingResult = bindingResult
     }
 

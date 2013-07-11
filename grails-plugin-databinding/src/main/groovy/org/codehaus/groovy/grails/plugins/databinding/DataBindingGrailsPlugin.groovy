@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins.databinding
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
-import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
+import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
@@ -41,7 +41,7 @@ class DataBindingGrailsPlugin {
 
         def autoGrowCollectionLimitSetting = databindingConfig?.autoGrowCollectionLimit
 
-        "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GormAwareDataBinder, ref('grailsApplication')) {
+        "${DataBindingUtils.DATA_BINDER_BEAN_NAME}"(GrailsWebDataBinder, ref('grailsApplication')) {
 
             // trimStrings defaults to TRUE
             trimStrings = !Boolean.FALSE.equals(databindingConfig?.trimStrings)

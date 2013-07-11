@@ -51,14 +51,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
 
 @CompileStatic
-class GormAwareDataBinder extends SimpleDataBinder {
+class GrailsWebDataBinder extends SimpleDataBinder {
     protected static final Map<Class, List> CLASS_TO_BINDING_INCLUDE_LIST = new ConcurrentHashMap<Class, List>()
     protected GrailsApplication grailsApplication
     protected MessageSource messageSource
     boolean trimStrings = true
     boolean convertEmptyStringsToNull = true
 
-    GormAwareDataBinder(GrailsApplication grailsApplication) {
+    GrailsWebDataBinder(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication
         this.conversionService = new SpringConversionServiceAdapter()
         registerConverter new ByteArrayMultipartFileValueConverter()

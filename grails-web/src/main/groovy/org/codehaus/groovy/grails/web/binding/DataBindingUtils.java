@@ -62,7 +62,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 @SuppressWarnings("rawtypes")
 public class DataBindingUtils {
 
-    public static final String DATA_BINDER_BEAN_NAME = "gormAwareDataBinder";
+    public static final String DATA_BINDER_BEAN_NAME = "grailsWebDataBinder";
     private static final String BLANK = "";
     private static final Map<Class, List> CLASS_TO_BINDING_INCLUDE_LIST = new ConcurrentHashMap<Class, List>();
 
@@ -209,10 +209,10 @@ public class DataBindingUtils {
         }
         if (!useSpringBinder) {
             final DataBindingSource bindingSource = createDataBindingSource(grailsApplication, object.getClass(), source);
-            final DataBinder gormAwareDataBinder = getGormAwareDataBinder(grailsApplication);
+            final DataBinder grailsWebDataBinder = getGrailsWebDataBinder(grailsApplication);
             final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
-            final DataBindingListener listener = new GormAwareDataBindingListener(tmpBindingResult);
-            gormAwareDataBinder.bind(object, bindingSource, filter, include, exclude, listener);
+            final DataBindingListener listener = new GrailsWebDataBindingListener(tmpBindingResult);
+            grailsWebDataBinder.bind(object, bindingSource, filter, include, exclude, listener);
             bindingResult = tmpBindingResult;
         } else {
             if (source instanceof GrailsParameterMap) {
@@ -319,20 +319,20 @@ public class DataBindingUtils {
         return mimeType;
     }
 
-    private static DataBinder getGormAwareDataBinder(final GrailsApplication grailsApplication) {
-        DataBinder gormAwareDataBinder = null;
+    private static DataBinder getGrailsWebDataBinder(final GrailsApplication grailsApplication) {
+        DataBinder dataBinder = null;
         if (grailsApplication != null) {
             final ApplicationContext mainContext = grailsApplication.getMainContext();
             if (mainContext != null && mainContext.containsBean(DATA_BINDER_BEAN_NAME)) {
-                gormAwareDataBinder = mainContext.getBean(DATA_BINDER_BEAN_NAME, DataBinder.class);
+                dataBinder = mainContext.getBean(DATA_BINDER_BEAN_NAME, DataBinder.class);
             }
         }
-        if (gormAwareDataBinder == null) {
+        if (dataBinder == null) {
             // this should really never happen in the running app as the binder
             // should always be found in the context
-            gormAwareDataBinder = new GormAwareDataBinder(grailsApplication);
+            dataBinder = new GrailsWebDataBinder(grailsApplication);
         }
-        return gormAwareDataBinder;
+        return dataBinder;
     }
 
     private static void performBindFromPropertyValues(GrailsDataBinder binder, MutablePropertyValues mutablePropertyValues, String filter) {
