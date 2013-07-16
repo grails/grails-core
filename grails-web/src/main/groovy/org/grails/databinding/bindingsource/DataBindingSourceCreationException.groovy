@@ -16,7 +16,7 @@
 package org.grails.databinding.bindingsource
 
 /**
- * Thrown if an unrecoverable problem occurs initializing a DataBindingSource
+ * Thrown if an unrecoverable problem occurs creating a DataBindingSource
  * 
  * @since 2.3
  * @see org.grails.databinding.DataBindingSource
