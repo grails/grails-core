@@ -50,6 +50,7 @@ import org.codehaus.groovy.grails.web.json.JSONTokener;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
 import org.codehaus.groovy.grails.web.json.PathCapturingJSONWriterWrapper;
 import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
+import org.codehaus.groovy.grails.web.mime.MimeType;
 
 /**
  * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON.
@@ -79,6 +80,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     public JSON() {
         config = initConfig();
         encoding = config != null ? config.getEncoding() : "UTF-8";
+        contentType = MimeType.JSON.getName();
         circularReferenceBehaviour = config != null ? config.getCircularReferenceBehaviour() : CircularReferenceBehaviour.DEFAULT;
         prettyPrint = config != null && config.isPrettyPrint();
     }
@@ -322,7 +324,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      */
     public static Object parse(HttpServletRequest request) throws ConverterException {
         Object json = request.getAttribute(CACHED_JSON);
-        if (json != null) return json;
+        if (json != null) {
+            return json;
+        }
 
         String encoding = request.getCharacterEncoding();
         if (encoding == null) {
@@ -541,7 +545,9 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         @Override
         protected Object createNode(Object key, Map valueMap) {
             try {
-                if (stack.peek().equals(BuilderMode.OBJECT)) writer.key(String.valueOf(key));
+                if (stack.peek().equals(BuilderMode.OBJECT)) {
+                    writer.key(String.valueOf(key));
+                }
                 writer.object();
                 for (Object o : valueMap.entrySet()) {
                     Map.Entry element = (Map.Entry) o;
@@ -617,8 +623,12 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
                 int i = ((Integer)node);
                 while (i-- > 0) {
                     last = stack.pop();
-                    if (BuilderMode.ARRAY == last) writer.endArray();
-                    if (BuilderMode.OBJECT == last) writer.endObject();
+                    if (BuilderMode.ARRAY == last) {
+                        writer.endArray();
+                    }
+                    if (BuilderMode.OBJECT == last) {
+                        writer.endObject();
+                    }
                 }
             }
             catch (JSONException e) {

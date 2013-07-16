@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.NameAwareMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter;
 import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter;
@@ -75,6 +76,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
     public XML() {
         config = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);
         encoding = config.getEncoding() != null ? config.getEncoding() : "UTF-8";
+        contentType = MimeType.XML.getName();
         circularReferenceBehaviour = config.getCircularReferenceBehaviour();
     }
 
