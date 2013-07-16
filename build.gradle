@@ -269,9 +269,13 @@ subprojects { project ->
                         authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
                                         password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
                     }
-                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
-                        authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
-                                        password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
+//                    snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+//                        authentication(userName: project.hasProperty("sonatypeUsername") ? project.sonatypeUsername : null,
+//                                        password: project.hasProperty("sonatypePassword") ?  project.sonatypePassword : null)
+//                    }
+                    snapshotRepository(url: "http://repo.grails.org/grails/libs-snapshots-local") {
+                        authentication(userName: project.hasProperty("artifactoryPublishUsername") ? project.artifactoryPublishUsername : null,
+                            password: project.hasProperty("artifactoryPublishPassword") ?  project.artifactoryPublishPassword : null)
                     }
 
                     
