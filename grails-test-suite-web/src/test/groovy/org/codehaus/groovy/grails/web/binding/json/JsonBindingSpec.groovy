@@ -14,7 +14,7 @@ class JsonBindingSpec extends Specification {
     "name": "Douglas", "age": "42"}
 '''
     when:
-        def model = controller.createPerson()
+        def model = controller.createPersonCommandObject()
     then:
         model.person instanceof Person
         model.person.name == 'Douglas'
@@ -52,17 +52,37 @@ class JsonBindingSpec extends Specification {
             {
     "name": [foo.[} this is unparseable JSON{[
 '''
-    when:
-        controller.createPerson()
+        when:
+        def model = controller.createPersonCommandObject()
         
-    then:
+        then:
         response.status == 400
+        model == null
+        
+        when:
+        request.json = '''
+            {
+    "name": [foo.[} this is unparseable JSON{[
+'''
+        model = controller.createPerson()
+        def person = model.person
+        
+        then:
+        person.hasErrors()
+        person.errors.errorCount == 1
+        person.errors.allErrors[0].defaultMessage == 'com.google.gson.JsonSyntaxException: com.google.gson.stream.MalformedJsonException: Unterminated array at line 3 column 19'
     }
 }
 
 @Artefact('Controller')
 class BindingController {
-    def createPerson(Person person) {
+    def createPerson() {
+        def person = new Person()
+        person.properties = request
+        [person: person]
+    }
+    
+    def createPersonCommandObject(Person person) {
         [person: person]
     }
     
