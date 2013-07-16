@@ -34,6 +34,21 @@ class XmlBindingSpec extends Specification {
         model.person.workAddress.city == 'San Mateo'
         model.person.workAddress.state == 'California'
     }
+    
+    void 'Test parsing invalid XML'() {
+        given:
+        request.xml = '''<person><someInvalid<this is invalid XML'''
+        
+        when:
+        def model = controller.createPerson()
+        def person = model.person
+        
+        then:
+        response.status == 200
+        person.hasErrors()
+        person.errors.errorCount == 1
+        person.errors.allErrors[0].defaultMessage == 'org.xml.sax.SAXParseException: Element type "someInvalid" must be followed by either attribute specifications, ">" or "/>".'
+    }
 }
 
 class BindingController {

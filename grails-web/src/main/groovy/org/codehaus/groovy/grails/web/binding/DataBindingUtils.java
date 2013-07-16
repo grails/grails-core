@@ -208,12 +208,15 @@ public class DataBindingUtils {
             }
         }
         if (!useSpringBinder) {
-            final DataBindingSource bindingSource = createDataBindingSource(grailsApplication, object.getClass(), source);
-            final DataBinder grailsWebDataBinder = getGrailsWebDataBinder(grailsApplication);
-            final BindingResult tmpBindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
-            final DataBindingListener listener = new GrailsWebDataBindingListener(tmpBindingResult);
-            grailsWebDataBinder.bind(object, bindingSource, filter, include, exclude, listener);
-            bindingResult = tmpBindingResult;
+            bindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
+            try {
+                final DataBindingSource bindingSource = createDataBindingSource(grailsApplication, object.getClass(), source);
+                final DataBinder grailsWebDataBinder = getGrailsWebDataBinder(grailsApplication);
+                final DataBindingListener listener = new GrailsWebDataBindingListener(bindingResult);
+                grailsWebDataBinder.bind(object, bindingSource, filter, include, exclude, listener);
+            } catch (Exception e) {
+                bindingResult.addError(new ObjectError(bindingResult.getObjectName(), e.getMessage()));
+            }
         } else {
             if (source instanceof GrailsParameterMap) {
                 GrailsParameterMap parameterMap = (GrailsParameterMap) source;

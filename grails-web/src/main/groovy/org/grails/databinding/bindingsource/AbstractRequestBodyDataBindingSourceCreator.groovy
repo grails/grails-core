@@ -16,14 +16,14 @@
 package org.grails.databinding.bindingsource
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceCreator
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.grails.databinding.SimpleMapDataBindingSource
 
 import javax.servlet.http.HttpServletRequest
 
+import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.databinding.DataBindingSource
+import org.grails.databinding.DataBindingSourceInitializationException
 
 @CompileStatic
 abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBindingSourceCreator {
@@ -34,27 +34,31 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
     }
 
     @Override
-    public DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
-        if(bindingSource instanceof GrailsParameterMap) {
-            def req = bindingSource.getRequest()
-            def is = req.getInputStream()
-            return createBindingSource(is)
-        }
-        else if(bindingSource instanceof HttpServletRequest) {
-            def req = (HttpServletRequest)bindingSource
-            def is = req.getInputStream()
-            return createBindingSource(is)
-        }
-        else if(bindingSource instanceof InputStream) {
-            def is = (InputStream)bindingSource
-            return createBindingSource(is)
-        }
-        else if(bindingSource instanceof Reader) {
-            def is = (Reader)bindingSource
-            return createBindingSource(is)
-        }
-        else  {
-            return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
+    public DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceInitializationException {
+        try {
+            if(bindingSource instanceof GrailsParameterMap) {
+                def req = bindingSource.getRequest()
+                def is = req.getInputStream()
+                return createBindingSource(is)
+            }
+            else if(bindingSource instanceof HttpServletRequest) {
+                def req = (HttpServletRequest)bindingSource
+                def is = req.getInputStream()
+                return createBindingSource(is)
+            }
+            else if(bindingSource instanceof InputStream) {
+                def is = (InputStream)bindingSource
+                return createBindingSource(is)
+            }
+            else if(bindingSource instanceof Reader) {
+                def is = (Reader)bindingSource
+                return createBindingSource(is)
+            }
+            else  {
+                return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
+            }
+        } catch (Exception e) {
+            throw new DataBindingSourceInitializationException(e);
         }
     }
 

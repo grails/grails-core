@@ -45,6 +45,19 @@ class JsonBindingSpec extends Specification {
         model.family.familyMembers[1].name == 'Zack'
         model.family.familyMembers[1].age == 15
     }
+    
+    void 'Test parsing invalid JSON'() {
+        given:
+        request.json = '''
+            {
+    "name": [foo.[} this is unparseable JSON{[
+'''
+    when:
+        controller.createPerson()
+        
+    then:
+        response.status == 400
+    }
 }
 
 @Artefact('Controller')
