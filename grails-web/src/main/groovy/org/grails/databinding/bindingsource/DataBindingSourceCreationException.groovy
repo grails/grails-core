@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding
+package org.grails.databinding.bindingsource
 
 /**
  * Thrown if an unrecoverable problem occurs initializing a DataBindingSource
  * 
  * @since 2.3
- * @see DataBindingSource
+ * @see org.grails.databinding.DataBindingSource
+ * @see DataBindingSourceCreator
  *
  */
-class DataBindingSourceInitializationException extends RuntimeException {
+class DataBindingSourceCreationException extends RuntimeException {
     
-    DataBindingSourceInitializationException(Throwable cause) {
+    DataBindingSourceCreationException(Throwable cause) {
         super(cause);
     }
 }

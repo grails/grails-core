@@ -72,7 +72,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector
 import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
-import org.grails.databinding.DataBindingSourceInitializationException;
+import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
 import org.springframework.validation.MapBindingResult;
 
 /**
@@ -534,7 +534,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         catchBlock.addStatement(returnStatement);
         
         final TryCatchStatement tryCatchStatement = new TryCatchStatement(tryBlock, new EmptyStatement());
-        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(DataBindingSourceInitializationException.class), "$dataBindingSourceInitializationException"), catchBlock));
+        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(DataBindingSourceCreationException.class), "$dataBindingSourceInitializationException"), catchBlock));
         
         wrapper.addStatement(tryCatchStatement);
     }

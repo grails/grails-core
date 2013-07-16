@@ -23,7 +23,6 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSo
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.grails.databinding.DataBindingSource
-import org.grails.databinding.DataBindingSourceInitializationException
 
 @CompileStatic
 abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBindingSourceCreator {
@@ -34,7 +33,7 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
     }
 
     @Override
-    public DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceInitializationException {
+    public DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceCreationException {
         try {
             if(bindingSource instanceof GrailsParameterMap) {
                 def req = bindingSource.getRequest()
@@ -58,7 +57,7 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
                 return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
             }
         } catch (Exception e) {
-            throw new DataBindingSourceInitializationException(e);
+            throw new DataBindingSourceCreationException(e);
         }
     }
 
