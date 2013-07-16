@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve
 
-import groovy.transform.Canonical
-import groovy.transform.ToString
+package grails.rest.render
+
+import groovy.transform.CompileStatic
 
 /**
- * Used to represent a resolved artifact (downloaded and cached) in the dependency resolution system
+ * Abstract implementation of RenderContext
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-@Canonical
-@ToString
-class ResolvedArtifactReport {
+@CompileStatic
+abstract class AbstractRenderContext implements RenderContext{
 
-    /**
-     * @return The dependency
-     */
-    Dependency dependency
-
-    /**
-     * @return The file for this dependency
-     */
-    File file
+    List<String> includes
+    List<String> excludes
+    Map<String, Object> arguments
 }

@@ -17,18 +17,10 @@ package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
@@ -73,18 +65,23 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void marshalObject(Object value, XML xml) throws ConverterException {
         Class clazz = value.getClass();
+
+        List<String> excludes = xml.getExcludes(clazz);
+        List<String> includes = xml.getIncludes(clazz);
+        IncludeExcludeSupport<String> includeExcludeSupport = new IncludeExcludeSupport<String>();
+
         GrailsDomainClass domainClass = (GrailsDomainClass)application.getArtefact(
               DomainClassArtefactHandler.TYPE, ConverterUtil.trimProxySuffix(clazz.getName()));
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
 
         GrailsDomainClassProperty id = domainClass.getIdentifier();
-        if(shouldInclude(value, id.getName())) {
+        if(shouldInclude(includeExcludeSupport, includes, excludes,value, id.getName())) {
             Object idValue = beanWrapper.getPropertyValue(id.getName());
 
             if (idValue != null) xml.attribute("id", String.valueOf(idValue));
         }
 
-        if (shouldInclude(value, GrailsDomainClassProperty.VERSION) && includeVersion) {
+        if (shouldInclude(includeExcludeSupport, includes, excludes, value, GrailsDomainClassProperty.VERSION) && includeVersion) {
             Object versionValue = beanWrapper.getPropertyValue(domainClass.getVersion().getName());
             xml.attribute("version", String.valueOf(versionValue));
         }
@@ -93,7 +90,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
 
         for (GrailsDomainClassProperty property : properties) {
             String propertyName = property.getName();
-            if(!shouldInclude(value, property.getName())) continue;
+            if(!shouldInclude(includeExcludeSupport, includes, excludes, value, property.getName())) continue;
 
             xml.startNode(propertyName);
             if (!property.isAssociation()) {
@@ -164,6 +161,10 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
             }
             xml.end();
         }
+    }
+
+    private boolean shouldInclude(IncludeExcludeSupport<String> includeExcludeSupport, List<String> includes, List<String> excludes, Object object, String name) {
+        return includeExcludeSupport.shouldInclude(includes, excludes, name) && shouldInclude(object,name);
     }
 
     private boolean shouldInitializeProxy(Object object) {

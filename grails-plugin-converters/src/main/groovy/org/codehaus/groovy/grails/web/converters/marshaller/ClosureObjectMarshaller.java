@@ -27,13 +27,13 @@ import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
  * @since 1.1
  */
 @SuppressWarnings("rawtypes")
-public class ClosureOjectMarshaller<T extends Converter> implements ObjectMarshaller<T> {
+public class ClosureObjectMarshaller<T extends Converter> implements ObjectMarshaller<T> {
 
     private Class<?> clazz;
 
     private Closure closure;
 
-    public ClosureOjectMarshaller(Class<?> clazz, Closure closure) {
+    public ClosureObjectMarshaller(Class<?> clazz, Closure closure) {
         this.clazz = clazz;
         this.closure = closure;
     }

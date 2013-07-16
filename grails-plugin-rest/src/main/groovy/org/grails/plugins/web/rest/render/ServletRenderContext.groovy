@@ -27,6 +27,8 @@ import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.ModelAndView
+import org.codehaus.groovy.grails.support.IncludeExcludeSupport
+import grails.rest.render.AbstractRenderContext
 
 /**
  * RenderContext for the servlet environment
@@ -35,7 +37,7 @@ import org.springframework.web.servlet.ModelAndView
  * @since 2.3
  */
 @CompileStatic
-class ServletRenderContext implements RenderContext{
+class ServletRenderContext extends AbstractRenderContext{
 
     GrailsWebRequest webRequest
     Map<String, Object> arguments
@@ -50,11 +52,23 @@ class ServletRenderContext implements RenderContext{
         this.webRequest = webRequest
         if(arguments != null) {
             this.arguments = Collections.unmodifiableMap(arguments)
+            final argsMap = arguments
+            final incObject = argsMap != null ?  argsMap.get(IncludeExcludeSupport.INCLUDES_PROPERTY) : null
+            final excObject = argsMap != null ? argsMap.get(IncludeExcludeSupport.EXCLUDES_PROPERTY) : null
+            List includes = incObject instanceof List ? (List)incObject : null
+            List excludes = excObject instanceof List ? (List)excObject : null
+            if(includes != null) {
+                this.includes = includes
+            }
+            if(excludes != null) {
+                this.excludes = excludes
+            }
         }
         else {
             this.arguments = Collections.emptyMap()
         }
     }
+
 
     @Override
     String getResourcePath() {
@@ -147,4 +161,6 @@ class ServletRenderContext implements RenderContext{
     String getControllerName() {
         webRequest.controllerName
     }
+
+
 }

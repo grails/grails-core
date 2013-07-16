@@ -17,6 +17,7 @@ package grails.rest.render
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.support.IncludeExcludeSupport
 
 /**
  * Abstract class for implementing renderers that include/exclude certain properties
@@ -29,6 +30,7 @@ abstract class AbstractIncludeExcludeRenderer<T> extends AbstractRenderer<T> {
 
     List<String> includes = null
     List<String> excludes = []
+    IncludeExcludeSupport<String> includeExcludeSupport = new IncludeExcludeSupport<String>()
 
     AbstractIncludeExcludeRenderer(Class<T> targetType, MimeType mimeType) {
         super(targetType, mimeType)
@@ -38,15 +40,15 @@ abstract class AbstractIncludeExcludeRenderer<T> extends AbstractRenderer<T> {
         super(targetType, mimeTypes)
     }
 
-    boolean shouldIncludeProperty(Object object, String property) {
-        includesProperty(object, property) && !excludesProperty(object, property)
+    boolean shouldIncludeProperty(RenderContext renderContext, Object object, String property) {
+        includeExcludeSupport.shouldInclude(renderContext.includes,renderContext.excludes, property) && includeExcludeSupport.shouldInclude(includes, excludes, property)
     }
 
     boolean includesProperty(Object object, String property) {
-        includes == null || includes.contains(property)
+        includeExcludeSupport.includes(includes, property)
     }
 
     boolean excludesProperty(Object object, String property) {
-        excludes.contains(property)
+        includeExcludeSupport.excludes(excludes, property)
     }
 }

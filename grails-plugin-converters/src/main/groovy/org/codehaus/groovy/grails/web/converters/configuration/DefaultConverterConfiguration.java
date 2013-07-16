@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
-import org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller;
+import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 
 /**
@@ -133,11 +133,11 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public void registerObjectMarshaller(Class<?> c, int priority, Closure callable) {
-        registerObjectMarshaller(new ClosureOjectMarshaller<C>(c, callable), priority);
+        registerObjectMarshaller(new ClosureObjectMarshaller<C>(c, callable), priority);
     }
 
     public void registerObjectMarshaller(Class<?> c, Closure callable) {
-        registerObjectMarshaller(new ClosureOjectMarshaller<C>(c, callable));
+        registerObjectMarshaller(new ClosureObjectMarshaller<C>(c, callable));
     }
 
     public ObjectMarshaller<C> getMarshaller(Object o) {

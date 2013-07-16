@@ -140,14 +140,14 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
         return Collections.emptyList()
     }
 
-    protected Map<Association, Object> writeAssociationLinks(object, Locale locale, writer, PersistentEntity entity, MetaClass metaClass) {
+    protected Map<Association, Object> writeAssociationLinks(RenderContext context, object, Locale locale, writer, PersistentEntity entity, MetaClass metaClass) {
         writeExtraLinks(object, locale, writer)
 
 
         Map<Association, Object> associationMap = [:]
         for (Association a in entity.associations) {
             final propertyName = a.name
-            if (!shouldIncludeProperty(object, propertyName)) {
+            if (!shouldIncludeProperty(context,object, propertyName)) {
                 continue
             }
             final associatedEntity = a.associatedEntity
@@ -204,12 +204,12 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
      * @param writer The writer
      * @return Any associations embedded within the object
      */
-    protected void writeDomain(MetaClass metaClass, PersistentEntity entity, Object object, writer) {
+    protected void writeDomain(RenderContext context, MetaClass metaClass, PersistentEntity entity, Object object, writer) {
 
         if (entity) {
             for (PersistentProperty p in entity.persistentProperties) {
                 final propertyName = p.name
-                if (!shouldIncludeProperty(object, propertyName)) {
+                if (!shouldIncludeProperty(context, object, propertyName)) {
                     continue
                 }
                 if ((p instanceof Basic) || !(p instanceof Association)) {

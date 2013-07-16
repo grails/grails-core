@@ -109,6 +109,8 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         else {
             converter = object as XML
         }
+        converter.setExcludes(context.excludes)
+        converter.setIncludes(context.includes)
         converter.render(context.getWriter())
     }
 }

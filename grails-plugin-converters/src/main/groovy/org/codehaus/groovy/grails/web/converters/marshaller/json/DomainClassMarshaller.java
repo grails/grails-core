@@ -17,19 +17,11 @@ package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
 import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
@@ -85,25 +77,29 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
         value = proxyHandler.unwrapIfProxy(value);
         Class<?> clazz = value.getClass();
 
+        List<String> excludes = json.getExcludes(clazz);
+        List<String> includes = json.getIncludes(clazz);
+        IncludeExcludeSupport<String> includeExcludeSupport = new IncludeExcludeSupport<String>();
+
         GrailsDomainClass domainClass = (GrailsDomainClass)application.getArtefact(
               DomainClassArtefactHandler.TYPE, ConverterUtil.trimProxySuffix(clazz.getName()));
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
 
         writer.object();
 
-        if(shouldInclude(domainClass, "class")) {
+        if(shouldInclude(includeExcludeSupport, includes, excludes, value, "class")) {
             writer.key("class").value(domainClass.getClazz().getName());
         }
 
 
         GrailsDomainClassProperty id = domainClass.getIdentifier();
 
-        if(shouldInclude(value, id.getName())) {
+        if(shouldInclude(includeExcludeSupport, includes, excludes, value, id.getName())) {
             Object idValue = extractValue(value, id);
             json.property(GrailsDomainClassProperty.IDENTITY, idValue);
         }
 
-        if (shouldInclude(value, GrailsDomainClassProperty.VERSION) && isIncludeVersion()) {
+        if (shouldInclude(includeExcludeSupport, includes, excludes, value, GrailsDomainClassProperty.VERSION) && isIncludeVersion()) {
             GrailsDomainClassProperty versionProperty = domainClass.getVersion();
             Object version = extractValue(value, versionProperty);
             json.property(GrailsDomainClassProperty.VERSION, version);
@@ -112,7 +108,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
 
         for (GrailsDomainClassProperty property : properties) {
-            if(!shouldInclude(value, property.getName())) continue;
+            if(!shouldInclude(includeExcludeSupport, includes, excludes, value, property.getName())) continue;
 
             writer.key(property.getName());
             if (!property.isAssociation()) {
@@ -189,6 +185,10 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
             }
         }
         writer.endObject();
+    }
+
+    private boolean shouldInclude(IncludeExcludeSupport<String> includeExcludeSupport, List<String> includes, List<String> excludes, Object object, String propertyName) {
+        return includeExcludeSupport.shouldInclude(includes,excludes,propertyName) && shouldInclude(object,propertyName);
     }
 
     protected void asShortObject(Object refObj, JSON json, GrailsDomainClassProperty idProperty, GrailsDomainClass referencedDomainClass) throws ConverterException {

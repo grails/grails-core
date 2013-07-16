@@ -92,7 +92,7 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
             for(pd in propertyDescriptors) {
                 final propertyName = pd.name
                 if (DEFAULT_EXCLUDES.contains(propertyName)) continue
-                if (shouldIncludeProperty(object, propertyName)) {
+                if (shouldIncludeProperty(context, object, propertyName)) {
                     if (pd.readMethod && pd.writeMethod) {
                         writer.startNode(propertyName)
                         xml.convertAnother(bean.getPropertyValue(propertyName))
@@ -121,8 +121,8 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
         XMLStreamWriter writer = xml.getWriter()
         startResourceTag(writer, resourceHref, locale, title)
         final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
-        final associationMap = writeAssociationLinks(object, locale, xml, entity, metaClass)
-        writeDomain(metaClass, entity, object, xml)
+        final associationMap = writeAssociationLinks(context,object, locale, xml, entity, metaClass)
+        writeDomain(context, metaClass, entity, object, xml)
 
         if (associationMap) {
             for (entry in associationMap.entrySet()) {

@@ -24,8 +24,10 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
@@ -44,14 +46,20 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
 
     public void marshalObject(Object o, JSON json) throws ConverterException {
         JSONWriter writer = json.getWriter();
+
+
+        Class<? extends Object> clazz = o.getClass();
+        List<String> excludes = json.getExcludes(clazz);
+        List<String> includes = json.getIncludes(clazz);
+        IncludeExcludeSupport<String> includeExcludeSupport = new IncludeExcludeSupport<String>();
         try {
             writer.object();
-            for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(o.getClass())) {
+            for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(clazz)) {
 
                 Method readMethod = property.getReadMethod();
                 String name = property.getName();
 
-                if(!shouldInclude(o, name)) continue;
+                if(!shouldInclude(includeExcludeSupport, includes, excludes, o, name)) continue;
 
                 if (readMethod != null && !(name.equals("metaClass"))&& !(name.equals("class"))) {
                     if(readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
@@ -61,10 +69,12 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
                     json.convertAnother(value);
                 }
             }
-            for (Field field : o.getClass().getDeclaredFields()) {
+            for (Field field : clazz.getDeclaredFields()) {
                 int modifiers = field.getModifiers();
                 if (Modifier.isPublic(modifiers) && !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))) {
-                    writer.key(field.getName());
+                    String name = field.getName();
+                    if(!shouldInclude(includeExcludeSupport,includes,excludes,o,name)) continue;
+                    writer.key(name);
                     json.convertAnother(field.get(o));
                 }
             }
@@ -74,8 +84,12 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
             throw ce;
         }
         catch (Exception e) {
-            throw new ConverterException("Error converting Bean with class " + o.getClass().getName(), e);
+            throw new ConverterException("Error converting Bean with class " + clazz.getName(), e);
         }
+    }
+
+    private boolean shouldInclude(IncludeExcludeSupport<String> includeExcludeSupport, List<String> includes, List<String> excludes, Object o, String name) {
+        return includeExcludeSupport.shouldInclude(includes,excludes, name) && shouldInclude(o,name);
     }
 
 }

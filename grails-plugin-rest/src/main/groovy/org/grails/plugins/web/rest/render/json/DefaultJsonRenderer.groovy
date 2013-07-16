@@ -108,6 +108,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         } else {
             converter = object as JSON
         }
+        converter.setExcludes(context.excludes)
+        converter.setIncludes(context.includes)
         converter.render(context.getWriter())
     }
 }

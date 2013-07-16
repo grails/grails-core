@@ -29,6 +29,19 @@ class JsonRendererSpec extends Specification {
         ConvertersConfigurationHolder.clear()
     }
 
+    void "Test including properties with JsonRenderer via RenderContext"() {
+        given:"A new JsonRenderer instance is created that excludes properties"
+            def renderer = new JsonRenderer(Album)
+            renderer.registerCustomConverter()
+
+        when:"The renderer renders an object"
+            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            renderer.render(new Album(title: "Undertow", isbn: "38047301"), new ServletRenderContext(webRequest, [includes:['title']]))
+
+        then:"Only included properties are rendered"
+            webRequest.response.contentAsString == '{"title":"Undertow"}'
+
+    }
     void "Test including properties with JsonRenderer"() {
         given:"A new JsonRenderer instance is created that excludes properties"
             def renderer = new JsonRenderer(Album)

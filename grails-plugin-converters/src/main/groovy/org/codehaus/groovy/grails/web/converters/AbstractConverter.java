@@ -20,23 +20,95 @@ import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- * Abstract base implementation of the Converter interface that provides a default toString()
- * implementation.
+ * Abstract base implementation of the Converter interface that provides a default toString() implementation.
  *
  * @author Siegfried Puchbauer
+ * @author Graeme Rocher
  */
-public abstract class AbstractConverter<W> implements Converter<W> {
+public abstract class AbstractConverter<W> implements ConfigurableConverter<W> {
+
+    protected String contentType;
+    protected String encoding = "UTF-8";
+    protected Map<Class, List<String>> includes = new LinkedHashMap<Class, List<String>>();
+    protected Map<Class, List<String>> excludes = new LinkedHashMap<Class, List<String>>();
 
     public abstract void setTarget(Object target);
+
+    /**
+     * Sets the content type of the converter
+     *
+     * @param contentType The content type
+     */
+    @Override
+    public void setContentType(String contentType) {
+        this.contentType = contentType;
+    }
+
+    /**
+     * Sets the encoding of the converter
+     *
+     * @param encoding The encoding
+     */
+    @Override
+    public void setEncoding(String encoding) {
+        this.encoding = encoding;
+    }
+
+    /**
+     * Set to include properties for the given type
+     *
+     * @param type The type
+     * @param properties The properties
+     */
+    @Override
+    public void setIncludes(Class type, List<String> properties) {
+        includes.put(type, properties);
+    }
+
+    /**
+     * Set to exclude properties for the given type
+     *
+     * @param type The type
+     * @param properties The properties
+     */
+    @Override
+    public void setExcludes(Class type, List<String> properties) {
+        excludes.put(type, properties);
+    }
+
+    /**
+     * Gets the excludes for the given type
+     *
+     * @param type The type
+     * @return The excludes
+     */
+    @Override
+    public List<String> getExcludes(Class type) {
+        return excludes.get(type);
+    }
+
+    /**
+     * Gets the includes for the given type
+     *
+     * @param type The type
+     * @return The includes
+     */
+    @Override
+    public List<String> getIncludes(Class type) {
+        return includes.get(type);
+    }
 
     @Override
     public String toString() {
         FastStringWriter writer = new FastStringWriter();
         try {
             render(writer);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             throw new UnhandledException(e);
         }
         return writer.toString();

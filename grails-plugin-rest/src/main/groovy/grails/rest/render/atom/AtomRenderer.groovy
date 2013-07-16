@@ -179,8 +179,8 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
 
         writeLink(linkAlt,locale, xml)
         final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
-        final associationMap = writeAssociationLinks(object, locale, xml, entity, metaClass)
-        writeDomain(metaClass, entity, object, xml)
+        final associationMap = writeAssociationLinks(context,object, locale, xml, entity, metaClass)
+        writeDomain(context, metaClass, entity, object, xml)
 
         if (associationMap) {
             for (entry in associationMap.entrySet()) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,28 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.resolve
 
-import groovy.transform.Canonical
-import groovy.transform.ToString
+package org.codehaus.groovy.grails.web.converters
 
 /**
- * Used to represent a resolved artifact (downloaded and cached) in the dependency resolution system
+ *  A converter capable of including/excluding properties on the target object
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-@Canonical
-@ToString
-class ResolvedArtifactReport {
+public interface IncludeExcludeConverter<W> extends ConfigurableConverter<W> {
 
-    /**
-     * @return The dependency
-     */
-    Dependency dependency
+    void setIncludes(List<String> includes)
 
-    /**
-     * @return The file for this dependency
-     */
-    File file
+    void setExcludes(List<String> excludes)
+
 }

@@ -3,10 +3,10 @@ package org.codehaus.groovy.grails.web.converters
 import grails.converters.JSON
 import grails.converters.XML
 
-import org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.json.DomainClassMarshaller as JsonClassMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.DomainClassMarshaller as XmlClassMarshaller
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
+import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller
 
 /**
  * Tests for the customizable Converter Configuration.
@@ -57,8 +57,8 @@ class ConverterConfigurationTests extends AbstractGrailsControllerTests {
 
     void testMarshallerPriority() {
 
-        def om1 = new ClosureOjectMarshaller(Date, { "SUCCESS" })
-        def om2 = new ClosureOjectMarshaller(Date, { "FAIL" })
+        def om1 = new ClosureObjectMarshaller(Date, { "SUCCESS" })
+        def om2 = new ClosureObjectMarshaller(Date, { "FAIL" })
 
         JSON.registerObjectMarshaller(om1, 5)
         JSON.registerObjectMarshaller(om2, 3)

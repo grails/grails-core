@@ -24,10 +24,7 @@ import java.io.InputStream;
 import java.io.PushbackInputStream;
 import java.io.Reader;
 import java.io.Writer;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -38,11 +35,12 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
+import org.codehaus.groovy.grails.web.converters.IncludeExcludeConverter;
 import org.codehaus.groovy.grails.web.converters.configuration.ConverterConfiguration;
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder;
 import org.codehaus.groovy.grails.web.converters.configuration.DefaultConverterConfiguration;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
-import org.codehaus.groovy.grails.web.converters.marshaller.ClosureOjectMarshaller;
+import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONArray;
 import org.codehaus.groovy.grails.web.json.JSONElement;
@@ -59,17 +57,15 @@ import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
  * @author Siegfried Puchbauer
  * @author Graeme Rocher
  */
-public class JSON extends AbstractConverter<JSONWriter> {
+public class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConverter<JSONWriter> {
 
     private final static Log log = LogFactory.getLog(JSON.class);
     private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
 
-    private Object target;
-    private final String encoding;
-    private final ConverterConfiguration<JSON> config;
-    private final CircularReferenceBehaviour circularReferenceBehaviour;
-    private boolean prettyPrint;
-
+    protected Object target;
+    protected final ConverterConfiguration<JSON> config;
+    protected final CircularReferenceBehaviour circularReferenceBehaviour;
+    protected boolean prettyPrint;
     protected JSONWriter writer;
     protected Stack<Object> referenceStack;
 
@@ -146,7 +142,7 @@ public class JSON extends AbstractConverter<JSONWriter> {
      * @throws ConverterException
      */
     public void render(HttpServletResponse response) throws ConverterException {
-        response.setContentType(GrailsWebUtil.getContentType("application/json", encoding));
+        response.setContentType(GrailsWebUtil.getContentType(contentType, encoding));
         try {
             render(response.getWriter());
         }
@@ -428,11 +424,11 @@ public class JSON extends AbstractConverter<JSONWriter> {
     }
 
     public static void registerObjectMarshaller(Class<?> clazz, Closure<?> callable) throws ConverterException {
-        registerObjectMarshaller(new ClosureOjectMarshaller<JSON>(clazz, callable));
+        registerObjectMarshaller(new ClosureObjectMarshaller<JSON>(clazz, callable));
     }
 
     public static void registerObjectMarshaller(Class<?> clazz, int priority, Closure<?> callable) throws ConverterException {
-        registerObjectMarshaller(new ClosureOjectMarshaller<JSON>(clazz, callable), priority);
+        registerObjectMarshaller(new ClosureObjectMarshaller<JSON>(clazz, callable), priority);
     }
 
     public static void registerObjectMarshaller(ObjectMarshaller<JSON> om) throws ConverterException {
@@ -483,6 +479,16 @@ public class JSON extends AbstractConverter<JSONWriter> {
         catch (Throwable t) {
             throw ConverterUtil.resolveConverterException(t);
         }
+    }
+
+    @Override
+    public void setIncludes(List<String> includes) {
+        setIncludes(target.getClass(), includes);
+    }
+
+    @Override
+    public void setExcludes(List<String> excludes) {
+        setExcludes(target.getClass(), excludes);
     }
 
     public class Builder extends BuilderSupport {

@@ -29,6 +29,19 @@ import org.springframework.http.HttpStatus
 public interface RenderContext {
 
     /**
+     * Which properties should be included in rendering
+     * @return A list of includes
+     */
+    List<String> getIncludes()
+
+    /**
+     * Which properties should be excluded from rendering
+     * @return A list of excludes
+     */
+    List<String> getExcludes()
+
+
+    /**
      * @return Arguments passed by the user
      */
     Map<String, Object> getArguments()
