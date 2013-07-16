@@ -21,6 +21,7 @@ import groovy.transform.CompileStatic
 class SimpleMapDataBindingSource implements DataBindingSource {
 
     protected Map map
+    boolean dataSourceAware = true
 
     SimpleMapDataBindingSource(Map map) {
         this.map = map

@@ -391,13 +391,17 @@ class SimpleDataBinder implements DataBinder {
                 } else {
                     annotation = field.getAnnotation BindingFormat
                     if (annotation) {
-                        converter = getFormattedConverter field, annotation.value()
+                        converter = getFormattedConverter field, getFormatString(annotation)
                     }
                 }
             }
         } catch (Exception e) {
         }
         converter
+    }
+    
+    protected String getFormatString(BindingFormat annotation) {
+        annotation.value()
     }
 
     protected ValueConverter getValueConverterForClass(obj, String propName) {

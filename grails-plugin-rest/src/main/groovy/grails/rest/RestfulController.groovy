@@ -70,7 +70,6 @@ class RestfulController<T> {
         respond createResource(getParametersToBind())
     }
 
-
     /**
      * Saves a resource
      */
@@ -78,10 +77,9 @@ class RestfulController<T> {
     def save() {
         def instance = createResource(getParametersToBind())
         instance.validate()
-        if(instance.hasErrors()) {
+        if (instance.hasErrors()) {
             respond instance.errors, view:'create' // STATUS CODE 422
-        }
-        else {
+        } else {
             instance.save flush:true
             request.withFormat {
                 form {
@@ -104,17 +102,16 @@ class RestfulController<T> {
     @Transactional
     def update() {
         T instance = queryForResource(params.id)
-        if(instance == null) {
+        if (instance == null) {
             render status:404
             return
-        }
-        else {
+        } else {
             instance.properties = getParametersToBind()
         }
-        if(instance.hasErrors()) {
+
+        if (instance.hasErrors()) {
             respond instance.errors, view:'edit' // STATUS CODE 422
-        }
-        else {
+        } else {
             instance.save flush:true
             request.withFormat {
                 form {
@@ -126,8 +123,6 @@ class RestfulController<T> {
         }
     }
 
-
-
     /**
      * Deletes a resource for the given id
      * @param id The id
@@ -135,7 +130,7 @@ class RestfulController<T> {
     @Transactional
     def delete() {
         def instance = queryForResource(params.id)
-        if(instance) {
+        if (instance) {
             instance.delete flush:true
             request.withFormat {
                 form {
@@ -144,8 +139,7 @@ class RestfulController<T> {
                 }
                 '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
             }
-        }
-        else {
+        } else {
             render status: NOT_FOUND
         }
     }

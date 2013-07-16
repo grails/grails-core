@@ -50,6 +50,7 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
      * The properties to be included
      */
     List<String> includes
+
     /**
      * The properties to be excluded
      */
@@ -65,7 +66,6 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
 
     @PostConstruct
     void registerCustomConverter() {
-
         def domain = grailsApplication != null ? grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, targetType.name) : null
 
         ObjectMarshaller<XML> marshaller
@@ -82,8 +82,7 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
                     return excludes.contains(property)
                 }
             }
-        }
-        else {
+        } else {
             marshaller = new GroovyBeanMarshaller() {
                 @Override
                 protected boolean includesProperty(Object o, String property) {

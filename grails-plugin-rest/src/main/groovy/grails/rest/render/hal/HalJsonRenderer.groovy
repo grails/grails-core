@@ -68,8 +68,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     @PostConstruct
     void initialize() {
-        if(dataBindingSourceRegistry != null) {
-
+        if (dataBindingSourceRegistry != null) {
             final thisType = getTargetType()
             final thisMimeTypes = getMimeTypes()
             final halDataBindingSourceCreator = new HalJsonDataBindingSourceCreator() {
@@ -95,7 +94,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         JsonWriter writer = new JsonWriter(responseWriter)
 
         try {
-            if(prettyPrint)
+            if (prettyPrint)
                 writer.setIndent('  ')
 
             final clazz = object.class
@@ -117,8 +116,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 }
                 writer.endArray()
 
-            }
-            else {
+            } else {
                 beginLinks(writer)
                 writeLinkForCurrentPath(context, mimeType, writer)
                 writeExtraLinks(object, context.locale, writer)
@@ -191,7 +189,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                     }
                 } else {
                     final associatedEntity = property.associatedEntity
-                    if(associatedEntity) {
+                    if (associatedEntity) {
                         writer.beginArray()
                         for (obj in entry.value) {
                             writtenObjects << obj
@@ -225,8 +223,6 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         associationMap
     }
 
-
-
     protected void writeLink(Link link, Locale locale, writerObject) {
         JsonWriter writer = (JsonWriter)writerObject
         writer.name(link.rel)
@@ -251,10 +247,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     }
 
-
-
     protected void writeDomainProperty(value, String propertyName, writer) {
         ((JsonWriter)writer).name(propertyName).value(gson.toJson(value))
     }
-
 }

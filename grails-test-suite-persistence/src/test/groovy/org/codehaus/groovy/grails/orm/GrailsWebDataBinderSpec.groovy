@@ -21,22 +21,24 @@ import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
 
 import org.apache.commons.lang.builder.CompareToBuilder
-import org.codehaus.groovy.grails.web.binding.GormAwareDataBinder
+import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.grails.databinding.BindUsing
+import org.grails.databinding.BindingFormat
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListener
+import org.springframework.context.support.StaticMessageSource
 
 import spock.lang.Specification
 
 @TestMixin(DomainClassUnitTestMixin)
 @Mock([Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
-class GormAwareDataBinderSpec extends Specification {
+class GrailsWebDataBinderSpec extends Specification {
 
     void 'Test string trimming'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def author = new Author()
 
         when:
@@ -74,7 +76,7 @@ class GormAwareDataBinderSpec extends Specification {
     void 'Test binding an invalid String to an object reference does not result in an empty instance being bound'() {
         // GRAILS-3159
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def publication = new Publication()
 
         when:
@@ -86,7 +88,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding empty and blank String'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def obj = new Author()
 
         when:
@@ -121,7 +123,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding to primitives from Strings'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def obj = new PrimitiveContainer()
 
         when:
@@ -147,7 +149,7 @@ class GormAwareDataBinderSpec extends Specification {
     
     void 'Test binding null to id of element nested in a List'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def obj = new CollectionContainer()
         def map = [:]
 
@@ -186,7 +188,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test id binding'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def author = new Author(name: 'David Foster Wallace').save(flush: true)
         def publication = new Publication()
 
@@ -225,9 +227,33 @@ class GormAwareDataBinderSpec extends Specification {
         publication.author == null
     }
 
+    void 'Test id binding with a non dataSource aware binding source'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def author = new Author(name: 'David Foster Wallace').save(flush: true)
+        def publication = new Publication()
+
+        when:
+        def bindingSource = new SimpleMapDataBindingSource([title: 'Infinite Jest', author: [id: author.id]])
+        bindingSource.dataSourceAware = false
+        binder.bind publication, bindingSource
+
+        then:
+        publication.title == 'Infinite Jest'
+        publication.author.name == null
+
+        when:
+        bindingSource.dataSourceAware = true
+        binder.bind publication, bindingSource
+
+        then:
+        publication.title == 'Infinite Jest'
+        publication.author.name == 'David Foster Wallace'
+    }
+
     void 'Test binding to the one side of a one to many'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def author = new Author(name: 'Graeme').save()
         def pub = new Publication(title: 'DGG', author: author)
 
@@ -255,7 +281,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding to a hasMany List'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def publisher = new Publisher()
 
         when:
@@ -277,7 +303,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test bindable'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def widget = new Widget()
 
         when:
@@ -290,7 +316,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding to a collection of String'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def book = new DataBindingBook()
 
         when:
@@ -303,7 +329,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding to a collection of Integer'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def book = new DataBindingBook()
 
         when:
@@ -316,7 +342,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding to a collection of primitive'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def parent = new Parent()
 
         when:
@@ -347,7 +373,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test unbinding a Map entry'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def team = new Team()
 
         when:
@@ -371,7 +397,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding to a Map for new instance with quoted key'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def team = new Team()
 
         when:
@@ -387,7 +413,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test autoGrowCollectionLimit with Maps of String'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def team = new Team()
         binder.autoGrowCollectionLimit = 2
         def bindingSource = [:]
@@ -409,7 +435,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test autoGrowCollectionLimit with Maps of domain objects'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def team = new Team()
         binder.autoGrowCollectionLimit = 2
         def bindingSource = [:]
@@ -433,7 +459,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding to Set with subscript'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def pub = new Publisher()
         pub.addToAuthors(name: 'Author One')
 
@@ -448,7 +474,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding existing entities to a new Set'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
 
         when:
         def a1 = new Author(name: 'Author One').save()
@@ -470,7 +496,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding a String to an domain class object reference in a Collection'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
 
         when:
         def a1 = new Author(name: 'Author One').save()
@@ -506,7 +532,7 @@ class GormAwareDataBinderSpec extends Specification {
         a3.id != null
 
         when:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         // the subscript values are not important, the ids drive selection from the Set
         binder.bind publisher, new SimpleMapDataBindingSource(['authors[123]': [id: a3.id, name: 'Author Tres'],
                                 'authors[456]': [id: a1.id, name: 'Author Uno'],
@@ -523,7 +549,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test updating a Set element by id that does not exist'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def bindingErrors = []
         def listener = { BindingError error ->
             bindingErrors << error
@@ -547,7 +573,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test updating nested entities retrieved by id'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
 
         when:
         def publisher = new Publisher(name: 'Apress').save()
@@ -567,7 +593,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test using @BindUsing to initialize property with a type other than the declared type'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def author = new Author()
 
         when:
@@ -586,7 +612,7 @@ class GormAwareDataBinderSpec extends Specification {
 
     void 'Test binding to different collection types'() {
         given:
-        def binder = new GormAwareDataBinder(grailsApplication)
+        def binder = new GrailsWebDataBinder(grailsApplication)
         def obj = new CollectionContainer()
         def map = [:]
 
@@ -635,6 +661,45 @@ class GormAwareDataBinderSpec extends Specification {
         sortedSetOfWidgets[0].isBindable == 'Is Dos (SortedSet)'
         sortedSetOfWidgets[1].isBindable == 'Is Tres (SortedSet)'
         sortedSetOfWidgets[2].isBindable == 'Is Uno (SortedSet)'
+    }
+    
+    void 'Test binding format code'() {
+        given:
+        def messageSource = new StaticMessageSource()
+        messageSource.addMessage 'my.date.format', Locale.US, 'MMddyyyy'
+        messageSource.addMessage 'my.date.format', Locale.UK, 'ddMMyyyy'
+        def child = new Child()
+        
+        when:
+        def binder = new GrailsWebDataBinder(grailsApplication)  {
+            Locale getLocale() {
+                Locale.US
+            }
+        }
+        binder.messageSource = messageSource
+        binder.bind child, new SimpleMapDataBindingSource([birthDate: '11151969'])
+        def birthDate = child.birthDate
+        
+        then:
+        Calendar.NOVEMBER == birthDate.month
+        15 == birthDate.date
+        69 == birthDate.year
+        
+        when:
+        binder = new GrailsWebDataBinder(grailsApplication) {
+            Locale getLocale() {
+                Locale.UK
+            }
+        }
+        binder.messageSource = messageSource
+        child.birthDate = null
+        binder.bind child, new SimpleMapDataBindingSource([birthDate: '15111969'])
+        birthDate = child.birthDate
+        
+        then:
+        Calendar.NOVEMBER == birthDate.month
+        15 == birthDate.date
+        69 == birthDate.year
     }
 }
 
@@ -712,6 +777,8 @@ class Parent {
 
 @Entity
 class Child {
+    @BindingFormat(code='my.date.format')
+    Date birthDate
     static hasMany = [someOtherIds: Integer]
 }
 

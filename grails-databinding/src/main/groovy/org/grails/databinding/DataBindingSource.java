@@ -68,4 +68,16 @@ public interface DataBindingSource {
      * @return the number of properties represented by this binding source
      */
     int size();
+    
+    /**
+     * 
+     * @return true if GORM operations should be enabled when binding with this DataBindingSource
+     */
+    boolean isDataSourceAware();
+    
+    /**
+     * 
+     * @param isDataSourceAware true if GORM operations should be enabled when binding with this DataBindingSource
+     */
+    void setDataSourceAware(boolean isDataSourceAware);
 }

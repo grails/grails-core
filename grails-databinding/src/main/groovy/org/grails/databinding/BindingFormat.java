@@ -38,4 +38,5 @@ class DateContainer {
 @Target(ElementType.FIELD)
 public @interface BindingFormat {
     String value();
+    String code() default "";
 }

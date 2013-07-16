@@ -107,8 +107,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
                 htmlRenderer = new DefaultHtmlRenderer(targetType)
             }
             htmlRenderer.render(object, context)
-        }
-        else {
+        } else {
             renderInternal(object, context)
         }
 

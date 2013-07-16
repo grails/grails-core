@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package grails.rest.render.errors
 
 import grails.rest.render.ContainerRenderer
@@ -48,11 +47,9 @@ class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
 
     MimeType[] mimeTypes = [MIME_TYPE, MimeType.HAL_XML, MimeType.XML, MimeType.TEXT_XML] as MimeType[]
 
-
     @Override
     void render(Errors object, RenderContext context) {
         if (object instanceof BeanPropertyBindingResult) {
-
             context.setContentType(mimeTypes[0].name)
             Locale locale = context.locale
             final target = object.target
@@ -80,6 +77,3 @@ class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
         }
     }
 }
-
-
-

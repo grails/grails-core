@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.grails.plugins.web.rest.render.json
 
 import grails.converters.JSON
@@ -82,15 +81,12 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
                 htmlRenderer = new DefaultHtmlRenderer(targetType)
             }
             htmlRenderer.render(object, context)
-        }
-        else {
-
+        } else {
             if (object instanceof Errors) {
                 context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
             }
             renderJson(object, context)
         }
-
     }
 
     /**
