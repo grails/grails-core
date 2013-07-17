@@ -48,10 +48,12 @@ import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.grails.databinding.CollectionDataBindingSource;
 import org.grails.databinding.DataBindingSource;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
+import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -324,6 +326,17 @@ public class ControllersApi extends CommonWebApi {
         return invokeBindData(instance, target, args, filter);
     }
 
+    public <T> void bindData(Object instance, Class<T> targetType, List<T> collectionToPopulate, CollectionDataBindingSource collectionBindingSource) throws Exception {
+        Assert.notNull(collectionToPopulate,
+                "The 2nd argument to the bindData method must not be null");
+        final List<DataBindingSource> dataBindingSources = collectionBindingSource.getDataBindingSources();
+        for(DataBindingSource bindingSource : dataBindingSources) {
+            T newObject = targetType.newInstance();
+            bindData(instance, newObject, bindingSource);
+            collectionToPopulate.add(newObject);
+        }
+    }
+    
     protected Object invokeBindData(Object instance, Object... args) {
         return bind.invoke(instance, BIND_DATA_METHOD, args);
     }
