@@ -303,30 +303,30 @@ public class ControllersApi extends CommonWebApi {
         return render.invoke(instance, RENDER_METHOD_NAME, args);
     }
 
-    public Object bindData(Object instance, Object target, Object args, final List disallowed) {
-        return bindData(instance, target, args, CollectionUtils.newMap(EXCLUDE_MAP_KEY, disallowed), null);
+    public Object bindData(Object instance, Object target, Object bindingSource, final List excludes) {
+        return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), null);
     }
     
-    public Object bindData(Object instance, Object target, Object args, final List disallowed, String filter) {
-        return bindData(instance, target, args, CollectionUtils.newMap(EXCLUDE_MAP_KEY, disallowed), filter);
+    public Object bindData(Object instance, Object target, Object bindingSource, final List excludes, String filter) {
+        return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), filter);
     }
     
-    public Object bindData(Object instance, Object target, Object args, Map includeExclude) {
-        return bindData(instance, target, args, includeExclude, null);
+    public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude) {
+        return bindData(instance, target, bindingSource, includeExclude, null);
     }
 
-    public Object bindData(Object instance, Object target, Object args, String filter) {
-        return bindData(instance, target, args, Collections.EMPTY_MAP, filter);
+    public Object bindData(Object instance, Object target, Object bindingSource, String filter) {
+        return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, filter);
     }
 
-    public Object bindData(Object instance, Object target, Object args) {
-        return bindData(instance, target, args, Collections.EMPTY_MAP, null);
+    public Object bindData(Object instance, Object target, Object bindingSource) {
+        return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, null);
     }
     
-    public Object bindData(Object instance, Object target, Object args, Map includeExclude, String filter) {
+    public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude, String filter) {
         List include = convertToListIfString(includeExclude.get(INCLUDE_MAP_KEY));
         List exclude = convertToListIfString(includeExclude.get(EXCLUDE_MAP_KEY));
-        DataBindingUtils.bindObjectToInstance(target, args, include, exclude, filter);
+        DataBindingUtils.bindObjectToInstance(target, bindingSource, include, exclude, filter);
         return target;
     }
     
