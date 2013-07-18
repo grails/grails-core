@@ -27,15 +27,12 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
-import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder as RCH
@@ -48,12 +45,6 @@ import org.springframework.web.context.request.RequestContextHolder as RCH
  * @since 1.0
  */
 class WebMetaUtils {
-
-    static Closure createAndPrepareCommandObjectAction(GroovyObject controller, Closure originalAction,
-                                                       String actionName, ApplicationContext ctx) {
-        def bindingAction = createCommandObjectBindingAction(ctx)
-        prepareCommandObjectBindingAction bindingAction, originalAction, actionName, controller, ctx
-    }
 
     /**
      * Prepares a command object binding action for usage
@@ -88,67 +79,6 @@ class WebMetaUtils {
     static void prepareCommandObjectBindingAction(Method action, Class[] commandObjectClasses, ApplicationContext ctx) {
         for (type in commandObjectClasses) {
             enhanceCommandObject ctx, type
-        }
-    }
-
-    /**
-     * Creates a command object binding action that can be used to replace an existing action
-     *
-     * @param ctx The ApplicationContext
-     * @return The command object binding action
-     */
-    static Closure createCommandObjectBindingAction(ApplicationContext ctx) {
-        def bind = new BindDynamicMethod()
-        return {Closure originalAction, String closureName, Object[] varArgs ->
-
-            def paramTypes = originalAction.getParameterTypes()
-            def commandObjects = []
-            for (v in varArgs) {
-                commandObjects << v
-            }
-            def counter = 0
-            def params = RCH.currentRequestAttributes().params
-            for (paramType in paramTypes) {
-                if (GroovyObject.isAssignableFrom(paramType)) {
-                    try {
-                        def commandObject
-                        if (counter < commandObjects.size()) {
-                            if (paramType.isInstance(commandObjects[counter])) {
-                                commandObject = commandObjects[counter]
-                            }
-                        }
-
-                        if (!commandObject) {
-                            commandObject = paramType.newInstance()
-                            ctx.autowireCapableBeanFactory?.autowireBeanProperties(
-                                    commandObject, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
-                            commandObjects << commandObject
-                        }
-
-                        def commandParamsKey = convertTypeNameToParamsPrefix(paramType)
-                        def commandParams = params
-                        if (params != null && commandParamsKey != null && params[commandParamsKey] instanceof Map) {
-                            commandParams = params[commandParamsKey]
-                        }
-
-                        bind.invoke(commandObject, "bindData", [commandObject, commandParams] as Object[])
-                        def errors = commandObject.errors ?: new BindException(commandObject, paramType.name)
-                        def constrainedProperties = commandObject.constraints?.values()
-                        for (constrainedProperty in constrainedProperties) {
-                            constrainedProperty.messageSource = ctx.getBean("messageSource")
-                            constrainedProperty.validate(commandObject, commandObject.getProperty(
-                                    constrainedProperty.getPropertyName()), errors)
-                        }
-                        commandObject.errors = errors
-                    }
-                    catch (Exception e) {
-                        throw new ControllerExecutionException("Error occurred creating command object.", e)
-                    }
-                }
-                counter++
-            }
-            def callable = GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(delegate, closureName)
-            callable.call(* commandObjects)
         }
     }
 
