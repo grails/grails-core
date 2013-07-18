@@ -638,14 +638,19 @@ abstract class ForkedGrailsProcess {
     }
 
     /**
-     * @deprecated The project watcher should not be started in the forked JVM, but instead should be run from the JVM that launched the fork
      *
      * @param classLoader
      * @param buildSettings
      */
-    @Deprecated
     protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
-        // noop.. deprecated
+        Thread.start {
+            final holders = classLoader.loadClass("grails.util.Holders")
+            while(!holders.getPluginManager()) {
+                sleep(1000)
+            }
+            startProjectWatcher(classLoader, buildSettings)
+        }
+
     }
 
     protected void startProjectWatcher(URLClassLoader classLoader, BuildSettings buildSettings) {
