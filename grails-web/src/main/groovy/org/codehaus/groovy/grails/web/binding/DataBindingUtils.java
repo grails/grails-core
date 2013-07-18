@@ -23,6 +23,7 @@ import groovy.lang.MetaClass;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.grails.databinding.CollectionDataBindingSource;
 import org.grails.databinding.DataBinder;
 import org.grails.databinding.DataBindingSource;
 import org.grails.databinding.events.DataBindingListener;
@@ -153,6 +155,30 @@ public class DataBindingUtils {
         return bindObjectToDomainInstance(domain,object, source, getBindingIncludeList(object), Collections.EMPTY_LIST, null);
     }
 
+    /**
+     * For each DataBindingSource provided by collectionBindingSource a new instance of targetType is created,
+     * data binding is imposed on that instance with the DataBindingSource and the instance is added to the end of
+     * collectionToPopulate
+     * 
+     * @param targetType The type of objects to create, must be a concrete class
+     * @param collectionToPopulate A collection to populate with new instances of targetType
+     * @param collectionBindingSource A CollectionDataBindingSource
+     * @since 2.3
+     */
+    public static <T> void bindToCollection(final Class<T> targetType, final Collection<T> collectionToPopulate, final CollectionDataBindingSource collectionBindingSource) throws InstantiationException, IllegalAccessException {
+        final GrailsApplication application = GrailsWebRequest.lookupApplication();
+        GrailsDomainClass domain = null;
+        if (application != null) {
+            domain = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,targetType.getName());
+        }
+        final List<DataBindingSource> dataBindingSources = collectionBindingSource.getDataBindingSources();
+        for(final DataBindingSource dataBindingSource : dataBindingSources) {
+            final T newObject = targetType.newInstance();
+            bindObjectToDomainInstance(domain, newObject, dataBindingSource, getBindingIncludeList(newObject), Collections.EMPTY_LIST, null);
+            collectionToPopulate.add(newObject);
+        }
+    }
+    
     /**
      * Binds the given source object to the given target object performing type conversion if necessary
      *

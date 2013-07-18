@@ -331,12 +331,7 @@ public class ControllersApi extends CommonWebApi {
     }
     
     public <T> void bindData(Object instance, Class<T> targetType, List<T> collectionToPopulate, CollectionDataBindingSource collectionBindingSource) throws Exception {
-        final List<DataBindingSource> dataBindingSources = collectionBindingSource.getDataBindingSources();
-        for(DataBindingSource dataBindingSource : dataBindingSources) {
-            T newObject = targetType.newInstance();
-            bindData(instance, newObject, dataBindingSource, Collections.EMPTY_MAP, null);
-            collectionToPopulate.add(newObject);
-        }
+        DataBindingUtils.bindToCollection(targetType, collectionToPopulate, collectionBindingSource);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
