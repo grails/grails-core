@@ -330,11 +330,11 @@ public class ControllersApi extends CommonWebApi {
         return target;
     }
     
-    public <T> void bindData(Object instance, Class<T> targetType, List<T> collectionToPopulate, ServletRequest request) throws Exception {
+    public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, ServletRequest request) throws Exception {
         DataBindingUtils.bindToCollection(targetType, collectionToPopulate, request);
     }
 
-    public <T> void bindData(Object instance, Class<T> targetType, List<T> collectionToPopulate, CollectionDataBindingSource collectionBindingSource) throws Exception {
+    public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, CollectionDataBindingSource collectionBindingSource) throws Exception {
         DataBindingUtils.bindToCollection(targetType, collectionToPopulate, collectionBindingSource);
     }
 
