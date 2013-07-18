@@ -26,13 +26,13 @@ import org.grails.databinding.SimpleMapDataBindingSource
 @CompileStatic
 class GPathResultCollectionDataBindingSource implements CollectionDataBindingSource {
 
-    protected List<DataBindingSource> dataBindingSources
+    protected List<? extends DataBindingSource> dataBindingSources
     
     GPathResultCollectionDataBindingSource(GPathResult gpath) {
         dataBindingSources = gpath?.children()?.collect { GPathResult child ->
             def map = new GPathResultMap(child)
             DataBindingSource bindingSource = new SimpleMapDataBindingSource(map)
-            (DataBindingSource)bindingSource
+            bindingSource
         }
     }
     
