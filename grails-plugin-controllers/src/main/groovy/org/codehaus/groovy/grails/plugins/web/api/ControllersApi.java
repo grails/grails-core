@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -329,6 +330,10 @@ public class ControllersApi extends CommonWebApi {
         return target;
     }
     
+    public <T> void bindData(Object instance, Class<T> targetType, List<T> collectionToPopulate, ServletRequest request) throws Exception {
+        DataBindingUtils.bindToCollection(targetType, collectionToPopulate, request);
+    }
+
     public <T> void bindData(Object instance, Class<T> targetType, List<T> collectionToPopulate, CollectionDataBindingSource collectionBindingSource) throws Exception {
         DataBindingUtils.bindToCollection(targetType, collectionToPopulate, collectionBindingSource);
     }

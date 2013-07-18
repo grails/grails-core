@@ -25,7 +25,7 @@ class CollectionBindDataMethodSpec extends Specification {
     </person>
 </people>
 '''
-        def model = controller.createPeople()
+        def model = controller.createPeopleWithBindingSource()
         def people = model.people
         
         then:
@@ -49,7 +49,7 @@ class CollectionBindDataMethodSpec extends Specification {
    {"firstName": "Scott", "lastName" : "Gorham"},
    {"firstName": "Brian", "lastName" : "Downey"}]
 '''
-        def model = controller.createPeople()
+        def model = controller.createPeopleWithBindingSource()
         def people = model.people
         
         then:
@@ -65,6 +65,70 @@ class CollectionBindDataMethodSpec extends Specification {
         people[2].firstName == 'Brian'
         people[2].lastName == 'Downey'
     }
+    
+
+    void 'Test bindData with the request using XML'() {
+        when:
+        request.xml = '''
+<people>
+    <person>
+        <firstName>Alex</firstName>
+        <lastName>Lifeson</lastName>
+    </person>
+    <person>
+        <firstName>Neil</firstName>
+        <lastName>Peart</lastName>
+    </person>
+    <person>
+        <firstName>Geddy</firstName>
+        <lastName>Lee</lastName>
+    </person>
+</people>
+'''
+        def model = controller.createPeopleWithRequest()
+        def people = model.people
+        
+        then:
+        people instanceof List
+        people.size() == 3
+        people[0] instanceof Person
+        people[0].firstName == 'Alex'
+        people[0].lastName == 'Lifeson'
+        people[1] instanceof Person
+        people[1].firstName == 'Neil'
+        people[1].lastName == 'Peart'
+        people[2] instanceof Person
+        people[2].firstName == 'Geddy'
+        people[2].lastName == 'Lee'
+    }
+    
+    void 'Test bindData with the request using JSON'() {
+        when:
+        request.json = '''
+  [{"firstName": "Danny", "lastName" : "Carey"},
+   {"firstName": "Adam", "lastName" : "Jones"},
+   {"firstName": "Justin", "lastName" : "Chancellor"},
+   {"firstName": "Maynard", "lastName" : "Keenan"}]
+'''
+        def model = controller.createPeopleWithRequest()
+        def people = model.people
+        
+        then:
+        people instanceof List
+        people.size() == 4
+        people[0] instanceof Person
+        people[0].firstName == 'Danny'
+        people[0].lastName == 'Carey'
+        people[1] instanceof Person
+        people[1].firstName == 'Adam'
+        people[1].lastName == 'Jones'
+        people[2] instanceof Person
+        people[2].firstName == 'Justin'
+        people[2].lastName == 'Chancellor'
+        people[3] instanceof Person
+        people[3].firstName == 'Maynard'
+        people[3].lastName == 'Keenan'
+    }
 }
 
 @Artefact('Controller')
@@ -72,9 +136,15 @@ class DemoController {
     def dataBindingSourceRegistry
     def mimeTypeResolver
 
-    def createPeople() {
-        // this is a peculiar thing that applications generally wouldn't do but
-        // is a way to to test that the resolver is creating a compatible CollectionDataBindingSource
+    def createPeopleWithRequest() {
+        def listOfPeople = []
+        
+        bindData Person, listOfPeople, request
+        
+        [people: listOfPeople]
+    }
+    
+    def createPeopleWithBindingSource() {
         def mimeType = mimeTypeResolver.resolveRequestMimeType()
         def bindingSource = dataBindingSourceRegistry.createCollectionDataBindingSource mimeType, Person, request
         

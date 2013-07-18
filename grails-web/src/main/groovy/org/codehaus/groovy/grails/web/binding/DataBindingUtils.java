@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -179,6 +180,12 @@ public class DataBindingUtils {
         }
     }
     
+    public static <T> void bindToCollection(final Class<T> targetType, final Collection<T> collectionToPopulate, final ServletRequest request) throws InstantiationException, IllegalAccessException {
+        final GrailsApplication grailsApplication = GrailsWebRequest.lookupApplication();
+        final CollectionDataBindingSource collectionDataBindingSource = createCollectionDataBindingSource(grailsApplication, targetType, request);
+        bindToCollection(targetType, collectionToPopulate, collectionDataBindingSource);
+    }
+    
     /**
      * Binds the given source object to the given target object performing type conversion if necessary
      *
@@ -306,25 +313,53 @@ public class DataBindingUtils {
         return bindingResult;
     }
 
-    public static DataBindingSource createDataBindingSource(GrailsApplication grailsApplication, Class bindingTargetType, Object bindingSource) {
+    public static DataBindingSourceRegistry getDataBindingSourceRegistry(GrailsApplication grailsApplication) {
         DataBindingSourceRegistry registry = null;
-        MimeTypeResolver mimeTypeResolver = null;
         if(grailsApplication != null) {
             ApplicationContext context = grailsApplication.getMainContext();
             if(context != null) {
                 if(context.containsBean(DataBindingSourceRegistry.BEAN_NAME)) {
                     registry = context.getBean(DataBindingSourceRegistry.BEAN_NAME, DataBindingSourceRegistry.class);
                 }
-                if(context.containsBean(MimeTypeResolver.BEAN_NAME)) {
-                    mimeTypeResolver = context.getBean(MimeTypeResolver.BEAN_NAME, MimeTypeResolver.class);
-                }
             }
         }
         if(registry == null) {
             registry = new DefaultDataBindingSourceRegistry();
         }
-        final MimeType mimeType = resolveMimeType(bindingSource, mimeTypeResolver);
+        
+        return registry;
+    }
+    
+    public static DataBindingSource createDataBindingSource(GrailsApplication grailsApplication, Class bindingTargetType, Object bindingSource) {
+        final DataBindingSourceRegistry registry = getDataBindingSourceRegistry(grailsApplication);
+        final MimeType mimeType = getMimeType(grailsApplication, bindingSource);
         return registry.createDataBindingSource(mimeType, bindingTargetType, bindingSource);
+    }
+
+    public static CollectionDataBindingSource createCollectionDataBindingSource(GrailsApplication grailsApplication, Class bindingTargetType, Object bindingSource) {
+        final DataBindingSourceRegistry registry = getDataBindingSourceRegistry(grailsApplication);
+        final MimeType mimeType = getMimeType(grailsApplication, bindingSource);
+        return registry.createCollectionDataBindingSource(mimeType, bindingTargetType, bindingSource);
+    }
+
+    public static MimeType getMimeType(GrailsApplication grailsApplication,
+            Object bindingSource) {
+        final MimeTypeResolver mimeTypeResolver = getMimeTypeResolver(grailsApplication);
+        return resolveMimeType(bindingSource, mimeTypeResolver);
+    }
+
+    public static MimeTypeResolver getMimeTypeResolver(
+            GrailsApplication grailsApplication) {
+        MimeTypeResolver mimeTypeResolver = null;
+        if(grailsApplication != null) {
+            ApplicationContext context = grailsApplication.getMainContext();
+            if(context != null) {
+                if(context.containsBean(MimeTypeResolver.BEAN_NAME)) {
+                    mimeTypeResolver = context.getBean(MimeTypeResolver.BEAN_NAME, MimeTypeResolver.class);
+                }
+            }
+        }
+        return mimeTypeResolver;
     }
 
     public static MimeType resolveMimeType(Object bindingSource, MimeTypeResolver mimeTypeResolver) {
