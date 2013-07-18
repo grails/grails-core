@@ -55,10 +55,13 @@ import org.codehaus.groovy.ast.expr.TernaryExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.CatchStatement;
+import org.codehaus.groovy.ast.stmt.EmptyStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -69,6 +72,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector
 import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
 import org.springframework.validation.MapBindingResult;
 
 /**
@@ -513,12 +517,26 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
             final ClassNode commandObjectNode, final String paramName, SourceUnit source) {
+        
         final DeclarationExpression declareCoExpression = new DeclarationExpression(
                 new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
         wrapper.addStatement(new ExpressionStatement(declareCoExpression));
+        final BlockStatement tryBlock = new BlockStatement();
         final Expression initializeCommandObjectMethodCall = new MethodCallExpression(THIS_EXPRESSION, "initializeCommandObject", new ClassExpression(commandObjectNode));
         final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
-        wrapper.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
+        tryBlock.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
+        
+        final BlockStatement catchBlock = new BlockStatement();
+        final VariableExpression responseVariableExpression = new VariableExpression("response");
+        final MethodCallExpression setStatusMethodCallExpression = new MethodCallExpression(responseVariableExpression, "setStatus", new ConstantExpression(400));
+        catchBlock.addStatement(new ExpressionStatement(setStatusMethodCallExpression));
+        final ReturnStatement returnStatement = new ReturnStatement(new ExpressionStatement(new ConstantExpression(null)));
+        catchBlock.addStatement(returnStatement);
+        
+        final TryCatchStatement tryCatchStatement = new TryCatchStatement(tryBlock, new EmptyStatement());
+        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(DataBindingSourceCreationException.class), "$dataBindingSourceInitializationException"), catchBlock));
+        
+        wrapper.addStatement(tryCatchStatement);
     }
 
     /**

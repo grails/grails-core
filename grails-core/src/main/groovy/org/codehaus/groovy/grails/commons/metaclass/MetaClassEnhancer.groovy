@@ -19,6 +19,7 @@ import java.lang.reflect.Method
 
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod
 import org.springframework.beans.BeanUtils
+import groovy.transform.CompileStatic
 
 /**
  * Enhances one or many MetaClasses with the given API methods provided by the super class BaseApiProvider.
@@ -41,7 +42,7 @@ class MetaClassEnhancer extends BaseApiProvider {
 
                 @Override
                 Object call(Object... args) {
-                    def instance = BeanUtils.instantiate(cls)
+                    def instance = BeanUtils.instantiate((Class)delegate)
                     method.invoke(method.getDeclaringClass(), instance, *args)
                     return instance
                 }
