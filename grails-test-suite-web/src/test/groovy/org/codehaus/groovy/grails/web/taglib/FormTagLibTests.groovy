@@ -68,18 +68,14 @@ class FormTagLibTests extends AbstractGrailsTagTests {
     void testFormTagWithTrueUseTokenAndRequestDataValueProcessor() {
         def template = '<g:form url="/foo/bar" useToken="true"></g:form>'
         assertOutputContains('<form action="/foo/bar" method="post" >', template)
-        assertOutputContains('<input type="hidden" name="org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN" value="', template)
-        assertOutputContains('<input type="hidden" name="org.codehaus.groovy.grails.SYNCHRONIZER_URI" value="', template)
-        assertOutputContains('<input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />',template)
-        assertOutputContains('_PROCESSED_',template)
+
+        assertOutputContains('<input type="hidden" name="SYNCHRONIZER_TOKEN" value="', template)
+        assertOutputContains('<input type="hidden" name="SYNCHRONIZER_URI" value="', template)
 
         template = '<g:form url="/foo/bar" useToken="${2 * 3 == 6}"></g:form>'
         assertOutputContains('<form action="/foo/bar" method="post" >', template)
-        assertOutputContains('<input type="hidden" name="org.codehaus.groovy.grails.SYNCHRONIZER_TOKEN" value="', template)
-        assertOutputContains('<input type="hidden" name="org.codehaus.groovy.grails.SYNCHRONIZER_URI" value="', template)
-        assertOutputContains('<input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />',template)
-        assertOutputContains('<input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />',template)
-        assertOutputContains('_PROCESSED_',template)
+        assertOutputContains('<input type="hidden" name="SYNCHRONIZER_TOKEN" value="', template)
+        assertOutputContains('<input type="hidden" name="SYNCHRONIZER_URI" value="', template)
     }
 
     void testFormTagWithNonTrueUseToken() {
