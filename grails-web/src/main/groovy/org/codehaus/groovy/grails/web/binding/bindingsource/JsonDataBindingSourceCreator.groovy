@@ -73,7 +73,20 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
 
     @Override
     protected CollectionDataBindingSource createCollectionBindingSource(Reader reader) {
-        throw new UnsupportedOperationException();
+        def jsonReader = new JsonReader(reader)
+        jsonReader.setLenient true
+        def parser = new JsonParser()
+        
+        // TODO Need to decide what to do if the root element is not a JsonArray
+        JsonArray jsonElement = (JsonArray)parser.parse(jsonReader)
+        def dataBindingSources = jsonElement.collect { JsonElement element ->
+            new SimpleMapDataBindingSource(createJsonObjectMap(element))
+        }
+        return new CollectionDataBindingSource() {
+            List<DataBindingSource> getDataBindingSources() {
+                dataBindingSources
+            }
+        }
     }
     
     @Override

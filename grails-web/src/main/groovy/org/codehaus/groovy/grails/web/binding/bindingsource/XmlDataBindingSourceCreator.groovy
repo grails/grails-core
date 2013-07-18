@@ -60,6 +60,16 @@ class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
     }
     
     @Override
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
+        if(bindingSource instanceof GPathResult) {
+            new GPathResultCollectionDataBindingSource(bindingSource)
+        }
+        else {
+            return super.createCollectionDataBindingSource(mimeType, bindingTargetType, bindingSource)
+        }
+    }
+    
+    @Override
     protected CollectionDataBindingSource createCollectionBindingSource(Reader reader) {
         def gpath = new XmlSlurper().parse(reader)
         return new GPathResultCollectionDataBindingSource(gpath)

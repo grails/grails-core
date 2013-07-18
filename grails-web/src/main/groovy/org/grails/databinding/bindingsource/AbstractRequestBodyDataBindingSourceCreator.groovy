@@ -62,6 +62,35 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
         }
     }
 
+    @Override
+    public CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceCreationException {
+        try {
+            if(bindingSource instanceof GrailsParameterMap) {
+                def req = bindingSource.getRequest()
+                def is = req.getInputStream()
+                return createCollectionBindingSource(is)
+            }
+            else if(bindingSource instanceof HttpServletRequest) {
+                def req = (HttpServletRequest)bindingSource
+                def is = req.getInputStream()
+                return createCollectionBindingSource(is)
+            }
+            else if(bindingSource instanceof InputStream) {
+                def is = (InputStream)bindingSource
+                return createCollectionBindingSource(is)
+            }
+            else if(bindingSource instanceof Reader) {
+                def is = (Reader)bindingSource
+                return createCollectionBindingSource(is)
+            }
+            else  {
+                return super.createCollectionDataBindingSource(mimeType, bindingTargetType, bindingSource)
+            }
+        } catch (Exception e) {
+            throw new DataBindingSourceCreationException(e);
+        }
+    }
+
     protected DataBindingSource createBindingSource(InputStream inputStream){
         return createBindingSource(new InputStreamReader(inputStream))
     }
