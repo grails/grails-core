@@ -1640,7 +1640,9 @@ class BuildSettings extends AbstractBuildSettings {
             else if (!isFile && !isHidden) {
                 final fileName = f.name
                 if (fileName != 'hibernate' && fileName != 'spring') {
-                    copyDirectoryContentsToTarget(f, new File(targetPath, fileName).path)
+                    final newDir = new File(targetPath, fileName)
+                    newDir.mkdirs()
+                    copyDirectoryContentsToTarget(f, newDir.path)
                 }
             }
         }
