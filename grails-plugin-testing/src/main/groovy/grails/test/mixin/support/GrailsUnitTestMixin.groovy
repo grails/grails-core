@@ -19,6 +19,7 @@ import grails.async.Promises
 import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
+import grails.util.Holders
 import grails.util.Metadata
 import grails.validation.DeferredBindingActions
 import grails.web.CamelCaseUrlConverter
@@ -51,6 +52,8 @@ import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostP
 import org.springframework.context.MessageSource
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.WebApplicationContext
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -111,6 +114,9 @@ class GrailsUnitTestMixin {
             mainContext.refresh()
             grailsApplication.mainContext = mainContext
             grailsApplication.initialise()
+            def servletContext = new MockServletContext()
+            servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mainContext
+            Holders.setServletContext servletContext
 
             grailsApplication.applicationContext = applicationContext
             config = grailsApplication.config
