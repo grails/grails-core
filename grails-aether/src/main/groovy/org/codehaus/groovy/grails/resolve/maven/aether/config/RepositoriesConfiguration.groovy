@@ -96,7 +96,13 @@ class RepositoriesConfiguration {
     RemoteRepository mavenRepo(String url, Closure configurer = null) {
         final existing = repositories.find { ArtifactRepository ar -> ar.id == url }
         if (!existing) {
-            final repository = new RemoteRepository(url, "default", url)
+            final i = url.indexOf('//')
+            String name = url
+            if(i > -1)
+                name = url[i+2..-1]
+            name.replaceAll(/[\.\/]/,'-')
+
+            final repository = new RemoteRepository(name, "default", url)
             configureRepository(repository, configurer)
             repositories << repository
             return repository
