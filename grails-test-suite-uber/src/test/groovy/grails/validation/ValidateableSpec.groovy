@@ -25,6 +25,10 @@ class ValidateableSpec extends Specification {
         validateable.hasErrors()
         validateable.errors.errorCount == 1
         validateable.errors instanceof grails.validation.ValidationErrors
+        
+        // TODO temporary to help debug build server behavior:
+        println "errors['name'] is: [${validateable.errors['name']}]"
+        
         validateable.errors['name'].code == 'matches.invalid'
         
         when: 'the clearErrors() is called'
