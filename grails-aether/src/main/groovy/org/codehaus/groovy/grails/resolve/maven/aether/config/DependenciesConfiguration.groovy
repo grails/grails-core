@@ -92,6 +92,15 @@ class DependenciesConfiguration {
         dependencyManager.addBuildDependency dependency
     }
 
+    /**
+     * Configure the JAR to use for the reloading agent
+     *
+     * @param pattern The version pattern
+     */
+//    void agent(String pattern) {
+//        dependencyManager.setAgent
+//    }
+
     void build(String pattern, Closure customizer = null) {
         addBuildDependency new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE), customizer
     }
