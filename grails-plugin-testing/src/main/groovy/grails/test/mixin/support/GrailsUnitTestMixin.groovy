@@ -271,5 +271,6 @@ class GrailsUnitTestMixin {
 
         applicationContext = null
         grailsApplication = null
+        Holders.setServletContext null
     }
 }
