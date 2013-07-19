@@ -16,11 +16,12 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.web.json.JSONObject
 
 import java.util.regex.Pattern
 
+import org.codehaus.groovy.grails.web.json.JSONObject
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.databinding.CollectionDataBindingSource
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
@@ -70,6 +71,24 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         }
     }
 
+    @Override
+    protected CollectionDataBindingSource createCollectionBindingSource(Reader reader) {
+        def jsonReader = new JsonReader(reader)
+        jsonReader.setLenient true
+        def parser = new JsonParser()
+        
+        // TODO Need to decide what to do if the root element is not a JsonArray
+        JsonArray jsonElement = (JsonArray)parser.parse(jsonReader)
+        def dataBindingSources = jsonElement.collect { JsonElement element ->
+            new SimpleMapDataBindingSource(createJsonObjectMap(element))
+        }
+        return new CollectionDataBindingSource() {
+            List<DataBindingSource> getDataBindingSources() {
+                dataBindingSources
+            }
+        }
+    }
+    
     @Override
     protected DataBindingSource createBindingSource(Reader reader) {
         def jsonReader = new JsonReader(reader)

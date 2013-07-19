@@ -21,11 +21,14 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -35,7 +38,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
-import org.codehaus.groovy.grails.web.metaclass.BindDynamicMethod;
 import org.codehaus.groovy.grails.web.metaclass.ChainMethod;
 import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
 import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
@@ -48,6 +50,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.CannotRedirectException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.grails.databinding.CollectionDataBindingSource;
 import org.grails.databinding.DataBindingSource;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -66,6 +69,9 @@ import org.springframework.web.servlet.ModelAndView;
 @SuppressWarnings("rawtypes")
 public class ControllersApi extends CommonWebApi {
 
+    private static final String INCLUDE_MAP_KEY = "include";
+    private static final String EXCLUDE_MAP_KEY = "exclude";
+
     private static final long serialVersionUID = 1;
 
     protected static final String RENDER_METHOD_NAME = "render";
@@ -73,7 +79,6 @@ public class ControllersApi extends CommonWebApi {
     protected static final String SLASH = "/";
     protected transient RedirectDynamicMethod redirect;
     protected transient RenderDynamicMethod render;
-    protected transient BindDynamicMethod bind;
     protected transient WithFormMethod withFormMethod;
     protected transient ForwardMethod forwardMethod;
 
@@ -85,7 +90,6 @@ public class ControllersApi extends CommonWebApi {
         super(pluginManager);
         redirect = new RedirectDynamicMethod();
         render = new RenderDynamicMethod();
-        bind = new BindDynamicMethod();
         withFormMethod = new WithFormMethod();
         forwardMethod = new ForwardMethod();
     }
@@ -299,33 +303,49 @@ public class ControllersApi extends CommonWebApi {
         return render.invoke(instance, RENDER_METHOD_NAME, args);
     }
 
-    // the bindData method
-    public Object bindData(Object instance, Object target, Object args) {
-        return invokeBindData(instance, target, args);
+    public Object bindData(Object instance, Object target, Object bindingSource, final List excludes) {
+        return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), null);
+    }
+    
+    public Object bindData(Object instance, Object target, Object bindingSource, final List excludes, String filter) {
+        return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), filter);
+    }
+    
+    public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude) {
+        return bindData(instance, target, bindingSource, includeExclude, null);
     }
 
-    public Object bindData(Object instance, Object target, Object args, final List disallowed) {
-        return invokeBindData(instance, target, args, CollectionUtils.newMap("exclude", disallowed));
+    public Object bindData(Object instance, Object target, Object bindingSource, String filter) {
+        return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, filter);
     }
 
-    public Object bindData(Object instance, Object target, Object args, final List disallowed, String filter) {
-        return invokeBindData(instance, target, args, CollectionUtils.newMap("exclude", disallowed), filter);
+    public Object bindData(Object instance, Object target, Object bindingSource) {
+        return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, null);
+    }
+    
+    public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude, String filter) {
+        List include = convertToListIfString(includeExclude.get(INCLUDE_MAP_KEY));
+        List exclude = convertToListIfString(includeExclude.get(EXCLUDE_MAP_KEY));
+        DataBindingUtils.bindObjectToInstance(target, bindingSource, include, exclude, filter);
+        return target;
+    }
+    
+    public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, ServletRequest request) throws Exception {
+        DataBindingUtils.bindToCollection(targetType, collectionToPopulate, request);
     }
 
-    public Object bindData(Object instance, Object target, Object args, Map includeExclude) {
-        return invokeBindData(instance, target, args, includeExclude);
+    public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, CollectionDataBindingSource collectionBindingSource) throws Exception {
+        DataBindingUtils.bindToCollection(targetType, collectionToPopulate, collectionBindingSource);
     }
 
-    public Object bindData(Object instance, Object target, Object args, Map includeExclude, String filter) {
-        return invokeBindData(instance, target, args, includeExclude, filter);
-    }
-
-    public Object bindData(Object instance, Object target, Object args, String filter) {
-        return invokeBindData(instance, target, args, filter);
-    }
-
-    protected Object invokeBindData(Object instance, Object... args) {
-        return bind.invoke(instance, BIND_DATA_METHOD, args);
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private List convertToListIfString(Object o) {
+        if (o instanceof String) {
+            List list = new ArrayList();
+            list.add(o);
+            o = list;
+        }
+        return (List) o;
     }
 
     /**
@@ -415,7 +435,7 @@ public class ControllersApi extends CommonWebApi {
             }
             
             if(shouldDoDataBinding) {
-                bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource);
+                bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null);
             }
             
             final ApplicationContext applicationContext = getApplicationContext(controllerInstance);

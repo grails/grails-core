@@ -17,10 +17,13 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
+
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.databinding.CollectionDataBindingSource
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
+import org.grails.databinding.xml.GPathResultCollectionDataBindingSource
 import org.grails.databinding.xml.GPathResultMap
 
 /**
@@ -54,5 +57,21 @@ class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
         def gpath = new XmlSlurper().parse(reader)
         def gpathMap = new GPathResultMap(gpath)
         return new SimpleMapDataBindingSource(gpathMap)
+    }
+    
+    @Override
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
+        if(bindingSource instanceof GPathResult) {
+            new GPathResultCollectionDataBindingSource(bindingSource)
+        }
+        else {
+            return super.createCollectionDataBindingSource(mimeType, bindingTargetType, bindingSource)
+        }
+    }
+    
+    @Override
+    protected CollectionDataBindingSource createCollectionBindingSource(Reader reader) {
+        def gpath = new XmlSlurper().parse(reader)
+        return new GPathResultCollectionDataBindingSource(gpath)
     }
 }
