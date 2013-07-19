@@ -35,7 +35,8 @@ public class GrailsCoreDependencies {
     protected final String log4jVersion = "1.2.17";
     protected final String h2Version = "1.3.170";
     protected final String jaxbVersion = "2.0";
-    private String servletApiVersion = "3.0.1";
+    protected String servletApiVersion = "3.0.1";
+    protected String spockVersion = "0.7-groovy-2.0";
 
     public boolean java5compatible;
     protected Collection<Dependency> buildDependencies;
@@ -94,6 +95,7 @@ public class GrailsCoreDependencies {
 
         testDependencies = Arrays.asList(
             new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
+            new Dependency("org.spockframework", "spock-core", spockVersion, true),
             new Dependency("org.grails", "grails-test", grailsVersion, true)
         );
 

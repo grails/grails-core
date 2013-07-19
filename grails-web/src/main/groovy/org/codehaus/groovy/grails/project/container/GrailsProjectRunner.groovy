@@ -77,11 +77,18 @@ class GrailsProjectRunner extends BaseSettingsApi {
      * @return Whether the server is running
      */
     boolean isServerRunning() {
+        ServerSocket serverSocket = null
         try {
-            new Socket(serverHost ?: "localhost", serverPort)
-            return true
-        } catch (e) {
+            serverSocket = new ServerSocket(serverPort)
             return false
+        } catch (e) {
+            return true
+        }
+        finally {
+            try {
+                serverSocket?.close()
+            } catch (Throwable e) {
+            }
         }
     }
 

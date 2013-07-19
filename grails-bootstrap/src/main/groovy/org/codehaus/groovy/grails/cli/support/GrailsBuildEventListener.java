@@ -65,6 +65,10 @@ public class GrailsBuildEventListener implements BuildListener {
         this.buildSettings = buildSettings;
     }
 
+    public Binding getBinding() {
+        return binding;
+    }
+
     public void initialize() {
         loadEventHooks(buildSettings);
         loadGrailsBuildListeners();

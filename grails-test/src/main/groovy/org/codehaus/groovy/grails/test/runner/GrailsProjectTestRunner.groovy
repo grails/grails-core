@@ -309,6 +309,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         }
         catch(Throwable e) {
             testsFailed = true
+            CONSOLE.error("Fatal error running tests: ${e.message}", e)
             throw e
         }
         finally {

@@ -693,7 +693,7 @@ abstract class ForkedGrailsProcess {
         buildSettings.setCompileDependencies(ec.runtimeDependencies)
         buildSettings.setTestDependencies(ec.testDependencies)
         buildSettings.setProvidedDependencies(ec.providedDependencies)
-        buildSettings.setBuildDependencies([])
+        buildSettings.setBuildDependencies(ec.buildDependencies)
         buildSettings.setForkSettings(ec.forkConfig)
 
         BuildSettingsHolder.settings = buildSettings
@@ -789,9 +789,9 @@ class ExecutionContext implements Serializable {
         runtimeDependencies = new ArrayList<>(settings.runtimeDependencies)
         runtimeDependencies.addAll settings.pluginRuntimeDependencies
         providedDependencies = new ArrayList<>(settings.providedDependencies)
-        providedDependencies.addAll settings.providedDependencies
+        providedDependencies.addAll settings.pluginProvidedDependencies
         testDependencies = new ArrayList<>(settings.testDependencies)
-        testDependencies.addAll settings.testDependencies
+        testDependencies.addAll settings.pluginTestDependencies
         baseDir = settings.baseDir
         env = Environment.current.name
         grailsHome = settings.grailsHome
