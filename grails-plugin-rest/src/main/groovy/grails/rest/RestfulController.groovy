@@ -51,7 +51,7 @@ class RestfulController<T> {
         params.max = Math.min(max ?: 10, 100)
         def model = [:]
         model.put("${resourceName}Count".toString(), countResources())
-        respond listAllResources(params), model:model
+        respond listAllResources(), model:model
     }
 
     /**
