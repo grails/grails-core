@@ -1320,12 +1320,13 @@ class BuildSettings extends AbstractBuildSettings {
             // The logic here tries to establish if the plugin has been declared anywhere by the application. Only plugins that have
             // been declared should have their transitive dependencies resolved. Unfortunately it is fairly complicated to establish what plugins are declared since
             // there may be a mixture of plugins defined in BuildConfig, inline plugins and plugins installed via install-plugin
-            if (!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInlinePluginLocation(dir)) {
+            final isInline = isInlinePluginLocation(dir)
+            if (!isRegisteredInMetadata(pluginName) && notDefinedInBuildConfig(pluginName) && !isInline) {
                 return
             }
 
             def pdd = dependencyManager.getPluginDependencyDescriptor(pluginName)
-            if (isInlinePluginLocation(dir) || (pdd && pdd.transitive)) {
+            if (isInline || (pdd && pdd.transitive)) {
                 // bail out of the dependencies handled by external tool
                 if (isDependenciesExternallyConfigured()) return
                 // Try BuildConfig.groovy first, which should work
@@ -1345,7 +1346,7 @@ class BuildSettings extends AbstractBuildSettings {
                         Script script = gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
                         def pluginConfig = pluginSlurper.parse(script)
 
-                        if(dependencyManager.isLegacyResolve()) {
+                        if(dependencyManager.isLegacyResolve() || isInline) {
                             def pluginDependencyConfig = pluginConfig.grails.project.dependency.resolution
                             if (pluginDependencyConfig instanceof Closure) {
                                 def excludeRules = pdd ? pdd.getExcludeRules(dependencyManager.configurationNames) : [] as ExcludeRule[]
