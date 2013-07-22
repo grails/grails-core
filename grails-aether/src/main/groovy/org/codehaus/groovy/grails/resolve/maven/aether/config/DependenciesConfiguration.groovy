@@ -97,9 +97,9 @@ class DependenciesConfiguration {
      *
      * @param pattern The version pattern
      */
-//    void agent(String pattern) {
-//        dependencyManager.setAgent
-//    }
+    void agent(String pattern) {
+        dependencyManager.setJvmAgent(new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE))
+    }
 
     void build(String pattern, Closure customizer = null) {
         addBuildDependency new Dependency(new DefaultArtifact(pattern), SCOPE_COMPILE), customizer

@@ -192,16 +192,22 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected void discoverAndSetAgent(ExecutionContext executionContext) {
-        try {
-            final agentClass = Thread.currentThread().contextClassLoader.loadClass('org.springsource.loaded.ReloadEventProcessorPlugin')
-            setReloadingAgent(findJarFile(agentClass))
-        } catch (e) {
-            final grailsHome = executionContext.grailsHome
-            if (grailsHome && grailsHome.exists()) {
-                def agentHome = new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars")
-                final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar") && !f.name.contains('sources') && !f.name.contains('javadoc')}
-                if (agentJar) {
-                    setReloadingAgent(agentJar)
+        final jarFromContext = executionContext.agentJar
+        if (jarFromContext) {
+            setReloadingAgent(jarFromContext)
+        }
+        else {
+            try {
+                final agentClass = Thread.currentThread().contextClassLoader.loadClass('org.springsource.loaded.ReloadEventProcessorPlugin')
+                setReloadingAgent(findJarFile(agentClass))
+            } catch (e) {
+                final grailsHome = executionContext.grailsHome
+                if (grailsHome && grailsHome.exists()) {
+                    def agentHome = new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars")
+                    final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar") && !f.name.contains('sources') && !f.name.contains('javadoc')}
+                    if (agentJar) {
+                        setReloadingAgent(agentJar)
+                    }
                 }
             }
         }
@@ -755,6 +761,7 @@ class ExecutionContext implements Serializable {
     File resourcesDir
     File projectPluginsDir
     File baseDir
+    File agentJar
 
     String env
     File grailsHome
@@ -810,6 +817,11 @@ class ExecutionContext implements Serializable {
                 forkConf = [:] + (Map)value
             }
             forkConfig[key] = forkConf
+        }
+
+        final agentReport = settings.dependencyManager.resolveAgent()
+        if(agentReport && agentReport.jarFiles) {
+            agentJar = agentReport.jarFiles[0]
         }
     }
 

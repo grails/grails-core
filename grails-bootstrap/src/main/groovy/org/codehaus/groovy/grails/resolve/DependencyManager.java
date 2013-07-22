@@ -71,6 +71,12 @@ public interface DependencyManager {
     DependencyReport resolve(String scope);
 
     /**
+     * Resolve the JVM agent to be used for the forked JVM
+     * @return The {@link DependencyReport} instance or null if no agent configured
+     */
+    DependencyReport resolveAgent();
+
+    /**
      * Resolve dependencies for the default scope
      * @return The {@link DependencyReport} instance
      */

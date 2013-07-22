@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettings
-import groovy.transform.NotYetImplemented
+
 import groovy.xml.MarkupBuilder
 
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
@@ -30,6 +30,26 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
+
+    void testResolveAgent() {
+        def settings = new BuildSettings()
+
+        def dependencyManager = new IvyDependencyManager("test", "0.1",settings)
+        dependencyManager.parseDependencies {
+            repositories {
+                mavenRepo("http://repo.grails.org/grails/core")
+            }
+            dependencies {
+                agent "org.springsource.springloaded:springloaded-core:1.1.1"
+            }
+        }
+
+        def report = dependencyManager.resolveAgent()
+
+        assert report != null
+        assert report.jarFiles.find { File f -> f.name.contains('springloaded')}
+
+    }
     // test that when a plugin is declared as test scoped then its dependencies are test scoped as well
     void testPluginScopeMapping() {
         def settings = new BuildSettings()

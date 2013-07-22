@@ -83,13 +83,17 @@ class AetherDependencyManager implements DependencyManager {
                                                              runtime:['compile', 'optional','runtime'],
                                                              test:['compile','provided', 'runtime', 'optional','test'],
                                                              provided:['provided']]
-    private List<Dependency> dependencies = []
-    private Set <org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []
-    private List<Dependency> buildDependencies = []
-    private Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsDependenciesByScope = [:].withDefault { [] }
-    private Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsPluginDependenciesByScope = [:].withDefault { [] }
-    private List<org.codehaus.groovy.grails.resolve.Dependency> grailsDependencies = []
-    private List<RemoteRepository> repositories = []
+
+
+    protected Dependency jvmAgent
+    protected DependencyReport jvmAgentReport
+    protected List<Dependency> dependencies = []
+    protected Set <org.codehaus.groovy.grails.resolve.Dependency> grailsPluginDependencies = []
+    protected List<Dependency> buildDependencies = []
+    protected Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsDependenciesByScope = [:].withDefault { [] }
+    protected Map<String, List<org.codehaus.groovy.grails.resolve.Dependency>> grailsPluginDependenciesByScope = [:].withDefault { [] }
+    protected List<org.codehaus.groovy.grails.resolve.Dependency> grailsDependencies = []
+    protected List<RemoteRepository> repositories = []
     String cacheDir
     String basedir = new File('.')
     Settings settings
@@ -141,6 +145,10 @@ class AetherDependencyManager implements DependencyManager {
 
     MavenRepositorySystemSession getSession() {
         return session
+    }
+
+    void setJvmAgent(Dependency jvmAgent) {
+        this.jvmAgent = jvmAgent
     }
 
     void produceReport(String scope) {
@@ -253,6 +261,14 @@ class AetherDependencyManager implements DependencyManager {
         this.settings = settings
     }
 
+    @Override
+    DependencyReport resolveAgent() {
+        if(jvmAgent && !jvmAgentReport) {
+            jvmAgentReport = resolve('agent')
+        }
+        return jvmAgentReport
+    }
+
     /**
      * Resolve dependencies for the given scope
      * @param scope The scope (defaults to 'runtime')
@@ -344,7 +360,7 @@ class AetherDependencyManager implements DependencyManager {
     protected DependencyResult resolveToResult(DependencyNode node, String scope) {
         def dependencyRequest = new DependencyRequest(node, null)
 
-        if (scope && scope != 'build') {
+        if (scope && scope != 'build' && scope != 'agent') {
             final includedScopes = SCOPE_MAPPINGS[scope]
             if (includedScopes) {
                 final filter = new ScopeDependencyFilter(includedScopes, [])
@@ -394,6 +410,9 @@ class AetherDependencyManager implements DependencyManager {
         def collectRequest = new CollectRequest()
         if (scope == 'build') {
             collectRequest.setDependencies(buildDependencies)
+        }
+        else if(scope == 'agent') {
+            collectRequest.setDependencies([jvmAgent])
         }
         else {
             collectRequest.setDependencies(dependencies)
