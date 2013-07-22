@@ -19,6 +19,7 @@ class MockDomainWithInheritanceTests extends GroovyTestCase {
         def test = new PersonTests()
         test.setUp()
         test.testLoadingPirateInstance()
+        test.tearDown()
     }
 }
 
