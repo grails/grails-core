@@ -22,6 +22,7 @@ import grails.test.MockUtils
 import grails.util.Holders
 import grails.util.Metadata
 import grails.validation.DeferredBindingActions
+import grails.validation.ValidationErrors
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
@@ -38,6 +39,7 @@ import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
@@ -46,6 +48,7 @@ import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.junit.After
 import org.junit.AfterClass
+import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
@@ -120,6 +123,14 @@ class GrailsUnitTestMixin {
 
             grailsApplication.applicationContext = applicationContext
             config = grailsApplication.config
+        }
+    }
+
+    @Before
+    void setupValidationErrorsForTesting() {
+        ValidationErrors.metaClass.getAt = {String field ->
+            def code = getFieldError(field)?.code
+            return GrailsMockErrors.ERROR_CODE_TABLE[code] ?: code
         }
     }
 
