@@ -28,6 +28,7 @@ class MockUtilsAndHasManyTests extends GroovyTestCase {
         def test = new MagazineTests()
         test.setUp()
         test.testSomething()
+        test.tearDown()
     }
 }
 
