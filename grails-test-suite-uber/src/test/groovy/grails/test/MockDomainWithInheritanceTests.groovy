@@ -32,6 +32,7 @@ class PersonTests extends GrailsUnitTestCase {
 
     @Override
     protected void tearDown() {
+        super.tearDown()
         ApplicationHolder.application = null
     }
 

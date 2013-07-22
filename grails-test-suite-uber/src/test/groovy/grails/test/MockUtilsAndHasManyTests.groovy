@@ -20,6 +20,7 @@ class MockUtilsAndHasManyTests extends GroovyTestCase {
 
     @Override
     protected void tearDown() {
+        super.tearDown()
         ApplicationHolder.application = null
     }
 
@@ -34,6 +35,7 @@ class MagazineTests extends GrailsUnitTestCase {
 
     @Override
     protected void tearDown() {
+        super.tearDown()
         ApplicationHolder.application = null
     }
 
