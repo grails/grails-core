@@ -409,25 +409,24 @@ public class ControllersApi extends CommonWebApi {
         final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(controllerInstance), type, request);
         final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSource(type, dataBindingSource);
         final Object commandObjectInstance;
-        boolean queryWasUsedToRetrieveDomainObject = false;
-        if(commandObjectBindingSource.hasIdentifier() && DomainClassArtefactHandler.isDomainClass(type)) {
-            queryWasUsedToRetrieveDomainObject = true; 
-            commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", commandObjectBindingSource.getIdentifierValue());
+        Object entityIdentifierValue = null;
+        if(DomainClassArtefactHandler.isDomainClass(type)) {
+            entityIdentifierValue = commandObjectBindingSource.getIdentifierValue();
+            if(entityIdentifierValue == null) {
+                final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+                entityIdentifierValue = webRequest != null ? webRequest.getParams().getIdentifier() : null;
+            }
+        }
+        if(entityIdentifierValue != null) {
+            commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
         } else {
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-            Object id = webRequest != null ? webRequest.getParams().getIdentifier() : null;
-            if(id != null) {
-                commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", id);
-            }
-            else {
-                commandObjectInstance = type.newInstance();
-            }
+            commandObjectInstance = type.newInstance();
         }
         
         if(commandObjectInstance != null) {
             final boolean shouldDoDataBinding;
             
-            if(queryWasUsedToRetrieveDomainObject) {
+            if(entityIdentifierValue != null) {
                 final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
                 switch(requestMethod) {
                     case PATCH:
