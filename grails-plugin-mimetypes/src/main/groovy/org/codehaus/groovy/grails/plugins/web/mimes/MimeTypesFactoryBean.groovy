@@ -24,6 +24,8 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.ApplicationContextAware
+import org.springframework.context.ApplicationContext
 
 /**
  * Creates the MimeType[] object that defines the configured mime types.
@@ -32,25 +34,15 @@ import org.springframework.beans.factory.annotation.Autowired
  * @since 2.0
  */
 @CompileStatic
-class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplicationAware, InitializingBean {
+class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContextAware{
 
-    GrailsApplication grailsApplication
+    ApplicationContext applicationContext
 
     private MimeType[] mimeTypes
-    private MimeTypeProvider[] mimeTypeProviders = [] as MimeTypeProvider[]
 
-    MimeType[] getObject() { mimeTypes }
-
-    Class<?> getObjectType() { MimeType[] }
-
-    boolean isSingleton() { true }
-
-    @Autowired(required = false)
-    void setMimeTypeProviders(MimeTypeProvider[] mimeTypeProviders) {
-        this.mimeTypeProviders = mimeTypeProviders
-    }
-
-    void afterPropertiesSet() {
+    MimeType[] getObject() {
+        Collection<MimeTypeProvider> mimeTypeProviders = applicationContext.getBeansOfType(MimeTypeProvider).values()
+        final grailsApplication = applicationContext.getBean(GrailsApplication)
         def config = grailsApplication?.config
         def mimeConfig = getMimeConfig(config)
         if (!mimeConfig) {
@@ -70,15 +62,20 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, GrailsApplication
             }
         }
         for(MimeTypeProvider mtp in mimeTypeProviders) {
-           for(MimeType mt in mtp.mimeTypes) {
-               if (!mimes.contains(mt)) {
-                   mimes << mt
-               }
-           }
+            for(MimeType mt in mtp.mimeTypes) {
+                if (!mimes.contains(mt)) {
+                    mimes << mt
+                }
+            }
         }
         mimeTypes = mimes
+        mimeTypes
+
     }
 
+    Class<?> getObjectType() { MimeType[] }
+
+    boolean isSingleton() { true }
 
 
     @CompileStatic(TypeCheckingMode.SKIP)
