@@ -179,7 +179,6 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
         application.config = config
         def mimeTypesFactory = new MimeTypesFactoryBean()
         mimeTypesFactory.grailsApplication = application
-        mimeTypesFactory.afterPropertiesSet()
 
         return new RequestMimeTypesApi(application, mimeTypesFactory.getObject())
     }
@@ -189,7 +188,6 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
         application.config = config
         def mimeTypesFactory = new MimeTypesFactoryBean()
         mimeTypesFactory.grailsApplication = application
-        mimeTypesFactory.afterPropertiesSet()
 
         return new ResponseMimeTypesApi(application, mimeTypesFactory.getObject())
     }

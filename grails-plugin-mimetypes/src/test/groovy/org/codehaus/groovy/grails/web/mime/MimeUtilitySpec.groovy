@@ -27,7 +27,6 @@ class MimeUtilitySpec extends Specification {
                     ]
 
         final factory = new MimeTypesFactoryBean(grailsApplication: ga)
-        factory.afterPropertiesSet()
 
         def mimeTypes = factory.getObject()
         return new DefaultMimeUtility(mimeTypes)
