@@ -49,7 +49,6 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
     protected DefaultAcceptHeaderParser getAcceptHeaderParser() {
         final application = new DefaultGrailsApplication(config: config)
         final factoryBean = new MimeTypesFactoryBean(grailsApplication: application)
-        factoryBean.afterPropertiesSet()
         final parser = new DefaultAcceptHeaderParser(factoryBean.getObject())
         parser
     }
