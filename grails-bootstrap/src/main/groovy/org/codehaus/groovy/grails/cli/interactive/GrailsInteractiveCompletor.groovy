@@ -26,13 +26,16 @@ import jline.ArgumentCompletor
 import jline.SimpleCompletor
 
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
+import groovy.transform.CompileStatic
+import jline.Completor
 
- /**
+/**
  * A JLine completor for Grails' interactive mode.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class GrailsInteractiveCompletor extends SimpleCompletor {
     BuildSettings settings
     Map completorCache = new ConcurrentHashMap()
@@ -40,7 +43,7 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
     private ArgumentCompletor bangCompletor = new ArgumentCompletor(
         new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
 
-    GrailsInteractiveCompletor(BuildSettings settings, List<File> scriptResources) {
+    GrailsInteractiveCompletor(BuildSettings settings, List<File> scriptResources) throws IOException{
         super(getScriptNames(scriptResources))
         this.settings = settings
     }
@@ -56,14 +59,14 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
             trimmedBuffer = trimmedBuffer.split(' ')[0]
         }
 
-        def completor = trimmedBuffer[0] == '!' ? bangCompletor : completorCache.get(trimmedBuffer)
+        Completor completor = (Completor)trimmedBuffer[0] == '!' ? bangCompletor : completorCache.get(trimmedBuffer)
         if (completor == null) {
             def className = GrailsNameUtils.getNameFromScript(trimmedBuffer)
             className = "grails.build.interactive.completors.$className"
 
             try {
                 def completorClass = getClass().classLoader.loadClass(className)
-                completor = completorClass.newInstance()
+                completor = (Completor)completorClass.newInstance()
                 if (completor instanceof BuildSettingsAware) {
                     completor.buildSettings = settings
                 }

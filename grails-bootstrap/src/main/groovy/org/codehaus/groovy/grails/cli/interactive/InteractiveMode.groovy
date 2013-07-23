@@ -59,6 +59,8 @@ class InteractiveMode {
 
     protected MetaClassRegistryCleaner registryCleaner = MetaClassRegistryCleaner.createAndRegister()
 
+    protected GrailsInteractiveCompletor interactiveCompletor
+
     InteractiveMode(BuildSettings settings, GrailsScriptRunner scriptRunner) {
         this.scriptRunner = scriptRunner
         this.settings = settings
@@ -88,7 +90,8 @@ class InteractiveMode {
         current = this
         System.setProperty("grails.disable.exit", "true") // you can't exit completely in interactive mode from a script
 
-        console.reader.addCompletor(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
+        interactiveCompletor = new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts)
+        console.reader.addCompletor(interactiveCompletor)
         interactiveModeActive = true
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
 
@@ -347,5 +350,10 @@ class InteractiveMode {
      */
     protected unescape(String str) {
         return str.replace('\\', '')
+    }
+
+    void refresh() {
+        final scripts = scriptRunner.getAvailableScripts()
+        interactiveCompletor.setCandidateStrings(GrailsInteractiveCompletor.getScriptNames(scripts))
     }
 }
