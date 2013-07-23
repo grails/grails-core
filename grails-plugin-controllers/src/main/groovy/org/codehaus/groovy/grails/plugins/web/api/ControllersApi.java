@@ -414,7 +414,14 @@ public class ControllersApi extends CommonWebApi {
             queryWasUsedToRetrieveDomainObject = true; 
             commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", commandObjectBindingSource.getIdentifierValue());
         } else {
-            commandObjectInstance = type.newInstance();
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+            Object id = webRequest != null ? webRequest.getParams().getIdentifier() : null;
+            if(id != null) {
+                commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", id);
+            }
+            else {
+                commandObjectInstance = type.newInstance();
+            }
         }
         
         if(commandObjectInstance != null) {
