@@ -37,6 +37,11 @@ target (cleanAll: "Cleans a Grails project") {
     projectCleaner.cleanAll(false)
 }
 
+target (cleanWork: "Cleans a Grails project") {
+    projectCleaner.cleanAll(false)
+    projectCleaner.cleanWork()
+}
+
 target (clean: "Implementation of clean") {
     projectCleaner.clean(false)
 }
