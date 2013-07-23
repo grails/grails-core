@@ -795,6 +795,7 @@ class ExecutionContext implements Serializable {
         buildDependencies = isolatedBuildDependencies
         runtimeDependencies = new ArrayList<>(settings.runtimeDependencies)
         runtimeDependencies.addAll settings.pluginRuntimeDependencies
+        runtimeDependencies.addAll settings.applicationJars
         providedDependencies = new ArrayList<>(settings.providedDependencies)
         providedDependencies.addAll settings.pluginProvidedDependencies
         testDependencies = new ArrayList<>(settings.testDependencies)
