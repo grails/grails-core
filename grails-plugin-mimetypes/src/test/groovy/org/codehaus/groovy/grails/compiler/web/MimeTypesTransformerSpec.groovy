@@ -98,7 +98,6 @@ class MyMockRequest extends org.springframework.mock.web.MockHttpServletRequest 
         application.config = config
         def mimeTypesFactory = new MimeTypesFactoryBean()
         mimeTypesFactory.grailsApplication = application
-        mimeTypesFactory.afterPropertiesSet()
 
         return new ResponseMimeTypesApi(application, mimeTypesFactory.getObject())
     }

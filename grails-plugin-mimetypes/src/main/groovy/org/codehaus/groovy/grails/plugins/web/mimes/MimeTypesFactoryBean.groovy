@@ -37,12 +37,13 @@ import org.springframework.context.ApplicationContext
 class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContextAware{
 
     ApplicationContext applicationContext
+    GrailsApplication grailsApplication
 
     private MimeType[] mimeTypes
 
     MimeType[] getObject() {
-        Collection<MimeTypeProvider> mimeTypeProviders = applicationContext.getBeansOfType(MimeTypeProvider).values()
-        final grailsApplication = applicationContext.getBean(GrailsApplication)
+        Collection<MimeTypeProvider> mimeTypeProviders = applicationContext ? applicationContext.getBeansOfType(MimeTypeProvider).values() : new ArrayList<MimeTypeProvider>()
+        final grailsApplication = this.grailsApplication ?: applicationContext.getBean(GrailsApplication)
         def config = grailsApplication?.config
         def mimeConfig = getMimeConfig(config)
         if (!mimeConfig) {
