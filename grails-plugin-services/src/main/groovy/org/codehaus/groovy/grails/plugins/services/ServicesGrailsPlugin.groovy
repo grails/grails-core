@@ -19,16 +19,16 @@ import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 import org.codehaus.groovy.grails.commons.GrailsServiceClass
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
 import org.codehaus.groovy.grails.commons.spring.TypeSpecifyableTransactionProxyFactoryBean
 import org.codehaus.groovy.grails.orm.support.GroovyAwareNamedTransactionAttributeSource
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.springframework.core.AliasRegistry
 import org.springframework.core.annotation.AnnotationUtils
 import org.springframework.transaction.annotation.Transactional
-
-import java.lang.reflect.Modifier
 
 /**
  * Configures services in the Spring context.
@@ -48,19 +48,15 @@ class ServicesGrailsPlugin {
         xmlns tx:"http://www.springframework.org/schema/tx"
         tx.'annotation-driven'('transaction-manager':'transactionManager')
 
-        def aliasNameToListOfBeanNames = [:].withDefault { key -> [] }
-        def registeredBeanNames = []
         for (GrailsServiceClass serviceClass in application.serviceClasses) {
             def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
 
             String beanName
             if (providingPlugin && !serviceClass.shortName.toLowerCase().startsWith(providingPlugin.name.toLowerCase())) {
                 beanName = "${providingPlugin.name}${serviceClass.shortName}"
-                aliasNameToListOfBeanNames[serviceClass.propertyName] << beanName
             } else {
                 beanName = serviceClass.propertyName
             }
-            registeredBeanNames << beanName
             def scope = serviceClass.getPropertyValue("scope")
             def lazyInit = serviceClass.hasProperty("lazyInit") ? serviceClass.getPropertyValue("lazyInit") : true
 
@@ -108,12 +104,32 @@ class ServicesGrailsPlugin {
                 }
             }
         }
-
-        aliasNameToListOfBeanNames.each { aliasName, listOfBeanNames ->
-            if (listOfBeanNames.size() == 1 && !registeredBeanNames.contains(aliasName)) {
-                registerAlias listOfBeanNames[0], aliasName
+    }
+    
+    def doWithApplicationContext = { ctx ->
+        // should always be true...
+        if(ctx instanceof AliasRegistry) {
+            // all service property names, may contain duplicates if multiple service
+            // artifacts exists withe same name
+            def allServicePropertyNames = application.serviceClasses*.propertyName
+            for (GrailsServiceClass serviceClass in application.serviceClasses) {
+                def potentialAliasName = serviceClass.propertyName
+                // if there is no bean with this alias name 
+                //    AND
+                // there is only 1 occurence of the name in allServicePropertyNames
+                //   THEN
+                // it is ok to create the alias
+                if(!ctx.containsBean(potentialAliasName) && allServicePropertyNames.count(potentialAliasName) == 1) {
+                    def providingPlugin = manager?.getPluginForClass(serviceClass.clazz)
+                    // only create the alias if the service is provided by a plugin
+                    if(providingPlugin) {
+                        def beanName = "${providingPlugin.name}${serviceClass.shortName}"
+                        ctx.registerAlias beanName, potentialAliasName
+                    }
+                }
             }
         }
+        
     }
 
     @CompileStatic
