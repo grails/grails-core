@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
+import grails.util.Environment
 
 /**
  * @author Graeme Rocher
@@ -172,6 +173,20 @@ class DependenciesConfiguration {
         }
         else {
             console.error("WARNING: Configurational method [$name] in grails-app/conf/BuildConfig.groovy doesn't exist. Ignoring..")
+        }
+    }
+
+    /**
+     * Environment support
+     *
+     * @param callable The callable
+     * @return The result of the environments block
+     */
+    def environments(Closure callable) {
+        final environmentCallable = Environment.getEnvironmentSpecificBlock(callable)
+        if(environmentCallable) {
+            environmentCallable.setDelegate(this)
+            environmentCallable.call()
         }
     }
 

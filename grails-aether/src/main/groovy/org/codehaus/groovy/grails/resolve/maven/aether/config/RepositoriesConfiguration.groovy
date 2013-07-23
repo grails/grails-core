@@ -21,6 +21,7 @@ import org.sonatype.aether.repository.ArtifactRepository
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.Proxy
 import org.sonatype.aether.repository.RemoteRepository
+import grails.util.Environment
 
 /**
  * @author Graeme Rocher
@@ -29,6 +30,20 @@ import org.sonatype.aether.repository.RemoteRepository
 @CompileStatic
 class RepositoriesConfiguration {
     List<RemoteRepository> repositories = []
+
+    /**
+     * Environment support
+     *
+     * @param callable The callable
+     * @return The result of the environments block
+     */
+    def environments(Closure callable) {
+        final environmentCallable = Environment.getEnvironmentSpecificBlock(callable)
+        if(environmentCallable) {
+            environmentCallable.setDelegate(this)
+            environmentCallable.call()
+        }
+    }
 
     void inherit(boolean b) {
         inherits(b)

@@ -1030,7 +1030,7 @@ class BuildSettings extends AbstractBuildSettings {
      * and returns the corresponding config object. If the file does
      * not exist, this returns an empty config.
      */
-    ConfigObject loadConfig() {
+    ConfigObject loadConfig(String environment = null) {
         loadConfig(new File(baseDir, "grails-app/conf/BuildConfig.groovy"))
     }
 
@@ -1040,22 +1040,32 @@ class BuildSettings extends AbstractBuildSettings {
      * returns an empty config.
      */
     @CompileStatic
-    ConfigObject loadConfig(File configFile) {
+    ConfigObject loadConfig(File configFile, String environment = null) {
         loadSettingsFile()
         if (configFile.exists()) {
             // To avoid class loader issues, we make sure that the Groovy class loader used to parse the config file has
             // the root loader as its parent. Otherwise we get something like NoClassDefFoundError for Script.
             GroovyClassLoader gcl = obtainGroovyClassLoader()
-            ConfigSlurper slurper = createConfigSlurper()
 
             URL configUrl = configFile.toURI().toURL()
             Script script = (Script)gcl.parseClass(configFile)?.newInstance()
 
             config.setConfigFile(configUrl)
-            loadConfig(slurper.parse(script))
+            return loadConfig(script)
         } else {
             postLoadConfig()
         }
+    }
+
+    /**
+     * Loads the given script and returns corresponding config object. If the file does not exist, this
+     * returns an empty config.
+     */
+    @CompileStatic
+    public ConfigObject loadConfig(Script script, String environment = null) {
+        ConfigSlurper slurper = createConfigSlurper()
+        slurper.setEnvironment(environment)
+        return loadConfig(slurper.parse(script))
     }
 
     @CompileStatic

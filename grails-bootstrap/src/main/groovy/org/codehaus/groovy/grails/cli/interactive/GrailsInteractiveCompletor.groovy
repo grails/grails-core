@@ -44,7 +44,7 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
         new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
 
     GrailsInteractiveCompletor(BuildSettings settings, List<File> scriptResources) throws IOException{
-        super(getScriptNames(scriptResources))
+        super( getScriptNames(scriptResources))
         this.settings = settings
     }
 
