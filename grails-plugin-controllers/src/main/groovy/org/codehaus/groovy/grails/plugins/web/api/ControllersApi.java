@@ -430,12 +430,13 @@ public class ControllersApi extends CommonWebApi {
             if(queryWasUsedToRetrieveDomainObject) {
                 final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
                 switch(requestMethod) {
-                case POST:
-                case PUT:
-                    shouldDoDataBinding = true;
-                    break;
-                default:
-                    shouldDoDataBinding = false;
+                    case PATCH:
+                    case POST:
+                    case PUT:
+                        shouldDoDataBinding = true;
+                        break;
+                    default:
+                        shouldDoDataBinding = false;
                 }
             } else {
                 shouldDoDataBinding = true;
