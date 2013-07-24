@@ -145,6 +145,7 @@ subprojects { project ->
         groovyOptions.useAnt = true
         groovyOptions.stacktrace = true
         options.useAnt = true
+        options.encoding = "UTF-8"
     }
 
     configure([compileJava, compileTestJava]) {
