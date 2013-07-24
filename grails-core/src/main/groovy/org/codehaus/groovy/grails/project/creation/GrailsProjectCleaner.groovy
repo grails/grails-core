@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.project.creation
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
@@ -48,7 +49,6 @@ class GrailsProjectCleaner extends BaseSettingsApi {
     /**
      *  Cleans a Grails project
      **/
-    @CompileStatic
     void cleanAll(boolean triggerEvents = true) {
         if (triggerEvents) {
             buildEventListener.triggerEvent("CleanAllStart")
