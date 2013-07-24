@@ -24,7 +24,7 @@ class ValidateableSpec extends Specification {
         !validateable.validate()
         validateable.hasErrors()
         validateable.errors.errorCount == 1
-        validateable.errors['name'].code == 'matches.invalid'
+        validateable.errors['name'] == 'matches'
         
         when: 'the clearErrors() is called'
         validateable.clearErrors()

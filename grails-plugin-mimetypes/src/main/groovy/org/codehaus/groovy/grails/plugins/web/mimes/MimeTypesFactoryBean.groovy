@@ -48,7 +48,7 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
         def mimeConfig = getMimeConfig(config)
         if (!mimeConfig) {
             mimeTypes = MimeType.createDefaults()
-            return
+            return mimeTypes
         }
 
         def mimes = []
