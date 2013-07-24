@@ -244,7 +244,7 @@ class CommandObjectsSpec extends Specification {
         then:
         model.person.hasErrors()
         model.person.name == 'Maynard'
-        model.person.errors['name'] == 'matches'
+        model.person.errors['name'].code == 'matches.invalid'
     }
 
     void "Test validation"() {
