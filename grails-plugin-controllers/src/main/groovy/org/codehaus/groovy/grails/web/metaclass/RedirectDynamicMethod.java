@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.metaclass;
 
+import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 import groovy.lang.MissingMethodException;
@@ -210,6 +211,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             actionName = actionRef.toString();
         }
         else if (actionRef instanceof Closure) {
+            GrailsUtil.deprecated("Using a closure reference in the 'action' argument of the 'redirect' method is deprecated. Please change to use a String.");
             actionName = GrailsClassUtils.findPropertyNameForValue(target, actionRef);
         }
         return actionName;
