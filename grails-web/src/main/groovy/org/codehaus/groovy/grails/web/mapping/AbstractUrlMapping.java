@@ -38,6 +38,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
     protected Object pluginName;
     protected Object viewName;
     protected Object forwardURI;
+    protected Object redirectInfo;
     protected ServletContext servletContext;
     @SuppressWarnings("rawtypes")
     protected Map parameterValues = Collections.EMPTY_MAP;
@@ -55,7 +56,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
      * @param constraints Any constraints that apply to the mapping
      * @param servletContext
      */
-    public AbstractUrlMapping(Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
+    public AbstractUrlMapping(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
         this.controllerName = controllerName;
         this.actionName = actionName;
         this.namespace = namespace;
@@ -63,6 +64,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
         this.constraints = constraints;
         this.viewName = viewName;
         this.servletContext = servletContext;
+        this.redirectInfo = redirectInfo;
     }
 
     protected AbstractUrlMapping(Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
@@ -156,5 +158,9 @@ public abstract class AbstractUrlMapping implements UrlMapping {
             }
         }
         return false;
+    }
+    
+    public Object getRedirectInfo() {
+        return redirectInfo;
     }
 }

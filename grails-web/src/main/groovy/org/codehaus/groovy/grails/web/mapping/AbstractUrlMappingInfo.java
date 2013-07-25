@@ -144,4 +144,16 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
         }
         return name != null ? name.trim() : null;
     }
+    
+    /**
+     * The redirect information should be a String or a Map.  If it
+     * is a String that string is the URI to redirect to.  If it is
+     * a Map, that Map may contain any entries supported as arguments
+     * to the dynamic redirect(Map) method on a controller.
+     * 
+     * @return redirect information for this url mapping, null if no redirect is specified
+     */
+    public Object getRedirectInfo() {
+        return null;
+    }
 }

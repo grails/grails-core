@@ -7,6 +7,7 @@ import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 
 import java.util.List;
+import java.util.Map;
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.Constraint;
@@ -36,6 +37,29 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertEquals(3, mappings.size());
     }
 
+    public void testRedirectMappings() throws Exception {
+        GroovyShell shell = new GroovyShell();
+        Binding binding = new Binding();
+        Script script = shell.parse("mappings = {\n" +
+                "\"/first\"(redirect:[controller: 'foo', action: 'bar'])\n" +
+                "\"/second\"(redirect: '/bing/bang')\n" +
+        "}");
+
+        script.setBinding(binding);
+        script.run();
+
+        Closure closure = (Closure)binding.getVariable("mappings");
+        List<UrlMapping> mappings = evaluator.evaluateMappings(closure);
+        assertEquals(2, mappings.size());
+        Object redirectInfo = mappings.get(0).getRedirectInfo();
+        assertTrue(redirectInfo instanceof Map);
+        Map redirectMap = (Map)redirectInfo;
+        assertEquals(2, redirectMap.size());
+        assertEquals("foo", redirectMap.get("controller"));
+        assertEquals("bar", redirectMap.get("action"));
+        assertEquals("/bing/bang", mappings.get(1).getRedirectInfo());
+    }
+    
     @SuppressWarnings("rawtypes")
     public void testNewMethod () throws Exception {
         GroovyShell shell = new GroovyShell ();

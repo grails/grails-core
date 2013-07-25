@@ -52,6 +52,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     private Object actionName;
     private Object pluginName;
     private Object namespace;
+    private Object redirectInfo;
     private Object id;
     private static final String ID_PARAM = "id";
     private UrlMappingData urlData;
@@ -94,14 +95,14 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     @SuppressWarnings("rawtypes")
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, Map params,
+    public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, Map params,
             UrlMappingData urlData, ServletContext servletContext) {
-        this(controllerName, actionName, namespace, pluginName, viewName, null,UrlMapping.ANY_VERSION, params, urlData, servletContext);
+        this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, null,UrlMapping.ANY_VERSION, params, urlData, servletContext);
     }
-    public DefaultUrlMappingInfo(Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, Map params,
+    public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, Map params,
                                  UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
-        Assert.isTrue(controllerName != null || viewName != null, "URL mapping must either provide a controller or view name to map to!");
+        Assert.isTrue(redirectInfo != null || controllerName != null || viewName != null, "URL mapping must either provide redirect information, a controller or a view name to map to!");
         Assert.notNull(params, "Argument [params] cannot be null");
         this.controllerName = controllerName;
         this.actionName = actionName;
@@ -109,6 +110,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this.namespace = namespace;
         this.httpMethod = httpMethod;
         this.version = version;
+        this.redirectInfo = redirectInfo;
         if (actionName == null) {
             this.viewName = viewName;
         }
@@ -259,5 +261,10 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
 
     public String getURI() {
         return evaluateNameForValue(uri);
+    }
+    
+    @Override
+    public Object getRedirectInfo() {
+        return redirectInfo;
     }
 }
