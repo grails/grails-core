@@ -81,9 +81,9 @@ class PluginDescriptorGenerator {
         if (!commonResourceBase) return false
 
         if (r.file.absolutePath.indexOf(commonResourceBase.absolutePath) == 0) {
-            String path = r.file.absolutePath.substring(commonResourceBase.absolutePath.length()+1)
+            String path = r.file.absolutePath.substring(commonResourceBase.absolutePath.length()+1).tr(File.separator, "/")
             for(String pattern : pluginExcludes) {
-                if (antPathMatcher.match(pattern, path)) return true
+                if (antPathMatcher.match(pattern.tr(File.separator, "/"), path)) return true
             }
 
         }
