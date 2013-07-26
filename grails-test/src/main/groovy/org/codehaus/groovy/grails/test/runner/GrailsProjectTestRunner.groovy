@@ -217,7 +217,9 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         projectPackager.packageApplication()
 
         if (testOptions.clean) {
-            new GrailsProjectCleaner(buildSettings, buildEventListener).cleanAll()
+            final cleaner = new GrailsProjectCleaner(buildSettings, buildEventListener)
+            cleaner.clean()
+            cleaner.cleanTestReports()
         }
 
         ant.mkdir(dir: "${testReportsDir}/html")

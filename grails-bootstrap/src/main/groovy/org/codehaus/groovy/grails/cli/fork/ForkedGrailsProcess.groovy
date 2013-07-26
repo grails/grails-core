@@ -579,7 +579,8 @@ abstract class ForkedGrailsProcess {
             if (fileName.contains('grails-bootstrap') ||
                     fileName.contains('slf4j-api') ||
                     fileName.contains('ivy') ||
-                    fileName.contains('ant') ||
+                    fileName.matches(/^ant-.+$/) ||
+                    fileName.contains('ant-junit') ||
                     fileName.contains('jline') ||
                     fileName.contains('jansi') ) {
                 bootstrapJars.add(f)

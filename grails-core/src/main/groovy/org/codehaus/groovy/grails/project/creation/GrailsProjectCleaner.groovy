@@ -56,6 +56,7 @@ class GrailsProjectCleaner extends BaseSettingsApi {
         clean()
         cleanTestReports()
         ant.delete(dir:new File(buildSettings.projectWorkDir, "scriptCache"), failonerror:false)
+        ant.delete(dir:buildSettings.pluginBuildClassesDir, failonerror:false)
 
         CONSOLE.updateStatus "Application cleaned."
         if (triggerEvents) {
@@ -101,7 +102,6 @@ class GrailsProjectCleaner extends BaseSettingsApi {
         ant.delete(dir:"${buildSettings.baseDir}/web-app/plugins")
         ant.delete(dir:buildSettings.classesDir.absolutePath)
         ant.delete(dir:buildSettings.pluginClassesDir, failonerror:false)
-        ant.delete(dir:buildSettings.pluginBuildClassesDir, failonerror:false)
         ant.delete(dir:buildSettings.pluginProvidedClassesDir, failonerror:false)
 
         ant.delete(dir:buildSettings.resourcesDir)
