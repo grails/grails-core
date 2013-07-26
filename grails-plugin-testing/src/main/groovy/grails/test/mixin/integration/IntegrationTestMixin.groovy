@@ -35,9 +35,13 @@ class IntegrationTestMixin implements TestMixinTargetAware {
 
     void setTarget(Object target) {
         this.target = target
-        final applicationContext = Holders.getApplicationContext()
-        if(applicationContext && target) {
-            interceptor = new GrailsTestInterceptor(target, new GrailsTestMode(autowire: true, wrapInRequestEnvironment: true, wrapInTransaction: true), applicationContext, ['Spec', 'Specification','Test', 'Tests'] as String[])
+        try {
+            final applicationContext = Holders.getApplicationContext()
+            if(applicationContext && target) {
+                interceptor = new GrailsTestInterceptor(target, new GrailsTestMode(autowire: true, wrapInRequestEnvironment: true, wrapInTransaction: true), applicationContext, ['Spec', 'Specification','Test', 'Tests'] as String[])
+            }
+        } catch (IllegalStateException ise) {
+            // ignore, thrown when application context hasn't been bootstrapped
         }
     }
 
