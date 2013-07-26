@@ -128,34 +128,35 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             throw new CannotRedirectException("Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response.");
         }
 
-        GroovyObject controller = (GroovyObject)target;
+        if(target instanceof GroovyObject) {
+            GroovyObject controller = (GroovyObject)target;
 
-        // if there are errors add it to the list of errors
-        Errors controllerErrors = (Errors)controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY);
-        Errors errors = (Errors)argMap.get(ARGUMENT_ERRORS);
-        if (controllerErrors != null && errors != null) {
-            controllerErrors.addAllErrors(errors);
+            // if there are errors add it to the list of errors
+            Errors controllerErrors = (Errors)controller.getProperty(ControllerDynamicMethods.ERRORS_PROPERTY);
+            Errors errors = (Errors)argMap.get(ARGUMENT_ERRORS);
+            if (controllerErrors != null && errors != null) {
+                controllerErrors.addAllErrors(errors);
+            }
+            else {
+                controller.setProperty(ControllerDynamicMethods.ERRORS_PROPERTY, errors);
+            }
+            Object action = argMap.get(GrailsControllerClass.ACTION);
+            if (action != null) {
+                argMap.put(GrailsControllerClass.ACTION, establishActionName(action,controller));
+            }
+            if (!argMap.containsKey(GrailsControllerClass.NAMESPACE_PROPERTY)) {
+                // this could be made more efficient if we had a reference to the GrailsControllerClass object, which
+                // has the namespace property accessible without needing reflection
+                argMap.put(GrailsControllerClass.NAMESPACE_PROPERTY, GrailsClassUtils.getStaticFieldValue(controller.getClass(), GrailsControllerClass.NAMESPACE_PROPERTY));
+            }
         }
-        else {
-            controller.setProperty(ControllerDynamicMethods.ERRORS_PROPERTY, errors);
-        }
-
         boolean permanent = DefaultGroovyMethods.asBoolean(argMap.get(ARGUMENT_PERMANENT));
 
-        Object action = argMap.get(GrailsControllerClass.ACTION);
-        if (action != null) {
-            argMap.put(GrailsControllerClass.ACTION, establishActionName(action,controller));
-        }
 
         // we generate a relative link with no context path so that the absolute can be calculated by combining the serverBaseURL
         // which includes the contextPath
         argMap.put(LinkGenerator.ATTRIBUTE_CONTEXT_PATH, BLANK);
 
-        if (!argMap.containsKey(GrailsControllerClass.NAMESPACE_PROPERTY)) {
-            // this could be made more efficient if we had a reference to the GrailsControllerClass object, which
-            // has the namespace property accessible without needing reflection
-            argMap.put(GrailsControllerClass.NAMESPACE_PROPERTY, GrailsClassUtils.getStaticFieldValue(controller.getClass(), GrailsControllerClass.NAMESPACE_PROPERTY));
-        }
         return redirectResponse(requestLinkGenerator.getServerBaseURL(), requestLinkGenerator.link(argMap), request, response, permanent);
     }
 

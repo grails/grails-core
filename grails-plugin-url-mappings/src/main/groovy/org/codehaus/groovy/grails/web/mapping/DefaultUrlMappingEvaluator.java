@@ -257,6 +257,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Object exception;
         private Object parseRequest;
         private Object uri;
+        private Object redirectInfo;
         private Deque<ParentResource> parentResources = new ArrayDeque<ParentResource>();
 
         public UrlMappingBuilder(Binding binding, ServletContext servletContext) {
@@ -321,6 +322,14 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return controllerName;
         }
 
+        public void setRedirectInfo(Object redirectInfo) {
+            this.redirectInfo = redirectInfo;
+        }
+        
+        public Object getRedirectInfo() {
+            return redirectInfo;
+        }
+        
         public void setPlugin(Object plugin) {
             pluginName = plugin;
         }
@@ -419,6 +428,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         Object namespace;
                         Object viewName;
                         Object uri;
+                        Object redirectInfo = null;
 
                         if (binding != null) {
                             controllerName = variables.get(GrailsControllerClass.CONTROLLER);
@@ -433,6 +443,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                         } else {
                             controllerName = this.controllerName;
+                            redirectInfo = this.redirectInfo;
                             actionName = this.actionName;
                             pluginName = this.pluginName;
                             namespace = this.namespace;
@@ -450,7 +461,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                 throw new UrlMappingException("Cannot map to invalid URI: " + e.getMessage(), e);
                             }
                         } else {
-                            urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version,constraints);
+                            urlMapping = createURLMapping(urlData, isResponseCode, redirectInfo, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version,constraints);
                         }
 
                         if (binding != null) {
@@ -513,6 +524,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         variables.clear();
                     } else {
                         controllerName = null;
+                        redirectInfo = null;
                         actionName = null;
                         viewName = null;
                         pluginName = null;
@@ -866,6 +878,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             Object httpMethod = getHttpMethod(namedArguments, bindingVariables);
             Object version = getVersion(namedArguments, bindingVariables);
             Object namespace = getNamespace(namedArguments, bindingVariables);
+            Object redirectInfo = getRedirectInfo(namedArguments, bindingVariables);
 
             Object viewName = getViewName(namedArguments, bindingVariables);
             if (actionName != null && viewName != null) {
@@ -886,7 +899,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 }
             }
             else {
-                urlMapping = createURLMapping(urlData, isResponseCode, controllerName, actionName, namespace, pluginName, viewName, httpMethod != null ? httpMethod.toString() : null, version != null ? version.toString() : null, constraints);
+                urlMapping = createURLMapping(urlData, isResponseCode, redirectInfo, controllerName, actionName, namespace, pluginName, viewName, httpMethod != null ? httpMethod.toString() : null, version != null ? version.toString() : null, constraints);
             }
 
             Object exceptionArg = getException(namedArguments, bindingVariables);
@@ -944,6 +957,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.HTTP_METHOD, pluginName);
         }
 
+        private Object getRedirectInfo(Map namedArguments, Map bindingVariables) {
+            return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.REDIRECT_INFO, redirectInfo);
+        }
+        
         private Object getVersion(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.VERSION, pluginName);
         }
@@ -964,12 +981,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables,EXCEPTION, exception);
         }
 
-        private UrlMapping createURLMapping(UrlMappingData urlData, boolean isResponseCode,
+        private UrlMapping createURLMapping(UrlMappingData urlData, boolean isResponseCode, Object redirectInfo,
                                             Object controllerName, Object actionName, Object namespace, Object pluginName,
                                             Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints) {
             if (!isResponseCode) {
-                return new RegexUrlMapping(urlData, controllerName, actionName, namespace, pluginName, viewName, httpMethod,  version,
-                        constraints, sc);
+                return new RegexUrlMapping(redirectInfo, urlData, controllerName, actionName, namespace, pluginName, viewName, httpMethod,  version, constraints, sc);
             }
 
             return new ResponseCodeUrlMapping(urlData, controllerName, actionName, namespace, pluginName, viewName,
