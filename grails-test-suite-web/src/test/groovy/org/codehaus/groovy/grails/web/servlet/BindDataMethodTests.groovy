@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet;
+package org.codehaus.groovy.grails.web.servlet
 
 import grails.artefact.Artefact
 import grails.test.mixin.TestFor
@@ -30,16 +30,16 @@ class BindDataMethodTests extends Specification {
         when:
         def model = controller.bindWithMap()
         def target = model.target
-        
+
         then:
         target.name == 'Marc Palmer'
     }
-    
+
     void 'Test bindData With Excludes'() {
         when:
         def model = controller.bindWithExcludes()
         def target = model.target
-        
+
         then:
         target.name == 'Marc Palmer'
         target.email == null
@@ -49,7 +49,7 @@ class BindDataMethodTests extends Specification {
         when:
         def model = controller.bindWithIncludes()
         def target = model.target
-        
+
         then:
         target.name == 'Marc Palmer'
         target.email == null
@@ -59,7 +59,7 @@ class BindDataMethodTests extends Specification {
         when:
         def model = controller.bindWithEmptyIncludesExcludesMap()
         def target = model.target
-        
+
         then:
         target.name == 'Marc Palmer'
         target.email == 'dowantthis'
@@ -69,7 +69,7 @@ class BindDataMethodTests extends Specification {
         when:
         def model = controller.bindWithIncludeOverriddenByExclude()
         def target = model.target
-        
+
         then:
         target.name == 'Marc Palmer'
         target.email == null
@@ -79,7 +79,7 @@ class BindDataMethodTests extends Specification {
         when:
         def model = controller.bindWithPrefixFilter()
         def target = model.target
-        
+
         then:
         target.name == 'Lee Butts'
         target.email == 'lee@mail.com'
@@ -92,7 +92,7 @@ class BindDataMethodTests extends Specification {
         params.'address.country' = 'gbr'
         def model = controller.bindWithParamsAndDisallowed()
         def target = model.target
-        
+
         then:
         target.name == 'Marc Palmer'
         target.address.country == 'gbr'
@@ -103,7 +103,7 @@ class BindDataMethodTests extends Specification {
         when:
         def model = controller.bindWithPrefixFilterAndDisallowed()
         def target = model.target
-        
+
         then:
         target.name == 'Lee Butts'
         target.email == null
@@ -113,7 +113,7 @@ class BindDataMethodTests extends Specification {
         when:
         def model = controller.bindWithStringConvertedToList()
         def target = model.target
-        
+
         then:
         target.name == 'Lee Butts'
         target.email == null
@@ -122,31 +122,31 @@ class BindDataMethodTests extends Specification {
 
 @Artefact('Controller')
 class BindingController {
- 
+
     def bindWithMap() {
         def target = new CommandObject()
         bindData target, [ name : 'Marc Palmer' ]
         [target: target]
-    }   
-    
+    }
+
     def bindWithExcludes() {
         def target = new CommandObject()
         bindData target, [name: 'Marc Palmer', email: 'dontwantthis'], [exclude: ['email']]
         [target: target]
     }
-    
+
     def bindWithIncludes() {
         def target = new CommandObject()
         bindData target, [ name : 'Marc Palmer', email : 'dontwantthis' ], [include:['name']]
         [target: target]
     }
-    
+
     def bindWithEmptyIncludesExcludesMap() {
         def target = new CommandObject()
         bindData target, [ name : 'Marc Palmer', email : 'dowantthis' ], [:]
         [target: target]
     }
-    
+
     def bindWithIncludeOverriddenByExclude() {
         def target = new CommandObject()
         bindData target, [ name : 'Marc Palmer', email : 'dontwantthis' ], [include: ['name', 'email'], exclude: ['email']]
@@ -159,13 +159,13 @@ class BindingController {
         bindData target, [ 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis', 'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com'], filter
         [target: target]
     }
-    
+
     def bindWithParamsAndDisallowed() {
         def target = new CommandObject()
         bindData target, params, [exclude:['email']]
         [target: target]
     }
-    
+
     def bindWithPrefixFilterAndDisallowed() {
         def target = new CommandObject()
         def filter = "lee"
@@ -173,7 +173,7 @@ class BindingController {
         bindData target, [ 'mark.name' : 'Marc Palmer', 'mark.email' : 'dontwantthis', 'lee.name': 'Lee Butts', 'lee.email': 'lee@mail.com'], disallowed, filter
         [target: target]
     }
-    
+
     def bindWithStringConvertedToList() {
         def target = new CommandObject()
         def filter = "lee"

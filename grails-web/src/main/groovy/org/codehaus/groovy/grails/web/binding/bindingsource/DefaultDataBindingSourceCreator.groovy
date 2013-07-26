@@ -56,15 +56,15 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
         }
         dataBindingSource
     }
-    
+
     @Override
     CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException()
     }
 
     protected  DataBindingSource createDataBindingSource(Object bindingTarget, HttpServletRequest req) {
-        final GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup(req);
-        final GrailsParameterMap parameterMap = grailsWebRequest.getParams();
+        final GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup(req)
+        final GrailsParameterMap parameterMap = grailsWebRequest.getParams()
         new SimpleMapDataBindingSource(parameterMap)
     }
 }

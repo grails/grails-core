@@ -127,11 +127,9 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     protected getPersistentInstance(Class<?> type, id) {
-        def persistentInstace
         try {
-            persistentInstace = InvokerHelper.invokeStaticMethod type, 'get', id
+            InvokerHelper.invokeStaticMethod type, 'get', id
         } catch (Exception exc) {}
-        persistentInstace
     }
 
     /**
@@ -166,7 +164,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             idValue = source
         } else if(source instanceof Map && source.containsKey('id')) {
             idValue = source['id']
-        } 
+        }
         if (idValue instanceof GString) {
             idValue = idValue.toString()
         }
@@ -486,13 +484,13 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
         converter
     }
-    
+
     @Autowired
-    public setMessageSource(MessageSource messageSource) {
+    void setMessageSource(MessageSource messageSource) {
         this.messageSource = messageSource
     }
 
-    @Override    
+    @Override
     protected String getFormatString(BindingFormat annotation) {
         def formatString
         def code = annotation.code()
@@ -507,13 +505,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     protected Locale getLocale() {
-        def locale
         def request = GrailsWebRequest.lookup()
-        if(request) {
-            locale = request.getLocale()
-        } else {
-            locale = Locale.getDefault()
-        }
-        return locale
+        request ? request.getLocale() : Locale.getDefault()
     }
 }

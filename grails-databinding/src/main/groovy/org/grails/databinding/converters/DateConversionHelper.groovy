@@ -25,14 +25,14 @@ import java.text.SimpleDateFormat
  */
 @CompileStatic
 class DateConversionHelper implements ValueConverter {
-    
+
     /**
      * A List of String which represent date formats compatible with {@link SimpleDateFormat}.  When
      * This converter attempts to convert a String to a Date, these formats will be tried in
      * the order in which they appear in the List.
      */
     List<String> formatStrings = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'hh:mm:ss'Z'"]
-    
+
     protected final Map<String, SimpleDateFormat> formatters = [:].withDefault { String formatString -> new SimpleDateFormat(formatString) }
 
     Object convert(value) {
@@ -60,7 +60,7 @@ class DateConversionHelper implements ValueConverter {
         Date
     }
 
-    public boolean canConvert(Object value) {
+    boolean canConvert(Object value) {
         value instanceof String
     }
 }

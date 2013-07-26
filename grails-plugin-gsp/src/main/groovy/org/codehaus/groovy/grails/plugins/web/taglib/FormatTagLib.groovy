@@ -104,18 +104,16 @@ class FormatTagLib {
 
         def locale = resolveLocale(attrs.locale)
         if (b) {
-            if(attrs.containsKey('true')) {
+            if (attrs.containsKey('true')) {
                 return attrs['true']
-            } else {
-                return messageHelper('boolean.true', { messageHelper('default.boolean.true', 'True', null, locale) }, null, locale)
             }
+            return messageHelper('boolean.true', { messageHelper('default.boolean.true', 'True', null, locale) }, null, locale)
         }
-        
-        if(attrs.containsKey('false')) {
+
+        if (attrs.containsKey('false')) {
             return attrs['false']
-        } else {
-            return messageHelper('boolean.false', { messageHelper('default.boolean.false', 'False', null, locale) }, null, locale)
         }
+        return messageHelper('boolean.false', { messageHelper('default.boolean.false', 'False', null, locale) }, null, locale)
     }
 
     /**
@@ -152,8 +150,8 @@ class FormatTagLib {
         }
 
         def locale = resolveLocale(attrs.locale)
-        String timeStyle = null
-        String dateStyle = null
+        String timeStyle
+        String dateStyle
         if (attrs.style != null) {
             String style = attrs.style.toString().toUpperCase()
             timeStyle = style

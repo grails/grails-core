@@ -16,11 +16,25 @@
 package org.codehaus.groovy.grails.web.converters.marshaller.json;
 
 import grails.converters.JSON;
-
-import java.util.*;
-
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.commons.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
@@ -28,7 +42,6 @@ import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -150,7 +163,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
                         GrailsDomainClass referencedDomainClass = property.getReferencedDomainClass();
 
                         // Embedded are now always fully rendered
-                        if (referencedDomainClass == null || property.isEmbedded() || GrailsClassUtils.isJdk5Enum(property.getType())) {
+                        if (referencedDomainClass == null || property.isEmbedded() || property.getType().isEnum()) {
                             json.convertAnother(referenceObject);
                         }
                         else if (property.isOneToOne() || property.isManyToOne() || property.isEmbedded()) {

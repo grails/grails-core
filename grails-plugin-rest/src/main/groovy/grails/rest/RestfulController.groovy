@@ -15,13 +15,13 @@
  */
 package grails.rest
 
+import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.transaction.Transactional
 import grails.util.GrailsNameUtils
-import static org.springframework.http.HttpStatus.*
 
 /**
- * Base class that can be extended to get the basic CRUD operations needed for a RESTful API
+ * Base class that can be extended to get the basic CRUD operations needed for a RESTful API.
  *
  * @author Graeme Rocher
  * @since 2.3
@@ -29,16 +29,17 @@ import static org.springframework.http.HttpStatus.*
 @Artefact("Controller")
 @Transactional(readOnly = true)
 class RestfulController<T> {
+
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
-    Class resource
+    Class<T> resource
     String resourceName
     String resourceClassName
 
     RestfulController(Class<T> resource) {
         this.resource = resource
-        this.resourceClassName = resource.simpleName
-        this.resourceName = GrailsNameUtils.getPropertyName(resource)
+        resourceClassName = resource.simpleName
+        resourceName = GrailsNameUtils.getPropertyName(resource)
     }
 
     /**
@@ -49,9 +50,7 @@ class RestfulController<T> {
      */
     def index(Integer max) {
         params.max = Math.min(max ?: 10, 100)
-        def model = [:]
-        model.put("${resourceName}Count".toString(), countResources())
-        respond listAllResources(params), model:model
+        respond listAllResources(params), model: ["${resourceName}Count".toString(), countResources()]
     }
 
     /**
@@ -105,21 +104,22 @@ class RestfulController<T> {
         if (instance == null) {
             render status:404
             return
-        } else {
-            instance.properties = getParametersToBind()
         }
+
+        instance.properties = getParametersToBind()
 
         if (instance.hasErrors()) {
             respond instance.errors, view:'edit' // STATUS CODE 422
-        } else {
-            instance.save flush:true
-            request.withFormat {
-                form {
-                    flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
-                    redirect instance
-                }
-                '*'{ respond instance, [status: OK] }
+            return
+        }
+
+        instance.save flush:true
+        request.withFormat {
+            form {
+                flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
+                redirect instance
             }
+            '*'{ respond instance, [status: OK] }
         }
     }
 
@@ -130,17 +130,18 @@ class RestfulController<T> {
     @Transactional
     def delete() {
         def instance = queryForResource(params.id)
-        if (instance) {
-            instance.delete flush:true
-            request.withFormat {
-                form {
-                    flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
-                    redirect action:"index", method:"GET"
-                }
-                '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
-            }
-        } else {
+        if (!instance) {
             render status: NOT_FOUND
+            return
+        }
+
+        instance.delete flush:true
+        request.withFormat {
+            form {
+                flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
+                redirect action:"index", method:"GET"
+            }
+            '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
         }
     }
 
@@ -150,7 +151,7 @@ class RestfulController<T> {
      * @return The parameters
      */
     protected Map getParametersToBind() {
-        this.params
+        params
     }
 
     /**

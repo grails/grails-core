@@ -517,7 +517,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     protected void initializeCommandObjectParameter(final BlockStatement wrapper,
             final ClassNode commandObjectNode, final String paramName, SourceUnit source) {
-        
+
         final DeclarationExpression declareCoExpression = new DeclarationExpression(
                 new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
         wrapper.addStatement(new ExpressionStatement(declareCoExpression));
@@ -525,17 +525,17 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final Expression initializeCommandObjectMethodCall = new MethodCallExpression(THIS_EXPRESSION, "initializeCommandObject", new ClassExpression(commandObjectNode));
         final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
         tryBlock.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
-        
+
         final BlockStatement catchBlock = new BlockStatement();
         final VariableExpression responseVariableExpression = new VariableExpression("response");
         final MethodCallExpression setStatusMethodCallExpression = new MethodCallExpression(responseVariableExpression, "setStatus", new ConstantExpression(400));
         catchBlock.addStatement(new ExpressionStatement(setStatusMethodCallExpression));
         final ReturnStatement returnStatement = new ReturnStatement(new ExpressionStatement(new ConstantExpression(null)));
         catchBlock.addStatement(returnStatement);
-        
+
         final TryCatchStatement tryCatchStatement = new TryCatchStatement(tryBlock, new EmptyStatement());
         tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(DataBindingSourceCreationException.class), "$dataBindingSourceInitializationException"), catchBlock));
-        
+
         wrapper.addStatement(tryCatchStatement);
     }
 
@@ -671,5 +671,4 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     public boolean shouldInject(URL url) {
         return url != null && ControllerTransformer.CONTROLLER_PATTERN.matcher(url.getFile()).find();
     }
-
 }

@@ -76,7 +76,7 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         def jsonReader = new JsonReader(reader)
         jsonReader.setLenient true
         def parser = new JsonParser()
-        
+
         // TODO Need to decide what to do if the root element is not a JsonArray
         JsonArray jsonElement = (JsonArray)parser.parse(jsonReader)
         def dataBindingSources = jsonElement.collect { JsonElement element ->
@@ -88,7 +88,7 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
             }
         }
     }
-    
+
     @Override
     protected DataBindingSource createBindingSource(Reader reader) {
         def jsonReader = new JsonReader(reader)
@@ -101,7 +101,8 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         return new SimpleMapDataBindingSource(result)
 
     }
-/**
+
+    /**
      * Returns a map for the given JsonElement. Subclasses can override to customize the format of the map
      *
      * @param jsonElement The JSON element
@@ -238,4 +239,3 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
         }
     }
 }
-

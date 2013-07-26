@@ -5,7 +5,7 @@ import org.grails.databinding.DataBindingSource
 import spock.lang.Specification
 
 class GPathCollectionDataBindingSourceSpec extends Specification {
-    
+
     void 'Test multiple child elements'() {
         given:
         def xml = new XmlSlurper().parseText('''
@@ -27,7 +27,7 @@ class GPathCollectionDataBindingSourceSpec extends Specification {
         when:
         def source = new GPathResultCollectionDataBindingSource(xml)
         def dataBindingSources = source.dataBindingSources
-        
+
         then:
         dataBindingSources.size() == 3
         dataBindingSources[0] instanceof DataBindingSource

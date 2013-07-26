@@ -47,7 +47,7 @@ interface DataBindingSourceRegistry {
      * @return The {@link DataBindingSource}
      */
     DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource)
-    
+
     /**
      * Locates a {@link CollectionDataBindingSource} for the given MimeType and binding target
      * @param mimeType The MimeType

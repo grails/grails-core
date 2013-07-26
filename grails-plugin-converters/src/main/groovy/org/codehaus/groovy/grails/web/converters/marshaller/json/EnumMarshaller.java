@@ -19,7 +19,6 @@ import grails.converters.JSON;
 
 import java.lang.reflect.Method;
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.codehaus.groovy.grails.web.json.JSONWriter;
@@ -32,7 +31,7 @@ import org.springframework.beans.BeanUtils;
 public class EnumMarshaller implements ObjectMarshaller<JSON> {
 
     public boolean supports(Object object) {
-        return GrailsClassUtils.isJdk5Enum(object.getClass());
+        return object.getClass().isEnum();
     }
 
     public void marshalObject(Object en, JSON json) throws ConverterException {

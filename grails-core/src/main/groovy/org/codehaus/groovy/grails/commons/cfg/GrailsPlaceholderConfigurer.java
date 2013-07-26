@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.Properties;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 
 /**

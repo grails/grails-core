@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,12 +22,11 @@ import org.grails.databinding.CollectionDataBindingSource
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 
-
 @CompileStatic
 class GPathResultCollectionDataBindingSource implements CollectionDataBindingSource {
 
     protected List<? extends DataBindingSource> dataBindingSources
-    
+
     GPathResultCollectionDataBindingSource(GPathResult gpath) {
         dataBindingSources = gpath?.children()?.collect { GPathResult child ->
             def map = new GPathResultMap(child)
@@ -35,8 +34,7 @@ class GPathResultCollectionDataBindingSource implements CollectionDataBindingSou
             bindingSource
         }
     }
-    
-    
+
     @Override
     List<DataBindingSource> getDataBindingSources() {
         dataBindingSources

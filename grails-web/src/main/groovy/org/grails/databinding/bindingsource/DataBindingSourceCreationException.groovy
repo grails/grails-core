@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,16 +16,15 @@
 package org.grails.databinding.bindingsource
 
 /**
- * Thrown if an unrecoverable problem occurs creating a DataBindingSource
- * 
+ * Thrown if an unrecoverable problem occurs creating a DataBindingSource.
+ *
  * @since 2.3
  * @see org.grails.databinding.DataBindingSource
  * @see DataBindingSourceCreator
- *
  */
 class DataBindingSourceCreationException extends RuntimeException {
-    
+
     DataBindingSourceCreationException(Throwable cause) {
-        super(cause);
+        super(cause)
     }
 }

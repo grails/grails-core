@@ -27,7 +27,7 @@ class CollectionBindDataMethodSpec extends Specification {
 '''
         def model = controller.createPeopleWithBindingSource()
         def people = model.people
-        
+
         then:
         people instanceof List
         people.size() == 3
@@ -41,7 +41,7 @@ class CollectionBindDataMethodSpec extends Specification {
         people[2].firstName == 'Steve'
         people[2].lastName == 'Hacket'
     }
-    
+
     void 'Test bindData with a CollectionDataBindingSource argument using JSON'() {
         when:
         request.json = '''
@@ -51,7 +51,7 @@ class CollectionBindDataMethodSpec extends Specification {
 '''
         def model = controller.createPeopleWithBindingSource()
         def people = model.people
-        
+
         then:
         people instanceof List
         people.size() == 3
@@ -65,7 +65,6 @@ class CollectionBindDataMethodSpec extends Specification {
         people[2].firstName == 'Brian'
         people[2].lastName == 'Downey'
     }
-    
 
     void 'Test bindData with the request using XML'() {
         when:
@@ -87,7 +86,7 @@ class CollectionBindDataMethodSpec extends Specification {
 '''
         def model = controller.createPeopleWithRequest()
         def people = model.people
-        
+
         then:
         people instanceof List
         people.size() == 3
@@ -101,7 +100,7 @@ class CollectionBindDataMethodSpec extends Specification {
         people[2].firstName == 'Geddy'
         people[2].lastName == 'Lee'
     }
-    
+
     void 'Test bindData with the request using JSON'() {
         when:
         request.json = '''
@@ -112,7 +111,7 @@ class CollectionBindDataMethodSpec extends Specification {
 '''
         def model = controller.createPeopleWithRequest()
         def people = model.people
-        
+
         then:
         people instanceof List
         people.size() == 4
@@ -138,20 +137,20 @@ class DemoController {
 
     def createPeopleWithRequest() {
         def listOfPeople = []
-        
+
         bindData Person, listOfPeople, request
-        
+
         [people: listOfPeople]
     }
-    
+
     def createPeopleWithBindingSource() {
         def mimeType = mimeTypeResolver.resolveRequestMimeType()
         def bindingSource = dataBindingSourceRegistry.createCollectionDataBindingSource mimeType, Person, request
-        
+
         def listOfPeople = []
-        
+
         bindData Person, listOfPeople, bindingSource
-        
+
         [people: listOfPeople]
     }
 }

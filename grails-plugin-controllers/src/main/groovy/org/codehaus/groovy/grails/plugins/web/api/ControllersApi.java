@@ -306,11 +306,11 @@ public class ControllersApi extends CommonWebApi {
     public Object bindData(Object instance, Object target, Object bindingSource, final List excludes) {
         return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), null);
     }
-    
+
     public Object bindData(Object instance, Object target, Object bindingSource, final List excludes, String filter) {
         return bindData(instance, target, bindingSource, CollectionUtils.newMap(EXCLUDE_MAP_KEY, excludes), filter);
     }
-    
+
     public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude) {
         return bindData(instance, target, bindingSource, includeExclude, null);
     }
@@ -322,14 +322,14 @@ public class ControllersApi extends CommonWebApi {
     public Object bindData(Object instance, Object target, Object bindingSource) {
         return bindData(instance, target, bindingSource, Collections.EMPTY_MAP, null);
     }
-    
+
     public Object bindData(Object instance, Object target, Object bindingSource, Map includeExclude, String filter) {
         List include = convertToListIfString(includeExclude.get(INCLUDE_MAP_KEY));
         List exclude = convertToListIfString(includeExclude.get(EXCLUDE_MAP_KEY));
         DataBindingUtils.bindObjectToInstance(target, bindingSource, include, exclude, filter);
         return target;
     }
-    
+
     public <T> void bindData(Object instance, Class<T> targetType, Collection<T> collectionToPopulate, ServletRequest request) throws Exception {
         DataBindingUtils.bindToCollection(targetType, collectionToPopulate, request);
     }
@@ -387,7 +387,7 @@ public class ControllersApi extends CommonWebApi {
     public String forward(Object instance, Map params) {
         return forwardMethod.forward(getRequest(instance), getResponse(instance), params);
     }
-    
+
     /**
      * Initializes a command object.
      *
@@ -422,10 +422,10 @@ public class ControllersApi extends CommonWebApi {
         } else {
             commandObjectInstance = type.newInstance();
         }
-        
+
         if(commandObjectInstance != null) {
             final boolean shouldDoDataBinding;
-            
+
             if(entityIdentifierValue != null) {
                 final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
                 switch(requestMethod) {
@@ -440,11 +440,11 @@ public class ControllersApi extends CommonWebApi {
             } else {
                 shouldDoDataBinding = true;
             }
-            
+
             if(shouldDoDataBinding) {
                 bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null);
             }
-            
+
             final ApplicationContext applicationContext = getApplicationContext(controllerInstance);
             final AutowireCapableBeanFactory autowireCapableBeanFactory = applicationContext.getAutowireCapableBeanFactory();
             autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);

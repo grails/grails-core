@@ -18,10 +18,10 @@ class BindingRequestMethodSpec extends Specification {
         def model = controller.createEmployee()
         def employee = model.employee
         def originalId = employee.id
-        
+
         then:
         originalId != null
-        
+
         when: 'Submitting a GET request with an id that matches an existing record'
         request.method = 'GET'
         params.clear()
@@ -30,7 +30,7 @@ class BindingRequestMethodSpec extends Specification {
         params.remove 'lastName'
         model = controller.someActionWhichAcceptsAnEmployee()
         employee = model.employee
-        
+
         then: 'Data binding should not have happened'
         employee.firstName == 'Zack'
         employee.lastName == 'Brown'
@@ -42,7 +42,7 @@ class BindingRequestMethodSpec extends Specification {
         params.firstName = 'Zachary'
         model = controller.someActionWhichAcceptsAnEmployee()
         employee = model.employee
-        
+
         then: 'Data binding should have happened'
         employee.firstName == 'Zachary'
         employee.lastName == 'Brown'
@@ -54,11 +54,11 @@ class BindingRequestMethodSpec extends Specification {
         params.firstName = 'Jake'
         model = controller.someActionWhichAcceptsAnEmployee()
         employee = model.employee
-        
+
         then: 'Data binding should have happened'
         employee.firstName == 'Jake'
         employee.lastName == 'Brown'
-        
+
         when: 'Submitting a GET request with no id'
         request.method = 'GET'
         params.clear()
@@ -66,7 +66,7 @@ class BindingRequestMethodSpec extends Specification {
         params.lastName = 'Brown'
         model = controller.someActionWhichAcceptsAnEmployee()
         employee = model.employee
-        
+
         then: 'Data binding should have happened'
         employee.firstName == 'Zachary'
         employee.lastName == 'Brown'
@@ -79,12 +79,12 @@ class BindingRequestMethodSpec extends Specification {
         params.lastName = 'Browning'
         model = controller.someActionWhichAcceptsAnEmployee()
         employee = model.employee
-        
+
         then: 'Data binding should have happened'
         employee.firstName == 'Zack'
         employee.lastName == 'Browning'
         employee.id == null
-        
+
         when: 'Submitting a POST request with no id'
         request.method = 'POST'
         params.clear()
@@ -92,13 +92,13 @@ class BindingRequestMethodSpec extends Specification {
         params.lastName = 'Brown'
         model = controller.someActionWhichAcceptsAnEmployee()
         employee = model.employee
-        
+
         then: 'Data binding should have happened'
         employee.firstName == 'Jake'
         employee.lastName == 'Brown'
         employee.id == null
     }
-    
+
     void 'Test binding to a non-domain class command object'() {
         when: 'Submitting a GET request'
         request.method = 'GET'
@@ -106,7 +106,7 @@ class BindingRequestMethodSpec extends Specification {
         params.lastName = 'Brown'
         def model = controller.someActionWhichAcceptsMyCommandObject()
         def command = model.command
-        
+
         then: 'Data binding should have happened'
         command.firstName == 'Zack'
         command.lastName == 'Brown'
@@ -118,7 +118,7 @@ class BindingRequestMethodSpec extends Specification {
         params.lastName = 'Browning'
         model = controller.someActionWhichAcceptsMyCommandObject()
         command = model.command
-        
+
         then: 'Data binding should have happened'
         command.firstName == 'Zachary'
         command.lastName == 'Browning'
@@ -130,7 +130,7 @@ class BindingRequestMethodSpec extends Specification {
         params.lastName = 'Brown'
         model = controller.someActionWhichAcceptsMyCommandObject()
         command = model.command
-        
+
         then: 'Data binding should have happened'
         command.firstName == 'Jake'
         command.lastName == 'Brown'
@@ -143,11 +143,11 @@ class BindingController {
         employee.save()
         [employee: employee]
     }
-    
+
     def someActionWhichAcceptsAnEmployee(Employee employee) {
         [employee: employee]
     }
-    
+
     def someActionWhichAcceptsMyCommandObject(MyCommandObject command) {
         [command: command]
     }

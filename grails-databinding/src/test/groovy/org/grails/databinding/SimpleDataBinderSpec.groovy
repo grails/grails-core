@@ -204,7 +204,7 @@ class SimpleDataBinderSpec extends Specification {
         given:
         def binder = new SimpleDataBinder()
         binder.registerConverter new DateConversionHelper()
-        
+
         def obj = new DateContainer()
 
         when:

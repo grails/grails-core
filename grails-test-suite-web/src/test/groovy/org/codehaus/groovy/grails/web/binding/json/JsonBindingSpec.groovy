@@ -20,14 +20,14 @@ class JsonBindingSpec extends Specification {
         model.person.name == 'Douglas'
         model.person.age == 42
     }
-    
+
     void 'Test binding nested collection elements'() {
         given:
         request.json = '''
             {
-    "lastName": "Brown", 
+    "lastName": "Brown",
     "familyMembers": [
-        {"name": "Jake", "age": "12"}, 
+        {"name": "Jake", "age": "12"},
         {"name": "Zack", "age": "15"}
     ]
 }
@@ -36,16 +36,16 @@ class JsonBindingSpec extends Specification {
         def model = controller.createFamily()
     then:
         model.family.lastName == 'Brown'
-        
+
         model.family.familyMembers.size() == 2
-        
+
         model.family.familyMembers[0].name == 'Jake'
         model.family.familyMembers[0].age == 12
 
         model.family.familyMembers[1].name == 'Zack'
         model.family.familyMembers[1].age == 15
     }
-    
+
     void 'Test parsing invalid JSON'() {
         given:
         request.json = '''
@@ -54,11 +54,11 @@ class JsonBindingSpec extends Specification {
 '''
         when:
         def model = controller.createPersonCommandObject()
-        
+
         then:
         response.status == 400
         model == null
-        
+
         when:
         request.json = '''
             {
@@ -66,7 +66,7 @@ class JsonBindingSpec extends Specification {
 '''
         model = controller.createPerson()
         def person = model.person
-        
+
         then:
         person.hasErrors()
         person.errors.errorCount == 1
@@ -81,11 +81,11 @@ class BindingController {
         person.properties = request
         [person: person]
     }
-    
+
     def createPersonCommandObject(Person person) {
         [person: person]
     }
-    
+
     def createFamily(Family family) {
         [family: family]
     }

@@ -2,6 +2,7 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.persistence.Entity
+import grails.transaction.Transactional
 import spock.lang.Specification
 
 /**
@@ -13,10 +14,7 @@ class RestfulControllerSpec extends Specification {
 
     def populateValidParams(params) {
         assert params != null
-        // TODO: Populate valid properties like...
-        //params["name"] = 'someValidName'
     }
-
 
     void "Test the index action returns the correct model"() {
 
@@ -88,11 +86,9 @@ class RestfulControllerSpec extends Specification {
             def video = new Video(title: "Game of Thrones")
             controller.edit(video)
 
-
         then:"A model is populated containing the domain instance"
             model.video == video
     }
-
 
     void "Test the update action performs an update on a valid domain instance"() {
         when:"Update is called for a domain instance that doesn't exist"
@@ -120,7 +116,6 @@ class RestfulControllerSpec extends Specification {
         then:"A redirect is issues to the show action"
             response.redirectedUrl == "/video/show/$video.id"
             flash.message != null
-
     }
 
     void "Test that the delete action deletes an instance if it exists"() {
@@ -145,7 +140,6 @@ class RestfulControllerSpec extends Specification {
             Video.count() == 0
             response.redirectedUrl == '/video/index'
             flash.message != null
-
     }
 }
 
@@ -157,8 +151,6 @@ class Video {
         title blank:false
     }
 }
-
-import grails.transaction.*
 
 @Transactional(readOnly = true)
 @Artefact("Controller")
@@ -237,4 +229,3 @@ class VideoController {
         }
     }
 }
-

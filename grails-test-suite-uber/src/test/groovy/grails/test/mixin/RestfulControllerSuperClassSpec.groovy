@@ -16,6 +16,8 @@
 
 package grails.test.mixin
 
+import grails.artefact.Artefact
+import grails.rest.RestfulController
 import spock.lang.Specification
 
 /**
@@ -26,10 +28,7 @@ class RestfulControllerSuperClassSpec extends Specification {
 
     def populateValidParams(params) {
         assert params != null
-        // TODO: Populate valid properties like...
-        //params["name"] = 'someValidName'
     }
-
 
     void "Test the index action returns the correct model"() {
 
@@ -49,9 +48,6 @@ class RestfulControllerSuperClassSpec extends Specification {
             model.video != null
     }
 }
-import grails.transaction.*
-import grails.artefact.Artefact
-import grails.rest.RestfulController
 
 @Artefact("Controller")
 class SecondVideoController extends RestfulController<Video> {

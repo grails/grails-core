@@ -105,7 +105,7 @@ class ServicesGrailsPlugin {
             }
         }
     }
-    
+
     def doWithApplicationContext = { ctx ->
         // should always be true...
         if(ctx instanceof AliasRegistry) {
@@ -114,7 +114,7 @@ class ServicesGrailsPlugin {
             def allServicePropertyNames = application.serviceClasses*.propertyName
             for (GrailsServiceClass serviceClass in application.serviceClasses) {
                 def potentialAliasName = serviceClass.propertyName
-                // if there is no bean with this alias name 
+                // if there is no bean with this alias name
                 //    AND
                 // there is only 1 occurence of the name in allServicePropertyNames
                 //   THEN
@@ -129,7 +129,6 @@ class ServicesGrailsPlugin {
                 }
             }
         }
-        
     }
 
     @CompileStatic
@@ -206,7 +205,6 @@ class ServicesGrailsPlugin {
                 }
                 beans.registerBeans(event.ctx)
             }
-
         }
     }
 }

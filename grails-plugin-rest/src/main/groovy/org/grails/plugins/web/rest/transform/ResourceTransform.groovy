@@ -15,14 +15,20 @@
  */
 package org.grails.plugins.web.rest.transform
 
+import static java.lang.reflect.Modifier.*
+import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
+import static org.codehaus.groovy.grails.web.mapping.ControllerActionConventions.*
+import static org.springframework.http.HttpMethod.*
 import grails.artefact.Artefact
-import grails.rest.Link
 import grails.rest.Resource
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.GrailsNameUtils
 import grails.web.controllers.ControllerMethod
 import groovy.transform.CompileStatic
+
+import javax.annotation.PostConstruct
+
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
@@ -30,7 +36,6 @@ import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.FieldNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
-import org.codehaus.groovy.ast.PropertyNode
 import org.codehaus.groovy.ast.VariableScope
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.BinaryExpression
@@ -62,7 +67,6 @@ import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.codehaus.groovy.grails.transaction.transform.TransactionalTransform
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
@@ -71,13 +75,6 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
-
-import javax.annotation.PostConstruct
-
-import static java.lang.reflect.Modifier.*
-import static org.springframework.http.HttpMethod.*
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
-import static org.codehaus.groovy.grails.web.mapping.ControllerActionConventions.*
 
 /**
  * The Resource transform automatically exposes a domain class as a RESTful resource. In effect the transform adds a controller to a Grails application
@@ -89,7 +86,7 @@ import static org.codehaus.groovy.grails.web.mapping.ControllerActionConventions
 @CompileStatic
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 class ResourceTransform implements ASTTransformation{
-    private static final ClassNode MY_TYPE = new ClassNode(Resource);
+    private static final ClassNode MY_TYPE = new ClassNode(Resource)
     public static final String ATTR_READY_ONLY = "readOnly"
     public static final String RESPOND_METHOD = "respond"
     public static final String ATTR_RESPONSE_FORMATS = "formats"
@@ -101,22 +98,22 @@ class ResourceTransform implements ASTTransformation{
     public static final String REDIRECT_METHOD = "redirect"
     public static final ClassNode AUTOWIRED_CLASS_NODE = new ClassNode(Autowired).getPlainNodeReference()
 
-    private ResourceLocator resourceLocator;
+    private ResourceLocator resourceLocator
 
-    public ResourceLocator getResourceLocator() {
+    ResourceLocator getResourceLocator() {
         if (resourceLocator == null) {
-            resourceLocator = new DefaultResourceLocator();
-            BuildSettings buildSettings = BuildSettingsHolder.getSettings();
-            String basedir;
+            resourceLocator = new DefaultResourceLocator()
+            BuildSettings buildSettings = BuildSettingsHolder.getSettings()
+            String basedir
             if (buildSettings != null) {
-                basedir = buildSettings.getBaseDir().getAbsolutePath();
+                basedir = buildSettings.getBaseDir().getAbsolutePath()
             } else {
-                basedir = ".";
+                basedir = "."
             }
 
-            resourceLocator.setSearchLocation(basedir);
+            resourceLocator.setSearchLocation(basedir)
         }
-        return resourceLocator;
+        return resourceLocator
     }
 
     @Override
@@ -125,10 +122,10 @@ class ResourceTransform implements ASTTransformation{
             throw new RuntimeException('Internal error: wrong types: $node.class / $parent.class')
         }
 
-        ClassNode parent = (ClassNode) astNodes[1];
-        AnnotationNode annotationNode = (AnnotationNode) astNodes[0];
+        ClassNode parent = (ClassNode) astNodes[1]
+        AnnotationNode annotationNode = (AnnotationNode) astNodes[0]
         if (!MY_TYPE.equals(annotationNode.getClassNode())) {
-            return;
+            return
         }
 
         final resourceLocator = getResourceLocator()
@@ -203,10 +200,10 @@ class ResourceTransform implements ASTTransformation{
 
             final publicStaticFinal = PUBLIC | STATIC | FINAL
 
-            newControllerClassNode.addProperty("scope", publicStaticFinal, ClassHelper.STRING_TYPE, new ConstantExpression("singleton"), null, null);
+            newControllerClassNode.addProperty("scope", publicStaticFinal, ClassHelper.STRING_TYPE, new ConstantExpression("singleton"), null, null)
             newControllerClassNode.addProperty("responseFormats", publicStaticFinal, new ClassNode(List).getPlainNodeReference(), responseFormatsExpression, null, null)
 
-            boolean isReadOnly = readOnlyAttr != null && readOnlyAttr.equals(ConstantExpression.TRUE);
+            boolean isReadOnly = readOnlyAttr != null && readOnlyAttr.equals(ConstantExpression.TRUE)
 
             List<MethodNode> weavedMethods = []
             weaveReadActions(parent, domainPropertyName,newControllerClassNode, annotationNode.lineNumber, weavedMethods)
@@ -222,10 +219,11 @@ class ResourceTransform implements ASTTransformation{
             final transactionalAnn = new AnnotationNode(TransactionalTransform.MY_TYPE)
             transactionalAnn.addMember(ATTR_READY_ONLY,ConstantExpression.PRIM_TRUE)
             newControllerClassNode.addAnnotation(transactionalAnn)
-            ArtefactTypeAstTransformation.doPerformInjectionOnArtefactType(source, newControllerClassNode, ControllerArtefactHandler.TYPE);
+            ArtefactTypeAstTransformation.doPerformInjectionOnArtefactType(source, newControllerClassNode, ControllerArtefactHandler.TYPE)
             for(MethodNode mn in weavedMethods) {
-                if(!mn.getAnnotations(ControllerActionTransformer.ACTION_ANNOTATION_NODE.classNode))
+                if(!mn.getAnnotations(ControllerActionTransformer.ACTION_ANNOTATION_NODE.classNode)) {
                     mn.addAnnotation(ControllerActionTransformer.ACTION_ANNOTATION_NODE)
+                }
             }
             new TransactionalTransform().weaveTransactionalBehavior(newControllerClassNode, transactionalAnn)
             newControllerClassNode.setModule(ast)
@@ -284,8 +282,7 @@ class ResourceTransform implements ASTTransformation{
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
         domainParameter.setClosureSharedVariable(true)
-        variableScope.putReferencedLocalVariable(domainParameter);
-        
+        variableScope.putReferencedLocalVariable(domainParameter)
         if (hasHtml) {
             // add html specific method call
             final messageKey = "default.updated.message"
@@ -355,8 +352,7 @@ class ResourceTransform implements ASTTransformation{
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
         domainParameter.setClosureSharedVariable(true)
-        variableScope.putReferencedLocalVariable(domainParameter);
-        
+        variableScope.putReferencedLocalVariable(domainParameter)
         if (hasHtml) {
             // add html specific method call
             final message = getFlashMessage('default.deleted.message', domainPropertyName, domainClass, domainVar)
@@ -414,8 +410,7 @@ class ResourceTransform implements ASTTransformation{
 
 
         domainParameter.setClosureSharedVariable(true)
-        variableScope.putReferencedLocalVariable(domainParameter);
-        
+        variableScope.putReferencedLocalVariable(domainParameter)
         if (hasHtml) {
             // add html specific method call
             final message = getFlashMessage('default.created.message', domainPropertyName, domainClass, domainVar)
