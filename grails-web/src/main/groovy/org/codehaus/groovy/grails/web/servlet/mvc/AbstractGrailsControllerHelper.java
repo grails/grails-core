@@ -384,15 +384,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             if (viewNameBlank) {
                 return null;
             }
-
-            Map model;
-            if (!chainModel.isEmpty()) {
-                model = new CompositeMap(chainModel, new GrailsControllerBeanMap(controller));
-            }
-            else {
-                model = new GrailsControllerBeanMap(controller);
-            }
-            return new ModelAndView(viewName, model);
+            return new ModelAndView(viewName, chainModel);
         }
 
         if (returnValue instanceof Map) {
@@ -430,14 +422,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             return modelAndView;
         }
 
-        Map model;
-        if (!chainModel.isEmpty()) {
-            model = new CompositeMap(chainModel, new GrailsControllerBeanMap(controller));
-        }
-        else {
-            model = new GrailsControllerBeanMap(controller);
-        }
-        return new ModelAndView(viewName, model);
+        return new ModelAndView(viewName, chainModel);
     }
 
     @SuppressWarnings("rawtypes")
