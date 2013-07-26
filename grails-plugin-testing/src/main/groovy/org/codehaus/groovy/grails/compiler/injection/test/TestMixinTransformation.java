@@ -24,6 +24,7 @@ import groovy.lang.GroovyObjectSupport;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -45,10 +46,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.*;
 
 /**
  * An AST transformation to be applied to tests for adding behavior to a target test class.
@@ -68,6 +66,8 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     public static final String TEAR_DOWN_METHOD = "tearDown";
     public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
+    public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
+    public static final String VOID_TYPE = "void";
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -88,9 +88,29 @@ public class TestMixinTransformation implements ASTTransformation{
         }
 
         autoAnnotateSetupTeardown(classNode);
+        autoAddTestAnnotation(classNode);
         ListExpression values = getListOfClasses(node);
 
         weaveMixinsIntoClass(classNode, values);
+    }
+
+    private void autoAddTestAnnotation(ClassNode classNode) {
+        if(isSpockTest(classNode)) return;
+        Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
+        for (String methodName : declaredMethodsMap.keySet()) {
+            MethodNode methodNode = declaredMethodsMap.get(methodName);
+            ClassNode testAnnotationClassNode = TEST_ANNOTATION.getClassNode();
+            List<AnnotationNode> existingTestAnnotations = methodNode.getAnnotations(testAnnotationClassNode);
+            if (isCandidateMethod(methodNode) && (methodNode.getName().startsWith("test") || existingTestAnnotations.size()>0)) {
+                if (existingTestAnnotations.size()==0) {
+                    ClassNode returnType = methodNode.getReturnType();
+                    if (returnType.getName().equals(VOID_TYPE)) {
+                        methodNode.addAnnotation(TEST_ANNOTATION);
+                    }
+                }
+            }
+        }
+
     }
 
     protected ListExpression getListOfClasses(AnnotationNode node) {
