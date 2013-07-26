@@ -22,6 +22,7 @@ import org.spockframework.runtime.SpecUtil
 import spock.config.RunnerConfiguration
 
 import java.lang.reflect.Modifier
+import org.codehaus.groovy.grails.test.support.GrailsTestMode
 
 @CompileStatic
 class GrailsSpecTestType extends GrailsTestTypeSupport {
@@ -29,9 +30,15 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
 
     private final List<Class> specClasses = []
     private int featureCount = 0
+    protected GrailsTestMode mode
 
     GrailsSpecTestType(String name, String relativeSourcePath) {
         super(name, relativeSourcePath)
+    }
+
+    GrailsSpecTestType(String name, String relativeSourcePath, GrailsTestMode mode) {
+        super(name, relativeSourcePath)
+        this.mode = mode
     }
 
     protected List<String> getTestExtensions() {
@@ -66,7 +73,12 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
     }
 
     protected Suite createSuite(classes) {
-        new Suite(new GrailsTestCaseRunnerBuilder(testTargetPatterns), classes as Class[])
+        if(mode) {
+            new Suite(new GrailsTestCaseRunnerBuilder(mode, getApplicationContext(), testTargetPatterns), classes as Class[])
+        }
+        else {
+            new Suite(new GrailsTestCaseRunnerBuilder(testTargetPatterns), classes as Class[])
+        }
     }
 
 

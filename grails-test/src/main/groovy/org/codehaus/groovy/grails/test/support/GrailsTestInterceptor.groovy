@@ -16,7 +16,9 @@
 package org.codehaus.groovy.grails.test.support
 
 import org.springframework.context.ApplicationContext
+import groovy.transform.CompileStatic
 
+@CompileStatic
 class GrailsTestInterceptor {
 
     private test
@@ -75,7 +77,7 @@ class GrailsTestInterceptor {
         ControllerNameExtractor.extractControllerNameFromTestClassName(test.class.name, testClassSuffixes)
     }
 
-    protected initRequestEnvironmentIfNecessary(Closure body) {
+    protected initRequestEnvironmentIfNecessary() {
         if (mode.wrapInRequestEnvironment) {
             requestEnvironmentInterceptor = createRequestEnvironmentInterceptor()
             def controllerName = getControllerName()

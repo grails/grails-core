@@ -248,7 +248,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
                         def rawTypeString = rawType.toString()
                         if (phaseName == 'integration') {
                             def mode = new GrailsTestMode(autowire: true, wrapInTransaction: true, wrapInRequestEnvironment: true)
-                            new JUnit4GrailsTestType(rawTypeString, rawTypeString, mode)
+                            new GrailsSpecTestType(rawTypeString, rawTypeString, mode)
                         }
                         else {
                             new GrailsSpecTestType(rawTypeString, rawTypeString)
