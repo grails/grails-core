@@ -18,11 +18,12 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests {
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver()
         GroovySystem.metaClassRegistry.removeMetaClass HttpServletRequest
         GroovySystem.metaClassRegistry.removeMetaClass MockHttpServletRequest
+        String parentPath = System.getProperty("user.dir").endsWith("grails-core") ? "" : "../"
         TagLibraryResolver.metaClass.resolveRootLoader = {->
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
-            def res = new FileSystemResource("../lib/taglibs/standard/jars/standard-1.1.2.jar")
+            def res = new FileSystemResource("${parentPath}lib/taglibs/standard/jars/standard-1.1.2.jar")
             rootLoader.addURL res.getURL()
-            resolver.getResources("file:../lib/org.springframework/spring-web*/jars/*.jar").each {
+            resolver.getResources("file:${parentPath}lib/org.springframework/spring-web*/jars/*.jar").each {
                 rootLoader.addURL it.getURL()
             }
             return rootLoader
