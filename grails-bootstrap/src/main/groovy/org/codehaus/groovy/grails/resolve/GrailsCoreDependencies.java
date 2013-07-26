@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.resolve;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 
@@ -48,14 +49,14 @@ public class GrailsCoreDependencies {
     protected Collection<Dependency> testDependencies;
 
     public GrailsCoreDependencies(String grailsVersion) {
-        this(grailsVersion, "2.5", false);
+        this(grailsVersion, "2.5", false, true);
     }
 
     public GrailsCoreDependencies(String grailsVersion, String servletVersion) {
-        this(grailsVersion, servletVersion, false);
+        this(grailsVersion, servletVersion, false, true);
     }
 
-    public GrailsCoreDependencies(String grailsVersion, String servletVersion, boolean java5compatible) {
+    public GrailsCoreDependencies(String grailsVersion, String servletVersion, boolean java5compatible, boolean isGrailsProject) {
         this.grailsVersion = grailsVersion;
         this.servletVersion = servletVersion == null ? "2.5" : servletVersion;
         this.java5compatible = java5compatible;
@@ -93,12 +94,21 @@ public class GrailsCoreDependencies {
             compileDependencies.add(  new Dependency("org.grails", "grails-plugin-async", grailsVersion, true, "javax:javaee-web-api") );
         }
 
-        String[] spockExcludes = {"org.codehaus.groovy:groovy-all", "junit:junit-dep"};
-        testDependencies = Arrays.asList(
-            new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
-            new Dependency("org.spockframework", "spock-core", spockVersion, true,spockExcludes),
-            new Dependency("org.grails", "grails-test", grailsVersion, true)
-        );
+        if(isGrailsProject) {
+            String[] spockExcludes = {"org.codehaus.groovy:groovy-all", "junit:junit-dep"};
+            testDependencies = Arrays.asList(
+                new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
+                new Dependency("org.spockframework", "spock-core", spockVersion, true,spockExcludes),
+                new Dependency("org.grails", "grails-test", grailsVersion, true)
+            );
+        }
+        else {
+            testDependencies = Arrays.asList(
+                new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
+                new Dependency("org.grails", "grails-test", grailsVersion, true)
+            );
+
+        }
 
         String[] loggingExcludes = {"javax.mail:mail", "javax.jms:jms", "com.sun.jdmk:jmxtools", "com.sun.jmx:jmxri"};
         runtimeDependencies = Arrays.asList(

@@ -48,7 +48,7 @@ class DependencyManagerConfigurer {
         DependencyManager aetherDependencyManager = loadAetherDependencyManager(classLoader)
 
         final coreDeps = classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies")
-            .newInstance(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel))
+            .newInstance(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
         prepareAetherDependencies(aetherDependencyManager, buildSettings, coreDeps)
 
         if (buildSettings.proxySettings) {
@@ -134,9 +134,8 @@ class DependencyManagerConfigurer {
         setCacheDir(grailsConfig, dependencyManager)
 
         if (!buildSettings.dependenciesExternallyConfigured) {
-            def coreDependencies = new GrailsIvyDependencies(grailsVersion, buildSettings.servletVersion)
+            def coreDependencies = new GrailsIvyDependencies(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
             buildSettings.coreDependencies = coreDependencies
-            coreDependencies.java5compatible = !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel)
             configureGlobalFrameworkDependencies(coreDependencies, grailsConfig)
             configureIvyAuthentication(grailsConfig, dependencyManager)
         }

@@ -530,6 +530,11 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     @CompileStatic
+    boolean isGrailsProject() {
+        return new File(getBaseDir(), "grails-app").exists()
+    }
+
+    @CompileStatic
     private List<File> findAndRemovePluginDependencies(String scope, Collection<File> jarFiles, List<File> scopePluginDependencies) {
         jarFiles = jarFiles?.findAll { File it -> it != null} ?: new ArrayList<File>()
         def pluginZips = jarFiles.findAll { File it -> it.name.endsWith(".zip") }

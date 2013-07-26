@@ -35,12 +35,8 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies {
         super(grailsVersion)
     }
 
-    GrailsAetherCoreDependencies(String grailsVersion, String servletVersion) {
-        super(grailsVersion, servletVersion)
-    }
-
-    GrailsAetherCoreDependencies(String grailsVersion, String servletVersion, boolean java5compatible) {
-        super(grailsVersion, servletVersion, java5compatible)
+    GrailsAetherCoreDependencies(String grailsVersion, String servletVersion, boolean java5compatible = false, boolean isGrailsProject = true) {
+        super(grailsVersion, servletVersion, java5compatible, isGrailsProject)
     }
 
     ExclusionDependencySelector exclusionDependencySelector
