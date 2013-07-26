@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -268,32 +269,77 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
         initialised = true;
     }
 
-    private List<GrailsPlugin> sortPlugins(List<GrailsPlugin> toSort) {
-
-        List<GrailsPlugin> newList = new ArrayList<GrailsPlugin>(toSort);
-
+    protected List<GrailsPlugin> sortPlugins(List<GrailsPlugin> toSort) {
+        /* http://en.wikipedia.org/wiki/Topological_sorting
+         * 
+        * L ← Empty list that will contain the sorted nodes
+         S ← Set of all nodes
+        
+        function visit(node n)
+            if n has not been visited yet then
+                mark n as visited
+                for each node m with an edge from n to m do
+                    visit(m)
+                add n to L
+        
+        for each node n in S do
+            visit(n)
+        
+         */
+        List<GrailsPlugin> sortedPlugins = new ArrayList<GrailsPlugin>(toSort.size());
+        Set<GrailsPlugin> visitedPlugins = new HashSet<GrailsPlugin>();
+        Map<GrailsPlugin, List<GrailsPlugin>> loadOrderDependencies = resolveLoadDependencies(toSort);
+        
         for (GrailsPlugin plugin : toSort) {
-            int i = newList.indexOf(plugin);
-            for (String loadBefore : plugin.getLoadBeforeNames()) {
-                final GrailsPlugin loadBeforePlugin = getGrailsPlugin(loadBefore);
-                int j = newList.indexOf(loadBeforePlugin);
-                if (j > -1 && i > j) {
-                    newList.remove(plugin);
-                    newList.add(j, plugin);
+            visitTopologicalSort(plugin, sortedPlugins, visitedPlugins, loadOrderDependencies);
+        }
+        
+        return sortedPlugins;
+    }
+
+    protected Map<GrailsPlugin, List<GrailsPlugin>> resolveLoadDependencies(List<GrailsPlugin> plugins) {
+        Map<GrailsPlugin, List<GrailsPlugin>> loadOrderDependencies = new HashMap<GrailsPlugin, List<GrailsPlugin>>();
+        
+        for (GrailsPlugin plugin : plugins) {
+            if(plugin.getLoadAfterNames() != null) {
+                List<GrailsPlugin> loadDepsForPlugin = loadOrderDependencies.get(plugin);
+                if(loadDepsForPlugin==null) {
+                    loadDepsForPlugin = new ArrayList<GrailsPlugin>();
+                    loadOrderDependencies.put(plugin, loadDepsForPlugin);
+                }     
+                for(String pluginName : plugin.getLoadAfterNames()) {
+                    GrailsPlugin loadAfterPlugin = getGrailsPlugin(pluginName);
+                    if(loadAfterPlugin != null) {
+                        loadDepsForPlugin.add(loadAfterPlugin);
+                    }
                 }
             }
-
-            i = newList.indexOf(plugin);
-            for (String loadAfter : plugin.getLoadAfterNames()) {
-                final GrailsPlugin loadAfterPlugin = getGrailsPlugin(loadAfter);
-                int j = newList.indexOf(loadAfterPlugin);
-                if (j > -1 && i < j) {
-                    newList.remove(plugin);
-                    newList.add(j, plugin);
+            for (String loadBefore : plugin.getLoadBeforeNames()) {
+                GrailsPlugin loadBeforePlugin = getGrailsPlugin(loadBefore);
+                if(loadBeforePlugin != null) {
+                    List<GrailsPlugin> loadDepsForPlugin = loadOrderDependencies.get(loadBeforePlugin);
+                    if(loadDepsForPlugin==null) {
+                        loadDepsForPlugin = new ArrayList<GrailsPlugin>();
+                        loadOrderDependencies.put(loadBeforePlugin, loadDepsForPlugin);
+                    }
+                    loadDepsForPlugin.add(plugin);
                 }
             }
         }
-        return newList;
+        return loadOrderDependencies;
+    }
+    
+    private void visitTopologicalSort(GrailsPlugin plugin, List<GrailsPlugin> sortedPlugins, Set<GrailsPlugin> visitedPlugins, Map<GrailsPlugin, List<GrailsPlugin>> loadOrderDependencies) {
+        if(plugin != null && !visitedPlugins.contains(plugin)) {
+            visitedPlugins.add(plugin);
+            List<GrailsPlugin> loadDepsForPlugin = loadOrderDependencies.get(plugin);
+            if(loadDepsForPlugin != null) {
+                for(GrailsPlugin dependentPlugin : loadDepsForPlugin) {
+                    visitTopologicalSort(dependentPlugin, sortedPlugins, visitedPlugins, loadOrderDependencies);
+                }
+            }
+            sortedPlugins.add(plugin);
+        }
     }
 
     private void attemptLoadPlugins(ClassLoader gcl) {
