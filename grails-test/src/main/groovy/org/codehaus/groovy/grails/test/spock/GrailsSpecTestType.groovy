@@ -91,6 +91,8 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
             createJUnitReportsFactory(), createSystemOutAndErrSwapper(), result,
             createGrails2TerminalListenerIfCan()))
 
+
+        optimizeSpecRunOrderIfEnabled()
         junit.run(specClasses as Class[])
         result
     }

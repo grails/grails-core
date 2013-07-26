@@ -93,8 +93,10 @@ public class GrailsCoreDependencies {
             compileDependencies.add(  new Dependency("org.grails", "grails-plugin-async", grailsVersion, true, "javax:javaee-web-api") );
         }
 
+        String[] spockExcludes = {"org.codehaus.groovy:groovy-all", "junit:junit-dep"};
         testDependencies = Arrays.asList(
             new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
+            new Dependency("org.spockframework", "spock-core", spockVersion, true,spockExcludes),
             new Dependency("org.grails", "grails-test", grailsVersion, true)
         );
 

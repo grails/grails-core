@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.TestMixin;
+import grails.test.mixin.TestMixinTargetAware;
 import grails.test.mixin.support.MixinMethod;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
@@ -32,11 +33,7 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
@@ -131,7 +128,7 @@ public class TestMixinTransformation implements ASTTransformation{
 
                 final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
 
-                FieldNode fieldNode = GrailsASTUtils.addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
+                FieldNode fieldNode = addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
 
                 if (fieldNode == null) return; // already woven
                 VariableExpression fieldReference = new VariableExpression(fieldName);
@@ -185,6 +182,22 @@ public class TestMixinTransformation implements ASTTransformation{
             addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
             addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
         }
+    }
+
+
+    public static FieldNode addFieldIfNonExistent(ClassNode classNode, ClassNode fieldType, String fieldName) {
+        ClassNode targetAwareInterface = GrailsASTUtils.findInterface(fieldType, new ClassNode(TestMixinTargetAware.class).getPlainNodeReference());
+        if (classNode != null && classNode.getField(fieldName) == null) {
+            Expression constructorArgument = new ArgumentListExpression();
+            if(targetAwareInterface != null) {
+                MapExpression namedArguments = new MapExpression();
+                namedArguments.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("target"), THIS_EXPRESSION));
+                constructorArgument = namedArguments;
+            }
+            return classNode.addField(fieldName, Modifier.PRIVATE, fieldType,
+                new ConstructorCallExpression(fieldType, constructorArgument));
+        }
+        return null;
     }
 
     protected boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
