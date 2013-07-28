@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationContext
  */
 class ForwardMethod {
 
+    public static final String IN_PROGRESS = "org.codehaus.groovy.grails.FORWARD_IN_PROGRESS"
     public static final String CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED"
 
     private UrlConverter urlConverter
@@ -53,6 +54,7 @@ class ForwardMethod {
         BeanUtils.populate(urlInfo, params)
 
         def model = params.model instanceof Map ? params.model : Collections.EMPTY_MAP
+        request.setAttribute(IN_PROGRESS, true)
         String uri = WebUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, model, true)
         request.setAttribute(CALLED, true)
         return uri

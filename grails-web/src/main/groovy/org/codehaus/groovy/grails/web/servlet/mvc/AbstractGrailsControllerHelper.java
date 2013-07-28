@@ -73,6 +73,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     private static final Log LOG = LogFactory.getLog(AbstractGrailsControllerHelper.class);
     private static final String PROPERTY_CHAIN_MODEL = "chainModel";
+    private static final String FORWARD_IN_PROGRESS = "org.codehaus.groovy.grails.FORWARD_IN_PROGRESS";
     private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
     private Collection<ActionResultTransformer> actionResultTransformers = Collections.emptyList();
     protected boolean developmentMode = Environment.isDevelopmentMode();
@@ -137,7 +138,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
         // Step 2: lookup the controller in the application.
         GrailsControllerClass controllerClass=null;
-        if(!WebUtils.isIncludeRequest(request)) {
+        if (!WebUtils.isIncludeRequest(request) && request.getAttribute(FORWARD_IN_PROGRESS) == null) {
 
             Object attribute = grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, WebRequest.SCOPE_REQUEST);
             if (attribute instanceof GrailsControllerClass) {
