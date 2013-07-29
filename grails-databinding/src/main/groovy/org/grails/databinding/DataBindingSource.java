@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,58 +25,58 @@ import java.util.Set;
  */
 public interface DataBindingSource {
     /**
-     * 
+     *
      * @return the names of properties represented
      */
     Set<String> getPropertyNames();
-    
+
     /**
-     * 
+     *
      * @param propertyName the name of a property
      * @return the value associated with propertyName, or null if propertyName is not represented
      */
     Object getPropertyValue(String propertyName);
-    
+
     /**
-     * Convencience operator overloading 
+     * Convencience operator overloading
      * @param propertyName the name of a property
      * @return the value associated with propertyName, or null if propertyName is not represented
      */
     Object getAt(String propertyName);
-    
+
     /**
-     * 
+     *
      * @param propertyName the name of a property
      * @return true if propertyName is represented in the is binding source, otherwise false
      */
     boolean containsProperty(String propertyName);
-    
+
     /**
-     * 
+     *
      * @return true if this binding source contains an identifier for binding
      */
     boolean hasIdentifier();
-    
+
     /**
-     * 
+     *
      * @return the identifier value for binding or null if no identifier is represented by this binding source
      */
     Object getIdentifierValue();
-    
+
     /**
-     * 
+     *
      * @return the number of properties represented by this binding source
      */
     int size();
-    
+
     /**
-     * 
+     *
      * @return true if GORM operations should be enabled when binding with this DataBindingSource
      */
     boolean isDataSourceAware();
-    
+
     /**
-     * 
+     *
      * @param isDataSourceAware true if GORM operations should be enabled when binding with this DataBindingSource
      */
     void setDataSourceAware(boolean isDataSourceAware);

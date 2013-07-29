@@ -57,7 +57,6 @@ class GrailsTestRequestEnvironmentInterceptor {
      */
     void destroy() {
         RequestContextHolder.requestAttributes = null
-        ServletContextHolder.servletContext = null
     }
 
     /**

@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.project.container.GrailsProjectRunner
 import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
+import grails.build.logging.GrailsConsole
 
 /**
  * Test phase configurer for the functional phase
@@ -66,7 +67,10 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         if (!isServerRunning)  {
             def grailsProjectPluginLoader = new GrailsProjectPluginLoader(null, packager.classLoader,
                 packager.buildSettings, projectRunner.buildEventListener)
-            packager.generateWebXml(grailsProjectPluginLoader.loadPlugins())
+            final pluginManager = grailsProjectPluginLoader.loadPlugins()
+            testExecutionContext.setVariable('pluginManager', pluginManager)
+            packager.buildEventListener.binding.setVariable('pluginManager', pluginManager)
+            packager.generateWebXml(pluginManager)
         }
 
         registryCleaner = MetaClassRegistryCleaner.createAndRegister()
@@ -95,7 +99,8 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                     projectRunner.runWar()
                 }
             } else {
-                projectRunner.projectPackager.packageApplication()
+                final config = projectRunner.projectPackager.packageApplication()
+                testExecutionContext.setVariable("config", config)
                 if (https) {
                     projectRunner.runAppHttps()
                 }
@@ -113,7 +118,25 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                         // no appCtx configured, ignore
                     }
                 }
+                else {
+                    final console = GrailsConsole.getInstance()
+                    console.updateStatus("Waiting for server availablility")
+                    int maxWait = 10000
+                    int timeout = 0
+                    while(true) {
+                        if (timeout>maxWait) break
+                        try {
+                            new URL(functionalBaseUrl).getText(connectTimeout:1000, readTimeout:1000)
+                            break
+                        } catch (Throwable e) {
+                            console.indicateProgress()
+                            timeout += 1000
+                            sleep(1000)
+                        }
+                    }
+                }
             }
+
         }
         else {
             existingServer = true
@@ -145,7 +168,9 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
 
         functionalBaseUrl = null
         System.setProperty(BuildSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
-        registryCleaner.clean()
-        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+        if (registryCleaner) {
+            registryCleaner.clean()
+            GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+        }
     }
 }

@@ -217,7 +217,9 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         projectPackager.packageApplication()
 
         if (testOptions.clean) {
-            new GrailsProjectCleaner(buildSettings, buildEventListener).cleanAll()
+            final cleaner = new GrailsProjectCleaner(buildSettings, buildEventListener)
+            cleaner.clean()
+            cleaner.cleanTestReports()
         }
 
         ant.mkdir(dir: "${testReportsDir}/html")
@@ -246,7 +248,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
                         def rawTypeString = rawType.toString()
                         if (phaseName == 'integration') {
                             def mode = new GrailsTestMode(autowire: true, wrapInTransaction: true, wrapInRequestEnvironment: true)
-                            new JUnit4GrailsTestType(rawTypeString, rawTypeString, mode)
+                            new GrailsSpecTestType(rawTypeString, rawTypeString, mode)
                         }
                         else {
                             new GrailsSpecTestType(rawTypeString, rawTypeString)
@@ -309,6 +311,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         }
         catch(Throwable e) {
             testsFailed = true
+            CONSOLE.error("Fatal error running tests: ${e.message}", e)
             throw e
         }
         finally {

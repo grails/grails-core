@@ -15,27 +15,24 @@
  */
 package org.codehaus.groovy.grails.plugins.i18n
 
-import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
-import org.springframework.core.io.FileSystemResource
-
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
+import groovy.transform.CompileStatic
 
 import org.apache.commons.lang.StringUtils
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 import org.codehaus.groovy.grails.web.i18n.ParamsAwareLocaleChangeInterceptor
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.ClassPathResource
 import org.springframework.core.io.ContextResource
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
-import org.springframework.context.support.ReloadableResourceBundleMessageSource
-import org.springframework.util.ResourceUtils
 import org.springframework.web.context.support.ServletContextResourcePatternResolver
 import org.springframework.web.servlet.i18n.SessionLocaleResolver
 
@@ -65,9 +62,7 @@ class I18nGrailsPlugin {
             messageResources = plugin.watchedResources
         }
 
-
         calculateBaseNamesFromMessageSources(messageResources, baseNames)
-
 
         LOG.debug "Creating messageSource with basenames: $baseNames"
 

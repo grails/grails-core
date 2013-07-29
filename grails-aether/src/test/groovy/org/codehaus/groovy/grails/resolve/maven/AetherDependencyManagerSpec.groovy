@@ -29,6 +29,27 @@ import spock.lang.Specification
  */
 class AetherDependencyManagerSpec extends Specification {
 
+    void "Test resolve agent"() {
+        given:"A dependency manager specifies a custom agent"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    mavenRepo("http://repo.grails.org/grails/core")
+                }
+                dependencies {
+                    agent "org.springsource.springloaded:springloaded-core:1.1.1"
+                }
+            }
+
+        when:"When the agent is resolved"
+            def report = dependencyManager.resolveAgent()
+
+        then:"The result is correct"
+            report != null
+            report.jarFiles.find { File f -> f.name.contains('springloaded')}
+
+    }
+
     void "Test customize repository policy"() {
         given:"A dependency manager with a dependency that contains exclusions"
             def dependencyManager = new AetherDependencyManager()

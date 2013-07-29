@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.grails.databinding.CollectionDataBindingSource
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
@@ -56,9 +57,14 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
         dataBindingSource
     }
 
+    @Override
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
+        throw new UnsupportedOperationException()
+    }
+
     protected  DataBindingSource createDataBindingSource(Object bindingTarget, HttpServletRequest req) {
-        final GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup(req);
-        final GrailsParameterMap parameterMap = grailsWebRequest.getParams();
+        final GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup(req)
+        final GrailsParameterMap parameterMap = grailsWebRequest.getParams()
         new SimpleMapDataBindingSource(parameterMap)
     }
 }

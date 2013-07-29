@@ -17,6 +17,7 @@ package org.grails.databinding.bindingsource
 
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
+import org.grails.databinding.CollectionDataBindingSource
 import org.grails.databinding.DataBindingSource
 
 /**
@@ -43,4 +44,15 @@ interface DataBindingSourceCreator extends MimeTypeProvider {
      * @throws DataBindingSourceCreationException if an unrecoverable error occurs creating the binding source
      */
     DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceCreationException
+    
+    /**
+     * Creates a CollectionDataBindingSource suitable for binding bindingSource to bindingTarget
+     *
+     * @param mimeType a mime type
+     * @param bindingTarget the type of the target of the data binding
+     * @param bindingSource the value being bound
+     * @return a CollectionDataBindingSource
+     * @throws DataBindingSourceCreationException if an unrecoverable error occurs creating the binding source
+     */
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceCreationException
 }

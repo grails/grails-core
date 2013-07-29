@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.databinding.CollectionDataBindingSource
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 
@@ -46,4 +47,13 @@ interface DataBindingSourceRegistry {
      * @return The {@link DataBindingSource}
      */
     DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource)
+
+    /**
+     * Locates a {@link CollectionDataBindingSource} for the given MimeType and binding target
+     * @param mimeType The MimeType
+     * @param bindingTarget The type of the binding target
+     * @param bindingSource The binding source
+     * @return The {@link CollectionDataBindingSource}
+     */
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource)
 }

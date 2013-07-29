@@ -19,6 +19,7 @@ class MockDomainWithInheritanceTests extends GroovyTestCase {
         def test = new PersonTests()
         test.setUp()
         test.testLoadingPirateInstance()
+        test.tearDown()
     }
 }
 
@@ -32,6 +33,7 @@ class PersonTests extends GrailsUnitTestCase {
 
     @Override
     protected void tearDown() {
+        super.tearDown()
         ApplicationHolder.application = null
     }
 

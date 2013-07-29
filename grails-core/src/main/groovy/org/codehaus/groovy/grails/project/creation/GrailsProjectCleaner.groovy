@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.project.creation
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
@@ -48,13 +49,15 @@ class GrailsProjectCleaner extends BaseSettingsApi {
     /**
      *  Cleans a Grails project
      **/
-    @CompileStatic
     void cleanAll(boolean triggerEvents = true) {
         if (triggerEvents) {
             buildEventListener.triggerEvent("CleanAllStart")
         }
         clean()
         cleanTestReports()
+        ant.delete(dir:new File(buildSettings.projectWorkDir, "scriptCache"), failonerror:false)
+        ant.delete(dir:buildSettings.pluginBuildClassesDir, failonerror:false)
+
         CONSOLE.updateStatus "Application cleaned."
         if (triggerEvents) {
             buildEventListener.triggerEvent("CleanAllEnd")
@@ -78,6 +81,10 @@ class GrailsProjectCleaner extends BaseSettingsApi {
 
     }
 
+    void cleanWork() {
+        ant.delete(dir: buildSettings.projectWorkDir, failonerror: false)
+    }
+
     /**
      * Cleans compiled Java and Groovy sources
      **/
@@ -88,12 +95,15 @@ class GrailsProjectCleaner extends BaseSettingsApi {
 
         def webInf = "${buildSettings.baseDir}/web-app/WEB-INF"
         ant.delete(dir:"${webInf}/classes")
+        ant.delete(dir: new File(buildSettings.grailsWorkDir, ".slcache"), failonerror: false)
         ant.delete(file:buildSettings.webXmlLocation.absolutePath, failonerror:false)
         ant.delete(dir:"${buildSettings.projectWorkDir}/gspcompile", failonerror:false)
         ant.delete(dir:"${webInf}/lib")
         ant.delete(dir:"${buildSettings.baseDir}/web-app/plugins")
         ant.delete(dir:buildSettings.classesDir.absolutePath)
         ant.delete(dir:buildSettings.pluginClassesDir, failonerror:false)
+        ant.delete(dir:buildSettings.pluginProvidedClassesDir, failonerror:false)
+
         ant.delete(dir:buildSettings.resourcesDir)
         ant.delete(dir:buildSettings.testClassesDir)
         ant.delete(failonerror:false, includeemptydirs: true) {

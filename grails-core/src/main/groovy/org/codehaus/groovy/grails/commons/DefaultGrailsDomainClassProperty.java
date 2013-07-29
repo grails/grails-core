@@ -391,7 +391,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
     }
 
     public boolean isEnum() {
-        return GrailsClassUtils.isJdk5Enum(getType());
+        return getType().isEnum();
     }
 
     public String getNaturalName() {

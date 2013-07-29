@@ -24,7 +24,7 @@ compile - Classpath for compiling sources
 |    \\--- org.grails:grails-bootstrap:2.3.0
 |         \\--- org.apache.ant:ant:1.8.2
 
-'''
+'''.denormalize()
 
     }
 

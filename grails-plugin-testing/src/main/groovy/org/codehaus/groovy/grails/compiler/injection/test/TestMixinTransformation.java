@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.TestMixin;
+import grails.test.mixin.TestMixinTargetAware;
 import grails.test.mixin.support.MixinMethod;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
@@ -23,6 +24,7 @@ import groovy.lang.GroovyObjectSupport;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -32,11 +34,7 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
@@ -48,10 +46,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
+import org.junit.*;
 
 /**
  * An AST transformation to be applied to tests for adding behavior to a target test class.
@@ -71,6 +66,8 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     public static final String TEAR_DOWN_METHOD = "tearDown";
     public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
+    public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
+    public static final String VOID_TYPE = "void";
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -78,12 +75,21 @@ public class TestMixinTransformation implements ASTTransformation{
         }
 
         AnnotatedNode parent = (AnnotatedNode) astNodes[1];
-        AnnotationNode node = (AnnotationNode) astNodes[0];
-        if (!MY_TYPE.equals(node.getClassNode()) || !(parent instanceof ClassNode)) {
+        AnnotationNode annotationNode = (AnnotationNode) astNodes[0];
+        if (!MY_TYPE.equals(annotationNode.getClassNode()) || !(parent instanceof ClassNode)) {
             return;
         }
 
         ClassNode classNode = (ClassNode) parent;
+        ListExpression values = getListOfClasses(annotationNode);
+        weaveTestMixins(classNode, values);
+    }
+
+    /**
+     * @param classNode The class node to weave into
+     * @param values A list of ClassExpression instances
+     */
+    public void weaveTestMixins(ClassNode classNode, ListExpression values) {
         String cName = classNode.getName();
         if (classNode.isInterface()) {
             throw new RuntimeException("Error processing interface '" + cName + "'. " +
@@ -91,9 +97,28 @@ public class TestMixinTransformation implements ASTTransformation{
         }
 
         autoAnnotateSetupTeardown(classNode);
-        ListExpression values = getListOfClasses(node);
+        autoAddTestAnnotation(classNode);
 
         weaveMixinsIntoClass(classNode, values);
+    }
+
+    private void autoAddTestAnnotation(ClassNode classNode) {
+        if(isSpockTest(classNode)) return;
+        Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
+        for (String methodName : declaredMethodsMap.keySet()) {
+            MethodNode methodNode = declaredMethodsMap.get(methodName);
+            ClassNode testAnnotationClassNode = TEST_ANNOTATION.getClassNode();
+            List<AnnotationNode> existingTestAnnotations = methodNode.getAnnotations(testAnnotationClassNode);
+            if (isCandidateMethod(methodNode) && (methodNode.getName().startsWith("test") || existingTestAnnotations.size()>0)) {
+                if (existingTestAnnotations.size()==0) {
+                    ClassNode returnType = methodNode.getReturnType();
+                    if (returnType.getName().equals(VOID_TYPE)) {
+                        methodNode.addAnnotation(TEST_ANNOTATION);
+                    }
+                }
+            }
+        }
+
     }
 
     protected ListExpression getListOfClasses(AnnotationNode node) {
@@ -131,7 +156,7 @@ public class TestMixinTransformation implements ASTTransformation{
 
                 final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
 
-                FieldNode fieldNode = GrailsASTUtils.addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
+                FieldNode fieldNode = addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
 
                 if (fieldNode == null) return; // already woven
                 VariableExpression fieldReference = new VariableExpression(fieldName);
@@ -185,6 +210,22 @@ public class TestMixinTransformation implements ASTTransformation{
             addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
             addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
         }
+    }
+
+
+    public static FieldNode addFieldIfNonExistent(ClassNode classNode, ClassNode fieldType, String fieldName) {
+        ClassNode targetAwareInterface = GrailsASTUtils.findInterface(fieldType, new ClassNode(TestMixinTargetAware.class).getPlainNodeReference());
+        if (classNode != null && classNode.getField(fieldName) == null) {
+            Expression constructorArgument = new ArgumentListExpression();
+            if(targetAwareInterface != null) {
+                MapExpression namedArguments = new MapExpression();
+                namedArguments.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("target"), THIS_EXPRESSION));
+                constructorArgument = namedArguments;
+            }
+            return classNode.addField(fieldName, Modifier.PRIVATE, fieldType,
+                new ConstructorCallExpression(fieldType, constructorArgument));
+        }
+        return null;
     }
 
     protected boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {

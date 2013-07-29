@@ -20,6 +20,9 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
+import javax.servlet.http.HttpServletResponse
+
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
@@ -32,8 +35,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
-import javax.servlet.http.HttpServletResponse
-
 /**
  * Provides the "respond" method in controllers
  *
@@ -42,7 +43,9 @@ import javax.servlet.http.HttpServletResponse
  */
 @CompileStatic
 class ControllersRestApi {
+
     public static final String PROPERTY_RESPONSE_FORMATS = "responseFormats"
+
     protected @Delegate ControllersApi controllersApi
     protected @Delegate ControllersMimeTypesApi mimeTypesApi
     protected RendererRegistry rendererRegistry
@@ -59,7 +62,7 @@ class ControllersRestApi {
     /**
      * Same as {@link ControllersRestApi#respond(java.lang.Object, java.lang.Object, java.util.Map)}, but here to support Groovy named arguments
      */
-    public <T> Object respond(Object controller, Map args, Object value) {
+    public <T> Object respond(controller, Map args, value) {
         respond(controller, value, args)
     }
 
@@ -75,8 +78,8 @@ class ControllersRestApi {
      * @param args The arguments
      * @return
      */
-    public Object respond(Object controller, Object value, Map args = [:]) {
-        Integer statusCode = null
+    Object respond(Object controller, Object value, Map args = [:]) {
+        Integer statusCode
         if (args.status) {
             final Object statusValue = args.status
             if (statusValue instanceof Number) {
@@ -88,7 +91,6 @@ class ControllersRestApi {
         if (value == null) {
             return render(controller,[status:statusCode ?: 404 ])
         }
-
 
         final webRequest = getWebRequest(controller)
         List<String> formats = calculateFormats(controller, webRequest.actionName, value, args)
@@ -121,19 +123,19 @@ class ControllersRestApi {
                         context.setStatus(HttpStatus.valueOf(statusCode))
                     }
                     return errorsRenderer.render(errors, context)
-                } else {
-                    return render(controller,[status: statusCode ?: 404 ])
                 }
-            } else {
-                final valueType = value.getClass()
-                if (registry.isContainerType(valueType)) {
-                    renderer = registry.findContainerRenderer(mimeType,valueType, value)
-                    if (renderer == null) {
-                        renderer = registry.findRenderer(mimeType, value)
-                    }
-                } else {
+
+                return render(controller,[status: statusCode ?: 404 ])
+            }
+
+            final valueType = value.getClass()
+            if (registry.isContainerType(valueType)) {
+                renderer = registry.findContainerRenderer(mimeType,valueType, value)
+                if (renderer == null) {
                     renderer = registry.findRenderer(mimeType, value)
                 }
+            } else {
+                renderer = registry.findRenderer(mimeType, value)
             }
 
             if (renderer) {
@@ -150,45 +152,40 @@ class ControllersRestApi {
         }
     }
 
-    protected List<String> calculateFormats(def controller, String actionName, Object value, Map args) {
+    protected List<String> calculateFormats(controller, String actionName, value, Map args) {
         if (args.formats) {
             return (List<String>) args.formats
         }
 
-        else if (controller.hasProperty(PROPERTY_RESPONSE_FORMATS)) {
+        if (controller.hasProperty(PROPERTY_RESPONSE_FORMATS)) {
             final responseFormatsProperty = ((GroovyObject) controller).getProperty(PROPERTY_RESPONSE_FORMATS)
             if (responseFormatsProperty instanceof List) {
                 return (List<String>) responseFormatsProperty
             }
-            else if ((responseFormatsProperty instanceof Map) && actionName) {
+            if ((responseFormatsProperty instanceof Map) && actionName) {
                 Map<String, Object> responseFormatsMap = (Map<String, Object>) responseFormatsProperty
 
                 final responseFormatsForAction = responseFormatsMap.get(actionName)
                 if (responseFormatsForAction instanceof List) {
                     return (List<String>) responseFormatsForAction
-                } else {
-                    return getDefaultResponseFormats(value)
                 }
-            } else {
                 return getDefaultResponseFormats(value)
             }
-        } else {
             return getDefaultResponseFormats(value)
         }
-
+        return getDefaultResponseFormats(value)
     }
 
-    protected List<String> getDefaultResponseFormats(Object value) {
+    protected List<String> getDefaultResponseFormats(value) {
         Resource resAnn = value != null ? value.getClass().getAnnotation(Resource) : null
         if (resAnn) {
             return resAnn.formats().toList()
-        } else {
-            return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
         }
+        return MimeType.getConfiguredMimeTypes().collect { MimeType mt -> mt.extension }
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected Errors getDomainErrors(def object) {
+    protected Errors getDomainErrors(object) {
         if (object instanceof Errors) {
             return object
         }

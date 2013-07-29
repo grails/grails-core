@@ -289,7 +289,7 @@ class ControllerActionParameterBindingSpec extends Specification {
 
 @Artefact('Controller')
 class TestBindingController {
-    
+
     def methodAction(String stringParam,
             Short shortParam,
             short primitiveShortParam,
@@ -325,11 +325,11 @@ class TestBindingController {
             charParam: charParam,
             primitiveCharParam: primitiveCharParam ]
     }
-            
+
     def methodActionWithRequestMapping(@RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age) {
         [name: name, age: age]
     }
-    
+
     def closureAction = {String stringParam,
             Short shortParam,
             short primitiveShortParam,
@@ -365,7 +365,7 @@ class TestBindingController {
             charParam: charParam,
             primitiveCharParam: primitiveCharParam ]
     }
-            
+
     def closureActionWithRequestMapping = { @RequestParameter('firstName') String name, @RequestParameter('numberOfYearsOld') int age ->
         [name: name, age: age]
     }

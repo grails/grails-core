@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettings
-import groovy.transform.NotYetImplemented
+
 import groovy.xml.MarkupBuilder
 
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
@@ -30,6 +30,26 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
+
+    void testResolveAgent() {
+        def settings = new BuildSettings()
+
+        def dependencyManager = new IvyDependencyManager("test", "0.1",settings)
+        dependencyManager.parseDependencies {
+            repositories {
+                mavenRepo("http://repo.grails.org/grails/core")
+            }
+            dependencies {
+                agent "org.springsource.springloaded:springloaded-core:1.1.1"
+            }
+        }
+
+        def report = dependencyManager.resolveAgent()
+
+        assert report != null
+        assert report.jarFiles.find { File f -> f.name.contains('springloaded')}
+
+    }
     // test that when a plugin is declared as test scoped then its dependencies are test scoped as well
     void testPluginScopeMapping() {
         def settings = new BuildSettings()
@@ -646,7 +666,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertTrue("all default dependencies should be inherited", manager.dependencyDescriptors.every { it.inherited == true })
         assertEquals 10, manager.dependencyDescriptors.findAll { it.scope == 'compile'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'runtime'}.size()
-        assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
+        assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'test'}.size()
         assertEquals 3, manager.dependencyDescriptors.findAll { it.scope == 'build'}.size()
         assertEquals 1, manager.dependencyDescriptors.findAll { it.scope == 'provided'}.size()
         assertEquals 2, manager.dependencyDescriptors.findAll { it.scope == 'docs'}.size()
@@ -846,7 +866,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
         assertTrue "should have a file system resolver",resolvers[0] instanceof FileSystemResolver
         assertEquals "mine", resolvers[0].name
-        assertTrue "should resolve to grails home",resolvers[0].artifactPatterns[0].endsWith("lib/[module]-[revision](-[classifier]).[ext]")
+        assertTrue "should resolve to grails home",resolvers[0].artifactPatterns[0].endsWith("lib/[module]-[revision](-[classifier]).[ext]".tr("/", File.separator))
         assertTrue "grailsHome() should be a file system resolver",resolvers[1] instanceof FileSystemResolver
         assertTrue "grailsHome() should be a file system resolver",resolvers[2] instanceof FileSystemResolver
 

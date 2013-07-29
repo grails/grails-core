@@ -681,7 +681,7 @@ public class GrailsConsole {
     }
 
     /**
-     * Like {@link #userInput(String)} except that the user's entered characters will be replaced with ‘*’ on the CLI,
+     * Like {@link #userInput(String)} except that the user's entered characters will be replaced with '*' on the CLI,
      * masking the input (i.e. suitable for capturing passwords etc.).
      *
      * @param msg The message/question to display.

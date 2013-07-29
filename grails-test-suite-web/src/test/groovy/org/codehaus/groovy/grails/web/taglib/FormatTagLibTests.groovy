@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import java.text.DecimalFormatSymbols
+
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
-import java.text.DecimalFormatSymbols;
 
 /**
  * Tests for the FormatTagLib.
@@ -25,11 +26,11 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
 
         assertOutputEquals "Yippeee!", template, [theBoolean:true]
         assertOutputEquals "Urghh!", template, [theBoolean:false]
-        
+
         template = '<g:formatBoolean boolean="${somebool}" true="X" false=""/>'
         assertOutputEquals 'X', template, [somebool: true]
         assertOutputEquals '', template, [somebool: false]
-        
+
         template = '<g:formatBoolean boolean="${somebool}" true="" false="X"/>'
         assertOutputEquals '', template, [somebool: true]
         assertOutputEquals 'X', template, [somebool: false]
@@ -74,11 +75,11 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals("", template, [myNumber:null])
     }
 
-     void testFormatNumberNoNumber() {
-         shouldFail(GrailsTagException) {
+    void testFormatNumberNoNumber() {
+        shouldFail(GrailsTagException) {
             applyTemplate('<g:formatNumber/>')
-         }
-     }
+        }
+    }
 
     void testFormatDateFromBundle() {
         def calender = new GregorianCalendar(1980,1,3)
@@ -197,5 +198,4 @@ class FormatTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:formatNumber number="${number}" nan="n/a"/>'
         assertOutputEquals("n/a", template, [number: number])
     }
-
 }

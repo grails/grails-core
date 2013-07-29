@@ -207,7 +207,7 @@ public class GrailsScriptRunner {
             String version = System.getProperty("grails.version");
             console.updateStatus("Loading Grails " + (version == null ? build.getGrailsVersion() : version));
 
-            build.loadConfig();
+            loadConfigEnvironment(commandLine, build);
             if (resolveDeps) {
                 ClasspathConfigurer.cleanResolveCache(build);
             }
@@ -235,6 +235,18 @@ public class GrailsScriptRunner {
                 exitWithError(msg, t);
             }
         }
+    }
+
+    private static void loadConfigEnvironment(CommandLine commandLine, BuildSettings build) {
+        String env;
+        if(commandLine.isEnvironmentSet()) {
+            env = commandLine.getEnvironment();
+        }
+        else {
+            env = commandLine.lookupEnvironmentForCommand();
+        }
+        build.setGrailsEnv(env);
+        build.loadConfig(env);
     }
 
     public static CommandLineParser getCommandLineParser() {
@@ -342,7 +354,7 @@ public class GrailsScriptRunner {
             System.setProperty("disable.grails.plugin.transform", "true");
 
             console.updateStatus("Loading Grails " + settings.getGrailsVersion());
-            settings.loadConfig();
+            loadConfigEnvironment(commandLine, settings);
             settings.initializeResourcesDir();
 
             System.setProperty("springloaded.directoriesContainingReloadableCode",

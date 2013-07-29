@@ -18,13 +18,14 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
 
+import javax.annotation.PostConstruct
+
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
+import org.grails.databinding.CollectionDataBindingSource
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.bindingsource.DataBindingSourceCreator
 import org.springframework.beans.factory.annotation.Autowired
-
-import javax.annotation.PostConstruct
 
 @CompileStatic
 class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBindingSourceCreator, DataBindingSourceCreatorCacheKey> implements DataBindingSourceRegistry {
@@ -61,6 +62,12 @@ class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBind
     DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, bindingSource) {
         def helper = getDataBindingSourceCreator(mimeType, bindingTargetType, bindingSource)
         helper.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
+    }
+
+    @Override
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, bindingSource) {
+        def helper = getDataBindingSourceCreator(mimeType, bindingTargetType, bindingSource)
+                helper.createCollectionDataBindingSource(mimeType, bindingTargetType, bindingSource)
     }
 
     @Override

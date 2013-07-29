@@ -145,6 +145,7 @@ subprojects { project ->
         groovyOptions.useAnt = true
         groovyOptions.stacktrace = true
         options.useAnt = true
+        options.encoding = "UTF-8"
     }
 
     configure([compileJava, compileTestJava]) {
@@ -184,6 +185,8 @@ subprojects { project ->
             testCompile "junit:junit:${junitVersion}"
             testCompile("org.spockframework:spock-core:${spockVersion}") {
                 transitive = false
+                exclude group:'junit', module: 'junit-dep'
+                exclude group:'org.codehaus.groovy', module: 'groovy-all'
             }
         }
     }

@@ -11,7 +11,7 @@ import spock.lang.Specification
 
 @TestFor(TestController)
 class CommandObjectsSpec extends Specification {
-    
+
     def setupSpec() {
         defineBeans {
             theAnswer(Integer, 42)
@@ -76,6 +76,7 @@ class CommandObjectsSpec extends Specification {
         widget.errors.errorCount == 2
         widget.errors.getFieldError('width').rejectedValue == 'some bad value'
     }
+
     void 'Test non validateable command object'() {
         when:
         controller.params.name = 'Beardfish'
@@ -244,7 +245,7 @@ class CommandObjectsSpec extends Specification {
         then:
         model.person.hasErrors()
         model.person.name == 'Maynard'
-        'matches.invalid.name' in model.person.errors['name'].codes
+        model.person.errors['name'].code == 'matches.invalid'
     }
 
     void "Test validation"() {
@@ -357,7 +358,6 @@ class CommandObjectsSpec extends Specification {
         model.artist.hasErrors()
     }
 
-
     void 'Test command object that is a precompiled @Validatable'() {
         when:
         def model = controller.methodActionWithValidateableParam()
@@ -406,7 +406,6 @@ class CommandObjectsSpec extends Specification {
         then:
         1 == model.co.validationCounter
     }
-
 }
 
 @Artefact('Controller')
@@ -512,9 +511,11 @@ class ArtistSubclass extends ArtistCommand {
     String bandName
     static constraints = { bandName matches: /[A-Z].*/ }
 }
+
 abstract class MyAbstractController {
     def index = { [name: 'Abstract Parent Controller'] }
 }
+
 class SubClassController extends MyAbstractController {
     def index = { [name: 'Subclass Controller'] }
 }
@@ -538,8 +539,3 @@ class PersonCommand {
         state nullable: true
     }
 }
-
-
-
-
-

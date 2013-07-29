@@ -192,16 +192,22 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected void discoverAndSetAgent(ExecutionContext executionContext) {
-        try {
-            final agentClass = Thread.currentThread().contextClassLoader.loadClass('org.springsource.loaded.ReloadEventProcessorPlugin')
-            setReloadingAgent(findJarFile(agentClass))
-        } catch (e) {
-            final grailsHome = executionContext.grailsHome
-            if (grailsHome && grailsHome.exists()) {
-                def agentHome = new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars")
-                final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar") && !f.name.contains('sources') && !f.name.contains('javadoc')}
-                if (agentJar) {
-                    setReloadingAgent(agentJar)
+        final jarFromContext = executionContext.agentJar
+        if (jarFromContext) {
+            setReloadingAgent(jarFromContext)
+        }
+        else {
+            try {
+                final agentClass = Thread.currentThread().contextClassLoader.loadClass('org.springsource.loaded.ReloadEventProcessorPlugin')
+                setReloadingAgent(findJarFile(agentClass))
+            } catch (e) {
+                final grailsHome = executionContext.grailsHome
+                if (grailsHome && grailsHome.exists()) {
+                    def agentHome = new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars")
+                    final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar") && !f.name.contains('sources') && !f.name.contains('javadoc')}
+                    if (agentJar) {
+                        setReloadingAgent(agentJar)
+                    }
                 }
             }
         }
@@ -573,7 +579,8 @@ abstract class ForkedGrailsProcess {
             if (fileName.contains('grails-bootstrap') ||
                     fileName.contains('slf4j-api') ||
                     fileName.contains('ivy') ||
-                    fileName.contains('ant') ||
+                    fileName.matches(/^ant-.+$/) ||
+                    fileName.contains('ant-junit') ||
                     fileName.contains('jline') ||
                     fileName.contains('jansi') ) {
                 bootstrapJars.add(f)
@@ -638,14 +645,19 @@ abstract class ForkedGrailsProcess {
     }
 
     /**
-     * @deprecated The project watcher should not be started in the forked JVM, but instead should be run from the JVM that launched the fork
      *
      * @param classLoader
      * @param buildSettings
      */
-    @Deprecated
     protected void setupReloading(URLClassLoader classLoader, BuildSettings buildSettings) {
-        // noop.. deprecated
+        Thread.start {
+            final holders = classLoader.loadClass("grails.util.Holders")
+            while(!holders.getPluginManager()) {
+                sleep(1000)
+            }
+            startProjectWatcher(classLoader, buildSettings)
+        }
+
     }
 
     protected void startProjectWatcher(URLClassLoader classLoader, BuildSettings buildSettings) {
@@ -688,7 +700,7 @@ abstract class ForkedGrailsProcess {
         buildSettings.setCompileDependencies(ec.runtimeDependencies)
         buildSettings.setTestDependencies(ec.testDependencies)
         buildSettings.setProvidedDependencies(ec.providedDependencies)
-        buildSettings.setBuildDependencies([])
+        buildSettings.setBuildDependencies(ec.buildDependencies)
         buildSettings.setForkSettings(ec.forkConfig)
 
         BuildSettingsHolder.settings = buildSettings
@@ -750,6 +762,7 @@ class ExecutionContext implements Serializable {
     File resourcesDir
     File projectPluginsDir
     File baseDir
+    File agentJar
 
     String env
     File grailsHome
@@ -783,10 +796,11 @@ class ExecutionContext implements Serializable {
         buildDependencies = isolatedBuildDependencies
         runtimeDependencies = new ArrayList<>(settings.runtimeDependencies)
         runtimeDependencies.addAll settings.pluginRuntimeDependencies
+        runtimeDependencies.addAll settings.applicationJars
         providedDependencies = new ArrayList<>(settings.providedDependencies)
-        providedDependencies.addAll settings.providedDependencies
+        providedDependencies.addAll settings.pluginProvidedDependencies
         testDependencies = new ArrayList<>(settings.testDependencies)
-        testDependencies.addAll settings.testDependencies
+        testDependencies.addAll settings.pluginTestDependencies
         baseDir = settings.baseDir
         env = Environment.current.name
         grailsHome = settings.grailsHome
@@ -805,6 +819,11 @@ class ExecutionContext implements Serializable {
                 forkConf = [:] + (Map)value
             }
             forkConfig[key] = forkConf
+        }
+
+        final agentReport = settings.dependencyManager.resolveAgent()
+        if(agentReport && agentReport.jarFiles) {
+            agentJar = agentReport.jarFiles[0]
         }
     }
 

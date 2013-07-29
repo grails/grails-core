@@ -29,6 +29,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.binding.StructuredDateEditor;
@@ -360,5 +361,12 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
             throw new ControllerExecutionException("Unable to convert parameter map [" + this +
                  "] to a query string: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * @return The identifier in the request
+     */
+    public Object getIdentifier() {
+        return get(GrailsDomainClassProperty.IDENTITY);
     }
 }

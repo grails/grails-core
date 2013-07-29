@@ -28,6 +28,7 @@ import org.sonatype.aether.repository.RepositoryPolicy
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 import org.sonatype.aether.util.repository.DefaultAuthenticationSelector
+import grails.util.Environment
 
 /**
  * Core of the DSL for configuring Aether dependency resolution
@@ -44,6 +45,20 @@ class AetherDsl {
 
     AetherDsl(AetherDependencyManager dependencyManager) {
         this.dependencyManager = dependencyManager
+    }
+
+    /**
+     * Environment support
+     *
+     * @param callable The callable
+     * @return The result of the environments block
+     */
+    def environments(Closure callable) {
+        final environmentCallable = Environment.getEnvironmentSpecificBlock(callable)
+        if(environmentCallable) {
+            environmentCallable.setDelegate(this)
+            environmentCallable.call()
+        }
     }
 
     /**

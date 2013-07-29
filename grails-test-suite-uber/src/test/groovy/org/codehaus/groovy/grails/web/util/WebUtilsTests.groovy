@@ -61,7 +61,6 @@ grails.mime.file.extensions=true
         def ctx = new MockApplicationContext()
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
         def factory = new MimeTypesFactoryBean(grailsApplication: ga)
-        factory.afterPropertiesSet()
 
         ctx.registerMockBean(MimeType.BEAN_NAME, factory.getObject())
 

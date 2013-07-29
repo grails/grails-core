@@ -146,7 +146,7 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.someFloat == 5.5
         obj.someDouble == 6.6
     }
-    
+
     void 'Test binding null to id of element nested in a List'() {
         given:
         def binder = new GrailsWebDataBinder(grailsApplication)
@@ -170,13 +170,13 @@ class GrailsWebDataBinderSpec extends Specification {
         listOfWidgets[1].isNotBindable == null
         listOfWidgets[2].isBindable == 'Is Tres (List)'
         listOfWidgets[2].isNotBindable == null
-        
+
         when:
         map = ['listOfWidgets[1]': [id: 'null']]
         binder.bind obj, new SimpleMapDataBindingSource(map)
 
         listOfWidgets = obj.listOfWidgets
-        
+
         then:
         listOfWidgets instanceof List
         listOfWidgets.size() == 2
@@ -662,14 +662,14 @@ class GrailsWebDataBinderSpec extends Specification {
         sortedSetOfWidgets[1].isBindable == 'Is Tres (SortedSet)'
         sortedSetOfWidgets[2].isBindable == 'Is Uno (SortedSet)'
     }
-    
+
     void 'Test binding format code'() {
         given:
         def messageSource = new StaticMessageSource()
         messageSource.addMessage 'my.date.format', Locale.US, 'MMddyyyy'
         messageSource.addMessage 'my.date.format', Locale.UK, 'ddMMyyyy'
         def child = new Child()
-        
+
         when:
         def binder = new GrailsWebDataBinder(grailsApplication)  {
             Locale getLocale() {
@@ -679,12 +679,12 @@ class GrailsWebDataBinderSpec extends Specification {
         binder.messageSource = messageSource
         binder.bind child, new SimpleMapDataBindingSource([birthDate: '11151969'])
         def birthDate = child.birthDate
-        
+
         then:
         Calendar.NOVEMBER == birthDate.month
         15 == birthDate.date
         69 == birthDate.year
-        
+
         when:
         binder = new GrailsWebDataBinder(grailsApplication) {
             Locale getLocale() {
@@ -695,7 +695,7 @@ class GrailsWebDataBinderSpec extends Specification {
         child.birthDate = null
         binder.bind child, new SimpleMapDataBindingSource([birthDate: '15111969'])
         birthDate = child.birthDate
-        
+
         then:
         Calendar.NOVEMBER == birthDate.month
         15 == birthDate.date

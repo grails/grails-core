@@ -34,6 +34,7 @@ import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.GrailsVersionUtils
+import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -108,8 +109,15 @@ class PluginInstallEngine {
     }
     @CompileStatic
     protected void installResolvePlugins(Collection<File> pluginZips) {
-        for (zip in pluginZips) {
-            installResolvedPlugin(zip)
+        try {
+            for (zip in pluginZips) {
+                installResolvedPlugin(zip)
+            }
+        } finally {
+            final im = InteractiveMode.current
+            if(im) {
+                im.refresh()
+            }
         }
     }
 

@@ -72,6 +72,7 @@ import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
+import org.springframework.context.ApplicationContext
 
 /**
  * Applied to a unit test to test controllers.
@@ -267,8 +268,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         ServletsGrailsPluginSupport.enhanceServletApi()
         ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
-        request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(grailsApplication: grailsApplication))
-        response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication))
+        request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(applicationContext: applicationContext))
+        response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(applicationContext: applicationContext))
         webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         request = (GrailsMockHttpServletRequest)webRequest.getCurrentRequest()
         response = (GrailsMockHttpServletResponse)webRequest.getCurrentResponse()
@@ -366,10 +367,12 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 @CompileStatic
 class TestResponseMimeTypesApi extends ResponseMimeTypesApi {
 
+    ApplicationContext applicationContext
+
     @Override
     MimeType[] getMimeTypes() {
-        def factory = new MimeTypesFactoryBean(grailsApplication:grailsApplication)
-        factory.afterPropertiesSet()
+        def factory = new MimeTypesFactoryBean()
+        factory.applicationContext = applicationContext
         return factory.getObject()
     }
 }
@@ -377,10 +380,12 @@ class TestResponseMimeTypesApi extends ResponseMimeTypesApi {
 @CompileStatic
 class TestRequestMimeTypesApi extends RequestMimeTypesApi {
 
+    ApplicationContext applicationContext
+
     @Override
     MimeType[] getMimeTypes() {
-        def factory = new MimeTypesFactoryBean(grailsApplication:grailsApplication)
-        factory.afterPropertiesSet()
+        def factory = new MimeTypesFactoryBean()
+        factory.applicationContext = applicationContext
         return factory.getObject()
     }
 }

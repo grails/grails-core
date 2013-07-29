@@ -81,10 +81,10 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         ctx = new MockApplicationContext()
         onSetUp()
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(), gcl)
-        
+
         def binder = new GrailsWebDataBinder(ga)
         binder.registerConverter new DateConversionHelper()
-        
+
         ctx.registerMockBean(DataBindingUtils.DATA_BINDER_BEAN_NAME, binder)
 
         ga.metadata[Metadata.APPLICATION_NAME] = getClass().name

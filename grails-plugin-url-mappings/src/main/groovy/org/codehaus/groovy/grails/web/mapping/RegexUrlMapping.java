@@ -88,6 +88,9 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         super(uri, constraints, servletContext);
         parse(data, constraints);
     }
+    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        this(null, data, controllerName, actionName, namespace, pluginName, viewName, httpMethod, version, constraints, servletContext);
+    }
 
     /**
      * Constructs a new RegexUrlMapping for the given pattern, controller name, action name and constraints.
@@ -104,8 +107,8 @@ public class RegexUrlMapping extends AbstractUrlMapping {
      * @param servletContext
      * @see org.codehaus.groovy.grails.validation.ConstrainedProperty
      */
-    public RegexUrlMapping(UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        super(controllerName, actionName, namespace, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
+    public RegexUrlMapping(Object redirectInfo, UrlMappingData data, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, ConstrainedProperty[] constraints, ServletContext servletContext) {
+        super(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, constraints != null ? constraints : new ConstrainedProperty[0], servletContext);
         if (httpMethod != null) {
             this.httpMethod = httpMethod;
         }
@@ -628,6 +631,10 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         if (viewName == null) {
             viewName = createRuntimeConstraintEvaluator(GrailsControllerClass.VIEW, constraints);
         }
+        
+        if(redirectInfo == null) {
+            redirectInfo = createRuntimeConstraintEvaluator("redirect", constraints);
+        }
 
         DefaultUrlMappingInfo info;
         if (forwardURI != null && controllerName == null) {
@@ -637,7 +644,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             info = new DefaultUrlMappingInfo(viewName, params, urlData, servletContext);
         }
         else {
-            info = new DefaultUrlMappingInfo(controllerName, actionName, namespace, pluginName, getViewName(), getHttpMethod(),getVersion(), params, urlData, servletContext);
+            info = new DefaultUrlMappingInfo(redirectInfo, controllerName, actionName, namespace, pluginName, getViewName(), getHttpMethod(),getVersion(), params, urlData, servletContext);
         }
 
         if (parseRequest) {

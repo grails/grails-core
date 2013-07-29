@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.plugins;
 
 import groovy.lang.GroovyClassLoader;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import junit.framework.TestCase;
@@ -111,4 +112,85 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
 
         assertEquals("Expected plugins not loaded. Expected " + 5 + " but got " + pluginList, 5, pluginList.size());
     }
+    
+    
+    public void testLoadingOrderGRAILS9426() {
+        // GRAILS-9426
+        DefaultGrailsPluginManager manager = loadPlugins("class FirstGrailsPlugin {\n" +
+                    "def version = '1.0'\n" +
+                    "}", "class SecondGrailsPlugin {\n" +
+                    "def version = '1.0'\n" +
+                    "}", "import grails.util.GrailsUtil\n" +
+                                    "class ThirdGrailsPlugin {\n" +
+                                "def version = '1.0'\n" +
+                                "}", "class FourthGrailsPlugin {\n" +
+                                "def version = '1.0'\n" +
+                                "def loadBefore = ['first', 'second']\n" +
+                                "}");
+
+        List<GrailsPlugin> pluginList = manager.getPluginList();
+
+        assertNotNull(manager.getGrailsPlugin("first"));
+        assertNotNull(manager.getGrailsPlugin("second"));
+        assertNotNull(manager.getGrailsPlugin("third"));
+        assertNotNull(manager.getGrailsPlugin("fourth"));
+        
+        List<GrailsPlugin> expectedOrder = new ArrayList<GrailsPlugin>();
+        expectedOrder.add(manager.getGrailsPlugin("fourth"));
+        expectedOrder.add(manager.getGrailsPlugin("first"));
+        expectedOrder.add(manager.getGrailsPlugin("second"));
+        expectedOrder.add(manager.getGrailsPlugin("third"));
+        
+        assertEquals("Expected plugin order", expectedOrder, pluginList);
+
+        assertEquals("Expected plugins not loaded. Expected " + 4 + " but got " + pluginList, 4, pluginList.size());
+    }
+
+    DefaultGrailsPluginManager loadPlugins(String firstClassString, String secondClassString, String thirdClassString, String fourthClassString) {
+        GroovyClassLoader gcl = new GroovyClassLoader();
+
+        first = gcl.parseClass(firstClassString);
+        second = gcl.parseClass(secondClassString);
+        third = gcl.parseClass(thirdClassString);
+        fourth = gcl.parseClass(fourthClassString);
+
+        GrailsApplication app = new DefaultGrailsApplication(new Class[]{}, gcl);
+        MockApplicationContext parent = new MockApplicationContext();
+        parent.registerMockBean(GrailsApplication.APPLICATION_ID, app);
+
+        DefaultGrailsPluginManager manager = new DefaultGrailsPluginManager(new Class[]{first, second, third, fourth}, app);
+        manager.setParentApplicationContext(parent);
+        manager.setPluginFilter(new IncludingPluginFilter(new String[]{"first", "second", "third", "fourth"}));
+
+        manager.loadPlugins();
+        return manager;
+    }
+
+    public void testLoadingOrderLoadBeforeAndLoadAfter() {
+        DefaultGrailsPluginManager manager = loadPlugins("class FirstGrailsPlugin {\n" +
+                    "def version = '1.0'\n" +
+                    "def loadAfter = ['second', 'third']\n" +
+                    "}", "class SecondGrailsPlugin {\n" +
+                    "def version = '1.0'\n" +
+                    "}", "import grails.util.GrailsUtil\n" +
+                                    "class ThirdGrailsPlugin {\n" +
+                                "def version = '1.0'\n" +
+                                "def loadBefore = ['fourth']\n" +
+                                "}", "class FourthGrailsPlugin {\n" +
+                                "def version = '1.0'\n" +
+                                "def loadBefore = ['first', 'second']\n" +
+                                "}");
+
+        List<GrailsPlugin> pluginList = manager.getPluginList();
+        
+        List<GrailsPlugin> expectedOrder = new ArrayList<GrailsPlugin>();
+        expectedOrder.add(manager.getGrailsPlugin("third"));
+        expectedOrder.add(manager.getGrailsPlugin("fourth"));
+        expectedOrder.add(manager.getGrailsPlugin("second"));
+        expectedOrder.add(manager.getGrailsPlugin("first"));        
+        
+        assertEquals("Expected plugin order", expectedOrder, pluginList);
+    }
+
+    
 }

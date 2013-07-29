@@ -15,11 +15,17 @@
  */
 package org.codehaus.groovy.grails.web.mapping.filter;
 
+import grails.util.CollectionUtils;
 import grails.util.Metadata;
 import grails.web.UrlConverter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
@@ -35,22 +41,24 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
+import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodInvocation;
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
 import org.codehaus.groovy.grails.web.mapping.UrlMapping;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingEvaluator;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
+import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -90,6 +98,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private MimeTypeResolver mimeTypeResolver;
     private UrlConverter urlConverter;
     private Boolean allowHeaderForWrongHttpMethod;
+    final DynamicMethodInvocation redirectDynamicMethod = new RedirectDynamicMethod();
+
 
     @Override
     protected void initFilterBean() throws ServletException {
@@ -147,6 +157,21 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
             for (UrlMappingInfo info : urlInfos) {
                 if (info != null) {
+                    Object redirectInfo = info.getRedirectInfo();
+                    if(redirectInfo != null) {
+                        final Map redirectArgs;
+                        if(redirectInfo instanceof Map) {
+                            redirectArgs = (Map) redirectInfo;
+                        } else {
+                            redirectArgs = CollectionUtils.newMap("uri", redirectInfo);
+                        }
+                        GrailsParameterMap params = webRequest.getParams();
+                        redirectArgs.put("params", params);
+                        redirectDynamicMethod.invoke(this, "redirect", new Object[]{ redirectArgs } );
+                        dispatched = true;
+
+                        break;
+                    }
                     // GRAILS-3369: The configure() will modify the
                     // parameter map attached to the web request. So,
                     // we need to clear it each time and restore the

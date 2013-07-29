@@ -24,7 +24,6 @@ import java.lang.reflect.Field
 import java.lang.reflect.ParameterizedType
 
 import org.grails.databinding.converters.ConversionService
-import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.converters.FormattedDateValueConverter
 import org.grails.databinding.converters.FormattedValueConverter
 import org.grails.databinding.converters.StructuredCalendarBindingEditor
@@ -68,7 +67,7 @@ class SimpleDataBinder implements DataBinder {
 
     protected Map<Class, StructuredBindingEditor> structuredEditors = new HashMap<Class, StructuredBindingEditor>()
     ConversionService conversionService
-    protected Map<Class, List<ValueConverter>> conversionHelpers = [:].withDefault { Class c -> new ArrayList<ValueConverter>()}
+    protected Map<Class, List<ValueConverter>> conversionHelpers = [:].withDefault { Class c -> [] }
     protected Map<Class, FormattedValueConverter> formattedValueConvertersionHelpers = new HashMap<Class, FormattedValueConverter>()
     protected static final List<Class> BASIC_TYPES = [
         String,
@@ -346,7 +345,7 @@ class SimpleDataBinder implements DataBinder {
     protected Collection initializeCollection(obj, String propertyName, Class type) {
         if (obj[propertyName] == null) {
             if (List.isAssignableFrom(type)) {
-                obj[propertyName] = new ArrayList()
+                obj[propertyName] = []
             } else if (SortedSet.isAssignableFrom(type)) {
                 obj[propertyName] = new TreeSet()
             } else if (Set.isAssignableFrom(type)) {
@@ -399,7 +398,7 @@ class SimpleDataBinder implements DataBinder {
         }
         converter
     }
-    
+
     protected String getFormatString(BindingFormat annotation) {
         annotation.value()
     }
@@ -427,12 +426,9 @@ class SimpleDataBinder implements DataBinder {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected convertStringToEnum(Class<? extends Enum> enumClass, String value) {
-        Enum enumValue = null
         try {
-            enumValue = enumClass.valueOf(value)
+            enumClass.valueOf(value)
         } catch (IllegalArgumentException iae) {}
-
-        enumValue
     }
 
     protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
@@ -549,10 +545,12 @@ class SimpleDataBinder implements DataBinder {
         }
         if (conversionService?.canConvert(value.getClass(), typeToConvertTo)) {
             return conversionService.convert(value, typeToConvertTo)
-        } else if (Collection.isAssignableFrom(typeToConvertTo) && value instanceof String[]) {
+        }
+        if (Collection.isAssignableFrom(typeToConvertTo) && value instanceof String[]) {
             if (Set == typeToConvertTo) {
                 return value as Set
-            } else if (List == typeToConvertTo) {
+            }
+            if (List == typeToConvertTo) {
                 return value as List
             }
         } else if (typeToConvertTo.isPrimitive() || typeToConvertTo.isArray()) {
@@ -567,7 +565,6 @@ class SimpleDataBinder implements DataBinder {
 
     protected ValueConverter getConverter(Class typeToConvertTo, value) {
         def converters = conversionHelpers.get(typeToConvertTo)
-        ValueConverter converter = converters?.find { ValueConverter c -> c.canConvert(value) }
-        return converter
+        converters?.find { ValueConverter c -> c.canConvert(value) }
     }
 }

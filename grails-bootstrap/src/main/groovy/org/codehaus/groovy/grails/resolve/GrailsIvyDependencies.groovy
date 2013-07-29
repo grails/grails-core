@@ -33,8 +33,8 @@ class GrailsIvyDependencies extends GrailsCoreDependencies {
         super(grailsVersion)
     }
 
-    GrailsIvyDependencies(String grailsVersion, String servletVersion) {
-        super(grailsVersion, servletVersion)
+    GrailsIvyDependencies(String grailsVersion, String servletVersion, boolean java5compatible = false, boolean isGrailsProject = true) {
+        super(grailsVersion, servletVersion, java5compatible, isGrailsProject)
     }
 
     private void registerDependencies(IvyDependencyManager dependencyManager, String scope, ModuleRevisionId[] dependencies, boolean transitive) {

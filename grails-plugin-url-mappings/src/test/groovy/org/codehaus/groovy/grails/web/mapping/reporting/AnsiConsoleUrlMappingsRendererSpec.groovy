@@ -54,7 +54,7 @@ Controller: publisher
  |   GET    | /books/${bookId}/authors/${authorId}/publisher             | Action: show             |
  |   POST   | /books/${bookId}/authors/${authorId}/publisher             | Action: save             |
 
-'''
+'''.denormalize()
     }
 
     void "Test render URL mappings to target stream"() {
@@ -95,7 +95,7 @@ Controller: foo
 Controller: image
  |    *     | /images/${name}**.jpg                             | Action: (default action) |
 
-'''
+'''.denormalize()
     }
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())

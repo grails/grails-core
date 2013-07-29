@@ -38,7 +38,7 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
     private Class<?> exceptionType;
 
     public ResponseCodeUrlMapping(UrlMappingData urlData, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, ConstrainedProperty[] constraints, ServletContext servletContext) {
-        super(controllerName, actionName, namespace, pluginName, viewName, constraints, servletContext);
+        super(null, controllerName, actionName, namespace, pluginName, viewName, constraints, servletContext);
         this.urlData = (ResponseCodeMappingData) urlData;
 
         Assert.isTrue(constraints == null || constraints.length == 0,
@@ -132,7 +132,7 @@ public class ResponseCodeUrlMapping extends AbstractUrlMapping {
 
     public UrlMappingInfo match(int responseCode) {
         if (responseCode == urlData.getResponseCode()) {
-            return new DefaultUrlMappingInfo(controllerName, actionName, namespace, pluginName, viewName,
+            return new DefaultUrlMappingInfo(null, controllerName, actionName, namespace, pluginName, viewName,
                     parameterValues, urlData, servletContext);
         }
         return null;

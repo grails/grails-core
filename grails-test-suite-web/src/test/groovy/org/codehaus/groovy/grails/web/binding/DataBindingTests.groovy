@@ -259,7 +259,7 @@ class AuthorBean {
         def myBean = myBeanClass.newInstance()
 
         request.addParameter 'someFloatProperty', '21.12Rush'
-        
+
         myBean.properties = request
 
         def errors = myBean.errors

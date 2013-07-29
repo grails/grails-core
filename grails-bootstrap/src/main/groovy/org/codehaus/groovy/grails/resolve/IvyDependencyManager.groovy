@@ -419,6 +419,11 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     @Override
+    DependencyReport resolveAgent() {
+        resolve('agent')
+    }
+
+    @Override
     DependencyReport resolve() {
         final resolveReport = resolveDependencies()
         return new IvyDependencyReport("compile", resolveReport)
