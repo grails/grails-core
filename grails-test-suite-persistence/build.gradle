@@ -27,7 +27,7 @@ test {
     maxParallelForks = 2
     forkEvery = 200
     jvmArgs = [
-        '-Xmx1048M',
+        '-Xmx2048M',
         '-XX:MaxPermSize=256m'
     ]
     excludes = [
