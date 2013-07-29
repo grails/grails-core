@@ -21,6 +21,7 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,11 +33,15 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections.Predicate;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.compiler.web.ControllerActionTransformer;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
+import org.codehaus.groovy.grails.web.controllers.ControllerExceptionHandlerMetaData;
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator;
 import org.codehaus.groovy.grails.web.metaclass.ChainMethod;
 import org.codehaus.groovy.grails.web.metaclass.ForwardMethod;
@@ -450,5 +455,41 @@ public class ControllersApi extends CommonWebApi {
             autowireCapableBeanFactory.autowireBeanProperties(commandObjectInstance, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
         }
         return commandObjectInstance;
+    }
+    
+    @SuppressWarnings("unchecked")
+    public Method getExceptionHandlerMethodFor(final Object controllerInstance, final Class<? extends Exception> exceptionType) throws Exception {
+        if(!Exception.class.isAssignableFrom(exceptionType)) {
+            throw new IllegalArgumentException("exceptionType [" + exceptionType.getName() + "] argument must be Exception or a subclass of Exception");
+        }
+        Method handlerMethod = null;
+        final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = (List<ControllerExceptionHandlerMetaData>) GrailsClassUtils.getStaticFieldValue(controllerInstance.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME);
+        if(exceptionHandlerMetaDataInstances != null && exceptionHandlerMetaDataInstances.size() > 0) {
+            
+            // find all of the handler methods which could accept this exception type
+            final List<ControllerExceptionHandlerMetaData> matches = (List<ControllerExceptionHandlerMetaData>) org.apache.commons.collections.CollectionUtils.select(exceptionHandlerMetaDataInstances, new Predicate() {
+                @Override
+                public boolean evaluate(Object object) {
+                    ControllerExceptionHandlerMetaData md = (ControllerExceptionHandlerMetaData) object;
+                    return md.getExceptionType().isAssignableFrom(exceptionType);
+                }
+            });
+            
+            
+            if(matches.size() > 0) {
+                ControllerExceptionHandlerMetaData theOne = matches.get(0);
+                
+                // if there are more than 1, find the one that is farthest down the inheritance hierarchy
+                for(int i = 1; i < matches.size(); i++) {
+                    final ControllerExceptionHandlerMetaData nextMatch = matches.get(i);
+                    if(theOne.getExceptionType().isAssignableFrom(nextMatch.getExceptionType())) {
+                        theOne = nextMatch;
+                    }
+                }
+                handlerMethod = controllerInstance.getClass().getMethod(theOne.getMethodName(), theOne.getExceptionType());
+            }
+        }
+        
+        return handlerMethod;
     }
 }
