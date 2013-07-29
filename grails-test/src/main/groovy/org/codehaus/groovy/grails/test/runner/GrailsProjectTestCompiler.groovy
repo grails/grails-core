@@ -45,6 +45,7 @@ class GrailsProjectTestCompiler extends GrailsProjectCompiler{
 
         ant.path(id: "grails.test.classpath", testClasspath)
         ant.taskdef (name: 'testc', classname:'org.codehaus.groovy.grails.test.compiler.GrailsTestCompiler', classpathref:"grails.test.classpath")
+        ant.taskdef (name: 'itestc', classname:'org.codehaus.groovy.grails.test.compiler.GrailsIntegrationTestCompiler', classpathref:"grails.test.classpath")
 
         return ant
     }
@@ -62,7 +63,15 @@ class GrailsProjectTestCompiler extends GrailsProjectCompiler{
         ant.mkdir(dir: dest.path)
         try {
             def classpathId = "grails.test.classpath"
-            ant."${ type.name == 'unit' ? 'testc' : 'groovyc'}"(destdir: dest, classpathref: classpathId,
+            def compilerName = 'groovyc'
+            if(type.name == 'unit') {
+                compilerName = 'testc'
+            }
+            else if(type.name == 'integration') {
+                compilerName = 'itestc'
+            }
+
+            ant."${compilerName}"(destdir: dest, classpathref: classpathId,
                 verbose: buildSettings.verboseCompile, listfiles: buildSettings.verboseCompile) {
                 javac(classpathref: classpathId, debug: "yes")
                 src(path: source)

@@ -43,7 +43,7 @@ class GrailsTestInterceptor {
     }
 
     void destroy() {
-        transactionInterceptor?.destroy()
+        destroyTransactionIfNecessary()
         requestEnvironmentInterceptor?.destroy()
     }
 

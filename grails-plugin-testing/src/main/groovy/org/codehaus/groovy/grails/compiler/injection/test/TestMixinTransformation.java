@@ -75,12 +75,21 @@ public class TestMixinTransformation implements ASTTransformation{
         }
 
         AnnotatedNode parent = (AnnotatedNode) astNodes[1];
-        AnnotationNode node = (AnnotationNode) astNodes[0];
-        if (!MY_TYPE.equals(node.getClassNode()) || !(parent instanceof ClassNode)) {
+        AnnotationNode annotationNode = (AnnotationNode) astNodes[0];
+        if (!MY_TYPE.equals(annotationNode.getClassNode()) || !(parent instanceof ClassNode)) {
             return;
         }
 
         ClassNode classNode = (ClassNode) parent;
+        ListExpression values = getListOfClasses(annotationNode);
+        weaveTestMixins(classNode, values);
+    }
+
+    /**
+     * @param classNode The class node to weave into
+     * @param values A list of ClassExpression instances
+     */
+    public void weaveTestMixins(ClassNode classNode, ListExpression values) {
         String cName = classNode.getName();
         if (classNode.isInterface()) {
             throw new RuntimeException("Error processing interface '" + cName + "'. " +
@@ -89,7 +98,6 @@ public class TestMixinTransformation implements ASTTransformation{
 
         autoAnnotateSetupTeardown(classNode);
         autoAddTestAnnotation(classNode);
-        ListExpression values = getListOfClasses(node);
 
         weaveMixinsIntoClass(classNode, values);
     }
