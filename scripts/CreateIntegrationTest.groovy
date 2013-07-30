@@ -32,7 +32,7 @@ target ('default': "Creates a new Grails integration test which loads the whole 
 
     for (name in argsMap["params"]) {
         name = purgeRedundantArtifactSuffix(name, 'Spec')
-        createIntegrationTest(name: name, suffix: "", testType:"Generic")
+        createIntegrationTest(name: name, suffix: "", testType:"Integration")
     }
 }
 

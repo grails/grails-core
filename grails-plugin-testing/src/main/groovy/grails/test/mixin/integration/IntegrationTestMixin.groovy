@@ -24,6 +24,7 @@ import grails.util.Holders
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.junit.After
 import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.grails.test.runner.phase.IntegrationTestPhaseConfigurer
 
 /**
  * A mixin for enhancing integration tests with autowiring and transactional capabitities
@@ -38,7 +39,7 @@ class IntegrationTestMixin implements TestMixinTargetAware {
     void setTarget(Object target) {
         this.target = target
         try {
-            final applicationContext = Holders.getApplicationContext()
+            final applicationContext = IntegrationTestPhaseConfigurer.currentApplicationContext
             if(applicationContext && target) {
                 interceptor = new GrailsTestInterceptor(target, new GrailsTestMode( autowire: true,
                                                                                     wrapInRequestEnvironment: true,

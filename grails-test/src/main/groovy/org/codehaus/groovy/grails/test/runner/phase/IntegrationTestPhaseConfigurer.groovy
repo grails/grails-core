@@ -36,6 +36,9 @@ import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
  */
 @CompileStatic
 class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
+
+    static GrailsWebApplicationContext currentApplicationContext
+
     protected MetaClassRegistryCleaner registryCleaner
     protected GrailsProjectTestCompiler projectTestCompiler
     protected GrailsProjectLoader projectLoader
@@ -54,6 +57,7 @@ class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
         projectTestCompiler.packageTests()
         appCtx = (GrailsWebApplicationContext)projectLoader.configureApplication()
+        currentApplicationContext = appCtx
 
         Holders.servletContext = appCtx.servletContext
         // Get the Grails application instance created by the bootstrap process.
@@ -77,6 +81,7 @@ class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
 
     @Override
     void cleanup(Binding testExecutionContext, Map<String, Object> testOptions) {
+        currentApplicationContext = null
         PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
         appCtx?.close()
         registryCleaner.clean()
