@@ -56,7 +56,7 @@ grails.project.dependency.resolution = {
         build ":tomcat:7.0.41"
 
         // plugins for the compile step
-        compile ":scaffolding:2.0.0.M1"
+        compile ":scaffolding:2.0.0.RC1"
         compile ':cache:1.1.1'
 
         // plugins needed at runtime but not for compilation
