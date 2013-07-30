@@ -275,7 +275,7 @@ public class GrailsASTUtils {
     public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation, boolean thisAsFirstArgument, Map<String, ClassNode> genericsPlaceholders) {
         Parameter[] parameterTypes = thisAsFirstArgument ? getRemainingParameterTypes(declaredMethod.getParameters()) : declaredMethod.getParameters();
         String methodName = declaredMethod.getName();
-        if (classNode.hasDeclaredMethod(methodName, parameterTypes)) {
+        if (classNode.hasDeclaredMethod(methodName, copyParameters(parameterTypes, genericsPlaceholders))) {
             return null;
         }
         String propertyName = GrailsClassUtils.getPropertyForGetter(methodName);
@@ -414,7 +414,7 @@ public class GrailsASTUtils {
     public static MethodNode addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode delegateMethod, AnnotationNode markerAnnotation, Map<String, ClassNode> genericsPlaceholders) {
         Parameter[] parameterTypes = delegateMethod.getParameters();
         String declaredMethodName = delegateMethod.getName();
-        if (classNode.hasDeclaredMethod(declaredMethodName, parameterTypes)) {
+        if (classNode.hasDeclaredMethod(declaredMethodName, copyParameters(parameterTypes, genericsPlaceholders))) {
             return null;
         }
 
