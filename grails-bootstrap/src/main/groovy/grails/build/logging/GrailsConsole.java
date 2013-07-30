@@ -218,6 +218,14 @@ public class GrailsConsole {
      */
     protected History prepareHistory() throws IOException {
         File file = new File(System.getProperty("user.home"), HISTORYFILE);
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            }
+            catch (IOException ignored) {
+                // can't create the file, so no history for you
+            }
+        }
         return file.canWrite() ? new History(file) : null;
     }
 
