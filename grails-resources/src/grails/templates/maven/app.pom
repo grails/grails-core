@@ -119,7 +119,7 @@
         <dependency>
             <groupId>org.grails.plugins</groupId>
             <artifactId>hibernate</artifactId>
-            <version>3.6.10.M4</version>
+            <version>3.6.10.M5</version>
             <type>zip</type>
             <scope>compile</scope>
         </dependency>
