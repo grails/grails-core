@@ -176,7 +176,7 @@ fi
 AGENT_GRAILS_HOME=$GRAILS_HOME
 if $cygwin ; then
     [ -n "$GRAILS_HOME" ] &&
-        AGENT_GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
+        AGENT_GRAILS_HOME=`cygpath --dos "$GRAILS_HOME"`
 fi
 
 if [ -z "$GRAILS_AGENT_CACHE_DIR" ]; then
