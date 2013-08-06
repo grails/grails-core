@@ -129,11 +129,20 @@ public class GrailsWrapper {
 
         final File grailsCacheDir =  new File(System.getProperty("user.home") + "/.grails/");
         final File wrapperDir = new File(grailsCacheDir, "wrapper");
-        final File downloadFile = new File(wrapperDir, "grails-" + grailsVersion + "-download.zip");
-        new RemoteFileHelper().retrieve(uri, downloadFile);
         final File installDir = new File(wrapperDir, grailsVersion);
+        File downloadFile = null;
         if (!installDir.exists()) {
-            extract(downloadFile, installDir);
+            try {
+                downloadFile = new File(wrapperDir, "grails-" + grailsVersion + "-download.zip");
+                new RemoteFileHelper().retrieve(uri, downloadFile);
+                extract(downloadFile, installDir);
+            } finally {
+                try {
+                    if(downloadFile != null && downloadFile.exists()) {
+                        downloadFile.delete();
+                    }
+                } catch (Exception e) {}
+            }
         }
         final File grailsHome = new File(installDir, "grails-" + grailsVersion);
         return grailsHome;
