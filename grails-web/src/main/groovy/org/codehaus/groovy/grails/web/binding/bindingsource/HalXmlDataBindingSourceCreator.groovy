@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
+import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
@@ -25,6 +27,7 @@ import org.grails.databinding.SimpleMapDataBindingSource
  * @since 2.3
  *
  */
+@CompileStatic
 class HalXmlDataBindingSourceCreator extends XmlDataBindingSourceCreator {
 
     @Override
