@@ -36,9 +36,6 @@ public class RemoteFileHelper {
     private static final int BUFFER_SIZE = 10000;
 
     public void retrieve(final URI address, final File destination) throws Exception {
-        if (destination.exists()) {
-            return;
-        }
         destination.getParentFile().mkdirs();
 
         System.out.println("Downloading " + address + " to " + destination.getAbsolutePath());
