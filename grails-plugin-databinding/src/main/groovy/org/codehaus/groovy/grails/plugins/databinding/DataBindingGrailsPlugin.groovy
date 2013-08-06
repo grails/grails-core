@@ -22,6 +22,7 @@ import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
+import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
 import org.grails.databinding.converters.DateConversionHelper
@@ -66,5 +67,6 @@ class DataBindingGrailsPlugin {
         xmlDataBindingSourceCreator(XmlDataBindingSourceCreator)
         jsonDataBindingSourceCreator(JsonDataBindingSourceCreator)
         halJsonDataBindingSourceCreator(HalJsonDataBindingSourceCreator)
+        halXmlDataBindingSourceCreator(HalXmlDataBindingSourceCreator)
     }
 }

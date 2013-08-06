@@ -16,14 +16,16 @@
 package org.grails.databinding.xml
 
 import groovy.util.slurpersupport.GPathResult
+import groovy.util.slurpersupport.Node
+import groovy.util.slurpersupport.NodeChild
 
 /**
  * @author Jeff Brown
  * @since 2.3
  */
 class GPathResultMap implements Map {
-    private GPathResult gpath
-    private id
+    protected GPathResult gpath
+    protected id
 
     GPathResultMap(GPathResult gpath) {
         this.gpath = gpath
@@ -33,7 +35,7 @@ class GPathResultMap implements Map {
     int size() {
         def uniqueNames = [] as Set
         gpath.children().each { child ->
-            uniqueNames << child.name()
+            uniqueNames << getPropertyNameForNodeChild(child)
         }
         uniqueNames.size()
     }
@@ -49,7 +51,7 @@ class GPathResultMap implements Map {
         def entries = [] as Set
         def uniqueChildNames = [] as Set
         gpath.childNodes().each { childNode ->
-            uniqueChildNames << childNode.name()
+            uniqueChildNames << getPropertyNameForNode(childNode)
         }
         uniqueChildNames.each { name ->
             def value = get name
@@ -93,11 +95,21 @@ class GPathResultMap implements Map {
     }
 
     Set keySet() {
-        def keys = gpath.children().collect { it.name() } as Set
+        def keys = gpath.children().collect { 
+            getPropertyNameForNodeChild it 
+        } as Set
         if(this.@id != null) {
             keys << 'id'
         }
         keys
+    }
+
+    protected String getPropertyNameForNodeChild(NodeChild child) {
+        child.name()
+    }
+
+    protected String getPropertyNameForNode(Node node) {
+        node.name()
     }
 
     void clear() {
