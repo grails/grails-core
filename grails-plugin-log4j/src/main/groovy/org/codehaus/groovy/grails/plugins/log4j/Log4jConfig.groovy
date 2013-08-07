@@ -88,7 +88,7 @@ class Log4jConfig {
             return LAYOUTS[name].newInstance()
         }
 
-        LogLog.error "Property missing when configuring log4j: $name"
+        LogLog.debug "Property missing when configuring log4j: $name"
 
         throw new MissingPropertyException("Property missing when configuring log4j: $name")
     }
