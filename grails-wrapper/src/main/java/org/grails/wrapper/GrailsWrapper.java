@@ -41,8 +41,8 @@ import java.util.zip.ZipFile;
  */
 public class GrailsWrapper {
 
-    private static final String DIST_URL = "http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/"
-    private static final String USER_GRAILS_HOME = System.getProperty("user.home") + "/.grails/"
+    private static final String DIST_URL = "http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/";
+    private static final String USER_GRAILS_HOME = System.getProperty("user.home") + "/.grails/";
 
     public static void main(final String[] args) throws Exception{
         final ResourceBundle applicationBundle = ResourceBundle.getBundle("application");
