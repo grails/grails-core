@@ -21,6 +21,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.String;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
@@ -40,21 +41,19 @@ import java.util.zip.ZipFile;
  */
 public class GrailsWrapper {
 
+    private static final String DIST_URL = "http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/"
+    private static final String USER_GRAILS_HOME = System.getProperty("user.home") + "/.grails/"
+
     public static void main(final String[] args) throws Exception{
         final ResourceBundle applicationBundle = ResourceBundle.getBundle("application");
         final ResourceBundle wrapperBundle = ResourceBundle.getBundle("grails-wrapper");
         final String grailsVersion = applicationBundle.getString("app.grails.version");
-        String distUrl = wrapperBundle.getString("wrapper.dist.url");
-        if (distUrl == null) {
-            distUrl = "http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/";
-        }
-        if (!distUrl.endsWith("/")) {
-            distUrl += "/";
-        }
+        final String distUrl = defaultAndPostFixConfigValue(USER_GRAILS_HOME, wrapperBundle.getString("wrapper.dist.url"));
+        final String cacheDir = defaultAndPostFixConfigValue(DIST_URL, wrapperBundle.getString("wrapper.cache.dir"));
 
         addSystemProperties(wrapperBundle);
 
-        final File grailsHome = configureGrailsInstallation(distUrl, grailsVersion);
+        final File grailsHome = configureGrailsInstallation(distUrl, cacheDir, grailsVersion);
 
         System.setProperty("grails.home", grailsHome.getAbsolutePath());
 
@@ -93,6 +92,23 @@ public class GrailsWrapper {
         mainMethod.invoke(null, new Object[]{newArgsArray});
     }
 
+    /**
+     * Method will use user value if set or use default value if not.  Will also check for trailing '/' for url and dir style params.
+     * @param defaultValue default to use if user value not set
+     * @param userValue a value probably derrived from grails-wrapper.properties file
+     * @return string value to use
+     */
+    private static String defaultAndPostFixConfigValue(String defaultValue, String userValue){
+        String finalValue = defaultValue;
+        if (userValue != null) {
+            finalValue = userValue;
+        }
+        if (!finalValue.endsWith("/")) {
+            finalValue += "/";
+        }
+        return finalValue;
+    }
+
     private static void addSystemProperties(ResourceBundle wrapperBundle) {
         String prefix = "systemProp.";
         for (String key : wrapperBundle.keySet()) {
@@ -119,15 +135,17 @@ public class GrailsWrapper {
 
     /**
      * @param distUrl URL to directory where the distribution zip is found
+     * @param cacheDir directory to install grails files after download
      * @param grailsVersion version of Grails to configure
      * @return a File pointing to the directory where this version of Grails is configured
      */
     private static File configureGrailsInstallation(String distUrl,
+                                                    String cacheDir,
             final String grailsVersion) throws Exception {
         final String src = distUrl + "grails-" + grailsVersion + ".zip";
         final URI uri = new URI(src);
 
-        final File grailsCacheDir =  new File(System.getProperty("user.home") + "/.grails/");
+        final File grailsCacheDir =  new File(cacheDir);
         final File wrapperDir = new File(grailsCacheDir, "wrapper");
         final File installDir = new File(wrapperDir, grailsVersion);
         File downloadFile = null;
