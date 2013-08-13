@@ -15,6 +15,8 @@
  */
 package org.grails.databinding.bindingsource
 
+import groovy.transform.CompileStatic
+
 /**
  * Thrown if an unrecoverable problem occurs creating a DataBindingSource.
  *
@@ -22,6 +24,7 @@ package org.grails.databinding.bindingsource
  * @see org.grails.databinding.DataBindingSource
  * @see DataBindingSourceCreator
  */
+@CompileStatic
 class DataBindingSourceCreationException extends RuntimeException {
 
     DataBindingSourceCreationException(Throwable cause) {
