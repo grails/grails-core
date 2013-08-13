@@ -15,6 +15,8 @@
  */
 package grails.validation
 
+import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.exceptions.GrailsException
 import org.springframework.validation.Errors
 
@@ -24,6 +26,7 @@ import org.springframework.validation.Errors
  * @author Jeff Brown
  * @since 1.2
  */
+@CompileStatic
 class ValidationException extends GrailsException {
 
     Errors errors
