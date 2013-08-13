@@ -15,12 +15,15 @@
  */
 package org.codehaus.groovy.grails.web.servlet.mvc.exceptions
 
+import groovy.transform.CompileStatic
+
 /**
  * Thrown when the request cannot be redirected.
  *
  * @author Graeme Rocher
  * @since 1.2
  */
+@CompileStatic
 class CannotRedirectException extends ControllerExecutionException {
 
     CannotRedirectException() {}

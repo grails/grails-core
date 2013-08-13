@@ -1,9 +1,11 @@
 package org.codehaus.groovy.grails.resolve
 
-import org.apache.ivy.core.resolve.IvyNode
-import org.apache.ivy.core.report.ResolveReport
-import org.apache.ivy.core.report.ArtifactDownloadReport
+import groovy.transform.CompileStatic
+
 import org.apache.ivy.core.module.id.ModuleRevisionId
+import org.apache.ivy.core.report.ArtifactDownloadReport
+import org.apache.ivy.core.report.ResolveReport
+import org.apache.ivy.core.resolve.IvyNode
 
 /**
  * Thrown when dependencies fail to resolve.
@@ -11,6 +13,7 @@ import org.apache.ivy.core.module.id.ModuleRevisionId
  * @author Graeme Rocher
  * @since 2.0
  */
+@CompileStatic
 class ResolveException extends RuntimeException {
 
     ResolveReport resolveReport
