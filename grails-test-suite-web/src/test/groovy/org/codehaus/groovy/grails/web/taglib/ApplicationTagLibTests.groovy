@@ -764,6 +764,14 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         assertOutputEquals '<link href="/images/icons/iphone-icon.png?requestDataValueProcessorParamName=paramValue" rel="apple-touch-icon"/>\r\n', template
     }
 
+    void testWithTagWithNameAndAttrs() {
+        def template = '<g:withTag name="div" attrs="[class: 'foo']>body</g:withTag>'
+        assertOutputEquals '<div class="foo">body</div>', template
+        
+        template = '<g:withTag name="div">body</g:withTag>'
+        assertOutputEquals '<div>body</div>', template
+    }
+
     private void unRegisterRequestDataValueProcessor() {
         appCtx.getBean(ApplicationTagLib.name).requestDataValueProcessor = null
     }
