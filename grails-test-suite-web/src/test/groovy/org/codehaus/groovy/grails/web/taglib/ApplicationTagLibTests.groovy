@@ -767,4 +767,12 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     private void unRegisterRequestDataValueProcessor() {
         appCtx.getBean(ApplicationTagLib.name).requestDataValueProcessor = null
     }
+
+    void testWithTagWithNameAndAttrs() {
+        def template = '<g:withTag name="div" attrs="[class: 'foo']>body</g:withTag>'
+        assertOutputEquals '<div class="foo">body</div>', template
+        
+        template = '<g:withTag name="div">body</g:withTag>'
+        assertOutputEquals '<div>body</div>', template
+    }
 }
