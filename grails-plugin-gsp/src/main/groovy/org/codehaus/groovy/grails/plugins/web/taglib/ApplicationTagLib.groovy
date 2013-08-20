@@ -387,7 +387,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
     Closure withTag = { attrs, body ->
         def writer = out
         writer << "<${attrs.name}"
-        attrs.attrs.each { k,v ->
+        attrs.attrs?.each { k,v ->
             if (!v) return
             if (v instanceof Closure) {
                 writer << " $k=\""

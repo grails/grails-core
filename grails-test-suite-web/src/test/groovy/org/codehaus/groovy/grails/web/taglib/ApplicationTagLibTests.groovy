@@ -423,4 +423,12 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
         def template = '<g:createLink controller="foo" action="bar" id="|prop:8888" />'
         assertOutputEquals '/foo/bar/%7Cprop%3A8888', template
     }
+
+    void testWithTagWithNameAndAttrs() {
+        def template = '<g:withTag name="div" attrs="[class: 'foo']>body</g:withTag>'
+        assertOutputEquals '<div class="foo">body</div>', template
+        
+        template = '<g:withTag name="div">body</g:withTag>'
+        assertOutputEquals '<div>body</div>', template
+    }
 }
