@@ -37,6 +37,7 @@ public class CommandLineParser {
 
     static Map<String, String> ENV_ARGS = new HashMap<String, String>();
     static Map<String, String> DEFAULT_ENVS = new HashMap<String, String>();
+    private static CommandLine CURRENT = null;
     private static final String DEFAULT_PADDING = "        ";
 
     static {
@@ -50,6 +51,10 @@ public class CommandLineParser {
     private Map<String, Option> declaredOptions = new HashMap<String, Option> ();
     private int longestOptionNameLength = 0;
     private String usageMessage;
+
+    public static CommandLine getCurrentCommandLine() {
+        return CURRENT;
+    }
 
     /**
      * Adds a declared option
@@ -160,7 +165,9 @@ public class CommandLineParser {
     }
 
     protected DefaultCommandLine createCommandLine() {
-        return new DefaultCommandLine();
+        DefaultCommandLine defaultCommandLine = new DefaultCommandLine();
+        CURRENT = defaultCommandLine;
+        return defaultCommandLine;
     }
 
     protected void processOption(DefaultCommandLine cl, String arg) {

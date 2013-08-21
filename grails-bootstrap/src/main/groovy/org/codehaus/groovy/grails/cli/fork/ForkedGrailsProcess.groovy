@@ -24,6 +24,7 @@ import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleErrorPrintStream
 import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream
+import org.codehaus.groovy.grails.cli.parsing.CommandLineParser
 
 import java.lang.reflect.Method
 
@@ -790,6 +791,17 @@ class ExecutionContext implements Serializable {
                 final value = System.properties.get(prop)
                 if (value)
                     systemProps[p] = value
+            }
+        }
+        final commandLine = CommandLineParser.getCurrentCommandLine()
+        if (commandLine) {
+            final commandLineSystemProperties = commandLine.systemProperties
+            for(prop in commandLineSystemProperties.keySet()) {
+                String p = prop.toString()
+                final value = commandLineSystemProperties.get(prop)
+                if (value)
+                    systemProps[p] = value
+
             }
         }
 
