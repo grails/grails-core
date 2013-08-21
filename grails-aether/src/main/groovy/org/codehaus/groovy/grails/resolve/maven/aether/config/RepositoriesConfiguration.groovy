@@ -77,7 +77,7 @@ class RepositoriesConfiguration {
         final proxyHost = System.getProperty("http.proxyHost")
         final proxyPort = System.getProperty("http.proxyPort")
         if (proxyHost && proxyPort) {
-            final proxyUser = System.getProperty("http.proxyUserName")
+            final proxyUser = System.getProperty("http.proxyUser")
             final proxyPass = System.getProperty("http.proxyPassword")
             if (proxyUser && proxyPass) {
                 repository.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),new Authentication(proxyUser, proxyPass)))
