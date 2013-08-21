@@ -34,9 +34,10 @@ import org.springframework.util.Assert;
  *         def a = new Account()
  *         bindData(a, params)
  * </code>
- *
+ * @deprecated Use the data binder api directly
  * @author Graeme Rocher
  */
+@Deprecated
 public class BindDynamicMethod extends AbstractDynamicMethodInvocation {
 
     public static final String METHOD_SIGNATURE = "bindData";
