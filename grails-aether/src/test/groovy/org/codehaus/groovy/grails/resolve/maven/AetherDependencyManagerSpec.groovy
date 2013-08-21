@@ -29,6 +29,25 @@ import spock.lang.Specification
  */
 class AetherDependencyManagerSpec extends Specification {
 
+    void "Test download plugin info"() {
+        given:"A dependency manager instance"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    grailsCentral()
+                }
+            }
+
+        when:"Plugin info is downloaded and no version specified"
+            def result = dependencyManager.downloadPluginInfo("feeds", null)
+
+        then:"The result is correct"
+            result != null
+            result.@name.text() == 'feeds'
+
+
+    }
+
     void "Test resolve agent"() {
         given:"A dependency manager specifies a custom agent"
             def dependencyManager = new AetherDependencyManager()

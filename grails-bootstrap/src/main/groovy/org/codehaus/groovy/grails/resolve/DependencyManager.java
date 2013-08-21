@@ -44,6 +44,15 @@ public interface DependencyManager {
     GPathResult downloadPluginList(File localFile);
 
     /**
+     * Downloads information about a plugin from the -plugin.xml file
+     *
+     * @param pluginName The plugin name
+     * @param pluginVersion The plugin version
+     * @return The plugin.xml data or null if the plugin doesn't exit
+     */
+    GPathResult downloadPluginInfo(String pluginName, String pluginVersion);
+
+    /**
      * Outputs the dependency graph to System.out
      */
     void produceReport();

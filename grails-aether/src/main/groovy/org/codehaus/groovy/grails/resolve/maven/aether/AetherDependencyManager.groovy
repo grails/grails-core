@@ -168,6 +168,32 @@ class AetherDependencyManager implements DependencyManager {
         return DependencyManagerUtils.downloadPluginList(localFile)
     }
 
+    @Override
+    @CompileStatic(TypeCheckingMode.SKIP)
+    GPathResult downloadPluginInfo(String pluginName, String pluginVersion) {
+        AetherDependencyManager newDependencyManager = (AetherDependencyManager)createCopy()
+
+        newDependencyManager.parseDependencies {
+            dependencies {
+                compile group:"org.grails.plugins",
+                        name:pluginName,
+                        version:pluginVersion ?: 'RELEASE',
+                        classifier:"plugin",
+                        extension:'xml'
+
+            }
+        }
+
+        final report = newDependencyManager.resolve()
+        if(report.allArtifacts) {
+            File pluginXml = report.allArtifacts.find { File f -> f.name.endsWith('-plugin.xml')}
+
+            return new XmlSlurper().parse(pluginXml)
+        }
+
+        return null
+    }
+
     void produceReport() {
         // build scope
         reportOnScope(BuildSettings.BUILD_SCOPE, BuildSettings.BUILD_SCOPE_DESC)

@@ -82,7 +82,15 @@ class DependenciesConfiguration {
         if (!properties.extension) {
             properties.extension = defaultExtension
         }
-        return new Dependency(new DefaultArtifact(properties.groupId, properties.artifactId, properties.classifier, properties.extension, properties.version), scope)
+        def version = properties.version
+        if ('latest.release' == version) {
+            version = 'RELEASE'
+        }
+        if ('latest.integration' == version) {
+            version = 'LATEST'
+        }
+
+        return new Dependency(new DefaultArtifact(properties.group, properties.name, properties.classifier, properties.extension, version), scope)
     }
 
     void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope) {
@@ -219,8 +227,8 @@ class DependenciesConfiguration {
         if (matcher.matches()) {
 
             def properties = [:]
-            properties.artifactId = matcher.group(2)
-            properties.groupId = matcher.group(1) ?: getDefaultGroup()
+            properties.name = matcher.group(2)
+            properties.group = matcher.group(1) ?: getDefaultGroup()
             properties.version = matcher.group(3)
             properties
         }

@@ -20,6 +20,10 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
+import org.apache.ivy.core.cache.ArtifactOrigin
+import org.apache.ivy.plugins.repository.Repository
+import org.apache.ivy.plugins.repository.Resource
+import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.codehaus.groovy.grails.resolve.ivy.IvyExcludeResolver
 
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -85,6 +89,79 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 
     GPathResult downloadPluginList(File localFile) {
         DependencyManagerUtils.downloadPluginList(localFile)
+    }
+
+    @Override
+    GPathResult downloadPluginInfo(String pluginName, String pluginVersion) {
+        IvyDependencyManager dependencyManager = createCopy(buildSettings)
+
+        def resolveArgs = createResolveArguments(pluginName, pluginVersion)
+
+        // first try resolve via plugin.xml that resides next to zip
+        dependencyManager.parseDependencies {
+            plugins {
+                runtime(resolveArgs) {
+                    transitive = false
+                }
+            }
+        }
+
+        def report = dependencyManager.resolveDependencies("runtime", [download:false])
+        if (report.getArtifactsReports(null, false)) {
+            ArtifactOrigin origin = report.getArtifactsReports(null, false).origin.first()
+            def location = origin.location
+            def parent = location[0..location.lastIndexOf('/')-1]
+            for (org.apache.ivy.plugins.resolver.DependencyResolver dr in dependencyManager.chainResolver.resolvers) {
+                if (dr instanceof RepositoryResolver) {
+                    Repository r = dr.repository
+
+                    def pluginFile = "$parent/plugin.xml"
+                    try {
+                        Resource res = r.getResource(pluginFile)
+                        def input
+                        try {
+                            input = res.openStream()
+                            return new XmlSlurper().parse(input)
+                        }
+                        finally {
+                            input.close()
+                        }
+                    }
+                    catch(e) {
+                        // ignore
+                    }
+                }
+            }
+        }
+
+        // if the plugin.xml was never found, try via maven-style attachments using a classifier
+        if (!report.hasError()) {
+            resolveArgs.classifier = "plugin"
+            dependencyManager = createCopy(buildSettings)
+
+            dependencyManager.parseDependencies {
+                plugins {
+                    runtime resolveArgs
+                }
+            }
+
+            report = dependencyManager.resolvePluginDependencies()
+
+            if (report.hasError() || !report.getArtifactsReports(null, false)) {
+                return null
+            }
+
+            return new XmlSlurper().parse(report.getArtifactsReports(null, false).localFile.first())
+        }
+        return null
+    }
+
+    protected createResolveArguments(String pluginName, String pluginVersion) {
+        def (group, name) = pluginName.contains(":") ? pluginName.split(":") : ['org.grails.plugins', pluginName]
+        def resolveArgs = [name: name, group: group]
+        if (pluginVersion) resolveArgs.version = pluginVersion
+        else resolveArgs.version = "latest.integration"
+        return resolveArgs
     }
 
     /**

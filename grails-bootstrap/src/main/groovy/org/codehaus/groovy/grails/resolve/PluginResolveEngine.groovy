@@ -19,12 +19,6 @@ import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.util.slurpersupport.GPathResult
 
-import org.apache.ivy.core.cache.ArtifactOrigin
-import org.apache.ivy.plugins.repository.Repository
-import org.apache.ivy.plugins.repository.Resource
-import org.apache.ivy.plugins.resolver.DependencyResolver
-import org.apache.ivy.plugins.resolver.RepositoryResolver
-
 /**
  * Utility methods for resolving plugin zips and information
  * used in conjunction with an IvyDependencyManager instance.
@@ -303,65 +297,7 @@ For further info visit http://grails.org/plugins
      * without downloading the plugin zip itself
      */
     GPathResult resolvePluginMetadata(String pluginName, String pluginVersion) {
-        IvyDependencyManager dependencyManager = createFreshDependencyManager()
-
-        def resolveArgs = createResolveArguments(pluginName, pluginVersion)
-
-        // first try resolve via plugin.xml that resides next to zip
-        dependencyManager.parseDependencies {
-            plugins {
-                runtime(resolveArgs) {
-                    transitive = false
-                }
-            }
-        }
-
-        def report = dependencyManager.resolveDependencies("runtime", [download:false])
-        if (report.getArtifactsReports(null, false)) {
-            ArtifactOrigin origin = report.getArtifactsReports(null, false).origin.first()
-            def location = origin.location
-            def parent = location[0..location.lastIndexOf('/')-1]
-            for (DependencyResolver dr in dependencyManager.chainResolver.resolvers) {
-                if (dr instanceof RepositoryResolver) {
-                    Repository r = dr.repository
-
-                    def pluginFile = "$parent/plugin.xml"
-                    try {
-                        Resource res = r.getResource(pluginFile)
-                        def input
-                        try {
-                            input = res.openStream()
-                            return new XmlSlurper().parse(input)
-                        }
-                        finally {
-                            input.close()
-                        }
-                    }
-                    catch(e) {
-                        // ignore
-                    }
-                }
-            }
-        }
-
-        // if the plugin.xml was never found, try via maven-style attachments using a classifier
-        if (!report.hasError()) {
-            resolveArgs.classifier = "plugin"
-            dependencyManager = createFreshDependencyManager()
-
-            dependencyManager.parseDependencies {
-                plugins {
-                    runtime resolveArgs
-                }
-            }
-
-            report = dependencyManager.resolvePluginDependencies()
-
-            if (report.hasError() || !report.getArtifactsReports(null, false)) {
-                return null
-            }
-
-            return new XmlSlurper().parse(report.getArtifactsReports(null, false).localFile.first())
-        }
+        DependencyManager dependencyManager = createFreshDependencyManager()
+        return dependencyManager.downloadPluginInfo(pluginName, pluginVersion)
     }
 }
