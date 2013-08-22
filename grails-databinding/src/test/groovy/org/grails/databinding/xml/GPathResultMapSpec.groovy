@@ -140,6 +140,23 @@ class GPathResultMapSpec extends Specification {
         map.name == 'Thin Lizzy'
 
     }
+    
+    void 'Test id returns null when no id is present'() {
+        given:
+        def xml = new XmlSlurper().parseText('''
+<music>
+    <band>
+        <name>Genesis</name>
+    </band>
+</music>
+''')
+
+        when:
+        def map = new GPathResultMap(xml)
+
+        then:
+        map.band.id == null
+    }
 
     void 'Test id attributes'() {
         given:
