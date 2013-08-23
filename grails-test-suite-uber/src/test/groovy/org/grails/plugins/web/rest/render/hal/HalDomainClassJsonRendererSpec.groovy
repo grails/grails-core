@@ -51,7 +51,7 @@ class HalDomainClassJsonRendererSpec extends Specification {
 
         then:"The resulting HAL is correct"
             response.contentType == HalJsonRenderer.MIME_TYPE.name
-            response.contentAsString == '{"_links":{"self":{"href":"http://localhost/books/1","hreflang":"en","type":"application/hal+json"},"The Publisher":{"href":"/publisher","hreflang":"en"},"author":{"href":"http://localhost/authors/2","hreflang":"en"}},"title":"\\"The Stand\\"","_embedded":{"author":{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"\\"Stephen King\\""},"authors":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"\\"Stephen King\\""},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en"}},"name":"\\"King Stephen\\""}]}}'
+            response.contentAsString == '{"_links":{"self":{"href":"http://localhost/books/1","hreflang":"en","type":"application/hal+json"},"The Publisher":{"href":"/publisher","hreflang":"en"},"author":{"href":"http://localhost/authors/2","hreflang":"en"}},"title":"The Stand","_embedded":{"author":{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"Stephen King"},"authors":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en"}},"name":"Stephen King"},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en"}},"name":"King Stephen"}]}}'
 
 
     }
@@ -85,8 +85,10 @@ class HalDomainClassJsonRendererSpec extends Specification {
       "title": "Made by Apple"
     }
   },
-  "category": "{\\"name\\":\\"laptop\\"}",
-  "name": "\\"MacBook\\""
+  "category": {
+    "name": "laptop"
+  },
+  "name": "MacBook"
 }'''
 
 
@@ -114,7 +116,7 @@ class HalDomainClassJsonRendererSpec extends Specification {
             renderer.render(book.authors, renderContext)
         then:"The resulting HAL is correct"
             response.contentType == HalJsonRenderer.MIME_TYPE.name
-            response.contentAsString == '{"_links":{"self":{"href":"http://localhost/authors","hreflang":"en","type":"application/hal+json"}},"_embedded":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en","type":"application/hal+json"}},"name":"\\"Stephen King\\""},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en","type":"application/hal+json"}},"name":"\\"King Stephen\\""}]'
+            response.contentAsString == '{"_links":{"self":{"href":"http://localhost/authors","hreflang":"en","type":"application/hal+json"}},"_embedded":[{"_links":{"self":{"href":"http://localhost/authors/2","hreflang":"en","type":"application/hal+json"}},"name":"Stephen King"},{"_links":{"self":{"href":"http://localhost/authors/3","hreflang":"en","type":"application/hal+json"}},"name":"King Stephen"}]'
 
     }
 

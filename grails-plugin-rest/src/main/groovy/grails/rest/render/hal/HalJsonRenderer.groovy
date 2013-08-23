@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
 
 import javax.annotation.PostConstruct
+import org.grails.datastore.mapping.model.MappingFactory
 
 /**
  * Renders domain instances in HAL JSON format (see http://tools.ietf.org/html/draft-kelly-json-hal-05)
@@ -121,24 +122,44 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 writeLinkForCurrentPath(context, mimeType, writer)
                 writeExtraLinks(object, context.locale, writer)
                 writer.endObject()
-                final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
-                final propertyDescriptors = bean.propertyDescriptors
-                for(pd in propertyDescriptors) {
-                    final propertyName = pd.name
-                    if (DEFAULT_EXCLUDES.contains(propertyName)) continue
-                    if (shouldIncludeProperty(context,object, propertyName)) {
-                        if (pd.readMethod && pd.writeMethod) {
-                            writer.name(propertyName).value(gson.toJson(bean.getPropertyValue(propertyName)))
-                        }
-                    }
-                }
-                writer.endObject()
+                writeSimpleObject(object, context, writer)
 
             }
         } finally {
             writer.flush()
         }
 
+    }
+
+    protected void writeSimpleObject(Object object, RenderContext context, JsonWriter writer) {
+        final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
+        final propertyDescriptors = bean.propertyDescriptors
+        for (pd in propertyDescriptors) {
+            final propertyName = pd.name
+            if (DEFAULT_EXCLUDES.contains(propertyName)) continue
+            if (shouldIncludeProperty(context, object, propertyName)) {
+                if (pd.readMethod && pd.writeMethod) {
+                    final value = bean.getPropertyValue(propertyName)
+                    if (value instanceof Number) {
+                        writer.name(propertyName).value((Number) value)
+                    }
+                    else if (value instanceof CharSequence) {
+                        writer.name(propertyName).value(value.toString())
+                    }
+                    else {
+                        if (MappingFactory.isSimpleType(pd.getPropertyType().getName())) {
+                            writer.name(propertyName).value(gson.toJson(value))
+                        }
+                        else {
+                            writer.name(propertyName)
+                                .beginObject()
+                                writeSimpleObject(value, context, writer)
+                        }
+                    }
+                }
+            }
+        }
+        writer.endObject()
     }
 
     protected void writeLinkForCurrentPath(RenderContext context, MimeType mimeType, JsonWriter writer) {
@@ -248,6 +269,15 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     }
 
     protected void writeDomainProperty(value, String propertyName, writer) {
-        ((JsonWriter)writer).name(propertyName).value(gson.toJson(value))
+        final jsonWriter = (JsonWriter) writer
+        if(value instanceof Number) {
+            jsonWriter.name(propertyName).value((Number)value)
+        }
+        else if(value instanceof CharSequence) {
+            jsonWriter.name(propertyName).value(value.toString())
+        }
+        else {
+            jsonWriter.name(propertyName).value(gson.toJson(value))
+        }
     }
 }
