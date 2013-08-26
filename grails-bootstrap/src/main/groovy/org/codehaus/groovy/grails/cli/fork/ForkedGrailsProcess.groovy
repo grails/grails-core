@@ -446,8 +446,14 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     protected String getBoostrapClasspath(ExecutionContext executionContext) {
         def cp = new StringBuilder()
+        def isWindows = isWindows()
         for (File file : executionContext.getBuildDependencies()) {
-            cp << file << File.pathSeparator
+            if(isWindows) {
+                cp << URLDecoder.decode(file.canonicalPath, "UTF-8") << File.pathSeparator
+            }
+            else {
+                cp << file << File.pathSeparator
+            }
         }
 
         cp.toString()
