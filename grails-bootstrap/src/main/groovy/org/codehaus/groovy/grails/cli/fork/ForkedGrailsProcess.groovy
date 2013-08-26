@@ -333,7 +333,8 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected boolean shouldRunWithDaemon() {
-        daemon && InteractiveMode.active && !isDebugForkEnabled()
+        // Whether the test runner daemon should be used. On Windows this is disabled as there are issues with regards to reading process output on Windows
+        daemon && InteractiveMode.active && !isDebugForkEnabled() && !isWindows()
     }
 
     @CompileStatic
