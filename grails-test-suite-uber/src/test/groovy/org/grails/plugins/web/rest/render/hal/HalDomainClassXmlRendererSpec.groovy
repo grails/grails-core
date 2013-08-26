@@ -1,5 +1,6 @@
 package org.grails.plugins.web.rest.render.hal
 
+import grails.rest.render.hal.HalJsonRenderer
 import grails.rest.render.hal.HalXmlRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
@@ -56,7 +57,7 @@ class HalDomainClassXmlRendererSpec extends Specification {
 
         then:"The resulting HAL is correct"
             response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/books/1" hreflang="en"><link rel="The Publisher" href="/publisher" hreflang="en" /><link rel="author" href="http://localhost/authors/2" hreflang="en" /><title>The Stand</title><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
-            response.contentType == HalXmlRenderer.MIME_TYPE.name
+            response.contentType == GrailsWebUtil.getContentType(HalXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
 
 
     }
@@ -76,8 +77,8 @@ class HalDomainClassXmlRendererSpec extends Specification {
             renderer.render(product, renderContext)
 
         then:"The resulting HAL is correct"
-        response.contentType == HalXmlRenderer.MIME_TYPE.name
-        response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/product/Macbook" hreflang="en"><link rel="company" href="http://apple.com" hreflang="en" title="Made by Apple" /><category><name>laptop</name></category><name>MacBook</name></resource>'
+            response.contentType == GrailsWebUtil.getContentType(HalXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/product/Macbook" hreflang="en"><link rel="company" href="http://apple.com" hreflang="en" title="Made by Apple" /><category><name>laptop</name></category><name>MacBook</name></resource>'
 
 
     }
@@ -104,7 +105,7 @@ class HalDomainClassXmlRendererSpec extends Specification {
             renderer.render(book.authors, renderContext)
         then:"The resulting HAL is correct"
             response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/authors" hreflang="en"><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
-            response.contentType == HalXmlRenderer.MIME_TYPE.name
+            response.contentType == GrailsWebUtil.getContentType(HalXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
 
     }
 

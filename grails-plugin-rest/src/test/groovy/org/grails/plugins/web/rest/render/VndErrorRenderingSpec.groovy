@@ -65,7 +65,7 @@ class VndErrorRenderingSpec extends Specification{
             renderer.render(error, new ServletRenderContext(request))
 
         then:"The response is correct"
-            request.response.contentType == VndErrorXmlRenderer.MIME_TYPE.name
+            request.response.contentType == GrailsWebUtil.getContentType(VndErrorXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             request.response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><errors xml:lang="en"><error logref="book.title.invalid.1"><message>Bad Title</message><link rel="resource" href="http://localhost/books/1" /></error></errors>'
 
     }
@@ -100,7 +100,7 @@ class VndErrorRenderingSpec extends Specification{
             renderer.render(error, new ServletRenderContext(request))
 
             then:"The response is correct"
-            request.response.contentType == VndErrorJsonRenderer.MIME_TYPE.name
+            request.response.contentType == GrailsWebUtil.getContentType(VndErrorJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             request.response.contentAsString == '[{"logref":"\\"book.title.invalid.1\\"","message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"\\"book.title.bad.1\\"","message":"Title Bad","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
 
     }

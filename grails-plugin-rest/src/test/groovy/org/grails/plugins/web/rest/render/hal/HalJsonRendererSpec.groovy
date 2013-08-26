@@ -55,7 +55,7 @@ class HalJsonRendererSpec extends Specification{
             renderer.render(product, renderContext)
 
         then:"The resulting HAL is correct"
-        response.contentType == HalJsonRenderer.MIME_TYPE.name
+            response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
         response.contentAsString == '''{
   "_links": {
     "self": {
@@ -96,7 +96,7 @@ class HalJsonRendererSpec extends Specification{
             renderer.render(product, renderContext)
 
         then:"The resulting HAL is correct"
-            response.contentType == HalJsonRenderer.MIME_TYPE.name
+            response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '''{
   "_links": {
     "self": {

@@ -1,6 +1,7 @@
 package org.grails.plugins.web.rest.render.xml
 
 import grails.converters.XML
+import grails.util.GrailsWebUtil
 import grails.validation.ValidationErrors
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
@@ -52,7 +53,7 @@ class DefaultXmlRendererSpec extends Specification {
 
 
         then:"The model and view are populated correctly"
-            response.contentType == 'text/xml'
+            response.contentType == GrailsWebUtil.getContentType('text/xml', GrailsWebUtil.DEFAULT_ENCODING)
             response.status == 200
 
         when:"The XML is parsed"
@@ -83,7 +84,7 @@ class DefaultXmlRendererSpec extends Specification {
 
 
         then:"The model and view are populated correctly"
-            response.contentType == 'text/xml'
+            response.contentType == GrailsWebUtil.getContentType('text/xml', GrailsWebUtil.DEFAULT_ENCODING)
             response.status == 422
 
         when:"The XML is parsed"
