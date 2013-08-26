@@ -48,8 +48,8 @@ public class GrailsWrapper {
         final ResourceBundle applicationBundle = ResourceBundle.getBundle("application");
         final ResourceBundle wrapperBundle = ResourceBundle.getBundle("grails-wrapper");
         final String grailsVersion = applicationBundle.getString("app.grails.version");
-        final String distUrl = defaultAndPostFixConfigValue(USER_GRAILS_HOME, wrapperBundle.getString("wrapper.dist.url"));
-        final String cacheDir = defaultAndPostFixConfigValue(DIST_URL, wrapperBundle.getString("wrapper.cache.dir"));
+        final String distUrl = defaultAndPostFixConfigValue(DIST_URL, wrapperBundle, "wrapper.dist.url");
+        final String cacheDir = defaultAndPostFixConfigValue(USER_GRAILS_HOME, wrapperBundle, "wrapper.cache.dir");
 
         addSystemProperties(wrapperBundle);
 
@@ -98,10 +98,13 @@ public class GrailsWrapper {
      * @param userValue a value probably derrived from grails-wrapper.properties file
      * @return string value to use
      */
-    private static String defaultAndPostFixConfigValue(String defaultValue, String userValue){
+    private static String defaultAndPostFixConfigValue(String defaultValue, ResourceBundle wrapperBundle, String propertyKey){
         String finalValue = defaultValue;
-        if (userValue != null) {
-            finalValue = userValue;
+        if(wrapperBundle != null){
+            String userValue = wrapperBundle.getString(propertyKey);
+            if (userValue != null) {
+                finalValue = userValue;
+            }
         }
         if (!finalValue.endsWith("/")) {
             finalValue += "/";
