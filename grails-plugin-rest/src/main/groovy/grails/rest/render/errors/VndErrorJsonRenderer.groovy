@@ -18,6 +18,7 @@ package grails.rest.render.errors
 import com.google.gson.Gson
 import com.google.gson.stream.JsonWriter
 import grails.rest.render.RenderContext
+import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
@@ -48,7 +49,7 @@ class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
         if (messageSource == null) throw new IllegalStateException("messageSource property null")
         if (object instanceof BeanPropertyBindingResult) {
 
-            context.setContentType(MIME_TYPE.name)
+            context.setContentType(GrailsWebUtil.getContentType(MIME_TYPE.name, encoding))
             Locale locale = context.locale
             final target = object.target
 

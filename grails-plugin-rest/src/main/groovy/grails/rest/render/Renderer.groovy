@@ -15,7 +15,6 @@
  */
 package grails.rest.render
 
-import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
 
 /**
@@ -30,11 +29,6 @@ interface Renderer<T> extends MimeTypeProvider{
      * @return The target type
      */
     Class<T> getTargetType()
-
-    /**
-     * @return The {@link MimeType} of the renderer
-     */
-    MimeType[] getMimeTypes()
 
     /**
      * Renders the object

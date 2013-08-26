@@ -22,6 +22,7 @@ import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.util.Environment
+import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.apache.commons.beanutils.PropertyUtils
@@ -83,7 +84,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
 
     boolean prettyPrint = Environment.isDevelopmentMode()
     boolean absoluteLinks = true
-    String encoding = "UTF-8"
+    String encoding = GrailsWebUtil.DEFAULT_ENCODING
 
     AbstractLinkingRenderer(Class<T> targetType, MimeType mimeType) {
         super(targetType, mimeType)
@@ -96,7 +97,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     @Override
     final void render(T object, RenderContext context) {
         final mimeType = context.acceptMimeType ?: getMimeTypes()[0]
-        context.setContentType(mimeType.name)
+        context.setContentType( GrailsWebUtil.getContentType(mimeType.name, encoding) )
 
         def viewName = context.viewName ?: context.actionName
         final view = groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension)

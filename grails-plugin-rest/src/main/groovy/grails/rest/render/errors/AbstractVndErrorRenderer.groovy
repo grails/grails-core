@@ -18,6 +18,7 @@ package grails.rest.render.errors
 import grails.rest.render.ContainerRenderer
 import grails.util.Environment
 import grails.util.GrailsNameUtils
+import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
@@ -40,7 +41,7 @@ abstract class AbstractVndErrorRenderer  implements ContainerRenderer<Errors, Ob
     public static final String HREF_ATTRIBUTE = "href"
 
 
-    String encoding = "UTF-8"
+    String encoding = GrailsWebUtil.DEFAULT_ENCODING
     boolean absoluteLinks = true
     boolean prettyPrint = Environment.isDevelopmentMode()
 

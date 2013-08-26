@@ -17,6 +17,7 @@ package grails.rest.render.errors
 
 import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
+import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.xml.MarkupBuilder
@@ -50,7 +51,7 @@ class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
     @Override
     void render(Errors object, RenderContext context) {
         if (object instanceof BeanPropertyBindingResult) {
-            context.setContentType(mimeTypes[0].name)
+            context.setContentType(GrailsWebUtil.getContentType(MIME_TYPE.name, encoding))
             Locale locale = context.locale
             final target = object.target
             final language = locale.language

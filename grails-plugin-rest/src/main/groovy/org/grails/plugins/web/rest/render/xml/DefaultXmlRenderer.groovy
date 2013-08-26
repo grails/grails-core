@@ -19,6 +19,7 @@ import grails.converters.XML
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
+import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
@@ -37,6 +38,7 @@ import org.springframework.validation.Errors
 class DefaultXmlRenderer<T> implements Renderer<T> {
     final Class<T> targetType
     MimeType[] mimeTypes = [MimeType.XML,MimeType.TEXT_XML] as MimeType[]
+    String encoding = GrailsWebUtil.DEFAULT_ENCODING
 
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
@@ -69,7 +71,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     @Override
     void render(T object, RenderContext context) {
         final mimeType = context.acceptMimeType ?: MimeType.XML
-        context.setContentType(mimeType.name)
+        context.setContentType( GrailsWebUtil.getContentType(mimeType.name, encoding) )
 
         def viewName = context.viewName ?: context.actionName
         final view = groovyPageLocator?.findViewForFormat(context.controllerName, viewName, mimeType.extension)
