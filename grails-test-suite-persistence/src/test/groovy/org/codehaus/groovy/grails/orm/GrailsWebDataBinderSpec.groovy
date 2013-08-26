@@ -19,6 +19,7 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
+import grails.validation.Validateable
 
 import org.apache.commons.lang.builder.CompareToBuilder
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
@@ -701,6 +702,90 @@ class GrailsWebDataBinderSpec extends Specification {
         15 == birthDate.date
         69 == birthDate.year
     }
+    
+    void 'Test that binding errors are populated on a @Validateable instance'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def obj = new SomeValidateableClass()
+        
+        when: 'binding with just a binding source'
+        binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource
+        
+        then:
+        obj.hasErrors()
+        obj.errors.errorCount == 1
+        obj.errors['someNumber'].code == 'typeMismatch'
+        
+        when:
+        obj.clearErrors()
+        
+        then:
+        !obj.hasErrors()
+        
+        when: 'binding with a binding source and a white list'
+        binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource, ['someNumber']
+        
+        then:
+        obj.hasErrors()
+        obj.errors.errorCount == 1
+        obj.errors['someNumber'].code == 'typeMismatch'
+        
+        when:
+        obj.clearErrors()
+        
+        then:
+        !obj.hasErrors()
+        
+        when: 'binding with a binding source, a white list and a black list'
+        binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource, ['someNumber'], ['someOtherProperty']
+        
+        then:
+        obj.hasErrors()
+        obj.errors.errorCount == 1
+        obj.errors['someNumber'].code == 'typeMismatch'
+        when:
+        obj.clearErrors()
+        
+        then:
+        !obj.hasErrors()
+        
+        when: 'binding with a binding source and a listener'
+        def listenerMap = [:]
+        def beforeBindingArgs = []
+        def bindingErrorArgs = []
+        def afterBindingArgs = []
+        listenerMap.beforeBinding = { object, String propName, value ->
+            beforeBindingArgs << [object: object, propName: propName, value: value]
+            true
+        } 
+        listenerMap.bindingError = { BindingError error ->
+            bindingErrorArgs << error
+        }
+        listenerMap.afterBinding = { object, String propertyName ->
+            afterBindingArgs << [object: object, propertyName: propertyName]
+        }
+        def bindingErrors = []
+        def listener = listenerMap as DataBindingListener
+
+        binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource, listener
+        
+        then:
+        obj.hasErrors()
+        obj.errors.errorCount == 1
+        obj.errors['someNumber'].code == 'typeMismatch'
+        beforeBindingArgs.size() == 1
+        beforeBindingArgs[0].object.is obj
+        beforeBindingArgs[0].propName == 'someNumber'
+        beforeBindingArgs[0].value == 'not a number'
+        bindingErrorArgs.size() == 1
+        bindingErrorArgs[0].object.is obj
+        bindingErrorArgs[0].propertyName == 'someNumber'
+        bindingErrorArgs[0].rejectedValue == 'not a number'
+        afterBindingArgs.size() == 1
+        afterBindingArgs[0].object.is obj
+        afterBindingArgs[0].propertyName == 'someNumber'
+        
+    }
 }
 
 @Entity
@@ -810,4 +895,9 @@ class PrimitiveContainer {
     long someLong
     float someFloat
     double someDouble
+}
+
+@Validateable
+class SomeValidateableClass {
+    Integer someNumber
 }
