@@ -16,6 +16,7 @@
 package grails.rest.render.xml
 
 import grails.converters.XML
+import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -103,5 +104,12 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
         XML.registerObjectMarshaller(targetType, { object, XML xml ->
             marshaller.marshalObject(object, xml)
         })
+    }
+
+    @Override
+    protected void renderXml(XML converter, RenderContext context) {
+        converter.setExcludes(excludes ?: context.excludes)
+        converter.setIncludes(includes != null ? includes : context.includes)
+        converter.render(context.getWriter())
     }
 }

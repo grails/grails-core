@@ -106,6 +106,10 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
         } else {
             converter = object as JSON
         }
+        renderJson(converter, context)
+    }
+
+    protected void renderJson(JSON converter, RenderContext context) {
         converter.setExcludes(context.excludes)
         converter.setIncludes(context.includes)
         converter.render(context.getWriter())

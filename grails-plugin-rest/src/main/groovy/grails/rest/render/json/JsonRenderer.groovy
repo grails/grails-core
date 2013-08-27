@@ -16,6 +16,7 @@
 package grails.rest.render.json
 
 import grails.converters.JSON
+import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -104,5 +105,12 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
         JSON.registerObjectMarshaller(targetType, { Object object, JSON json ->
             marshaller.marshalObject(object, json)
         })
+    }
+
+    @Override
+    protected void renderJson(JSON converter, RenderContext context) {
+        converter.setExcludes(excludes ?: context.excludes)
+        converter.setIncludes(includes != null ? includes : context.includes)
+        converter.render(context.getWriter())
     }
 }

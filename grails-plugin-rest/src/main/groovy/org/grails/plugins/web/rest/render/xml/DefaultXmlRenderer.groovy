@@ -107,6 +107,16 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
         } else {
             converter = object as XML
         }
+        renderXml(converter, context)
+    }
+
+    /**
+     * Subclasses should override to customize XML response rendering
+     *
+     * @param object
+     * @param context
+     */
+    protected void renderXml(XML converter, RenderContext context) {
         converter.setExcludes(context.excludes)
         converter.setIncludes(context.includes)
         converter.render(context.getWriter())
