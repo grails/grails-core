@@ -372,7 +372,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
             urlAttrs.params = params
         }
 
-        String generatedLink = linkGenerator.link(attrs, request.characterEncoding)
+        String generatedLink = linkGenerator.link(urlAttrs, request.characterEncoding)
         generatedLink = processedUrl(generatedLink, request)
 
         return useJsessionId ? response.encodeURL(generatedLink) : generatedLink
