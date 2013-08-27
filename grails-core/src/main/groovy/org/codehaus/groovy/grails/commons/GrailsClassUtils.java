@@ -29,17 +29,7 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanInstantiationException;
@@ -80,6 +70,109 @@ public class GrailsClassUtils {
         registerPrimitiveClassPair(Long.class, long.class);
         registerPrimitiveClassPair(Float.class, float.class);
         registerPrimitiveClassPair(Double.class, double.class);
+    }
+
+    /**
+     * Return all interfaces that the given instance implements as array,
+     * including ones implemented by superclasses.
+     * @param instance the instance to analyze for interfaces
+     * @return all interfaces that the given instance implements as array
+     */
+    public static Class[] getAllInterfaces(Object instance) {
+        Assert.notNull(instance, "Instance must not be null");
+        return getAllInterfacesForClass(instance.getClass());
+    }
+
+    /**
+     * Return all interfaces that the given class implements as array,
+     * including ones implemented by superclasses.
+     * <p>If the class itself is an interface, it gets returned as sole interface.
+     * @param clazz the class to analyze for interfaces
+     * @return all interfaces that the given object implements as array
+     */
+    public static Class<?>[] getAllInterfacesForClass(Class<?> clazz) {
+        return getAllInterfacesForClass(clazz, null);
+    }
+
+    /**
+     * Return all interfaces that the given class implements as array,
+     * including ones implemented by superclasses.
+     * <p>If the class itself is an interface, it gets returned as sole interface.
+     * @param clazz the class to analyze for interfaces
+     * @param classLoader the ClassLoader that the interfaces need to be visible in
+     * (may be {@code null} when accepting all declared interfaces)
+     * @return all interfaces that the given object implements as array
+     */
+    public static Class<?>[] getAllInterfacesForClass(Class<?> clazz, ClassLoader classLoader) {
+        Set<Class> ifcs = getAllInterfacesForClassAsSet(clazz, classLoader);
+        return ifcs.toArray(new Class[ifcs.size()]);
+    }
+
+    /**
+     * Return all interfaces that the given instance implements as Set,
+     * including ones implemented by superclasses.
+     * @param instance the instance to analyze for interfaces
+     * @return all interfaces that the given instance implements as Set
+     */
+    public static Set<Class> getAllInterfacesAsSet(Object instance) {
+        Assert.notNull(instance, "Instance must not be null");
+        return getAllInterfacesForClassAsSet(instance.getClass());
+    }
+
+    /**
+     * Return all interfaces that the given class implements as Set,
+     * including ones implemented by superclasses.
+     * <p>If the class itself is an interface, it gets returned as sole interface.
+     * @param clazz the class to analyze for interfaces
+     * @return all interfaces that the given object implements as Set
+     */
+    public static Set<Class> getAllInterfacesForClassAsSet(Class clazz) {
+        return getAllInterfacesForClassAsSet(clazz, null);
+    }
+
+    /**
+     * Return all interfaces that the given class implements as Set,
+     * including ones implemented by superclasses.
+     * <p>If the class itself is an interface, it gets returned as sole interface.
+     * @param clazz the class to analyze for interfaces
+     * @param classLoader the ClassLoader that the interfaces need to be visible in
+     * (may be {@code null} when accepting all declared interfaces)
+     * @return all interfaces that the given object implements as Set
+     */
+    public static Set<Class> getAllInterfacesForClassAsSet(Class clazz, ClassLoader classLoader) {
+        Assert.notNull(clazz, "Class must not be null");
+        Set<Class> interfaces = new LinkedHashSet<Class>();
+        while (clazz != null) {
+            Class<?>[] ifcs = clazz.getInterfaces();
+            for (Class<?> ifc : ifcs) {
+                interfaces.add(ifc);
+                interfaces.addAll(getAllInterfacesForClassAsSet(ifc, classLoader));
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return interfaces;
+    }
+
+
+    /**
+     * Check whether the given class is visible in the given ClassLoader.
+     * @param clazz the class to check (typically an interface)
+     * @param classLoader the ClassLoader to check against (may be {@code null},
+     * in which case this method will always return {@code true})
+     */
+    public static boolean isVisible(Class<?> clazz, ClassLoader classLoader) {
+        if (classLoader == null) {
+            return true;
+        }
+        try {
+            Class<?> actualClass = classLoader.loadClass(clazz.getName());
+            return (clazz == actualClass);
+            // Else: different interface class found...
+        }
+        catch (ClassNotFoundException ex) {
+            // No interface class found...
+            return false;
+        }
     }
 
     /**

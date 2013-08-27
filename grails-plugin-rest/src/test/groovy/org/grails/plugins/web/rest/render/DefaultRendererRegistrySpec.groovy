@@ -18,12 +18,26 @@ package org.grails.plugins.web.rest.render
 
 import grails.rest.render.AbstractRenderer
 import grails.rest.render.RenderContext
+import grails.rest.render.hal.HalJsonCollectionRenderer
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import spock.lang.Specification
 
 class DefaultRendererRegistrySpec extends Specification {
+
+    void "Test that registering a HAL collection renderer works"() {
+        given:"A registry with a specific renderer"
+            def registry = new DefaultRendererRegistry()
+
+        when:"A HAL collection renderer is specified"
+            registry.addRenderer(new HalJsonCollectionRenderer(URL))
+            def list = new LinkedList()
+            list << new URL("http://grails.org")
+        then:"The renderer is available"
+            registry.findContainerRenderer(MimeType.HAL_JSON, LinkedList, list) != null
+
+    }
 
     void "Test that the registry returns an appropriate render for a container type"() {
         when:"A registry with a specific renderer"

@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.util
 
 import grails.util.Environment
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -89,7 +90,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
                 currentClass = currentClass.getSuperclass()
             }
 
-            final interfaces = ClassUtils.getAllInterfaces(object)
+            final interfaces = GrailsClassUtils.getAllInterfaces(object)
             for(i in interfaces) {
                 registeredObject = findRegisteredObjectForType(i, mimeType)
                 if (registeredObject) break

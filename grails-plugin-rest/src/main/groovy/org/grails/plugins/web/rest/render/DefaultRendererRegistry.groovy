@@ -20,6 +20,7 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 import java.util.concurrent.ConcurrentHashMap
 
@@ -138,29 +139,29 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
                 if (renderer != null) break
                 else {
                     if (targetClass == Object) break
-                    targetClass = targetClass.getSuperclass()
                     key = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
                     renderer = containerRenderers.get(key)
                     if (renderer != null) break
                     else {
-                        final containerInterfaces = ClassUtils.getAllInterfacesForClass(containerType)
+                        final containerInterfaces = GrailsClassUtils.getAllInterfacesForClass(containerType)
                         for(Class i in containerInterfaces) {
                             key = new ContainerRendererCacheKey(i, targetClass, mimeType)
                             renderer = containerRenderers.get(key)
                             if (renderer != null) break
                         }
                     }
+                    targetClass = targetClass.getSuperclass()
                 }
             }
 
             if (renderer == null) {
-                final interfaces = ClassUtils.getAllInterfaces(object)
+                final interfaces = GrailsClassUtils.getAllInterfaces(object)
                 for(Class i in interfaces) {
                     key = new ContainerRendererCacheKey(containerType, i, mimeType)
                     renderer = containerRenderers.get(key)
                     if (renderer) break
                     else {
-                        final containerInterfaces = ClassUtils.getAllInterfacesForClass(containerType)
+                        final containerInterfaces = GrailsClassUtils.getAllInterfacesForClass(containerType)
                         for(Class ci in containerInterfaces) {
                             key = new ContainerRendererCacheKey(ci, i, mimeType)
                             renderer = containerRenderers.get(key)
