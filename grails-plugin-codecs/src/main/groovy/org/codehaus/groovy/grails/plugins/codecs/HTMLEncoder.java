@@ -21,7 +21,7 @@ import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 /**
  * HTMLEncoder implementation currently this doesn't add any extra features to
  * XMLEncoder This encoder is for XML, XHTML and HTML5 documents.
- * 
+ *
  * @see HTML4Encoder
  * @author Lari Hotari
  * @since 2.3

@@ -258,7 +258,6 @@ public class GrailsASTUtils {
     public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation, boolean thisAsFirstArgument) {
         return addDelegateInstanceMethod(classNode,delegate,declaredMethod, markerAnnotation, thisAsFirstArgument, null);
     }
-    
 
     /**
      * Adds a delegate method to the target class node where the first argument
@@ -344,7 +343,7 @@ public class GrailsASTUtils {
      *
      * @param parameterTypes The parameter types
      * @param thisAsFirstArgument Whether to include a reference to 'this' as the first argument
-     * @param genericsPlaceholders 
+     * @param genericsPlaceholders
      *
      * @return the arguments
      */
@@ -578,7 +577,7 @@ public class GrailsASTUtils {
         }
         return newParameterTypes;
     }
-    
+
     public static ClassNode nonGeneric(ClassNode type) {
         return replaceGenericsPlaceholders(type, null);
     }
@@ -591,7 +590,7 @@ public class GrailsASTUtils {
         if (!type.isUsingGenerics() && !type.isRedirectNode()) {
             return type.getPlainNodeReference();
         }
-        
+
         if(type.isGenericsPlaceHolder()) {
             ClassNode placeHolderType = genericsPlaceholders != null ? genericsPlaceholders.get(type.getUnresolvedName()) : null;
             if(placeHolderType != null) {
@@ -600,9 +599,9 @@ public class GrailsASTUtils {
                 return ClassHelper.make(Object.class).getPlainNodeReference();
             }
         }
-        
+
         final ClassNode nonGen = type.getPlainNodeReference();
-        
+
         GenericsType[] parameterized = type.getGenericsTypes();
         if (parameterized != null && parameterized.length > 0) {
             GenericsType[] copiedGenericsTypes = new GenericsType[parameterized.length];
@@ -623,7 +622,7 @@ public class GrailsASTUtils {
             }
             nonGen.setGenericsTypes(copiedGenericsTypes);
         }
-                
+
         return nonGen;
     }
 
@@ -691,7 +690,7 @@ public class GrailsASTUtils {
 
         return isDomainClass;
     }
-    
+
     public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
         addDelegateInstanceMethods(classNode, delegateNode, delegateInstance, null);
     }
@@ -699,7 +698,7 @@ public class GrailsASTUtils {
     public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance, Map<String, ClassNode> genericsPlaceholders) {
         addDelegateInstanceMethods(classNode, classNode, delegateNode, delegateInstance, genericsPlaceholders);
     }
-    
+
     public static void addDelegateInstanceMethods(ClassNode supportedSuperType, ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
         addDelegateInstanceMethods(supportedSuperType, classNode, delegateNode, delegateInstance, null);
     }

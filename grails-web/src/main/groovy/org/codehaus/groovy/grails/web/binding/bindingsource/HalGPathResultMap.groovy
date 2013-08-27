@@ -21,12 +21,9 @@ import groovy.util.slurpersupport.NodeChild
 
 import org.grails.databinding.xml.GPathResultMap
 
-
 /**
- * 
  * @author Jeff Brown
  * @since 2.3
- *
  */
 class HalGPathResultMap extends GPathResultMap {
 

@@ -253,6 +253,7 @@ public class ControllersApi extends CommonWebApi {
      * @param object A domain class
      * @return null
      */
+    @SuppressWarnings("unchecked")
     public Object redirect(Object instance,Object object) {
         if(object != null) {
 
@@ -343,7 +344,7 @@ public class ControllersApi extends CommonWebApi {
         DataBindingUtils.bindToCollection(targetType, collectionToPopulate, collectionBindingSource);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings("unchecked")
     private List convertToListIfString(Object o) {
         if (o instanceof String) {
             List list = new ArrayList();
@@ -456,7 +457,7 @@ public class ControllersApi extends CommonWebApi {
         }
         return commandObjectInstance;
     }
-    
+
     @SuppressWarnings("unchecked")
     public Method getExceptionHandlerMethodFor(final Object controllerInstance, final Class<? extends Exception> exceptionType) throws Exception {
         if(!Exception.class.isAssignableFrom(exceptionType)) {
@@ -465,7 +466,7 @@ public class ControllersApi extends CommonWebApi {
         Method handlerMethod = null;
         final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = (List<ControllerExceptionHandlerMetaData>) GrailsClassUtils.getStaticFieldValue(controllerInstance.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME);
         if(exceptionHandlerMetaDataInstances != null && exceptionHandlerMetaDataInstances.size() > 0) {
-            
+
             // find all of the handler methods which could accept this exception type
             final List<ControllerExceptionHandlerMetaData> matches = (List<ControllerExceptionHandlerMetaData>) org.apache.commons.collections.CollectionUtils.select(exceptionHandlerMetaDataInstances, new Predicate() {
                 @Override
@@ -474,11 +475,10 @@ public class ControllersApi extends CommonWebApi {
                     return md.getExceptionType().isAssignableFrom(exceptionType);
                 }
             });
-            
-            
+
             if(matches.size() > 0) {
                 ControllerExceptionHandlerMetaData theOne = matches.get(0);
-                
+
                 // if there are more than 1, find the one that is farthest down the inheritance hierarchy
                 for(int i = 1; i < matches.size(); i++) {
                     final ControllerExceptionHandlerMetaData nextMatch = matches.get(i);
@@ -489,7 +489,7 @@ public class ControllersApi extends CommonWebApi {
                 handlerMethod = controllerInstance.getClass().getMethod(theOne.getMethodName(), theOne.getExceptionType());
             }
         }
-        
+
         return handlerMethod;
     }
 }

@@ -325,11 +325,11 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         public void setRedirectInfo(Object redirectInfo) {
             this.redirectInfo = redirectInfo;
         }
-        
+
         public Object getRedirectInfo() {
             return redirectInfo;
         }
-        
+
         public void setPlugin(Object plugin) {
             pluginName = plugin;
         }
@@ -960,7 +960,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Object getRedirectInfo(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.REDIRECT_INFO, redirectInfo);
         }
-        
+
         private Object getVersion(Map namedArguments, Map bindingVariables) {
             return getVariableFromNamedArgsOrBinding(namedArguments, bindingVariables, UrlMapping.VERSION, pluginName);
         }

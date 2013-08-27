@@ -159,7 +159,7 @@ public abstract class AbstractUrlMapping implements UrlMapping {
         }
         return false;
     }
-    
+
     public Object getRedirectInfo() {
         return redirectInfo;
     }

@@ -22,10 +22,8 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 
 /**
- * 
  * @author Jeff Brown
  * @since 2.3
- *
  */
 @CompileStatic
 class HalXmlDataBindingSourceCreator extends XmlDataBindingSourceCreator {
@@ -34,12 +32,11 @@ class HalXmlDataBindingSourceCreator extends XmlDataBindingSourceCreator {
     MimeType[] getMimeTypes() {
         [MimeType.HAL_XML] as MimeType[]
     }
-    
+
     @Override
     protected DataBindingSource createBindingSource(Reader reader) {
         def gpath = new XmlSlurper().parse(reader)
         def gpathMap = new HalGPathResultMap(gpath)
         return new SimpleMapDataBindingSource(gpathMap)
     }
-
 }

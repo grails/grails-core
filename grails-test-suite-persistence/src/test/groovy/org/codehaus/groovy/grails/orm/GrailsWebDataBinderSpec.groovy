@@ -566,7 +566,7 @@ class GrailsWebDataBinderSpec extends Specification {
         pub.authors.size() == 1
         pub.authors.find { it.name == 'Author Two' } != null
     }
-    
+
     void 'Test binding a gson LazilyParsedNumber to a domain class object reference'() {
         given:
         def binder = new GrailsWebDataBinder(grailsApplication)
@@ -574,22 +574,21 @@ class GrailsWebDataBinderSpec extends Specification {
 
         when:
         author.save()
-        
+
         then:
         author.id !=  null
-        
+
         when:
         def publication = new Publication()
         def bindingSource = [title: 'Me Of Little Faith', author: new LazilyParsedNumber(author.id.toString())] as SimpleMapDataBindingSource
         binder.bind publication, bindingSource
-        
+
         then:
         publication.author.name == 'Lewis Black'
         publication.title == 'Me Of Little Faith'
         publication.author.is author
     }
 
-    
     void 'Test binding a String to a domain class object reference'() {
         given:
         def binder = new GrailsWebDataBinder(grailsApplication)
@@ -597,15 +596,15 @@ class GrailsWebDataBinderSpec extends Specification {
 
         when:
         author.save()
-        
+
         then:
         author.id !=  null
-        
+
         when:
         def publication = new Publication()
         def bindingSource = [title: 'Me Of Little Faith', author: author.id.toString()] as SimpleMapDataBindingSource
         binder.bind publication, bindingSource
-        
+
         then:
         publication.author.name == 'Lewis Black'
         publication.title == 'Me Of Little Faith'
@@ -797,53 +796,53 @@ class GrailsWebDataBinderSpec extends Specification {
         15 == birthDate.date
         69 == birthDate.year
     }
-    
+
     void 'Test that binding errors are populated on a @Validateable instance'() {
         given:
         def binder = new GrailsWebDataBinder(grailsApplication)
         def obj = new SomeValidateableClass()
-        
+
         when: 'binding with just a binding source'
         binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource
-        
+
         then:
         obj.hasErrors()
         obj.errors.errorCount == 1
         obj.errors['someNumber'].code == 'typeMismatch'
-        
+
         when:
         obj.clearErrors()
-        
+
         then:
         !obj.hasErrors()
-        
+
         when: 'binding with a binding source and a white list'
         binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource, ['someNumber']
-        
+
         then:
         obj.hasErrors()
         obj.errors.errorCount == 1
         obj.errors['someNumber'].code == 'typeMismatch'
-        
+
         when:
         obj.clearErrors()
-        
+
         then:
         !obj.hasErrors()
-        
+
         when: 'binding with a binding source, a white list and a black list'
         binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource, ['someNumber'], ['someOtherProperty']
-        
+
         then:
         obj.hasErrors()
         obj.errors.errorCount == 1
         obj.errors['someNumber'].code == 'typeMismatch'
         when:
         obj.clearErrors()
-        
+
         then:
         !obj.hasErrors()
-        
+
         when: 'binding with a binding source and a listener'
         def listenerMap = [:]
         def beforeBindingArgs = []
@@ -852,7 +851,7 @@ class GrailsWebDataBinderSpec extends Specification {
         listenerMap.beforeBinding = { object, String propName, value ->
             beforeBindingArgs << [object: object, propName: propName, value: value]
             true
-        } 
+        }
         listenerMap.bindingError = { BindingError error ->
             bindingErrorArgs << error
         }
@@ -863,7 +862,7 @@ class GrailsWebDataBinderSpec extends Specification {
         def listener = listenerMap as DataBindingListener
 
         binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource, listener
-        
+
         then:
         obj.hasErrors()
         obj.errors.errorCount == 1
@@ -879,7 +878,6 @@ class GrailsWebDataBinderSpec extends Specification {
         afterBindingArgs.size() == 1
         afterBindingArgs[0].object.is obj
         afterBindingArgs[0].propertyName == 'someNumber'
-        
     }
 }
 

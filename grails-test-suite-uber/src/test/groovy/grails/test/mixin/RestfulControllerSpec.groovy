@@ -221,7 +221,7 @@ class VideoController {
                     flash.message = message(code: 'default.deleted.message', args: [message(code: 'Video.label', default: 'Video'), video.id])
                     redirect action:"index", method:"GET"
                 }
-                '*'{ render status:204 } // NO CONTENT STATUS CODE  
+                '*'{ render status:204 } // NO CONTENT STATUS CODE
             }
         }
         else {

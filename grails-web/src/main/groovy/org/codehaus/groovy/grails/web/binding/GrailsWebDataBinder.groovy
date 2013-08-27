@@ -77,7 +77,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     void bind(obj, DataBindingSource source) {
         bind obj, source, null, getBindingIncludeList(obj), null, null
     }
-    
+
     /**
      * @param obj the object to perform data binding on
      * @param source the binding source
@@ -113,7 +113,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     void bind(obj, GPathResult gpath) {
         bind obj, new SimpleMapDataBindingSource(new GPathResultMap(gpath)), getBindingIncludeList(obj)
     }
-    
+
     protected populateErrors(obj, BindingResult bindingResult) {
         GrailsDomainClass domain = null
         if (grailsApplication != null) {
@@ -590,7 +590,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 @CompileStatic
 class DataBindingEventMulticastListener implements DataBindingListener {
     List<DataBindingListener> listeners
-    
+
     Boolean beforeBinding(Object obj, String propertyName, Object value) {
         listeners*.beforeBinding obj, propertyName, value
     }

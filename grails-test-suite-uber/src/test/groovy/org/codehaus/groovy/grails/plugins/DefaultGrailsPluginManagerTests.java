@@ -112,8 +112,7 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
 
         assertEquals("Expected plugins not loaded. Expected " + 5 + " but got " + pluginList, 5, pluginList.size());
     }
-    
-    
+
     public void testLoadingOrderGRAILS9426() {
         // GRAILS-9426
         DefaultGrailsPluginManager manager = loadPlugins("class FirstGrailsPlugin {\n" +
@@ -134,13 +133,13 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
         assertNotNull(manager.getGrailsPlugin("second"));
         assertNotNull(manager.getGrailsPlugin("third"));
         assertNotNull(manager.getGrailsPlugin("fourth"));
-        
+
         List<GrailsPlugin> expectedOrder = new ArrayList<GrailsPlugin>();
         expectedOrder.add(manager.getGrailsPlugin("fourth"));
         expectedOrder.add(manager.getGrailsPlugin("first"));
         expectedOrder.add(manager.getGrailsPlugin("second"));
         expectedOrder.add(manager.getGrailsPlugin("third"));
-        
+
         assertEquals("Expected plugin order", expectedOrder, pluginList);
 
         assertEquals("Expected plugins not loaded. Expected " + 4 + " but got " + pluginList, 4, pluginList.size());
@@ -182,15 +181,13 @@ public class DefaultGrailsPluginManagerTests extends TestCase {
                                 "}");
 
         List<GrailsPlugin> pluginList = manager.getPluginList();
-        
+
         List<GrailsPlugin> expectedOrder = new ArrayList<GrailsPlugin>();
         expectedOrder.add(manager.getGrailsPlugin("third"));
         expectedOrder.add(manager.getGrailsPlugin("fourth"));
         expectedOrder.add(manager.getGrailsPlugin("second"));
-        expectedOrder.add(manager.getGrailsPlugin("first"));        
-        
+        expectedOrder.add(manager.getGrailsPlugin("first"));
+
         assertEquals("Expected plugin order", expectedOrder, pluginList);
     }
-
-    
 }

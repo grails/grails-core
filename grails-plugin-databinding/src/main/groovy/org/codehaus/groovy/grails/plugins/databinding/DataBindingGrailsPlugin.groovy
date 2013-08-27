@@ -63,7 +63,7 @@ class DataBindingGrailsPlugin {
                 formatStrings = databindingConfig.dateFormats
             }
         }
-        [Short,   Short.TYPE, 
+        [Short,   Short.TYPE,
          Integer, Integer.TYPE,
          Float,   Float.TYPE,
          Long,    Long.TYPE,
@@ -78,7 +78,7 @@ class DataBindingGrailsPlugin {
         defaultGrailsBigIntegerConverter(LocaleAwareBigDecimalConverter) {
             targetType = BigInteger
         }
-        
+
         "${DataBindingSourceRegistry.BEAN_NAME}"(DefaultDataBindingSourceRegistry)
 
         xmlDataBindingSourceCreator(XmlDataBindingSourceCreator)

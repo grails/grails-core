@@ -6,7 +6,6 @@ import spock.lang.Specification
 
 class HalGPathResultMapSpec extends Specification {
 
-    
     void 'Test nested elements'() {
         given:
         def xml = new XmlSlurper().parseText('''

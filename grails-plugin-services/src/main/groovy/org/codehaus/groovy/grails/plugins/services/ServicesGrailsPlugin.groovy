@@ -103,7 +103,7 @@ class ServicesGrailsPlugin {
                 }
             }
         }
-        
+
         serviceBeanAliasPostProcessor(ServiceBeanAliasPostProcessor)
     }
 

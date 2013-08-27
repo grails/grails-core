@@ -631,7 +631,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
         if (viewName == null) {
             viewName = createRuntimeConstraintEvaluator(GrailsControllerClass.VIEW, constraints);
         }
-        
+
         if(redirectInfo == null) {
             redirectInfo = createRuntimeConstraintEvaluator("redirect", constraints);
         }

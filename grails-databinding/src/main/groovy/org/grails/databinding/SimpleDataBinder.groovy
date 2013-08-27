@@ -149,7 +149,7 @@ class SimpleDataBinder implements DataBinder {
     void bind(obj, GPathResult gpath) {
         bind obj, new SimpleMapDataBindingSource(new GPathResultMap(gpath))
     }
-    
+
     /**
      * @param obj the object to perform data binding on
      * @param source the binding source

@@ -65,7 +65,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     private String httpMethod;
     private String version;
 
-    @SuppressWarnings({"unchecked","rawtypes"})
+    @SuppressWarnings("rawtypes")
     private DefaultUrlMappingInfo(Map params, UrlMappingData urlData, ServletContext servletContext) {
         setParams(params);
         id = getParams().get(ID_PARAM);
@@ -83,24 +83,15 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
             urlConverter = new CamelCaseUrlConverter();
         }
     }
-    private DefaultUrlMappingInfo(String httpMethod,Map params, UrlMappingData urlData, ServletContext servletContext) {
-        setParams(params);
-        id = getParams().get(ID_PARAM);
-        this.urlData = urlData;
-        this.servletContext = servletContext;
-        this.httpMethod = httpMethod;
-        GrailsApplication grailsApplication = WebUtils.lookupApplication(servletContext);
-        ApplicationContext mainContext = grailsApplication.getMainContext();
-        urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
-    }
 
     @SuppressWarnings("rawtypes")
     public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, Map params,
             UrlMappingData urlData, ServletContext servletContext) {
         this(redirectInfo, controllerName, actionName, namespace, pluginName, viewName, null,UrlMapping.ANY_VERSION, params, urlData, servletContext);
     }
-    public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName, String httpMethod, String version, Map params,
-                                 UrlMappingData urlData, ServletContext servletContext) {
+
+    public DefaultUrlMappingInfo(Object redirectInfo, Object controllerName, Object actionName, Object namespace, Object pluginName, Object viewName,
+                                 String httpMethod, String version, Map<?, ?> params, UrlMappingData urlData, ServletContext servletContext) {
         this(params, urlData, servletContext);
         Assert.isTrue(redirectInfo != null || controllerName != null || viewName != null, "URL mapping must either provide redirect information, a controller or a view name to map to!");
         Assert.notNull(params, "Argument [params] cannot be null");
@@ -262,7 +253,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     public String getURI() {
         return evaluateNameForValue(uri);
     }
-    
+
     @Override
     public Object getRedirectInfo() {
         return redirectInfo;

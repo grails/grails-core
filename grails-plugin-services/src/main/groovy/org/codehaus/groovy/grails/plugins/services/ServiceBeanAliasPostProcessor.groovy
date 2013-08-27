@@ -27,13 +27,13 @@ import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 
 /**
  * Registers bean aliases for service beans provided by plugins.
- * 
+ *
  * If a plugin named ReportingPlugin provides a service artifact named
  * PrintingService, the corresponding bean name will be reportingPrintingService.
  * This post processor will create a printingService alias which points to the
  * reportingPrintingService bean as long as there is not another bean in the
  * context named printingService.
- * 
+ *
  * @since 2.3
  * @author Jeff Scott Brown
  */

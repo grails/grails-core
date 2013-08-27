@@ -24,10 +24,9 @@ import java.text.NumberFormat
  * A ValueConverter that knows how to convert a String to a BigDecimal or a BigInteger and is Locale aware.  The
  * converter will use the Locale of the current request if being invoked as part of a
  * request, otherwise will use Locale.getDefault().
- * 
+ *
  * @author Jeff Brown
  * @since 2.3
- *
  */
 @CompileStatic
 class LocaleAwareBigDecimalConverter extends LocaleAwareNumberConverter {
@@ -36,7 +35,7 @@ class LocaleAwareBigDecimalConverter extends LocaleAwareNumberConverter {
     protected NumberFormat getNumberFormatter() {
         def nf = super.getNumberFormatter()
         if (!(nf instanceof DecimalFormat)) {
-            throw new IllegalStateException("Cannot support non-DecimalFormat: " + nf);
+            throw new IllegalStateException("Cannot support non-DecimalFormat: " + nf)
         }
 
         ((DecimalFormat)nf).setParseBigDecimal(true)

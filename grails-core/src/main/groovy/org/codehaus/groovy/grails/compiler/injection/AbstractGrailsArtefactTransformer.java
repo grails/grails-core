@@ -70,7 +70,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     public static final String CURRENT_PREFIX = "current";
     public static final String METHOD_MISSING_METHOD_NAME = "methodMissing";
     public static final String STATIC_METHOD_MISSING_METHOD_NAME = "$static_methodMissing";
-    
+
     private static final String[] DEFAULT_GENERICS_PLACEHOLDERS = new String[]{"D", "T"};
 
     public String[] getArtefactTypes() {
@@ -114,10 +114,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         if(classNode.getName().contains("$")) return;
         // only transform the targeted artefact type
         if(!DomainClassArtefactHandler.TYPE.equals(getArtefactType()) && !isValidArtefactTypeByConvention(classNode)) return;
-        
-        
+
         Map<String, ClassNode> genericsPlaceholders = resolveGenericsPlaceHolders(classNode);
-        
+
         Class instanceImplementation = getInstanceImplementation();
 
         if (instanceImplementation != null) {
@@ -231,7 +230,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             MethodNode declaredMethod, Map<String, ClassNode> genericsPlaceholders) {
         GrailsASTUtils.addDelegateStaticMethod(apiLookupMethod, classNode, declaredMethod, getMarkerAnnotation(), genericsPlaceholders);
     }
-    
+
     private boolean isValidArtefactTypeByConvention(ClassNode classNode) {
         String[] artefactTypes = getArtefactTypes();
         for (String artefactType : artefactTypes) {

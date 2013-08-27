@@ -22,28 +22,24 @@ import java.text.NumberFormat
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.databinding.converters.ValueConverter
 
-
 /**
  * A ValueConverter that knows how to convert a String to any numeric type and is Locale aware.  The
  * converter will use the Locale of the current request if being invoked as part of a
  * request, otherwise will use Locale.getDefault()
- * 
+ *
  * @author Jeff Brown
  * @since 2.3
- *
  */
 @CompileStatic
 class LocaleAwareNumberConverter implements ValueConverter {
 
     Class<?> targetType
 
-    @Override
-    public boolean canConvert(Object value) {
+    boolean canConvert(value) {
         value instanceof String
     }
 
-    @Override
-    public Object convert(Object value) {
+    Object convert(value) {
         numberFormatter.parse((String)value).asType(getTargetType())
     }
 

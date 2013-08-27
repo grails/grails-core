@@ -411,46 +411,41 @@ public class GrailsNameUtils {
     public static String getPropertyNameConvention(Object object, String suffix) {
         if(object != null) {
             Class<?> type = object.getClass();
-            if(type.isArray()) {
+            if (type.isArray()) {
                 return getPropertyName(type.getComponentType()) + suffix + "Array";
             }
-            else if(object instanceof Collection) {
+
+            if (object instanceof Collection) {
                 Collection coll = (Collection) object;
-                if(coll.isEmpty()) {
+                if (coll.isEmpty()) {
                     return "emptyCollection";
                 }
-                else {
-                    Object first = coll.iterator().next();
-                    if(coll instanceof List) {
-                        return getPropertyName(first.getClass()) + suffix + "List";
-                    }
-                    else if(coll instanceof Set) {
-                        return getPropertyName(first.getClass()) + suffix + "Set";
-                    }
-                    else {
-                        return getPropertyName(first.getClass()) + suffix + "Collection";
-                    }
 
+                Object first = coll.iterator().next();
+                if(coll instanceof List) {
+                    return getPropertyName(first.getClass()) + suffix + "List";
                 }
-
+                if(coll instanceof Set) {
+                    return getPropertyName(first.getClass()) + suffix + "Set";
+                }
+                return getPropertyName(first.getClass()) + suffix + "Collection";
             }
-            else if(object instanceof Map) {
+
+            if (object instanceof Map) {
                 Map map = (Map)object;
 
-                if(map.isEmpty()) {
+                if (map.isEmpty()) {
                     return "emptyMap";
                 }
-                else {
-                    Object entry = map.values().iterator().next();
-                    if(entry != null) {
-                        return getPropertyName(entry.getClass()) + suffix + "Map";
-                    }
+
+                Object entry = map.values().iterator().next();
+                if (entry != null) {
+                    return getPropertyName(entry.getClass()) + suffix + "Map";
                 }
             }
             else {
                 return getPropertyName(object.getClass()) + suffix;
             }
-
         }
         return null;
     }

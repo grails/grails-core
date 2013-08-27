@@ -55,7 +55,7 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * The HTTP method this mapping matches
      */
     String HTTP_METHOD = "method";
-    
+
     /**
      * Redirect information for this url mapping.
      */
@@ -160,7 +160,6 @@ public interface UrlMapping extends Comparable, UrlCreator {
      */
     String getHttpMethod();
 
-
     /**
      * @return The version of the URL mapping. Used for versioning of REST services
      */
@@ -208,13 +207,13 @@ public interface UrlMapping extends Comparable, UrlCreator {
      * @return true if the mapping has the variable
      */
     boolean hasRuntimeVariable(String name);
-    
+
     /**
      * The redirect information should be a String or a Map.  If it
      * is a String that string is the URI to redirect to.  If it is
      * a Map, that Map may contain any entries supported as arguments
      * to the dynamic redirect(Map) method on a controller.
-     * 
+     *
      * @return redirect information for this url mapping
      */
     Object getRedirectInfo();

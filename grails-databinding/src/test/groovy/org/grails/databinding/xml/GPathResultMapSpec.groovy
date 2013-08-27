@@ -138,9 +138,8 @@ class GPathResultMapSpec extends Specification {
         map.containsKey('name')
         map.id == '42'
         map.name == 'Thin Lizzy'
-
     }
-    
+
     void 'Test id returns null when no id is present'() {
         given:
         def xml = new XmlSlurper().parseText('''

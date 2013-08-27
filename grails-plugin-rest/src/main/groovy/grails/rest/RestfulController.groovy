@@ -75,18 +75,21 @@ class RestfulController<T> {
     @Transactional
     def save() {
         def instance = createResource(getParametersToBind())
+
         instance.validate()
         if (instance.hasErrors()) {
             respond instance.errors, view:'create' // STATUS CODE 422
-        } else {
-            instance.save flush:true
-            request.withFormat {
-                form {
-                    flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
-                    redirect instance
-                }
-                '*' { respond instance, [status: CREATED] }
+            return
+        }
+
+        instance.save flush:true
+
+        request.withFormat {
+            form {
+                flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
+                redirect instance
             }
+            '*' { respond instance, [status: CREATED] }
         }
     }
 
@@ -136,6 +139,7 @@ class RestfulController<T> {
         }
 
         instance.delete flush:true
+
         request.withFormat {
             form {
                 flash.message = message(code: 'default.deleted.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])

@@ -21,7 +21,7 @@ import org.springframework.web.util.HtmlUtils;
 
 /**
  * HTML4 decoder that uses Spring's HtmlUtils.htmlUnescape to do the unescaping.
- * 
+ *
  * @author Lari Hotari
  * @since 2.3
  */

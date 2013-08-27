@@ -28,20 +28,20 @@ import org.grails.databinding.events.DataBindingListener;
 public interface DataBinder {
 
     void bind(Object obj, DataBindingSource source, String filter, List<String> whiteList,
-            List<String> blackList, DataBindingListener listener);
+              List<String> blackList, DataBindingListener listener);
 
     void bind(Object obj, DataBindingSource source, String filter, List<String> whiteList,
-            List<String> blackList);
-    
-    public abstract void bind(Object obj, GPathResult gpath);
+              List<String> blackList);
 
-    public abstract void bind(Object obj, DataBindingSource source, List<String> whiteList,
-            List<String> blackList);
+    void bind(Object obj, GPathResult gpath);
 
-    public abstract void bind(Object obj, DataBindingSource source, List<String> whiteList);
+    void bind(Object obj, DataBindingSource source, List<String> whiteList,
+              List<String> blackList);
 
-    public abstract void bind(Object obj, DataBindingSource source, DataBindingListener listener);
+    void bind(Object obj, DataBindingSource source, List<String> whiteList);
 
-    public abstract void bind(Object obj, DataBindingSource source);
+    void bind(Object obj, DataBindingSource source, DataBindingListener listener);
+
+    void bind(Object obj, DataBindingSource source);
 
 }

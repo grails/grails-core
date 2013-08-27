@@ -44,7 +44,7 @@ interface DataBindingSourceCreator extends MimeTypeProvider {
      * @throws DataBindingSourceCreationException if an unrecoverable error occurs creating the binding source
      */
     DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceCreationException
-    
+
     /**
      * Creates a CollectionDataBindingSource suitable for binding bindingSource to bindingTarget
      *

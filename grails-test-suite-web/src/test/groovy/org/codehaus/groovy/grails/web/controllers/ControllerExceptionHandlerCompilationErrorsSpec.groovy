@@ -9,7 +9,6 @@ import spock.lang.Specification
 
 class ControllerExceptionHandlerCompilationErrorsSpec extends Specification {
 
-    
     static gcl
 
     void setupSpec() {

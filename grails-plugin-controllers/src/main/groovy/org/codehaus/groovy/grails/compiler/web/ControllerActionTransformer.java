@@ -209,7 +209,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         }
         return isExceptionHandler;
     }
-    
+
     private void processMethods(ClassNode classNode, SourceUnit source,
             GeneratorContext context) {
 
@@ -221,7 +221,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
                 if (method.getReturnType().getName().equals(VOID_TYPE) ||
                     isExceptionHandlingMethod(method)) continue;
-                
+
                 final List<MethodNode> declaredMethodsWithThisName = classNode.getDeclaredMethods(method.getName());
                 if(declaredMethodsWithThisName != null) {
                     final int numberOfNonExceptionHandlerMethodsWithThisName = org.apache.commons.collections.CollectionUtils.countMatches(declaredMethodsWithThisName, new Predicate() {
@@ -245,7 +245,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             }
         }
         Collection<MethodNode> exceptionHandlerMethods = getExceptionHandlerMethods(classNode, source);
-        
+
         final FieldNode exceptionHandlerMetaDataField = classNode.getField(EXCEPTION_HANDLER_META_DATA_FIELD_NAME);
         if(exceptionHandlerMetaDataField == null || !exceptionHandlerMetaDataField.getDeclaringClass().equals(classNode)) {
             final ListExpression listOfExceptionHandlerMetaData = new ListExpression();
@@ -267,7 +267,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             classNode.addMethod(newMethod);
         }
     }
-    
+
     protected Collection<MethodNode> getExceptionHandlerMethods(final ClassNode classNode, SourceUnit sourceUnit) {
         final Map<ClassNode, MethodNode> exceptionTypeToHandlerMethodMap = new HashMap<ClassNode, MethodNode>();
         final List<MethodNode> methods = classNode.getMethods();
@@ -471,14 +471,13 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
      * </pre>
      * @param methodNode the method to add the try catch block to
      */
-    protected void wrapMethodBodyWithExceptionHandling(
-            final MethodNode methodNode) {
+    protected void wrapMethodBodyWithExceptionHandling(final MethodNode methodNode) {
         final BlockStatement catchBlockCode = new BlockStatement();
         final String caughtExceptionArgumentName = "$caughtException";
         final Expression caughtExceptionVariableExpression = new VariableExpression(caughtExceptionArgumentName);
         final Expression caughtExceptionTypeExpression = new PropertyExpression(caughtExceptionVariableExpression, "class");
         final Expression getExceptionHandlerMethodCall = new MethodCallExpression(THIS_EXPRESSION, "getExceptionHandlerMethodFor", caughtExceptionTypeExpression);
-        
+
         final String exceptionHandlerMethodVariableName = "$method";
         final Expression declareExceptionHandlerMethod = new DeclarationExpression(
                 new VariableExpression(exceptionHandlerMethodVariableName, new ClassNode(Method.class)), Token.newSymbol(Types.EQUALS, 0, 0), getExceptionHandlerMethodCall);
@@ -491,12 +490,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final Statement ifExceptionHandlerMethodExistsStatement = new IfStatement(new BooleanExpression(new VariableExpression(exceptionHandlerMethodVariableName)), returnStatement, throwCaughtExceptionStatement);
         catchBlockCode.addStatement(new ExpressionStatement(declareExceptionHandlerMethod));
         catchBlockCode.addStatement(ifExceptionHandlerMethodExistsStatement);
-        
+
         final CatchStatement catchStatement = new CatchStatement(new Parameter(new ClassNode(Exception.class), caughtExceptionArgumentName), catchBlockCode);
         final Statement methodBody = methodNode.getCode();
         final TryCatchStatement tryCatchStatement = new TryCatchStatement(methodBody, new EmptyStatement());
         tryCatchStatement.addCatch(catchStatement);
-        
+
         methodNode.setCode(tryCatchStatement);
     }
 

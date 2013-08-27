@@ -16,7 +16,6 @@
 package org.grails.databinding.xml
 
 import groovy.util.slurpersupport.GPathResult
-import groovy.util.slurpersupport.NoChildren
 import groovy.util.slurpersupport.Node
 import groovy.util.slurpersupport.NodeChild
 
@@ -68,11 +67,12 @@ class GPathResultMap implements Map {
         if('id' == key && this.@id) {
             return this.@id
         }
-        
+
         def value = gpath.children().findAll { it.name() == key }
         if(value.size() == 0) {
             return null
-        } else if(value.size() > 1) {
+        }
+        if(value.size() > 1) {
             def list = []
             value.iterator().each {
                 def theId = it.@id.text()
@@ -89,7 +89,8 @@ class GPathResultMap implements Map {
                 }
             }
             return list
-        } else if(value.children().size() == 0) {
+        }
+        if(value.children().size() == 0) {
             if(value.@id.text()) {
                 return [id: value.@id.text()]
             }
@@ -99,8 +100,8 @@ class GPathResultMap implements Map {
     }
 
     Set keySet() {
-        def keys = gpath.children().collect { 
-            getPropertyNameForNodeChild it 
+        def keys = gpath.children().collect {
+            getPropertyNameForNodeChild it
         } as Set
         if(this.@id != null) {
             keys << 'id'

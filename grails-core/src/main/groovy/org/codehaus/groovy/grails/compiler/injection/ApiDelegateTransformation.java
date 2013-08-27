@@ -15,8 +15,15 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import java.util.Arrays;
+import java.util.Map;
+
 import org.codehaus.groovy.GroovyBugError;
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
@@ -24,9 +31,6 @@ import org.codehaus.groovy.control.CompilePhase;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-
-import java.util.Arrays;
-import java.util.Map;
 
 /**
  * The logic for the {@link grails.artefact.ApiDelegate} location transform.
@@ -57,8 +61,8 @@ public class ApiDelegateTransformation implements ASTTransformation{
             GrailsASTUtils.addDelegateInstanceMethods(supportedType, owner, type, new VariableExpression(fieldNode.getName()), resolveGenericsPlaceHolders(supportedType));
         }
     }
-    
+
     protected Map<String, ClassNode> resolveGenericsPlaceHolders(ClassNode classNode) {
         return null;
-    }    
+    }
 }

@@ -22,7 +22,7 @@ class HalXmlBindingSpec extends Specification {
         <city>San Mateo</city>
     </resource>
 </resource>'''
-        
+
         request.contentType = 'application/hal+xml'
         def model = controller.createPerson()
     then:

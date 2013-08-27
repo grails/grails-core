@@ -37,7 +37,7 @@ import org.springframework.web.context.request.RequestContextHolder;
  * @author Graeme Rocher
  * @since 1.2
  */
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes", "unchecked"})
 public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
 
     private Map<String, Object> params = Collections.EMPTY_MAP;
@@ -78,7 +78,6 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
      * @param webRequest The Map instance
      * @see org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
      */
-    @SuppressWarnings("unchecked")
     protected void populateParamsForMapping(GrailsWebRequest webRequest) {
         Map dispatchParams = webRequest.getParams();
         String encoding = webRequest.getRequest().getCharacterEncoding();
@@ -144,13 +143,13 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
         }
         return name != null ? name.trim() : null;
     }
-    
+
     /**
      * The redirect information should be a String or a Map.  If it
      * is a String that string is the URI to redirect to.  If it is
      * a Map, that Map may contain any entries supported as arguments
      * to the dynamic redirect(Map) method on a controller.
-     * 
+     *
      * @return redirect information for this url mapping, null if no redirect is specified
      */
     public Object getRedirectInfo() {

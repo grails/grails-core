@@ -14,9 +14,9 @@ import org.codehaus.groovy.grails.validation.Constraint;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.mock.web.MockServletContext;
 
+@SuppressWarnings("rawtypes")
 public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests {
 
-    @SuppressWarnings("rawtypes")
     public void testNamedMappings() throws Exception {
         GroovyShell shell = new GroovyShell();
         Binding binding = new Binding();
@@ -59,10 +59,9 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertEquals("bar", redirectMap.get("action"));
         assertEquals("/bing/bang", mappings.get(1).getRedirectInfo());
     }
-    
-    @SuppressWarnings("rawtypes")
-    public void testNewMethod () throws Exception {
-        GroovyShell shell = new GroovyShell ();
+
+    public void testNewMethod() throws Exception {
+        GroovyShell shell = new GroovyShell();
         Binding binding = new Binding();
         Script script = shell.parse (
                 "mappings = {\n" +
@@ -109,8 +108,7 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertEquals("234", mapping.match("/blog/test/234").getId());
     }
 
-    @SuppressWarnings("rawtypes")
-    public void testOldMethod () throws Exception {
+    public void testOldMethod() throws Exception {
         GroovyShell shell = new GroovyShell();
         Script script = shell.parse (
                 "mappings {\n" +
