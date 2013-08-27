@@ -229,6 +229,8 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             idValue = source
         } else if(source instanceof Map && source.containsKey('id')) {
             idValue = source['id']
+        } else if(source instanceof Number) {
+            idValue = source.toString()
         }
         if (idValue instanceof GString) {
             idValue = idValue.toString()
@@ -245,7 +247,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             def idValue = getIdentifierValueFrom(val)
             if (idValue != null) {
                 def propertyType = getDomainClassType(obj, metaProperty.name)
-                if (propertyType) {
+                if (propertyType && isDomainClass(propertyType)) {
                     needsBinding = false
                     def persistedInstance = null
                     if (idValue != 'null' && idValue != null && idValue != '') {

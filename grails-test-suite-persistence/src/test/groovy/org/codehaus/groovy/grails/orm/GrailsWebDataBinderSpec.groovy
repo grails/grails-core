@@ -33,6 +33,8 @@ import org.springframework.context.support.StaticMessageSource
 
 import spock.lang.Specification
 
+import com.google.gson.internal.LazilyParsedNumber
+
 @TestMixin(DomainClassUnitTestMixin)
 @Mock([Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
 class GrailsWebDataBinderSpec extends Specification {
@@ -515,6 +517,51 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         pub.authors.size() == 1
         pub.authors.find { it.name == 'Author Two' } != null
+    }
+    
+    void 'Test binding a gson LazilyParsedNumber to a domain class object reference'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def author = new Author(name: 'Lewis Black')
+
+        when:
+        author.save()
+        
+        then:
+        author.id !=  null
+        
+        when:
+        def publication = new Publication()
+        def bindingSource = [title: 'Me Of Little Faith', author: new LazilyParsedNumber(author.id.toString())] as SimpleMapDataBindingSource
+        binder.bind publication, bindingSource
+        
+        then:
+        publication.author.name == 'Lewis Black'
+        publication.title == 'Me Of Little Faith'
+        publication.author.is author
+    }
+
+    
+    void 'Test binding a String to a domain class object reference'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def author = new Author(name: 'Lewis Black')
+
+        when:
+        author.save()
+        
+        then:
+        author.id !=  null
+        
+        when:
+        def publication = new Publication()
+        def bindingSource = [title: 'Me Of Little Faith', author: author.id.toString()] as SimpleMapDataBindingSource
+        binder.bind publication, bindingSource
+        
+        then:
+        publication.author.name == 'Lewis Black'
+        publication.title == 'Me Of Little Faith'
+        publication.author.is author
     }
 
     void 'Test updating Set elements by id and subscript operator'() {
