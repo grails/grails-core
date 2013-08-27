@@ -138,7 +138,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
                 renderer = containerRenderers.get(key)
                 if (renderer != null) break
                 else {
-                    if (targetClass == Object) break
+
                     key = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
                     renderer = containerRenderers.get(key)
                     if (renderer != null) break
@@ -150,6 +150,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
                             if (renderer != null) break
                         }
                     }
+                    if (targetClass == Object) break
                     targetClass = targetClass.getSuperclass()
                 }
             }
