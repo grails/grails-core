@@ -30,6 +30,9 @@ public interface DataBinder {
     void bind(Object obj, DataBindingSource source, String filter, List<String> whiteList,
             List<String> blackList, DataBindingListener listener);
 
+    void bind(Object obj, DataBindingSource source, String filter, List<String> whiteList,
+            List<String> blackList);
+    
     public abstract void bind(Object obj, GPathResult gpath);
 
     public abstract void bind(Object obj, DataBindingSource source, List<String> whiteList,

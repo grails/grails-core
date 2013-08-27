@@ -106,7 +106,7 @@ class SimpleDataBinder implements DataBinder {
 
     /**
      * @param obj the object to perform data binding on
-     * @param source a Map containg the values to be bound to obj
+     * @param source the binding source
      */
     void bind(obj, DataBindingSource source) {
         bind obj, source, null, null, null, null
@@ -114,7 +114,7 @@ class SimpleDataBinder implements DataBinder {
 
     /**
      * @param obj the object to perform data binding on
-     * @param source a Map containg the values to be bound to obj
+     * @param source the binding source
      * @param listener will be notified of data binding events
      */
     void bind(obj, DataBindingSource source, DataBindingListener listener) {
@@ -123,7 +123,7 @@ class SimpleDataBinder implements DataBinder {
 
     /**
      * @param obj the object to perform data binding on
-     * @param source a Map containg the values to be bound to obj
+     * @param source the binding source
      * @param whiteList A list of properties that are eligible for binding, if
      * null all properties are eligible for binding
      */
@@ -133,7 +133,7 @@ class SimpleDataBinder implements DataBinder {
 
     /**
      * @param obj the object to perform data binding on
-     * @param source a Map containg the values to be bound to obj
+     * @param source the binding source
      * @param whiteList A list of properties that are eligible for binding, if
      * null all properties are eligible for binding
      * @param blackList A list of properties to exclude from binding
@@ -149,13 +149,29 @@ class SimpleDataBinder implements DataBinder {
     void bind(obj, GPathResult gpath) {
         bind obj, new SimpleMapDataBindingSource(new GPathResultMap(gpath))
     }
-
+    
     /**
      * @param obj the object to perform data binding on
-     * @param source a Map containg the values to be bound to obj
+     * @param source the binding source
+     * @param filter a String representing a filter for selecting entries from the binding source
      * @param whiteList A list of properties that are eligible for binding, if
      * null all properties are eligible for binding
      * @param blackList A list of properties to exclude from binding
+     * @see DataBindingSource
+     */
+    void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList) {
+        bind obj, source, filter, whiteList, blackList, null
+    }
+
+    /**
+     * @param obj the object to perform data binding on
+     * @param source the binding source
+     * @param filter a String representing a filter for selecting entries from the binding source
+     * @param whiteList A list of properties that are eligible for binding, if
+     * null all properties are eligible for binding
+     * @param blackList A list of properties to exclude from binding
+     * @param listener will be notified of data binding events
+     * @see DataBindingSource
      */
     void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
         def keys = source.getPropertyNames()

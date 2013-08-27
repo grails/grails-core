@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.binding
 import grails.util.Environment
 import grails.util.GrailsNameUtils
 import grails.validation.DeferredBindingActions
+import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
@@ -45,10 +46,15 @@ import org.grails.databinding.SimpleDataBinder
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.converters.FormattedValueConverter
 import org.grails.databinding.converters.ValueConverter
+import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListener
 import org.grails.databinding.xml.GPathResultMap
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
+import org.springframework.validation.BeanPropertyBindingResult
+import org.springframework.validation.BindingResult
+import org.springframework.validation.FieldError
+import org.springframework.validation.ObjectError
 
 @CompileStatic
 class GrailsWebDataBinder extends SimpleDataBinder {
@@ -71,14 +77,33 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     void bind(obj, DataBindingSource source) {
         bind obj, source, null, getBindingIncludeList(obj), null, null
     }
-
+    
     /**
      * @param obj the object to perform data binding on
-     * @param source a Map containing the values to be bound to obj
+     * @param source the binding source
      * @param listener will be notified of data binding events
      */
     void bind(obj, DataBindingSource source, DataBindingListener listener) {
         bind obj, source, null, getBindingIncludeList(obj), null, listener
+    }
+
+    /**
+     * @param obj the object to perform data binding on
+     * @param source the binding source
+     * @param filter a String representing a filter for selecting entries from the binding source
+     * @param whiteList A list of properties that are eligible for binding, if
+     * null all properties are eligible for binding
+     * @param blackList A list of properties to exclude from binding
+     * @param listener will be notified of data binding events
+     * @see DataBindingSource
+     */
+    void bind(object, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
+        def bindingResult = new BeanPropertyBindingResult(object, object.getClass().name)
+        def errorHandlingListener = new GrailsWebDataBindingListener(bindingResult)
+
+        def listenerWrapper = new DataBindingEventMulticastListener(listeners: [errorHandlingListener, listener])
+        super.bind object, source, filter, whiteList, blackList, listenerWrapper
+        populateErrors(object, bindingResult)
     }
 
     /**
@@ -88,6 +113,46 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     void bind(obj, GPathResult gpath) {
         bind obj, new SimpleMapDataBindingSource(new GPathResultMap(gpath)), getBindingIncludeList(obj)
     }
+    
+    protected populateErrors(obj, BindingResult bindingResult) {
+        GrailsDomainClass domain = null
+        if (grailsApplication != null) {
+            domain = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,obj.getClass().name)
+        }
+
+        if (domain != null && bindingResult != null) {
+            def newResult = new ValidationErrors(obj)
+            for (Object error : bindingResult.getAllErrors()) {
+                if (error instanceof FieldError) {
+                    def fieldError = (FieldError)error
+                    final boolean isBlank = ''.equals(fieldError.getRejectedValue())
+                    if (!isBlank) {
+                        newResult.addError(fieldError)
+                    }
+                    else if (domain.hasPersistentProperty(fieldError.getField())) {
+                        final boolean isOptional = domain.getPropertyByName(fieldError.getField()).isOptional()
+                        if (!isOptional) {
+                            newResult.addError(fieldError)
+                        }
+                    }
+                    else {
+                        newResult.addError(fieldError)
+                    }
+                }
+                else {
+                    newResult.addError((ObjectError)error)
+                }
+            }
+            bindingResult = newResult
+        }
+        def mc = GroovySystem.getMetaClassRegistry().getMetaClass(obj.getClass())
+        if (mc.hasProperty(obj, "errors")!=null && bindingResult!=null) {
+            def errors = new ValidationErrors(obj)
+            errors.addAllErrors(bindingResult)
+            mc.setProperty(obj,"errors", errors)
+        }
+    }
+
 
     @Override
     protected Class<?> getReferencedTypeForCollection(String name, Object target) {
@@ -507,5 +572,22 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     protected Locale getLocale() {
         def request = GrailsWebRequest.lookup()
         request ? request.getLocale() : Locale.getDefault()
+    }
+}
+
+@CompileStatic
+class DataBindingEventMulticastListener implements DataBindingListener {
+    List<DataBindingListener> listeners
+    
+    Boolean beforeBinding(Object obj, String propertyName, Object value) {
+        listeners*.beforeBinding obj, propertyName, value
+    }
+
+    void afterBinding(Object obj, String propertyName) {
+        listeners*.afterBinding obj, propertyName
+    }
+
+    void bindingError(BindingError error) {
+        listeners*.bindingError error
     }
 }

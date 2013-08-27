@@ -47,7 +47,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.databinding.CollectionDataBindingSource;
 import org.grails.databinding.DataBinder;
 import org.grails.databinding.DataBindingSource;
-import org.grails.databinding.events.DataBindingListener;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -241,13 +240,12 @@ public class DataBindingUtils {
             }
         }
         if (!useSpringBinder) {
-            bindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
             try {
                 final DataBindingSource bindingSource = createDataBindingSource(grailsApplication, object.getClass(), source);
                 final DataBinder grailsWebDataBinder = getGrailsWebDataBinder(grailsApplication);
-                final DataBindingListener listener = new GrailsWebDataBindingListener(bindingResult);
-                grailsWebDataBinder.bind(object, bindingSource, filter, include, exclude, listener);
+                grailsWebDataBinder.bind(object, bindingSource, filter, include, exclude);
             } catch (Exception e) {
+                bindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
                 bindingResult.addError(new ObjectError(bindingResult.getObjectName(), e.getMessage()));
             }
         } else {
