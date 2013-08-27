@@ -315,6 +315,7 @@ startGrails() {
           -classpath "$STARTER_CLASSPATH" \
           -Dgrails.home="$GRAILS_HOME" \
           -Dtools.jar="$TOOLS_JAR" \
+          -Djava.net.preferIPv4Stack=true \
           $STARTER_MAIN_CLASS \
           --main $CLASS \
           --conf "$STARTER_CONF" \
@@ -324,6 +325,7 @@ startGrails() {
           -classpath "$STARTER_CLASSPATH" \
           -Dgrails.home="$GRAILS_HOME" \
           -Dtools.jar="$TOOLS_JAR" \
+          -Djava.net.preferIPv4Stack=true \
           $STARTER_MAIN_CLASS \
           --main $CLASS \
           --conf "$STARTER_CONF" \
