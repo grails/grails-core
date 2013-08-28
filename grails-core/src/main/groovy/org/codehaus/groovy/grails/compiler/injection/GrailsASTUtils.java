@@ -905,11 +905,15 @@ public class GrailsASTUtils {
     }
 
     public static ClassNode findInterface(ClassNode classNode, ClassNode interfaceNode) {
-        Set<ClassNode> interfaces = classNode.getAllInterfaces();
+        while(!classNode.equals(OBJECT_CLASS_NODE)) {
 
-        for (ClassNode anInterface : interfaces) {
-            if(anInterface.equals(interfaceNode)) return anInterface;
+            Set<ClassNode> interfaces = classNode.getAllInterfaces();
 
+            for (ClassNode anInterface : interfaces) {
+                if(anInterface.equals(interfaceNode)) return anInterface;
+
+            }
+            classNode = classNode.getSuperClass();
         }
         return null;
     }

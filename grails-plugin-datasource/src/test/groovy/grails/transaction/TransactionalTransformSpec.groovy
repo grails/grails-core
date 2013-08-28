@@ -19,6 +19,7 @@ package grails.transaction
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.support.DefaultTransactionStatus
+import spock.lang.Issue
 import spock.lang.Specification
 import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
 
@@ -27,6 +28,76 @@ import javax.sql.DataSource
 /**
  */
 class TransactionalTransformSpec extends Specification {
+
+    @Issue('GRAILS-10402')
+    void "Test @Transactional annotation with inheritance"() {
+        when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
+            def bookService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+    import org.springframework.transaction.PlatformTransactionManager
+    import org.springframework.transaction.TransactionStatus
+    import org.springframework.transaction.annotation.Isolation
+    import org.springframework.transaction.annotation.Propagation
+
+    @Transactional
+    class ParentService {
+           void doWork() {}
+    }
+
+    class BookService extends ParentService{
+
+        void updateBook() {
+
+        }
+
+        @Transactional(readOnly = true, timeout = 1000, isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
+        TransactionStatus readBook() {
+             return transactionStatus
+        }
+
+        int add(int a, int b) {
+            a + b
+        }
+    }
+
+    new BookService()
+    ''')
+
+        then:"It implements TransactionManagerAware"
+            bookService instanceof TransactionManagerAware
+
+
+        when:"A transactionManager is set"
+            final transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+
+        then:"It is not null"
+            bookService.transactionManager != null
+
+        when:"A non-transactional method is called"
+            bookService.updateBook()
+
+        then:"The transaction was not started"
+            transactionManager.transactionStarted == false
+
+        when:"A transactional method is called"
+            bookService.readBook()
+
+        then:"The transaction was started"
+            transactionManager.transactionStarted == true
+
+        when:"A parent method that starts a transactiona is called"
+            transactionManager.transactionStarted = false
+            bookService.doWork()
+
+        then:"The transaction was started"
+            transactionManager.transactionStarted == true
+
+
+
+    }
+
 
     void "Test that a @Transactional annotation on a class results in a call to TransactionTemplate"() {
         when:"A new instance of a class with a @Transactional method is created"
