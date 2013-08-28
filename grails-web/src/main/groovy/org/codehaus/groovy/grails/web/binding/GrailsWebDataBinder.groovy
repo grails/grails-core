@@ -244,27 +244,37 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
         if (source.dataSourceAware) {
             def propName = metaProperty.name
-            def idValue = getIdentifierValueFrom(val)
-            if (idValue != null) {
-                def propertyType = getDomainClassType(obj, metaProperty.name)
-                if (propertyType && isDomainClass(propertyType)) {
-                    needsBinding = false
-                    def persistedInstance = null
-                    if (idValue != 'null' && idValue != null && idValue != '') {
-                        persistedInstance = getPersistentInstance(propertyType, idValue)
-                        if (persistedInstance == null) {
-                            needsBinding = true
-                        } else {
-                            bindProperty obj, source, metaProperty, persistedInstance, listener
-                            if (persistedInstance != null) {
-                                if (val instanceof Map) {
-                                    bind persistedInstance, new SimpleMapDataBindingSource(val), listener
-                                } else if (val instanceof DataBindingSource) {
-                                    bind persistedInstance, val, listener
-                                }
+            def propertyType = getDomainClassType(obj, metaProperty.name)
+            if (propertyType && isDomainClass(propertyType)) {
+                def idValue = getIdentifierValueFrom(val)
+                if (idValue != 'null' && idValue != null && idValue != '') {
+                    def persistedInstance = getPersistentInstance(propertyType, idValue)
+                    if (persistedInstance != null) {
+                        needsBinding = false
+                        bindProperty obj, source, metaProperty, persistedInstance, listener
+                        if (persistedInstance != null) {
+                            if (val instanceof Map) {
+                                bind persistedInstance, new SimpleMapDataBindingSource(val), listener
+                            } else if (val instanceof DataBindingSource) {
+                                bind persistedInstance, val, listener
                             }
                         }
-                    } else {
+                    }
+                } else {
+                    boolean shouldBindNull = false
+                    if(val instanceof DataBindingSource) {
+                        // bind null if this binding source does contain an identifier
+                        shouldBindNull = ((DataBindingSource)val).hasIdentifier()
+                    } else if(val instanceof Map) {
+                        // bind null if this Map does contain an id
+                        shouldBindNull = ((Map)val).containsKey('id')
+                    } else if(idValue instanceof CharSequence) {
+                        // bind null if idValue is a CharSequence because it would have
+                        // to be 'null' or '' in order for control to be in this else block
+                        shouldBindNull = true
+                    }
+                    if(shouldBindNull) {
+                        needsBinding = false
                         bindProperty obj, source, metaProperty, null, listener
                     }
                 }

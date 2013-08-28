@@ -228,6 +228,54 @@ class GrailsWebDataBinderSpec extends Specification {
 
         then:
         publication.author == null
+
+        when:
+        binder.bind publication, new SimpleMapDataBindingSource([author: [id: null]])
+
+        then:
+        publication.author == null
+        
+        when:
+        publication.author = new Author()
+        binder.bind publication, new SimpleMapDataBindingSource([author: [id: null]])
+        
+        then:
+        publication.author == null
+        
+        when:
+        publication.author = new Author()
+        binder.bind publication, new SimpleMapDataBindingSource([author: [id: 'null']])
+        
+        then:
+        publication.author == null
+        
+        when:
+        publication.author = new Author()
+        binder.bind publication, new SimpleMapDataBindingSource([author: [id: '']])
+        
+        then:
+        publication.author == null
+        
+        when:
+        publication.author = new Author()
+        binder.bind publication, new SimpleMapDataBindingSource([author: 'null'])
+        
+        then:
+        publication.author == null
+        
+        when:
+        publication.author = new Author()
+        binder.bind publication, new SimpleMapDataBindingSource([author: ''])
+        
+        then:
+        publication.author == null
+        
+        when:
+        publication.author = new Author()
+        binder.bind publication, new SimpleMapDataBindingSource([author: null])
+        
+        then:
+        publication.author == null
     }
 
     void 'Test id binding with a non dataSource aware binding source'() {
