@@ -52,7 +52,7 @@ class MimeType {
     }
 
     MimeType(String name, String extension, Map<String, String> params = [:]) {
-        if(name.contains(';')) {
+        if(name && name.contains(';')) {
             List tokenWithArgs = name.split(';').toList()
             name = tokenWithArgs[0]
             final paramsList = tokenWithArgs[1..-1]
