@@ -17,39 +17,29 @@ package org.grails.databinding.converters.web
 
 import groovy.transform.CompileStatic
 
+import java.text.DecimalFormat
 import java.text.NumberFormat
 
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.databinding.converters.ValueConverter
-
-
 /**
- * A ValueConverter that knows how to convert a String to any numeric type and is Locale aware.  The
+ * A ValueConverter that knows how to convert a String to a BigDecimal or a BigInteger and is Locale aware.  The
  * converter will use the Locale of the current request if being invoked as part of a
- * request, otherwise will use Locale.getDefault()
+ * request, otherwise will use Locale.getDefault().
  * 
  * @author Jeff Brown
  * @since 2.3
  *
  */
 @CompileStatic
-class LocaleAwareNumberConverter implements ValueConverter {
-
-    Class<?> targetType
+class LocaleAwareBigDecimalConverter extends LocaleAwareNumberConverter {
 
     @Override
-    public boolean canConvert(Object value) {
-        value instanceof String
-    }
-
-    @Override
-    public Object convert(Object value) {
-        numberFormatter.parse((String)value).asType(getTargetType())
-    }
-
     protected NumberFormat getNumberFormatter() {
-        def request = GrailsWebRequest.lookup()
-        def locale = request ? request.getLocale() : Locale.getDefault()
-        NumberFormat.getInstance(locale)
+        def nf = super.getNumberFormatter()
+        if (!(nf instanceof DecimalFormat)) {
+            throw new IllegalStateException("Cannot support non-DecimalFormat: " + nf);
+        }
+
+        ((DecimalFormat)nf).setParseBigDecimal(true)
+        nf
     }
 }

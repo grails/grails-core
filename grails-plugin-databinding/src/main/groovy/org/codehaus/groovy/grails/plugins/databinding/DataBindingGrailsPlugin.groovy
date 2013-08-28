@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSou
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
 import org.grails.databinding.converters.DateConversionHelper
+import org.grails.databinding.converters.web.LocaleAwareBigDecimalConverter
 import org.grails.databinding.converters.web.LocaleAwareNumberConverter
 
 /**
@@ -70,6 +71,12 @@ class DataBindingGrailsPlugin {
             "defaultGrails${numberType.name}Converter"(LocaleAwareNumberConverter) {
                 targetType = numberType
             }
+        }
+        defaultGrailsBigDecimalConverter(LocaleAwareBigDecimalConverter) {
+            targetType = BigDecimal
+        }
+        defaultGrailsBigIntegerConverter(LocaleAwareBigDecimalConverter) {
+            targetType = BigInteger
         }
         
         "${DataBindingSourceRegistry.BEAN_NAME}"(DefaultDataBindingSourceRegistry)
