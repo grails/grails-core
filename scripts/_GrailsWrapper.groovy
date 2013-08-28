@@ -39,7 +39,14 @@ target (generateWrapper: "Generates the Grails wrapper") {
     depends(checkVersion, parseArguments)
     event 'InstallWrapperStart', [ 'Installing Wrapper...' ]
 
-    grailsDistUrl =  argsMap.distributionUrl ?: 'http://dist.springframework.org.s3.amazonaws.com/release/GRAILS/'
+    releaseType = 'release'
+    if(grailsVersion ==~ /.*\.RC[0-9]+/ || grailsVersion ==~ /.*\.M[0-9]+/) {
+        releaseType = 'milestone'
+    } else if(grailsVersion.endsWith('BUILD-SNAPSHOT')) {
+        releaseType = 'snapshot'
+    }
+
+    grailsDistUrl =  argsMap.distributionUrl ?: "http://dist.springframework.org.s3.amazonaws.com/${releaseType}/GRAILS/"
     grailsWrapperDir = argsMap.wrapperDir ?: 'wrapper'
 
     targetDir = "${basedir}/${grailsWrapperDir}"
