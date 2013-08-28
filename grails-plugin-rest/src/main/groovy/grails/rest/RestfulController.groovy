@@ -105,7 +105,7 @@ class RestfulController<T> {
     def update() {
         T instance = queryForResource(params.id)
         if (instance == null) {
-            render status:404
+            notFound()
             return
         }
 
@@ -133,8 +133,8 @@ class RestfulController<T> {
     @Transactional
     def delete() {
         def instance = queryForResource(params.id)
-        if (!instance) {
-            render status: NOT_FOUND
+        if (instance == null) {
+            notFound()
             return
         }
 
@@ -194,5 +194,15 @@ class RestfulController<T> {
      */
     protected Integer countResources() {
         resource.count()
+    }
+
+    protected void notFound() {
+        request.withFormat {
+            form {
+                flash.message = message(code: 'default.not.found.message', args: [message(code: '${propertyName}.label', default: '${className}'), params.id])
+                redirect action: "index", method: "GET"
+            }
+            '*'{ render status: NOT_FOUND }
+        }
     }
 }

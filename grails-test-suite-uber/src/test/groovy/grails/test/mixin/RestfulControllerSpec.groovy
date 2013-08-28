@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.persistence.Entity
 import grails.transaction.Transactional
@@ -37,6 +38,7 @@ class RestfulControllerSpec extends Specification {
     void "Test the save action correctly persists an instance"() {
 
         when:"The save action is executed with an invalid instance"
+            controller.request.format = 'form'
             def video = new Video(title: '')
             video.validate()
             controller.save(video)
@@ -111,6 +113,7 @@ class RestfulControllerSpec extends Specification {
             response.reset()
             //populateValidParams(params)
             video = new Video(title: 'Game of Thrones').save(flush: true)
+            controller.request.format = 'form'
             controller.update(video)
 
         then:"A redirect is issues to the show action"
@@ -134,6 +137,7 @@ class RestfulControllerSpec extends Specification {
             Video.count() == 1
 
         when:"The domain instance is passed to the delete action"
+            controller.request.format = 'form'
             controller.delete(video)
 
         then:"The instance is deleted"
@@ -173,18 +177,24 @@ class VideoController {
 
     @Transactional
     def save(Video video) {
-        if(video.hasErrors()) {
-            respond video.errors, view:'create' // STATUS CODE 422
+        if (video == null) {
+            notFound()
+            return
         }
-        else {
-            video.save flush:true
-            withFormat {
-                html {
-                    flash.message = message(code: 'default.created.message', args: [message(code: 'video.label', default: 'Video'), video.id])
-                    redirect video
-                }
-                '*' { render status:201 }
+
+        if (video.hasErrors()) {
+            respond video.errors, view:'create'
+            return
+        }
+
+        video.save flush:true
+
+        request.withFormat {
+            form {
+                flash.message = message(code: 'default.created.message', args: [message(code: 'video.label', default: 'Video'), video.id])
+                redirect video
             }
+            '*' { respond video, [status: CREATED] }
         }
     }
 
@@ -194,38 +204,52 @@ class VideoController {
 
     @Transactional
     def update(Video video) {
-        if(video == null) {
-            render status:404
+        if (video == null) {
+            notFound()
+            return
         }
-        else if(video.hasErrors()) {
-            respond video.errors, view:'edit' // STATUS CODE 422
+
+        if (video.hasErrors()) {
+            respond video.errors, view:'edit'
+            return
         }
-        else {
-            video.save flush:true
-            withFormat {
-                html {
-                    flash.message = message(code: 'default.updated.message', args: [message(code: 'Video.label', default: 'Video'), video.id])
-                    redirect video
-                }
-                '*'{ render status:200 }
+
+        video.save flush:true
+
+        request.withFormat {
+            form {
+                flash.message = message(code: 'default.updated.message', args: [message(code: 'Video.label', default: 'Video'), video.id])
+                redirect video
             }
+            '*'{ respond video, [status: OK] }
         }
     }
 
     @Transactional
     def delete(Video video) {
-        if(video) {
-            video.delete flush:true
-            withFormat {
-                html {
-                    flash.message = message(code: 'default.deleted.message', args: [message(code: 'Video.label', default: 'Video'), video.id])
-                    redirect action:"index", method:"GET"
-                }
-                '*'{ render status:204 } // NO CONTENT STATUS CODE
-            }
+        if (video == null) {
+            notFound()
+            return
         }
-        else {
-            render status:404
+
+        video.delete flush:true
+
+        request.withFormat {
+            form {
+                flash.message = message(code: 'default.deleted.message', args: [message(code: 'Video.label', default: 'Video'), video.id])
+                redirect action:"index", method:"GET"
+            }
+            '*'{ render status: NO_CONTENT }
+        }
+    }
+
+    protected void notFound() {
+        request.withFormat {
+            form {
+                flash.message = message(code: 'default.not.found.message', args: [message(code: 'video.label', default: 'Video'), params.id])
+                redirect action: "index", method: "GET"
+            }
+            '*'{ render status: NOT_FOUND }
         }
     }
 }
