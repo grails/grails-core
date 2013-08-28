@@ -47,6 +47,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.databinding.CollectionDataBindingSource;
 import org.grails.databinding.DataBinder;
 import org.grails.databinding.DataBindingSource;
+import org.grails.databinding.bindingsource.InvalidRequestBodyException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -244,6 +245,13 @@ public class DataBindingUtils {
                 final DataBindingSource bindingSource = createDataBindingSource(grailsApplication, object.getClass(), source);
                 final DataBinder grailsWebDataBinder = getGrailsWebDataBinder(grailsApplication);
                 grailsWebDataBinder.bind(object, bindingSource, filter, include, exclude);
+            } catch (InvalidRequestBodyException e) {
+                String messageCode = "invalidRequestBody";
+                Class objectType = object.getClass();
+                String defaultMessage = "An error occurred parsing the body of the request";
+                String[] codes = getMessageCodes(messageCode, objectType);
+                bindingResult = new BeanPropertyBindingResult(object, objectType.getName());
+                bindingResult.addError(new ObjectError(bindingResult.getObjectName(), codes, null, defaultMessage));
             } catch (Exception e) {
                 bindingResult = new BeanPropertyBindingResult(object, object.getClass().getName());
                 bindingResult.addError(new ObjectError(bindingResult.getObjectName(), e.getMessage()));
@@ -309,6 +317,12 @@ public class DataBindingUtils {
             mc.setProperty(object,"errors", errors);
         }
         return bindingResult;
+    }
+
+    protected static String[] getMessageCodes(String messageCode,
+            Class objectType) {
+        String[] codes = {objectType.getName() + "." + messageCode, messageCode};
+        return codes;
     }
 
     public static DataBindingSourceRegistry getDataBindingSourceRegistry(GrailsApplication grailsApplication) {

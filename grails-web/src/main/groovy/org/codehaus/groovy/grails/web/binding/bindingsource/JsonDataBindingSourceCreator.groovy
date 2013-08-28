@@ -25,12 +25,15 @@ import org.grails.databinding.CollectionDataBindingSource
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.bindingsource.AbstractRequestBodyDataBindingSourceCreator
+import org.grails.databinding.bindingsource.DataBindingSourceCreationException
+import org.grails.databinding.bindingsource.InvalidRequestBodyException
 import org.springframework.beans.factory.annotation.Autowired
 
 import com.google.gson.Gson
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonParseException
 import com.google.gson.JsonParser
 import com.google.gson.JsonPrimitive
 import com.google.gson.stream.JsonReader
@@ -237,5 +240,13 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
             final jsonElement = jsonArray.get(i)
             return getValueForJsonElement(jsonElement, gson)
         }
+    }
+    
+    @Override
+    protected DataBindingSourceCreationException createBindingSourceCreationException(Exception e) {
+        if(e instanceof JsonParseException) {
+            return new InvalidRequestBodyException(e)
+        }
+        return super.createBindingSourceCreationException(e)
     }
 }

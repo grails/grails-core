@@ -57,8 +57,12 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
 
             return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
         } catch (Exception e) {
-            throw new DataBindingSourceCreationException(e)
+            throw createBindingSourceCreationException(e)
         }
+    }
+
+    protected DataBindingSourceCreationException createBindingSourceCreationException(Exception e) {
+        return new DataBindingSourceCreationException(e)
     }
 
     @Override

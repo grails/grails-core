@@ -48,7 +48,11 @@ class XmlBindingSpec extends Specification {
         response.status == 200
         person.hasErrors()
         person.errors.errorCount == 1
-        person.errors.allErrors[0].defaultMessage == 'org.xml.sax.SAXParseException: Element type "someInvalid" must be followed by either attribute specifications, ">" or "/>".'
+        person.errors.allErrors[0].defaultMessage == 'An error occurred parsing the body of the request'
+        person.errors.allErrors[0].code == 'invalidRequestBody'
+        'invalidRequestBody' in person.errors.allErrors[0].codes
+        'org.codehaus.groovy.grails.web.binding.xml.Person.invalidRequestBody' in person.errors.allErrors[0].codes
+
 
         when:
         request.xml = '''<person><someInvalid<this is invalid XML'''

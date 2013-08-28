@@ -70,7 +70,10 @@ class JsonBindingSpec extends Specification {
         then:
         person.hasErrors()
         person.errors.errorCount == 1
-        person.errors.allErrors[0].defaultMessage == 'com.google.gson.JsonSyntaxException: com.google.gson.stream.MalformedJsonException: Unterminated array at line 3 column 19'
+        person.errors.allErrors[0].defaultMessage == 'An error occurred parsing the body of the request'
+        person.errors.allErrors[0].code == 'invalidRequestBody'
+        'invalidRequestBody' in person.errors.allErrors[0].codes
+        'org.codehaus.groovy.grails.web.binding.json.Person.invalidRequestBody' in person.errors.allErrors[0].codes
     }
 }
 
