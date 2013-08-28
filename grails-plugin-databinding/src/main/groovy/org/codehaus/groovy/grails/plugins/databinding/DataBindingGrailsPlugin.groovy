@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSou
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
 import org.grails.databinding.converters.DateConversionHelper
+import org.grails.databinding.converters.web.LocaleAwareNumberConverter
 
 /**
  * @author Jeff Brown
@@ -61,7 +62,16 @@ class DataBindingGrailsPlugin {
                 formatStrings = databindingConfig.dateFormats
             }
         }
-
+        [Short,   Short.TYPE, 
+         Integer, Integer.TYPE,
+         Float,   Float.TYPE,
+         Long,    Long.TYPE,
+         Double,  Double.TYPE].each { numberType ->
+            "defaultGrails${numberType.name}Converter"(LocaleAwareNumberConverter) {
+                targetType = numberType
+            }
+        }
+        
         "${DataBindingSourceRegistry.BEAN_NAME}"(DefaultDataBindingSourceRegistry)
 
         xmlDataBindingSourceCreator(XmlDataBindingSourceCreator)
