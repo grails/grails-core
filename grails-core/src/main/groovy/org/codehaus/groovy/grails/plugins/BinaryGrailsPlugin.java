@@ -209,7 +209,7 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
     }
 
     private String getBaseMessagesProperties() {
-        return "grails-app/i18n/" + getName() + "-messages"
+        return "grails-app/i18n/" + getName() + "-messages";
     }
 
     /**
