@@ -43,7 +43,6 @@ import org.springframework.core.io.Resource;
 @SuppressWarnings("rawtypes")
 public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
 
-    public static final String BASE_MESSAGES_PROPERTIES = "grails-app/i18n/messages";
     public static final String VIEWS_PROPERTIES = "views.properties";
 
     private BinaryGrailsPluginDescriptor descriptor;
@@ -187,10 +186,10 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
         }
 
         Properties properties = new Properties();
-        final String defaultName = BASE_MESSAGES_PROPERTIES;
+        final String defaultName = getBaseMessagesProperties();
         attemptLoadProperties(descriptorResource, properties, defaultName);
 
-        for (String filename : calculateFilenamesForLocale("grails-app/i18n/messages", locale)) {
+        for (String filename : calculateFilenamesForLocale(defaultName, locale)) {
             attemptLoadProperties(descriptorResource, properties, filename);
         }
 
@@ -207,6 +206,10 @@ public class BinaryGrailsPlugin extends DefaultGrailsPlugin {
             LOG.debug("Failed to load plugin [" + this + "] properties for name [" +
                     defaultName + "]: " + e.getMessage(), e);
         }
+    }
+
+    private String getBaseMessagesProperties() {
+        return "grails-app/i18n/" + getName() + "-messages";
     }
 
     /**
