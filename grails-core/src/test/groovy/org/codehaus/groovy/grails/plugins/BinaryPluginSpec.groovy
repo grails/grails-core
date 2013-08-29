@@ -52,7 +52,7 @@ class BinaryPluginSpec extends Specification {
 /WEB-INF/grails-app/views/bar/list.gsp=org.codehaus.groovy.grails.plugins.MyView
 '''.bytes)
             resource.relativesResources['grails-app/i18n'] = new ByteArrayResource(''.bytes)
-            resource.relativesResources['grails-app/i18n/messages.properties'] = new ByteArrayResource('''
+            resource.relativesResources['grails-app/i18n/testBinary-messages.properties'] = new ByteArrayResource('''
 foo.bar=one
 '''.bytes)
             def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
