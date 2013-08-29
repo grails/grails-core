@@ -20,6 +20,7 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import javax.servlet.http.HttpServletResponse
 
@@ -105,6 +106,9 @@ class ControllersRestApi {
             final allMimeTypes = MimeType.getConfiguredMimeTypes()
             final firstFormat = formats[0]
             mimeType = allMimeTypes.find { MimeType mt -> mt.extension == firstFormat}
+            if(mimeType) {
+                webRequest.currentRequest.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
+            }
         }
 
         if (mimeType && formats.contains(mimeType.extension)) {
