@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.resolve;
 
 import grails.util.BuildSettings;
+import groovy.lang.Closure;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.io.File;
@@ -139,4 +140,12 @@ public interface DependencyManager {
      * @return Returns the exclude resolver for this dependency manager
      */
     ExcludeResolver getExcludeResolver();
+
+
+    /**
+     * Parse the dependency definition DSL
+     *
+     * @param callable The DSL definition
+     */
+    void parseDependencies(Closure callable);
 }

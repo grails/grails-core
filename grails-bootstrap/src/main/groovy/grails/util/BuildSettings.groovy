@@ -1205,12 +1205,12 @@ class BuildSettings extends AbstractBuildSettings {
         dependencyManager = configureDependencyManager()
         def pluginDirs = getPluginDirectories()
         for (dir in pluginDirs) {
-            handleInlinePlugin(dir.name, dir)
+            handleInlinePlugin(dir.name, dir, dependencyManager)
         }
     }
 
     @CompileStatic
-    void handleInlinePlugin(String pluginName, File dir) {
+    void handleInlinePlugin(String pluginName, File dir, DependencyManager dependencyManager) {
 
         if (!isInlinePluginLocation(dir)) {
             return
@@ -1232,13 +1232,16 @@ class BuildSettings extends AbstractBuildSettings {
                 Script script = (Script)gcl.parseClass(pluginDependencyDescriptor)?.newInstance()
                 def pluginSlurper = createConfigSlurper()
                 def pluginConfig = pluginSlurper.parse(script)
-
+                def pluginDependencyConfig = getInlinePluginDependencyConfig(pluginConfig)
+                if (pluginDependencyConfig instanceof Closure) {
+                    dependencyManager.parseDependencies(pluginDependencyConfig)
+                }
                 def inlinePlugins = getInlinePluginsFromConfiguration(pluginConfig, dir)
                 if (inlinePlugins) {
                     for (File inlinePlugin in inlinePlugins) {
                         addPluginDirectory inlinePlugin, true
                         // recurse
-                        handleInlinePlugin(inlinePlugin.name, inlinePlugin)
+                        handleInlinePlugin(inlinePlugin.name, inlinePlugin, dependencyManager)
                     }
                 }
             }
@@ -1246,6 +1249,10 @@ class BuildSettings extends AbstractBuildSettings {
                 CONSOLE.error "WARNING: Inline plugins for [$pluginName] cannot be read due to error: ${e.message}", e
             }
         }
+    }
+
+    protected Object getInlinePluginDependencyConfig(ConfigObject pluginConfig) {
+        pluginConfig.grails.project.dependency.resolution
     }
 
     protected boolean settingsFileLoaded = false
