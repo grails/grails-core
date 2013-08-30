@@ -393,10 +393,13 @@ class BuildSettings extends AbstractBuildSettings {
     Closure getGrailsScriptClosure() {
         return new OwnerlessClosure() {
             Object doCall(String name) {
-                def potentialScript = new File(grailsHome, "scripts/${name}.groovy")
-                potentialScript = potentialScript.exists() ? potentialScript : new File(grailsHome, "scripts/${name}_.groovy")
-                if (potentialScript.exists()) {
-                    return potentialScript
+                if(grailsHome != null) {
+
+                    def potentialScript = new File(grailsHome, "scripts/${name}.groovy")
+                    potentialScript = potentialScript.exists() ? potentialScript : new File(grailsHome, "scripts/${name}_.groovy")
+                    if (potentialScript.exists()) {
+                        return potentialScript
+                    }
                 }
                 try {
                     return classLoader.loadClass("${name}_")
@@ -1261,7 +1264,7 @@ class BuildSettings extends AbstractBuildSettings {
     DependencyManager configureDependencyManager() {
         DependencyManagerConfigurer configurer = new DependencyManagerConfigurer()
 
-        if (useMavenDependencyResolver) {
+        if (useMavenDependencyResolver && !isDependenciesExternallyConfigured()) {
             return configurer.configureAether(this)
         }
         return configurer.configureIvy(this)
