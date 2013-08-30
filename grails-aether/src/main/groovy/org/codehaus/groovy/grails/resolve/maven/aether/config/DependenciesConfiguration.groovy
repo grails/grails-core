@@ -90,7 +90,7 @@ class DependenciesConfiguration {
             version = 'LATEST'
         }
 
-        return new Dependency(new DefaultArtifact(properties.group, properties.name, properties.classifier, properties.extension, version), scope)
+        return new Dependency(new DefaultArtifact(properties.group, properties.name, properties.classifier, properties.extension ?: 'jar', version), scope)
     }
 
     void addDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, String scope) {

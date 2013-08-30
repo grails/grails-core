@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDe
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.RemoteRepository
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -28,6 +29,26 @@ import spock.lang.Specification
  * @since 2.3
  */
 class AetherDependencyManagerSpec extends Specification {
+
+    @Issue('GRAILS-10414')
+    void "Test Aether with map based dependency syntax"() {
+        given:"A dependency manager instance"
+        def dependencyManager = new AetherDependencyManager()
+        dependencyManager.parseDependencies {
+            repositories {
+                mavenCentral()
+            }
+            dependencies {
+                runtime group: 'mysql', name: 'mysql-connector-java', version: '5.1.24'
+            }
+        }
+
+        when:"Plugin info is downloaded and no version specified"
+            def result = dependencyManager.resolve()
+
+        then:"The result is correct"
+            !result.hasError()
+    }
 
     void "Test download plugin info"() {
         given:"A dependency manager instance"
