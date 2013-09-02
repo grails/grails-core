@@ -363,7 +363,7 @@ class AetherDependencyManager implements DependencyManager {
             def nlg = new PreorderNodeListGenerator()
             root.accept nlg
 
-            return new AetherDependencyReport(nlg, scope, e)
+            return new AetherDependencyReport(nlg, scope, e.cause ?: e)
         }
 
         def nlg = new PreorderNodeListGenerator()
