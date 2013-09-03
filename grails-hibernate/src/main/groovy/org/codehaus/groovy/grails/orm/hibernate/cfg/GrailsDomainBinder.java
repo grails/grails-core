@@ -1186,7 +1186,7 @@ public final class GrailsDomainBinder {
         PropertyConfig config = getPropertyConfig(property);
         JoinTable jt = config != null ? config.getJoinTable() : null;
         NamingStrategy namingStrategy = getNamingStrategy(sessionFactoryBeanName);
-        String tableName = (prefix == null ? "" : prefix + '.') + jt != null && jt.getName() != null ? jt.getName() : namingStrategy.tableName(calculateTableForMany(property, sessionFactoryBeanName));
+        String tableName = (prefix == null ? "" : prefix + '.') + (jt != null && jt.getName() != null ? jt.getName() : namingStrategy.tableName(calculateTableForMany(property, sessionFactoryBeanName)));
         String schemaName = mappings.getSchemaName();
         String catalogName = mappings.getCatalogName();
         if(jt != null) {
