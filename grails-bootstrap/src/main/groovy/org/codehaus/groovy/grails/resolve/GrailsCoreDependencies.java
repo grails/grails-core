@@ -107,7 +107,6 @@ public class GrailsCoreDependencies {
                 new Dependency("org.grails", "grails-plugin-testing", grailsVersion, true),
                 new Dependency("org.grails", "grails-test", grailsVersion, true)
             );
-
         }
 
         String[] loggingExcludes = {"javax.mail:mail", "javax.jms:jms", "com.sun.jdmk:jmxtools", "com.sun.jmx:jmxri"};
