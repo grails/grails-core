@@ -28,7 +28,7 @@ import java.nio.charset.CodingErrorAction;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * An in-memory buffer that provides OutputStream and InputStream interfaces.

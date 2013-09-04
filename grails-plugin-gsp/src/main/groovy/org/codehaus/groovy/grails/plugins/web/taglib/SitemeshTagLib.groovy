@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import groovy.transform.CompileStatic
 
-import org.apache.commons.lang.WordUtils
+import org.apache.commons.lang3.text.WordUtils
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage

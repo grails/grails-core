@@ -5,7 +5,7 @@ configurations {
 
 dependencies {
     gradleConf gradleApi()
-    compile "commons-lang:commons-lang:$commonsLangVersion",
+    compile "org.apache.commons:commons-lang3:$commonsLangVersion",
             "org.slf4j:jcl-over-slf4j:$slf4jVersion",
             "org.apache.ant:ant:$antVersion",
             'org.grails:grails-gdoc-engine:1.0.1',

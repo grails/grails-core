@@ -15,7 +15,7 @@
  */
 package grails.web;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * URL converter that allows for hyphenated URLs

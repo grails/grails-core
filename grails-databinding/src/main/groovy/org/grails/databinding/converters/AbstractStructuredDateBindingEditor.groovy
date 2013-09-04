@@ -17,7 +17,7 @@ package org.grails.databinding.converters
 
 import groovy.transform.CompileStatic
 
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.StructuredBindingEditor
 

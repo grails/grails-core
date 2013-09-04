@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.EmailValidator;
 import org.springframework.validation.Errors;
 

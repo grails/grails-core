@@ -2,7 +2,7 @@ configurations {
     optional
 }
 dependencies {
-    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "org.apache.commons:commons-lang3:$commonsLangVersion"
     compile "commons-io:commons-io:${commonsIOVersion}"
 
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {

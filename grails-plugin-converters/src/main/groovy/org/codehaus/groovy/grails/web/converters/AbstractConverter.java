@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.web.converters;
 
-import org.apache.commons.lang.UnhandledException;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -109,7 +108,7 @@ public abstract class AbstractConverter<W> implements ConfigurableConverter<W> {
         try {
             render(writer);
         } catch (Exception e) {
-            throw new UnhandledException(e);
+            throw new RuntimeException(e);
         }
         return writer.toString();
     }

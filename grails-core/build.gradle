@@ -7,7 +7,7 @@ dependencies {
     compile 'org.hibernate.javax.persistence:hibernate-jpa-2.0-api:1.0.1.Final'
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile "commons-io:commons-io:${commonsIOVersion}"
-    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "org.apache.commons:commons-lang3:$commonsLangVersion"
     compile( "commons-validator:commons-validator:1.3.1" ) {
         exclude group: 'xml-apis', module:'xml-apis'
         exclude group: 'commons-digester', module:'commons-digester'

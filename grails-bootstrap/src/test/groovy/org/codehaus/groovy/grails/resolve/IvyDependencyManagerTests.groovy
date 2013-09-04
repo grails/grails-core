@@ -738,7 +738,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                 excludes 'junit'
             }
             dependencies {
-                runtime("commons-lang:commons-lang:2.4") {
+                runtime("org.apache.commons:commons-lang3:3.1") {
                 }
             }
         }
@@ -760,7 +760,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         manager.parseDependencies {
             inherits 'test'
             dependencies {
-                runtime("commons-lang:commons-lang:2.4") {
+                runtime("org.apache.commons:commons-lang3:3.1") {
                 }
             }
         }
@@ -961,7 +961,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
                     "commons-collections:commons-collections:3.2.1",
                     "commons-fileupload:commons-fileupload:1.2.1",
                     "commons-io:commons-io:1.4",
-                    "commons-lang:commons-lang:2.4",
+                    "org.apache.commons:commons-lang3:3.1",
                     "javax.transaction:jta:1.1",
                     "log4j:log4j:1.2.16",
                     "net.sf.ehcache:ehcache:1.6.1",

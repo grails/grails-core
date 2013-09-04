@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import org.apache.commons.lang.WordUtils
+import org.apache.commons.lang3.text.WordUtils
 import org.springframework.context.MessageSourceResolvable
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 import org.w3c.dom.Document

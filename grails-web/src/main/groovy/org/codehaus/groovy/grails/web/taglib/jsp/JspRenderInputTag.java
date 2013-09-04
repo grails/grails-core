@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib.jsp;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.RenderInputTag;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;

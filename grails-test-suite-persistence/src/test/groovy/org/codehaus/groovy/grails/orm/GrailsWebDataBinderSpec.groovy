@@ -21,7 +21,7 @@ import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.validation.DeferredBindingActions
 import grails.validation.Validateable
 
-import org.apache.commons.lang.builder.CompareToBuilder
+import org.apache.commons.lang3.builder.CompareToBuilder
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.grails.databinding.BindUsing
 import org.grails.databinding.BindingFormat

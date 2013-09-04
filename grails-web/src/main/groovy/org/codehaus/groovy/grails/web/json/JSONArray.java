@@ -24,8 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import org.apache.commons.lang.UnhandledException;
-
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
@@ -170,7 +168,7 @@ public class JSONArray implements JSONElement, List {
     public Object get(int index) {
         Object o = opt(index);
         if (o == null) {
-            throw new UnhandledException(new JSONException("JSONArray[" + index + "] not found."));
+            throw new JSONException("JSONArray[" + index + "] not found.");
         }
         return o;
     }
