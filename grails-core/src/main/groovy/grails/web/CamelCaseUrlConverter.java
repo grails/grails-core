@@ -17,7 +17,7 @@ package grails.web;
 
 import java.util.Locale;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * URL converter that allows for camel case URLs

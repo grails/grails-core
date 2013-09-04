@@ -23,7 +23,7 @@ import java.beans.PropertyEditor
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 
-import org.apache.commons.lang.StringEscapeUtils
+import org.apache.commons.lang3.StringEscapeUtils
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest

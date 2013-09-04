@@ -54,7 +54,7 @@ enum Title implements org.springframework.context.MessageSourceResolvable {
     }
 
     String getDefaultMessage() {
-        use(org.apache.commons.lang.WordUtils) {
+        use(org.apache.commons.lang3.text.WordUtils) {
             name().toLowerCase().replaceAll(/_+/, " ").capitalizeFully()
         }
     }

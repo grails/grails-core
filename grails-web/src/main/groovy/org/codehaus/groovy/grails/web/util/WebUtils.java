@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import groovy.lang.Binding;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;

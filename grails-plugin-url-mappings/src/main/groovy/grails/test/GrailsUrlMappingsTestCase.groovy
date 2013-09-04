@@ -15,7 +15,7 @@
  */
 package grails.test
 
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator

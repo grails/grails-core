@@ -24,7 +24,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.collections.FactoryUtils;
 import org.apache.commons.collections.ListUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.mock.web.MockHttpServletRequest;
 

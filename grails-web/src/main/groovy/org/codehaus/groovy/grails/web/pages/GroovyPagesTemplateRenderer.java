@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;

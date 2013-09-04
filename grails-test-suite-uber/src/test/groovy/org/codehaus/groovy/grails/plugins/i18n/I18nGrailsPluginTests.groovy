@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.plugins.i18n;
 
-import org.apache.commons.lang.StringUtils
+import org.apache.commons.lang3.StringUtils
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.*

@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.springframework.core.io.ByteArrayResource;

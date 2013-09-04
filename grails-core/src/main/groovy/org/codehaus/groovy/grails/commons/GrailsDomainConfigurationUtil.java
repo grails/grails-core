@@ -40,7 +40,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.validation.Errors;

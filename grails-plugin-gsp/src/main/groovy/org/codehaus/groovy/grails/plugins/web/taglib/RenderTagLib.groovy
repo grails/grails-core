@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
 
-import org.apache.commons.lang.WordUtils
+import org.apache.commons.lang3.text.WordUtils
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo

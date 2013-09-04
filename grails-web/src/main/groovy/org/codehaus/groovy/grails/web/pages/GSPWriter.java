@@ -19,7 +19,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.Array;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A PrintWriter used in the generation of GSP pages that allows printing to the target output

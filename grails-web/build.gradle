@@ -17,7 +17,7 @@ dependencies {
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile('commons-fileupload:commons-fileupload:1.2.2')
     compile "commons-io:commons-io:${commonsIOVersion}"
-    compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "org.apache.commons:commons-lang3:$commonsLangVersion"
 
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
         exclude group: 'commons-logging', module:'commons-logging'

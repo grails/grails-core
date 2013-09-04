@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.support;
 
 import groovy.lang.GroovyObjectSupport;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;

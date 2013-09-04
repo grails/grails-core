@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;

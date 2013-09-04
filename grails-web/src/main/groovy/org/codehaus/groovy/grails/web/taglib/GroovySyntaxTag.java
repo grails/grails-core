@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;

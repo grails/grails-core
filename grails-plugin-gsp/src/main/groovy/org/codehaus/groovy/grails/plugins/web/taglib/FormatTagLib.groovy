@@ -23,7 +23,7 @@ import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
 
-import org.apache.commons.lang.time.FastDateFormat
+import org.apache.commons.lang3.time.FastDateFormat
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest

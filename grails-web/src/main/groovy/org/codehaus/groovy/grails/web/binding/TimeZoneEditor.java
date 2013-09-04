@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.binding;
 import java.beans.PropertyEditorSupport;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * A Property editor for converting instances of java.util.TimeZone.

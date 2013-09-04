@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.plugins.codecs
 
 import groovy.transform.CompileStatic
 
-import org.apache.commons.lang.StringEscapeUtils
+import org.apache.commons.lang3.StringEscapeUtils
 import org.codehaus.groovy.grails.support.encoding.CodecFactory
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier
 import org.codehaus.groovy.grails.support.encoding.Decoder
@@ -36,7 +36,7 @@ class JavaScriptCodec implements CodecFactory {
 
     private static Decoder DECODER = new Decoder() {
         def decode(Object obj) {
-            obj != null ? StringEscapeUtils.unescapeJavaScript(obj.toString()) : null
+            obj != null ? StringEscapeUtils.unescapeEcmaScript(obj.toString()) : null
         }
 
         CodecIdentifier getCodecIdentifier() {
