@@ -18,13 +18,34 @@ package org.grails.databinding.events;
 import org.grails.databinding.errors.BindingError;
 
 /**
+ * A listener which will be notified of events generated during data binding
  * @author Jeff Brown
  * @since 2.3
  */
 public interface DataBindingListener {
+    
+    /**
+     * Called when data binding is about to imposed on a property
+     * 
+     * @param obj The object data binding is being imposed upon
+     * @param propertyName The name of the property being bound to
+     * @param value The value of the property being bound
+     * @return true if data binding should continue, otherwise return false
+     */
     Boolean beforeBinding(Object obj, String propertyName, Object value);
 
+    /**
+     * Called after data binding has been imposed on a property
+     *  
+     * @param obj The object data binding is being imposed upon
+     * @param propertyName The name of the property that was bound to
+     */
     void afterBinding(Object obj, String propertyName);
 
+    /**
+     * Called when an error occurs binding to a property
+     * @param error encapsulates information about the binding error
+     * @see BindingError
+     */
     void bindingError(BindingError error);
 }
