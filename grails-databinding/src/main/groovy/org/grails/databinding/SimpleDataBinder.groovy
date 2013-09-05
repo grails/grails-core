@@ -105,58 +105,80 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * @param obj the object to perform data binding on
-     * @param source the binding source
+     * 
+     * @param obj The object being bound to
+     * @param source The data binding source
+     * @see DataBindingSource
      */
     void bind(obj, DataBindingSource source) {
         bind obj, source, null, null, null, null
     }
 
     /**
-     * @param obj the object to perform data binding on
-     * @param source the binding source
-     * @param listener will be notified of data binding events
+     * 
+     * @param obj The object being bound to
+     * @param source The data binding source
+     * @param listener A listener which will be notifed of data binding events triggered
+     * by this binding
+     * @see DataBindingSource
+     * @see DataBindingListener
      */
     void bind(obj, DataBindingSource source, DataBindingListener listener) {
         bind obj, source, null, null, null, listener
     }
 
     /**
-     * @param obj the object to perform data binding on
-     * @param source the binding source
-     * @param whiteList A list of properties that are eligible for binding, if
-     * null all properties are eligible for binding
+     * 
+     * @param obj The object being bound to
+     * @param source The data binding source
+     * @param whiteList A list of property names to be included during this 
+     * data binding.  All other properties represented in the binding source 
+     * will be ignored
+     * @see DataBindingSource
      */
     void bind(obj, DataBindingSource source, List whiteList) {
         bind obj, source, null, whiteList, null, null
     }
 
     /**
-     * @param obj the object to perform data binding on
-     * @param source the binding source
-     * @param whiteList A list of properties that are eligible for binding, if
-     * null all properties are eligible for binding
-     * @param blackList A list of properties to exclude from binding
+     * 
+     * @param obj The object being bound to
+     * @param source The data binding source
+     * @param whiteList A list of property names to be included during this 
+     * data binding.  All other properties represented in the binding source 
+     * will be ignored
+     * @param blackList A list of properties names to be excluded during
+     * this data binding.  
+     * @see DataBindingSource
      */
     void bind(obj, DataBindingSource source, List whiteList, List blackList) {
         bind obj, source, null, whiteList, blackList, null
     }
 
     /**
-     * @param obj the object to perform data binding on
-     * @param gpath contains an XML representation of the data to be bound to obj
+     * 
+     * @param obj The object being bound to
+     * @param gpath A GPathResult which represents the data being bound.  
+     * @see DataBindingSource
      */
     void bind(obj, GPathResult gpath) {
         bind obj, new SimpleMapDataBindingSource(new GPathResultMap(gpath))
     }
 
     /**
-     * @param obj the object to perform data binding on
-     * @param source the binding source
-     * @param filter a String representing a filter for selecting entries from the binding source
-     * @param whiteList A list of properties that are eligible for binding, if
-     * null all properties are eligible for binding
-     * @param blackList A list of properties to exclude from binding
+     * 
+     * @param obj The object being bound to
+     * @param source The data binding source
+     * @param filter Only properties beginning with filter will be included in the
+     * data binding.  For example, if filter is &quot;person&quot; and the binding
+     * source contains data for properties &quot;person.name&quot; and &quot;author.name&quot;
+     * the value of &quot;person.name&quot; will be bound to obj.name.  The value of
+     * &quot;author.name&quot; will be ignored.
+     * @param whiteList A list of property names to be included during this 
+     * data binding.  All other properties represented in the binding source 
+     * will be ignored
+     * @param blackList A list of properties names to be excluded during
+     * this data binding.  
      * @see DataBindingSource
      */
     void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList) {
@@ -164,14 +186,23 @@ class SimpleDataBinder implements DataBinder {
     }
 
     /**
-     * @param obj the object to perform data binding on
-     * @param source the binding source
-     * @param filter a String representing a filter for selecting entries from the binding source
-     * @param whiteList A list of properties that are eligible for binding, if
-     * null all properties are eligible for binding
-     * @param blackList A list of properties to exclude from binding
-     * @param listener will be notified of data binding events
+     * 
+     * @param obj The object being bound to
+     * @param source The data binding source
+     * @param filter Only properties beginning with filter will be included in the
+     * data binding.  For example, if filter is &quot;person&quot; and the binding
+     * source contains data for properties &quot;person.name&quot; and &quot;author.name&quot;
+     * the value of &quot;person.name&quot; will be bound to obj.name.  The value of
+     * &quot;author.name&quot; will be ignored.
+     * @param whiteList A list of property names to be included during this 
+     * data binding.  All other properties represented in the binding source 
+     * will be ignored
+     * @param blackList A list of properties names to be excluded during
+     * this data binding.  
+     * @param listener A listener which will be notifed of data binding events triggered
+     * by this binding
      * @see DataBindingSource
+     * @see DataBindingListener
      */
     void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
         def keys = source.getPropertyNames()
