@@ -102,10 +102,10 @@ task pluginsFromRepo {
     ext.plugins = [
         cache: "1.1.1",
         'database-migration': "1.3.5",
-        hibernate: "3.6.10.M6",
+        hibernate: "3.6.10",
         jquery: "1.10.2",
         resources: "1.2",
-        scaffolding: "2.0.0.RC2",
+        scaffolding: "2.0.0",
         tomcat: "7.0.42",
         webxml: "1.4.1"
     ]
