@@ -1,4 +1,4 @@
- Apache License
+Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
@@ -202,35 +202,38 @@
 
 =======================================================================   
 
-Grails 2.2.0 : 
+Grails 2.3.0 : 
 
-Grails 2.2.0 includes a number of subcomponents with
+Grails 2.3.0 includes a number of subcomponents with
 separate copyright notices and license terms.  The product that 
 includes this file does not necessarily use all the open source 
 subcomponents referred to below. Your use of the source
-code for these subcomponents is subject to the terms and
-conditions of the following licenses. 
+code for the these subcomponents is subject to the terms and
+conditions of the following licenses.
 
-
+=================================================================
+TABLE OF CONTENTS
+=================================================================
+The following is a listing of the open source components detailed in this document. This list is provided for your convenience; please read further if you wish to review the copyright notice(s) and the full text of the license associated with each component.
 
 
 SECTION 1: BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES
 
    >>> antlr-2.7.7
    >>> aopalliance-1.0
-   >>> asm-3.1
+   >>> asm-3.3.1
    >>> commons-el-1.0
    >>> dom4j-1.6.1
    >>> hsqldb-1.8.0.10
    >>> jline-1.0
    >>> sitemesh-2.4
-   >>> slf4j-1.6.2
+   >>> slf4j-1.7.4
 
 
 
 SECTION 2: Apache License, V2.0
 
-   >>> ant-1.8.2
+   >>> ant-1.8.4
    >>> cglib-2.2.2
    >>> commons-beanutils-1.8.3
    >>> commons-cli-1.2
@@ -242,31 +245,28 @@ SECTION 2: Apache License, V2.0
    >>> commons-lang-2.6
    >>> commons-pool-1.5.6
    >>> commons-validator-1.3.1
-   >>> concurrentlinkedhashmap-lru-1.2_jdk5
-   >>> ehcache-core-2.4.6
+   >>> concurrentlinkedhashmap-lru-1.3.2
    >>> gant_groovy1.7-1.9.6
-   >>> groovy-all-2.0.2
+   >>> groovy-all-2.1.2
    >>> hibernate-validator-4.1.0.final
-   >>> ivy-2.2.0
+   >>> ivy-2.3.0
    >>> jansi-1.2.1
    >>> javassist-3.16.1.ga
    >>> jsp-api-2.0
-   >>> log4j-1.2.16
-   >>> spring-aop-3.1.0.release
-   >>> spring-aspects-3.1.0.release
-   >>> spring-beans-3.1.0.release
-   >>> spring-context-3.1.0.release
-   >>> spring-context-support-3.1.0.release
-   >>> spring-core-3.1.0.release
-   >>> spring-expression-3.1.0.release
-   >>> spring-jdbc-3.1.0.release
-   >>> spring-jms-3.1.0.release
+   >>> log4j-1.2.17
+   >>> spring-aop-3.2.2
+   >>> spring-aspects-3.2.2
+   >>> spring-beans-3.2.2
+   >>> spring-context-3.2.2
+   >>> spring-context-support-3.2.2
+   >>> spring-core-3.2.2
+   >>> spring-expression-3.2.2
+   >>> spring-jdbc-3.2.2
    >>> spring-loaded-1.1.0
-   >>> spring-orm-3.1.0.release
-   >>> spring-tx-3.1.0.release
-   >>> spring-web-3.1.0.release
-   >>> spring-webmvc-3.1.0.release
-   >>> tomcat-7.0.27
+   >>> spring-orm-3.2.2
+   >>> spring-tx-3.2.2
+   >>> spring-web-3.2.2
+   >>> spring-webmvc-3.2.2
    >>> validation-api-1.0.0.ga
 
 
@@ -286,9 +286,9 @@ SECTION 4: Common Public License, V1.0
 
 SECTION 5: Eclipse Public License, V1.0
 
-   >>> aspect.weaver-1.6.10
-   >>> aspectjrt-1.6.10
-   >>> h2-1.3.164
+   >>> aspectjrt-1.7.2
+   >>> aspectjweaver-1.7.2
+   >>> h2-1.3.171
    >>> hibernate-jpa-2.0-api-1.0.1.final
 
 
@@ -306,12 +306,15 @@ SECTION 7: GNU Lesser General Public License, V3.0
    >>> hibernate-ehcache-3.6.10
 
 
+SECTION 8: Creative Commons Attribution License, V2.5
+
+   >>> groovy-all-2.1.2
 
 APPENDIX. Standard License Files
 
-   >>> Apache License, V2.0
-
    >>> Common Public License, V1.0
+
+   >>> Apache License, V2.0
 
    >>> Eclipse Public License, V1.0
 
@@ -321,13 +324,12 @@ APPENDIX. Standard License Files
 
    >>> GNU Lesser General Public License, V3.0
 
-   >>> Creative Commons Attribution, V2.5
-   
-   
+   >>> Creative Commons Attribution License, V2.5
 
---------------- SECTION 1:  BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES ----------
 
-BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES are applicable to the following component(s).
+--------------- SECTION 1: BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES ----------
+
+The BSD-STYLE, MIT-STYLE, OR SIMILAR STYLE LICENSES are applicable to
 
 
 >>> antlr-2.7.7
@@ -371,21 +373,37 @@ The AOP Alliance project is a joint open-source project between several software
 LICENCE: all the source code provided by AOP Alliance is Public Domain.
 
 
->>> asm-3.1
+>>> asm-3.3.1
 
-Copyright (c) 2000-2007 INRIA, France Telecom
-
+Copyright (c) 2000-2011 INRIA, France Telecom
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
 
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
 
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
 
-3. Neither the name of the copyright holders nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+3. Neither the name of the copyright holders nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
 
 
 >>> commons-el-1.0
@@ -612,7 +630,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 SUCH DAMAGE.
 
 
->>> slf4j-1.6.2
+>>> slf4j-1.7.4
 
 Copyright (c) 2004-2007 QOS.ch
 All rights reserved.
@@ -642,102 +660,210 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Apache License, V2.0 is applicable to the following component(s).
 
 
->>> ant-1.8.2
+>>> ant-1.8.4
 
-Licensed to the Apache Software Foundation (ASF) under one or more
-contributor license agreements.  See the NOTICE file distributed with
-this work for additional information regarding copyright ownership.
-The ASF licenses this file to You under the Apache License, Version 2.0
-(the "License"); you may not use this file except in compliance with
-the License.  You may obtain a copy of the License at
+Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
 
-http://www.apache.org/licenses/LICENSE-2.0
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+   1. Definitions.
 
-ant-antlr.jar
-ant-apache-bcel.jar
-ant-apache-log4j.jar
-ant-apache-log4j.jar
-ant-apache-oro.jar
-ant-apache-regexp.jar
-ant-apache-resolver.jar
-ant-apache-xalan2.jar
-ant-commons-logging.jar
-ant-commons-net.jar
-ant-jai.jar
-ant-javamail.jar
-ant-jdepend.jar
-ant-jmf.jar
-ant-jsch.jar
-ant-junit.jar
-ant-junit4.jar
-ant.jar
-ant-testutil.jar
-ant-swing.jar
+      "License" shall mean the terms and conditions for use, reproduction,
+      and distribution as defined by Sections 1 through 9 of this document.
 
+      "Licensor" shall mean the copyright owner or entity authorized by
+      the copyright owner that is granting the License.
 
-ADDITIONAL LICENSE INFORMATION:
+      "Legal Entity" shall mean the union of the acting entity and all
+      other entities that control, are controlled by, or are under common
+      control with that entity. For the purposes of this definition,
+      "control" means (i) the power, direct or indirect, to cause the
+      direction or management of such entity, whether by contract or
+      otherwise, or (ii) ownership of fifty percent (50%) or more of the
+      outstanding shares, or (iii) beneficial ownership of such entity.
 
+      "You" (or "Your") shall mean an individual or Legal Entity
+      exercising permissions granted by this License.
 
-> Apache 1.1
+      "Source" form shall mean the preferred form for making modifications,
+      including but not limited to software source code, documentation
+      source, and configuration files.
 
-apache-ant-1.8.4-bin.tar.gz\apache-ant-1.8.4-bin.tar\apache-ant-1.8.4\manual\tutorial-tasks-filesets-properties.zip\src\FindTest.java
+      "Object" form shall mean any form resulting from mechanical
+      transformation or translation of a Source form, including but
+      not limited to compiled object code, generated documentation,
+      and conversions to other media types.
 
-The Apache Software License, Version 1.1
+      "Work" shall mean the work of authorship, whether in Source or
+      Object form, made available under the License, as indicated by a
+      copyright notice that is included in or attached to the work
+      (an example is provided in the Appendix below).
 
- Copyright (c) 2000-2003 The Apache Software Foundation.  All rights
- reserved.
+      "Derivative Works" shall mean any work, whether in Source or Object
+      form, that is based on (or derived from) the Work and for which the
+      editorial revisions, annotations, elaborations, or other modifications
+      represent, as a whole, an original work of authorship. For the purposes
+      of this License, Derivative Works shall not include works that remain
+      separable from, or merely link (or bind by name) to the interfaces of,
+      the Work and Derivative Works thereof.
 
- Redistribution and use in source and binary forms, with or without
- modification, are permitted provided that the following conditions
- are met:
+      "Contribution" shall mean any work of authorship, including
+      the original version of the Work and any modifications or additions
+      to that Work or Derivative Works thereof, that is intentionally
+      submitted to Licensor for inclusion in the Work by the copyright owner
+      or by an individual or Legal Entity authorized to submit on behalf of
+      the copyright owner. For the purposes of this definition, "submitted"
+      means any form of electronic, verbal, or written communication sent
+      to the Licensor or its representatives, including but not limited to
+      communication on electronic mailing lists, source code control systems,
+      and issue tracking systems that are managed by, or on behalf of, the
+      Licensor for the purpose of discussing and improving the Work, but
+      excluding communication that is conspicuously marked or otherwise
+      designated in writing by the copyright owner as "Not a Contribution."
 
- 1. Redistributions of source code must retain the above copyright
-    notice, this list of conditions and the following disclaimer.
+      "Contributor" shall mean Licensor and any individual or Legal Entity
+      on behalf of whom a Contribution has been received by Licensor and
+      subsequently incorporated within the Work.
 
- 2. Redistributions in binary form must reproduce the above copyright
-    notice, this list of conditions and the following disclaimer in
-    the documentation and/or other materials provided with the
-    distribution.
+   2. Grant of Copyright License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      copyright license to reproduce, prepare Derivative Works of,
+      publicly display, publicly perform, sublicense, and distribute the
+      Work and such Derivative Works in Source or Object form.
 
- 3. The end-user documentation included with the redistribution, if
-    any, must include the following acknowlegement:
-       "This product includes software developed by the
-        Apache Software Foundation (http://www.apache.org/)."
-    Alternately, this acknowlegement may appear in the software itself,
-    if and wherever such third-party acknowlegements normally appear.
+   3. Grant of Patent License. Subject to the terms and conditions of
+      this License, each Contributor hereby grants to You a perpetual,
+      worldwide, non-exclusive, no-charge, royalty-free, irrevocable
+      (except as stated in this section) patent license to make, have made,
+      use, offer to sell, sell, import, and otherwise transfer the Work,
+      where such license applies only to those patent claims licensable
+      by such Contributor that are necessarily infringed by their
+      Contribution(s) alone or by combination of their Contribution(s)
+      with the Work to which such Contribution(s) was submitted. If You
+      institute patent litigation against any entity (including a
+      cross-claim or counterclaim in a lawsuit) alleging that the Work
+      or a Contribution incorporated within the Work constitutes direct
+      or contributory patent infringement, then any patent licenses
+      granted to You under this License for that Work shall terminate
+      as of the date such litigation is filed.
 
- 4. The names "Ant" and "Apache Software
-    Foundation" must not be used to endorse or promote products derived
-    from this software without prior written permission. For written
-    permission, please contact apache@apache.org.
+   4. Redistribution. You may reproduce and distribute copies of the
+      Work or Derivative Works thereof in any medium, with or without
+      modifications, and in Source or Object form, provided that You
+      meet the following conditions:
 
- 5. Products derived from this software may not be called "Apache"
-    nor may "Apache" appear in their names without prior written
-    permission of the Apache Group.
+      (a) You must give any other recipients of the Work or
+          Derivative Works a copy of this License; and
 
- THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
- WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
- ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
- USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
- OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- SUCH DAMAGE.
+      (b) You must cause any modified files to carry prominent notices
+          stating that You changed the files; and
 
+      (c) You must retain, in the Source form of any Derivative Works
+          that You distribute, all copyright, patent, trademark, and
+          attribution notices from the Source form of the Work,
+          excluding those notices that do not pertain to any part of
+          the Derivative Works; and
 
-> MIT Style
+      (d) If the Work includes a "NOTICE" text file as part of its
+          distribution, then any Derivative Works that You distribute must
+          include a readable copy of the attribution notices contained
+          within such NOTICE file, excluding those notices that do not
+          pertain to any part of the Derivative Works, in at least one
+          of the following places: within a NOTICE text file distributed
+          as part of the Derivative Works; within the Source form or
+          documentation, if provided along with the Derivative Works; or,
+          within a display generated by the Derivative Works, if and
+          wherever such third-party notices normally appear. The contents
+          of the NOTICE file are for informational purposes only and
+          do not modify the License. You may add Your own attribution
+          notices within Derivative Works that You distribute, alongside
+          or as an addendum to the NOTICE text from the Work, provided
+          that such additional attribution notices cannot be construed
+          as modifying the License.
 
-apache-ant-1.8.4-bin.tar.gz\apache-ant-1.8.4-bin.tar\apache-ant-1.8.4\LICENSE
+      You may add Your own copyright statement to Your modifications and
+      may provide additional or different license terms and conditions
+      for use, reproduction, or distribution of Your modifications, or
+      for any such Derivative Works as a whole, provided Your use,
+      reproduction, and distribution of the Work otherwise complies with
+      the conditions stated in this License.
+
+   5. Submission of Contributions. Unless You explicitly state otherwise,
+      any Contribution intentionally submitted for inclusion in the Work
+      by You to the Licensor shall be under the terms and conditions of
+      this License, without any additional terms or conditions.
+      Notwithstanding the above, nothing herein shall supersede or modify
+      the terms of any separate license agreement you may have executed
+      with Licensor regarding such Contributions.
+
+   6. Trademarks. This License does not grant permission to use the trade
+      names, trademarks, service marks, or product names of the Licensor,
+      except as required for reasonable and customary use in describing the
+      origin of the Work and reproducing the content of the NOTICE file.
+
+   7. Disclaimer of Warranty. Unless required by applicable law or
+      agreed to in writing, Licensor provides the Work (and each
+      Contributor provides its Contributions) on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+      implied, including, without limitation, any warranties or conditions
+      of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A
+      PARTICULAR PURPOSE. You are solely responsible for determining the
+      appropriateness of using or redistributing the Work and assume any
+      risks associated with Your exercise of permissions under this License.
+
+   8. Limitation of Liability. In no event and under no legal theory,
+      whether in tort (including negligence), contract, or otherwise,
+      unless required by applicable law (such as deliberate and grossly
+      negligent acts) or agreed to in writing, shall any Contributor be
+      liable to You for damages, including any direct, indirect, special,
+      incidental, or consequential damages of any character arising as a
+      result of this License or out of the use or inability to use the
+      Work (including but not limited to damages for loss of goodwill,
+      work stoppage, computer failure or malfunction, or any and all
+      other commercial damages or losses), even if such Contributor
+      has been advised of the possibility of such damages.
+
+   9. Accepting Warranty or Additional Liability. While redistributing
+      the Work or Derivative Works thereof, You may choose to offer,
+      and charge a fee for, acceptance of support, warranty, indemnity,
+      or other liability obligations and/or rights consistent with this
+      License. However, in accepting such obligations, You may act only
+      on Your own behalf and on Your sole responsibility, not on behalf
+      of any other Contributor, and only if You agree to indemnify,
+      defend, and hold each Contributor harmless for any liability
+      incurred by, or claims asserted against, such Contributor by reason
+      of your accepting any such warranty or additional liability.
+
+   END OF TERMS AND CONDITIONS
+
+   APPENDIX: How to apply the Apache License to your work.
+
+      To apply the Apache License to your work, attach the following
+      boilerplate notice, with the fields enclosed by brackets "[]"
+      replaced with your own identifying information. (Don't include
+      the brackets!)  The text should be enclosed in the appropriate
+      comment syntax for the file format. We also recommend that a
+      file or class name and description of purpose be included on the
+      same "printed page" as the copyright notice for easier
+      identification within third-party archives.
+
+   Copyright [yyyy] [name of copyright owner]
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+/
 
 W3C SOFTWARE NOTICE AND LICENSE
 http://www.w3.org/Consortium/Legal/2002/copyright-software-20021231
@@ -777,10 +903,19 @@ publicity pertaining to the software without specific, written prior permission.
 Title to copyright in this software and any associated documentation will at
 all times remain with copyright holders.
 
+____________________________________
 
-> Public Domain
-
-apache-ant-1.8.4-bin.tar.gz\apache-ant-1.8.4-bin.tar\apache-ant-1.8.4\LICENSE
+This formulation of W3C's notice and license became active on December 31 2002.
+This version removes the copyright ownership notice such that this license can
+be used with materials other than those owned by the W3C, reflects that ERCIM
+is now a host of the W3C, includes references to this specific dated version of
+the license, and removes the ambiguous grant of "use". Otherwise, this version
+is the same as the previous version and is written so as to preserve the Free
+Software Foundation's assessment of GPL compatibility and OSI's certification
+under the Open Source Definition. Please see our Copyright FAQ for common
+questions about using materials from our site, including specific terms and
+conditions for packages like libwww, Amaya, and Jigsaw. Other questions about
+this notice can be directed to site-policy@w3.org.
 
 Joseph Reagle <site-policy@w3.org>
 
@@ -963,44 +1098,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
->>> concurrentlinkedhashmap-lru-1.2_jdk5
+>>> concurrentlinkedhashmap-lru-1.3.2
 
-Copyright 2011 Benjamin Manes
+Copyright 2010 Google Inc. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-
-
-ADDITIONAL LICENSE INFORMATION:
-
-
-> Creative Commons Attribution License  2.5
-
-C:\Documents and Settings\dileep.antony\My Documents\Downloads\concurrentlinkedhashmap-lru-1.2_jdk5-sources.jar\com\googlecode\concurrentlinkedhashmap\ThreadSafe.java
-
-Copyright (c) 2005 Brian Goetz
-Released under the Creative Commons Attribution License
-(http://creativecommons.org/licenses/by/2.5)
-Official home: http://www.jcip.net
-
-
->>> ehcache-core-2.4.6
-
-Copyright 2003-2010 Terracotta, Inc.
-
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License.
 
 
 >>> gant_groovy1.7-1.9.6
@@ -1014,62 +1126,106 @@ http://www.apache.org/licenses/LICENSE-2.0
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express  or implied. See the License for the specific language governing permissions and limitations under the License.
 
 
->>> groovy-all-2.0.2
+>>> groovy-all-2.1.2
 
-Copyright 2003-2007 the original author or authors.
+Copyright 2003-2012 the original author or authors.
+ 
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+ 
+      http://www.apache.org/licenses/LICENSE-2.0
+ 
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-
-
-
-ADDITIONAL LICENSE INFORMATION:
-
-> BSD
-
-groovy-all-2.0.2-sources.jar\org\codehaus\groovy\jsr223\GroovyScriptEngineImpl.java
-
-Copyright 2006 Sun Microsystems, Inc. All rights reserved.
-Use is subject to license terms.
-
-Redistribution and use in source and binary forms, with or without modification, are
-permitted provided that the following conditions are met: Redistributions of source code
-must retain the above copyright notice, this list of conditions and the following disclaimer.
-Redistributions in binary form must reproduce the above copyright notice, this list of
-conditions and the following disclaimer in the documentation and/or other materials
-provided with the distribution. Neither the name of the Sun Microsystems nor the names of
-is contributors may be used to endorse or promote products derived from this software
-without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS
-OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY
-AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER
-OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-POSSIBILITY OF SUCH DAMAGE.
+ADDITIONAL LICENSE INFORMATION :
 
 
 > Creative Commons Attribution License  2.5
 
-groovy-all-2.0.2-sources.jar\groovy\ui\icons\credits.txt
 
+groovy-all-2.1.2.jar\groovy\ui\icons\credits.txt
 These icons are from the famfamfam.com silk icons set
 http://www.famfamfam.com/lab/icons/silk/
 
 Licensed under the Creative Commons Attribution Licence v2.5
 http://creativecommons.org/licenses/by/2.5/
+
+
+> Public Domain
+
+
+groovy-all-2.1.2.jar\META-INF\ANTLR-LICENSE.txt
+
+SOFTWARE RIGHTS
+
+ANTLR 1989-2006 Developed by Terence Parr
+Partially supported by University of San Francisco & jGuru.com
+
+We reserve no legal rights to the ANTLR--it is fully in the
+public domain. An individual or company may do whatever
+they wish with source code distributed with ANTLR or the
+code generated by ANTLR, including the incorporation of
+ANTLR, or its output, into commerical software.
+
+We encourage users to develop software with ANTLR. However,
+we do ask that credit is given to us for developing
+ANTLR. By "credit", we mean that if you use ANTLR or
+incorporate any source code into one of your programs
+(commercial product, research project, or otherwise) that
+you acknowledge this fact somewhere in the documentation,
+research report, etc... If you like ANTLR and have
+developed a nice tool with the output, please mention that
+you developed it using ANTLR. In addition, we ask that the
+headers remain intact in our source code. As long as these
+guidelines are kept, we expect to continue enhancing this
+system and expect to make other tools available as they are
+completed.
+
+The primary ANTLR guy:
+
+Terence Parr
+parrt@cs.usfca.edu
+parrt@antlr.org
+
+
+
+> BSD
+
+groovy-all-2.1.2.jar\META-INF\ASM-LICENSE.txt
+
+ASM: a very small and fast Java bytecode manipulation framework
+Copyright (c) 2000-2005 INRIA, France Telecom
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+3. Neither the name of the copyright holders nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
 
 
 >>> hibernate-validator-4.1.0.final
@@ -1089,22 +1245,85 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
->>> ivy-2.2.0
+>>> ivy-2.3.0
 
-Licensed to the Apache Software Foundation (ASF) under one or more
-contributor license agreements.  See the NOTICE file distributed with
-this work for additional information regarding copyright ownership.
-The ASF licenses this file to You under the Apache License, Version 2.0
-(the "License"); you may not use this file except in compliance with
-the License.  You may obtain a copy of the License at
+Copyright 2007-2013 The Apache Software Foundation
 
-http://www.apache.org/licenses/LICENSE-2.0
+This product includes software developed by
+The Apache Software Foundation (http://www.apache.org/).
+   
+Portions of Ivy were originally developed by
+Jayasoft SARL (http://www.jayasoft.fr/)
+and are licensed to the Apache Software Foundation under the
+"Software Grant License Agreement"
+   
+SSH and SFTP support is provided by the JCraft JSch package, 
+which is open source software, available under
+the terms of a BSD style license.  
+The original software and related information is available
+at http://www.jcraft.com/jsch/.
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+
+ADDITIONAL LICENSE INFORMATION : 
+
+Third Party Sub-Components
+
+ivy-2.3.0.jar\META-INF\LICENSE
+
+
+License for JCraft JSch package
+------------------------------------------------------------------------------
+Copyright (c) 2002,2003,2004,2005,2006,2007 Atsuhiko Yamanaka, JCraft,Inc. 
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+  1. Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+
+  2. Redistributions in binary form must reproduce the above copyright 
+     notice, this list of conditions and the following disclaimer in 
+     the documentation and/or other materials provided with the distribution.
+
+  3. The names of the authors may not be used to endorse or promote products
+     derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES,
+INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL JCRAFT,
+INC. OR ANY CONTRIBUTORS TO THIS SOFTWARE BE LIABLE FOR ANY DIRECT, INDIRECT,
+INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+
+------------------------------------------------------------------------------
+License for jQuery
+------------------------------------------------------------------------------
+Copyright (c) 2007 John Resig, http://jquery.com/
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 >>> jansi-1.2.1
@@ -1162,27 +1381,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
->>> log4j-1.2.16
+>>> log4j-1.2.17
 
-Licensed to the Apache Software Foundation (ASF) under one or more
-contributor license agreements.  See the NOTICE file distributed with
-this work for additional information regarding copyright ownership.
-The ASF licenses this file to You under the Apache License, Version 2.0
-(the "License"); you may not use this file except in compliance with
-the License.  You may obtain a copy of the License at
+Apache log4j
+Copyright 2007 The Apache Software Foundation
 
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+This product includes software developed at
+The Apache Software Foundation (http://www.apache.org/).
 
 
->>> spring-aop-3.1.0.release
+>>> spring-aop-3.2.2
 
-Copyright 2002-2010 the original author or authors.
+Copyright 2002-2012 the original author or authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1194,108 +1404,186 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.
+limitations under the License
 
 
->>> spring-aspects-3.1.0.release
+>>> spring-aspects-3.2.2
 
-Copyright 2002-2008 the original author or authors.
+Copyright (c) 2002-2013 SpringSource, a division of VMware, Inc.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+This product is licensed to you under the Apache License, Version 2.0
+(the "License"). You may not use this product except in compliance with
+the License.
 
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+This product may include a number of subcomponents with separate
+copyright notices and license terms. Your use of the source code for
+these subcomponents is subject to the terms and conditions of the
+subcomponent's license, as noted in the license.txt file.
 
 
->>> spring-beans-3.1.0.release
 
-Copyright 2002-2011 the original author or authors.
+ADDITIONAL LICENSE INFORMATION :
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
+Third Party Sub-Components
 
 
->>> spring-context-3.1.0.release
-
-Copyright 2002-2011 the original author or authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
+spring-aspects-3.2.2.RELEASE.jar\META-INF\license.txt
 
 
->>> spring-context-support-3.1.0.release
-
-Copyright 2002-2008 the original author or authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Spring Framework 3.2.2.RELEASE includes a number of subcomponents
+with separate copyright notices and license terms. The product that
+includes this file does not necessarily use all the open source
+subcomponents referred to below. Your use of the source
+code for these subcomponents is subject to the terms and
+conditions of the following licenses.
 
 
->>> spring-core-3.1.0.release
+>>> ASM 4.0 (org.ow2.asm:asm:4.0, org.ow2.asm:asm-commons:4.0):
 
-Spring Framework 3.1
-
-Copyright (c) 2002-2011 SpringSource, a division of VMware, Inc.
-
-This product is licensed to you under the Apache License, Version 2.0 (the "License"). You may not use this product except in compliance with the License.
-
-This product may include a number of subcomponents with separate copyright notices and license terms. Your use of the source code for the these subcomponents is subject to the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
-
-
-ADDITIONAL LICENSE INFORMATION:
-
-spring-core-3.1.0.RELEASE.jar\META-INF\ license.txt
-
-SPRING FRAMEWORK 3.1 SUBCOMPONENTS: 
-
-Spring Framework 3.1 includes a number of subcomponents with separate copyright notices and license terms.  The product that includes this file does not necessarily use all the open source subcomponents referred to below. Your use of the source code for these subcomponents is subject to the terms and conditions of the following licenses. 
-
->>> asm-2.2.3:
-
-Copyright (c) 2000-2005 INRIA, France Telecom
+Copyright (c) 2000-2011 INRIA, France Telecom
 All rights reserved.
 
-Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
 
-2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
 
-3. Neither the name of the copyright holders nor the names of its contributors may be used to endorse or promote products derived from this software without specific prior written permission.
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+3. Neither the name of the copyright holders nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+Copyright (c) 1999-2009, OW2 Consortium <http://www.ow2.org/>
 
 
+>>> CGLIB 3.0 (cglib:cglib:3.0):
 
-Copyright (c) 1999-2009, OW2 Consortium <http://www.ow2.org/>	
+Per the LICENSE file in the CGLIB JAR distribution downloaded from
+http://sourceforge.net/projects/cglib/files/cglib3/3.0/cglib-3.0.jar/download,
+CGLIB 3.0 is licensed under the Apache License, version 2.0, the text of which
+is included above.
 
-To the extent any open source subcomponents are licensed under the EPL and/or other  similar licenses that require the source code and/or modifications to  source code to be made available (as would be noted above), you may obtain a  copy of the source code corresponding to the binaries for such open source  components and modifications thereto, if any, (the "Source Files"), by  downloading the Source Files from http://www.springsource.org/download,  or by sending a request, with your name and address to: VMware, Inc., 3401 Hillview  Avenue, Palo Alto, CA 94304, United States of America or email info@vmware.com.  All such requests should clearly specify:  OPEN SOURCE FILES REQUEST, Attention General Counsel.  VMware shall mail a copy of the Source Files to you on a CD or equivalent physical medium.  This offer to obtain a copy of the Source Files is valid for three years from the date you acquired this Software product.
+
+>>> spring-beans-3.2.2
+
+Copyright (c) 2002-2013 SpringSource, a division of VMware, Inc.
+
+This product is licensed to you under the Apache License, Version 2.0
+(the "License"). You may not use this product except in compliance with
+the License.
+
+This product may include a number of subcomponents with separate
+copyright notices and license terms. Your use of the source code for
+these subcomponents is subject to the terms and conditions of the
+subcomponent's license, as noted in the license.txt file.
 
 
->>> spring-expression-3.1.0.release
+ADDITIONAL LICENSE INFORMATION :
 
-Copyright 2002-2010 the original author or authors.
+
+> THIRD PARTY SUB-COMPONENTS
+
+spring-beans-3.2.2.RELEASE.jar\META-INF\license.txt
+
+license.txt
+
+>>> ASM 4.0 (org.ow2.asm:asm:4.0, org.ow2.asm:asm-commons:4.0):
+
+Copyright (c) 2000-2011 INRIA, France Telecom
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holders nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+Copyright (c) 1999-2009, OW2 Consortium <http://www.ow2.org/>
+
+
+>>> CGLIB 3.0 (cglib:cglib:3.0):
+
+Per the LICENSE file in the CGLIB JAR distribution downloaded from
+http://sourceforge.net/projects/cglib/files/cglib3/3.0/cglib-3.0.jar/download,
+CGLIB 3.0 is licensed under the Apache License, version 2.0, the text of which
+is included above.
+
+
+>>> spring-context-3.2.2
+
+Copyright 2002-2012 the original author or authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License
+
+
+>>> spring-context-support-3.2.2
+
+Copyright 2002-2012 the original author or authors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License
+
+
+>>> spring-core-3.2.2
+
+Copyright 2002-2012 the original author or authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1310,9 +1598,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
->>> spring-jdbc-3.1.0.release
+>>> spring-expression-3.2.2
 
-Copyright 2002-2008 the original author or authors.
+Copyright 2002-2012 the original author or authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1327,16 +1615,70 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
->>> spring-jms-3.1.0.release
+>>> spring-jdbc-3.2.2
 
-Copyright 2002-2007 the original author or authors.
+Copyright (c) 2002-2013 SpringSource, a division of VMware, Inc.
 
-Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
+This product is licensed to you under the Apache License, Version 2.0
+(the "License"). You may not use this product except in compliance with
+the License.
 
-You may obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0
+This product may include a number of subcomponents with separate
+copyright notices and license terms. Your use of the source code for
+these subcomponents is subject to the terms and conditions of the
+subcomponent's license, as noted in the license.txt file.
 
-Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and limitations under the License.
+
+
+ADDITIONAL LICENSE INFORMATION :
+
+
+> Third Party Sub-Components
+
+spring-jdbc-3.2.2.RELEASE.jar\META-INF\notice.txt
+
+
+>>> ASM 4.0 (org.ow2.asm:asm:4.0, org.ow2.asm:asm-commons:4.0):
+
+Copyright (c) 2000-2011 INRIA, France Telecom
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holders nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+Copyright (c) 1999-2009, OW2 Consortium <http://www.ow2.org/>
+
+
+>>> CGLIB 3.0 (cglib:cglib:3.0):
+
+Per the LICENSE file in the CGLIB JAR distribution downloaded from
+http://sourceforge.net/projects/cglib/files/cglib3/3.0/cglib-3.0.jar/download,
+CGLIB 3.0 is licensed under the Apache License, version 2.0, the text of which
+is included above.
 
 
 >>> spring-loaded-1.1.0
@@ -1350,22 +1692,9 @@ Licensed under the Apache License, Version 2.0 (the "License"); you may not use 
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
 
 
->>> spring-orm-3.1.0.release
+>>> spring-orm-3.2.2
 
-Spring Framework 3.1
-Copyright (c) 2002-2011 SpringSource, a division of VMware, Inc.
-
-This product is licensed to you under the Apache License, Version 2.0 (the "License").
-You may not use this product except in compliance with the License.
-
-This product may include a number of subcomponents with separate copyright notices and
-license terms. Your use of the source code for the these subcomponents is subject to
-the terms and conditions of the subcomponent's license, as noted in the LICENSE file.
-
-
->>> spring-tx-3.1.0.release
-
-Copyright 2002-2006 the original author or authors.
+Copyright 2002-2012 the original author or authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1380,32 +1709,79 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
->>> spring-web-3.1.0.release
+>>> spring-tx-3.2.2
 
-Copyright 2002-2010 the original author or authors.
- 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
- 
-       http://www.apache.org/licenses/LICENSE-2.0
- 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+Copyright (c) 2002-2013 SpringSource, a division of VMware, Inc.
+
+This product is licensed to you under the Apache License, Version 2.0
+(the "License"). You may not use this product except in compliance with
+the License.
+
+This product may include a number of subcomponents with separate
+copyright notices and license terms. Your use of the source code for
+these subcomponents is subject to the terms and conditions of the
+subcomponent's license, as noted in the license.txt file.
 
 
->>> spring-webmvc-3.1.0.release
+ADDITIONAL LICENSE INFORMATION :
 
-Copyright 2002-2008 the original author or authors.
+> Third Party Sub-Components
+
+spring-tx-3.2.2.RELEASE.jar\META-INF\license.txt
+
+
+>>> ASM 4.0 (org.ow2.asm:asm:4.0, org.ow2.asm:asm-commons:4.0):
+
+Copyright (c) 2000-2011 INRIA, France Telecom
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holders nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+THE POSSIBILITY OF SUCH DAMAGE.
+
+Copyright (c) 1999-2009, OW2 Consortium <http://www.ow2.org/>
+
+
+>>> CGLIB 3.0 (cglib:cglib:3.0):
+
+Per the LICENSE file in the CGLIB JAR distribution downloaded from
+http://sourceforge.net/projects/cglib/files/cglib3/3.0/cglib-3.0.jar/download,
+CGLIB 3.0 is licensed under the Apache License, version 2.0, the text of which
+is included above.
+
+
+>>> spring-web-3.2.2
+
+Copyright 2002-2012 the original author or authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+     http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -1414,51 +1790,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
->>> tomcat-7.0.27
+>>> spring-webmvc-3.2.2
 
-Apache Tomcat
+Copyright 2002-2012 the original author or authors.
 
-Copyright 1999-2012 The Apache Software Foundation
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This product includes software developed by
+      http://www.apache.org/licenses/LICENSE-2.0
 
-The Apache Software Foundation (http://www.apache.org/).
-
-The Windows Installer is built with the Null soft Scriptable Install System (NSIS), which is open source software.  The original software and related information is available at http://nsis.sourceforge.net.
-
-Java compilation software for JSP pages is provided by Eclipse, which is open source software.  The original software and related information is available at http://www.eclipse.org.
-
-annotations-api.jar
-bootstrap.jar
-commons-daemon.jar
-catalina.jar
-catalina-ant.jar
-catalina-ha.jar
-catalina-tribes.jar
-el-api.jar
-jasper-el.jar
-jasper.jar
-jsp-api.jar
-servlet-api.jar
-tomcat-api.jar
-tomcat-coyote.jar
-tomcat-dbcp.jar
-tomcat-i18n-es.jar
-tomcat-i18n-fr.jar
-tomcat-i18n-ja.jar
-tomcat-jdbc.jar
-tomcat-util.jar
-tomcat-juli.jar
-
-Additional License Information:
-
-> EPL 
-
-apache-tomcat-7.0.27.tar.gz\apache-tomcat-7.0.27.tar\apache-tomcat-7.0.27\lib\ecj-3.7.2.jar\org\eclipse\jdt\internal\antadapter\ messages.properties
-
-Copyright (c) 2000, 2006 IBM Corporation and others.
-
-All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0 which accompanies this distribution, and is available at http://www.eclipse.org/legal/epl-v10.html
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
 
 >>> validation-api-1.0.0.ga
@@ -1566,7 +1912,17 @@ License: CPL 1.0
 Eclipse Public License, V1.0 is applicable to the following component(s).
 
 
->>> aspect.weaver-1.6.10
+>>> aspectjrt-1.7.2
+
+Copyright (c) 2005 Contributors.
+ All rights reserved.
+ This program and the accompanying materials are made available
+ under the terms of the Eclipse Public License v1.0
+ which accompanies this distribution and is available at
+ http://eclipse.org/legal/epl-v10.html
+
+
+>>> aspectjweaver-1.7.2
 
 Copyright (c) 2005 Contributors.
 All rights reserved.
@@ -1578,20 +1934,61 @@ http://eclipse.org/legal/epl-v10.html
 Contributors:
 Alexandre Vasseur         initial implementation
 
-
->>> aspectjrt-1.6.10
-
-Copyright (c) 2005 Contributors.
-All rights reserved.
-
-This program and the accompanying materials are made available
-under the terms of the Eclipse Public License v1.0
-
-which accompanies this distribution and is available at
-http://eclipse.org/legal/epl-v10.html
+ADDITIONAL LICENSE INFORMATION :
 
 
->>> h2-1.3.164
+> Apache 1.1
+
+aspectjweaver-1.7.2.RELEASE-sources.jar\org\aspectj\apache\bcel\Constants.java
+
+The Apache Software License, Version 1.1
+
+Copyright (c) 2001 The Apache Software Foundation.  All rights
+reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in
+the documentation and/or other materials provided with the
+distribution.
+
+3. The end-user documentation included with the redistribution,
+if any, must include the following acknowledgment:
+"This product includes software developed by the
+Apache Software Foundation (http://www.apache.org/)."
+Alternately, this acknowledgment may appear in the software itself,
+if and wherever such third-party acknowledgments normally appear.
+
+4. The names "Apache" and "Apache Software Foundation" and
+"Apache BCEL" must not be used to endorse or promote products
+derived from this software without prior written permission. For
+written permission, please contact apache@apache.org.
+
+5. Products derived from this software may not be called "Apache",
+"Apache BCEL", nor may "Apache" appear in their name, without
+prior written permission of the Apache Software Foundation.
+
+THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED.  IN NO EVENT SHALL THE APACHE SOFTWARE FOUNDATION OR
+ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+SUCH DAMAGE.
+
+
+>>> h2-1.3.171
 
 [PLEASE NOTE:  VMWARE, INC. ELECTS TO USE AND DISTRIBUTE THIS COMPONENT UNDER THE TERMS OF THE EPL 1.0. PLEASE SEE THE APPENDIX TO REVIEW THE FULL TEXT OF EPL 1.0 THE ORIGINAL LICENSE TERMS ARE REPRODUCED BELOW ONLY AS A REFERENCE.]
 
@@ -1703,186 +2100,7 @@ Boston, MA  02110-1301  USA
 
 
 
---------------- SECTION 1: Apache License, V2.0 -----------
-
-Apache License 
-
-Version 2.0, January 2004 
-http://www.apache.org/licenses/ 
-
-TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION 
-
-1. Definitions.
-
-"License" shall mean the terms and conditions for use, reproduction,
-and distribution as defined by Sections 1 through 9 of this document.
-
-"Licensor" shall mean the copyright owner or entity authorized by the
-copyright owner that is granting the License.  
-
-"Legal Entity" shall mean the union of the acting entity and all other
-entities that control, are controlled by, or are under common control
-with that entity. For the purposes of this definition, "control" means
-(i) the power, direct or indirect, to cause the direction or management
-of such entity, whether by contract or otherwise, or (ii) ownership
-of fifty percent (50%) or more of the outstanding shares, or (iii)
-beneficial ownership of such entity.
-
-"You" (or "Your") shall mean an individual or Legal Entity exercising
-permissions granted by this License.  
-
-"Source" form shall mean the preferred form for making modifications,
-including but not limited to software source code, documentation source,
-and configuration files.
-
-"Object" form shall mean any form resulting from mechanical transformation
-or translation of a Source form, including but not limited to compiled
-object code, generated documentation, and conversions to other media
-types.  
-
-"Work" shall mean the work of authorship, whether in Source or
-Object form, made available under the License, as indicated by a copyright
-notice that is included in or attached to the work (an example is provided
-in the Appendix below).  
-
-"Derivative Works" shall mean any work, whether in Source or Object form,
-that is based on (or derived from) the Work and for which the editorial
-revisions, annotations, elaborations, or other modifications represent,
-as a whole, an original work of authorship. For the purposes of this
-License, Derivative Works shall not include works that remain separable
-from, or merely link (or bind by name) to the interfaces of, the Work
-and Derivative Works thereof.
-
-"Contribution" shall mean any work of authorship, including the
-original version of the Work and any modifications or additions to
-that Work or Derivative Works thereof, that is intentionally submitted
-to Licensor for inclusion in the Work by the copyright owner or by an
-individual or Legal Entity authorized to submit on behalf of the copyright
-owner. For the purposes of this definition, "submitted" means any form of
-electronic, verbal, or written communication sent to the Licensor or its
-representatives, including but not limited to communication on electronic
-mailing lists, source code control systems, and issue tracking systems
-that are managed by, or on behalf of, the Licensor for the purpose of
-discussing and improving the Work, but excluding communication that is
-conspicuously marked or otherwise designated in writing by the copyright
-owner as "Not a Contribution."
-
-"Contributor" shall mean Licensor and any individual or Legal Entity
-on behalf of whom a Contribution has been received by Licensor and
-subsequently incorporated within the Work.
-
-2. Grant of Copyright License.
-Subject to the terms and conditions of this License, each Contributor
-hereby grants to You a perpetual, worldwide, non-exclusive, no-charge,
-royalty-free, irrevocable copyright license to reproduce, prepare
-Derivative Works of, publicly display, publicly perform, sublicense, and
-distribute the Work and such Derivative Works in Source or Object form.
-
-3. Grant of Patent License.
-Subject to the terms and conditions of this License, each Contributor
-hereby grants to You a perpetual, worldwide, non-exclusive, no-charge,
-royalty- free, irrevocable (except as stated in this section) patent
-license to make, have made, use, offer to sell, sell, import, and
-otherwise transfer the Work, where such license applies only to those
-patent claims licensable by such Contributor that are necessarily
-infringed by their Contribution(s) alone or by combination of
-their Contribution(s) with the Work to which such Contribution(s)
-was submitted. If You institute patent litigation against any entity
-(including a cross-claim or counterclaim in a lawsuit) alleging that the
-Work or a Contribution incorporated within the Work constitutes direct
-or contributory patent infringement, then any patent licenses granted
-to You under this License for that Work shall terminate as of the date
-such litigation is filed.
-
-4. Redistribution.
-You may reproduce and distribute copies of the Work or Derivative Works
-thereof in any medium, with or without modifications, and in Source or
-Object form, provided that You meet the following conditions:
-
-  a. You must give any other recipients of the Work or Derivative Works
-     a copy of this License; and
-
-  b. You must cause any modified files to carry prominent notices stating
-     that You changed the files; and
-
-  c. You must retain, in the Source form of any Derivative Works that
-     You distribute, all copyright, patent, trademark, and attribution
-     notices from the Source form of the Work, excluding those notices
-     that do not pertain to any part of the Derivative Works; and
-
-  d. If the Work includes a "NOTICE" text file as part of its
-     distribution, then any Derivative Works that You distribute must
-     include a readable copy of the attribution notices contained
-     within such NOTICE file, excluding those notices that do not
-     pertain to any part of the Derivative Works, in at least one of
-     the following places: within a NOTICE text file distributed as part
-     of the Derivative Works; within the Source form or documentation,
-     if provided along with the Derivative Works; or, within a display
-     generated by the Derivative Works, if and wherever such third-party
-     notices normally appear. The contents of the NOTICE file are for
-     informational purposes only and do not modify the License. You
-     may add Your own attribution notices within Derivative Works that
-     You distribute, alongside or as an addendum to the NOTICE text
-     from the Work, provided that such additional attribution notices
-     cannot be construed as modifying the License.  You may add Your own
-     copyright statement to Your modifications and may provide additional
-     or different license terms and conditions for use, reproduction, or
-     distribution of Your modifications, or for any such Derivative Works
-     as a whole, provided Your use, reproduction, and distribution of the
-     Work otherwise complies with the conditions stated in this License.
-
-5. Submission of Contributions.
-Unless You explicitly state otherwise, any Contribution intentionally
-submitted for inclusion in the Work by You to the Licensor shall be
-under the terms and conditions of this License, without any additional
-terms or conditions.  Notwithstanding the above, nothing herein shall
-supersede or modify the terms of any separate license agreement you may
-have executed with Licensor regarding such Contributions.
-
-6. Trademarks.
-This License does not grant permission to use the trade names, trademarks,
-service marks, or product names of the Licensor, except as required for
-reasonable and customary use in describing the origin of the Work and
-reproducing the content of the NOTICE file.
-
-7. Disclaimer of Warranty.
-Unless required by applicable law or agreed to in writing, Licensor
-provides the Work (and each Contributor provides its Contributions) on
-an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
-express or implied, including, without limitation, any warranties or
-conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR
-A PARTICULAR PURPOSE. You are solely responsible for determining the
-appropriateness of using or redistributing the Work and assume any risks
-associated with Your exercise of permissions under this License.
-
-8. Limitation of Liability.
-In no event and under no legal theory, whether in tort (including
-negligence), contract, or otherwise, unless required by applicable law
-(such as deliberate and grossly negligent acts) or agreed to in writing,
-shall any Contributor be liable to You for damages, including any direct,
-indirect, special, incidental, or consequential damages of any character
-arising as a result of this License or out of the use or inability to
-use the Work (including but not limited to damages for loss of goodwill,
-work stoppage, computer failure or malfunction, or any and all other
-commercial damages or losses), even if such Contributor has been advised
-of the possibility of such damages.
-
-9. Accepting Warranty or Additional Liability.
-While redistributing the Work or Derivative Works thereof, You may
-choose to offer, and charge a fee for, acceptance of support, warranty,
-indemnity, or other liability obligations and/or rights consistent with
-this License. However, in accepting such obligations, You may act only
-on Your own behalf and on Your sole responsibility, not on behalf of
-any other Contributor, and only if You agree to indemnify, defend, and
-hold each Contributor harmless for any liability incurred by, or claims
-asserted against, such Contributor by reason of your accepting any such
-warranty or additional liability.
-
-END OF TERMS AND CONDITIONS 
-
-
-
---------------- SECTION 2: Common Public License, V1.0 -----------
+--------------- SECTION 1: Common Public License, V1.0 -----------
 
 Common Public License Version 1.0
 
@@ -2113,6 +2331,185 @@ intellectual property laws of the United States of America. No party to
 this Agreement will bring a legal action under this Agreement more than
 one year after the cause of action arose. Each party waives its rights
 to a jury trial in any resulting litigation.
+
+
+
+--------------- SECTION 2: Apache License, V2.0 -----------
+
+Apache License 
+
+Version 2.0, January 2004 
+http://www.apache.org/licenses/ 
+
+TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION 
+
+1. Definitions.
+
+"License" shall mean the terms and conditions for use, reproduction,
+and distribution as defined by Sections 1 through 9 of this document.
+
+"Licensor" shall mean the copyright owner or entity authorized by the
+copyright owner that is granting the License.  
+
+"Legal Entity" shall mean the union of the acting entity and all other
+entities that control, are controlled by, or are under common control
+with that entity. For the purposes of this definition, "control" means
+(i) the power, direct or indirect, to cause the direction or management
+of such entity, whether by contract or otherwise, or (ii) ownership
+of fifty percent (50%) or more of the outstanding shares, or (iii)
+beneficial ownership of such entity.
+
+"You" (or "Your") shall mean an individual or Legal Entity exercising
+permissions granted by this License.  
+
+"Source" form shall mean the preferred form for making modifications,
+including but not limited to software source code, documentation source,
+and configuration files.
+
+"Object" form shall mean any form resulting from mechanical transformation
+or translation of a Source form, including but not limited to compiled
+object code, generated documentation, and conversions to other media
+types.  
+
+"Work" shall mean the work of authorship, whether in Source or
+Object form, made available under the License, as indicated by a copyright
+notice that is included in or attached to the work (an example is provided
+in the Appendix below).  
+
+"Derivative Works" shall mean any work, whether in Source or Object form,
+that is based on (or derived from) the Work and for which the editorial
+revisions, annotations, elaborations, or other modifications represent,
+as a whole, an original work of authorship. For the purposes of this
+License, Derivative Works shall not include works that remain separable
+from, or merely link (or bind by name) to the interfaces of, the Work
+and Derivative Works thereof.
+
+"Contribution" shall mean any work of authorship, including the
+original version of the Work and any modifications or additions to
+that Work or Derivative Works thereof, that is intentionally submitted
+to Licensor for inclusion in the Work by the copyright owner or by an
+individual or Legal Entity authorized to submit on behalf of the copyright
+owner. For the purposes of this definition, "submitted" means any form of
+electronic, verbal, or written communication sent to the Licensor or its
+representatives, including but not limited to communication on electronic
+mailing lists, source code control systems, and issue tracking systems
+that are managed by, or on behalf of, the Licensor for the purpose of
+discussing and improving the Work, but excluding communication that is
+conspicuously marked or otherwise designated in writing by the copyright
+owner as "Not a Contribution."
+
+"Contributor" shall mean Licensor and any individual or Legal Entity
+on behalf of whom a Contribution has been received by Licensor and
+subsequently incorporated within the Work.
+
+2. Grant of Copyright License.
+Subject to the terms and conditions of this License, each Contributor
+hereby grants to You a perpetual, worldwide, non-exclusive, no-charge,
+royalty-free, irrevocable copyright license to reproduce, prepare
+Derivative Works of, publicly display, publicly perform, sublicense, and
+distribute the Work and such Derivative Works in Source or Object form.
+
+3. Grant of Patent License.
+Subject to the terms and conditions of this License, each Contributor
+hereby grants to You a perpetual, worldwide, non-exclusive, no-charge,
+royalty- free, irrevocable (except as stated in this section) patent
+license to make, have made, use, offer to sell, sell, import, and
+otherwise transfer the Work, where such license applies only to those
+patent claims licensable by such Contributor that are necessarily
+infringed by their Contribution(s) alone or by combination of
+their Contribution(s) with the Work to which such Contribution(s)
+was submitted. If You institute patent litigation against any entity
+(including a cross-claim or counterclaim in a lawsuit) alleging that the
+Work or a Contribution incorporated within the Work constitutes direct
+or contributory patent infringement, then any patent licenses granted
+to You under this License for that Work shall terminate as of the date
+such litigation is filed.
+
+4. Redistribution.
+You may reproduce and distribute copies of the Work or Derivative Works
+thereof in any medium, with or without modifications, and in Source or
+Object form, provided that You meet the following conditions:
+
+  a. You must give any other recipients of the Work or Derivative Works
+     a copy of this License; and
+
+  b. You must cause any modified files to carry prominent notices stating
+     that You changed the files; and
+
+  c. You must retain, in the Source form of any Derivative Works that
+     You distribute, all copyright, patent, trademark, and attribution
+     notices from the Source form of the Work, excluding those notices
+     that do not pertain to any part of the Derivative Works; and
+
+  d. If the Work includes a "NOTICE" text file as part of its
+     distribution, then any Derivative Works that You distribute must
+     include a readable copy of the attribution notices contained
+     within such NOTICE file, excluding those notices that do not
+     pertain to any part of the Derivative Works, in at least one of
+     the following places: within a NOTICE text file distributed as part
+     of the Derivative Works; within the Source form or documentation,
+     if provided along with the Derivative Works; or, within a display
+     generated by the Derivative Works, if and wherever such third-party
+     notices normally appear. The contents of the NOTICE file are for
+     informational purposes only and do not modify the License. You
+     may add Your own attribution notices within Derivative Works that
+     You distribute, alongside or as an addendum to the NOTICE text
+     from the Work, provided that such additional attribution notices
+     cannot be construed as modifying the License.  You may add Your own
+     copyright statement to Your modifications and may provide additional
+     or different license terms and conditions for use, reproduction, or
+     distribution of Your modifications, or for any such Derivative Works
+     as a whole, provided Your use, reproduction, and distribution of the
+     Work otherwise complies with the conditions stated in this License.
+
+5. Submission of Contributions.
+Unless You explicitly state otherwise, any Contribution intentionally
+submitted for inclusion in the Work by You to the Licensor shall be
+under the terms and conditions of this License, without any additional
+terms or conditions.  Notwithstanding the above, nothing herein shall
+supersede or modify the terms of any separate license agreement you may
+have executed with Licensor regarding such Contributions.
+
+6. Trademarks.
+This License does not grant permission to use the trade names, trademarks,
+service marks, or product names of the Licensor, except as required for
+reasonable and customary use in describing the origin of the Work and
+reproducing the content of the NOTICE file.
+
+7. Disclaimer of Warranty.
+Unless required by applicable law or agreed to in writing, Licensor
+provides the Work (and each Contributor provides its Contributions) on
+an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+express or implied, including, without limitation, any warranties or
+conditions of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR
+A PARTICULAR PURPOSE. You are solely responsible for determining the
+appropriateness of using or redistributing the Work and assume any risks
+associated with Your exercise of permissions under this License.
+
+8. Limitation of Liability.
+In no event and under no legal theory, whether in tort (including
+negligence), contract, or otherwise, unless required by applicable law
+(such as deliberate and grossly negligent acts) or agreed to in writing,
+shall any Contributor be liable to You for damages, including any direct,
+indirect, special, incidental, or consequential damages of any character
+arising as a result of this License or out of the use or inability to
+use the Work (including but not limited to damages for loss of goodwill,
+work stoppage, computer failure or malfunction, or any and all other
+commercial damages or losses), even if such Contributor has been advised
+of the possibility of such damages.
+
+9. Accepting Warranty or Additional Liability.
+While redistributing the Work or Derivative Works thereof, You may
+choose to offer, and charge a fee for, acceptance of support, warranty,
+indemnity, or other liability obligations and/or rights consistent with
+this License. However, in accepting such obligations, You may act only
+on Your own behalf and on Your sole responsibility, not on behalf of
+any other Contributor, and only if You agree to indemnify, defend, and
+hold each Contributor harmless for any liability incurred by, or claims
+asserted against, such Contributor by reason of your accepting any such
+warranty or additional liability.
+
+END OF TERMS AND CONDITIONS 
 
 
 
@@ -3353,254 +3750,92 @@ permanent authorization for you to choose that version for the
 Library.
 
 
---------------- SECTION 7: Creative Commons Attribution, V2.5 -----------
+--------------- SECTION 8: Creative Commons Attribution License, V2.5 -----------
 
-				Creative Commons Attribution 2.5
+Creative Commons Attribution 2.5
 
-CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE
-LEGAL SERVICES. DISTRIBUTION OF THIS LICENSE DOES NOT CREATE AN
-ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION
-ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE
-INFORMATION PROVIDED, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM
-ITS USE.
-
+CREATIVE COMMONS CORPORATION IS NOT A LAW FIRM AND DOES NOT PROVIDE LEGAL SERVICES. DISTRIBUTION OF THIS LICENSE DOES NOT CREATE AN ATTORNEY-CLIENT RELATIONSHIP. CREATIVE COMMONS PROVIDES THIS INFORMATION ON AN "AS-IS" BASIS. CREATIVE COMMONS MAKES NO WARRANTIES REGARDING THE INFORMATION PROVIDED, AND DISCLAIMS LIABILITY FOR DAMAGES RESULTING FROM ITS USE.
 License
 
-THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE
-COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY
-COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS
-AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
+THE WORK (AS DEFINED BELOW) IS PROVIDED UNDER THE TERMS OF THIS CREATIVE COMMONS PUBLIC LICENSE ("CCPL" OR "LICENSE"). THE WORK IS PROTECTED BY COPYRIGHT AND/OR OTHER APPLICABLE LAW. ANY USE OF THE WORK OTHER THAN AS AUTHORIZED UNDER THIS LICENSE OR COPYRIGHT LAW IS PROHIBITED.
 
-BY EXERCISING ANY RIGHTS TO THE WORK PROVIDED HERE, YOU ACCEPT AND AGREE
-TO BE BOUND BY THE TERMS OF THIS LICENSE. THE LICENSOR GRANTS YOU THE
-RIGHTS CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS
-AND CONDITIONS.
+BY EXERCISING ANY RIGHTS TO THE WORK PROVIDED HERE, YOU ACCEPT AND AGREE TO BE BOUND BY THE TERMS OF THIS LICENSE. THE LICENSOR GRANTS YOU THE RIGHTS CONTAINED HERE IN CONSIDERATION OF YOUR ACCEPTANCE OF SUCH TERMS AND CONDITIONS.
 
 1. Definitions
 
-a. "Collective Work" means a work, such as a periodical issue, anthology
-or encyclopedia, in which the Work in its entirety in unmodified form,
-along with a number of other contributions, constituting separate and
-independent works in themselves, are assembled into a collective whole.
-A work that constitutes a Collective Work will not be considered a
-Derivative Work (as defined below) for the purposes of this License.
+	a. "Collective Work" means a work, such as a periodical issue, anthology or encyclopedia, in which the Work in its entirety in unmodified form, along with a number of other contributions, constituting separate and independent works in themselves, are assembled into a collective whole. A work that constitutes a Collective Work will not be considered a Derivative Work (as defined below) for the purposes of this License.
 
-b. "Derivative Work" means a work based upon the Work or upon the Work
-and other pre-existing works, such as a translation, musical
-arrangement, dramatization, fictionalization, motion picture version,
-sound recording, art reproduction, abridgment, condensation, or any
-other form in which the Work may be recast, transformed, or adapted,
-except that a work that constitutes a Collective Work will not be
-considered a Derivative Work for the purpose of this License. For the
-avoidance of doubt, where the Work is a musical composition or sound
-recording, the synchronization of the Work in timed-relation with a
-moving image ("synching") will be considered a Derivative Work for the
-purpose of this License.
+	b. "Derivative Work" means a work based upon the Work or upon the Work and other pre-existing works, such as a translation, musical arrangement, dramatization, fictionalization, motion picture version, sound recording, art reproduction, abridgment, condensation, or any other form in which the Work may be recast, transformed, or adapted, except that a work that constitutes a Collective Work will not be considered a Derivative Work for the purpose of this License. For the avoidance of doubt, where the Work is a musical composition or sound recording, the synchronization of the Work in timed-relation with a moving image ("synching") will be considered a Derivative Work for the purpose of this License.
 
-c. "Licensor" means the individual or entity that offers the Work under
-the terms of this License.
+	c. "Licensor" means the individual or entity that offers the Work under the terms 	of this License.
 
-d. "Original Author" means the individual or entity who created the
-Work.
+	d. "Original Author" means the individual or entity who created the Work.
 
-e. "Work" means the copyrightable work of authorship offered under the
-terms of this License.
+	e. "Work" means the copyrightable work of authorship offered under the terms of 	this License.
 
-f. "You" means an individual or entity exercising rights under this
-License who has not previously violated the terms of this License with
-respect to the Work, or who has received express permission from the
-Licensor to exercise rights under this License despite a previous
-violation.
+	f. "You" means an individual or entity exercising rights under this License who has 	not previously violated the terms of this License with respect to the Work, or who 	has received express permission from the Licensor to exercise rights under this 	License despite a previous violation.
 
-2. Fair Use Rights. Nothing in this license is intended to reduce,
-limit, or restrict any rights arising from fair use, first sale or other
-limitations on the exclusive rights of the copyright owner under
-copyright law or other applicable laws.
+2. Fair Use Rights. Nothing in this license is intended to reduce, limit, or restrict any rights arising from fair use, first sale or other limitations on the exclusive rights of the copyright owner under copyright law or other applicable laws.
 
-3. License Grant. Subject to the terms and conditions of this License,
-Licensor hereby grants You a worldwide, royalty-free, non-exclusive,
-perpetual (for the duration of the applicable copyright) license to
-exercise the rights in the Work as stated below:
+3. License Grant. Subject to the terms and conditions of this License, Licensor hereby grants You a worldwide, royalty-free, non-exclusive, perpetual (for the duration of the applicable copyright) license to exercise the rights in the Work as stated below:
 
-a. to reproduce the Work, to incorporate the Work into one or more
-Collective Works, and to reproduce the Work as incorporated in the
-Collective Works;
+	a. to reproduce the Work, to incorporate the Work into one or more Collective 		Works, and to reproduce the Work as incorporated in the Collective Works;
+	
+	b. to create and reproduce Derivative Works;
+	
+	c. to distribute copies or phonorecords of, display publicly, perform publicly, and 	perform publicly by means of a digital audio transmission the Work including as 	incorporated in Collective Works;
+	
+	d. to distribute copies or phonorecords of, display publicly, perform publicly, and 	perform publicly by means of a digital audio transmission Derivative Works.
+	
+	e. For the avoidance of doubt, where the work is a musical composition:
 
-b. to create and reproduce Derivative Works;
+		i. Performance Royalties Under Blanket Licenses. Licensor waives the 			exclusive right to collect, whether individually or via a performance 			rights society (e.g. ASCAP, BMI, SESAC), royalties for the public 			performance or public digital performance (e.g. webcast) of the Work.
 
-c. to distribute copies or phonorecords of, display publicly, perform
-publicly, and perform publicly by means of a digital audio transmission
-the Work including as incorporated in Collective Works;
+		ii. Mechanical Rights and Statutory Royalties. Licensor waives the 			exclusive right to collect, whether individually or via a music rights 			agency or designated agent (e.g. Harry Fox Agency), royalties for any 			phonorecord You create from the Work ("cover version") and distribute, 			subject to the compulsory license created by 17 USC Section 115 of the US 		Copyright Act (or the equivalent in other jurisdictions).
+	
+	f. Webcasting Rights and Statutory Royalties. For the avoidance of doubt, where the 	Work is a sound recording, Licensor waives the exclusive right to collect, whether 	individually or via a performance-rights society (e.g. SoundExchange), royalties 	for the public digital performance (e.g. webcast) of the Work, subject to the 		compulsory license created by 17 USC Section 114 of the US Copyright Act (or the 	equivalent in other jurisdictions).
 
-d. to distribute copies or phonorecords of, display publicly, perform
-publicly, and perform publicly by means of a digital audio transmission
-Derivative Works.
+The above rights may be exercised in all media and formats whether now known or hereafter devised. The above rights include the right to make such modifications as are technically necessary to exercise the rights in other media and formats. All rights not expressly granted by Licensor are hereby reserved.
 
-e. For the avoidance of doubt, where the work is a musical composition:
+4. Restrictions.The license granted in Section 3 above is expressly made subject to and limited by the following restrictions:
 
-i. Performance Royalties Under Blanket Licenses. Licensor waives the
-exclusive right to collect, whether individually or via a performance
-rights society (e.g. ASCAP, BMI, SESAC), royalties for the public
-performance or public digital performance (e.g. webcast) of the Work.
+	a. You may distribute, publicly display, publicly perform, or publicly digitally 	perform the Work only under the terms of this License, and You must include a copy 	of, or the Uniform Resource Identifier for, this License with every copy or 		phonorecord of the Work You distribute, publicly display, publicly perform, or 		publicly digitally perform. You may not offer or impose any terms on the Work that 	alter or restrict the terms of this License or the recipients' exercise of the 		rights granted hereunder. You may not sublicense the Work. You must keep intact all 	notices that refer to this License and to the disclaimer of warranties. You may not 	distribute, publicly display, publicly perform, or publicly digitally perform the 	Work with any technological measures that control access or use of the Work in a 	manner inconsistent with the terms of this License Agreement. The above applies to 	the Work as incorporated in a Collective Work, but this does not require the 		Collective Work apart from the Work itself to be made subject to the terms of this 	License. If You create a Collective Work, upon notice from any Licensor You must, 	to the extent practicable, remove from the Collective Work any credit as required 	by clause 4(b), as requested. If You create a Derivative Work, upon notice from any 	Licensor You must, to the extent practicable, remove from the Derivative Work any 	credit as required by clause 4(b), as requested.
 
-ii. Mechanical Rights and Statutory Royalties. Licensor waives the
-exclusive right to collect, whether individually or via a music rights
-agency or designated agent (e.g. Harry Fox Agency), royalties for any
-phonorecord You create from the Work ("cover version") and distribute,
-subject to the compulsory license created by 17 USC Section 115 of the
-US Copyright Act (or the equivalent in other jurisdictions).
-
-f. Webcasting Rights and Statutory Royalties. For the avoidance of
-doubt, where the Work is a sound recording, Licensor waives the
-exclusive right to collect, whether individually or via a
-performance-rights society (e.g. SoundExchange), royalties for the
-public digital performance (e.g. webcast) of the Work, subject to the
-compulsory license created by 17 USC Section 114 of the US Copyright Act
-(or the equivalent in other jurisdictions).
-
-
-The above rights may be exercised in all media and formats whether now
-known or hereafter devised. The above rights include the right to make
-such modifications as are technically necessary to exercise the rights
-in other media and formats. All rights not expressly granted by Licensor
-are hereby reserved.
-
-4. Restrictions. The license granted in Section 3 above is expressly
-made subject to and limited by the following restrictions:
-
-a. You may distribute, publicly display, publicly perform, or publicly
-digitally perform the Work only under the terms of this License, and You
-must include a copy of, or the Uniform Resource Identifier for, this
-License with every copy or phonorecord of the Work You distribute,
-publicly display, publicly perform, or publicly digitally perform. You
-may not offer or impose any terms on the Work that alter or restrict the
-terms of this License or the recipients' exercise of the rights granted
-hereunder. You may not sublicense the Work. You must keep intact all
-notices that refer to this License and to the disclaimer of warranties.
-You may not distribute, publicly display, publicly perform, or publicly
-digitally perform the Work with any technological measures that control
-access or use of the Work in a manner inconsistent with the terms of
-this License Agreement. The above applies to the Work as incorporated in
-a Collective Work, but this does not require the Collective Work apart
-from the Work itself to be made subject to the terms of this License. If
-You create a Collective Work, upon notice from any Licensor You must, to
-the extent practicable, remove from the Collective Work any credit as
-required by clause 4(b), as requested. If You create a Derivative Work,
-upon notice from any Licensor You must, to the extent practicable,
-remove from the Derivative Work any credit as required by clause 4(b),
-as requested.
-
-b. If you distribute, publicly display, publicly perform, or publicly
-digitally perform the Work or any Derivative Works or Collective Works,
-You must keep intact all copyright notices for the Work and provide,
-reasonable to the medium or means You are utilizing: (i) the name of the
-Original Author (or pseudonym, if applicable) if supplied, and/or (ii)
-if the Original Author and/or Licensor designate another party or
-parties (e.g. a sponsor institute, publishing entity, journal) for
-attribution in Licensor's copyright notice, terms of service or by other
-reasonable means, the name of such party or parties; the title of the
-Work if supplied; to the extent reasonably practicable, the Uniform
-Resource Identifier, if any, that Licensor specifies to be associated
-with the Work, unless such URI does not refer to the copyright notice or
-licensing information for the Work; and in the case of a Derivative
-Work, a credit identifying the use of the Work in the Derivative Work
-(e.g., "French translation of the Work by Original Author," or
-"Screenplay based on original Work by Original Author"). Such credit may
-be implemented in any reasonable manner; provided, however, that in the
-case of a Derivative Work or Collective Work, at a minimum such credit
-will appear where any other comparable authorship credit appears and in
-a manner at least as prominent as such other comparable authorship
-credit.
+	b. If you distribute, publicly display, publicly perform, or publicly digitally 	perform the Work or any Derivative Works or Collective Works, You must keep intact 	all copyright notices for the Work and provide, reasonable to the medium or means 	You are utilizing: (i) the name of the Original Author (or pseudonym, if 		applicable) if supplied, and/or (ii) if the Original Author and/or Licensor 		designate another party or parties (e.g. a sponsor institute, publishing entity, 	journal) for attribution in Licensor's copyright notice, terms of service or by 	other reasonable means, the name of such party or parties; the title of the Work if 	supplied; to the extent reasonably practicable, the Uniform Resource Identifier, if 	any, that Licensor specifies to be associated with the Work, unless such URI does 	not refer to the copyright notice or licensing information for the Work; and in the 	case of a Derivative Work, a credit identifying the use of the Work in the 		Derivative Work (e.g., "French translation of the Work by Original Author," or 	"Screenplay based on original Work by Original Author"). Such credit may be 		implemented in any reasonable manner; provided, however, that in the case of a 		Derivative Work or Collective Work, at a minimum such credit will appear where any 	other comparable authorship credit appears and in a manner at least as prominent as 	such other comparable authorship credit.
 
 5. Representations, Warranties and Disclaimer
 
-UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR
-OFFERS THE WORK AS-IS AND MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY
-KIND CONCERNING THE WORK, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE,
-INCLUDING, WITHOUT LIMITATION, WARRANTIES OF TITLE, MERCHANTIBILITY,
-FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF
-LATENT OR OTHER DEFECTS, ACCURACY, OR THE PRESENCE OF ABSENCE OF ERRORS,
-WHETHER OR NOT DISCOVERABLE. SOME JURISDICTIONS DO NOT ALLOW THE
-EXCLUSION OF IMPLIED WARRANTIES, SO SUCH EXCLUSION MAY NOT APPLY TO YOU.
+UNLESS OTHERWISE MUTUALLY AGREED TO BY THE PARTIES IN WRITING, LICENSOR OFFERS THE WORK AS-IS AND MAKES NO REPRESENTATIONS OR WARRANTIES OF ANY KIND CONCERNING THE WORK, EXPRESS, IMPLIED, STATUTORY OR OTHERWISE, INCLUDING, WITHOUT LIMITATION, WARRANTIES OF TITLE, MERCHANTIBILITY, FITNESS FOR A PARTICULAR PURPOSE, NONINFRINGEMENT, OR THE ABSENCE OF LATENT OR OTHER DEFECTS, ACCURACY, OR THE PRESENCE OF ABSENCE OF ERRORS, WHETHER OR NOT DISCOVERABLE. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF IMPLIED WARRANTIES, SO SUCH EXCLUSION MAY NOT APPLY TO YOU.
 
-6. Limitation on Liability. EXCEPT TO THE EXTENT REQUIRED BY APPLICABLE
-LAW, IN NO EVENT WILL LICENSOR BE LIABLE TO YOU ON ANY LEGAL THEORY FOR
-ANY SPECIAL, INCIDENTAL, CONSEQUENTIAL, PUNITIVE OR EXEMPLARY DAMAGES
-ARISING OUT OF THIS LICENSE OR THE USE OF THE WORK, EVEN IF LICENSOR HAS
-BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+6. Limitation on Liability. EXCEPT TO THE EXTENT REQUIRED BY APPLICABLE LAW, IN NO EVENT WILL LICENSOR BE LIABLE TO YOU ON ANY LEGAL THEORY FOR ANY SPECIAL, INCIDENTAL, CONSEQUENTIAL, PUNITIVE OR EXEMPLARY DAMAGES ARISING OUT OF THIS LICENSE OR THE USE OF THE WORK, EVEN IF LICENSOR HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 
 7. Termination
 
-a. This License and the rights granted hereunder will terminate
-automatically upon any breach by You of the terms of this License.
-Individuals or entities who have received Derivative Works or Collective
-Works from You under this License, however, will not have their licenses
-terminated provided such individuals or entities remain in full
-compliance with those licenses. Sections 1, 2, 5, 6, 7, and 8 will
-survive any termination of this License.
+	a. This License and the rights granted hereunder will terminate automatically upon 	any breach by You of the terms of this License. Individuals or entities who have 	received Derivative Works or Collective Works from You under this License, however, 	will not have their licenses terminated provided such individuals or entities 		remain in full compliance with those licenses. Sections 1, 2, 5, 6, 7, and 8 will 	survive any termination of this License.
 
-b. Subject to the above terms and conditions, the license granted here
-is perpetual (for the duration of the applicable copyright in the Work).
-Notwithstanding the above, Licensor reserves the right to release the
-Work under different license terms or to stop distributing the Work at
-any time; provided, however that any such election will not serve to
-withdraw this License (or any other license that has been, or is
-required to be, granted under the terms of this License), and this
-License will continue in full force and effect unless terminated as
-stated above.
+	b. Subject to the above terms and conditions, the license granted here is perpetual 	(for the duration of the applicable copyright in the Work). Notwithstanding the 	above, Licensor reserves the right to release the Work under different license 		terms or to stop distributing the Work at any time; provided, however that any such 	election will not serve to withdraw this License (or any other license that has 	been, or is required to be, granted under the terms of this License), and this 		License will continue in full force and effect unless terminated as stated above.
 
 8. Miscellaneous
 
-a. Each time You distribute or publicly digitally perform the Work or a
-Collective Work, the Licensor offers to the recipient a license to the
-Work on the same terms and conditions as the license granted to You
-under this License.
+	a. Each time You distribute or publicly digitally perform the Work or a Collective 	Work, the Licensor offers to the recipient a license to the Work on the same terms 	and conditions as the license granted to You under this License.
+	
+	b. Each time You distribute or publicly digitally perform a Derivative Work, 		Licensor offers to the recipient a license to the original Work on the same terms 	and conditions as the license granted to You under this License.
+	
+	c. If any provision of this License is invalid or unenforceable under applicable 	law, it shall not affect the validity or enforceability of the remainder of the 	terms of this License, and without further action by the parties to this agreement, 	such provision shall be reformed to the minimum extent necessary to make such 		provision valid and enforceable.
 
-b. Each time You distribute or publicly digitally perform a Derivative
-Work, Licensor offers to the recipient a license to the original Work on
-the same terms and conditions as the license granted to You under this
-License.
+	d. No term or provision of this License shall be deemed waived and no breach 		consented to unless such waiver or consent shall be in writing and signed by the 	party to be charged with such waiver or consent.
 
-c. If any provision of this License is invalid or unenforceable under
-applicable law, it shall not affect the validity or enforceability of
-the remainder of the terms of this License, and without further action
-by the parties to this agreement, such provision shall be reformed to
-the minimum extent necessary to make such provision valid and
-enforceable.
-
-d. No term or provision of this License shall be deemed waived and no
-breach consented to unless such waiver or consent shall be in writing
-and signed by the party to be charged with such waiver or consent.
-
-e. This License constitutes the entire agreement between the parties
-with respect to the Work licensed here. There are no understandings,
-agreements or representations with respect to the Work not specified
-here. Licensor shall not be bound by any additional provisions that may
-appear in any communication from You. This License may not be modified
-without the mutual written agreement of the Licensor and You.
+	e. This License constitutes the entire agreement between the parties with respect 	to the Work licensed here. There are no understandings, agreements or 			representations with respect to the Work not specified here. Licensor shall not be 	bound by any additional provisions that may appear in any communication from You. 	This License may not be modified without the mutual written agreement of the 		Licensor and You.
 
 
-Creative Commons is not a party to this License, and makes no warranty
-whatsoever in connection with the Work. Creative Commons will not be
-liable to You or any party on any legal theory for any damages
-whatsoever, including without limitation any general, special,
-incidental or consequential damages arising in connection to this
-license. Notwithstanding the foregoing two (2) sentences, if Creative
-Commons has expressly identified itself as the Licensor hereunder, it
-shall have all rights and obligations of Licensor.
+Creative Commons is not a party to this License, and makes no warranty whatsoever in connection with the Work. Creative Commons will not be liable to You or any party on any legal theory for any damages whatsoever, including without limitation any general, special, incidental or consequential damages arising in connection to this license. Notwithstanding the foregoing two (2) sentences, if Creative Commons has expressly identified itself as the Licensor hereunder, it shall have all rights and obligations of Licensor.
 
-Except for the limited purpose of indicating to the public that the Work
-is licensed under the CCPL, neither party will use the trademark
-"Creative Commons" or any related trademark or logo of Creative Commons
-without the prior written consent of Creative Commons. Any permitted use
-will be in compliance with Creative Commons' then-current trademark
-usage guidelines, as may be published on its website or otherwise made
-available upon request from time to time.
+Except for the limited purpose of indicating to the public that the Work is licensed under the CCPL, neither party will use the trademark "Creative Commons" or any related trademark or logo of Creative Commons without the prior written consent of Creative Commons. Any permitted use will be in compliance with Creative Commons' then-current trademark usage guidelines, as may be published on its website or otherwise made available upon request from time to time.
 
-Creative Commons may be contacted at http://creativecommons.org/. 
+Creative Commons may be contacted at http://creativecommons.org/.
 
 
-===========================================================================
+================================================
 
 To the extent any open source components are licensed under the
 GPL and/or LGPL, or other similar licenses that require the
@@ -3609,14 +3844,10 @@ available (as would be noted above), you may obtain a copy of
 the source code corresponding to the binaries for such open
 source components and modifications thereto, if any, (the
 "Source Files"), by downloading the Source Files from VMware's website at
-http://www.vmware.com/download/open_source.html, or by sending a request, with
-your name and address to: VMware, Inc., 3401 Hillview Avenue,
-Palo Alto, CA 94304,United States of America. All such
-requests should clearly specify: OPEN SOURCE FILES REQUEST,
-Attention General Counsel. VMware shall mail a copy of the
+http://www.vmware.com/download/open_source.html, or by sending a request, with your name and address to: GoPivotal, Inc., 1900 S. Norfolk Street #125, San Mateo, CA 94403, Attention: General Counsel. All such requests should clearly specify: OPEN SOURCE FILES REQUEST,
+Attention General Counsel. GoPivotal shall mail a copy of the
 Source Files to you on a CD or equivalent physical medium. This
 offer to obtain a copy of the Source Files is valid for three
-years from the date you acquired this Software product. Alternatively,
-the Source Files may accompany the VMware product.
+years from the date you acquired this Software product. Alternatively, the Source Files may accompany the GoPivotal product.
 
-[GRAILS220SV092512]
+[GRAILS230GADS082813]
