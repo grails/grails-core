@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
@@ -220,14 +221,9 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     protected Class getDomainClassType(obj, String propName) {
         def domainClassType
         def objClass = obj.getClass()
-        if (grailsApplication) {
-            def domainClass = (GrailsDomainClass)grailsApplication.getArtefact('Domain', objClass.name)
-            if (domainClass) {
-                def prop = domainClass.getPersistentProperty(propName)
-                if (prop && isDomainClass(prop.type)) {
-                    domainClassType = prop.type
-                }
-            }
+        def propertyType = GrailsClassUtils.getPropertyType(objClass, propName)
+        if(propertyType && isDomainClass(propertyType)) {
+            domainClassType = propertyType
         }
         domainClassType
     }

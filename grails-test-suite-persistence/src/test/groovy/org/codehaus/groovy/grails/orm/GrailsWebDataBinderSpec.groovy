@@ -188,6 +188,30 @@ class GrailsWebDataBinderSpec extends Specification {
         listOfWidgets[1].isBindable == 'Is Tres (List)'
         listOfWidgets[1].isNotBindable == null
     }
+    
+    void 'Test binding null id to a domain class reference in a non-domain class'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def nonDomainClass = new SomeNonDomainClass()
+        
+        when:
+        binder.bind nonDomainClass, [publication:[id: null]] as SimpleMapDataBindingSource
+        
+        then:
+        nonDomainClass.publication == null
+        
+        when:
+        binder.bind nonDomainClass, [publication:[id: 'null']] as SimpleMapDataBindingSource
+        
+        then:
+        nonDomainClass.publication == null
+        
+        when:
+        binder.bind nonDomainClass, [publication:[id: '']] as SimpleMapDataBindingSource
+        
+        then:
+        nonDomainClass.publication == null
+    }
 
     void 'Test id binding'() {
         given:
@@ -893,6 +917,10 @@ class Publisher {
     String name
     static hasMany = [publications: Publication, authors: Author]
     List publications
+}
+
+class SomeNonDomainClass {
+    Publication publication
 }
 
 @Entity
