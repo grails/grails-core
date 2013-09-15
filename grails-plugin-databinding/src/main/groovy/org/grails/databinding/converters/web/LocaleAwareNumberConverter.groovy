@@ -19,33 +19,54 @@ import groovy.transform.CompileStatic
 
 import java.text.NumberFormat
 
+import javax.servlet.http.HttpServletRequest
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.databinding.converters.ValueConverter
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.web.servlet.LocaleResolver
+
 
 /**
  * A ValueConverter that knows how to convert a String to any numeric type and is Locale aware.  The
  * converter will use the Locale of the current request if being invoked as part of a
  * request, otherwise will use Locale.getDefault()
- *
+ * 
  * @author Jeff Brown
  * @since 2.3
+ *
  */
 @CompileStatic
 class LocaleAwareNumberConverter implements ValueConverter {
 
     Class<?> targetType
+    
+    @Autowired(required=false)
+    LocaleResolver localeResolver
 
-    boolean canConvert(value) {
+    @Override
+    public boolean canConvert(Object value) {
         value instanceof String
     }
 
-    Object convert(value) {
+    @Override
+    public Object convert(Object value) {
         numberFormatter.parse((String)value).asType(getTargetType())
     }
 
     protected NumberFormat getNumberFormatter() {
-        def request = GrailsWebRequest.lookup()
-        def locale = request ? request.getLocale() : Locale.getDefault()
-        NumberFormat.getInstance(locale)
+        NumberFormat.getInstance(getLocale())
+    }
+
+    protected Locale getLocale() {
+        def locale
+        def request = GrailsWebRequest.lookup()?.currentRequest
+        if(request instanceof HttpServletRequest) {
+            locale = localeResolver?.resolveLocale(request)
+        }
+        if(locale == null) {
+            locale = Locale.default
+        }
+        return locale
     }
 }
