@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.plugins.support.WatchPattern;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.groovy.RuntimeSpringConfiguration;
 import org.springframework.core.io.Resource;
 import org.springframework.core.type.filter.TypeFilter;
 import org.w3c.dom.Element;

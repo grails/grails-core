@@ -15,9 +15,9 @@
  */
 package grails.spring;
 
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.groovy.DefaultRuntimeSpringConfiguration;
+import org.springframework.context.groovy.GroovyBeanDefinitionReader;
 
 /**
  * Extended version of the BeanBuilder class that provides support for constructing WebApplicationContext instances
@@ -25,7 +25,7 @@ import org.springframework.context.ApplicationContext;
  * @author Graeme Rocher
  * @since 1.0
  */
-public class WebBeanBuilder extends BeanBuilder {
+public class WebBeanBuilder extends GroovyBeanDefinitionReader {
 
     public WebBeanBuilder() {
         super();
@@ -44,7 +44,7 @@ public class WebBeanBuilder extends BeanBuilder {
     }
 
     @Override
-    protected RuntimeSpringConfiguration createRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader classLoader) {
-        return new WebRuntimeSpringConfiguration(parent, classLoader);
+    protected org.springframework.context.groovy.RuntimeSpringConfiguration createRuntimeSpringConfiguration(ApplicationContext parent, ClassLoader classLoader) {
+        return new DefaultRuntimeSpringConfiguration(parent, classLoader);
     }
 }

@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.commons.cfg
 
-import grails.spring.BeanBuilder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.springframework.context.groovy.GroovyBeanDefinitionReader
+
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -14,7 +15,7 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
         when:"A bean is defined with a placeholder"
             def application = new DefaultGrailsApplication()
             application.config.foo.bar="test"
-            def bb = new BeanBuilder()
+            def bb = new GroovyBeanDefinitionReader()
             bb.beans {
                 addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer(application))
                 testBean(TestBean) {
@@ -34,7 +35,7 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
         def application = new DefaultGrailsApplication()
         application.config.bar.foo="test"
         application.config.more.stuff='another ${place.holder}'
-        def bb = new BeanBuilder()
+        def bb = new GroovyBeanDefinitionReader()
         bb.beans {
             addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer(application))
             testBean(TestBean) {
@@ -54,7 +55,7 @@ class GrailsPlaceholderConfigurerSpec extends Specification {
         application.config.foo.bar="test"
         application.config.grails.spring.placeholder.prefix='£{'
         application.setConfig(application.config)
-        def bb = new BeanBuilder()
+        def bb = new GroovyBeanDefinitionReader()
         bb.beans {
             addBeanFactoryPostProcessor(new GrailsPlaceholderConfigurer(application))
             testBean(TestBean) {

@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.orm.support
 
-import grails.spring.BeanBuilder
-
+import org.springframework.context.groovy.GroovyBeanDefinitionReader
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.PlatformTransactionManager
@@ -13,7 +12,7 @@ import org.springframework.transaction.PlatformTransactionManager
 class TransactionManagerPostProcessorTests extends GroovyTestCase{
 
     void testTransactionManagerPostProccessor() {
-        def bb = new BeanBuilder()
+        def bb = new GroovyBeanDefinitionReader()
 
         bb.beans {
             myBean(MyBean) { bean ->

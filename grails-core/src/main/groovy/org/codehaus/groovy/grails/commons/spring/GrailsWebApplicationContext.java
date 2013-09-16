@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons.spring;
 
-import grails.spring.BeanBuilder;
+import java.io.IOException;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
@@ -26,6 +26,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.groovy.GroovyBeanDefinitionReader;
 import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -157,10 +158,14 @@ public class GrailsWebApplicationContext extends GrailsApplicationContext
     protected void prepareBeanFactory(ConfigurableListableBeanFactory beanFactory) {
         if (configLocations.length > 0) {
             for (String configLocation : configLocations) {
-                BeanBuilder beanBuilder = new BeanBuilder(getParent(),getClassLoader());
-                final ServletContextResource resource = new ServletContextResource(getServletContext(), configLocation);
-                beanBuilder.loadBeans(resource);
-                beanBuilder.registerBeans(this);
+                try {
+                    GroovyBeanDefinitionReader beanBuilder = new GroovyBeanDefinitionReader(getParent(),getClassLoader());
+                    final ServletContextResource resource = new ServletContextResource(getServletContext(), configLocation);
+                    beanBuilder.loadBeans(resource);
+                    beanBuilder.registerBeans(this);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         super.prepareBeanFactory(beanFactory);

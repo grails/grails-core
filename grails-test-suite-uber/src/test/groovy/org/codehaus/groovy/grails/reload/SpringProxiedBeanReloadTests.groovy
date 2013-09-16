@@ -1,9 +1,9 @@
 package org.codehaus.groovy.grails.reload
 
-import grails.spring.BeanBuilder
-import org.springframework.aop.framework.ProxyFactoryBean
 import org.aopalliance.intercept.MethodInterceptor
 import org.aopalliance.intercept.MethodInvocation
+import org.springframework.aop.framework.ProxyFactoryBean
+import org.springframework.context.groovy.GroovyBeanDefinitionReader
 
 /**
  * @author Graeme Rocher
@@ -15,7 +15,7 @@ class SpringProxiedBeanReloadTests extends GroovyTestCase {
         def gcl = new GroovyClassLoader()
         def cls = gcl.parseClass("class Book { String title = 'The Stand'; String author }")
 
-        def bb = new BeanBuilder(gcl)
+        def bb = new GroovyBeanDefinitionReader(gcl)
         bb.beans {
             interceptor(DummyInterceptor)
             target(cls) {
@@ -36,7 +36,7 @@ class SpringProxiedBeanReloadTests extends GroovyTestCase {
         gcl = new GroovyClassLoader()
         cls = gcl.parseClass("class Book { String title = 'The Shining'; String author }")
 
-        bb = new BeanBuilder(gcl)
+        bb = new GroovyBeanDefinitionReader(gcl)
         bb.beans {
             interceptor(DummyInterceptor)
             target(cls) {
