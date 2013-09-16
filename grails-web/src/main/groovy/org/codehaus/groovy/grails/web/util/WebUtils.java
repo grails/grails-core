@@ -304,7 +304,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
-        exposeForwardRequestAttributes(request);
+//        exposeForwardRequestAttributes(request);
         exposeRequestAttributes(request, model);
 
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);

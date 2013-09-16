@@ -48,7 +48,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.util.ExpressionEvaluationUtils;
+//import org.springframework.web.util.ExpressionEvaluationUtils;
 
 /**
  * A tag that invokes a tag defined in a the Grails dynamic tag library. Authors of Grails tags
@@ -112,9 +112,9 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                         while (m.find()) {
                             String attributeName = m.group(1);
                             String attributeValue = m.group(2);
-                            if (ExpressionEvaluationUtils.isExpressionLanguage(attributeValue)) {
-                                attributeMap.put(attributeName, ExpressionEvaluationUtils.evaluate(
-                                        attributeName, attributeValue, Object.class, pageContext));
+                            if (false /*ExpressionEvaluationUtils.isExpressionLanguage(attributeValue)*/) {
+//                                attributeMap.put(attributeName, ExpressionEvaluationUtils.evaluate(
+//                                        attributeName, attributeValue, Object.class, pageContext));
                             }
                             else {
                                 attributeMap.put(attributeName, attributeValue);
@@ -123,9 +123,9 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                         attributes.put(pd.getName(), attributeMap);
                     }
                     else {
-                        if (ExpressionEvaluationUtils.isExpressionLanguage(propertyValue)) {
-                            attributes.put(pd.getName(), ExpressionEvaluationUtils.evaluate(
-                                    pd.getName(), propertyValue, Object.class, pageContext));
+                        if (false /*ExpressionEvaluationUtils.isExpressionLanguage(propertyValue)*/) {
+//                            attributes.put(pd.getName(), ExpressionEvaluationUtils.evaluate(
+//                                    pd.getName(), propertyValue, Object.class, pageContext));
                         }
                         else {
                             attributes.put(pd.getName(), propertyValue);
@@ -339,9 +339,9 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                 while (m.find()) {
                     String attributeName = m.group(1);
                     String attributeValue = m.group(2);
-                    if (ExpressionEvaluationUtils.isExpressionLanguage(attributeValue)) {
-                        attributeMap.put(attributeName, ExpressionEvaluationUtils.evaluate(
-                                attributeName, attributeValue, Object.class, pageContext));
+                    if (false /*ExpressionEvaluationUtils.isExpressionLanguage(attributeValue)*/) {
+//                        attributeMap.put(attributeName, ExpressionEvaluationUtils.evaluate(
+//                                attributeName, attributeValue, Object.class, pageContext));
                     }
                     else {
                         attributeMap.put(attributeName, attributeValue);
@@ -350,8 +350,8 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                 attributes.put(localName, attributeMap);
             }
             else {
-                if (ExpressionEvaluationUtils.isExpressionLanguage(stringValue)) {
-                    attributes.put(localName,ExpressionEvaluationUtils.evaluate(localName,stringValue,Object.class,pageContext));
+                if (false /*ExpressionEvaluationUtils.isExpressionLanguage(stringValue)*/) {
+//                    attributes.put(localName,ExpressionEvaluationUtils.evaluate(localName,stringValue,Object.class,pageContext));
                 }
                 else {
                     attributes.put(localName,value);
