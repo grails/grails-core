@@ -21,7 +21,6 @@ import org.codehaus.groovy.grails.web.taglib.RenderInputTag;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.web.servlet.tags.RequestContextAwareTag;
-//import org.springframework.web.util.ExpressionEvaluationUtils;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;
@@ -50,14 +49,14 @@ public class JspRenderInputTag extends RequestContextAwareTag {
         if (StringUtils.isBlank(bean)) {
             throw new JspTagException("Tag [renderInput] missing required attribute [bean]");
         }
-        if (false /*!ExpressionEvaluationUtils.isExpressionLanguage(bean)*/) {
+        if (!ExpressionEvaluationUtils.isExpressionLanguage(bean)) {
             throw new JspTagException("Attribute [bean] of tag [renderInput] must be a JSTL expression");
         }
 
         @SuppressWarnings("unused")
         Writer out = pageContext.getOut();
         try {
-            Object beanInstance = null; //ExpressionEvaluationUtils.evaluate("bean", bean, Object.class, pageContext);
+            Object beanInstance = ExpressionEvaluationUtils.evaluate("bean", bean, Object.class, pageContext);
             if (beanInstance == null) {
                 throw new JspTagException("Bean [" + bean + "] referenced by tag [renderInput] cannot be null");
             }
