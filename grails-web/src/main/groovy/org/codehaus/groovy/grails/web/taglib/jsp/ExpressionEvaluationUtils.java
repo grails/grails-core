@@ -20,7 +20,7 @@ import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.PageContext;
 import javax.servlet.jsp.el.ELException;
 
-import org.spockframework.util.Assert;
+import org.springframework.util.Assert;
 
 /**
  * IMPORTANT: This source code has been copied from org.springframework.web.util.ExpressionEvaluationUtils
