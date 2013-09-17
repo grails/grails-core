@@ -19,7 +19,6 @@ import javax.servlet.ServletContext;
 
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.groovy.DefaultRuntimeSpringConfiguration;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.web.context.ConfigurableWebApplicationContext;

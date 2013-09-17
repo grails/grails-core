@@ -1,9 +1,8 @@
 package org.codehaus.groovy.grails.commons.cfg
 
+import grails.spring.BeanBuilder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
-import org.springframework.context.groovy.GroovyBeanDefinitionReader
-
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -15,11 +14,11 @@ class GrailsPlaceHolderConfigurerCorePluginRuntimeSpec extends Specification{
     @Issue('GRAILS-10130')
     void "Test that system properties are used to replace values at runtime with GrailsPlaceHolderConfigurer"() {
         given:"A configured application context"
-            def parent = new GroovyBeanDefinitionReader()
+            def parent = new BeanBuilder()
             parent.beans {
                 grailsApplication(DefaultGrailsApplication)
             }
-            def bb = new GroovyBeanDefinitionReader(parent.createApplicationContext())
+            def bb = new BeanBuilder(parent.createApplicationContext())
 
             final beanBinding = new Binding()
             beanBinding.setVariable('application', new DefaultGrailsApplication())

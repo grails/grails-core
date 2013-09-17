@@ -15,15 +15,13 @@
  */
 package org.codehaus.groovy.grails.project.loader
 
+import grails.spring.BeanBuilder
 import grails.spring.WebBeanBuilder
 import grails.util.BuildSettings
 import grails.util.Holders
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-
-import javax.servlet.ServletContext
-
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.jndi.JndiBindingSupport
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
@@ -41,9 +39,10 @@ import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
 import org.codehaus.groovy.grails.support.CommandLineResourceLoader
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
-import org.springframework.context.groovy.GroovyBeanDefinitionReader
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
+
+import javax.servlet.ServletContext
 
 /**
  * Capable of bootstrapping a Grails project and returning the loaded ApplicationContext
@@ -82,7 +81,7 @@ class GrailsProjectLoader extends BaseSettingsApi{
     @CompileStatic
     GrailsApplication loadApplication() {
         buildEventListener.triggerEvent("AppLoadStart", ["Loading Grails Application"])
-        GroovyBeanDefinitionReader beanDefinitions
+        BeanBuilder beanDefinitions
         profile("Loading parent ApplicationContext") {
             def builder = parentContext ? new WebBeanBuilder(parentContext) :  new WebBeanBuilder()
             beanDefinitions = defineParentBeans(builder)
@@ -165,7 +164,7 @@ class GrailsProjectLoader extends BaseSettingsApi{
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected GroovyBeanDefinitionReader defineParentBeans(WebBeanBuilder builder) {
+    protected BeanBuilder defineParentBeans(WebBeanBuilder builder) {
         builder.beans {
             grailsApplication(DefaultGrailsApplication, pluginSettings.getArtefactResourcesForCurrentEnvironment())
         }

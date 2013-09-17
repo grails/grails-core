@@ -15,13 +15,13 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import java.io.File;
-
+import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration;
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.groovy.DefaultRuntimeSpringConfiguration;
-import org.springframework.context.groovy.RuntimeSpringConfiguration;
+
+import java.io.File;
 
 /**
  * Test for the DefaultGrailsPlugin class

@@ -1,10 +1,9 @@
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.spring.BeanBuilder
 import grails.util.GrailsWebUtil
-
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
-import org.springframework.context.groovy.GroovyBeanDefinitionReader
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
 class ControllersGrailsPluginTests extends AbstractGrailsPluginTests {
@@ -124,7 +123,7 @@ class FormTagLib {
             def mock = [application: [flatConfig: new ConfigObject(), config: new ConfigObject(), warDeployed: false], manager:mockManager]
             def plugin = new GroovyPagesGrailsPlugin()
             def beans = plugin.doWithSpring
-            def bb = new GroovyBeanDefinitionReader()
+            def bb = new BeanBuilder()
             bb.setBinding(new Binding(mock))
             bb.beans(beans)
             def beanDef = bb.getBeanDefinition('groovyPageResourceLoader')
@@ -148,7 +147,7 @@ class FormTagLib {
             def mock = [application: [config: new ConfigObject(), warDeployed: true],manager:mockManager]
             def plugin = new ControllersGrailsPlugin()
             def beans = plugin.doWithSpring
-            def bb = new GroovyBeanDefinitionReader()
+            def bb = new BeanBuilder()
             bb.setBinding(new Binding(mock))
             bb.beans(beans)
             assertNull bb.getBeanDefinition('groovyPageResourceLoader')
