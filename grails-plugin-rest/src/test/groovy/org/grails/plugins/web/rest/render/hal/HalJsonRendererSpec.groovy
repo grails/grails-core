@@ -16,6 +16,7 @@
 
 package org.grails.plugins.web.rest.render.hal
 
+import grails.rest.render.hal.HalJsonCollectionRenderer
 import spock.lang.Specification
 import grails.rest.render.hal.HalJsonRenderer
 import org.springframework.context.support.StaticMessageSource
@@ -81,6 +82,61 @@ class HalJsonRendererSpec extends Specification{
 
     }
 
+    @Issue('GRAILS-10499')
+    void "Test that the HAL rendered renders JSON values correctly for collection" () {
+        given: "A HAL Collection renderer"
+            HalJsonCollectionRenderer renderer = getCollectionRenderer()
+            renderer.prettyPrint = true
+
+        when: "A collection of domian objects is rendered"
+            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
+            def response = webRequest.response
+            def renderContext = new ServletRenderContext(webRequest)
+            def products = [
+                new Product(name: "MacBook", numberInStock: 10, category:  new Category(name: 'Laptops'))
+            ]
+            renderer.render(products, renderContext)
+
+        then:"The resulting HAL is correct"
+            response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name,
+                    GrailsWebUtil.DEFAULT_ENCODING)
+            response.contentAsString == '''{
+  "_links": {
+    "self": {
+      "href": "http://localhost/product/Macbook",
+      "hreflang": "en",
+      "type": "application/hal+json"
+    }
+  },
+  "_embedded": [
+    {
+      "_links": {
+        "self": {
+          "href": "http://localhost/products",
+          "hreflang": "en",
+          "type": "application/hal+json"
+        }
+      },
+      "name": "MacBook",
+      "numberInStock": 10,
+      "_embedded": {
+        "category": {
+          "_links": {
+            "self": {
+              "href": "http://localhost/category/index",
+              "hreflang": "en"
+            }
+          },
+          "name": "Laptops"
+        }
+      }
+    }
+  ]
+}'''
+
+    }
+
     @Issue('GRAILS-10372')
     void "Test that the HAL renderer renders JSON values correctly for simple POGOs"() {
         given:"A HAL renderer"
@@ -112,6 +168,16 @@ class HalJsonRendererSpec extends Specification{
   "numberInStock": 10
 }'''
 
+    }
+
+    protected HalJsonCollectionRenderer getCollectionRenderer() {
+        def renderer = new HalJsonCollectionRenderer(Product)
+        renderer.mappingContext = mappingContext
+        renderer.messageSource = new StaticMessageSource()
+        renderer.linkGenerator = getLinkGenerator {
+            "/products"(resources: "product")
+        }
+        renderer
     }
 
     protected HalJsonRenderer getRenderer() {
