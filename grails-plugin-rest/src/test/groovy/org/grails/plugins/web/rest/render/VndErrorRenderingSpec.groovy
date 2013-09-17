@@ -101,7 +101,7 @@ class VndErrorRenderingSpec extends Specification{
 
             then:"The response is correct"
             request.response.contentType == GrailsWebUtil.getContentType(VndErrorJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-            request.response.contentAsString == '[{"logref":"\\"book.title.invalid.1\\"","message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"\\"book.title.bad.1\\"","message":"Title Bad","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
+            request.response.contentAsString == '[{"logref":"book.title.invalid.1","message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"book.title.bad.1","message":"Title Bad","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
 
     }
 
