@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import grails.spring.BeanBuilder;
 import grails.util.BuildScope;
 import grails.util.CollectionUtils;
 import grails.util.Environment;
@@ -46,7 +45,6 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.core.io.SpringResource;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
@@ -59,6 +57,8 @@ import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.groovy.GroovyBeanDefinitionReader;
+import org.springframework.context.groovy.RuntimeSpringConfiguration;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -472,8 +472,8 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         return application.getParentContext();
     }
 
-    public BeanBuilder beans(Closure closure) {
-        BeanBuilder bb = new BeanBuilder(getParentCtx(), new GroovyClassLoader(application.getClassLoader()));
+    public GroovyBeanDefinitionReader beans(Closure closure) {
+        GroovyBeanDefinitionReader bb = new GroovyBeanDefinitionReader(getParentCtx(), new GroovyClassLoader(application.getClassLoader()));
         bb.invokeMethod("beans", new Object[]{closure});
         return bb;
     }
@@ -499,7 +499,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
 
         Closure c = (Closure)plugin.getProperty(DO_WITH_SPRING);
-        BeanBuilder bb = new BeanBuilder(getParentCtx(),springConfig, application.getClassLoader());
+        GroovyBeanDefinitionReader bb = new GroovyBeanDefinitionReader(getParentCtx(),springConfig, application.getClassLoader());
         Binding b = new Binding();
         b.setVariable("application", application);
         b.setVariable("manager", getManager());

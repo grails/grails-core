@@ -16,7 +16,6 @@
 package grails.test.mixin.support
 
 import grails.async.Promises
-import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
 import grails.util.Holders
@@ -50,6 +49,7 @@ import org.junit.BeforeClass
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.MessageSource
+import org.springframework.context.groovy.GroovyBeanDefinitionReader
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
@@ -80,7 +80,7 @@ class GrailsUnitTestMixin {
 
     @CompileStatic
     static void defineBeans(Closure callable) {
-        def bb = new BeanBuilder()
+        def bb = new GroovyBeanDefinitionReader()
         def binding = new Binding()
         binding.setVariable "application", grailsApplication
         bb.setBinding binding

@@ -21,7 +21,6 @@ import org.codehaus.groovy.grails.web.taglib.RenderInputTag;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.springframework.beans.InvalidPropertyException;
 import org.springframework.web.servlet.tags.RequestContextAwareTag;
-import org.springframework.web.util.ExpressionEvaluationUtils;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;

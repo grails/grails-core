@@ -38,6 +38,9 @@ dependencies {
     compile("org.springframework:spring-expression:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
+    compile("org.springframework:spring-lang-groovy:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
 
     compile("org.springframework:spring-test:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'

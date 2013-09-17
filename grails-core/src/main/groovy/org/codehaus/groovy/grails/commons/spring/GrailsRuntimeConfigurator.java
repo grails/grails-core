@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.commons.spring;
 
-import grails.spring.BeanBuilder;
 import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.Holders;
@@ -42,6 +41,9 @@ import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.groovy.DefaultRuntimeSpringConfiguration;
+import org.springframework.context.groovy.GroovyBeanDefinitionReader;
+import org.springframework.context.groovy.RuntimeSpringConfiguration;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -309,7 +311,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         GrailsRuntimeConfigurator.loadSpringGroovyResources(springConfig, app);
     }
 
-    private static volatile BeanBuilder springGroovyResourcesBeanBuilder = null;
+    private static volatile GroovyBeanDefinitionReader springGroovyResourcesBeanBuilder = null;
 
     /**
      * Attempt to load the beans defined by a BeanBuilder DSL closure in "resources.groovy".
@@ -356,8 +358,8 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         }
     }
 
-    public static BeanBuilder reloadSpringResourcesConfig(RuntimeSpringConfiguration config, GrailsApplication application, Class<?> groovySpringResourcesClass) throws InstantiationException, IllegalAccessException {
-        springGroovyResourcesBeanBuilder = new BeanBuilder(null, config,Thread.currentThread().getContextClassLoader());
+    public static GroovyBeanDefinitionReader reloadSpringResourcesConfig(RuntimeSpringConfiguration config, GrailsApplication application, Class<?> groovySpringResourcesClass) throws InstantiationException, IllegalAccessException {
+        springGroovyResourcesBeanBuilder = new GroovyBeanDefinitionReader(null, config,Thread.currentThread().getContextClassLoader());
         springGroovyResourcesBeanBuilder.setBinding(new Binding(CollectionUtils.newMap(
                 "application", application,
                 "grailsApplication", application))); // GRAILS-7550

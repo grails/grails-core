@@ -25,8 +25,8 @@ import org.springframework.web.context.ContextLoaderListener;
  */
 public class GrailsContextLoaderListener extends ContextLoaderListener {
 
-    @Override
-    protected ContextLoader createContextLoader() {
-        return new GrailsContextLoader();
-    }
+//    @Override
+//    protected ContextLoader createContextLoader() {
+//        return new GrailsContextLoader();
+//    }
 }

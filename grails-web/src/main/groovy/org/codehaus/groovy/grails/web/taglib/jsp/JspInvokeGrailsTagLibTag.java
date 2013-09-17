@@ -48,7 +48,6 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.ApplicationContext;
-import org.springframework.web.util.ExpressionEvaluationUtils;
 
 /**
  * A tag that invokes a tag defined in a the Grails dynamic tag library. Authors of Grails tags
@@ -65,7 +64,6 @@ import org.springframework.web.util.ExpressionEvaluationUtils;
  * @since 16-Jan-2006
  */
 public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicAttributes {
-
     private static final long serialVersionUID = 4688821761801666631L;
     private static final String ZERO_ARGUMENTS = "zeroArgumentsFlag";
     private static final String GROOVY_DEFAULT_ARGUMENT = "it";

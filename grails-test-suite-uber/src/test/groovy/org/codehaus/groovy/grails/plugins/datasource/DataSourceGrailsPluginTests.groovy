@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.plugins.datasource
 
-import grails.spring.BeanBuilder
 import grails.util.Holders
 import groovy.sql.Sql
 
@@ -9,6 +8,7 @@ import javax.sql.DataSource
 import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.springframework.context.groovy.GroovyBeanDefinitionReader
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
@@ -466,8 +466,8 @@ class DataSourceGrailsPluginTests extends AbstractGrailsMockTests {
         configurator.configure(ctx.getServletContext())
     }
 
-    private BeanBuilder createBeanBuilder(config) {
-        def bb = new BeanBuilder(binding: new Binding([application: [config: config]]))
+    private GroovyBeanDefinitionReader createBeanBuilder(config) {
+        def bb = new GroovyBeanDefinitionReader(binding: new Binding([application: [config: config]]))
         bb.beans new DataSourceGrailsPlugin().doWithSpring
         bb
     }
