@@ -82,6 +82,7 @@ class HalJsonRendererSpec extends Specification{
 
     }
 
+    @Issue('GRAILS-10499')
     void "Test that the HAL rendered renders JSON values correctly for collection" () {
         given: "A HAL Collection renderer"
             HalJsonCollectionRenderer renderer = getCollectionRenderer()
