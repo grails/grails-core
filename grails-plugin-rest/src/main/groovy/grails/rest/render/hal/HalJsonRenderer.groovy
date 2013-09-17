@@ -116,6 +116,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                     }
                 }
                 writer.endArray()
+                writer.endObject()
 
             } else {
                 beginLinks(writer)
