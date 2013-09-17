@@ -364,7 +364,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         // Call RequestDataValueProcessor to modify url if necessary
         def link = createLink(linkAttrs)
         if (requestDataValueProcessor != null) {
-            link= requestDataValueProcessor.processAction(request, link)
+            link= requestDataValueProcessor.processAction(request, link, request.method)
         }
 
         writer << link
