@@ -142,7 +142,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     private static final String ACTION_MEMBER_TARGET = "commandObjects";
     public static final String EXCEPTION_HANDLER_META_DATA_FIELD_NAME = "$exceptionHandlerMetaData";
 
-    private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final VariableExpression PARAMS_EXPRESSION = new VariableExpression("params");
 
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
@@ -371,7 +370,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         }
 
         MethodCallExpression callExpression = new MethodCallExpression(
-                THIS_EXPRESSION, methodNode.getName(), arguments);
+                new VariableExpression("this"), methodNode.getName(), arguments);
         callExpression.setMethodTarget(methodNode);
 
         blockStatement.addStatement(new ReturnStatement(callExpression));
@@ -476,13 +475,14 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final String caughtExceptionArgumentName = "$caughtException";
         final Expression caughtExceptionVariableExpression = new VariableExpression(caughtExceptionArgumentName);
         final Expression caughtExceptionTypeExpression = new PropertyExpression(caughtExceptionVariableExpression, "class");
-        final Expression getExceptionHandlerMethodCall = new MethodCallExpression(THIS_EXPRESSION, "getExceptionHandlerMethodFor", caughtExceptionTypeExpression);
+        final Expression thisExpression = new VariableExpression("this");
+        final Expression getExceptionHandlerMethodCall = new MethodCallExpression(thisExpression, "getExceptionHandlerMethodFor", caughtExceptionTypeExpression);
 
         final String exceptionHandlerMethodVariableName = "$method";
         final Expression declareExceptionHandlerMethod = new DeclarationExpression(
                 new VariableExpression(exceptionHandlerMethodVariableName, new ClassNode(Method.class)), Token.newSymbol(Types.EQUALS, 0, 0), getExceptionHandlerMethodCall);
         final ArgumentListExpression invokeArguments = new ArgumentListExpression();
-        invokeArguments.addExpression(THIS_EXPRESSION);
+        invokeArguments.addExpression(thisExpression);
         invokeArguments.addExpression(caughtExceptionVariableExpression);
         final Expression invokeExceptionHandlerMethodExpression = new MethodCallExpression(new VariableExpression(exceptionHandlerMethodVariableName), "invoke", invokeArguments);
         final Statement returnStatement = new ReturnStatement(invokeExceptionHandlerMethodExpression);
@@ -647,7 +647,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 new VariableExpression(paramName, commandObjectNode), Token.newSymbol(Types.EQUALS, 0, 0), new EmptyExpression());
         wrapper.addStatement(new ExpressionStatement(declareCoExpression));
         final BlockStatement tryBlock = new BlockStatement();
-        final Expression initializeCommandObjectMethodCall = new MethodCallExpression(THIS_EXPRESSION, "initializeCommandObject", new ClassExpression(commandObjectNode));
+        final Expression initializeCommandObjectMethodCall = new MethodCallExpression(new VariableExpression("this"), "initializeCommandObject", new ClassExpression(commandObjectNode));
         final Expression assignCommandObjectToParameter = new BinaryExpression(new VariableExpression(paramName), Token.newSymbol(Types.EQUALS, 0, 0), initializeCommandObjectMethodCall);
         tryBlock.addStatement(new ExpressionStatement(assignCommandObjectToParameter));
 

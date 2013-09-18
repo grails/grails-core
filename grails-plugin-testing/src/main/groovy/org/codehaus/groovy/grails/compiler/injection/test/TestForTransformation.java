@@ -479,7 +479,7 @@ public class TestForTransformation extends TestMixinTransformation {
     protected void addMockCollaborator(String mockType, ClassExpression targetClass, BlockStatement methodBody) {
         ArgumentListExpression args = new ArgumentListExpression();
         args.addExpression(targetClass);
-        methodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "mock" + mockType, args)));
+        methodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"), "mock" + mockType, args)));
     }
 
     protected void addMockCollaborators(ClassNode classNode, String mockType, List<ClassExpression> targetClasses) {
@@ -492,6 +492,6 @@ public class TestForTransformation extends TestMixinTransformation {
         for(ClassExpression ce : targetClasses) {
             args.addExpression(ce);
         }
-        methodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, "mock" + mockType + 's', args)));
+        methodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"), "mock" + mockType + 's', args)));
     }
 }

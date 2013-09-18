@@ -127,7 +127,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
         constructorArgs.addExpression(BODY_EXPRESSION);
         arguments.addExpression(ATTRS_EXPRESSION)
                  .addExpression(new ConstructorCallExpression(new ClassNode(GroovyPage.ConstantClosure.class), constructorArgs));
-        methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, tagName, arguments)));
+        methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"), tagName, arguments)));
         classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, MAP_CHARSEQUENCE_PARAMETERS, null, methodBody));
     }
 
