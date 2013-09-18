@@ -479,15 +479,16 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         final Expression getExceptionHandlerMethodCall = new MethodCallExpression(THIS_EXPRESSION, "getExceptionHandlerMethodFor", caughtExceptionTypeExpression);
 
         final String exceptionHandlerMethodVariableName = "$method";
+        final Expression exceptionHandlerMethodExpression = new VariableExpression(exceptionHandlerMethodVariableName, new ClassNode(Method.class));
         final Expression declareExceptionHandlerMethod = new DeclarationExpression(
-                new VariableExpression(exceptionHandlerMethodVariableName, new ClassNode(Method.class)), Token.newSymbol(Types.EQUALS, 0, 0), getExceptionHandlerMethodCall);
+                exceptionHandlerMethodExpression, Token.newSymbol(Types.EQUALS, 0, 0), getExceptionHandlerMethodCall);
         final ArgumentListExpression invokeArguments = new ArgumentListExpression();
         invokeArguments.addExpression(THIS_EXPRESSION);
         invokeArguments.addExpression(caughtExceptionVariableExpression);
-        final Expression invokeExceptionHandlerMethodExpression = new MethodCallExpression(new VariableExpression(exceptionHandlerMethodVariableName), "invoke", invokeArguments);
+        final Expression invokeExceptionHandlerMethodExpression = new MethodCallExpression(exceptionHandlerMethodExpression, "invoke", invokeArguments);
         final Statement returnStatement = new ReturnStatement(invokeExceptionHandlerMethodExpression);
         final Statement throwCaughtExceptionStatement = new ThrowStatement(caughtExceptionVariableExpression);
-        final Statement ifExceptionHandlerMethodExistsStatement = new IfStatement(new BooleanExpression(new VariableExpression(exceptionHandlerMethodVariableName)), returnStatement, throwCaughtExceptionStatement);
+        final Statement ifExceptionHandlerMethodExistsStatement = new IfStatement(new BooleanExpression(exceptionHandlerMethodExpression), returnStatement, throwCaughtExceptionStatement);
         catchBlockCode.addStatement(new ExpressionStatement(declareExceptionHandlerMethod));
         catchBlockCode.addStatement(ifExceptionHandlerMethodExistsStatement);
 
