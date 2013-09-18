@@ -66,7 +66,7 @@ class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
                 String logref = resolveLogRef(target, oe)
                 writer
                     .beginObject()
-                      .name(LOGREF_ATTRIBUTE).value(gson.toJson(logref))
+                      .name(LOGREF_ATTRIBUTE).value(logref)
                       .name(MESSAGE_ATTRIBUTE).value(msg)
                       .name(LINKS_ATTRIBUTE)
                          .beginObject()
