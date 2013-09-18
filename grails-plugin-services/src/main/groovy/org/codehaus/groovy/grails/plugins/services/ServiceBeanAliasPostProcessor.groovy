@@ -24,6 +24,7 @@ import org.springframework.beans.BeansException
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.springframework.core.AliasRegistry
 
 /**
  * Registers bean aliases for service beans provided by plugins.
@@ -97,7 +98,13 @@ class ServiceBeanAliasPostProcessor implements BeanFactoryPostProcessor {
                                                     // if the alias name does not conflict with another bean name,
                                                     // add it to the Map for consideration
                                                     if(!beanNames.contains(potentialAliasName)) {
-                                                        aliasNamesToListOfBeanNames[potentialAliasName] << beanName
+                                                        def aliasExists = false
+                                                        if(beanFactory instanceof AliasRegistry) {
+                                                            aliasExists = beanFactory.isAlias(potentialAliasName)
+                                                        }
+                                                        if(!aliasExists) {
+                                                            aliasNamesToListOfBeanNames[potentialAliasName] << beanName
+                                                        }
                                                     }
                                                 }
                                             }
