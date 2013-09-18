@@ -22,7 +22,11 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.InnerClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -91,8 +95,8 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector, Annota
             final BlockStatement methodBody = new BlockStatement();
             final ArgumentListExpression args = new ArgumentListExpression();
             args.addExpression(new VariableExpression("this"))
-                .addExpression(new VariableExpression("callable"));
-            methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression(FIELD_MIME_TYPES_API),  WITH_FORMAT_METHOD, args)));
+                .addExpression(new VariableExpression("callable", new ClassNode(Closure.class)));
+            methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression(FIELD_MIME_TYPES_API, mimeTypesApiClass),  WITH_FORMAT_METHOD, args)));
             classNode.addMethod(new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody));
         }
     }
