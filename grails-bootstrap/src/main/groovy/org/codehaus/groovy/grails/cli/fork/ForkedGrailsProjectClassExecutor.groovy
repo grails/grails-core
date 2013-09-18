@@ -51,6 +51,7 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
     }
 
     protected final void run() {
+        ExpandoMetaClass.enableGlobally()
 
         if (isDaemonProcess()) {
             startDaemon { cmd ->

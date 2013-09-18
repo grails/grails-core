@@ -144,9 +144,11 @@ class DependencyManagerConfigurer {
             configureDefaultPluginResolver(grailsConfig)
         }
 
-        Closure dependencyConfig = getDependencyConfig(grailsConfig, dependencyManager)
-        if (dependencyConfig instanceof Closure) {
-            dependencyManager.parseDependencies dependencyConfig
+        if(!Environment.isFork()) {
+            Closure dependencyConfig = getDependencyConfig(grailsConfig, dependencyManager)
+            if (dependencyConfig instanceof Closure) {
+                dependencyManager.parseDependencies dependencyConfig
+            }
         }
 
         return dependencyManager
