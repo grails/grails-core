@@ -57,7 +57,6 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
 
     private static final String CONSTRAINED_PROPERTIES_PROPERTY_NAME = "$constraints";
     private static final String VALIDATE_METHOD_NAME = "validate";
-    private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
 
     public void injectValidateableCode(ClassNode classNode) {
         ASTErrorsHelper errorsHelper = new ASTValidationErrorsHelper();
@@ -102,7 +101,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final Expression declareServletContextExpression = new DeclarationExpression(new VariableExpression(servletContextHolderVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(ServletContextHolder.class), "getServletContext", new ArgumentListExpression()));
             final Expression declareApplicationContextExpression = new DeclarationExpression(new VariableExpression(applicationContextVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(WebApplicationContextUtils.class), "getWebApplicationContext", new ArgumentListExpression(new VariableExpression(servletContextHolderVariableName))));
             final Expression declareConstraintsEvaluatorExpression = new DeclarationExpression(new VariableExpression(constraintsEvaluatorVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new MethodCallExpression(new VariableExpression(applicationContextVariableName), "getBean", new ArgumentListExpression(new ConstantExpression(ConstraintsEvaluator.BEAN_NAME))));
-            final Expression initializeConstraintsFieldExpression = new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(Types.EQUALS, 0, 0), new MethodCallExpression(new VariableExpression(constraintsEvaluatorVariableName), evaluateMethodName, new ArgumentListExpression(THIS_EXPRESSION)));
+            final Expression initializeConstraintsFieldExpression = new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(Types.EQUALS, 0, 0), new MethodCallExpression(new VariableExpression(constraintsEvaluatorVariableName), evaluateMethodName, new ArgumentListExpression(new VariableExpression("this"))));
             final Statement ifConstraintsPropertyIsNullStatement = new IfStatement(isConstraintsPropertyNull, ifConstraintsPropertyIsNullBlockStatement, new ExpressionStatement(new EmptyExpression()));
 
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(declareServletContextExpression));
@@ -131,7 +130,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
         if (listArgValidateMethod == null) {
             final BlockStatement validateMethodCode = new BlockStatement();
             final ArgumentListExpression validateInstanceArguments = new ArgumentListExpression();
-            validateInstanceArguments.addExpression(THIS_EXPRESSION);
+            validateInstanceArguments.addExpression(new VariableExpression("this"));
             validateInstanceArguments.addExpression(new VariableExpression(fieldsToValidateParameterName));
             final ClassNode validationSupportClassNode = new ClassNode(ValidationSupport.class);
             final StaticMethodCallExpression invokeValidateInstanceExpression = new StaticMethodCallExpression(validationSupportClassNode, "validateInstance", validateInstanceArguments);
@@ -147,7 +146,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
 
             final ArgumentListExpression validateInstanceArguments = new ArgumentListExpression();
             validateInstanceArguments.addExpression(new CastExpression(new ClassNode(List.class), new ConstantExpression(null)));
-            final Expression callListArgValidateMethod = new MethodCallExpression(THIS_EXPRESSION, VALIDATE_METHOD_NAME, validateInstanceArguments);
+            final Expression callListArgValidateMethod = new MethodCallExpression(new VariableExpression("this"), VALIDATE_METHOD_NAME, validateInstanceArguments);
             validateMethodCode.addStatement(new ReturnStatement(callListArgValidateMethod));
             classNode.addMethod(new MethodNode(
                   VALIDATE_METHOD_NAME, Modifier.PUBLIC, ClassHelper.boolean_TYPE,

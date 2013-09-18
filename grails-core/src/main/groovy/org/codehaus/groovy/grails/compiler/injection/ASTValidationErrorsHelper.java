@@ -57,9 +57,7 @@ public class ASTValidationErrorsHelper implements ASTErrorsHelper {
     private static final Token EQUALS_SYMBOL = Token.newSymbol(Types.EQUALS, 0, 0);
     private static final ClassNode ERRORS_CLASS_NODE = new ClassNode(Errors.class);
     private static final VariableExpression ERRORS_EXPRESSION = new VariableExpression(ERRORS_PROPERTY_NAME);
-    private static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     private static final TupleExpression EMPTY_TUPLE = new TupleExpression();
-    private static final MethodCallExpression INIT_ERRORS_METHOD_CALL_EXPRESSION = new MethodCallExpression(THIS_EXPRESSION, INIT_ERRORS_METHOD_NAME, EMPTY_TUPLE);
 
     public void injectErrorsCode(ClassNode classNode) {
         addErrorsField(classNode);
@@ -87,7 +85,7 @@ public class ASTValidationErrorsHelper implements ASTErrorsHelper {
                     Types.COMPARE_EQUAL, 0, 0), NULL_EXPRESSION);
 
             Expression beanPropertyBindingResultConstructorArgs = new ArgumentListExpression(
-                    THIS_EXPRESSION, new ConstantExpression(paramTypeClassNode.getName()));
+                    new VariableExpression("this"), new ConstantExpression(paramTypeClassNode.getName()));
             final Statement newEvaluatorExpression = new ExpressionStatement(
                     new BinaryExpression(ERRORS_EXPRESSION,
                             EQUALS_SYMBOL,
@@ -121,7 +119,8 @@ public class ASTValidationErrorsHelper implements ASTErrorsHelper {
         final ASTNode getErrorsMethod = paramTypeClassNode.getMethod(HAS_ERRORS_METHOD_NAME, ZERO_PARAMETERS);
         if (getErrorsMethod == null) {
             final BlockStatement hasErrorsMethodCode = new BlockStatement();
-            hasErrorsMethodCode.addStatement(new ExpressionStatement(INIT_ERRORS_METHOD_CALL_EXPRESSION));
+            final Expression initErrorsMethodCallExpression = new MethodCallExpression(new VariableExpression("this"), INIT_ERRORS_METHOD_NAME, EMPTY_TUPLE);
+            hasErrorsMethodCode.addStatement(new ExpressionStatement(initErrorsMethodCallExpression));
             final Statement returnStatement = new ReturnStatement(new BooleanExpression(new MethodCallExpression(ERRORS_EXPRESSION, HAS_ERRORS_METHOD_NAME, EMPTY_TUPLE)));
             hasErrorsMethodCode.addStatement(returnStatement);
             paramTypeClassNode.addMethod(new MethodNode(HAS_ERRORS_METHOD_NAME,
@@ -134,7 +133,8 @@ public class ASTValidationErrorsHelper implements ASTErrorsHelper {
         final ASTNode getErrorsMethod = paramTypeClassNode.getMethod(GET_ERRORS_METHOD_NAME, ZERO_PARAMETERS);
         if (getErrorsMethod == null) {
             final BlockStatement getErrorsMethodCode = new BlockStatement();
-            getErrorsMethodCode.addStatement(new ExpressionStatement(INIT_ERRORS_METHOD_CALL_EXPRESSION));
+            final Expression initErrorsMethodCallExpression = new MethodCallExpression(new VariableExpression("this"), INIT_ERRORS_METHOD_NAME, EMPTY_TUPLE);
+            getErrorsMethodCode.addStatement(new ExpressionStatement(initErrorsMethodCallExpression));
             final Statement returnStatement = new ReturnStatement(ERRORS_EXPRESSION);
             getErrorsMethodCode.addStatement(returnStatement);
             paramTypeClassNode.addMethod(new MethodNode(GET_ERRORS_METHOD_NAME,
