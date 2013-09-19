@@ -63,7 +63,6 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final String SPEC_CLASS = "spock.lang.Specification";
     private static final String JUNIT3_CLASS = "junit.framework.TestCase";
     public static final String SET_UP_METHOD = "setUp";
-    public static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
     public static final String TEAR_DOWN_METHOD = "tearDown";
     public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
@@ -219,7 +218,7 @@ public class TestMixinTransformation implements ASTTransformation{
             Expression constructorArgument = new ArgumentListExpression();
             if(targetAwareInterface != null) {
                 MapExpression namedArguments = new MapExpression();
-                namedArguments.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("target"), THIS_EXPRESSION));
+                namedArguments.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("target"), new VariableExpression("this")));
                 constructorArgument = namedArguments;
             }
             return classNode.addField(fieldName, Modifier.PRIVATE, fieldType,
@@ -240,7 +239,7 @@ public class TestMixinTransformation implements ASTTransformation{
         if (methods != null && !methods.isEmpty()) {
             BlockStatement setupMethodBody = getOrCreateNoArgsMethodBody(classNode, name);
             for (MethodNode beforeMethod : methods) {
-                setupMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(THIS_EXPRESSION, beforeMethod.getName(), GrailsArtefactClassInjector.ZERO_ARGS)));
+                setupMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"), beforeMethod.getName(), GrailsArtefactClassInjector.ZERO_ARGS)));
             }
         }
     }

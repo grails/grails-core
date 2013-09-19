@@ -64,7 +64,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
 
     protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
-    protected static final VariableExpression THIS_EXPRESSION = new VariableExpression("this");
 
     public static final int PUBLIC_STATIC_MODIFIER = Modifier.PUBLIC | Modifier.STATIC;
     public static final String CURRENT_PREFIX = "current";
