@@ -324,14 +324,6 @@ class PluginPackager {
                     }
                 }
             }
-            mkdir(dir:"${classesDir}/src")
-            copy(todir:"${classesDir}/src") {
-                fileset(dir:"${basedir}/src") {
-                    extraExcludes(basedir, "src", pluginProps?.pluginExcludes, ["groovy/**","java/**"]).each {
-                        exclude name: it
-                    }
-                }
-            }
 
             def stagingDir
             try {
