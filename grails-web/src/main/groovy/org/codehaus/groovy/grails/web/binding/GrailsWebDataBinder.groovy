@@ -112,7 +112,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
      */
     void bind(object, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
         def bindingResult = new BeanPropertyBindingResult(object, object.getClass().name)
-        def errorHandlingListener = new GrailsWebDataBindingListener(bindingResult)
+        def errorHandlingListener = new GrailsWebDataBindingListener(bindingResult, messageSource)
 
         def listenerWrapper = new DataBindingEventMulticastListener(listeners: [errorHandlingListener, listener])
         super.bind object, source, filter, whiteList, blackList, listenerWrapper
