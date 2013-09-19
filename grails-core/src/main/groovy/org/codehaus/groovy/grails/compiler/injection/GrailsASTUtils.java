@@ -105,6 +105,13 @@ public class GrailsASTUtils {
     public static final ClassNode INTEGER_CLASS_NODE = new ClassNode(Integer.class).getPlainNodeReference();
     public static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
     public static final ArgumentListExpression ZERO_ARGUMENTS = new ArgumentListExpression();
+    
+    /**
+     * @deprecated Sharing copies of VariableExpression which refer to "this" is unsafe
+     */
+    @Deprecated
+    public static final VariableExpression THIS_EXPR = new VariableExpression("this");
+
 
     public static void warning(final SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
         final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
