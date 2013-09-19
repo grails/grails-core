@@ -214,7 +214,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         List<MethodNode> deferredNewMethods = new ArrayList<MethodNode>();
         for (MethodNode method : classNode.getMethods()) {
-            if (!method.isStatic() && method.isPublic() &&
+            if (!method.isStatic() && method.isPublic() && !method.isAbstract() &&
                     method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                     method.getLineNumber() >= 0) {
 
