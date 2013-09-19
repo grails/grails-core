@@ -214,13 +214,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         List<MethodNode> deferredNewMethods = new ArrayList<MethodNode>();
         for (MethodNode method : classNode.getMethods()) {
-            if (!method.isStatic() && method.isPublic() &&
-                    method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
-                    method.getLineNumber() >= 0) {
-
-                if (method.getReturnType().getName().equals(VOID_TYPE) ||
-                    isExceptionHandlingMethod(method)) continue;
-
+            if (methodShouldBeConfiguredAsControllerAction(method)) {
                 final List<MethodNode> declaredMethodsWithThisName = classNode.getDeclaredMethods(method.getName());
                 if(declaredMethodsWithThisName != null) {
                     final int numberOfNonExceptionHandlerMethodsWithThisName = org.apache.commons.collections.CollectionUtils.countMatches(declaredMethodsWithThisName, new Predicate() {
@@ -265,6 +259,21 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         for (MethodNode newMethod : deferredNewMethods) {
             classNode.addMethod(newMethod);
         }
+    }
+
+    /**
+     * 
+     * @param method a potential controller action method
+     * @return true if the method should be configured as a controller action, false otherwise
+     */
+    protected boolean methodShouldBeConfiguredAsControllerAction(final MethodNode method) {
+        return !method.isStatic() && 
+                method.isPublic() && 
+                !method.isAbstract() &&
+                method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
+                method.getLineNumber() >= 0 &&
+                !method.getReturnType().getName().equals(VOID_TYPE) &&
+                !isExceptionHandlingMethod(method);
     }
 
     protected Collection<MethodNode> getExceptionHandlerMethods(final ClassNode classNode, SourceUnit sourceUnit) {
