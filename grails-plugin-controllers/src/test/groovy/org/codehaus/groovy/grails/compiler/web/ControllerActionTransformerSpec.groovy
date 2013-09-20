@@ -4,6 +4,8 @@ import grails.util.BuildSettings
 import grails.util.GrailsWebUtil
 import grails.web.Action
 
+import java.lang.reflect.Modifier
+
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
@@ -85,6 +87,27 @@ class ControllerActionTransformerSpec extends Specification {
         then:
         action2NoArgMethod.getAnnotation(Action)
         action2NoArgMethod.getAnnotation(Deprecated)
+    }
+    
+    void 'Test that a controller may have an abstract method - GRAILS-10509'() {
+        given:
+        def controllerClass = gcl.parseClass('''
+            abstract class SomeController {
+                def someAction() {}
+                abstract someAbstractMethod()
+            }
+''')
+        when:
+        def method = controllerClass.getMethod('someAbstractMethod')
+        
+        then:
+        Modifier.isAbstract(method.modifiers)
+        
+        when:
+        method = controllerClass.getMethod('someAction')
+        
+        then:
+        !Modifier.isAbstract(method.modifiers)
     }
 
     void 'Test action overiding'() {

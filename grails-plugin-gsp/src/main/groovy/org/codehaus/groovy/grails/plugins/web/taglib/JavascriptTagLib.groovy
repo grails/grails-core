@@ -123,15 +123,15 @@ class JavascriptTagLib implements ApplicationContextAware {
             }
         }
         else {
-            if (hasResourceProcessor) {
-                out << r.script(Collections.EMPTY_MAP, body)
-            } else {
-                out.println '<script type="text/javascript">'
-                withCodec(expressionCodec:"JavaScript") {
+            withCodec(expressionCodec:"JavaScript") {
+                if (hasResourceProcessor) {
+                    out << r.script(Collections.EMPTY_MAP, body)
+                } else {
+                    out.println '<script type="text/javascript">'
                     out << body()
+                    out.println()
+                    out.println '</script>'
                 }
-                out.println()
-                out.println '</script>'
             }
         }
     }

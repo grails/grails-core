@@ -103,9 +103,15 @@ public class GrailsASTUtils {
     public static final ClassNode OBJECT_CLASS_NODE = new ClassNode(Object.class).getPlainNodeReference();
     public static final ClassNode VOID_CLASS_NODE = ClassHelper.VOID_TYPE;
     public static final ClassNode INTEGER_CLASS_NODE = new ClassNode(Integer.class).getPlainNodeReference();
-    public static final VariableExpression THIS_EXPR = new VariableExpression("this");
     public static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
     public static final ArgumentListExpression ZERO_ARGUMENTS = new ArgumentListExpression();
+    
+    /**
+     * @deprecated Sharing copies of VariableExpression which refer to "this" is unsafe
+     */
+    @Deprecated
+    public static final VariableExpression THIS_EXPR = new VariableExpression("this");
+
 
     public static void warning(final SourceUnit sourceUnit, final ASTNode node, final String warningMessage) {
         final String sample = sourceUnit.getSample(node.getLineNumber(), node.getColumnNumber(), new Janitor());
@@ -351,7 +357,7 @@ public class GrailsASTUtils {
         ArgumentListExpression arguments = new ArgumentListExpression();
 
         if (thisAsFirstArgument) {
-            arguments.addExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION);
+            arguments.addExpression(new VariableExpression("this"));
         }
 
         for (Parameter parameterType : parameterTypes) {
@@ -786,11 +792,11 @@ public class GrailsASTUtils {
     }
 
     public static ExpressionStatement createPrintlnStatement(String message) {
-        return new ExpressionStatement(new MethodCallExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION,"println", new ArgumentListExpression(new ConstantExpression(message))));
+        return new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"),"println", new ArgumentListExpression(new ConstantExpression(message))));
     }
 
     public static ExpressionStatement createPrintlnStatement(String message, String variable) {
-        return new ExpressionStatement(new MethodCallExpression(AbstractGrailsArtefactTransformer.THIS_EXPRESSION,"println", new ArgumentListExpression(new BinaryExpression(new ConstantExpression(message),Token.newSymbol(Types.PLUS, 0, 0),new VariableExpression(variable)))));
+        return new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"),"println", new ArgumentListExpression(new BinaryExpression(new ConstantExpression(message),Token.newSymbol(Types.PLUS, 0, 0),new VariableExpression(variable)))));
     }
 
     /**
