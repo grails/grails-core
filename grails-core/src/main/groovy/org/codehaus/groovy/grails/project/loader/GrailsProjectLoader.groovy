@@ -113,6 +113,7 @@ class GrailsProjectLoader extends BaseSettingsApi{
         registerPluginManagerWithContext(ctx)
 
         grailsApp.initialise()
+        buildEventListener.binding.setVariable('grailsApp', grailsApp)
         buildEventListener.triggerEvent("AppLoadEnd", ["Loading Grails Application"])
         return grailsApp
     }

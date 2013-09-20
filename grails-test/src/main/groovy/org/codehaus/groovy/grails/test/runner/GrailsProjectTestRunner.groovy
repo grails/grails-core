@@ -216,8 +216,9 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
 
         projectPackager.packageApplication()
 
+        final cleaner = new GrailsProjectCleaner(buildSettings, buildEventListener)
+        buildEventListener.binding.setVariable('cleanCompiledSources', cleaner.&cleanCompiledSources)
         if (testOptions.clean) {
-            final cleaner = new GrailsProjectCleaner(buildSettings, buildEventListener)
             cleaner.clean()
             cleaner.cleanTestReports()
         }
