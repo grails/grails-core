@@ -605,6 +605,8 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                         "grails-app" + File.separator + "domain" + File.separator)) {
                     argumentIsValidateable = true;
                 }
+            } else {
+                argumentIsValidateable = commandObjectNode.hasMethod("validate", new Parameter[0]);
             }
         }
 
