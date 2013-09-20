@@ -53,22 +53,22 @@ class PluginConfiguration extends DependenciesConfiguration {
 
     @Override
     void runtime(String pattern, Closure customizer) {
-        super.compile(extractDependencyProperties(pattern), customizer)
+        super.runtime(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
     void provided(String pattern, Closure customizer) {
-        super.compile(extractDependencyProperties(pattern), customizer)
+        super.provided(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
     void optional(String pattern, Closure customizer) {
-        super.compile(extractDependencyProperties(pattern), customizer)
+        super.optional(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
     void test(String pattern, Closure customizer) {
-        super.compile(extractDependencyProperties(pattern), customizer)
+        super.test(extractDependencyProperties(pattern), customizer)
     }
 
     @Override
