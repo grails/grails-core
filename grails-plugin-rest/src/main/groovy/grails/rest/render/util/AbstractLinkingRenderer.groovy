@@ -42,6 +42,7 @@ import org.grails.datastore.mapping.model.types.Embedded
 import org.grails.datastore.mapping.model.types.ToOne
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.MessageSource
 import org.springframework.http.HttpMethod
 
@@ -71,6 +72,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     LinkGenerator linkGenerator
 
     @Autowired
+    @Qualifier('grailsDomainClassMappingContext')
     MappingContext mappingContext
 
     @Autowired
