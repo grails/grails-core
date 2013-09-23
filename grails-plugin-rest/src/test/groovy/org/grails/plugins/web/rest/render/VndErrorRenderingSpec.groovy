@@ -20,6 +20,7 @@ import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
 import spock.lang.Specification
+import org.springframework.http.HttpStatus
 
 /**
  *
@@ -43,12 +44,14 @@ class VndErrorRenderingSpec extends Specification{
             final vndRenderer = new VndErrorXmlRenderer()
             final messageSource = new StaticMessageSource()
             final request = GrailsWebUtil.bindMockWebRequest()
+            final response = request.response
             messageSource.addMessage("title.invalid", request.locale, "Bad Title")
             vndRenderer.messageSource = messageSource
             vndRenderer.linkGenerator = getLinkGenerator {
                 "/books"(resources:"book")
             }
             registry.addRenderer(vndRenderer)
+
 
         when:"A renderer is looked up"
             final book = new Book()
@@ -65,8 +68,9 @@ class VndErrorRenderingSpec extends Specification{
             renderer.render(error, new ServletRenderContext(request))
 
         then:"The response is correct"
-            request.response.contentType == GrailsWebUtil.getContentType(VndErrorXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-            request.response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><errors xml:lang="en"><error logref="book.title.invalid.1"><message>Bad Title</message><link rel="resource" href="http://localhost/books/1" /></error></errors>'
+            response.status == HttpStatus.UNPROCESSABLE_ENTITY.value()
+            response.contentType == GrailsWebUtil.getContentType(VndErrorXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+            response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><errors xml:lang="en"><error logref="book.title.invalid.1"><message>Bad Title</message><link rel="resource" href="http://localhost/books/1" /></error></errors>'
 
     }
 
@@ -76,6 +80,7 @@ class VndErrorRenderingSpec extends Specification{
             final vndRenderer = new VndErrorJsonRenderer()
             final messageSource = new StaticMessageSource()
             final request = GrailsWebUtil.bindMockWebRequest()
+            final response = request.response
             messageSource.addMessage("title.invalid", request.locale, "Bad Title")
             messageSource.addMessage("title.bad", request.locale, "Title Bad")
             vndRenderer.messageSource = messageSource
@@ -99,9 +104,10 @@ class VndErrorRenderingSpec extends Specification{
         when:"The renderer renders an error"
             renderer.render(error, new ServletRenderContext(request))
 
-            then:"The response is correct"
-            request.response.contentType == GrailsWebUtil.getContentType(VndErrorJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-            request.response.contentAsString == '[{"logref":"book.title.invalid.1","message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"book.title.bad.1","message":"Title Bad","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
+        then:"The response is correct"
+            response.status == HttpStatus.UNPROCESSABLE_ENTITY.value()
+            response.contentType == GrailsWebUtil.getContentType(VndErrorJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+            response.contentAsString == '[{"logref":"book.title.invalid.1","message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"book.title.bad.1","message":"Title Bad","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
 
     }
 

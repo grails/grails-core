@@ -33,7 +33,7 @@ import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 class GrailsProjectCleaner extends BaseSettingsApi {
     private static final GrailsConsole CONSOLE  = GrailsConsole.getInstance()
 
-    private AntBuilder ant
+    AntBuilder ant
     GrailsProjectCleaner(BuildSettings settings, GrailsBuildEventListener buildEventListener) {
         super(settings, buildEventListener, false)
     }
@@ -46,6 +46,10 @@ class GrailsProjectCleaner extends BaseSettingsApi {
         ant
     }
 
+    void setAnt(AntBuilder ant) {
+        this.ant = ant
+    }
+
     /**
      *  Cleans a Grails project
      **/
@@ -55,6 +59,7 @@ class GrailsProjectCleaner extends BaseSettingsApi {
         }
         clean()
         cleanTestReports()
+        AntBuilder ant = getAnt()
         ant.delete(dir:new File(buildSettings.projectWorkDir, "scriptCache"), failonerror:false)
         ant.delete(dir:buildSettings.pluginBuildClassesDir, failonerror:false)
 
@@ -82,6 +87,7 @@ class GrailsProjectCleaner extends BaseSettingsApi {
     }
 
     void cleanWork() {
+        AntBuilder ant = getAnt()
         ant.delete(dir: buildSettings.projectWorkDir, failonerror: false)
     }
 
@@ -94,6 +100,7 @@ class GrailsProjectCleaner extends BaseSettingsApi {
         }
 
         def webInf = "${buildSettings.baseDir}/web-app/WEB-INF"
+        AntBuilder ant = getAnt()
         ant.delete(dir:"${webInf}/classes")
         ant.delete(dir: new File(buildSettings.grailsWorkDir, ".slcache"), failonerror: false)
         ant.delete(file:buildSettings.webXmlLocation.absolutePath, failonerror:false)
@@ -126,6 +133,7 @@ class GrailsProjectCleaner extends BaseSettingsApi {
         }
         // Delete all reports *except* TEST-TestSuites.xml which we need
         // for the "--rerun" option to work.
+        AntBuilder ant = getAnt()
         ant.delete(failonerror:false, includeemptydirs: true) {
             fileset(dir:buildSettings.testReportsDir.path) {
                 include(name: "**/*")
@@ -145,6 +153,7 @@ class GrailsProjectCleaner extends BaseSettingsApi {
             buildEventListener.triggerEvent("CleanWarFileStart")
         }
 
+        AntBuilder ant = getAnt()
         ant.delete(file:buildSettings.projectWarFile, failonerror:false)
 
         if (triggerEvents) {

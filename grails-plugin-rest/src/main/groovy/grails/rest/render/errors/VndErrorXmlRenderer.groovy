@@ -31,6 +31,7 @@ import org.springframework.context.MessageSource
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
+import org.springframework.http.HttpStatus
 
 /**
  * A renderer that renders errors in in the Vnd.Error format (see https://github.com/blongden/vnd.error)
@@ -52,6 +53,7 @@ class VndErrorXmlRenderer extends AbstractVndErrorRenderer {
     void render(Errors object, RenderContext context) {
         if (object instanceof BeanPropertyBindingResult) {
             context.setContentType(GrailsWebUtil.getContentType(MIME_TYPE.name, encoding))
+            context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
             Locale locale = context.locale
             final target = object.target
             final language = locale.language

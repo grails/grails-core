@@ -219,16 +219,11 @@ public class GrailsBuildEventListener implements BuildListener {
         if (handlers != null) {
             for (Closure handler : handlers) {
                 handler.setDelegate(binding);
-                try {
-                    if (handler.getParameterTypes().length == 0) {
-                        handler.call();
-                    }
-                    else {
-                        handler.call(arguments);
-                    }
+                if (handler.getParameterTypes().length == 0) {
+                    handler.call();
                 }
-                catch (MissingPropertyException mpe) {
-                    // ignore
+                else {
+                    handler.call(arguments);
                 }
             }
         }

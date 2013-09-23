@@ -30,6 +30,37 @@ import spock.lang.Specification
  */
 class AetherDependencyManagerSpec extends Specification {
 
+    @Issue('GRAILS-10513')
+    void "Test that plugin scopes are correct"() {
+        given:"A dependency manager instance"
+        def dependencyManager = new AetherDependencyManager()
+
+        when:"Plugins are parsed in unique scopes"
+            dependencyManager.parseDependencies {
+                plugins {
+                    build ":tomcat:7.0.42"
+                    test ':cache:1.1.1'
+                    // plugins needed at runtime but not for compilation
+                    runtime ":hibernate:3.6.10.1" // or ":hibernate4:4.1.11.1"
+                    provided ":database-migration:1.3.5"
+                    optional ":jquery:1.10.2"
+                }
+            }
+
+
+        then:"The scopes are correct"
+            dependencyManager.getPluginDependencies('build').size() == 1
+            dependencyManager.getPluginDependencies('build')[0].name == 'tomcat'
+            dependencyManager.getPluginDependencies('test')[0].name == 'cache'
+            dependencyManager.getPluginDependencies('test').size() == 1
+            dependencyManager.getPluginDependencies('runtime')[0].name == 'hibernate'
+            dependencyManager.getPluginDependencies('runtime').size() == 1
+            dependencyManager.getPluginDependencies('provided')[0].name == 'database-migration'
+            dependencyManager.getPluginDependencies('provided').size() == 1
+            dependencyManager.getPluginDependencies('optional')[0].name == 'jquery'
+            dependencyManager.getPluginDependencies('optional').size() == 1
+
+    }
     @Issue('GRAILS-10414')
     void "Test Aether with map based dependency syntax"() {
         given:"A dependency manager instance"

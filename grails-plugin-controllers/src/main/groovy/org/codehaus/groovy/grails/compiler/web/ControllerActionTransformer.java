@@ -347,9 +347,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     addOriginalMethodCall(methodNode, initializeActionParameters(
                             classNode, methodNode, methodNode.getName(), parameters, source, context)));
             copyAnnotations(methodNode, method);
-            annotateActionMethod(parameters, method);
+            annotateActionMethodAndWrapWithExceptionHandling(parameters, method);
         } else {
-            annotateActionMethod(parameters, methodNode);
+            annotateActionMethodAndWrapWithExceptionHandling(parameters, methodNode);
         }
 
         return method;
@@ -440,12 +440,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC,
                     new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
 
-            annotateActionMethod(parameters, methodNode);
+            annotateActionMethodAndWrapWithExceptionHandling(parameters, methodNode);
             controllerClassNode.addMethod(methodNode);
         }
     }
 
-    protected void annotateActionMethod(final Parameter[] parameters, final MethodNode methodNode) {
+    protected void annotateActionMethodAndWrapWithExceptionHandling(final Parameter[] parameters, final MethodNode methodNode) {
 
         if (isCommandObjectAction(parameters)) {
             ListExpression initArray = new ListExpression();
