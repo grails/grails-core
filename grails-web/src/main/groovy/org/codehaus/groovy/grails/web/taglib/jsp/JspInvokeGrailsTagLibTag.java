@@ -110,24 +110,12 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                         while (m.find()) {
                             String attributeName = m.group(1);
                             String attributeValue = m.group(2);
-                            if (ExpressionEvaluationUtils.isExpressionLanguage(attributeValue)) {
-                                attributeMap.put(attributeName, ExpressionEvaluationUtils.evaluate(
-                                        attributeName, attributeValue, Object.class, pageContext));
-                            }
-                            else {
-                                attributeMap.put(attributeName, attributeValue);
-                            }
+                            attributeMap.put(attributeName, attributeValue);
                         }
                         attributes.put(pd.getName(), attributeMap);
                     }
                     else {
-                        if (ExpressionEvaluationUtils.isExpressionLanguage(propertyValue)) {
-                            attributes.put(pd.getName(), ExpressionEvaluationUtils.evaluate(
-                                    pd.getName(), propertyValue, Object.class, pageContext));
-                        }
-                        else {
-                            attributes.put(pd.getName(), propertyValue);
-                        }
+                        attributes.put(pd.getName(), propertyValue);
                     }
                 }
             }
@@ -337,23 +325,12 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
                 while (m.find()) {
                     String attributeName = m.group(1);
                     String attributeValue = m.group(2);
-                    if (ExpressionEvaluationUtils.isExpressionLanguage(attributeValue)) {
-                        attributeMap.put(attributeName, ExpressionEvaluationUtils.evaluate(
-                                attributeName, attributeValue, Object.class, pageContext));
-                    }
-                    else {
-                        attributeMap.put(attributeName, attributeValue);
-                    }
+                    attributeMap.put(attributeName, attributeValue);
                 }
                 attributes.put(localName, attributeMap);
             }
             else {
-                if (ExpressionEvaluationUtils.isExpressionLanguage(stringValue)) {
-                    attributes.put(localName,ExpressionEvaluationUtils.evaluate(localName,stringValue,Object.class,pageContext));
-                }
-                else {
-                    attributes.put(localName,value);
-                }
+                attributes.put(localName,value);
             }
         }
         else {
