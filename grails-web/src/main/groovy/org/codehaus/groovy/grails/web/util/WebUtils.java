@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.util;
 
 import grails.util.GrailsWebUtil;
+import groovy.lang.Binding;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -38,7 +39,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import groovy.lang.Binding;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
@@ -304,7 +304,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
-        exposeForwardRequestAttributes(request);
         exposeRequestAttributes(request, model);
 
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
@@ -324,27 +323,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return forwardUrl;
     }
     
-    /**
-     * Expose the current request URI and paths as {@link javax.servlet.http.HttpServletRequest}
-     * attributes under the keys defined in the Servlet 2.4 specification,
-     * for containers that implement 2.3 or an earlier version of the Servlet API:
-     * {@code javax.servlet.forward.request_uri},
-     * {@code javax.servlet.forward.context_path},
-     * {@code javax.servlet.forward.servlet_path},
-     * {@code javax.servlet.forward.path_info},
-     * {@code javax.servlet.forward.query_string}.
-     * <p>Does not override values if already present, to not cause conflicts
-     * with the attributes exposed by Servlet 2.4+ containers themselves.
-     * @param request current servlet request
-     */
-    public static void exposeForwardRequestAttributes(HttpServletRequest request) {
-        exposeRequestAttributeIfNotPresent(request, FORWARD_REQUEST_URI_ATTRIBUTE, request.getRequestURI());
-        exposeRequestAttributeIfNotPresent(request, FORWARD_CONTEXT_PATH_ATTRIBUTE, request.getContextPath());
-        exposeRequestAttributeIfNotPresent(request, FORWARD_SERVLET_PATH_ATTRIBUTE, request.getServletPath());
-        exposeRequestAttributeIfNotPresent(request, FORWARD_PATH_INFO_ATTRIBUTE, request.getPathInfo());
-        exposeRequestAttributeIfNotPresent(request, FORWARD_QUERY_STRING_ATTRIBUTE, request.getQueryString());
-    }
-
     /**
      * Include whatever the given UrlMappingInfo maps to within the current response
      *
