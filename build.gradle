@@ -84,9 +84,6 @@ if (jointBuildGroovyJarProperty) {
 allprojects {
     repositories {
         maven { url "http://repo.grails.org/grails/core" }
-
-        // for aspectjweaver 1.8.0.M1
-        maven { url 'http://repo.springsource.org/libs-milestone' }
     }
 
     configurations {
