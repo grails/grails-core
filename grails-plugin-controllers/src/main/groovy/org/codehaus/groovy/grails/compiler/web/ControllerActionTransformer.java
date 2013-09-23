@@ -347,9 +347,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     addOriginalMethodCall(methodNode, initializeActionParameters(
                             classNode, methodNode, methodNode.getName(), parameters, source, context)));
             copyAnnotations(methodNode, method);
-            annotateActionMethodAndWrapWithExceptionHandling(parameters, method);
+            annotateActionMethodAndWrapWithExceptionHandling(classNode, parameters, method);
         } else {
-            annotateActionMethodAndWrapWithExceptionHandling(parameters, methodNode);
+            annotateActionMethodAndWrapWithExceptionHandling(classNode, parameters, methodNode);
         }
 
         return method;
@@ -440,12 +440,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC,
                     new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
 
-            annotateActionMethodAndWrapWithExceptionHandling(parameters, methodNode);
+            annotateActionMethodAndWrapWithExceptionHandling(controllerClassNode, parameters, methodNode);
             controllerClassNode.addMethod(methodNode);
         }
     }
 
-    protected void annotateActionMethodAndWrapWithExceptionHandling(final Parameter[] parameters, final MethodNode methodNode) {
+    protected void annotateActionMethodAndWrapWithExceptionHandling(final ClassNode classNode, final Parameter[] parameters, final MethodNode methodNode) {
 
         if (isCommandObjectAction(parameters)) {
             ListExpression initArray = new ListExpression();
@@ -459,7 +459,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         } else {
             methodNode.addAnnotation(ACTION_ANNOTATION_NODE);
         }
-        wrapMethodBodyWithExceptionHandling(methodNode);
+        wrapMethodBodyWithExceptionHandling(classNode, methodNode);
     }
 
     /**
@@ -479,13 +479,17 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
      * </pre>
      * @param methodNode the method to add the try catch block to
      */
-    protected void wrapMethodBodyWithExceptionHandling(final MethodNode methodNode) {
+    protected void wrapMethodBodyWithExceptionHandling(final ClassNode classNode, final MethodNode methodNode) {
         final BlockStatement catchBlockCode = new BlockStatement();
         final String caughtExceptionArgumentName = "$caughtException";
         final Expression caughtExceptionVariableExpression = new VariableExpression(caughtExceptionArgumentName);
         final Expression caughtExceptionTypeExpression = new PropertyExpression(caughtExceptionVariableExpression, "class");
         final Expression thisExpression = new VariableExpression("this");
-        final Expression getExceptionHandlerMethodCall = new MethodCallExpression(thisExpression, "getExceptionHandlerMethodFor", caughtExceptionTypeExpression);
+        final MethodCallExpression getExceptionHandlerMethodCall = new MethodCallExpression(thisExpression, "getExceptionHandlerMethodFor", caughtExceptionTypeExpression);
+        final MethodNode getExceptionHandlerMethodForMethod = classNode.getMethod("getExceptionHandlerMethodFor", new Parameter[]{ new Parameter(ClassHelper.make(Class.class), "arg")});
+        if(getExceptionHandlerMethodForMethod != null) {
+            getExceptionHandlerMethodCall.setMethodTarget(getExceptionHandlerMethodForMethod);
+        }
 
         final String exceptionHandlerMethodVariableName = "$method";
         final Expression exceptionHandlerMethodExpression = new VariableExpression(exceptionHandlerMethodVariableName, new ClassNode(Method.class));
