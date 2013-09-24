@@ -163,7 +163,7 @@ class AetherDsl {
     }
 
     void repositories(Closure callable) {
-        def rc = new RepositoriesConfiguration()
+        def rc = new RepositoriesConfiguration(dependencyManager)
         callable.delegate = rc
         callable.call()
 
