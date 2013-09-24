@@ -114,7 +114,11 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
     protected Binding createExecutionContext(BuildSettings buildSettings, PluginBuildSettings pluginSettings) {
         final scriptBinding = new Binding()
         ScriptBindingInitializer.initBinding(scriptBinding, buildSettings, (URLClassLoader) forkedClassLoader, GrailsConsole.getInstance(), false)
+        scriptBinding.setVariable('includeTargets', new IncludeTargets(forkedClassLoader,scriptBinding))
         scriptBinding.setVariable("pluginSettings", pluginSettings)
+        scriptBinding.setVariable("target") { Map<String, String> arguments, Closure task ->
+            scriptBinding.setVariable(arguments.name, task)
+        }
         scriptBinding.setVariable(ScriptBindingInitializer.GRAILS_SETTINGS, buildSettings)
         scriptBinding.setVariable(ScriptBindingInitializer.ARGS_MAP, executionContext.argsMap)
         scriptBinding
@@ -123,4 +127,51 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
     protected abstract String getProjectClassType()
 
     abstract void runInstance(instance)
+}
+
+@CompileStatic
+class IncludeTargets {
+    ClassLoader classLoader
+    Binding binding
+
+    private Set<String> loadedClasses = []
+
+    IncludeTargets(ClassLoader classLoader, Binding binding) {
+        this.classLoader = classLoader
+        this.binding = binding
+    }
+    /**
+     *  Implementation of the << operator taking a <code>Class</code> parameter.
+     *
+     *  @param theClass The <code>Class</code> to load and instantiate.
+     *  @return The includer object to allow for << chaining.
+     */
+    def leftShift ( final Class<Script> theClass ) {
+        // We need to ensure that the script runs so that it populates the binding.
+
+        def className = theClass.name
+        if ( ! ( className in loadedClasses ) ) {
+            Script script = theClass.newInstance ( )
+            script.binding = binding
+            script.run ( )
+            loadedClasses << className
+            return script
+        }
+        this
+    }
+
+    /**
+     *  Implementation of the << operator taking a <code>Class</code> parameter.
+     *
+     *  @param theClass The <code>Class</code> to load and instantiate.
+     *  @return The includer object to allow for << chaining.
+     */
+    def leftShift ( final File f ) {
+        // We need to ensure that the script runs so that it populates the binding.
+        def className = f.name
+        if ( ! ( className in loadedClasses ) ) {
+            new GroovyShell(classLoader,binding).evaluate(f)
+        }
+        this
+    }
 }

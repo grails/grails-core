@@ -572,9 +572,7 @@ public abstract class AbstractIvyDependencyManager {
             return;
         }
 
-        if (moduleDescriptor == null) {
-            setModuleDescriptor((DefaultModuleDescriptor)createModuleDescriptor());
-        }
+        initializeModuleDescriptor();
 
         doParseDependencies(definition, null, null, NO_EXCLUDE_RULES);
 
@@ -594,6 +592,12 @@ public abstract class AbstractIvyDependencyManager {
         Map<String, String> metadataDeclaredPlugins = metadata.getInstalledPlugins();
         if (metadataDeclaredPlugins != null) {
             addMetadataPluginDependencies(metadataDeclaredPlugins);
+        }
+    }
+
+    protected void initializeModuleDescriptor() {
+        if (moduleDescriptor == null) {
+            setModuleDescriptor((DefaultModuleDescriptor)createModuleDescriptor());
         }
     }
 

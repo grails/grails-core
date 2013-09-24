@@ -129,6 +129,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
     @CompileStatic
     void initialiseContext(Binding context) {
         context.setVariable("grailsSettings", projectPackager.buildSettings)
+        context.setVariable("serverContextPath", projectPackager.configureServerContextPath())
         context.setVariable("testOptions", testOptions)
         context.setVariable("classLoader", Thread.currentThread().contextClassLoader)
         context.setVariable("resolveResources", { String pattern -> resolveResources(pattern) })
