@@ -65,7 +65,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
 
         try {
             compilationUnit.addSource("dummy",pluginLocation.getInputStream());
-            compilationUnit.addPhaseOperation(new PluginReadingPhaseOperation(pluginInfo, pluginLocation), Phases.CONVERSION);
+            compilationUnit.addPhaseOperation(new PluginReadingPhaseOperation(pluginInfo), Phases.CONVERSION);
             compilationUnit.compile(Phases.CONVERSION);
             return pluginInfo;
         }
@@ -77,21 +77,18 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
     class PluginReadingPhaseOperation  extends CompilationUnit.PrimaryClassNodeOperation {
         private BasicGrailsPluginInfo pluginInfo;
         private MetaClass pluginInfoMetaClass;
-        private Resource pluginLocation;
         
-        public PluginReadingPhaseOperation(BasicGrailsPluginInfo pluginInfo, Resource pluginLocation) {
+        public PluginReadingPhaseOperation(BasicGrailsPluginInfo pluginInfo) {
             this.pluginInfo = pluginInfo;
             pluginInfoMetaClass = pluginInfo.getMetaClass();
-            this.pluginLocation = pluginLocation;
         }
 
         @Override
         public void call(final SourceUnit source, GeneratorContext context,
                 ClassNode classNode) throws CompilationFailedException {
             String className = classNode.getNameWithoutPackage();
-            String groovyFileName = className + ".groovy";
             
-            if(groovyFileName.equals(this.pluginLocation.getFilename())) {
+            if(className.endsWith("GrailsPlugin")) {
                 visitContents(className, source, classNode);
             }
         }
