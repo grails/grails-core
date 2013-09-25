@@ -65,7 +65,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
 
         try {
             compilationUnit.addSource("dummy",pluginLocation.getInputStream());
-            compilationUnit.addPhaseOperation(new PluginReadingPhaseOperation(pluginInfo), Phases.CONVERSION);
+            compilationUnit.addPhaseOperation(new PluginReadingPhaseOperation(pluginInfo, pluginLocation), Phases.CONVERSION);
             compilationUnit.compile(Phases.CONVERSION);
             return pluginInfo;
         }
@@ -77,22 +77,33 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
     class PluginReadingPhaseOperation  extends CompilationUnit.PrimaryClassNodeOperation {
         private BasicGrailsPluginInfo pluginInfo;
         private MetaClass pluginInfoMetaClass;
-        public PluginReadingPhaseOperation(BasicGrailsPluginInfo pluginInfo) {
+        private Resource pluginLocation;
+        
+        public PluginReadingPhaseOperation(BasicGrailsPluginInfo pluginInfo, Resource pluginLocation) {
             this.pluginInfo = pluginInfo;
             pluginInfoMetaClass = pluginInfo.getMetaClass();
+            this.pluginLocation = pluginLocation;
         }
 
         @Override
         public void call(final SourceUnit source, GeneratorContext context,
                 ClassNode classNode) throws CompilationFailedException {
+            String className = classNode.getNameWithoutPackage();
+            String groovyFileName = className + ".groovy";
+            
+            if(groovyFileName.equals(this.pluginLocation.getFilename())) {
+                visitContents(className, source, classNode);
+            }
+        }
 
+        protected void visitContents(String className, final SourceUnit source, ClassNode classNode) {
             ClassCodeVisitorSupport visitor = new ClassCodeVisitorSupport() {
-
+   
                 @Override
                 public void visitProperty(PropertyNode node) {
                     String name = node.getName();
                     final Expression expr = node.getField().getInitialExpression();
-
+   
                     if (expr != null) {
                         Object value;
                         if (expr instanceof ListExpression) {
@@ -112,7 +123,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
                         else {
                             value = expr.getText();
                         }
-
+   
                         if (DefaultGroovyMethods.hasProperty(pluginInfo, name) != null) {
                             pluginInfoMetaClass.setProperty(pluginInfo,name, value);
                         }
@@ -122,16 +133,15 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
                         super.visitProperty(node);
                     }
                 }
-
+   
                 @Override
                 protected SourceUnit getSourceUnit() {
                     return source;
                 }
             };
-
+   
             classNode.visitContents(visitor);
-            String className = classNode.getNameWithoutPackage();
-
+   
             pluginInfoMetaClass.setProperty(pluginInfo, "name", GrailsNameUtils.getPluginName(className + ".groovy"));
         }
     }
