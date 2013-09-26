@@ -33,10 +33,18 @@ target(default: "Creates a multi-project build for Maven") {
 
     def generator = new MavenMultiProjectGenerator(grailsSettings)
     try {
-        def (group, name, version) = argsMap.params[0].split(":")
+        def coordinates = argsMap.params[0].split(":")
+        if (coordinates.size() != 3) {
+            println "You must specify groupId, artifactId and version in the argument - ${argsMap.params[0]} is invalid"
+            println()
+            println msg()
+            exit 1
+        }
+
+        def (group, name, version) = coordinates
         if (group && name && version) {
-            generator.generate group, name, version
-            grailsConsole.addStatus "Multi-module Maven build configured."
+            generator.generate group, name, version      
+            grailsConsole.addStatus "Multi-module Maven build configured."  
         }
         else {
             println msg()
