@@ -290,6 +290,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
 
         // return an empty resolve report
+        initializeModuleDescriptor();
         return new ResolveReport(moduleDescriptor)
     }
 
@@ -338,6 +339,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
 
         // return an empty resolve report
+        initializeModuleDescriptor();
         return new ResolveReport(moduleDescriptor)
     }
 

@@ -25,107 +25,67 @@ import org.codehaus.groovy.grails.io.support.FileSystemResource
  * Generates a Maven multi-module build structure for a Grails project and plugins
  *
  * @author Graeme Rocher
+ * @author Peter Ledbrook
  * @since 2.1
  */
 class MavenMultiProjectGenerator extends BaseSettingsApi{
+    MavenPomGenerator pomGenerator
+
     MavenMultiProjectGenerator(BuildSettings buildSettings) {
         super(buildSettings, false)
+        pomGenerator = new MavenPomGenerator(buildSettings)
     }
 
+    /**
+     * <p>Looks in the build's base directory for Grails plugin and application
+     * directories and then creates a parent POM in the base directory plus
+     * child POMs in each of the plugin and application folders. The parent
+     * POM just contains the modules, i.e. the plugins and apps.</p>
+     * <p>This method delegates to {@link MavenPomGenerator#generatePom(java.io.File, java.lang.String, java.util.Map)}
+     * for the child POM generation.</p>
+     * @param group The string to use for the parent and child POMs' <tt>groupId</tt>
+     * element.
+     * @param name The string to use for the parent and child POMs' <tt>artifactId</tt>,
+     * <tt>name</tt> and <tt>description</tt> elements.
+     * @param version The version string for the POMs.
+     */
     void generate(String group, String name, String version) {
-        def rootTemplate = grailsResource("src/grails/templates/maven/parent.pom")
-
+        // Generate the parent POM first.
         def baseDir = buildSettings.baseDir
-        def parentPom = new File(baseDir, "pom.xml")
-        copyGrailsResource(parentPom, rootTemplate)
-        def ant = new AntBuilder()
+        def plugins = baseDir.listFiles({ File f -> f.directory && !f.hidden && isPluginDir(f) } as FileFilter)
+        def apps  = baseDir.listFiles({ File f -> f.directory && !f.hidden && isAppDir(f)} as FileFilter)
+        def moduleNames = (plugins + apps)*.name
 
-        List<File> allModules = baseDir.listFiles().findAll { File dir ->
-            dir.isDirectory() && !dir.isHidden() && (new File(dir, 'grails-app').exists() || dir.listFiles().find { File f -> f.name.endsWith("GrailsPlugin.groovy")})
-        }
+        def parentModel = [group: group, name: name, version: version]
+        pomGenerator.generatePom(
+            baseDir,
+            "src/grails/templates/maven/parent.pom",
+            parentModel + [modules: moduleNames])
 
-        def moduleNames = allModules.collect() { File f -> f.name }
-
-        def plugins = allModules.findAll() { File dir -> dir.listFiles().find { File f -> f.name.endsWith("GrailsPlugin.groovy")} }
-        def apps  = allModules.findAll() { File dir -> !dir.listFiles().find { File f -> f.name.endsWith("GrailsPlugin.groovy")} }
-
-        def reader = new AstPluginDescriptorReader()
-        def binaryPlugins = []
-        def sourcePlugins = []
+        def dependentPlugins = []
         for (File pluginDir in plugins) {
-            def descriptor = pluginDir.listFiles().find { it.name.endsWith("GrailsPlugin.groovy")}
-            def info = reader.readPluginInfo(new FileSystemResource(descriptor))
-            def packaging = info.packaging ?: "source"
-            def isBinary = "binary" == packaging
-            def template = isBinary ? grailsResource("src/grails/templates/maven/binary-plugin.pom") :  grailsResource("src/grails/templates/maven/plugin.pom")
-            def pluginPom = new File(pluginDir, "pom.xml")
-            if (!pluginPom.exists()) {
-                copyGrailsResource(pluginPom, template)
-                def pluginGroup = info.group ?: "org.grails.plugins"
-                ant.replace(file:pluginPom) {
-                    replacefilter token:"@parent.group@", value:group
-                    replacefilter token:"@group@", value:pluginGroup
-                    replacefilter token:"@parent@", value:name
-                    replacefilter token:"@parent.version@", value:version
-                    replacefilter token:"@grailsVersion@", value:buildSettings.grailsVersion
-                    replacefilter token:"@name@", value:info.name
-                    replacefilter token:"@version@", value:info.version
-
-                }
-
-                (isBinary ? binaryPlugins : sourcePlugins ) << [group:pluginGroup, name: info.name, version:info.version]
-            }
+            dependentPlugins << pomGenerator.generate(group, pluginDir, [parent: parentModel])
         }
 
         for (File appDir in apps) {
-            def template = grailsResource("src/grails/templates/maven/app.pom")
-            def appPom = new File(appDir, "pom.xml")
-            if (!appPom.exists()) {
-                copyGrailsResource(appPom, template)
-
-                def appProps = new File(appDir, "application.properties")
-                def props = Metadata.getInstance(appProps)
-
-                List<String> dependencies = binaryPlugins.collect() {
-                    """
-    <dependency>
-        <groupId>$it.group</groupId>
-        <artifactId>$it.name</artifactId>
-        <version>$it.version</version>
-    </dependency>
-                    """
-                }
-                dependencies.addAll( sourcePlugins.collect {
-"""
-    <dependency>
-        <groupId>$it.group</groupId>
-        <artifactId>$it.name</artifactId>
-        <version>$it.version</version>
-        <type>zip</type>
-        <scope>compile</scope>
-    </dependency>
-
-""".toString()
-                })
-
-                ant.replace(file:appPom) {
-                    replacefilter token:"@parent.group@", value:group
-                    replacefilter token:"@group@", value:group
-                    replacefilter token:"@parent@", value:name
-                    replacefilter token:"@parent.version@", value:version
-                    replacefilter token:"@grailsVersion@", value:buildSettings.grailsVersion
-                    replacefilter token:"@name@", value:props.getApplicationName()
-                    replacefilter token:"@version@", value:props.getApplicationVersion()
-                    replacefilter token:"@plugins@", value: dependencies.join('')
-                }
-            }
+            pomGenerator.generate(group, appDir, [parent: parentModel, plugins: dependentPlugins])
         }
+    }
 
-        ant.replace(file:parentPom) {
-            replacefilter token:"@group@", value:group
-            replacefilter token:"@name@", value:name
-            replacefilter token:"@version@", value:version
-            replacefilter token:"@modules@", value:moduleNames.collect { "<module>$it</module>"}.join(System.getProperty("line.separator"))
-        }
+    /**
+     * Returns {@code true} if the given directory contains a Grails application
+     * (not a plugin). This is based on whether <tt>dir</tt> contains a <tt>grails-app</tt>
+     * sub-directory or not.
+     */
+    private boolean isAppDir(File dir) {
+        new File(dir, "grails-app").exists() && !isPluginDir(dir)
+    }
+
+    /**
+     * Returns {@code true} if the given directory contains a Grails plugin,
+     * i.e. it has a plugin descriptor file.
+     */
+    private boolean isPluginDir(File dir) {
+        dir.listFiles({ File p, String name -> name.endsWith("GrailsPlugin.groovy")} as FilenameFilter)
     }
 }

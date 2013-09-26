@@ -22,6 +22,8 @@ import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.Proxy
 import org.sonatype.aether.repository.RemoteRepository
 import grails.util.Environment
+import grails.build.logging.GrailsConsole
+import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 
 /**
  * @author Graeme Rocher
@@ -29,6 +31,12 @@ import grails.util.Environment
  */
 @CompileStatic
 class RepositoriesConfiguration {
+    AetherDependencyManager dependencyManager
+
+    RepositoriesConfiguration(AetherDependencyManager dependencyManager) {
+        this.dependencyManager = dependencyManager
+    }
+
     List<RemoteRepository> repositories = []
 
     /**
@@ -57,9 +65,19 @@ class RepositoriesConfiguration {
     void grailsHome() {
         // noop.. not supported
     }
+
+    void grailsRepo(String location) {
+        GrailsConsole.getInstance().warn("grailsRepo() method deprecated. Legacy Grails SVN repositories are not supported by Aether.")
+    }
+
     void mavenLocal() {
         // noop.. enabled by default
     }
+
+    void mavenLocal(String location) {
+        dependencyManager.cacheDir = location
+    }
+
     RemoteRepository mavenCentral(Closure configurer = null) {
         final existing = repositories.find { ArtifactRepository ar -> ar.id == "mavenCentral" }
         if (!existing) {

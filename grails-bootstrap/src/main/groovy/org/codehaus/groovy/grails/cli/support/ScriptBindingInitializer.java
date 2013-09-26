@@ -67,7 +67,7 @@ public class ScriptBindingInitializer {
     private boolean interactive;
 
     public ScriptBindingInitializer(CommandLine commandLine, URLClassLoader classLoader, BuildSettings settings,
-            PluginPathDiscoverySupport pluginPathSupport, boolean interactive) {
+                                    PluginPathDiscoverySupport pluginPathSupport, boolean interactive) {
         this.commandLine = commandLine;
         this.settings = settings;
         this.pluginPathSupport = pluginPathSupport;
@@ -76,91 +76,89 @@ public class ScriptBindingInitializer {
     }
 
     /**
-     * Prep the binding. We add the location of GRAILS_HOME under
-     * the variable name "grailsHome". We also add a closure that
-     * should be used with "includeTargets <<" - it takes a string
-     * and returns either a file containing the named Grails script
-     * or the script class.
+     * Prep the binding. We add the location of GRAILS_HOME under the variable name "grailsHome". We also add a closure that should be used with "includeTargets <<" - it takes a string and returns
+     * either a file containing the named Grails script or the script class.
      *
      * So, this:
      *
-     *   includeTargets << grailsScript("Init")
+     * includeTargets << grailsScript("Init")
      *
-     * will load the "Init" script from $GRAILS_HOME/scripts if it
-     * exists there; otherwise it will load the Init class.
+     * will load the "Init" script from $GRAILS_HOME/scripts if it exists there; otherwise it will load the Init class.
      */
     @SuppressWarnings("unchecked")
     public GantBinding initBinding(final GantBinding binding, String scriptName) {
-         BuildSettings buildSettings = settings;
-         Closure<?> c = buildSettings.getGrailsScriptClosure();
-         c.setDelegate(binding);
-         @SuppressWarnings("rawtypes")
-         Map argsMap = new LinkedHashMap(commandLine.getUndeclaredOptions());
-         argsMap.put("params", commandLine.getRemainingArgs());
-         binding.setVariable(ARGS_MAP, argsMap);
-         binding.setVariable("args", commandLine.getRemainingArgsLineSeparated());
-         binding.setVariable(GRAILS_SCRIPT, c);
-         URLClassLoader classLoader = this.classLoader;
-         final GrailsConsole grailsConsole = GrailsConsole.getInstance();
-         final File basedir = buildSettings.getBaseDir();
+        BuildSettings buildSettings = settings;
+        @SuppressWarnings("rawtypes")
+        Map argsMap = new LinkedHashMap(commandLine.getUndeclaredOptions());
+        argsMap.put("params", commandLine.getRemainingArgs());
+        binding.setVariable(ARGS_MAP, argsMap);
+        binding.setVariable("args", commandLine.getRemainingArgsLineSeparated());
+        URLClassLoader classLoader = this.classLoader;
+        final GrailsConsole grailsConsole = GrailsConsole.getInstance();
+        final File basedir = buildSettings.getBaseDir();
 
-         BaseSettingsApi cla = initBinding(binding, buildSettings, classLoader, grailsConsole, interactive);
+        BaseSettingsApi cla = initBinding(binding, buildSettings, classLoader, grailsConsole, interactive);
 
-         // Enable UAA for run-app because it is likely that the container will be running long enough to report useful info
-         if (scriptName.equals("RunApp")) {
-             cla.enableUaa();
-         }
+        // Enable UAA for run-app because it is likely that the container will be running long enough to report useful info
+        if (scriptName.equals("RunApp")) {
+            cla.enableUaa();
+        }
 
-         // setup Ant alias for older scripts
-         binding.setVariable("Ant", binding.getVariable("ant"));
+        // setup Ant alias for older scripts
+        binding.setVariable("Ant", binding.getVariable("ant"));
 
-         // Hide the deprecation warnings that occur with plugins that
-         // use "Ant" instead of "ant".
-         // TODO Remove this after 1.1 is released. Plugins should be
-         // able to safely switch to "ant" by then (few people should
-         // still be on 1.0.3 or earlier).
-         setUIListener(binding);
+        // Hide the deprecation warnings that occur with plugins that
+        // use "Ant" instead of "ant".
+        // TODO Remove this after 1.1 is released. Plugins should be
+        // able to safely switch to "ant" by then (few people should
+        // still be on 1.0.3 or earlier).
+        setUIListener(binding);
 
-         // Create binding variables that contain the locations of each of the
-         // plugins loaded by the application. The name of each variable is of
-         // the form <pluginName>PluginDir.
-         try {
-             // First, if this is a plugin project, we need to add its descriptor.
-             List<File> descriptors = new ArrayList<File>();
-             File desc = pluginPathSupport.getPluginDescriptor(basedir);
-             if (desc != null) descriptors.add(desc);
+        // Create binding variables that contain the locations of each of the
+        // plugins loaded by the application. The name of each variable is of
+        // the form <pluginName>PluginDir.
+        try {
+            // First, if this is a plugin project, we need to add its descriptor.
+            List<File> descriptors = new ArrayList<File>();
+            File desc = pluginPathSupport.getPluginDescriptor(basedir);
+            if (desc != null) {
+                descriptors.add(desc);
+            }
 
-             // Next add all those of installed plugins.
-             for (File dir : pluginPathSupport.listKnownPluginDirs()) {
-                 File pluginDescriptor = pluginPathSupport.getPluginDescriptor(dir);
-                 if (pluginDescriptor != null) {
-                     descriptors.add(pluginDescriptor);
-                 }
-                 else {
-                     grailsConsole.log("Cannot find plugin descriptor for path '" + dir.getPath() + "'.");
-                 }
-             }
+            // Next add all those of installed plugins.
+            for (File dir : pluginPathSupport.listKnownPluginDirs()) {
+                File pluginDescriptor = pluginPathSupport.getPluginDescriptor(dir);
+                if (pluginDescriptor != null) {
+                    descriptors.add(pluginDescriptor);
+                } else {
+                    grailsConsole.log("Cannot find plugin descriptor for path '" + dir.getPath() + "'.");
+                }
+            }
 
-             // Go through all the descriptors and add the appropriate binding
-             // variable for each one that contains the location of its plugin directory.
-             for (File file : descriptors) {
-                 Matcher matcher = pluginDescriptorPattern.matcher(file.getName());
-                 matcher.find();
-                 String pluginName = GrailsNameUtils.getPropertyName(matcher.group(1));
+            // Go through all the descriptors and add the appropriate binding
+            // variable for each one that contains the location of its plugin directory.
+            for (File file : descriptors) {
+                Matcher matcher = pluginDescriptorPattern.matcher(file.getName());
+                matcher.find();
+                String pluginName = GrailsNameUtils.getPropertyName(matcher.group(1));
 
-                 // Add the plugin path to the binding.
-                 binding.setVariable(pluginName + "PluginDir", file.getParentFile());
-             }
-         }
-         catch (Exception e) {
-             // No plugins found.
-         }
+                // Add the plugin path to the binding.
+                binding.setVariable(pluginName + "PluginDir", file.getParentFile());
+            }
+        } catch (Exception e) {
+            // No plugins found.
+        }
 
-         return binding;
-     }
+        return binding;
+    }
 
     public static BaseSettingsApi initBinding(Binding binding, BuildSettings buildSettings, URLClassLoader classLoader,
-            GrailsConsole grailsConsole, boolean interactive) {
+                                              GrailsConsole grailsConsole, boolean interactive) {
+
+        Closure<?> c = buildSettings.getGrailsScriptClosure();
+        c.setDelegate(binding);
+        binding.setVariable(GRAILS_SCRIPT, c);
+
         binding.setVariable(GRAILS_CONSOLE, grailsConsole);
         binding.setVariable(GRAILS_SETTINGS, buildSettings);
 
@@ -187,7 +185,7 @@ public class ScriptBindingInitializer {
         binding.setVariable("projectTargetDir", buildSettings.getProjectTargetDir());
         binding.setVariable("classesDir", buildSettings.getClassesDir());
         binding.setVariable("pluginClassesDir", buildSettings.getPluginClassesDir());
-        binding.setVariable("grailsTmp", grailsWork +"/tmp");
+        binding.setVariable("grailsTmp", grailsWork + "/tmp");
         binding.setVariable("classesDirPath", buildSettings.getClassesDir().getPath());
         binding.setVariable("pluginClassesDirPath", buildSettings.getPluginClassesDir().getPath());
         binding.setVariable("testDirPath", buildSettings.getTestClassesDir().getPath());
@@ -202,7 +200,7 @@ public class ScriptBindingInitializer {
         binding.setVariable("eventsClassLoader", eventsClassLoader);
         binding.setVariable("eventListener", buildEventListener);
         if (binding instanceof GantBinding) {
-            ((GantBinding)binding).addBuildListener(buildEventListener);
+            ((GantBinding) binding).addBuildListener(buildEventListener);
         }
 
         final BaseSettingsApi cla = new BaseSettingsApi(buildSettings, buildEventListener, interactive);
@@ -214,10 +212,10 @@ public class ScriptBindingInitializer {
     }
 
     private void setUIListener(GantBinding binding) {
-         AntBuilder ant = (AntBuilder) binding.getVariable("ant");
+        AntBuilder ant = (AntBuilder) binding.getVariable("ant");
 
-         Project project = ant.getProject();
-         project.getBuildListeners().clear();
-         GrailsConsoleAntBuilder.addGrailsConsoleBuildListener(project);
-     }
+        Project project = ant.getProject();
+        project.getBuildListeners().clear();
+        GrailsConsoleAntBuilder.addGrailsConsoleBuildListener(project);
+    }
 }
