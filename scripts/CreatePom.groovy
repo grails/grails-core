@@ -35,7 +35,12 @@ target(default: "Creates a POM for a Grails project") {
     try {
         def group = argsMap.params[0]?.trim()
         if (group) {
-            generator.generate group
+            if (argsMap["with-parent"]) {
+                generator.generateWithParent group
+            }
+            else {
+                generator.generate group
+            }
             grailsConsole.addStatus "POM generated."
         }
         else {
@@ -52,7 +57,12 @@ target(default: "Creates a POM for a Grails project") {
 
 String msg() {
     return '''\
-Usage: grails create-pom <group>
+Usage: grails [--with-parent] create-pom <group>
 Example: grails create-pom com.mycompany
+
+where:
+    with-parent = Adds a <parent> to the POM that references the POM in the
+                  parent directory. If no parent POM exists, the command will
+                  fail.
 '''
 }

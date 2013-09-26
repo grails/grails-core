@@ -37,6 +37,11 @@ target(default: "Creates a multi-project build for Maven") {
         if (group && name && version) {
             generator.generate group, name, version
             grailsConsole.addStatus "Multi-module Maven build configured."
+            grailsConsole.log """
+Sub-projects have not been configured with the dependencies explicitly declared in BuildConfig.groovy. \
+You can either manually add them to each project's pom.xml or run `create-pom --with-parent` in the sub-projects. \
+If you run `create-pom` in the sub-projects, you will have to manually add the inter-project dependencies.
+"""
         }
         else {
             println msg()

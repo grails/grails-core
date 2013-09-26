@@ -3,16 +3,24 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>@group@</groupId>
-    <artifactId>@name@</artifactId>
-    <packaging>grails-app</packaging>
-    <version>@version@</version>
-    <name>@name@</name>
-    <description>@name@</description>
+    <% if (binding.hasVariable('parent')) { %>
+    <parent>
+        <groupId>${parent.group}</groupId>
+        <artifactId>${parent.name}</artifactId>
+        <version>${parent.version}</version>
+        <relativePath>..</relativePath>
+    </parent>
+    <% } %>
+    <groupId>${group}</groupId>
+    <artifactId>${name}</artifactId>
+    <packaging>${packaging}</packaging>
+    <version>${version}</version>
 
+    <name>${name}</name>
+    <description>${name}</description>
 
     <properties>
-        <grails.version>@grailsVersion@</grails.version>
+        <grails.version>${grailsVersion}</grails.version>
         <h2.version>1.3.170</h2.version>
     </properties>
 
@@ -20,87 +28,112 @@
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-async</artifactId>
-            <version>${grails.version}</version>
+            <version>\${grails.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-rest</artifactId>
-            <version>${grails.version}</version>
+            <version>\${grails.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-services</artifactId>
-            <version>${grails.version}</version>
+            <version>\${grails.version}</version>
         </dependency>
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-i18n</artifactId>
-            <version>${grails.version}</version>
+            <version>\${grails.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-databinding</artifactId>
-            <version>${grails.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-filters</artifactId>
-            <version>${grails.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-gsp</artifactId>
-            <version>${grails.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-log4j</artifactId>
-            <version>${grails.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-servlets</artifactId>
-            <version>${grails.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-plugin-url-mappings</artifactId>
-            <version>${grails.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.grails</groupId>
-            <artifactId>grails-resources</artifactId>
-            <version>${grails.version}</version>
-            <scope>runtime</scope>
+            <version>\${grails.version}</version>
         </dependency>
 
         <dependency>
-            <groupId>com.h2database</groupId>
-            <artifactId>h2</artifactId>
-            <version>${h2.version}</version>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-filters</artifactId>
+            <version>\${grails.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-gsp</artifactId>
+            <version>\${grails.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-log4j</artifactId>
+            <version>\${grails.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-servlets</artifactId>
+            <version>\${grails.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-plugin-url-mappings</artifactId>
+            <version>\${grails.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.grails</groupId>
+            <artifactId>grails-resources</artifactId>
+            <version>\${grails.version}</version>
             <scope>runtime</scope>
         </dependency>
 
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-test</artifactId>
-            <version>${grails.version}</version>
+            <version>\${grails.version}</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-testing</artifactId>
-            <version>${grails.version}</version>
+            <version>\${grails.version}</version>
             <scope>test</scope>
         </dependency>
 
-        @dependencies@
+        <% if (!pluginProject) { %>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>\${h2.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <% } %>
 
-        @plugins@
+        <% for (dep in dependencies) { %>
+        <dependency>
+            <groupId>${dep.group}</groupId>
+            <artifactId>${dep.name}</artifactId>
+            <version>${dep.version}</version>
+            <scope>${dep.scope}</scope>
+            <% if (dep.type) { %><type>${dep.type}</type><% } %>
+        </dependency>
+        <% } %>
+
+        <% for (p in plugins) { %>
+        <dependency>
+            <groupId>${p.group}</groupId>
+            <artifactId>${p.name}</artifactId>
+            <version>${p.version}</version>
+            <scope>${p.scope}</scope>
+            <% if (p.type) { %><type>${p.type}</type><% } %>
+        </dependency>
+        <% } %>
+
     </dependencies>
 
     <build>
@@ -147,7 +180,7 @@
             <plugin>
                 <groupId>org.grails</groupId>
                 <artifactId>grails-maven-plugin</artifactId>
-                <version>${grails.version}</version>
+                <version>\${grails.version}</version>
                 <configuration>
                     <!-- Whether for Fork a JVM to run Grails commands -->
                     <fork>true</fork>
@@ -183,9 +216,9 @@
                 <dependency>
                     <groupId>com.sun</groupId>
                     <artifactId>tools</artifactId>
-                    <version>${java.version}</version>
+                    <version>\${java.version}</version>
                     <scope>system</scope>
-                    <systemPath>${java.home}/../lib/tools.jar</systemPath>
+                    <systemPath>\${java.home}/../lib/tools.jar</systemPath>
                 </dependency>
             </dependencies>
         </profile>
