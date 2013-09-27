@@ -411,6 +411,15 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected Process attachOutputListener(Process process, boolean async = false) {
+
+        addShutdownHook {
+            process.destroy()
+
+            new ProcessBuilder()
+                    .command('reset')
+                    .start().waitFor()
+        }
+
         def is = process.inputStream
         def es = process.errorStream
         def t1 = new Thread(new TextDumper(is))

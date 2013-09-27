@@ -360,7 +360,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
             }
             ConfigurationHelper.initConfig(config, null, classLoader)
         }
-        buildEventListener.binding.setVariable('config', config)
+        buildEventListener?.binding?.setVariable('config', config)
         Holders.config = config
         return config
     }
