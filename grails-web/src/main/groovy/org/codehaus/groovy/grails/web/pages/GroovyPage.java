@@ -447,12 +447,16 @@ public abstract class GroovyPage extends Script {
                         staticOut.append('\"').append(value).append('\"');
                     }
                 }
-                staticOut.append('>');
-                if (body != null) {
+                
+                if (body == null) {
+                    staticOut.append("/>");
+                } else {
+                    staticOut.append('>');
                     Object bodyOutput = body.call();
                     if (bodyOutput != null) staticOut.print(bodyOutput);
+                    staticOut.append("</").append(tagNamespace).append(':').append(tagName).append('>');
                 }
-                staticOut.append("</").append(tagNamespace).append(':').append(tagName).append('>');
+
             }
         } catch (Throwable e) {
             if (LOG.isTraceEnabled()) {

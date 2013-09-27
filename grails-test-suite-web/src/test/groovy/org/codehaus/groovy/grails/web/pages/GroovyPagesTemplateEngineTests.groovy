@@ -167,7 +167,7 @@ class GroovyPagesTemplateEngineTests extends GroovyTestCase {
 
         w.writeTo(pw)
 
-        assertEquals '''<g:actionSubmit onclick="return confirm('Are You Sure')"></g:actionSubmit>''', sw.toString()
+        assertEquals '''<g:actionSubmit onclick="return confirm('Are You Sure')"/>''', sw.toString()
     }
 
     private GrailsApplication createMockGrailsApplication(ConfigObject config = null) {

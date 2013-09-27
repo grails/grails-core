@@ -13,12 +13,17 @@ class PluginDescriptorReaderTests extends GroovyTestCase {
 
         def plugin = pluginReader.readPluginInfo(new ByteArrayResource('''
 import org.codehaus.groovy.grails.plugins.springsecurity.AuthorizeTools
+
+class DummyClassGRAILS8727Top { }
+
 class FooBarGrailsPlugin {
     def version = "0.1"
     def grailsVersion = "1.3"
     def evict = ['hibernate', 'domainClass']
     def dependsOn = ['hibernate':'1.3', 'domainClass':'1.2']
 }
+
+class DummyClassGRAILS8727Bottom { }
 '''.bytes))
 
         assert "0.1" == plugin.version : "plugin version should have been 0.1"

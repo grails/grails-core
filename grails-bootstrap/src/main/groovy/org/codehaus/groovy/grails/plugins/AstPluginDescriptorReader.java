@@ -77,6 +77,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
     class PluginReadingPhaseOperation  extends CompilationUnit.PrimaryClassNodeOperation {
         private BasicGrailsPluginInfo pluginInfo;
         private MetaClass pluginInfoMetaClass;
+        
         public PluginReadingPhaseOperation(BasicGrailsPluginInfo pluginInfo) {
             this.pluginInfo = pluginInfo;
             pluginInfoMetaClass = pluginInfo.getMetaClass();
@@ -85,14 +86,21 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
         @Override
         public void call(final SourceUnit source, GeneratorContext context,
                 ClassNode classNode) throws CompilationFailedException {
+            String className = classNode.getNameWithoutPackage();
+            
+            if(className.endsWith("GrailsPlugin")) {
+                visitContents(className, source, classNode);
+            }
+        }
 
+        protected void visitContents(String className, final SourceUnit source, ClassNode classNode) {
             ClassCodeVisitorSupport visitor = new ClassCodeVisitorSupport() {
-
+   
                 @Override
                 public void visitProperty(PropertyNode node) {
                     String name = node.getName();
                     final Expression expr = node.getField().getInitialExpression();
-
+   
                     if (expr != null) {
                         Object value;
                         if (expr instanceof ListExpression) {
@@ -112,7 +120,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
                         else {
                             value = expr.getText();
                         }
-
+   
                         if (DefaultGroovyMethods.hasProperty(pluginInfo, name) != null) {
                             pluginInfoMetaClass.setProperty(pluginInfo,name, value);
                         }
@@ -122,16 +130,15 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
                         super.visitProperty(node);
                     }
                 }
-
+   
                 @Override
                 protected SourceUnit getSourceUnit() {
                     return source;
                 }
             };
-
+   
             classNode.visitContents(visitor);
-            String className = classNode.getNameWithoutPackage();
-
+   
             pluginInfoMetaClass.setProperty(pluginInfo, "name", GrailsNameUtils.getPluginName(className + ".groovy"));
         }
     }
