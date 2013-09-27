@@ -319,8 +319,17 @@ public class GrailsConsole {
     }
 
     private void assertAllowInput() {
+        assertAllowInput(null);
+    }
+    
+    private void assertAllowInput(String prompt) {
         if (reader == null) {
-            throw new IllegalStateException("User input is not enabled, cannot obtain input stream");
+            String msg = "User input is not enabled, cannot obtain input stream";
+            if (prompt != null) {
+                msg = msg + " - while trying: " + prompt;
+            }
+
+            throw new IllegalStateException(msg);
         }
     }
 
@@ -721,7 +730,7 @@ public class GrailsConsole {
     }
 
     private String readLine(String prompt, boolean secure) {
-        assertAllowInput();
+        assertAllowInput(prompt);
         userInputActive = true;
         try {
             return secure ? reader.readLine(prompt, SECURE_MASK_CHAR) : reader.readLine(prompt);
