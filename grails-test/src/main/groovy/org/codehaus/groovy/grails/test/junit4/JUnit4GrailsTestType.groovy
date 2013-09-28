@@ -35,7 +35,10 @@ import org.junit.runners.Suite
 
 /**
  * An {@code GrailsTestType} for JUnit4 tests.
+ *
+ * @deprecated No longer used to support alternate JUnit4 test runners
  */
+@Deprecated
 class JUnit4GrailsTestType extends GrailsTestTypeSupport {
 
     static final List<String> SUFFIXES = ["Test", "Tests"].asImmutable()
