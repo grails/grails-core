@@ -138,7 +138,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         }
     }
 
-    private View createGrailsView(String viewName) throws Exception {
+    protected View createGrailsView(String viewName) throws Exception {
         // try GSP if res is null
 
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
@@ -161,7 +161,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
             return createGroovyPageView(webRequest, scriptSource.getURI(), scriptSource);
         }
 
-        return createJstlView(viewName);
+        return createFallbackView(viewName);
     }
 
     private View createGroovyPageView(GrailsWebRequest webRequest, String gspView, ScriptSource scriptSource) {
@@ -182,7 +182,11 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         return gspSpringView;
     }
 
-    private View createJstlView(String viewName) throws Exception {
+    protected View createFallbackView(String viewName) throws Exception {
+        return createJstlView(viewName);
+    }
+    
+    protected View createJstlView(String viewName) throws Exception {
         AbstractUrlBasedView view = buildView(viewName);
         view.setApplicationContext(getApplicationContext());
         view.afterPropertiesSet();
