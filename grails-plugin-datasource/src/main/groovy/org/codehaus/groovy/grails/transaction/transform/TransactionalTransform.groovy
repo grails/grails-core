@@ -21,7 +21,13 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
+import org.codehaus.groovy.ast.stmt.CatchStatement
+import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
+import org.codehaus.groovy.ast.stmt.IfStatement
+import org.codehaus.groovy.ast.stmt.ReturnStatement
+import org.codehaus.groovy.ast.stmt.ThrowStatement
+import org.codehaus.groovy.ast.stmt.TryCatchStatement
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
@@ -144,10 +150,20 @@ class TransactionalTransform implements ASTTransformation{
             )
         }
 
+        final tryCatchStatement = new TryCatchStatement(methodNode.getCode(), new EmptyStatement())
+
+        final runtimeExceptionThrowStatement = new ThrowStatement(new VariableExpression('$ex'))
+        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(RuntimeException.class), '$ex'), runtimeExceptionThrowStatement))
+
+        final throwableHolderClassNode = ClassHelper.make(ThrowableHolder).getPlainNodeReference()
+        final throwableHolderConstructorArgs = new ArgumentListExpression()
+        throwableHolderConstructorArgs.addExpression(new VariableExpression('$ex'))
+        final throwableHolderReturnStatement = new ReturnStatement(new ConstructorCallExpression(throwableHolderClassNode, throwableHolderConstructorArgs))
+        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Exception.class), '$ex'), throwableHolderReturnStatement))
+
         final methodArgs = new ArgumentListExpression()
         final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus).getPlainNodeReference(), "transactionStatus")] as Parameter[]
-        final callCallExpression = new ClosureExpression(executeMethodParameterTypes ,
-            methodNode.getCode())
+        final callCallExpression = new ClosureExpression(executeMethodParameterTypes, tryCatchStatement)
 
         final variableScope = new VariableScope()
         for (Parameter p in methodNode.parameters) {
@@ -161,12 +177,25 @@ class TransactionalTransform implements ASTTransformation{
         castExpression.coerce = true
         methodArgs.addExpression(castExpression)
 
+        final transactionTemplateResultVar = new VariableExpression('$transactionTemplateExecuteResult')
         final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, METHOD_EXECUTE, methodArgs)
         final executeMethodNode = transactionTemplateClassNode.getMethod("execute", executeMethodParameterTypes)
         executeMethodCallExpression.setMethodTarget(executeMethodNode)
         methodBody.addStatement(new ExpressionStatement(
-            executeMethodCallExpression
+            new DeclarationExpression(
+                transactionTemplateResultVar,
+                GrailsASTUtils.ASSIGNMENT_OPERATOR,
+                executeMethodCallExpression
+            )
         ))
+
+        final instanceOfThrowableHolderExpression = new BooleanExpression(new BinaryExpression(
+            transactionTemplateResultVar, Token.newSymbol(Types.KEYWORD_INSTANCEOF, 0, 0), new ClassExpression(throwableHolderClassNode)
+        ))
+        final throwableHolderThrowStatement = new ThrowStatement(new MethodCallExpression(transactionTemplateResultVar, "getThrowable", GrailsASTUtils.ZERO_ARGUMENTS))
+        methodBody.addStatement(new IfStatement(instanceOfThrowableHolderExpression, throwableHolderThrowStatement, new EmptyStatement()))
+
+        methodBody.addStatement(new ExpressionStatement(transactionTemplateResultVar))
         methodNode.setCode(methodBody)
     }
 
