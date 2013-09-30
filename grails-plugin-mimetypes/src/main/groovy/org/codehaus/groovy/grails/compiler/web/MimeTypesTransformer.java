@@ -102,7 +102,9 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector, Annota
             final ArgumentListExpression args = new ArgumentListExpression();
             args.addExpression(new VariableExpression("this"))
                 .addExpression(new VariableExpression("callable"));
-            methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression(FIELD_MIME_TYPES_API),  WITH_FORMAT_METHOD, args)));
+            MethodCallExpression methodCall = new MethodCallExpression(new VariableExpression(FIELD_MIME_TYPES_API),  WITH_FORMAT_METHOD, args);
+            methodCall.setMethodTarget(mimeTypesApiClass.getMethods(WITH_FORMAT_METHOD).get(0));
+            methodBody.addStatement(new ExpressionStatement(methodCall));
             MethodNode methodNode = new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody);
             methodNode.addAnnotation(getMarkerAnnotation());
             classNode.addMethod(methodNode);
