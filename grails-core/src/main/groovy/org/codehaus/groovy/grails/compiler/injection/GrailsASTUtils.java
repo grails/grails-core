@@ -21,6 +21,7 @@ import grails.util.GrailsNameUtils;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 import groovy.transform.CompileStatic;
+import groovy.transform.TypeChecked;
 import groovy.transform.TypeCheckingMode;
 
 import java.io.File;
@@ -34,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1203,16 +1206,38 @@ public class GrailsASTUtils {
         return methodCallExpression;
     }
 
-    
     public static void copyAnnotations(final AnnotatedNode from, final AnnotatedNode to) {
+        copyAnnotations(from, to, null, null);
+    }
+    
+    public static void copyAnnotations(final AnnotatedNode from, final AnnotatedNode to, final Set<String> included, final Set<String> excluded) {
         final List<AnnotationNode> annotationsToCopy = from.getAnnotations();
         for(final AnnotationNode node : annotationsToCopy) {
-            final AnnotationNode copyOfAnnotationNode = new AnnotationNode(node.getClassNode());
-            final Map<String, Expression> members = node.getMembers();
-            for(final Map.Entry<String, Expression> entry : members.entrySet()) {
-                copyOfAnnotationNode.addMember(entry.getKey(), entry.getValue());
+            String annotationClassName = node.getClassNode().getName();
+            if((excluded==null || !excluded.contains(annotationClassName)) &&
+               (included==null || included.contains(annotationClassName))) {
+                final AnnotationNode copyOfAnnotationNode = new AnnotationNode(node.getClassNode());
+                final Map<String, Expression> members = node.getMembers();
+                for(final Map.Entry<String, Expression> entry : members.entrySet()) {
+                    copyOfAnnotationNode.addMember(entry.getKey(), entry.getValue());
+                }
+                to.addAnnotation(copyOfAnnotationNode);
             }
-            to.addAnnotation(copyOfAnnotationNode);
         }
+    }
+    
+    public static void filterAnnotations(final AnnotatedNode annotatedNode, final Set<String> classNamesToRetain, final Set<String> classNamesToRemove) {
+        for(Iterator<AnnotationNode> iterator = annotatedNode.getAnnotations().iterator(); iterator.hasNext(); ) {
+            final AnnotationNode node = iterator.next();
+            String annotationClassName = node.getClassNode().getName();
+            if((classNamesToRemove==null || classNamesToRemove.contains(annotationClassName)) &&
+               (classNamesToRetain==null || !classNamesToRetain.contains(annotationClassName))) {
+                iterator.remove();
+            }
+        }
+    }
+    
+    public static void removeCompileStaticAnnotations(final AnnotatedNode annotatedNode) {
+        filterAnnotations(annotatedNode, null, new HashSet<String>(Arrays.asList(new String[]{CompileStatic.class.getName(), TypeChecked.class.getName()})));
     }
 }
