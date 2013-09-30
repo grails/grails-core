@@ -224,6 +224,59 @@ new BookService()
 
     }
 
+    @Issue("GRAILS-10557")
+    void "Test rollback with @Transactional annotation"() {
+        when:"A new instance of a class with a @Transactional method is created"
+            def bookService = new GroovyShell().evaluate('''
+import grails.transaction.*
+import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionStatus
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Propagation
+
+class BookService {
+
+    @Transactional
+    void throwRuntimeException() {
+        throw new TestTransactionRuntimeException()
+    }
+
+    @Transactional
+    void throwException() {
+        throw new TestTransactionException()
+    }
+
+}
+
+new BookService()
+''')
+
+        then:"It implements TransactionManagerAware"
+            bookService instanceof TransactionManagerAware
+
+        when:"A transactionManager is set"
+            def transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+
+        and:"A transactional method throw RuntimeException"
+            bookService.throwRuntimeException()
+
+        then:"The transaction was rolled back"
+            thrown(TestTransactionRuntimeException)
+            transactionManager.transactionRolledBack == true
+
+        when:"A transactionManager is set"
+            transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+
+        and:"A transactional method throw RuntimeException"
+            bookService.throwException()
+
+        then:"The transaction wasn't rolled back"
+            thrown(TestTransactionException)
+            transactionManager.transactionRolledBack == false
+    }
 
     TestTransactionManager getPlatformTransactionManager() {
         def dataSource = new DriverManagerDataSource("org.h2.Driver", "jdbc:h2:mem:${TransactionalTransformSpec.name};MVCC=TRUE;LOCK_TIMEOUT=10000", "sa", "")
@@ -233,6 +286,8 @@ new BookService()
 }
 class TestTransactionManager extends DataSourceTransactionManager {
     boolean transactionStarted = false
+    boolean transactionRolledBack = false
+
     TestTransactionManager(DataSource dataSource) {
         super(dataSource)
     }
@@ -242,7 +297,16 @@ class TestTransactionManager extends DataSourceTransactionManager {
         transactionStarted = true
         return super.doGetTransaction()
     }
+
+    @Override
+    protected void doRollback(DefaultTransactionStatus status) {
+        transactionRolledBack = true
+        super.doRollback(status)
+    }
 }
 
+class TestTransactionRuntimeException extends RuntimeException {
+}
 
-
+class TestTransactionException extends Exception {
+}
