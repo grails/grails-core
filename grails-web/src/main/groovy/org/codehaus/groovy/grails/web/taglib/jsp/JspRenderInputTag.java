@@ -34,7 +34,9 @@ import org.springframework.web.servlet.tags.RequestContextAwareTag;
  * org.codehaus.groovy.grails.web.taglib.RenderInputTag).
  *
  * @author Graeme Rocher
+ * @deprecated
  */
+@Deprecated
 public class JspRenderInputTag extends RequestContextAwareTag {
 
     private static final long serialVersionUID = 2807429431970194614L;

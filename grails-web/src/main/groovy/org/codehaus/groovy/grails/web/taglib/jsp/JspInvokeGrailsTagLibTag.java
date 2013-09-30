@@ -62,7 +62,9 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Graeme Rocher
  * @since 16-Jan-2006
+ * @deprecated
  */
+@Deprecated
 public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicAttributes {
     private static final long serialVersionUID = 4688821761801666631L;
     private static final String ZERO_ARGUMENTS = "zeroArgumentsFlag";
