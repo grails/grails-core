@@ -22,6 +22,7 @@ import grails.validation.ASTValidateableHelper;
 import grails.validation.DefaultASTValidateableHelper;
 import grails.web.Action;
 import grails.web.RequestParameter;
+import grails.web.controllers.ControllerMethod;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -271,6 +272,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 method.isPublic() && 
                 !method.isAbstract() &&
                 method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
+                method.getAnnotations(new ClassNode(ControllerMethod.class)).isEmpty() &&
                 method.getLineNumber() >= 0 &&
                 !method.getReturnType().getName().equals(VOID_TYPE) &&
                 !isExceptionHandlingMethod(method);
