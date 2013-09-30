@@ -278,6 +278,92 @@ new BookService()
             transactionManager.transactionRolledBack == false
     }
 
+    @Issue("GRAILS-10564")
+    void "Test rollback with @Transactional annotation attributes"() {
+        when:"A new instance of a class with a @Transactional method is created"
+            def bookService = new GroovyShell().evaluate('''
+import grails.transaction.*
+import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionStatus
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Propagation
+
+class BookService {
+
+    @Transactional(noRollbackFor = [TestTransactionRuntimeException])
+    void noRollbackForMethod() {
+        throw new TestTransactionRuntimeException()
+    }
+
+    @Transactional(noRollbackForClassName = ["TestTransactionRuntimeException"])
+    void noRollbackForClassNameMethod() {
+        throw new TestTransactionRuntimeException()
+    }
+
+    @Transactional(rollbackFor = TestTransactionException)
+    void rollbackForMethod() {
+        throw new TestTransactionException()
+    }
+
+    @Transactional(rollbackForClassName = "TestTransactionException")
+    void rollbackForClassNameMethod() {
+        throw new TestTransactionException()
+    }
+
+}
+
+new BookService()
+''')
+
+        then:"It implements TransactionManagerAware"
+            bookService instanceof TransactionManagerAware
+
+        when:"A transactionManager is set"
+            def transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+
+        and:"A transactional method throw RuntimeException"
+            bookService.noRollbackForMethod()
+
+        then:"The transaction wasn't rolled back"
+            thrown(TestTransactionRuntimeException)
+            transactionManager.transactionRolledBack == false
+
+        when:"A transactionManager is set"
+            transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+
+        and:"A transactional method throw RuntimeException"
+            bookService.noRollbackForClassNameMethod()
+
+        then:"The transaction wasn't rolled back"
+            thrown(TestTransactionRuntimeException)
+            transactionManager.transactionRolledBack == false
+
+        when:"A transactionManager is set"
+            transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+
+        and:"A transactional method throw Exception"
+            bookService.rollbackForMethod()
+
+        then:"The transaction was rolled back"
+            thrown(TestTransactionException)
+            transactionManager.transactionRolledBack == true
+
+        when:"A transactionManager is set"
+            transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+
+        and:"A transactional method throw Exception"
+            bookService.rollbackForClassNameMethod()
+
+        then:"The transaction was rolled back"
+            thrown(TestTransactionException)
+            transactionManager.transactionRolledBack == true
+    }
+
     TestTransactionManager getPlatformTransactionManager() {
         def dataSource = new DriverManagerDataSource("org.h2.Driver", "jdbc:h2:mem:${TransactionalTransformSpec.name};MVCC=TRUE;LOCK_TIMEOUT=10000", "sa", "")
 
