@@ -22,7 +22,9 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
                       cvs: 'text/csv',
                       all: '*/*',
                       json: 'application/json',
-                      html: ['text/html','application/xhtml+xml']
+                      html: ['text/html','application/xhtml+xml'],
+                      foov1: 'application/vnd.foo+json;v=1.0',
+                      foov2: 'application/vnd.foo+json;v=2.0'
                     ]
         """)
 
@@ -122,5 +124,13 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         def mimes = getAcceptHeaderParser().parse("application/xml; charset=UTF-8")
 
         assertEquals 1, mimes.size()
+    }
+
+    void testAcceptExtensionWithCustomVndTypeAndVersion() {
+        def mimesV1 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=3.0; charset=UTF-8")
+        def mimesV2 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=2.0; charset=UTF-8")
+
+        assertEquals(['foov1'], mimesV1.extension)
+        assertEquals(['foov2'], mimesV2.extension)
     }
 }
