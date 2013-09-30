@@ -127,7 +127,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
     }
 
     void testAcceptExtensionWithCustomVndTypeAndVersion() {
-        def mimesV1 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=3.0; charset=UTF-8")
+        def mimesV1 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=1.0; charset=UTF-8")
         def mimesV2 = getAcceptHeaderParser().parse("application/vnd.foo+json;v=2.0; charset=UTF-8")
 
         assertEquals(['foov1'], mimesV1.extension)
