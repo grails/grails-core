@@ -679,7 +679,7 @@ public class GrailsASTUtils {
                 grails.persistence.Entity.class,
                 javax.persistence.Entity.class);
 
-        if (!isDomainClass) {
+        if (!isDomainClass && sourceNode != null) {
             final String sourcePath = sourceNode.getName();
             final File sourceFile = new File(sourcePath);
             File parent = sourceFile.getParentFile();
