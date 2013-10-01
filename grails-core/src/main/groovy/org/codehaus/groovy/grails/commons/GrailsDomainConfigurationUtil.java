@@ -332,6 +332,7 @@ public class GrailsDomainConfigurationUtil {
                 !name.equals(GrailsDomainClassProperty.MAPPING_STRATEGY) &&
                 !name.equals(GrailsDomainClassProperty.MAPPED_BY) &&
                 !name.equals(GrailsDomainClassProperty.BELONGS_TO) &&
+                !name.equals(GrailsDomainClassProperty.ERRORS) &&
                 !name.equals(PROPERTIES_PROPERTY);
     }
 
