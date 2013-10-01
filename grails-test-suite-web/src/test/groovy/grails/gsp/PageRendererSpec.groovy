@@ -106,21 +106,6 @@ class PageRendererSpec extends Specification {
             """
     }
 
-    void "Test render page with absolute link"() {
-        given:
-        resourceLoader.resources.put("/foo/_bar.gsp", new ByteArrayResource("""
-				<g:link uri='/' absolute='true' base='http://some.other.host'>target</g:link>
-            """.bytes))
-        when:
-        def contents = pageRenderer.render(template:"/foo/bar", model:[:])
-        then:
-        contents != null
-
-        contents == """
-				<a href="http://some.other.host/">target</a>
-            """
-    }
-
     private PageRenderer getPageRenderer() {
         GroovyPagesTemplateEngine te = new GroovyPagesTemplateEngine()
 
