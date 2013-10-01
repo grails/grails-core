@@ -314,26 +314,33 @@ public class GrailsDomainConfigurationUtil {
                 && isNotConfigurational(name);
     }
 
+    private static final Set<String> CONFIGURATIONAL_PROPERTIES;
+    static {
+        Set<String> configurational = CollectionUtils.newSet(
+                GrailsDomainClassProperty.META_CLASS,
+                GrailsDomainClassProperty.CLASS, 
+                GrailsDomainClassProperty.TRANSIENT,
+                GrailsDomainClassProperty.ATTACHED, 
+                GrailsDomainClassProperty.DIRTY,
+                GrailsDomainClassProperty.DIRTY_PROPERTY_NAMES, 
+                GrailsDomainClassProperty.RELATES_TO_MANY,
+                GrailsDomainClassProperty.HAS_MANY, 
+                GrailsDomainClassProperty.EVANESCENT,
+                GrailsDomainClassProperty.CONSTRAINTS, 
+                GrailsDomainClassProperty.MAPPING_STRATEGY,
+                GrailsDomainClassProperty.MAPPED_BY, 
+                GrailsDomainClassProperty.BELONGS_TO,
+                GrailsDomainClassProperty.ERRORS, 
+                PROPERTIES_PROPERTY);
+        CONFIGURATIONAL_PROPERTIES = Collections.unmodifiableSet(configurational);
+    }
+
     public static boolean isConfigurational(String name) {
-        return !isNotConfigurational(name);
+        return CONFIGURATIONAL_PROPERTIES.contains(name);
     }
 
     public static boolean isNotConfigurational(String name) {
-        return !name.equals(GrailsDomainClassProperty.META_CLASS) &&
-                !name.equals(GrailsDomainClassProperty.CLASS) &&
-                !name.equals(GrailsDomainClassProperty.TRANSIENT) &&
-                !name.equals(GrailsDomainClassProperty.ATTACHED) &&
-                !name.equals(GrailsDomainClassProperty.DIRTY) &&
-                !name.equals(GrailsDomainClassProperty.DIRTY_PROPERTY_NAMES) &&
-                !name.equals(GrailsDomainClassProperty.RELATES_TO_MANY) &&
-                !name.equals(GrailsDomainClassProperty.HAS_MANY) &&
-                !name.equals(GrailsDomainClassProperty.EVANESCENT) &&
-                !name.equals(GrailsDomainClassProperty.CONSTRAINTS) &&
-                !name.equals(GrailsDomainClassProperty.MAPPING_STRATEGY) &&
-                !name.equals(GrailsDomainClassProperty.MAPPED_BY) &&
-                !name.equals(GrailsDomainClassProperty.BELONGS_TO) &&
-                !name.equals(GrailsDomainClassProperty.ERRORS) &&
-                !name.equals(PROPERTIES_PROPERTY);
+        return !isConfigurational(name);
     }
 
     /**
