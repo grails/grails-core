@@ -71,7 +71,7 @@ public class ASTValidationErrorsHelper implements ASTErrorsHelper {
     protected void addErrorsField(final ClassNode paramTypeClassNode) {
         final ASTNode errorsField = paramTypeClassNode.getField(ERRORS_PROPERTY_NAME);
         if (errorsField == null) {
-            paramTypeClassNode.addField(new FieldNode(ERRORS_PROPERTY_NAME, Modifier.PUBLIC,
+            paramTypeClassNode.addField(new FieldNode(ERRORS_PROPERTY_NAME, Modifier.PRIVATE,
                     ERRORS_CLASS_NODE, paramTypeClassNode, NULL_EXPRESSION));
         }
     }
