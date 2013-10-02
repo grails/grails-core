@@ -31,8 +31,7 @@ import java.lang.annotation.*;
  * {@link org.springframework.transaction.interceptor.RuleBasedTransactionAttribute}
  * class, and in fact {@link org.springframework.transaction.annotation.AnnotationTransactionAttributeSource} will directly
  * convert the data to the latter class, so that Spring's transaction support code
- * does not have to know about annotations. If no rules are relevant to the exception,
- * it will be treated like
+ * does not have to know about annotations. It will be treated like
  * {@link org.springframework.transaction.interceptor.DefaultTransactionAttribute}
  * (rolling back on runtime exceptions).
  *

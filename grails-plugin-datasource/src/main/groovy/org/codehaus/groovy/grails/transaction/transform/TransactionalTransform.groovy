@@ -16,18 +16,13 @@
 
 package org.codehaus.groovy.grails.transaction.transform
 
+import org.codehaus.groovy.grails.orm.support.GrailsTransactionTemplate
 import grails.transaction.Transactional
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
-import org.codehaus.groovy.ast.stmt.CatchStatement
-import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
-import org.codehaus.groovy.ast.stmt.IfStatement
-import org.codehaus.groovy.ast.stmt.ReturnStatement
-import org.codehaus.groovy.ast.stmt.ThrowStatement
-import org.codehaus.groovy.ast.stmt.TryCatchStatement
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
@@ -38,14 +33,15 @@ import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
-import org.springframework.transaction.support.TransactionCallback
-import org.springframework.transaction.support.TransactionTemplate
+import org.springframework.transaction.interceptor.NoRollbackRuleAttribute
+import org.springframework.transaction.interceptor.RollbackRuleAttribute
+import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute
 
 import java.lang.reflect.Modifier
 
 /**
  * This AST transform reads the {@link grails.transaction.Transactional} annotation and transforms method calls by
- * wrapping the body of the method in an execution of {@link org.springframework.transaction.support.TransactionTemplate#execute(org.springframework.transaction.support.TransactionCallback)}.
+ * wrapping the body of the method in an execution of {@link GrailsTransactionTemplate}.
  *
  *
  * @author Graeme Rocher
@@ -116,10 +112,74 @@ class TransactionalTransform implements ASTTransformation{
 
         BlockStatement methodBody = new BlockStatement()
 
+        final transactionAttributeVar = new VariableExpression('$transactionAttribute')
+        final transactionAttributeClassNode = ClassHelper.make(RuleBasedTransactionAttribute).getPlainNodeReference()
+        methodBody.addStatement(
+            new ExpressionStatement(
+                new DeclarationExpression(
+                    transactionAttributeVar,
+                    GrailsASTUtils.ASSIGNMENT_OPERATOR,
+                    new ConstructorCallExpression(transactionAttributeClassNode, GrailsASTUtils.ZERO_ARGUMENTS)
+                )
+            )
+        )
+
+        final rollbackRuleAttributeClassNode = ClassHelper.make(RollbackRuleAttribute).getPlainNodeReference()
+        final noRollbackRuleAttributeClassNode = ClassHelper.make(NoRollbackRuleAttribute).getPlainNodeReference()
+        final members = annotationNode.getMembers()
+        members.each { String name, Expression expr ->
+
+            Token operator = Token.newSymbol(Types.EQUAL, 0, 0)
+
+            if (name == 'isolation') {
+                name = 'isolationLevel'
+                expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
+            } else if (name == 'propagation') {
+                name = 'propagationBehavior'
+                expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
+            } else if (name == 'rollbackFor' || name == 'rollbackForClassName' || name == 'noRollbackFor' || name == 'noRollbackForClassName') {
+                final targetClassNode = (name == 'rollbackFor' || name == 'rollbackForClassName') ? rollbackRuleAttributeClassNode : noRollbackRuleAttributeClassNode
+                name = 'rollbackRules'
+                if (expr instanceof ListExpression) {
+                    final closureExpression = new ClosureExpression(
+                        GrailsASTUtils.ZERO_PARAMETERS,
+                        new ExpressionStatement(new ConstructorCallExpression(targetClassNode, new VariableExpression("it")))
+                    )
+                    closureExpression.setVariableScope(new VariableScope())
+                    operator = Token.newSymbol(Types.PLUS_EQUAL, 0, 0)
+                    expr = new MethodCallExpression(expr, "collect", closureExpression)
+                } else {
+                    operator = Token.newSymbol(Types.LEFT_SHIFT, 0, 0)
+                    expr = new ConstructorCallExpression(targetClassNode, expr)
+                }
+            }
+
+            methodBody.addStatement(
+                new ExpressionStatement(
+                    new BinaryExpression(new PropertyExpression(transactionAttributeVar, name),
+                        operator,
+                        expr)
+                )
+            )
+        }
+
+        final methodArgs = new ArgumentListExpression()
+        final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus).getPlainNodeReference(), "transactionStatus")] as Parameter[]
+        final callCallExpression = new ClosureExpression(executeMethodParameterTypes, methodNode.code)
+
+        final variableScope = new VariableScope()
+        for (Parameter p in methodNode.parameters) {
+            p.setClosureSharedVariable(true);
+            variableScope.putReferencedLocalVariable(p);
+        }
+        callCallExpression.setVariableScope(variableScope)
+        methodArgs.addExpression(callCallExpression)
+
         final constructorArgs = new ArgumentListExpression()
-        constructorArgs.addExpression(new VariableExpression(PROPERTY_TRANSACTION_MANAGER));
+        constructorArgs.addExpression(new VariableExpression(PROPERTY_TRANSACTION_MANAGER))
+        constructorArgs.addExpression(transactionAttributeVar)
         final transactionTemplateVar = new VariableExpression('$transactionTemplate')
-        final transactionTemplateClassNode = ClassHelper.make(TransactionTemplate).getPlainNodeReference()
+        final transactionTemplateClassNode = ClassHelper.make(GrailsTransactionTemplate).getPlainNodeReference()
         methodBody.addStatement(
             new ExpressionStatement(
                 new DeclarationExpression(
@@ -130,72 +190,11 @@ class TransactionalTransform implements ASTTransformation{
             )
         )
 
-        final members = annotationNode.getMembers()
-        members.each { String name, Expression expr ->
-
-            if (name == 'isolation') {
-                name = 'isolationLevel'
-                expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
-            } else if (name == 'propagation') {
-                name = 'propagationBehavior'
-                expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
-            }
-
-            methodBody.addStatement(
-                new ExpressionStatement(
-                    new BinaryExpression(new PropertyExpression(transactionTemplateVar, name),
-                        Token.newSymbol(Types.EQUAL, 0, 0),
-                        expr)
-                )
-            )
-        }
-
-        final tryCatchStatement = new TryCatchStatement(methodNode.getCode(), new EmptyStatement())
-
-        final runtimeExceptionThrowStatement = new ThrowStatement(new VariableExpression('$ex'))
-        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(RuntimeException.class), '$ex'), runtimeExceptionThrowStatement))
-
-        final throwableHolderClassNode = ClassHelper.make(ThrowableHolder).getPlainNodeReference()
-        final throwableHolderConstructorArgs = new ArgumentListExpression()
-        throwableHolderConstructorArgs.addExpression(new VariableExpression('$ex'))
-        final throwableHolderReturnStatement = new ReturnStatement(new ConstructorCallExpression(throwableHolderClassNode, throwableHolderConstructorArgs))
-        tryCatchStatement.addCatch(new CatchStatement(new Parameter(new ClassNode(Exception.class), '$ex'), throwableHolderReturnStatement))
-
-        final methodArgs = new ArgumentListExpression()
-        final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus).getPlainNodeReference(), "transactionStatus")] as Parameter[]
-        final callCallExpression = new ClosureExpression(executeMethodParameterTypes, tryCatchStatement)
-
-        final variableScope = new VariableScope()
-        for (Parameter p in methodNode.parameters) {
-            p.setClosureSharedVariable(true);
-            variableScope.putReferencedLocalVariable(p);
-        }
-        callCallExpression.setVariableScope(variableScope)
-        final castExpression = new CastExpression(ClassHelper.make(TransactionCallback).getPlainNodeReference(),
-            callCallExpression
-        )
-        castExpression.coerce = true
-        methodArgs.addExpression(castExpression)
-
-        final transactionTemplateResultVar = new VariableExpression('$transactionTemplateExecuteResult')
         final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, METHOD_EXECUTE, methodArgs)
         final executeMethodNode = transactionTemplateClassNode.getMethod("execute", executeMethodParameterTypes)
         executeMethodCallExpression.setMethodTarget(executeMethodNode)
-        methodBody.addStatement(new ExpressionStatement(
-            new DeclarationExpression(
-                transactionTemplateResultVar,
-                GrailsASTUtils.ASSIGNMENT_OPERATOR,
-                executeMethodCallExpression
-            )
-        ))
+        methodBody.addStatement(new ExpressionStatement(executeMethodCallExpression))
 
-        final instanceOfThrowableHolderExpression = new BooleanExpression(new BinaryExpression(
-            transactionTemplateResultVar, Token.newSymbol(Types.KEYWORD_INSTANCEOF, 0, 0), new ClassExpression(throwableHolderClassNode)
-        ))
-        final throwableHolderThrowStatement = new ThrowStatement(new MethodCallExpression(transactionTemplateResultVar, "getThrowable", GrailsASTUtils.ZERO_ARGUMENTS))
-        methodBody.addStatement(new IfStatement(instanceOfThrowableHolderExpression, throwableHolderThrowStatement, new EmptyStatement()))
-
-        methodBody.addStatement(new ExpressionStatement(transactionTemplateResultVar))
         methodNode.setCode(methodBody)
     }
 
