@@ -24,11 +24,7 @@ import grails.util.BuildSettings
  * @since 1.2.3
  */
 
-includeTargets << grailsScript("_GrailsArgParsing")
-
 target ("default" : "Sets HTTP proxy configuration for Grails") {
-    depends(parseArguments)
-
     if (argsMap.params) {
         def name = argsMap.params[0]
 

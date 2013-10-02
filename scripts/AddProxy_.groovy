@@ -19,10 +19,7 @@
  * @since 1.2.3
  */
 
-includeTargets << grailsScript("_GrailsArgParsing")
 target(default:"Adds a proxy configuration") {
-    depends(parseArguments)
-
     if (!argsMap.params) {
         grailsConsole.error msg()
         exit 1
