@@ -419,6 +419,9 @@ public class GrailsASTUtils {
     public static MethodNode addDelegateStaticMethod(Expression delegate, ClassNode classNode, MethodNode delegateMethod, AnnotationNode markerAnnotation, Map<String, ClassNode> genericsPlaceholders) {
         Parameter[] parameterTypes = delegateMethod.getParameters();
         String declaredMethodName = delegateMethod.getName();
+        if (METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
+            declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
+        }
         if (classNode.hasDeclaredMethod(declaredMethodName, copyParameters(parameterTypes, genericsPlaceholders))) {
             return null;
         }
@@ -427,7 +430,7 @@ public class GrailsASTUtils {
         ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, false, genericsPlaceholders);
         
         MethodCallExpression methodCallExpression = new MethodCallExpression(
-                delegate, declaredMethodName, arguments);
+                delegate, delegateMethod.getName(), arguments);
         methodCallExpression.setMethodTarget(delegateMethod);
 
         ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, delegateMethod);
@@ -436,22 +439,16 @@ public class GrailsASTUtils {
 
         methodBody.addStatement(ifStatement);
         ClassNode returnType = replaceGenericsPlaceholders(delegateMethod.getReturnType(), genericsPlaceholders);
-        if (METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
-            declaredMethodName = STATIC_METHOD_MISSING_METHOD_NAME;
+        MethodNode methodNode = new MethodNode(declaredMethodName, Modifier.PUBLIC | Modifier.STATIC, returnType,
+                copyParameters(parameterTypes, genericsPlaceholders), GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
+                methodBody);
+        methodNode.addAnnotations(delegateMethod.getAnnotations());
+        if (shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
+            methodNode.addAnnotation(markerAnnotation);
         }
-        MethodNode methodNode = classNode.getDeclaredMethod(declaredMethodName, parameterTypes);
-        if (methodNode == null) {
-            methodNode = new MethodNode(declaredMethodName,
-                Modifier.PUBLIC | Modifier.STATIC,
-                returnType, copyParameters(parameterTypes, genericsPlaceholders),
-                GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
-            methodNode.addAnnotations(delegateMethod.getAnnotations());
-            if(shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
-                methodNode.addAnnotation(markerAnnotation);
-            }
 
-            classNode.addMethod(methodNode);
-        }
+        classNode.addMethod(methodNode);
+
         return methodNode;
     }
 
