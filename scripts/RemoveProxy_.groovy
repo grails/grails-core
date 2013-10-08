@@ -19,9 +19,7 @@
  * @since 1.2.3
  */
 
-includeTargets << grailsScript("_GrailsArgParsing")
 target(default: "Removes a proxy configuration") {
-    depends(parseArguments)
 
     if (!argsMap.params) {
         println msg()

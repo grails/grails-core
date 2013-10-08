@@ -86,7 +86,11 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
                 injector.performInjectionOnAnnotatedClass(sourceUnit, cNode);
             }
         } catch (RuntimeException e) {
-            GrailsConsole.getInstance().error("Error occurred calling AST injector: " + e.getMessage(), e);
+            try {
+                GrailsConsole.getInstance().error("Error occurred calling AST injector: " + e.getMessage(), e);
+            } catch (Throwable t) {
+                // ignore it
+            }
             throw e;
         }
     }

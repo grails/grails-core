@@ -129,6 +129,28 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
         assertEquals("(*)?",((UrlMapping) mappings.get(0)).getUrlData().getTokens()[2]);
     }
 
+    public void testResourceMappingsWithVersionAndNamespace() throws Exception {
+        GroovyShell shell = new GroovyShell();
+        Binding binding = new Binding();
+        // Resource Entry: "/api/foo"(resources:"foo", version:'1.0', namespace:'v1')
+        Script script = shell.parse("mappings = {\n" +
+                "\"/api/foo\"(resources: 'foo', version: '1.0', namespace: 'v1')\n" +
+        "}");
+
+        script.setBinding(binding);
+        script.run();
+
+        Closure closure = (Closure)binding.getVariable("mappings");
+        List<UrlMapping> mappings = evaluator.evaluateMappings(closure);
+        assertTrue(mappings.size() > 0);
+        //Check that version and namespace are correct for each mapping
+        for (UrlMapping mapping: mappings) {
+            assertEquals("1.0", mapping.getVersion());
+            assertEquals("v1", mapping.getNamespace());
+        }
+
+    }
+
     private boolean makeSureMatchesConstraintExistsOnId(UrlMapping mapping) {
         ConstrainedProperty [] props = mapping.getConstraints();
         for (int i = 0; i < props.length; i++) {

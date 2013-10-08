@@ -93,7 +93,7 @@ class GrailsAetherCoreDependencies extends GrailsCoreDependencies {
 
     void registerDependencies(DependenciesConfiguration configuration, String scope, Collection<Dependency> dependencies) {
         for (Dependency d in dependencies) {
-            if (scope == 'build') {
+            if (scope == 'build' || scope == 'docs') {
                 configuration.addBuildDependency(d)
             }
             else {

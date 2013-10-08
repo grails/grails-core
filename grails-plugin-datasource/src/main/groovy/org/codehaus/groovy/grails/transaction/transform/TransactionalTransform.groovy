@@ -16,6 +16,7 @@
 
 package org.codehaus.groovy.grails.transaction.transform
 
+import org.codehaus.groovy.grails.orm.support.GrailsTransactionTemplate
 import grails.transaction.Transactional
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.ast.*
@@ -32,14 +33,15 @@ import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
-import org.springframework.transaction.support.TransactionCallback
-import org.springframework.transaction.support.TransactionTemplate
+import org.springframework.transaction.interceptor.NoRollbackRuleAttribute
+import org.springframework.transaction.interceptor.RollbackRuleAttribute
+import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute
 
 import java.lang.reflect.Modifier
 
 /**
  * This AST transform reads the {@link grails.transaction.Transactional} annotation and transforms method calls by
- * wrapping the body of the method in an execution of {@link org.springframework.transaction.support.TransactionTemplate#execute(org.springframework.transaction.support.TransactionCallback)}.
+ * wrapping the body of the method in an execution of {@link GrailsTransactionTemplate}.
  *
  *
  * @author Graeme Rocher
@@ -110,10 +112,74 @@ class TransactionalTransform implements ASTTransformation{
 
         BlockStatement methodBody = new BlockStatement()
 
+        final transactionAttributeVar = new VariableExpression('$transactionAttribute')
+        final transactionAttributeClassNode = ClassHelper.make(RuleBasedTransactionAttribute).getPlainNodeReference()
+        methodBody.addStatement(
+            new ExpressionStatement(
+                new DeclarationExpression(
+                    transactionAttributeVar,
+                    GrailsASTUtils.ASSIGNMENT_OPERATOR,
+                    new ConstructorCallExpression(transactionAttributeClassNode, GrailsASTUtils.ZERO_ARGUMENTS)
+                )
+            )
+        )
+
+        final rollbackRuleAttributeClassNode = ClassHelper.make(RollbackRuleAttribute).getPlainNodeReference()
+        final noRollbackRuleAttributeClassNode = ClassHelper.make(NoRollbackRuleAttribute).getPlainNodeReference()
+        final members = annotationNode.getMembers()
+        members.each { String name, Expression expr ->
+
+            Token operator = Token.newSymbol(Types.EQUAL, 0, 0)
+
+            if (name == 'isolation') {
+                name = 'isolationLevel'
+                expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
+            } else if (name == 'propagation') {
+                name = 'propagationBehavior'
+                expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
+            } else if (name == 'rollbackFor' || name == 'rollbackForClassName' || name == 'noRollbackFor' || name == 'noRollbackForClassName') {
+                final targetClassNode = (name == 'rollbackFor' || name == 'rollbackForClassName') ? rollbackRuleAttributeClassNode : noRollbackRuleAttributeClassNode
+                name = 'rollbackRules'
+                if (expr instanceof ListExpression) {
+                    final closureExpression = new ClosureExpression(
+                        GrailsASTUtils.ZERO_PARAMETERS,
+                        new ExpressionStatement(new ConstructorCallExpression(targetClassNode, new VariableExpression("it")))
+                    )
+                    closureExpression.setVariableScope(new VariableScope())
+                    operator = Token.newSymbol(Types.PLUS_EQUAL, 0, 0)
+                    expr = new MethodCallExpression(expr, "collect", closureExpression)
+                } else {
+                    operator = Token.newSymbol(Types.LEFT_SHIFT, 0, 0)
+                    expr = new ConstructorCallExpression(targetClassNode, expr)
+                }
+            }
+
+            methodBody.addStatement(
+                new ExpressionStatement(
+                    new BinaryExpression(new PropertyExpression(transactionAttributeVar, name),
+                        operator,
+                        expr)
+                )
+            )
+        }
+
+        final methodArgs = new ArgumentListExpression()
+        final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus).getPlainNodeReference(), "transactionStatus")] as Parameter[]
+        final callCallExpression = new ClosureExpression(executeMethodParameterTypes, methodNode.code)
+
+        final variableScope = new VariableScope()
+        for (Parameter p in methodNode.parameters) {
+            p.setClosureSharedVariable(true);
+            variableScope.putReferencedLocalVariable(p);
+        }
+        callCallExpression.setVariableScope(variableScope)
+        methodArgs.addExpression(callCallExpression)
+
         final constructorArgs = new ArgumentListExpression()
-        constructorArgs.addExpression(new VariableExpression(PROPERTY_TRANSACTION_MANAGER));
+        constructorArgs.addExpression(new VariableExpression(PROPERTY_TRANSACTION_MANAGER))
+        constructorArgs.addExpression(transactionAttributeVar)
         final transactionTemplateVar = new VariableExpression('$transactionTemplate')
-        final transactionTemplateClassNode = ClassHelper.make(TransactionTemplate).getPlainNodeReference()
+        final transactionTemplateClassNode = ClassHelper.make(GrailsTransactionTemplate).getPlainNodeReference()
         methodBody.addStatement(
             new ExpressionStatement(
                 new DeclarationExpression(
@@ -124,49 +190,11 @@ class TransactionalTransform implements ASTTransformation{
             )
         )
 
-        final members = annotationNode.getMembers()
-        members.each { String name, Expression expr ->
-
-            if (name == 'isolation') {
-                name = 'isolationLevel'
-                expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
-            } else if (name == 'propagation') {
-                name = 'propagationBehavior'
-                expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
-            }
-
-            methodBody.addStatement(
-                new ExpressionStatement(
-                    new BinaryExpression(new PropertyExpression(transactionTemplateVar, name),
-                        Token.newSymbol(Types.EQUAL, 0, 0),
-                        expr)
-                )
-            )
-        }
-
-        final methodArgs = new ArgumentListExpression()
-        final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus).getPlainNodeReference(), "transactionStatus")] as Parameter[]
-        final callCallExpression = new ClosureExpression(executeMethodParameterTypes ,
-            methodNode.getCode())
-
-        final variableScope = new VariableScope()
-        for (Parameter p in methodNode.parameters) {
-            p.setClosureSharedVariable(true);
-            variableScope.putReferencedLocalVariable(p);
-        }
-        callCallExpression.setVariableScope(variableScope)
-        final castExpression = new CastExpression(ClassHelper.make(TransactionCallback).getPlainNodeReference(),
-            callCallExpression
-        )
-        castExpression.coerce = true
-        methodArgs.addExpression(castExpression)
-
         final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, METHOD_EXECUTE, methodArgs)
         final executeMethodNode = transactionTemplateClassNode.getMethod("execute", executeMethodParameterTypes)
         executeMethodCallExpression.setMethodTarget(executeMethodNode)
-        methodBody.addStatement(new ExpressionStatement(
-            executeMethodCallExpression
-        ))
+        methodBody.addStatement(new ExpressionStatement(executeMethodCallExpression))
+
         methodNode.setCode(methodBody)
     }
 

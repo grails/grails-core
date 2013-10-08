@@ -204,22 +204,25 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * @throws Exception Thrown if an error occurs
      */
     public static View resolveView(HttpServletRequest request, String viewName, String controllerName, ViewResolver viewResolver) throws Exception {
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-
-        View v;
-        if (viewName.startsWith(String.valueOf(SLASH))) {
-            v = viewResolver.resolveViewName(viewName, webRequest.getLocale());
-        }
-        else {
+        return viewResolver.resolveViewName(addViewPrefix(viewName, controllerName), GrailsWebRequest.lookup(request).getLocale());
+    }
+    
+    public static String addViewPrefix(String viewName) {
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+        return addViewPrefix(viewName, webRequest != null ? webRequest.getControllerName() : null);
+    }
+    
+    public static String addViewPrefix(String viewName, String controllerName) {
+        if (!viewName.startsWith(String.valueOf(SLASH))) {
             StringBuilder buf = new StringBuilder();
             buf.append(SLASH);
             if (controllerName != null) {
                 buf.append(controllerName).append(SLASH);
             }
             buf.append(viewName);
-            v = viewResolver.resolveViewName(buf.toString(), webRequest.getLocale());
+            return buf.toString();
         }
-        return v;
+        return viewName;
     }
 
     /**
