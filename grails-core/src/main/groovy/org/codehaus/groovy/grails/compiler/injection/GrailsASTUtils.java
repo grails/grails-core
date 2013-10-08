@@ -410,13 +410,13 @@ public class GrailsASTUtils {
          * Adds a static method to the given class node that delegates to the given method
          * and resolves the object to invoke the method on from the given expression.
          *
-         * @param expression The expression
+         * @param delegate The expression
          * @param classNode The class node
          * @param delegateMethod The delegate method
          * @param markerAnnotation A marker annotation to be added to all methods
          * @return The added method node or null if it couldn't be added
          */
-    public static MethodNode addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode delegateMethod, AnnotationNode markerAnnotation, Map<String, ClassNode> genericsPlaceholders) {
+    public static MethodNode addDelegateStaticMethod(Expression delegate, ClassNode classNode, MethodNode delegateMethod, AnnotationNode markerAnnotation, Map<String, ClassNode> genericsPlaceholders) {
         Parameter[] parameterTypes = delegateMethod.getParameters();
         String declaredMethodName = delegateMethod.getName();
         if (classNode.hasDeclaredMethod(declaredMethodName, copyParameters(parameterTypes, genericsPlaceholders))) {
@@ -427,11 +427,11 @@ public class GrailsASTUtils {
         ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, false, genericsPlaceholders);
         
         MethodCallExpression methodCallExpression = new MethodCallExpression(
-                expression, declaredMethodName, arguments);
+                delegate, declaredMethodName, arguments);
         methodCallExpression.setMethodTarget(delegateMethod);
 
         ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, delegateMethod);
-        VariableExpression apiVar = addApiVariableDeclaration(expression, delegateMethod, methodBody);
+        VariableExpression apiVar = addApiVariableDeclaration(delegate, delegateMethod, methodBody);
         IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
 
         methodBody.addStatement(ifStatement);
