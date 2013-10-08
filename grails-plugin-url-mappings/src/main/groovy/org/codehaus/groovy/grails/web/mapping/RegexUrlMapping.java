@@ -220,7 +220,6 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             String urlRoot = lastSlash > -1 ? pattern.substring(0, lastSlash) : pattern;
             String urlEnd = lastSlash > -1 ? pattern.substring(lastSlash, pattern.length()) : "";
 
-
             // Now replace "*" with "[^/]" and "**" with ".*".
             pattern = "^" + urlRoot
                                     .replace("(\\.(*))", "\\.?([^/]+)?")
@@ -230,9 +229,12 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
             pattern += urlEnd
                                 .replace("(\\.(*))", "\\.?([^/]+)?")
-                                .replaceAll("([^\\*])\\*([^\\*])", "$1[^/\\.]+$2")
-                                .replaceAll("([^\\*])\\*$", "$1[^/\\.]+")
-                                .replaceAll("\\*\\*", ".*");
+                                .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
+                                .replaceAll("([^\\*])\\*$", "$1[^/]+")
+                                .replaceAll("\\*\\*", ".*")
+//                                .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+)\\\\.")
+                                .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\?\\\\\\.", "([^/.]+)\\?\\\\.")
+                                ;
 
             pattern += "/??$";
             regex = Pattern.compile(pattern);

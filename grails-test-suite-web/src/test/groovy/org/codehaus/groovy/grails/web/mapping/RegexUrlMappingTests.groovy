@@ -61,6 +61,10 @@ mappings {
       controller = "survey"
       action = "viewByName"
   }
+  "/reports/$foo" {
+      controller = 'reporting'
+      action = 'view'
+  }
 }
 '''
     void testMaptoURI() {
@@ -351,6 +355,22 @@ mappings {
         assertNotNull info
         assertEquals 'survey', info.controllerName
         assertEquals 'viewByName', info.actionName
+    }
+    
+    void testParameterContainingADot() {
+        def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
+        
+        def info = holder.match("/reports/my")
+        assertNotNull info
+        assertEquals 'reporting', info.controllerName
+        assertEquals 'view', info.actionName
+        assertEquals 'my', info.params.foo
+        
+        info = holder.match("/reports/my.id")
+        assertNotNull info
+        assertEquals 'reporting', info.controllerName
+        assertEquals 'view', info.actionName
+        assertEquals 'my.id', info.params.foo
     }
 
     void testInit() {
