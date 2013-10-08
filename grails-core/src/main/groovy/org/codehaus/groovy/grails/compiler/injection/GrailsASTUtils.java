@@ -424,11 +424,8 @@ public class GrailsASTUtils {
         }
 
         BlockStatement methodBody = new BlockStatement();
-        ArgumentListExpression arguments = new ArgumentListExpression();
-
-        for (Parameter parameterType : parameterTypes) {
-           arguments.addExpression(new VariableExpression(parameterType.getName()));
-       }
+        ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, false, genericsPlaceholders);
+        
         MethodCallExpression methodCallExpression = new MethodCallExpression(
                 expression, declaredMethodName, arguments);
         methodCallExpression.setMethodTarget(delegateMethod);
