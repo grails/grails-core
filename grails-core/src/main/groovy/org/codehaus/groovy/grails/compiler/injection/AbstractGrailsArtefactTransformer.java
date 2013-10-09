@@ -31,8 +31,12 @@ import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.InnerClassNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.AttributeExpression;
+import org.codehaus.groovy.ast.expr.BinaryExpression;
+import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -40,11 +44,16 @@ import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
+import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.IfStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
+import org.codehaus.groovy.runtime.MetaClassHelper;
+import org.codehaus.groovy.syntax.Token;
+import org.codehaus.groovy.syntax.Types;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -133,7 +142,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         if (requiresStaticLookupMethod()) {
             final String lookupMethodName = CURRENT_PREFIX + instanceImplementation.getSimpleName();
             createStaticLookupMethod(classNode, implementationNode, apiInstanceProperty, lookupMethodName);
-            apiInstance = new MethodCallExpression(new ClassExpression(classNode),lookupMethodName, ZERO_ARGS);
+            apiInstance = new MethodCallExpression(new ClassExpression(classNode), lookupMethodName, ZERO_ARGS);
         }
         else if (requiresAutowiring()) {
 
@@ -183,15 +192,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             createStaticLookupMethod(classNode, staticImplementationNode, apiInstanceProperty, lookupMethodName);
         }
         else {
-
-            // just create the API
             final ConstructorCallExpression constructorCallExpression = new ConstructorCallExpression(staticImplementationNode, ZERO_ARGS);
-            FieldNode fieldNode = new FieldNode(apiInstanceProperty, PRIVATE_STATIC_MODIFIER,staticImplementationNode, classNode,constructorCallExpression);
-            classNode.addField(fieldNode);
-
-            BlockStatement methodBody = new BlockStatement();
-            MethodNode lookupMethod = populateDefaultApiLookupMethod(staticImplementationNode, apiInstanceProperty, lookupMethodName, methodBody);
-            classNode.addMethod(lookupMethod);
+            addApiLookupFieldAndSetter(classNode, staticImplementationNode, apiInstanceProperty, constructorCallExpression);
+            createStaticLookupMethod(classNode, staticImplementationNode, apiInstanceProperty, lookupMethodName);
         }
 
         MethodCallExpression apiLookupMethod = new MethodCallExpression(new ClassExpression(classNode), lookupMethodName, ZERO_ARGS);
@@ -273,13 +276,13 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return GrailsASTUtils.isCandidateMethod(declaredMethod);
     }
 
-    private void createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiInstanceProperty, String lookupMethodName) {
+    private void createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiProperty, String lookupMethodName) {
         // if autowiring is required we add a default method that throws an exception
         // the method should be override via meta-programming in the Grails environment
         MethodNode lookupMethod = classNode.getMethod(lookupMethodName, ZERO_PARAMETERS);
-        if (lookupMethod == null) {
+        if (lookupMethod == null  || !lookupMethod.getDeclaringClass().equals(classNode)) {
             BlockStatement methodBody = new BlockStatement();
-            lookupMethod = populateAutowiredApiLookupMethod(classNode, implementationNode, apiInstanceProperty, lookupMethodName, methodBody);
+            lookupMethod = populateAutowiredApiLookupMethod(classNode, implementationNode, apiProperty, lookupMethodName, methodBody);
             classNode.addMethod(lookupMethod);
         }
     }
@@ -295,11 +298,39 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected MethodNode populateAutowiredApiLookupMethod(ClassNode classNode, ClassNode implementationNode,
-                                                          String apiInstanceProperty, String methodName, BlockStatement methodBody) {
+                                                          String apiProperty, String methodName, BlockStatement methodBody) {
+        
+        addApiLookupFieldAndSetter(classNode, implementationNode, apiProperty, null);
+        
+        VariableExpression apiVar = new VariableExpression(apiProperty, implementationNode);
+        
+        BlockStatement ifBlock = new BlockStatement();
         ArgumentListExpression arguments = new ArgumentListExpression();
         arguments.addExpression(new ConstantExpression("Method on class ["+classNode+"] was used outside of a Grails application. If running in the context of a test using the mocking API or bootstrap Grails correctly."));
-        methodBody.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));
+        ifBlock.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));        
+        BlockStatement elseBlock = new BlockStatement();
+        elseBlock.addStatement(new ReturnStatement(apiVar));
+        methodBody.addStatement(new IfStatement(new BooleanExpression(new BinaryExpression(apiVar, GrailsASTUtils.EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION)),ifBlock,elseBlock));
+        
         return new MethodNode(methodName, PUBLIC_STATIC_MODIFIER, implementationNode,ZERO_PARAMETERS,null,methodBody);
+    }
+
+    protected void addApiLookupFieldAndSetter(ClassNode classNode, ClassNode implementationNode,
+            String apiProperty, Expression initialValueExpression) {
+        FieldNode fieldNode = classNode.getField(apiProperty);
+        if (fieldNode == null || !fieldNode.getDeclaringClass().equals(classNode)) {
+            fieldNode = new FieldNode(apiProperty, Modifier.PRIVATE | Modifier.STATIC, implementationNode, classNode, initialValueExpression);
+            classNode.addField(fieldNode);
+            
+            String setterName = "set" + MetaClassHelper.capitalize(apiProperty);
+            Parameter setterParameter = new Parameter(implementationNode, apiProperty);
+            BlockStatement setterBody = new BlockStatement();
+            setterBody.addStatement(new ExpressionStatement(new BinaryExpression(new AttributeExpression(
+                    new ClassExpression(classNode), new ConstantExpression(apiProperty)), Token.newSymbol(Types.EQUAL, 0, 0),
+                    new VariableExpression(setterParameter))));
+
+            classNode.addMethod(setterName, Modifier.PUBLIC | Modifier.STATIC, ClassHelper.VOID_TYPE, new Parameter[]{setterParameter}, null, setterBody);
+        }
     }
 
     protected MethodNode populateDefaultApiLookupMethod(ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
