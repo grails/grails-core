@@ -89,7 +89,13 @@ class RestfulController<T> {
                 flash.message = message(code: 'default.created.message', args: [message(code: "${resourceName}.label".toString(), default: resourceClassName), instance.id])
                 redirect instance
             }
-            '*' { respond instance, [status: CREATED] }
+            '*' {
+                response.addHeader('Location',
+                        g.createLink(
+                                resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
+                                namespace: this.class.declaredFields.find({it.name == 'namespace'})))
+                respond instance, [status: CREATED]
+            }
         }
     }
 
@@ -122,7 +128,13 @@ class RestfulController<T> {
                 flash.message = message(code: 'default.updated.message', args: [message(code: "${resourceClassName}.label".toString(), default: resourceClassName), instance.id])
                 redirect instance
             }
-            '*'{ respond instance, [status: OK] }
+            '*'{
+                response.addHeader('Location',
+                        g.createLink(
+                                resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
+                                namespace: this.class.declaredFields.find({it.name == 'namespace'})))
+                respond instance, [status: OK]
+            }
         }
     }
 
