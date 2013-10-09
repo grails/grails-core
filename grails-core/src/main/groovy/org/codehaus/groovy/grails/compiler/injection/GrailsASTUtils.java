@@ -19,6 +19,8 @@ import grails.build.logging.GrailsConsole;
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
 import groovy.lang.MissingMethodException;
+import groovy.transform.CompileStatic;
+import groovy.transform.TypeCheckingMode;
 
 import java.io.File;
 import java.lang.annotation.Annotation;
@@ -62,6 +64,7 @@ import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
@@ -80,6 +83,7 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
+import org.codehaus.groovy.transform.sc.StaticCompileTransformation;
 
 /**
  * Helper methods for working with Groovy AST trees.
@@ -103,6 +107,8 @@ public class GrailsASTUtils {
     public static final ClassNode OBJECT_CLASS_NODE = new ClassNode(Object.class).getPlainNodeReference();
     public static final ClassNode VOID_CLASS_NODE = ClassHelper.VOID_TYPE;
     public static final ClassNode INTEGER_CLASS_NODE = new ClassNode(Integer.class).getPlainNodeReference();
+    private static final ClassNode COMPILESTATIC_CLASS_NODE = ClassHelper.make(CompileStatic.class);
+    private static final ClassNode TYPECHECKINGMODE_CLASS_NODE = ClassHelper.make(TypeCheckingMode.class);
     public static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
     public static final ArgumentListExpression ZERO_ARGUMENTS = new ArgumentListExpression();
     
@@ -331,7 +337,7 @@ public class GrailsASTUtils {
     }
 
     private static VariableExpression addApiVariableDeclaration(Expression delegate, MethodNode declaredMethod, BlockStatement methodBody) {
-        VariableExpression apiVar = new VariableExpression("$api_" + declaredMethod.getName());
+        VariableExpression apiVar = new VariableExpression("$api_" + declaredMethod.getName(), delegate.getType());
         DeclarationExpression de = new DeclarationExpression(apiVar, ASSIGNMENT_OPERATOR, delegate);
         methodBody.addStatement(new ExpressionStatement(de));
         return apiVar;
@@ -459,7 +465,7 @@ public class GrailsASTUtils {
      * @param classNode The class node
      * @param constructorMethod The constructor static method
      */
-    public static void addDelegateConstructor(ClassNode classNode, MethodNode constructorMethod, Map<String, ClassNode> genericsPlaceholders) {
+    public static ConstructorNode addDelegateConstructor(ClassNode classNode, MethodNode constructorMethod, Map<String, ClassNode> genericsPlaceholders) {
         BlockStatement constructorBody = new BlockStatement();
         Parameter[] constructorParams = getRemainingParameterTypes(constructorMethod.getParameters());
         ArgumentListExpression arguments = createArgumentListFromParameters(constructorParams, true, genericsPlaceholders);
@@ -492,6 +498,7 @@ public class GrailsASTUtils {
                 classNode.addConstructor(constructorNode);
             }
             constructorNode.addAnnotation(new AnnotationNode(new ClassNode(GrailsDelegatingConstructor.class)));
+            return constructorNode;
         }
         else {
             // create new constructor, restoring default constructor if there is none
@@ -515,6 +522,7 @@ public class GrailsASTUtils {
                 classNode.addConstructor(new ConstructorNode(Modifier.PUBLIC, new BlockStatement()));
             }
             cn.addAnnotation(new AnnotationNode(new ClassNode(GrailsDelegatingConstructor.class)));
+            return cn;
         }
     }
 
@@ -939,4 +947,35 @@ public class GrailsASTUtils {
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)
     private static @interface GrailsDelegatingConstructor {}
+    
+    /**
+     * Marks a method to be staticly compiled
+     * 
+     * @param methodNode
+     * @return
+     */
+    public static MethodNode addCompileStaticAnnotation(MethodNode methodNode) {
+        return addCompileStaticAnnotation(methodNode, false);
+    }
+    
+    /**
+     * Adds @CompileStatic annotation to method
+     * 
+     * @param methodNode
+     * @param skip
+     * @return
+     */
+    public static MethodNode addCompileStaticAnnotation(MethodNode methodNode, boolean skip) {
+        if(methodNode != null) {
+            AnnotationNode an = new AnnotationNode(COMPILESTATIC_CLASS_NODE);
+            if(skip) {
+                an.addMember("value", new PropertyExpression(new ClassExpression(TYPECHECKINGMODE_CLASS_NODE), "SKIP")); 
+            }
+            methodNode.addAnnotation(an);
+            if(!skip) {
+                methodNode.getDeclaringClass().addTransform(StaticCompileTransformation.class, an);
+            }
+        }
+        return methodNode;
+    }
 }
