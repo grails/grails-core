@@ -232,7 +232,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                                 .replaceAll("([^\\*])\\*([^\\*])", "$1[^/]+$2")
                                 .replaceAll("([^\\*])\\*$", "$1[^/]+")
                                 .replaceAll("\\*\\*", ".*")
-//                                .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+)\\\\.")
+                                .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\\\\\.", "([^/.]+)\\\\.")
                                 .replaceAll("\\(\\[\\^\\/\\]\\+\\)\\?\\\\\\.", "([^/.]+)\\?\\\\.")
                                 ;
 
