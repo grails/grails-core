@@ -96,9 +96,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        if(classNode instanceof InnerClassNode) return;
-        // don't inject if already an @Artefact annotation is applied
-        if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
+        if(shouldSkipInjection(classNode) || hasArtefactAnnotation(classNode)) return;
         performInjectionOnAnnotatedClass(source, context, classNode);
     }
 
@@ -108,11 +106,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     public void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        if(classNode.isEnum()) return; // don't transform enums
-        if(classNode instanceof InnerClassNode) return;
-        if(classNode.getName().contains("$")) return;
-        // only transform the targeted artefact type
-        if(!DomainClassArtefactHandler.TYPE.equals(getArtefactType()) && !isValidArtefactTypeByConvention(classNode)) return;
+        if(shouldSkipInjection(classNode)) return;
 
         Map<String, ClassNode> genericsPlaceholders = resolveGenericsPlaceHolders(classNode);
 
@@ -211,6 +205,26 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
                 }
             }
         }
+    }
+
+    protected boolean shouldSkipInjection(ClassNode classNode) {
+        return !isValidTargetClassNode(classNode)
+                || (!isValidArtefactType() && !isValidArtefactTypeByConvention(classNode));
+    }
+
+    protected boolean hasArtefactAnnotation(ClassNode classNode) {
+        return !classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty();
+    }
+
+    protected boolean isValidTargetClassNode(ClassNode classNode) {
+        if(classNode.isEnum()) return false; // don't transform enums
+        if(classNode instanceof InnerClassNode) return false;
+        if(classNode.getName().contains("$")) return false;
+        return true;
+    }
+
+    protected boolean isValidArtefactType() {
+        return DomainClassArtefactHandler.TYPE.equals(getArtefactType());
     }
 
     protected Map<String, ClassNode> resolveGenericsPlaceHolders(ClassNode classNode) {
