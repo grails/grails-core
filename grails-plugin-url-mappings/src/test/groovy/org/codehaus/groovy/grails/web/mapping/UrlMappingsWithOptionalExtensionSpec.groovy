@@ -34,7 +34,7 @@ class UrlMappingRsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
 
     }
 
-    void "Test that dynamic URL mappings can be specified with an optional extension"() {
+    void "Test that dynamic URL mappings can be specified with an optional parameter and an optional extension"() {
         given:"A URL mapping with an optional extension"
             def urlMappingsHolder = getUrlMappingsHolder {
                 "/$controller/$action?(.$format)?"()
@@ -46,8 +46,19 @@ class UrlMappingRsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
             urlMappingsHolder.match('/book')
             urlMappingsHolder.match('/book/list')
             urlMappingsHolder.match('/book/list').parameters.format == null
+    }
 
-
+    void "Test that dynamic URL mappings can be specified with a required parameter and an optional extension"() {
+        given:"A URL mapping with an optional extension"
+            def urlMappingsHolder = getUrlMappingsHolder {
+                "/$controller/$action(.$format)?"()
+            }
+            
+        expect:"URLs with and without the format specified match"
+            urlMappingsHolder.match('/book/list.xml')
+            urlMappingsHolder.match('/book/list.xml').parameters.format == 'xml'
+            urlMappingsHolder.match('/book/list')
+            urlMappingsHolder.match('/book/list').parameters.format == null
     }
 
     void "Test deep dynamic URL mappings can be specified with an optional extension"() {
