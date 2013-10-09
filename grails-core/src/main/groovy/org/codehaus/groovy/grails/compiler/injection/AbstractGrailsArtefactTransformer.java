@@ -128,7 +128,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         ClassNode implementationNode = GrailsASTUtils.replaceGenericsPlaceholders(ClassHelper.make(instanceImplementation), genericsPlaceholders);
 
         String apiInstanceProperty = INSTANCE_PREFIX + instanceImplementation.getSimpleName();
-            Expression apiInstance = new VariableExpression(apiInstanceProperty, implementationNode);
+        Expression apiInstance = new VariableExpression(apiInstanceProperty, implementationNode);
 
         if (requiresStaticLookupMethod()) {
             final String lookupMethodName = CURRENT_PREFIX + instanceImplementation.getSimpleName();
@@ -303,7 +303,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected MethodNode populateDefaultApiLookupMethod(ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
-        methodBody.addStatement(new ReturnStatement(new VariableExpression(apiInstanceProperty)));
+        methodBody.addStatement(new ReturnStatement(new VariableExpression(apiInstanceProperty, implementationNode)));
         return new MethodNode(methodName, Modifier.PRIVATE, implementationNode,ZERO_PARAMETERS,null,methodBody);
     }
 
