@@ -666,6 +666,92 @@ class GrailsWebDataBinderSpec extends Specification {
         updatedA3.name == 'Author Tres'
     }
 
+    void 'Test updating Set elements by id'() {
+        when:
+        def a1 = new Author(name: 'Author One').save()
+        def a2 = new Author(name: 'Author Two').save()
+        def a3 = new Author(name: 'Author Three').save()
+        def publisher = new Publisher(name: 'Some Publisher')
+        publisher.addToAuthors(a1)
+        publisher.addToAuthors(a2)
+        publisher.addToAuthors(a3)
+
+        then:
+        a1.id != null
+        a2.id != null
+        a3.id != null
+
+        when:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        binder.bind publisher, new SimpleMapDataBindingSource(['authors': [
+                                [id: a3.id, name: 'Author Tres'],
+                                [id: a1.id, name: 'Author Uno'],
+                                [id: a2.id, name: 'Author Dos']]])
+        def updatedA1 = publisher.authors.find { it.id == a1.id }
+        def updatedA2 = publisher.authors.find { it.id == a2.id }
+        def updatedA3 = publisher.authors.find { it.id == a3.id }
+
+        then:
+        publisher.authors.size()
+        updatedA1.name == 'Author Uno'
+        updatedA2.name == 'Author Dos'
+        updatedA3.name == 'Author Tres'
+    }
+
+    void 'Test updating Set elements by id in addition to adding new elements'() {
+        when:
+        def a1 = new Author(name: 'Author One').save()
+        def a2 = new Author(name: 'Author Two').save()
+        def a3 = new Author(name: 'Author Three').save()
+        def publisher = new Publisher(name: 'Some Publisher')
+        publisher.addToAuthors(a1)
+        publisher.addToAuthors(a2)
+        publisher.addToAuthors(a3)
+
+        then:
+        a1.id != null
+        a2.id != null
+        a3.id != null
+
+        when:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        binder.bind publisher, new SimpleMapDataBindingSource(['authors': [
+                                [id: a3.id, name: 'Author Tres'],
+                                [id: a1.id, name: 'Author Uno'],
+                                [name: 'Author Uno Part Two'],
+                                [id: a2.id, name: 'Author Dos']]])
+        def updatedA1 = publisher.authors.find { it.id == a1.id }
+        def updatedA1Part2 = publisher.authors.find { it.name == 'Author Uno Part Two' }
+        def updatedA2 = publisher.authors.find { it.id == a2.id }
+        def updatedA3 = publisher.authors.find { it.id == a3.id }
+
+        then:
+        publisher.authors.size() == 4
+        updatedA1Part2
+        updatedA1.name == 'Author Uno'
+        updatedA2.name == 'Author Dos'
+        updatedA3.name == 'Author Tres'
+    }
+
+    void 'Test binding a List of Maps to a persistent Set'() {
+        when:
+        def publisher = new Publisher(name: 'Some Publisher')
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        binder.bind publisher, new SimpleMapDataBindingSource(['authors': [
+                                [name: 'Author One'],
+                                [name: 'Author Two'],
+                                [name: 'Author Three']]])
+        def a1 = publisher.authors.find { it.name == 'Author One' }
+        def a2 = publisher.authors.find { it.name == 'Author Two' }
+        def a3 = publisher.authors.find { it.name == 'Author Three' }
+        
+        then:
+        a1
+        a2
+        a3
+        publisher.authors.size() == 3
+    }
+
     void 'Test updating a Set element by id that does not exist'() {
         given:
         def binder = new GrailsWebDataBinder(grailsApplication)
