@@ -268,7 +268,7 @@ public class GrailsASTUtils {
         return addDelegateInstanceMethod(classNode,delegate,declaredMethod, null, thisAsFirstArgument);
     }
     public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation, boolean thisAsFirstArgument) {
-        return addDelegateInstanceMethod(classNode,delegate,declaredMethod, markerAnnotation, thisAsFirstArgument, null);
+        return addDelegateInstanceMethod(classNode,delegate,declaredMethod, markerAnnotation, thisAsFirstArgument, null, false);
     }
 
     /**
@@ -283,7 +283,7 @@ public class GrailsASTUtils {
      * @param thisAsFirstArgument Whether 'this' should be passed as the first argument to the method
      * @return The added method node or null if it couldn't be added
      */
-    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation, boolean thisAsFirstArgument, Map<String, ClassNode> genericsPlaceholders) {
+    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation, boolean thisAsFirstArgument, Map<String, ClassNode> genericsPlaceholders, boolean noNullCheck) {
         Parameter[] parameterTypes = thisAsFirstArgument ? getRemainingParameterTypes(declaredMethod.getParameters()) : declaredMethod.getParameters();
         String methodName = declaredMethod.getName();
         if (classNode.hasDeclaredMethod(methodName, copyParameters(parameterTypes, genericsPlaceholders))) {
@@ -305,11 +305,16 @@ public class GrailsASTUtils {
 
         MethodCallExpression methodCallExpression = new MethodCallExpression(delegate, methodName, arguments);
         methodCallExpression.setMethodTarget(declaredMethod);
-        ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, declaredMethod);
-        VariableExpression apiVar = addApiVariableDeclaration(delegate, declaredMethod, methodBody);
-        IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
-
-        methodBody.addStatement(ifStatement);
+        
+        if(!noNullCheck) {
+            ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, declaredMethod);
+            VariableExpression apiVar = addApiVariableDeclaration(delegate, declaredMethod, methodBody);
+            IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
+            methodBody.addStatement(ifStatement);
+        } else {
+            methodBody.addStatement(new ExpressionStatement(methodCallExpression));
+        }
+        
         MethodNode methodNode = new MethodNode(methodName,
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes, genericsPlaceholders),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
@@ -317,7 +322,6 @@ public class GrailsASTUtils {
         if(shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
             methodNode.addAnnotation(markerAnnotation);
         }
-
 
         classNode.addMethod(methodNode);
         return methodNode;
@@ -410,7 +414,7 @@ public class GrailsASTUtils {
      * @return The added method node or null if it couldn't be added
      */
     public static MethodNode addDelegateStaticMethod(Expression expression, ClassNode classNode, MethodNode delegateMethod) {
-        return addDelegateStaticMethod(expression, classNode, delegateMethod, null, null);
+        return addDelegateStaticMethod(expression, classNode, delegateMethod, null, null, true);
     }
         /**
          * Adds a static method to the given class node that delegates to the given method
@@ -422,7 +426,7 @@ public class GrailsASTUtils {
          * @param markerAnnotation A marker annotation to be added to all methods
          * @return The added method node or null if it couldn't be added
          */
-    public static MethodNode addDelegateStaticMethod(Expression delegate, ClassNode classNode, MethodNode delegateMethod, AnnotationNode markerAnnotation, Map<String, ClassNode> genericsPlaceholders) {
+    public static MethodNode addDelegateStaticMethod(Expression delegate, ClassNode classNode, MethodNode delegateMethod, AnnotationNode markerAnnotation, Map<String, ClassNode> genericsPlaceholders, boolean noNullCheck) {
         Parameter[] parameterTypes = delegateMethod.getParameters();
         String declaredMethodName = delegateMethod.getName();
         if (METHOD_MISSING_METHOD_NAME.equals(declaredMethodName)) {
@@ -439,11 +443,15 @@ public class GrailsASTUtils {
                 delegate, delegateMethod.getName(), arguments);
         methodCallExpression.setMethodTarget(delegateMethod);
 
-        ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, delegateMethod);
-        VariableExpression apiVar = addApiVariableDeclaration(delegate, delegateMethod, methodBody);
-        IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
-
-        methodBody.addStatement(ifStatement);
+        if(!noNullCheck && !(delegate instanceof ClassExpression)) {
+            ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, delegateMethod);
+            VariableExpression apiVar = addApiVariableDeclaration(delegate, delegateMethod, methodBody);
+            IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
+            methodBody.addStatement(ifStatement);
+        } else {
+            methodBody.addStatement(new ExpressionStatement(methodCallExpression));
+        }
+        
         ClassNode returnType = replaceGenericsPlaceholders(delegateMethod.getReturnType(), genericsPlaceholders);
         MethodNode methodNode = new MethodNode(declaredMethodName, Modifier.PUBLIC | Modifier.STATIC, returnType,
                 copyParameters(parameterTypes, genericsPlaceholders), GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
@@ -704,14 +712,14 @@ public class GrailsASTUtils {
     }
 
     public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance, Map<String, ClassNode> genericsPlaceholders) {
-        addDelegateInstanceMethods(classNode, classNode, delegateNode, delegateInstance, genericsPlaceholders);
+        addDelegateInstanceMethods(classNode, classNode, delegateNode, delegateInstance, genericsPlaceholders, false);
     }
 
     public static void addDelegateInstanceMethods(ClassNode supportedSuperType, ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
-        addDelegateInstanceMethods(supportedSuperType, classNode, delegateNode, delegateInstance, null);
+        addDelegateInstanceMethods(supportedSuperType, classNode, delegateNode, delegateInstance, null, false);
     }
 
-    public static void addDelegateInstanceMethods(ClassNode supportedSuperType, ClassNode classNode, ClassNode delegateNode, Expression delegateInstance, Map<String, ClassNode> genericsPlaceholders) {
+    public static void addDelegateInstanceMethods(ClassNode supportedSuperType, ClassNode classNode, ClassNode delegateNode, Expression delegateInstance, Map<String, ClassNode> genericsPlaceholders, boolean noNullCheck) {
         while (!delegateNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
             List<MethodNode> declaredMethods = delegateNode.getMethods();
             for (MethodNode declaredMethod : declaredMethods) {
@@ -720,7 +728,7 @@ public class GrailsASTUtils {
                     addDelegateConstructor(classNode, declaredMethod, genericsPlaceholders);
                 }
                 else if (isCandidateInstanceMethod(supportedSuperType, declaredMethod)) {
-                    addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod, null, true, genericsPlaceholders);
+                    addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod, null, true, genericsPlaceholders, noNullCheck);
                 }
             }
             delegateNode = delegateNode.getSuperClass();
