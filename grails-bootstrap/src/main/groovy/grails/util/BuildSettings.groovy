@@ -865,6 +865,17 @@ class BuildSettings extends AbstractBuildSettings {
         // otherwise it loads the script class using the Gant classloader.
     }
 
+    boolean isDependenciesExternallyConfigured() {
+        return dependenciesExternallyConfigured
+    }
+
+    void setDependenciesExternallyConfigured(boolean dependenciesExternallyConfigured) {
+        if(dependenciesExternallyConfigured) {
+            setForkSettings([run:false, test:false, console:false, shell:false, compile:false])
+        }
+        this.dependenciesExternallyConfigured = dependenciesExternallyConfigured
+    }
+
     @CompileStatic
     void storeDependencyCache() {
         projectWorkDir.mkdirs()
@@ -1373,7 +1384,7 @@ class BuildSettings extends AbstractBuildSettings {
         def props = config.toProperties()
 
         final forkConfig = getForkConfig()
-        if ((forkConfig instanceof Map) && forkConfig) {
+        if ((forkConfig instanceof Map) && forkConfig && !isDependenciesExternallyConfigured()) {
             forkSettings = (Map)forkConfig
         }
         Metadata metadata = Metadata.getCurrent()
