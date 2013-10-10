@@ -28,7 +28,7 @@ sourceSets {
 
 task docFilesJar(type: Jar, description: 'Package up files used for generating documentation.') {
     version = null
-    appendix = "doc-files"
+    archiveName = "grails-doc-files.jar"
     from "src/main/template"
     doLast {
         copy {
