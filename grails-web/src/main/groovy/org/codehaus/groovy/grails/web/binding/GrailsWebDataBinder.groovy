@@ -289,6 +289,34 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         bindProperty obj, source, metaProperty, null, listener
                     }
                 }
+            } else if(Collection.isAssignableFrom(metaProperty.type)) {
+                def referencedType = getReferencedTypeForCollection(propName, obj)
+                if(referencedType && isDomainClass(referencedType) && val instanceof List) {
+                    needsBinding = false
+                    def itemsWhichNeedBinding = []
+                    val.each { item ->
+                        if(item instanceof Map || item instanceof DataBindingSource) {
+                            def idValue = getIdentifierValueFrom(item)
+                            def persistentInstance
+                            if(idValue != null) {
+                                persistentInstance = getPersistentInstance(referencedType, idValue)
+                                if(persistentInstance != null) {
+                                    bind persistentInstance, new SimpleMapDataBindingSource(item), listener
+                                }
+                            }
+                            if(persistentInstance == null) {
+                                itemsWhichNeedBinding << item
+                            }
+                        } else {
+                            itemsWhichNeedBinding << item
+                        }
+                    }
+                    if(itemsWhichNeedBinding) {
+                        for(item in itemsWhichNeedBinding) {
+                            addElementToCollection(obj, metaProperty.name, metaProperty.type, item, false)
+                        }
+                    }
+                }
             }
         }
         if (needsBinding) {
@@ -510,10 +538,10 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
         return stringValue
     }
-
-    protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue, boolean clearCollection) {
+    
+    protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
         boolean isSet = false
-        def coll = initializeCollection obj, propName, property.type
+        def coll = initializeCollection obj, propName, propertyType
         if (coll != null) {
             if (clearCollection) {
                 coll.clear()
@@ -525,6 +553,11 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     if (persistentInstance != null) {
                         coll << persistentInstance
                         isSet = true
+                    } else {
+                    try {
+                        coll << convert(referencedType, propertyValue)
+                        isSet = true
+                    } catch(Exception e){}
                     }
                 } else if (referencedType.isAssignableFrom(propertyValue.getClass())){
                     coll << propertyValue
@@ -538,6 +571,11 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             }
         }
         isSet
+
+    }
+
+    protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue, boolean clearCollection) {
+        addElementToCollection(obj, propName, property.type, propertyValue, clearCollection)
     }
 
     @Autowired(required=false)
