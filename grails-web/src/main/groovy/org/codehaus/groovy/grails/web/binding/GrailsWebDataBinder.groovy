@@ -313,7 +313,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     }
                     if(itemsWhichNeedBinding) {
                         for(item in itemsWhichNeedBinding) {
-                            addElementToCollection(obj, metaProperty.name, metaProperty.type, item, false)
+                            addElementToCollection obj, metaProperty.name, metaProperty.type, item, false
                         }
                     }
                 }
@@ -575,7 +575,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue, boolean clearCollection) {
-        addElementToCollection(obj, propName, property.type, propertyValue, clearCollection)
+        addElementToCollection obj, propName, property.type, propertyValue, clearCollection
     }
 
     @Autowired(required=false)
