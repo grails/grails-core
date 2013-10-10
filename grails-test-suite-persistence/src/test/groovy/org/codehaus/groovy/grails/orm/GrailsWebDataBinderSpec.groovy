@@ -853,6 +853,28 @@ class GrailsWebDataBinderSpec extends Specification {
         afterBindingArgs[0].object.is obj
         afterBindingArgs[0].propertyName == 'someNumber'
     }
+
+    void 'Test typeMismatch error codes'() {
+        given:
+        def obj = new SomeValidateableClass()
+
+        when:
+        binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource
+
+        then:
+        obj.hasErrors()
+        obj.errors.errorCount == 1
+        obj.errors['someNumber'].codes == [
+            "org.codehaus.groovy.grails.orm.SomeValidateableClass.someNumber.typeMismatch.error",
+            "org.codehaus.groovy.grails.orm.SomeValidateableClass.someNumber.typeMismatch",
+            "someValidateableClass.someNumber.typeMismatch.error",
+            "someValidateableClass.someNumber.typeMismatch",
+            "typeMismatch.org.codehaus.groovy.grails.orm.SomeValidateableClass.someNumber",
+            "typeMismatch.someNumber",
+            "typeMismatch.java.lang.Integer",
+            "typeMismatch"
+        ]
+    }
 }
 
 @Entity
