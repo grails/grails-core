@@ -172,8 +172,14 @@ if [ "$cygwin" = "false" ]; then
 	fi
 fi
 
-# Fix the cygwin agent issue
+# Fix the Mingw & cygwin agent issue
 AGENT_GRAILS_HOME=$GRAILS_HOME
+if $mingw ; then
+    # Converts GRAILS_HOME path to Windows syntax
+    [ -n "$GRAILS_HOME" ] &&
+        AGENT_GRAILS_HOME=`cmd //C echo "$GRAILS_HOME"`
+fi
+
 if $cygwin ; then
     [ -n "$GRAILS_HOME" ] &&
         AGENT_GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
