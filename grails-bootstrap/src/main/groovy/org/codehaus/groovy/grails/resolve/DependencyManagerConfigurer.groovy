@@ -54,6 +54,13 @@ class DependencyManagerConfigurer {
         if (buildSettings.proxySettings) {
             setProxy(aetherDependencyManager, buildSettings.proxySettings)
         }
+
+        ConfigObject config = buildSettings.config
+
+        def grailsConfig = config.grails
+
+        setCacheDir(grailsConfig, aetherDependencyManager)
+
         return aetherDependencyManager
     }
 
@@ -208,6 +215,14 @@ class DependencyManagerConfigurer {
         // If grails.dependency.cache.dir is set, use it for Ivy.
         if (grailsConfig.dependency.cache.dir) {
             dependencyManager.ivySettings.defaultCache = grailsConfig.dependency.cache.dir as File
+        }
+    }
+
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected void setCacheDir(grailsConfig, DependencyManager dependencyManager) {
+        // If grails.dependency.cache.dir is set, use it for Ivy.
+        if (grailsConfig.dependency.cache.dir) {
+            dependencyManager.cacheDir = (grailsConfig.dependency.cache.dir as File).absolutePath
         }
     }
 }
