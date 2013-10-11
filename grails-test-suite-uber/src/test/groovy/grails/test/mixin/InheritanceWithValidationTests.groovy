@@ -7,7 +7,7 @@ import org.junit.Test
 /**
  * Test for GRAILS-9010
  */
-@Mock([AbstractCustomPropertyValue])
+@Mock([AbstractCustomPropertyValue,CustomProperty,StringPropertyValue])
 class InheritanceWithValidationTests {
 
     @Test
