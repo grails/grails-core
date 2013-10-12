@@ -15,37 +15,53 @@
  */
 package org.codehaus.groovy.grails.web.binding
 
+import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
-
 import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
-import org.springframework.context.support.DefaultMessageSourceResolvable
+import org.springframework.context.MessageSource
+import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.BindingResult
-import org.springframework.validation.Errors
 import org.springframework.validation.FieldError
 
 @CompileStatic
 class GrailsWebDataBindingListener extends DataBindingListenerAdapter {
     private final BindingResult bindingResult
+    private final MessageSource messageSource
 
-    GrailsWebDataBindingListener(BindingResult bindingResult) {
+    GrailsWebDataBindingListener(BindingResult bindingResult, MessageSource messageSource) {
         this.bindingResult = bindingResult
+        this.messageSource = messageSource
     }
 
     @Override
     void bindingError(BindingError error) {
-        Object[] o = getArgumentsForBindError(error.object?.getClass()?.getName(), error.getPropertyName())
-        def codes = bindingResult.resolveMessageCodes('typeMismatch', error.getPropertyName())
-        def cause = error.cause
-        def defaultMessage = cause ? cause.message : 'Data Binding Failed'
-        def fieldError = new FieldError(error.object?.getClass()?.getName(), error.getPropertyName(), error.getRejectedValue(), true, codes as String[], o, defaultMessage)
+        String className = error.object?.getClass()?.getName()
+        String classAsPropertyName = GrailsNameUtils.getPropertyNameRepresentation(className)
+        String propertyName = error.getPropertyName()
+        String[] codes = [
+            className + '.' + propertyName + '.typeMismatch.error',
+            className + '.' + propertyName + '.typeMismatch',
+            classAsPropertyName + '.' + propertyName + '.typeMismatch.error',
+            classAsPropertyName + '.' + propertyName + '.typeMismatch',
+            bindingResult.resolveMessageCodes('typeMismatch', propertyName),
+        ].flatten() as String[]
+        Object[] args = [getPropertyName(className, classAsPropertyName, propertyName)] as Object[]
+        def defaultMessage = error.cause?.message ?: 'Data Binding Failed'
+        def fieldError = new FieldError(className, propertyName, error.getRejectedValue(), true, codes, args, defaultMessage)
         bindingResult.addError(fieldError)
     }
 
-    protected Object[] getArgumentsForBindError(String objectName, String field) {
-        def codes = [
-            objectName + Errors.NESTED_PATH_SEPARATOR + field,
-            field] as String[]
-        [new DefaultMessageSourceResolvable(codes, field)] as Object[]
+    protected String getPropertyName(String className, String classAsPropertyName, String propertyName) {
+        if (!messageSource) return propertyName
+
+        final Locale locale = LocaleContextHolder.getLocale()
+        String propertyNameCode = className + '.' + propertyName + ".label"
+        String resolvedPropertyName = messageSource.getMessage(propertyNameCode, null, propertyName, locale)
+        if (resolvedPropertyName.equals(propertyName)) {
+            propertyNameCode = classAsPropertyName + '.' + propertyName + ".label"
+            resolvedPropertyName = messageSource.getMessage(propertyNameCode, null, propertyName, locale)
+        }
+        return resolvedPropertyName
     }
 }
