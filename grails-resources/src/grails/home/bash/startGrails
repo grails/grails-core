@@ -36,6 +36,7 @@ earlyInit
 # OS specific support (must be 'true' or 'false').
 cygwin=false;
 darwin=false;
+mingw=false;
 case "`uname`" in
     CYGWIN*)
         cygwin=true
@@ -43,6 +44,10 @@ case "`uname`" in
 
     Darwin*)
         darwin=true
+        ;;
+
+    MINGW*)
+        mingw=true
         ;;
 esac
 
@@ -177,6 +182,12 @@ AGENT_GRAILS_HOME=$GRAILS_HOME
 if $cygwin ; then
     [ -n "$GRAILS_HOME" ] &&
         AGENT_GRAILS_HOME=`cygpath --windows "$GRAILS_HOME"`
+fi
+
+if $mingw ; then
+    # Converts GRAILS_HOME path to Windows syntax
+    [ -n "$GRAILS_HOME" ] &&
+        AGENT_GRAILS_HOME=`cmd //C echo "$GRAILS_HOME"`
 fi
 
 if [ -z "$GRAILS_AGENT_CACHE_DIR" ]; then

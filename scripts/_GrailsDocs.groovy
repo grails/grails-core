@@ -106,8 +106,6 @@ target(setupDoc:"Sets up the doc directories") {
     ant.mkdir(dir:grailsSettings.docsOutputDir)
     ant.mkdir(dir:groovydocDir)
     ant.mkdir(dir:javadocDir)
-    IvyDependencyManager dependencyManager = grailsSettings.dependencyManager
-    dependencyManager.loadDependencies('docs')
 }
 
 target(groovydoc:"Produces groovydoc documentation") {

@@ -66,6 +66,7 @@ import org.sonatype.aether.util.graph.DefaultDependencyNode
 import org.sonatype.aether.util.graph.PreorderNodeListGenerator
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 import org.sonatype.aether.util.repository.DefaultProxySelector
+import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsModelResolver
 
 /**
  * An implementation of the {@link DependencyManager} interface that uses Aether, the dependency resolution
@@ -425,6 +426,7 @@ class AetherDependencyManager implements DependencyManager {
 
             final modelRequest = new DefaultModelBuildingRequest()
             modelRequest.setPomFile(pomFile)
+            modelRequest.setModelResolver(new GrailsModelResolver(repositorySystem, session, repositories))
             ModelBuildingResult modelBuildingResult = modelBuilder.build(modelRequest)
             final mavenDependencies = modelBuildingResult.getEffectiveModel().getDependencies()
             for (org.apache.maven.model.Dependency md in mavenDependencies) {
