@@ -344,14 +344,17 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected Class<?> getReferencedTypeForCollection(String propertyName, Object obj) {
-        Class contentType
+        Class referencedType
         def clazz = obj.getClass()
-        def field = clazz.getDeclaredField(propertyName)
-        def genericType = field.genericType
-        if (genericType instanceof ParameterizedType) {
-            contentType = ((ParameterizedType)genericType).getActualTypeArguments()[0]
+        try {
+            def field = clazz.getDeclaredField(propertyName)
+            def genericType = field.genericType
+            if (genericType instanceof ParameterizedType) {
+                referencedType = ((ParameterizedType)genericType).getActualTypeArguments()[0]
+            }
+        } catch (NoSuchFieldException e) {
         }
-        contentType
+        referencedType
     }
 
     protected boolean isOkToAddElementAt(Collection collection, int index) {

@@ -989,6 +989,18 @@ class GrailsWebDataBinderSpec extends Specification {
         afterBindingArgs[0].object.is obj
         afterBindingArgs[0].propertyName == 'someNumber'
     }
+    
+    void 'Test binding a List<String>'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def obj = new CollectionContainer()
+        
+        when:
+        binder.bind obj, [listOfStrings: ['One', 'Two', 'Three']] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfStrings == ['One', 'Two', 'Three']
+    }
 }
 
 @Entity
@@ -1091,6 +1103,7 @@ class CollectionContainer {
     List listOfWidgets
     SortedSet sortedSetOfWidgets
     Collection collectionOfWidgets
+    List<String> listOfStrings
 }
 
 class PrimitiveContainer {

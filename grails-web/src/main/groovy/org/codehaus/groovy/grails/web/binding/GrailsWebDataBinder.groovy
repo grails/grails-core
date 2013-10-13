@@ -172,8 +172,8 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
     @Override
     protected Class<?> getReferencedTypeForCollection(String name, Object target) {
-        def referencedType
-        if (grailsApplication != null) {
+        def referencedType = super.getReferencedTypeForCollection(name, target)
+        if (referencedType == null && grailsApplication != null) {
             def dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().name)
             if (dc != null) {
                 def domainProperty = dc.getPersistentProperty(name)
@@ -182,7 +182,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 }
             }
         }
-        referencedType ?: super.getReferencedTypeForCollection(name, target)
+        referencedType
     }
 
     @Override
