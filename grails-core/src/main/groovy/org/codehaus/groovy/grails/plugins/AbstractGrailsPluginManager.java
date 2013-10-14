@@ -228,8 +228,10 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        for (GrailsPlugin plugin : pluginList) {
-            plugin.setApplicationContext(applicationContext);
+        if (applicationContext != null) {
+            for (GrailsPlugin plugin : pluginList) {
+                plugin.setApplicationContext(applicationContext);
+            }
         }
     }
 

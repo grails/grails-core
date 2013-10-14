@@ -36,7 +36,7 @@ import spock.lang.Specification
 import com.google.gson.internal.LazilyParsedNumber
 
 @TestMixin(DomainClassUnitTestMixin)
-@Mock([Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
+@Mock([AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
 class GrailsWebDataBinderSpec extends Specification {
 
     void 'Test string trimming'() {
@@ -1001,6 +1001,27 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         obj.listOfStrings == ['One', 'Two', 'Three']
     }
+    
+    void 'Test one to many list binding with nested subscript operator can insert to empty index of List'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+
+        when:
+        def author = new AssociationBindingAuthor(name: "William Gibson").save()
+        def page1 = new AssociationBindingPage(number: 1).save()
+        def page2 = new AssociationBindingPage(number: 2).save()
+        def book = new AssociationBindingBook()
+        binder.bind book, [title: "Pattern Recognition", author: author, pages: [null, page2]] as SimpleMapDataBindingSource
+        book.save()
+        binder.bind author, ["books[0]": ['pages[0]': [id: page1.id]]] as SimpleMapDataBindingSource
+
+        then:
+        2 == author.books[0].pages.size()
+        author.books[0].pages.find { it.id == page1.id }
+        author.books[0].pages.find { it.id == page2.id }
+        2 == author.books.sum { it.pages.size() }
+        !author.books.any { it.pages.contains(null) }
+    }
 }
 
 @Entity
@@ -1121,3 +1142,23 @@ class PrimitiveContainer {
 class SomeValidateableClass {
     Integer someNumber
 }
+
+@Entity
+class AssociationBindingPage {
+    Integer number
+}
+
+@Entity
+class AssociationBindingBook {
+    String title
+    List pages
+    static belongsTo = [author: AssociationBindingAuthor]
+    static hasMany = [pages:AssociationBindingPage]
+}
+
+@Entity
+class AssociationBindingAuthor {
+    String name
+    static hasMany = [books: AssociationBindingBook]
+}
+
