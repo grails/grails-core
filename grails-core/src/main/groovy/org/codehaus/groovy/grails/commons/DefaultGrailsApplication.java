@@ -39,6 +39,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware;
 import org.springframework.beans.BeansException;
@@ -339,6 +340,9 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     public void setMainContext(ApplicationContext context) {
         mainContext = context;
+        if (context != null) {
+            mainContext.getBean(GrailsPluginManager.class).setApplicationContext(context);
+        }
     }
 
     /**
