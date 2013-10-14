@@ -341,7 +341,9 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public void setMainContext(ApplicationContext context) {
         mainContext = context;
         if (context != null) {
-            mainContext.getBean(GrailsPluginManager.class).setApplicationContext(context);
+            if (mainContext.containsBean("pluginManager")) {
+                mainContext.getBean("pluginManager", GrailsPluginManager.class).setApplicationContext(context);
+            }
         }
     }
 
