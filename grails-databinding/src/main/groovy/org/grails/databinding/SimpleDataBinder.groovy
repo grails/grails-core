@@ -584,7 +584,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected convert(Class typeToConvertTo, value) {
-        if (typeToConvertTo.isAssignableFrom(value?.getClass())) {
+        if (value == null || typeToConvertTo.isAssignableFrom(value?.getClass())) {
             return value
         }
         if (conversionHelpers.containsKey(typeToConvertTo)) {

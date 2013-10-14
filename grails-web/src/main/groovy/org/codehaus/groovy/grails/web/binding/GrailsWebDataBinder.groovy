@@ -555,7 +555,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         isSet = true
                     } else {
                     try {
-                        coll << propertyValue == null ? null : convert(referencedType, propertyValue)
+                        coll << convert(referencedType, propertyValue)
                         isSet = true
                     } catch(Exception e){}
                     }
