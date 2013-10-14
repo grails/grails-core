@@ -50,7 +50,7 @@ public class IsolatedTomcat {
 
         String keystorePath = "";
         String keystorePassword = "";
-        if (httpsPort > 0) {
+        if (httpsPort >= 0) {
             keystorePath = args[6];
             keystorePassword = args[7];
         }
@@ -85,7 +85,7 @@ public class IsolatedTomcat {
 
         connector.setURIEncoding("UTF-8");
 
-        if (httpsPort > 0) {
+        if (httpsPort >= 0) {
             Connector sslConnector;
             try {
                 sslConnector = new Connector();
@@ -108,17 +108,32 @@ public class IsolatedTomcat {
             tomcat.getService().addConnector(sslConnector);
         }
 
-        final int serverPort = port;
-        startKillSwitch(tomcat, serverPort);
-
         try {
             tomcat.start();
-            String message = "Server running. Browse to http://"+(host != null ? host : "localhost")+":"+port+contextPath;
+            final int serverPort = tomcat.getConnector().getLocalPort();
+            startKillSwitch(tomcat, serverPort);
+            String message = "Server running. Browse to http://"+(host != null ? host : "localhost")+":"+serverPort+contextPath+getSslMessage(tomcat, host, contextPath);
             System.out.println(message);
         } catch (LifecycleException e) {
             e.printStackTrace(System.err);
             System.err.println("Error loading Tomcat: " + e.getMessage());
             System.exit(1);
+        }
+    }
+
+    public static String getSslMessage(Tomcat tomcat, String host, String contextPath) {
+        Connector[] connectors = tomcat.getService().findConnectors();
+        Connector sslConnector = null;
+        for(Connector c : connectors) {
+            if(c.getScheme().equals("https")) {
+                sslConnector = c;
+                break;
+            }
+        }
+        if (sslConnector != null) {
+            return " or https://"+(host != null ? host : "localhost")+":"+sslConnector.getLocalPort()+contextPath;
+        } else {
+            return "";
         }
     }
 

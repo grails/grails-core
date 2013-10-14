@@ -29,7 +29,7 @@ target('default': "Stops a forked Grails application") {
 
     try {
         grailsConsole.updateStatus "Stopping Grails Server..."
-        def url = "http://${serverHost ?: 'localhost'}:${serverPort+1}"
+        def url = "http://${serverHost ?: 'localhost'}:${serverPort-1}"
         grailsConsole.verbose "URL to stop server is $url"
         new URL(url).getText(connectTimeout: 10000, readTimeout: 10000)
         grailsConsole.updateStatus "Server Stopped"

@@ -121,7 +121,7 @@ abstract class TomcatServer implements EmbeddableServer {
     }
 
     void start(String host, int port) {
-        doStart(host ?: DEFAULT_HOST, port ?: DEFAULT_PORT, 0)
+        doStart(host ?: DEFAULT_HOST, port, -1)
     }
 
     void startSecure() {
@@ -141,7 +141,7 @@ abstract class TomcatServer implements EmbeddableServer {
             }
         }
 
-        doStart(host ?: DEFAULT_HOST, httpPort ?: DEFAULT_PORT, httpsPort ?: DEFAULT_SECURE_PORT)
+        doStart(host ?: DEFAULT_HOST, (httpPort >= 0) ? httpPort : DEFAULT_PORT, (httpsPort >= 0) ? httpsPort : DEFAULT_SECURE_PORT)
     }
 
     protected File getWorkDirFile(String path) {
