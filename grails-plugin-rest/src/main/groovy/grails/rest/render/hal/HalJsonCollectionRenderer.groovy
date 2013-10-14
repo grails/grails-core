@@ -16,7 +16,12 @@
 package grails.rest.render.hal
 
 import grails.rest.render.ContainerRenderer
+import grails.rest.render.RenderContext
+import grails.util.GrailsNameUtils
+
 import org.codehaus.groovy.grails.web.mime.MimeType
+
+import com.google.gson.stream.JsonWriter
 
 /**
  * A HAL JSON renderer for a collection of objects
@@ -36,5 +41,13 @@ class HalJsonCollectionRenderer extends HalJsonRenderer implements ContainerRend
     HalJsonCollectionRenderer(Class componentType, MimeType... mimeTypes) {
         super(Collection, mimeTypes)
         this.componentType = componentType
+    }
+    
+    @Override
+    protected renderEmbeddedAttributes(JsonWriter writer, object, RenderContext context, MimeType mimeType) {
+        writer.beginObject()
+        writer.name(GrailsNameUtils.getPropertyName(componentType))
+        super.renderEmbeddedAttributes writer, object, context, mimeType
+        writer.endObject()
     }
 }
