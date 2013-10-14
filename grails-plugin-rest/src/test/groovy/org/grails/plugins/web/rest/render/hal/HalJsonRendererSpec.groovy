@@ -94,7 +94,8 @@ class HalJsonRendererSpec extends Specification{
             def response = webRequest.response
             def renderContext = new ServletRenderContext(webRequest)
             def products = [
-                new Product(name: "MacBook", numberInStock: 10, category:  new Category(name: 'Laptops'))
+                new Product(name: "MacBook", numberInStock: 10, category:  new Category(name: 'Laptops')),
+                new Product(name: "iMac", numberInStock: 42, category:  new Category(name: 'Desktops'))
             ]
             renderer.render(products, renderContext)
 
@@ -109,30 +110,54 @@ class HalJsonRendererSpec extends Specification{
       "type": "application/hal+json"
     }
   },
-  "_embedded": [
-    {
-      "_links": {
-        "self": {
-          "href": "http://localhost/products",
-          "hreflang": "en",
-          "type": "application/hal+json"
+  "_embedded": {
+    "product": [
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
+          }
+        },
+        "name": "MacBook",
+        "numberInStock": 10,
+        "_embedded": {
+          "category": {
+            "_links": {
+              "self": {
+                "href": "http://localhost/category/index",
+                "hreflang": "en"
+              }
+            },
+            "name": "Laptops"
+          }
         }
       },
-      "name": "MacBook",
-      "numberInStock": 10,
-      "_embedded": {
-        "category": {
-          "_links": {
-            "self": {
-              "href": "http://localhost/category/index",
-              "hreflang": "en"
-            }
-          },
-          "name": "Laptops"
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
+          }
+        },
+        "name": "iMac",
+        "numberInStock": 42,
+        "_embedded": {
+          "category": {
+            "_links": {
+              "self": {
+                "href": "http://localhost/category/index",
+                "hreflang": "en"
+              }
+            },
+            "name": "Desktops"
+          }
         }
       }
-    }
-  ]
+    ]
+  }
 }'''
 
     }

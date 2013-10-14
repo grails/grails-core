@@ -106,18 +106,9 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 beginLinks(writer)
                 writeLinkForCurrentPath(context, mimeType, writer)
                 writer.endObject()
-                      .name(EMBEDDED_ATTRIBUTE)
-                      .beginArray()
-
-                final writtenObjects = [] as Set
-                for(o in ((Collection)object)) {
-                    if (o && isDomainResource(o.getClass())) {
-                        writeDomainWithEmbeddedAndLinks(context, o.class, o, writer, context.locale, mimeType, writtenObjects)
-                    }
-                }
-                writer.endArray()
+                writer.name(EMBEDDED_ATTRIBUTE)
+                renderEmbeddedAttributes(writer, object, context, mimeType)
                 writer.endObject()
-
             } else {
                 beginLinks(writer)
                 writeLinkForCurrentPath(context, mimeType, writer)
@@ -130,6 +121,18 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             writer.flush()
         }
 
+    }
+
+    protected renderEmbeddedAttributes(JsonWriter writer, object, RenderContext context, MimeType mimeType) {
+        writer.beginArray()
+
+        final writtenObjects = [] as Set
+        for(o in ((Collection)object)) {
+            if (o && isDomainResource(o.getClass())) {
+                writeDomainWithEmbeddedAndLinks(context, o.class, o, writer, context.locale, mimeType, writtenObjects)
+            }
+        }
+        writer.endArray()
     }
 
     protected void writeSimpleObject(Object object, RenderContext context, JsonWriter writer) {
