@@ -3,6 +3,7 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.persistence.Entity
 
+import org.junit.Assert;
 import org.junit.Test
 
 @TestFor(ImpedimentsController)
@@ -14,9 +15,10 @@ class TestForControllerWithoutMockDomainTests {
 
         try {
             impedimentInstance.save()
+            Assert.fail("Exception should have been thrown")
         }
-        catch(MissingMethodException me) {
-            assert me.message.contains( "No signature of method: grails.test.mixin.Impediment.save() is applicable for argument types: () values: []" )
+        catch(Exception e) {
+            
         }
     }
 }
