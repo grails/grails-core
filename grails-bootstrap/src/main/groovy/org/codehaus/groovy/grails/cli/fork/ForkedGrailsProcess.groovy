@@ -752,11 +752,15 @@ abstract class ForkedGrailsProcess {
         }
 
         void run() {
-            def isr = new InputStreamReader(input)
-            new BufferedReader(isr).eachLine { String next ->
-                if (next) {
-                    GrailsConsole.getInstance().log(next)
+            try {
+                def isr = new InputStreamReader(input)
+                new BufferedReader(isr).eachLine { String next ->
+                    if (next) {
+                        GrailsConsole.getInstance().log(next)
+                    }
                 }
+            } catch (IOException e) {
+                // ignore, probably due to an interrupt
             }
         }
     }
