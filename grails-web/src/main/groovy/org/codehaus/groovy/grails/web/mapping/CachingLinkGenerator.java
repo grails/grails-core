@@ -44,6 +44,7 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     private static final String THIS_MAP = "(this Map)";
     private static final String URL_ATTRIBUTE = "url";
     private static final String URI_ATTRIBUTE = "uri";
+    private static final String BASE = "base";
 
     private Map<String, Object> linkCache;
 
@@ -149,10 +150,14 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
     protected String makeKey(String prefix, Map attrs) {
         StringBuilder sb=new StringBuilder();
         sb.append(prefix);
-        if(getConfiguredServerBaseURL()==null && isAbsolute(attrs)) {
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if(webRequest != null) {
-                sb.append(webRequest.getBaseUrl());
+        if (getConfiguredServerBaseURL()==null && isAbsolute(attrs)) {
+            if (attrs.get(BASE) != null) {
+                sb.append(attrs.get(BASE));
+            } else {
+                GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+                if (webRequest != null) {
+                    sb.append(webRequest.getBaseUrl());
+                }
             }
         }
         appendMapKey(sb, attrs);
