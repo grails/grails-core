@@ -30,7 +30,7 @@ public class TomcatKillSwitch implements Runnable {
 
     public void run() {
         System.setProperty("TomcatKillSwitch.active", "true");
-        int killListenerPort = serverPort + 1;
+        int killListenerPort = serverPort - 1;
         ServerSocket serverSocket = createKillSwitch(killListenerPort);
         if (serverSocket != null) {
             try {

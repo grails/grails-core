@@ -147,6 +147,11 @@ abstract class ForkedGrailsProcess {
     ExecutionContext readExecutionContext() {
         String location = System.getProperty("grails.build.execution.context")
 
+        return readExecutionContext(location)
+    }
+
+    @CompileStatic
+    ExecutionContext readExecutionContext(String location) {
         if (location != null) {
             final file = new File(location)
             if (file.exists()) {
