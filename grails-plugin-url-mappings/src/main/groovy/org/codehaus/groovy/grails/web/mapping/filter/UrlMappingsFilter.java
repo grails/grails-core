@@ -66,7 +66,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.multipart.MultipartException;
@@ -181,18 +180,12 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     final String viewName;
                     try {
                         info.configure(webRequest);
-                        viewName = info.getViewName();
-                        if (viewName == null && info.getURI() == null) {
-                            ControllerArtefactHandler.ControllerCacheKey featureId = getFeatureId(info);
-                            GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
-                            if (controller == null) {
-                                continue;
-                            }
+                        UrlConverter urlConverterToUse = urlConverter;
+                        GrailsApplication grailsApplicationToUse = application;
 
-                            webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
-                            webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
-                            webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, Boolean.TRUE, WebRequest.SCOPE_REQUEST);
-                        }
+                        GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
+
+                        if(controller == null) continue;
                     }
                     catch (Exception e) {
                         if (e instanceof MultipartException) {
@@ -211,7 +204,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                     request = checkMultipart(request);
 
-                    if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                    String nameOfview = info.getViewName();
+                    if (nameOfview == null || nameOfview.endsWith(GSP_SUFFIX) || nameOfview.endsWith(JSP_SUFFIX)) {
                         if (info.isParsingRequest()) {
                             webRequest.informParameterCreationListeners();
                         }
@@ -221,7 +215,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         }
                     }
                     else {
-                        if (!renderViewForUrlMappingInfo(request, response, info, viewName)) {
+                        if (!renderViewForUrlMappingInfo(request, response, info, nameOfview)) {
                             dispatched = false;
                         }
                     }
@@ -254,7 +248,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         Set<HttpMethod> methods = new HashSet<HttpMethod>();
 
         for (UrlMappingInfo urlMappingInfo : urlMappingInfos) {
-            Object featureId = getFeatureId(urlMappingInfo);
+            Object featureId = WebUtils.getControllerFeatureId(urlConverter,urlMappingInfo);
             GrailsClass controllerClass = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
             if(controllerClass != null) {
                 if(urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
@@ -279,19 +273,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         return version;
     }
 
-    private ControllerArtefactHandler.ControllerCacheKey getFeatureId(UrlMappingInfo info) {
-        final String action = info.getActionName() == null ? "" : info.getActionName();
-        final String controllerName = info.getControllerName();
-        final String pluginName = info.getPluginName();
-        final String namespace = info.getNamespace();
-        final String featureUri = getControllerFeatureURI(controllerName, action);
 
-        return new ControllerArtefactHandler.ControllerCacheKey(featureUri, pluginName, namespace);
-    }
 
-    private String getControllerFeatureURI(String controller, String action) {
-        return WebUtils.SLASH + urlConverter.toUrlElement(controller) + WebUtils.SLASH + urlConverter.toUrlElement(action);
-    }
 
     public static boolean isUriExcluded(UrlMappingsHolder holder, String uri) {
         boolean isExcluded = false;

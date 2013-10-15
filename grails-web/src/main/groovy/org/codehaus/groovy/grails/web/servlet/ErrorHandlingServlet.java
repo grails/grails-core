@@ -16,19 +16,8 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.GrailsWebUtil;
-
-import java.io.IOException;
-import java.io.Writer;
-import java.util.Collections;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
-import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
+import grails.web.UrlConverter;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
@@ -43,6 +32,13 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
 
 /**
  * A servlet for handling errors.
@@ -60,7 +56,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
     private static final String JSP_SUFFIX = ".jsp";
     private static final String TEXT_HTML = "text/html";
 
-    private String defaultEncoding;
+    private String defaultEncoding = UTF_8;
 
     @Override
     protected void initFrameworkServlet() throws ServletException, BeansException {
@@ -103,7 +99,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         final UrlMappingsHolder urlMappingsHolder = (UrlMappingsHolder)getBean(UrlMappingsHolder.BEAN_ID);
         UrlMappingInfo urlMappingInfo = null;
         if (t != null) {
-            createStackTraceFilterer().filter(t, true);
+            stackFilterer.filter(t, true);
             urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode, t);
             if (urlMappingInfo == null) {
                 urlMappingInfo = urlMappingsHolder.matchStatusCode(statusCode, GrailsExceptionResolver.getRootCause(t));
@@ -119,15 +115,17 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             return;
         }
 
+
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         boolean restoreOriginalRequestAttributes = false;
+        final GrailsWebRequest webRequest;
         if (requestAttributes instanceof GrailsWebRequest) {
-            final GrailsWebRequest webRequest = (GrailsWebRequest) requestAttributes;
+            webRequest = (GrailsWebRequest) requestAttributes;
             urlMappingInfo.configure(webRequest);
         }
         else {
             restoreOriginalRequestAttributes = true;
-            GrailsWebRequest webRequest = new GrailsWebRequest(request, response, getServletContext());
+            webRequest = new GrailsWebRequest(request, response, getServletContext());
             RequestContextHolder.setRequestAttributes(webRequest);
             urlMappingInfo.configure(webRequest);
         }
@@ -138,7 +136,15 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             WrappedResponseHolder.setWrappedResponse(response);
             String viewName = urlMappingInfo.getViewName();
             if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+                GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, urlMappingInfo,
+                    webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
+                    webRequest.getAttributes().getGrailsApplication());
+                if(controller != null) {
+                    WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
+                }
+                else {
+                    renderDefaultResponse(response, statusCode);
+                }
             }
             else {
                 ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
@@ -147,12 +153,13 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                     try {
                         if (!response.isCommitted()) {
                             response.setContentType("text/html;charset="+defaultEncoding);
+
                         }
                         v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
                         v.render(Collections.EMPTY_MAP, request, response);
                     }
                     catch (Throwable e) {
-                        createStackTraceFilterer().filter(e);
+                        stackFilterer.filter(e);
                         renderDefaultResponse(response, statusCode, "Internal Server Error", e.getMessage());
                     }
                 }
@@ -165,17 +172,6 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
         }
     }
 
-    private StackTraceFilterer createStackTraceFilterer() {
-        try {
-            GrailsApplication application = (GrailsApplication)getBean("grailsApplication");
-            return (StackTraceFilterer)GrailsClassUtils.instantiateFromFlatConfig(
-                    application.getFlatConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
-        }
-        catch (Throwable t) {
-            logger.error("Problem instantiating StackTraceFilterer class, using default: " + t.getMessage());
-            return new DefaultStackTraceFilterer();
-        }
-    }
 
     private void renderDefaultResponse(HttpServletResponse response, int statusCode) throws IOException {
         if (statusCode == 404) {

@@ -89,7 +89,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     private GrailsApplication application;
     private LocaleResolver localeResolver;
-    private StackTraceFilterer stackFilterer;
+    protected StackTraceFilterer stackFilterer;
 
     protected HandlerInterceptor[] interceptors;
     protected MultipartResolver multipartResolver;
@@ -542,7 +542,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         return request;
     }
 
-    private void createStackTraceFilterer() {
+    protected void createStackTraceFilterer() {
         try {
             stackFilterer = (StackTraceFilterer)GrailsClassUtils.instantiateFromFlatConfig(
                     application.getFlatConfig(), "grails.logging.stackTraceFiltererClass", DefaultStackTraceFilterer.class.getName());
