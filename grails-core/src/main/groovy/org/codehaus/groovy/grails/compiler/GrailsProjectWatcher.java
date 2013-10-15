@@ -248,8 +248,14 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         else {
             // add to class change event queue
             String className = GrailsResourceUtils.getClassName(file.getAbsolutePath());
-            if (className != null) {
-
+            if (className == null) {
+                try {
+                pluginManager.informOfFileChange(file);
+                } catch (Exception e) {
+                    LOG.error("Failed to reload file [" + file + "] with error: " + e.getMessage(), e);
+                }
+            }
+            else {
                 classChangeEventQueue.put(className, new ClassUpdate() {
                     public void run(Class<?> cls) {
                         try {
