@@ -275,6 +275,67 @@ class HalJsonRendererSpec extends Specification{
 }'''
 
     }
+    
+    @Issue('GRAILS-10512')
+    void "Test that the HAL renderer renders JSON values correctly for a collection of simple POGOs"() {
+        given:"A HAL renderer"
+            HalJsonRenderer renderer = getRenderer()
+            renderer.prettyPrint = true
+ 
+            when:"A collection of POGO is rendered"
+            def webRequest = GrailsWebUtil.bindMockWebRequest()
+            webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
+            def response = webRequest.response
+            def renderContext = new ServletRenderContext(webRequest)
+            def products = [
+                new SimpleProduct(name: "MacBook", numberInStock: 10, category: new SimpleCategory(name: 'Laptops')),
+                new SimpleProduct(name: "iMac", numberInStock: 8, category: new SimpleCategory(name: 'Desktops'))
+            ]
+            renderer.render(products, renderContext)
+ 
+        then:"The resulting HAL is correct"
+            response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+            response.contentAsString == '''{
+  "_links": {
+    "self": {
+      "href": "http://localhost/product/Macbook",
+      "hreflang": "en",
+      "type": "application/hal+json"
+    }
+  },
+  "_embedded": [
+    {
+      "_links": {
+        "self": {
+          "href": "http://localhost/product/Macbook",
+          "hreflang": "en",
+          "type": "application/hal+json"
+        }
+      },
+      "category": {
+        "name": "Laptops"
+      },
+      "name": "MacBook",
+      "numberInStock": 10
+    },
+    {
+      "_links": {
+        "self": {
+          "href": "http://localhost/product/Macbook",
+          "hreflang": "en",
+          "type": "application/hal+json"
+        }
+      },
+      "category": {
+        "name": "Desktops"
+      },
+      "name": "iMac",
+      "numberInStock": 8
+    }
+  ]
+}'''
+ 
+    }
 
     protected HalJsonCollectionRenderer getCollectionRenderer() {
         def renderer = new HalJsonCollectionRenderer(Product)
