@@ -37,9 +37,12 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.web.UrlConverter;
 import groovy.lang.Binding;
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mime.MimeType;
@@ -55,6 +58,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -692,5 +696,37 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         String result = (String) request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
         if (StringUtils.isBlank(result)) result = request.getRequestURI();
         return result;
+    }
+
+    public static GrailsClass getConfiguredControllerForUrlMappingInfo(GrailsWebRequest webRequest, UrlMappingInfo info, UrlConverter urlConverterToUse, GrailsApplication grailsApplicationToUse) {
+        String viewName;
+        String action = info.getActionName() == null ? "" : info.getActionName();
+        viewName = info.getViewName();
+
+        GrailsClass controller = null;
+        if (viewName == null && info.getURI() == null) {
+            final String controllerName = info.getControllerName();
+            String pluginName = info.getPluginName();
+            String featureUri = SLASH + urlConverterToUse.toUrlElement(controllerName) + SLASH + urlConverterToUse.toUrlElement(action);
+
+            Object featureId;
+            if(pluginName != null) {
+                Map featureIdMap = new HashMap();
+                featureIdMap.put("uri", featureUri);
+                featureIdMap.put("pluginName", pluginName);
+                featureId = featureIdMap;
+            } else {
+                featureId = featureUri;
+            }
+            controller = grailsApplicationToUse.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
+            if (controller != null) {
+
+                webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
+                webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
+                webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, Boolean.TRUE, WebRequest.SCOPE_REQUEST);
+            }
+
+        }
+        return controller;
     }
 }

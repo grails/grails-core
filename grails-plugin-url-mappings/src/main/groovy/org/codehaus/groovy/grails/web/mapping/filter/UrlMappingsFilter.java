@@ -54,7 +54,6 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.multipart.MultipartException;
@@ -172,31 +171,13 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     final String viewName;
                     try {
                         info.configure(webRequest);
-                        String action = info.getActionName() == null ? "" : info.getActionName();
-                        viewName = info.getViewName();
-                        if (viewName == null && info.getURI() == null) {
-                            final String controllerName = info.getControllerName();
-                            String pluginName = info.getPluginName();
-                            String featureUri = WebUtils.SLASH + urlConverter.toUrlElement(controllerName) + WebUtils.SLASH + urlConverter.toUrlElement(action);
-                            
-                            Object featureId = null;
-                            if(pluginName != null) {
-                            	Map featureIdMap = new HashMap();
-                            	featureIdMap.put("uri", featureUri);
-                            	featureIdMap.put("pluginName", pluginName);
-                            	featureId = featureIdMap;
-                            } else {
-                            	featureId = featureUri;
-                            }
-                            GrailsClass controller = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
-                            if (controller == null) {
-                                continue;
-                            }
+                        UrlConverter urlConverterToUse = urlConverter;
+                        GrailsApplication grailsApplicationToUse = application;
 
-                            webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
-                            webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
-                            webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, Boolean.TRUE, WebRequest.SCOPE_REQUEST);
-                        }
+                        GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
+
+                        if(controller == null) continue;
+
                     }
                     catch (Exception e) {
                         if (e instanceof MultipartException) {
@@ -215,7 +196,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                     request = checkMultipart(request);
 
-                    if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
+                    String nameOfview = info.getViewName();
+                    if (nameOfview == null || nameOfview.endsWith(GSP_SUFFIX) || nameOfview.endsWith(JSP_SUFFIX)) {
                         if (info.isParsingRequest()) {
                             webRequest.informParameterCreationListeners();
                         }
@@ -225,7 +207,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         }
                     }
                     else {
-                        if (!renderViewForUrlMappingInfo(request, response, info, viewName)) {
+                        if (!renderViewForUrlMappingInfo(request, response, info, nameOfview)) {
                             dispatched = false;
                         }
                     }
