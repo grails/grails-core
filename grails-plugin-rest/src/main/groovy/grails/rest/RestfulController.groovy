@@ -15,6 +15,8 @@
  */
 package grails.rest
 
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders
+
 import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.transaction.Transactional
@@ -90,10 +92,10 @@ class RestfulController<T> {
                 redirect instance
             }
             '*' {
-                response.addHeader('Location',
+                response.addHeader(HttpHeaders.LOCATION,
                         g.createLink(
                                 resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
-                                namespace: this.class.declaredFields.find({it.name == 'namespace'})))
+                                namespace: hasProperty('namespace') ? this.namespace : null ))
                 respond instance, [status: CREATED]
             }
         }
@@ -129,10 +131,10 @@ class RestfulController<T> {
                 redirect instance
             }
             '*'{
-                response.addHeader('Location',
+                response.addHeader(HttpHeaders.LOCATION,
                         g.createLink(
                                 resource: this.controllerName, action: 'show',id: instance.id, absolute: true,
-                                namespace: this.class.declaredFields.find({it.name == 'namespace'})))
+                                namespace: hasProperty('namespace') ? this.namespace : null ))
                 respond instance, [status: OK]
             }
         }
