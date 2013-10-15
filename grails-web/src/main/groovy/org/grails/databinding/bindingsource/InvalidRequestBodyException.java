@@ -13,21 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding.bindingsource
+package org.grails.databinding.bindingsource;
 
-import groovy.transform.CompileStatic
-
-/**
- * Thrown if an unrecoverable problem occurs creating a DataBindingSource.
- *
+/** 
+ * Represents an error creation a data binding source because the request
+ * body is invalid.  Examples would be malformed JSON or XML.
+ * 
+ * @author Jeff Brown
  * @since 2.3
- * @see org.grails.databinding.DataBindingSource
- * @see DataBindingSourceCreator
  */
-@CompileStatic
-class DataBindingSourceCreationException extends RuntimeException {
+public class InvalidRequestBodyException extends DataBindingSourceCreationException {
+    private static final long serialVersionUID = 1L;
 
-    DataBindingSourceCreationException(Throwable cause) {
-        super(cause)
+    public InvalidRequestBodyException(Exception cause) {
+        super(cause);
     }
 }
