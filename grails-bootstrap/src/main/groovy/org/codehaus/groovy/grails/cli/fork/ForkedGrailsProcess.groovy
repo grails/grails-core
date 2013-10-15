@@ -640,16 +640,30 @@ abstract class ForkedGrailsProcess {
     protected GroovyClassLoader createClassLoader(BuildSettings buildSettings) {
         def classLoader = new GroovyClassLoader()
 
-        for (File f in buildSettings.runtimeDependencies) {
-            classLoader.addURL(f.toURI().toURL())
+        if(Environment.current == Environment.TEST) {
+            for (File f in buildSettings.testDependencies) {
+                classLoader.addURL(f.toURI().toURL())
+            }
+
         }
+        else {
+            for (File f in buildSettings.runtimeDependencies) {
+                classLoader.addURL(f.toURI().toURL())
+            }
+        }
+
+
         for (File f in buildSettings.providedDependencies) {
             classLoader.addURL(f.toURI().toURL())
         }
+
         classLoader.addURL(buildSettings.classesDir.toURI().toURL())
         classLoader.addURL(buildSettings.pluginClassesDir.toURI().toURL())
         classLoader.addURL(buildSettings.pluginBuildClassesDir.toURI().toURL())
         classLoader.addURL(buildSettings.pluginProvidedClassesDir.toURI().toURL())
+        if(Environment.current == Environment.TEST) {
+            classLoader.addURL(buildSettings.testClassesDir.toURI().toURL())
+        }
         classLoader.addURL(buildSettings.resourcesDir.toURI().toURL())
 
         def pluginSupport = new PluginPathDiscoverySupport(buildSettings)
