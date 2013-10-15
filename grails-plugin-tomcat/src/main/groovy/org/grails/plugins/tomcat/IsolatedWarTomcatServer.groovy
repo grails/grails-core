@@ -31,6 +31,10 @@ class IsolatedWarTomcatServer extends TomcatServer {
     protected final File warDir
     protected final String contextPath
     protected ant = new GrailsConsoleAntBuilder()
+
+    protected Integer httpPort
+    protected Integer httpsPort
+
     IsolatedWarTomcatServer(String warPath, String contextPath) {
         super()
 
@@ -64,7 +68,7 @@ class IsolatedWarTomcatServer extends TomcatServer {
                 arg value: host
                 arg value: httpPort
 
-                if (httpsPort) {
+                if (httpsPort != null) {
                     arg value: httpsPort
                     arg value: keystoreFile.absolutePath
                     arg value: keyPassword
@@ -114,7 +118,12 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
             // look for the magic string that will be written to output when the app is running
             try {
-                started = outFile.text.contains("Server running. ")
+                String text = outFile.text
+                started = text.contains("Server running. ")
+                if (started) {
+                    this.httpPort = parsePort("http", text)
+                    this.httpsPort = parsePort("https", text)
+                }
             } catch (IOException e) {
                 started = false
             }
@@ -132,6 +141,16 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
     }
 
+    static Integer parsePort(String scheme, String text) {
+        def pattern = "${scheme}:\\/\\/.*?:(\\d+)"
+        def match = text =~ pattern
+        if (match.find()) {
+            return match[0][1].toInteger()
+        } else {
+            return null
+        }
+    }
+
     @CompileStatic
     public static Collection<File> findTomcatJars(BuildSettings buildSettings) {
         return buildSettings.buildDependencies.findAll { File it -> it.name.contains("tomcat") } +
@@ -142,10 +161,18 @@ class IsolatedWarTomcatServer extends TomcatServer {
 
     void stop() {
         try {
-            new URL("http://${warParams.host}:${warParams.port + 1}").text
+            new URL("http://${warParams.host}:${warParams.port - 1}").text
         } catch(e) {
             // ignore
         }
+    }
+
+    int getLocalHttpPort() {
+        return httpPort
+    }
+
+    int getLocalHttpsPort() {
+        return httpsPort
     }
 }
 

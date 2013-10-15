@@ -92,8 +92,6 @@ class InlineExplodedTomcatServer extends TomcatServer {
         new TomcatLoader(classLoader)
     }
 
-
-
     void doStart(String host, int httpPort, int httpsPort) {
         preStart()
 
@@ -113,7 +111,7 @@ class InlineExplodedTomcatServer extends TomcatServer {
         tomcat.port = httpPort
         tomcat.connector.URIEncoding = 'UTF-8'
 
-        if (httpsPort) {
+        if (httpsPort >= 0) {
             def sslConnector = loadInstance('org.apache.catalina.connector.Connector')
             sslConnector.scheme = "https"
             sslConnector.secure = true
@@ -139,8 +137,18 @@ class InlineExplodedTomcatServer extends TomcatServer {
 
         tomcat.start()
         if(Environment.isFork()) {
-            IsolatedTomcat.startKillSwitch(tomcat, httpPort)
+            IsolatedTomcat.startKillSwitch(tomcat, tomcat.connector.getLocalPort())
         }
+    }
+
+    int getLocalHttpPort() {
+        return tomcat.connector.getLocalPort()
+    }
+
+    int getLocalHttpsPort() {
+        tomcat.service.findConnectors().find {
+            it.scheme == 'https'
+        }?.getLocalPort() ?: -1
     }
 
     void stop() {

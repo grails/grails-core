@@ -191,6 +191,9 @@ target(allTests: "Runs the project's tests.") {
 
                 "${phase}TestPhasePreparation"()
 
+                //Let's plugins know that the test phase is ready (i.e. functional tests ready and port has been binded)
+                event("TestPhasePrepared", [phase])
+
                 // Now run all the tests registered for this phase.
                 types.each(processTests)
             }
@@ -392,7 +395,7 @@ functionalTestPhasePreparation = {
         grails.util.Holders.grailsApplication = null
         packageApp()
         testOptions.https ? runAppHttps() : runApp()
-        
+
         appCtx = ApplicationHolder.application.mainContext
         initPersistenceContext()
     }
@@ -400,7 +403,7 @@ functionalTestPhasePreparation = {
     if (testOptions.containsKey('baseUrl')) {
         functionalBaseUrl = testOptions.baseUrl
     } else {
-        functionalBaseUrl = (testOptions.httpsBaseUrl ? 'https' : 'http') + "://localhost:$serverPort$serverContextPath/"
+        functionalBaseUrl = (testOptions.httpsBaseUrl ? 'https' : 'http') + "://localhost:${getServerPort()}$serverContextPath/"
     }
 
     System.setProperty(grailsSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
