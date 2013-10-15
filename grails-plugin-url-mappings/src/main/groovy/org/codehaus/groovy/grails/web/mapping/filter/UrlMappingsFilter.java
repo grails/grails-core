@@ -180,12 +180,14 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     final String viewName;
                     try {
                         info.configure(webRequest);
-                        UrlConverter urlConverterToUse = urlConverter;
-                        GrailsApplication grailsApplicationToUse = application;
+                        if(info.getViewName() == null && info.getURI() == null) {
+                            UrlConverter urlConverterToUse = urlConverter;
+                            GrailsApplication grailsApplicationToUse = application;
 
-                        GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
+                            GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
 
-                        if(controller == null) continue;
+                            if(controller == null) continue;
+                        }
                     }
                     catch (Exception e) {
                         if (e instanceof MultipartException) {
