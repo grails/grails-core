@@ -925,7 +925,7 @@ public class GrailsClassUtils {
     @SuppressWarnings("rawtypes")
     public static Collection createConcreteCollection(Class interfaceType) {
         Collection elements;
-        if (interfaceType.equals(List.class)) {
+        if (interfaceType.equals(List.class) || interfaceType.equals(Collection.class)) {
             elements = new ArrayList();
         }
         else if (interfaceType.equals(SortedSet.class)) {
