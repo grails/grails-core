@@ -596,7 +596,7 @@ public class GrailsASTUtils {
         for (int i = 0; i < parameterTypes.length; i++) {
             Parameter parameterType = parameterTypes[i];
             Parameter newParameter = new Parameter(replaceGenericsPlaceholders(parameterType.getType(), genericsPlaceholders), parameterType.getName(), parameterType.getInitialExpression());
-            newParameter.addAnnotations(parameterType.getAnnotations());
+            copyAnnotations(parameterType, newParameter);
             newParameterTypes[i] = newParameter;
         }
         return newParameterTypes;
@@ -1202,5 +1202,17 @@ public class GrailsASTUtils {
         methodCallExpression.setImplicitThis(useImplicitThis);
         return methodCallExpression;
     }
+
     
+    public static void copyAnnotations(final AnnotatedNode from, final AnnotatedNode to) {
+        final List<AnnotationNode> annotationsToCopy = from.getAnnotations();
+        for(final AnnotationNode node : annotationsToCopy) {
+            final AnnotationNode copyOfAnnotationNode = new AnnotationNode(node.getClassNode());
+            final Map<String, Expression> members = node.getMembers();
+            for(final Map.Entry<String, Expression> entry : members.entrySet()) {
+                copyOfAnnotationNode.addMember(entry.getKey(), entry.getValue());
+            }
+            to.addAnnotation(copyOfAnnotationNode);
+        }
+    }
 }
