@@ -167,7 +167,7 @@ class HalJsonRendererSpec extends Specification{
         given: "A HAL Collection renderer with a custom embedded name"
             HalJsonCollectionRenderer renderer = getCollectionRenderer()
             renderer.prettyPrint = true
-            renderer.embeddedName = 'schtuff'
+            renderer.collectionName = 'schtuff'
 
         when: "A collection of domian objects is rendered"
             def webRequest = GrailsWebUtil.bindMockWebRequest()

@@ -32,12 +32,12 @@ import com.google.gson.stream.JsonWriter
 class HalJsonCollectionRenderer extends HalJsonRenderer implements ContainerRenderer {
 
     final Class componentType
-    String embeddedName
-
+    String collectionName
+    
     HalJsonCollectionRenderer(Class componentType) {
         super(Collection)
         this.componentType = componentType
-        this.embeddedName = GrailsNameUtils.getPropertyName(componentType)
+        this.collectionName = GrailsNameUtils.getPropertyName(componentType)
     }
 
     HalJsonCollectionRenderer(Class componentType, MimeType... mimeTypes) {
@@ -49,7 +49,7 @@ class HalJsonCollectionRenderer extends HalJsonRenderer implements ContainerRend
     @Override
     protected renderEmbeddedAttributes(JsonWriter writer, object, RenderContext context, MimeType mimeType) {
         writer.beginObject()
-        writer.name(embeddedName)
+        writer.name(collectionName)
         super.renderEmbeddedAttributes writer, object, context, mimeType
         writer.endObject()
     }
