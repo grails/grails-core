@@ -181,7 +181,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         info.configure(webRequest);
                         UrlConverter urlConverterToUse = urlConverter;
                         GrailsApplication grailsApplicationToUse = application;
-
                         GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
 
                         if(controller == null && info.getViewName()==null && info.getURI()==null) continue;
@@ -247,7 +246,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         Set<HttpMethod> methods = new HashSet<HttpMethod>();
 
         for (UrlMappingInfo urlMappingInfo : urlMappingInfos) {
-            Object featureId = getFeatureId(urlMappingInfo);
+            Object featureId = WebUtils.getFeatureId(urlConverter, urlMappingInfo);
             GrailsClass controllerClass = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
             if(controllerClass != null) {
                 if(urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
@@ -270,20 +269,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             version = mimeType.getVersion();
         }
         return version;
-    }
-
-    private ControllerArtefactHandler.ControllerCacheKey getFeatureId(UrlMappingInfo info) {
-        final String action = info.getActionName() == null ? "" : info.getActionName();
-        final String controllerName = info.getControllerName();
-        final String pluginName = info.getPluginName();
-        final String namespace = info.getNamespace();
-        final String featureUri = getControllerFeatureURI(controllerName, action);
-
-        return new ControllerArtefactHandler.ControllerCacheKey(featureUri, pluginName, namespace);
-    }
-
-    private String getControllerFeatureURI(String controller, String action) {
-        return WebUtils.SLASH + urlConverter.toUrlElement(controller) + WebUtils.SLASH + urlConverter.toUrlElement(action);
     }
 
     public static boolean isUriExcluded(UrlMappingsHolder holder, String uri) {

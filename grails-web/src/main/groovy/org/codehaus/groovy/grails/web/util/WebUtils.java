@@ -712,24 +712,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
     public static GrailsClass getConfiguredControllerForUrlMappingInfo(GrailsWebRequest webRequest, UrlMappingInfo info, UrlConverter urlConverterToUse, GrailsApplication grailsApplicationToUse) {
         String viewName;
-        String action = info.getActionName() == null ? "" : info.getActionName();
         viewName = info.getViewName();
 
         GrailsClass controller = null;
         if (viewName == null && info.getURI() == null) {
-            final String controllerName = info.getControllerName();
-            String pluginName = info.getPluginName();
-            String featureUri = SLASH + urlConverterToUse.toUrlElement(controllerName) + SLASH + urlConverterToUse.toUrlElement(action);
-
-            Object featureId;
-            if(pluginName != null) {
-                Map featureIdMap = new HashMap();
-                featureIdMap.put("uri", featureUri);
-                featureIdMap.put("pluginName", pluginName);
-                featureId = featureIdMap;
-            } else {
-                featureId = featureUri;
-            }
+            ControllerArtefactHandler.ControllerCacheKey featureId = getFeatureId(urlConverterToUse, info);
             controller = grailsApplicationToUse.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
             if (controller != null) {
 
@@ -740,5 +727,19 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
 
         }
         return controller;
+    }
+
+    public static ControllerArtefactHandler.ControllerCacheKey getFeatureId(UrlConverter urlConverter, UrlMappingInfo info) {
+        final String action = info.getActionName() == null ? "" : info.getActionName();
+        final String controllerName = info.getControllerName();
+        final String pluginName = info.getPluginName();
+        final String namespace = info.getNamespace();
+        final String featureUri = getControllerFeatureURI(urlConverter, controllerName, action);
+
+        return new ControllerArtefactHandler.ControllerCacheKey(featureUri, pluginName, namespace);
+    }
+
+    public static String getControllerFeatureURI(UrlConverter urlConverter, String controller, String action) {
+        return SLASH + urlConverter.toUrlElement(controller) + SLASH + urlConverter.toUrlElement(action);
     }
 }
