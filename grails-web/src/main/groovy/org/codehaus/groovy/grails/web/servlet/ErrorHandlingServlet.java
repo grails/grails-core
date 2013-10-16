@@ -16,9 +16,6 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.GrailsWebUtil;
-<<<<<<< HEAD
-import grails.web.UrlConverter;
-=======
 
 import java.io.IOException;
 import java.io.Writer;
@@ -30,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import grails.web.UrlConverter;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
->>>>>>> 2.3.x
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
