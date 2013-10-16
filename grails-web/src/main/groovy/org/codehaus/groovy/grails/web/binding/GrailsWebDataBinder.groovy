@@ -24,6 +24,7 @@ import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
 import java.lang.reflect.Modifier
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
@@ -72,83 +73,40 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         registerConverter new ByteArrayMultipartFileValueConverter()
     }
 
-    /**
-     * 
-     * @param obj The object being bound to
-     * @param source The data binding source
-     * @see DataBindingSource
-     */
     void bind(obj, DataBindingSource source) {
         bind obj, source, null, getBindingIncludeList(obj), null, null
     }
 
-    /**
-     * 
-     * @param obj The object being bound to
-     * @param source The data binding source
-     * @param listener A listener which will be notifed of data binding events triggered
-     * by this binding
-     * @see DataBindingSource
-     * @see DataBindingListener
-     */
     void bind(obj, DataBindingSource source, DataBindingListener listener) {
         bind obj, source, null, getBindingIncludeList(obj), null, listener
     }
 
-    /**
-     * 
-     * @param obj The object being bound to
-     * @param source The data binding source
-     * @param filter Only properties beginning with filter will be included in the
-     * data binding.  For example, if filter is &quot;person&quot; and the binding
-     * source contains data for properties &quot;person.name&quot; and &quot;author.name&quot;
-     * the value of &quot;person.name&quot; will be bound to obj.name.  The value of
-     * &quot;author.name&quot; will be ignored.
-     * @param whiteList A list of property names to be included during this 
-     * data binding.  All other properties represented in the binding source 
-     * will be ignored
-     * @param blackList A list of properties names to be excluded during
-     * this data binding.  
-     * @see DataBindingSource
-     * @see DataBindingListener
-     */
     void bind(object, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
         def bindingResult = new BeanPropertyBindingResult(object, object.getClass().name)
-        def errorHandlingListener = new GrailsWebDataBindingListener(bindingResult, messageSource)
+        doBind object, source, filter, whiteList, blackList, listener, bindingResult
+    }
+
+    protected void doBind(object, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener, errors) {
+        BeanPropertyBindingResult bindingResult = (BeanPropertyBindingResult)errors
+        def errorHandlingListener = new GrailsWebDataBindingListener(messageSource)
 
         List<DataBindingListener> allListeners = [errorHandlingListener, listener]
         allListeners.addAll listeners
+        allListeners = (List<DataBindingListener>)allListeners.findAll { it != null }
 
-        List<DataBindingListener> listener1s = (List<DataBindingListener>)allListeners.findAll { it instanceof DataBindingListener }
-        List<DataBindingListener2> listener2s = (List<DataBindingListener2>)allListeners.findAll { it instanceof DataBindingListener2 }
-    
-        def listenerWrapper = new DataBindingEventMulticastListener(listener1s, listener2s)
+        def listenerWrapper = new DataBindingEventMulticastListener(allListeners)
 
-        boolean bind = true
-        for (DataBindingListener2 listener2 in listener2s) {
-            Boolean ok = listener2.beforeBinding(object, bindingResult)
-            if (!Boolean.TRUE.equals(ok)) {
-                bind = false
-            }
-        }
+        boolean bind = listenerWrapper.beforeBinding(object, bindingResult)
 
         if (bind) {
-            super.bind object, source, filter, whiteList, blackList, listenerWrapper
+            super.doBind object, source, filter, whiteList, blackList, listenerWrapper, bindingResult
         }
 
-        for (DataBindingListener2 listener2 in listener2s) {
-            listener2.afterBinding object, bindingResult
-        }
+        listenerWrapper.afterBinding object, bindingResult
 
         populateErrors(object, bindingResult)
     }
 
-    /**
-     * 
-     * @param obj The object being bound to
-     * @param gpath A GPathResult which represents the data being bound.  
-     * @see DataBindingSource
-     */
     void bind(obj, GPathResult gpath) {
         bind obj, new SimpleMapDataBindingSource(new GPathResultMap(gpath)), getBindingIncludeList(obj)
     }
@@ -273,7 +231,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     @Override
-    protected processProperty(obj, MetaProperty metaProperty, val, DataBindingSource source, DataBindingListener listener) {
+    protected processProperty(obj, MetaProperty metaProperty, val, DataBindingSource source, DataBindingListener listener, errors) {
         boolean needsBinding = true
 
         if (source.dataSourceAware) {
@@ -285,7 +243,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     def persistedInstance = getPersistentInstance(propertyType, idValue)
                     if (persistedInstance != null) {
                         needsBinding = false
-                        bindProperty obj, source, metaProperty, persistedInstance, listener
+                        bindProperty obj, source, metaProperty, persistedInstance, listener, errors
                         if (persistedInstance != null) {
                             if (val instanceof Map) {
                                 bind persistedInstance, new SimpleMapDataBindingSource(val), listener
@@ -309,7 +267,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     }
                     if(shouldBindNull) {
                         needsBinding = false
-                        bindProperty obj, source, metaProperty, null, listener
+                        bindProperty obj, source, metaProperty, null, listener, errors
                     }
                 }
             } else if(Collection.isAssignableFrom(metaProperty.type)) {
@@ -343,13 +301,13 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             }
         }
         if (needsBinding) {
-            super.processProperty obj, metaProperty, val, source, listener
+            super.processProperty obj, metaProperty, val, source, listener, errors
         }
     }
 
     @Override
     protected processIndexedProperty(obj, MetaProperty metaProperty, IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor, val,
-            DataBindingSource source, DataBindingListener listener) {
+            DataBindingSource source, DataBindingListener listener, errors) {
 
         boolean needsBinding = true
         if (source.dataSourceAware) {
@@ -374,7 +332,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                             if (instance == null) {
                                 def message = "Illegal attempt to update element in [${propName}] Set with id [${idValue}]. No such record was found."
                                 Exception e = new IllegalArgumentException(message)
-                                addBindingError(obj, propName, idValue, e, listener)
+                                addBindingError(obj, propName, idValue, e, listener, errors)
                             } else {
                                 addElementToCollectionAt obj, propName, collection, Integer.parseInt(indexedPropertyReferenceDescriptor.index), instance
                             }
@@ -434,7 +392,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             }
         }
         if (needsBinding) {
-            super.processIndexedProperty obj, metaProperty, indexedPropertyReferenceDescriptor, val, source, listener
+            super.processIndexedProperty obj, metaProperty, indexedPropertyReferenceDescriptor, val, source, listener, errors
         }
     }
 
@@ -665,54 +623,53 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 }
 
 @CompileStatic
-class DataBindingEventMulticastListener implements DataBindingListener2 {
+class DataBindingEventMulticastListener implements DataBindingListener {
 
-    protected final List<DataBindingListener> listener1s = []
-    protected final List<DataBindingListener2> listener2s = []
+    protected final List<DataBindingListener> listeners
 
-    DataBindingEventMulticastListener(List<DataBindingListener> listener1s, List<DataBindingListener2> listener2s) {
-        this.listener1s = listener1s
-        this.listener2s = listener2s
+    DataBindingEventMulticastListener(List<DataBindingListener> listeners) {
+        this.listeners = listeners
     }
 
     boolean supports(Class<?> clazz) {
-        for (DataBindingListener2 listener2 in listener2s) {
-            if (!listener2.supports(clazz)) {
+        for (DataBindingListener listener in listeners) {
+            if (!listener.supports(clazz)) {
                 return false
             }
         }
         true
     }
 
-    Boolean beforeBinding(target, BindingResult errors) {
+    Boolean beforeBinding(target, errors) {
         boolean bind = true
-        for (DataBindingListener2 listener in listener2s) {
+        for (DataBindingListener listener in listeners) {
             if (!listener.beforeBinding(target, errors)) {
                 bind = false
             }
         }
+        
         bind
     }
 
-    Boolean beforeBinding(obj, String propertyName, value) {
+    Boolean beforeBinding(obj, String propertyName, value, errors) {
         boolean bind = true
-        for (DataBindingListener listener in listener1s) {
-            if (!listener.beforeBinding(obj, propertyName, value)) {
+        for (DataBindingListener listener in listeners) {
+            if (!listener.beforeBinding(obj, propertyName, value, errors)) {
                 bind = false
             }
         }
         bind
     }
 
-    void afterBinding(obj, String propertyName) {
-        listener1s*.afterBinding obj, propertyName
+    void afterBinding(obj, String propertyName, errors) {
+        listeners*.afterBinding obj, propertyName, errors
     }
 
-    void afterBinding(target, BindingResult errors) {
-        listener2s*.afterBinding target, errors
+    void afterBinding(target, errors) {
+        listeners*.afterBinding target, errors
     }
 
-    void bindingError(BindingError error) {
-        listener1s*.bindingError error
+    void bindingError(BindingError error, errors) {
+        listeners*.bindingError error, errors
     }
 }

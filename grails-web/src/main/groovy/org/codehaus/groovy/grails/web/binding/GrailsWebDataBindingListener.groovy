@@ -26,16 +26,15 @@ import org.springframework.validation.FieldError
 
 @CompileStatic
 class GrailsWebDataBindingListener extends DataBindingListenerAdapter {
-    private final BindingResult bindingResult
     private final MessageSource messageSource
 
-    GrailsWebDataBindingListener(BindingResult bindingResult, MessageSource messageSource) {
-        this.bindingResult = bindingResult
+    GrailsWebDataBindingListener(MessageSource messageSource) {
         this.messageSource = messageSource
     }
 
     @Override
-    void bindingError(BindingError error) {
+    void bindingError(BindingError error, errors) {
+        BindingResult bindingResult = (BindingResult)errors
         String className = error.object?.getClass()?.getName()
         String classAsPropertyName = GrailsNameUtils.getPropertyNameRepresentation(className)
         String propertyName = error.getPropertyName()

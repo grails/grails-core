@@ -29,6 +29,7 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListener
+import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.context.support.StaticMessageSource
 
 import spock.lang.Specification
@@ -39,7 +40,7 @@ import com.google.gson.internal.LazilyParsedNumber
 @Mock([AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
 class GrailsWebDataBinderSpec extends Specification {
 
-    def binder
+    GrailsWebDataBinder binder
     def messageSource
 
     void setup() {
@@ -737,9 +738,11 @@ class GrailsWebDataBinderSpec extends Specification {
     void 'Test updating a Set element by id that does not exist'() {
         given:
         def bindingErrors = []
-        def listener = { BindingError error ->
-            bindingErrors << error
-        } as DataBindingListener
+        def listener = new DataBindingListenerAdapter() {
+            void bindingError(BindingError error, errors) {
+                bindingErrors << error
+            }
+        }
 
         when:
         def publisher = new Publisher(name: 'Apress').save()
@@ -928,22 +931,24 @@ class GrailsWebDataBinderSpec extends Specification {
         !obj.hasErrors()
 
         when: 'binding with a binding source and a listener'
-        def listenerMap = [:]
         def beforeBindingArgs = []
         def bindingErrorArgs = []
         def afterBindingArgs = []
-        listenerMap.beforeBinding = { object, String propName, value ->
-            beforeBindingArgs << [object: object, propName: propName, value: value]
-            true
-        }
-        listenerMap.bindingError = { BindingError error ->
-            bindingErrorArgs << error
-        }
-        listenerMap.afterBinding = { object, String propertyName ->
-            afterBindingArgs << [object: object, propertyName: propertyName]
-        }
         def bindingErrors = []
-        def listener = listenerMap as DataBindingListener
+        def listener = new DataBindingListenerAdapter() {
+            Boolean beforeBinding(object, String propertyName, value, errors) {
+                beforeBindingArgs << [object: object, propName: propertyName, value: value]
+                true
+            }
+
+            void afterBinding(object, String propertyName, errors) {
+                afterBindingArgs << [object: object, propertyName: propertyName]
+            }
+
+            void bindingError(BindingError error, errors) {
+                bindingErrorArgs << error
+            }
+        }
 
         binder.bind obj, [someNumber: 'not a number'] as SimpleMapDataBindingSource, listener
 
@@ -1154,4 +1159,3 @@ class AssociationBindingAuthor {
     String name
     static hasMany = [books: AssociationBindingBook]
 }
-

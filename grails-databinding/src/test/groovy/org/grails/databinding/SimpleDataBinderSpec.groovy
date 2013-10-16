@@ -16,7 +16,7 @@ package org.grails.databinding
 
 import org.grails.databinding.converters.DateConversionHelper
 import org.grails.databinding.errors.BindingError
-import org.grails.databinding.events.DataBindingListener
+import org.grails.databinding.events.DataBindingListenerAdapter
 
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -143,16 +143,9 @@ class SimpleDataBinderSpec extends Specification {
         def binder = new SimpleDataBinder()
         def obj = new DateContainer()
         def afterBindingEvents = []
-        def listener = new DataBindingListener() {
-            Boolean beforeBinding(Object o, String propertyName, Object value) {
-                true
-            }
-
-            void afterBinding(Object o, String propertyName) {
+        def listener = new DataBindingListenerAdapter() {
+            void afterBinding(o, String propertyName, errors) {
                 afterBindingEvents << [object: o, propertyName: propertyName]
-            }
-
-            void bindingError(BindingError error) {
             }
         }
         def f = new Fidget()
@@ -176,17 +169,10 @@ class SimpleDataBinderSpec extends Specification {
         given:
         def binder = new SimpleDataBinder()
         def obj = new DateContainer()
-        def errors = []
-        def listener = new DataBindingListener() {
-            Boolean beforeBinding(Object o, String propertyName, Object value) {
-                true
-            }
-
-            void afterBinding(Object o, String propertyName) {
-            }
-
-            void bindingError(BindingError error) {
-                errors << error
+        def bindingErrors = []
+        def listener = new DataBindingListenerAdapter() {
+            void bindingError(BindingError error, errors) {
+                bindingErrors << error
             }
         }
 
@@ -195,9 +181,9 @@ class SimpleDataBinderSpec extends Specification {
 
         then:
         obj.formattedUtilDate == null
-        errors.size() == 1
-        errors[0].rejectedValue == 'BAD'
-        errors[0].cause.message == 'Unparseable date: "BAD"'
+        bindingErrors.size() == 1
+        bindingErrors[0].rejectedValue == 'BAD'
+        bindingErrors[0].cause.message == 'Unparseable date: "BAD"'
     }
 
     void 'Test binding string to date'() {
