@@ -218,14 +218,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         // These are expanded for readability
         if (fileIsExcluded == true) {
             return false;
-        }
-        if (fileIsIncluded == true) {
+        } else if (fileIsIncluded == true) {
+            return true;
+        } else if (fileIsExcluded == false && fileIsIncluded == false && reloadIncludes.size() > 0) {
+            return false;
+        } else {
             return true;
         }
-        if (fileIsExcluded == false && fileIsIncluded == false && reloadIncludes.size() > 0) {
-            return false;
-        }
-        return true;
     }
 
     private void reloadPlugin(File file) {
@@ -249,7 +248,14 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         else {
             // add to class change event queue
             String className = GrailsResourceUtils.getClassName(file.getAbsolutePath());
-            if (className != null) {
+            if (className == null) {
+                try {
+                pluginManager.informOfFileChange(file);
+                } catch (Exception e) {
+                    LOG.error("Failed to reload file [" + file + "] with error: " + e.getMessage(), e);
+                }
+            }
+            else {
                 classChangeEventQueue.put(className, new ClassUpdate() {
                     public void run(Class<?> cls) {
                         try {
@@ -290,6 +296,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
             LOG.error("Compilation Error: " + e.getCause().getMessage());
         }
     }
+
 
     private void sleep(int time) {
         try {

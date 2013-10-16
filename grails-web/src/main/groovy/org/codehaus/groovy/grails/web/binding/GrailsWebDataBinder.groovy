@@ -64,6 +64,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     protected MessageSource messageSource
     boolean trimStrings = true
     boolean convertEmptyStringsToNull = true
+    protected List<DataBindingListener> listeners = []
 
     GrailsWebDataBinder(GrailsApplication grailsApplication) {
         this.grailsApplication = grailsApplication
@@ -115,8 +116,30 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         def bindingResult = new BeanPropertyBindingResult(object, object.getClass().name)
         def errorHandlingListener = new GrailsWebDataBindingListener(bindingResult, messageSource)
 
-        def listenerWrapper = new DataBindingEventMulticastListener(listeners: [errorHandlingListener, listener])
-        super.bind object, source, filter, whiteList, blackList, listenerWrapper
+        List<DataBindingListener> allListeners = [errorHandlingListener, listener]
+        allListeners.addAll listeners
+
+        List<DataBindingListener> listener1s = (List<DataBindingListener>)allListeners.findAll { it instanceof DataBindingListener }
+        List<DataBindingListener2> listener2s = (List<DataBindingListener2>)allListeners.findAll { it instanceof DataBindingListener2 }
+    
+        def listenerWrapper = new DataBindingEventMulticastListener(listener1s, listener2s)
+
+        boolean bind = true
+        for (DataBindingListener2 listener2 in listener2s) {
+            Boolean ok = listener2.beforeBinding(object, bindingResult)
+            if (!Boolean.TRUE.equals(ok)) {
+                bind = false
+            }
+        }
+
+        if (bind) {
+            super.bind object, source, filter, whiteList, blackList, listenerWrapper
+        }
+
+        for (DataBindingListener2 listener2 in listener2s) {
+            listener2.afterBinding object, bindingResult
+        }
+
         populateErrors(object, bindingResult)
     }
 
@@ -592,6 +615,11 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
     }
 
+    @Autowired(required=false)
+    void setValueConverters(DataBindingListener[] listeners) {
+        this.listeners.addAll Arrays.asList(listeners)
+    }
+
     protected convert(Class typeToConvertTo, value) {
         if (value instanceof JSONObject.Null) {
             return null
@@ -637,18 +665,54 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 }
 
 @CompileStatic
-class DataBindingEventMulticastListener implements DataBindingListener {
-    List<DataBindingListener> listeners
+class DataBindingEventMulticastListener implements DataBindingListener2 {
 
-    Boolean beforeBinding(Object obj, String propertyName, Object value) {
-        listeners*.beforeBinding obj, propertyName, value
+    protected final List<DataBindingListener> listener1s = []
+    protected final List<DataBindingListener2> listener2s = []
+
+    DataBindingEventMulticastListener(List<DataBindingListener> listener1s, List<DataBindingListener2> listener2s) {
+        this.listener1s = listener1s
+        this.listener2s = listener2s
     }
 
-    void afterBinding(Object obj, String propertyName) {
-        listeners*.afterBinding obj, propertyName
+    boolean supports(Class<?> clazz) {
+        for (DataBindingListener2 listener2 in listener2s) {
+            if (!listener2.supports(clazz)) {
+                return false
+            }
+        }
+        true
+    }
+
+    Boolean beforeBinding(target, BindingResult errors) {
+        boolean bind = true
+        for (DataBindingListener2 listener in listener2s) {
+            if (!listener.beforeBinding(target, errors)) {
+                bind = false
+            }
+        }
+        bind
+    }
+
+    Boolean beforeBinding(obj, String propertyName, value) {
+        boolean bind = true
+        for (DataBindingListener listener in listener1s) {
+            if (!listener.beforeBinding(obj, propertyName, value)) {
+                bind = false
+            }
+        }
+        bind
+    }
+
+    void afterBinding(obj, String propertyName) {
+        listener1s*.afterBinding obj, propertyName
+    }
+
+    void afterBinding(target, BindingResult errors) {
+        listener2s*.afterBinding target, errors
     }
 
     void bindingError(BindingError error) {
-        listeners*.bindingError error
+        listener1s*.bindingError error
     }
 }

@@ -13,9 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.servlet.mvc.exceptions
-
-import groovy.transform.CompileStatic
+package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
 
 /**
  * Thrown when the request cannot be redirected.
@@ -23,16 +21,16 @@ import groovy.transform.CompileStatic
  * @author Graeme Rocher
  * @since 1.2
  */
-@CompileStatic
-class CannotRedirectException extends ControllerExecutionException {
+public class CannotRedirectException extends ControllerExecutionException {
+    private static final long serialVersionUID = 1L;
 
-    CannotRedirectException() {}
+    public CannotRedirectException() {}
 
-    CannotRedirectException(String message, Throwable t) {
-        super(message, t)
+    public CannotRedirectException(String message, Throwable t) {
+        super(message, t);
     }
 
-    CannotRedirectException(String message) {
-        super(message)
+    public CannotRedirectException(String message) {
+        super(message);
     }
 }

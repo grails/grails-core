@@ -177,7 +177,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     // original request parameters.
                     webRequest.resetParams();
 
-                    final String viewName;
                     try {
                         info.configure(webRequest);
                         UrlConverter urlConverterToUse = urlConverter;
@@ -185,7 +184,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
                         GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
 
-                        if(controller == null) continue;
+                        if(controller == null && info.getViewName()==null && info.getURI()==null) continue;
                     }
                     catch (Exception e) {
                         if (e instanceof MultipartException) {
@@ -195,7 +194,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         LOG.error("Error when matching URL mapping [" + info + "]:" + e.getMessage(), e);
                         continue;
                     }
-
+                    
                     dispatched = true;
 
                     if (!WAR_DEPLOYED) {

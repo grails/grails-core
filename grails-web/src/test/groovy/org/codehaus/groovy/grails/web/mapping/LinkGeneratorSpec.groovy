@@ -204,7 +204,32 @@ class LinkGeneratorSpec extends Specification {
         then:
             cachedlink == "http://localhost:8081/blah/$resource.dir/$resource.file"
     }
+        
+    
+    def "caching should ignore request.baseUrl when base is provided for absolute links"() {
 
+        given:
+            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            baseUrl = null
+            def cachingGenerator = getGenerator(true)
+
+        when:
+            def cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [:]);
+        then:
+            cacheKey == "resource[:][]"
+
+        when:
+            cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [absolute:true]);
+        then:
+            cacheKey == "resourcehttp://localhost[absolute:true]"
+        when:
+            cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [absolute:true, base: "http://some.other.host"]);
+        then:
+            cacheKey == "resourcehttp://some.other.host[absolute:true, base:http://some.other.host]"
+    }
+
+    
     void cleanup() {
         RequestContextHolder.setRequestAttributes(null)
     }

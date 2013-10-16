@@ -106,25 +106,11 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 beginLinks(writer)
                 writeLinkForCurrentPath(context, mimeType, writer)
                 writer.endObject()
-                      .name(EMBEDDED_ATTRIBUTE)
-                      .beginArray()
-
-                final writtenObjects = [] as Set
-                for(o in ((Collection)object)) {
-                    if (o && isDomainResource(o.getClass())) {
-                        writeDomainWithEmbeddedAndLinks(context, o.class, o, writer, context.locale, mimeType, writtenObjects)
-                    }
-                }
-                writer.endArray()
+                writer.name(EMBEDDED_ATTRIBUTE)
+                renderEmbeddedAttributes(writer, object, context, mimeType)
                 writer.endObject()
-
             } else {
-                beginLinks(writer)
-                writeLinkForCurrentPath(context, mimeType, writer)
-                writeExtraLinks(object, context.locale, writer)
-                writer.endObject()
-                writeSimpleObject(object, context, writer)
-
+                writeSimpleObjectAndLink(object, context, writer, mimeType)
             }
         } finally {
             writer.flush()
@@ -132,6 +118,30 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     }
 
+    protected renderEmbeddedAttributes(JsonWriter writer, object, RenderContext context, MimeType mimeType) {
+        writer.beginArray()
+
+        final writtenObjects = [] as Set
+        for(o in ((Collection)object)) {
+            if (o) {
+                if(isDomainResource(o.getClass())) {
+                    writeDomainWithEmbeddedAndLinks(context, o.class, o, writer, context.locale, mimeType, writtenObjects)
+                } else {
+                    writeSimpleObjectAndLink(o, context, writer, mimeType)
+                }
+            }
+        }
+        writer.endArray()
+    }
+
+    protected writeSimpleObjectAndLink(Object o, RenderContext context, JsonWriter writer, MimeType mimeType) {
+        beginLinks(writer)
+        writeLinkForCurrentPath(context, mimeType, writer)
+        writeExtraLinks(o, context.locale, writer)
+        writer.endObject()
+        writeSimpleObject(o, context, writer)
+    }
+    
     protected void writeSimpleObject(Object object, RenderContext context, JsonWriter writer) {
         final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
         final propertyDescriptors = bean.propertyDescriptors
