@@ -41,6 +41,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
@@ -962,31 +963,31 @@ public class GrailsASTUtils {
     /**
      * Marks a method to be staticly compiled
      * 
-     * @param methodNode
+     * @param annotatedNode
      * @return
      */
-    public static MethodNode addCompileStaticAnnotation(MethodNode methodNode) {
-        return addCompileStaticAnnotation(methodNode, false);
+    public static AnnotatedNode addCompileStaticAnnotation(AnnotatedNode annotatedNode) {
+        return addCompileStaticAnnotation(annotatedNode, false);
     }
     
     /**
      * Adds @CompileStatic annotation to method
      * 
-     * @param methodNode
+     * @param annotatedNode
      * @param skip
      * @return
      */
-    public static MethodNode addCompileStaticAnnotation(MethodNode methodNode, boolean skip) {
-        if(methodNode != null) {
+    public static AnnotatedNode addCompileStaticAnnotation(AnnotatedNode annotatedNode, boolean skip) {
+        if(annotatedNode != null) {
             AnnotationNode an = new AnnotationNode(COMPILESTATIC_CLASS_NODE);
             if(skip) {
                 an.addMember("value", new PropertyExpression(new ClassExpression(TYPECHECKINGMODE_CLASS_NODE), "SKIP")); 
             }
-            methodNode.addAnnotation(an);
+            annotatedNode.addAnnotation(an);
             if(!skip) {
-                methodNode.getDeclaringClass().addTransform(StaticCompileTransformation.class, an);
+                annotatedNode.getDeclaringClass().addTransform(StaticCompileTransformation.class, an);
             }
         }
-        return methodNode;
+        return annotatedNode;
     }
 }
