@@ -84,7 +84,7 @@ public class MixinTransformation implements ASTTransformation {
                     final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
 
                     GrailsASTUtils.addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
-                    VariableExpression fieldReference = new VariableExpression(fieldName);
+                    VariableExpression fieldReference = new VariableExpression(fieldName, mixinClassNode);
 
                     while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
                         final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
@@ -92,10 +92,10 @@ public class MixinTransformation implements ASTTransformation {
                         for (MethodNode mixinMethod : mixinMethods) {
                             if (isCandidateMethod(mixinMethod) && !hasDeclaredMethod(classNode, mixinMethod)) {
                                 if (mixinMethod.isStatic()) {
-                                    /*MethodNode methodNode =*/ GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod);
+                                    GrailsASTUtils.addCompileStaticAnnotation(GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod));
                                 }
                                 else {
-                                    /*MethodNode methodNode =*/ GrailsASTUtils.addDelegateInstanceMethod(classNode, fieldReference, mixinMethod, false);
+                                    GrailsASTUtils.addCompileStaticAnnotation(GrailsASTUtils.addDelegateInstanceMethod(classNode, fieldReference, mixinMethod, false));
                                 }
                             }
                         }

@@ -712,14 +712,14 @@ public class GrailsASTUtils {
     }
 
     public static void addDelegateInstanceMethods(ClassNode classNode, ClassNode delegateNode, Expression delegateInstance, Map<String, ClassNode> genericsPlaceholders) {
-        addDelegateInstanceMethods(classNode, classNode, delegateNode, delegateInstance, genericsPlaceholders, false);
+        addDelegateInstanceMethods(classNode, classNode, delegateNode, delegateInstance, genericsPlaceholders, false, false);
     }
 
     public static void addDelegateInstanceMethods(ClassNode supportedSuperType, ClassNode classNode, ClassNode delegateNode, Expression delegateInstance) {
-        addDelegateInstanceMethods(supportedSuperType, classNode, delegateNode, delegateInstance, null, false);
+        addDelegateInstanceMethods(supportedSuperType, classNode, delegateNode, delegateInstance, null, false, false);
     }
 
-    public static void addDelegateInstanceMethods(ClassNode supportedSuperType, ClassNode classNode, ClassNode delegateNode, Expression delegateInstance, Map<String, ClassNode> genericsPlaceholders, boolean noNullCheck) {
+    public static void addDelegateInstanceMethods(ClassNode supportedSuperType, ClassNode classNode, ClassNode delegateNode, Expression delegateInstance, Map<String, ClassNode> genericsPlaceholders, boolean noNullCheck, boolean addCompileStatic) {
         while (!delegateNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
             List<MethodNode> declaredMethods = delegateNode.getMethods();
             for (MethodNode declaredMethod : declaredMethods) {
@@ -728,7 +728,10 @@ public class GrailsASTUtils {
                     addDelegateConstructor(classNode, declaredMethod, genericsPlaceholders);
                 }
                 else if (isCandidateInstanceMethod(supportedSuperType, declaredMethod)) {
-                    addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod, null, true, genericsPlaceholders, noNullCheck);
+                    MethodNode methodNode = addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod, null, true, genericsPlaceholders, noNullCheck);
+                    if(addCompileStatic) {
+                        addCompileStaticAnnotation(methodNode);
+                    }
                 }
             }
             delegateNode = delegateNode.getSuperClass();
