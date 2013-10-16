@@ -15,7 +15,7 @@
  */
 package grails.test.mixin.services
 
-import grails.test.mixin.support.GrailsUnitTestMixin
+import grails.test.mixin.domain.DomainClassUnitTestMixin
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
 
 /**
@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
  * @author Graeme Rocher
  * @since 2.0
  */
-class ServiceUnitTestMixin extends GrailsUnitTestMixin {
+class ServiceUnitTestMixin extends DomainClassUnitTestMixin {
 
     /**
      * Mocks a service class, registering it with the application context
