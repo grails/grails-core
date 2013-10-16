@@ -219,6 +219,15 @@ subprojects { project ->
     }
 
     if(!isTestSuite) {
+
+        // Map the groovy gradle configuration to the “compile” scope in our published POMs.
+        // For some reason, this has to go here. If it's put later in the build, the groovy-all
+        // JAR doesn't get added to the artifact POMs.
+        def groovyConfiguration = project.configurations.findByName("groovy")
+        if (groovyConfiguration) {
+            conf2ScopeMappings.addMapping(1, groovyConfiguration, "compile")
+        }
+
         artifacts {
             archives jar
             archives sourcesJar
@@ -262,8 +271,6 @@ subprojects { project ->
         }
 
         uploadPublished {
-          repositories {
-
             repositories {
                 project.poms << mavenDeployer {
                     beforeDeployment { MavenDeployment deployment -> signPom(deployment) }
@@ -284,7 +291,6 @@ subprojects { project ->
                     
                 }.pom
             }
-          }
         }
 
         modifyPom { pom ->
@@ -318,14 +324,6 @@ subprojects { project ->
                         name 'Jeff Brown'
                     }
                 }
-            }
-        }
-
-        // Map the groovy gradle configuration to the “compile” scope in our published POMs
-        def groovyConfiguration = project.configurations.findByName("groovy")
-        if (groovyConfiguration) {
-            modifyPom {
-                it.scopeMappings.addMapping(1, groovyConfiguration, "compile")
             }
         }
 
