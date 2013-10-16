@@ -23,7 +23,6 @@ import grails.util.PluginBuildSettings;
 import groovy.lang.Binding;
 import groovy.lang.Closure;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.MissingPropertyException;
 import groovy.lang.Script;
 
 import java.io.File;

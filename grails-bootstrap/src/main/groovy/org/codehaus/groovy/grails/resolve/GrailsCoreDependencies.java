@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.resolve;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.codehaus.groovy.grails.plugins.GrailsVersionUtils;
 
