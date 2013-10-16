@@ -18,6 +18,7 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.rest.RestfulController
+import org.springframework.http.HttpStatus
 import spock.lang.Specification
 
 /**
@@ -40,13 +41,34 @@ class RestfulControllerSuperClassSpec extends Specification {
         assert model.videoCount == 0
     }
 
-    void "Test the create action returns the correct model"() {
-        when:"The create action is executed"
-            controller.create()
+    void "Test the save action returns the correct model, status and location"() {
+        when:"The save action is executed"
+            controller.params['title'] = 'TestVideo'
+            controller.save()
 
-        then:"The model is correctly created"
+        then:"The model is created successfully"
             model.video != null
+            response.status == HttpStatus.CREATED.value()
+            response.getHeader('Location') != null
+
     }
+
+    void "Test the update action returns the correct model, status and location"() {
+        given: "An existing domain object and Restful controller"
+            def video = new Video(title:'Existing').save()
+        when:"The update action is executed on controller"
+            controller.params['id']=video.id
+            controller.params['title'] = 'Updated'
+            controller.update()
+
+        then:"The model is created successfully"
+            model.video != null
+            response.status == HttpStatus.OK.value()
+            response.getHeader('Location') != null
+
+    }
+
+
 }
 
 @Artefact("Controller")

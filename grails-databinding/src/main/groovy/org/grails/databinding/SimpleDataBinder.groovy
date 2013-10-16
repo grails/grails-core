@@ -205,8 +205,13 @@ class SimpleDataBinder implements DataBinder {
      * @see DataBindingListener
      */
     void bind(obj, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener) {
+        doBind obj, source, filter, whiteList, blackList, listener, null
+    }
+
+    protected void doBind(obj, DataBindingSource source, String filter, List whiteList, List blackList, DataBindingListener listener, errors) {
+
         def keys = source.getPropertyNames()
-        for(String key in keys) {
+        for (String key in keys) {
             if (!filter || key.startsWith(filter + '.')) {
                 String propName = key
                 if (filter) {
@@ -217,7 +222,7 @@ class SimpleDataBinder implements DataBinder {
                 if (metaProperty) { // normal property
                     if (isOkToBind(metaProperty.name, whiteList, blackList)) {
                         def val = source[key]
-                        processProperty obj, metaProperty, val, source, listener
+                        processProperty obj, metaProperty, val, source, listener, errors
                     }
                 } else {
                     def descriptor = getIndexedPropertyReferenceDescriptor propName
@@ -225,7 +230,7 @@ class SimpleDataBinder implements DataBinder {
                         metaProperty = obj.metaClass.getMetaProperty descriptor.propertyName
                         if (metaProperty && isOkToBind(metaProperty.name, whiteList, blackList)) {
                             def val = source.getPropertyValue key
-                            processIndexedProperty obj, metaProperty, descriptor, val, source, listener
+                            processIndexedProperty obj, metaProperty, descriptor, val, source, listener, errors
                         }
                     } else if (propName.startsWith('_')) { // boolean special handling
                         def restOfPropertyName = propName[1..-1]
@@ -233,7 +238,7 @@ class SimpleDataBinder implements DataBinder {
                             metaProperty = obj.metaClass.getMetaProperty restOfPropertyName
                             if (metaProperty && isOkToBind(restOfPropertyName, whiteList, blackList)) {
                                 if ((Boolean == metaProperty.type || Boolean.TYPE == metaProperty.type)) {
-                                    bindProperty obj, source, metaProperty, false, listener
+                                    bindProperty obj, source, metaProperty, false, listener, errors
                                 }
                             }
                         }
@@ -261,17 +266,19 @@ class SimpleDataBinder implements DataBinder {
         descriptor
     }
 
-    protected processProperty(obj, MetaProperty metaProperty, val, DataBindingSource source, DataBindingListener listener) {
+    protected processProperty(obj, MetaProperty metaProperty, val, DataBindingSource source, DataBindingListener listener, errors) {
         def propName = metaProperty.name
         def propertyType = metaProperty.type
         if (structuredEditors.containsKey(propertyType) && ('struct' == val || 'date.struct' == val)) {
             def structuredEditor = structuredEditors[propertyType]
             val = structuredEditor.getPropertyValue obj, propName, source
         }
-        bindProperty obj, source, metaProperty, val, listener
+        bindProperty obj, source, metaProperty, val, listener, errors
     }
 
-    protected processIndexedProperty(obj, MetaProperty metaProperty, IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor, val, DataBindingSource source, DataBindingListener listener) {
+    protected processIndexedProperty(obj, MetaProperty metaProperty, IndexedPropertyReferenceDescriptor indexedPropertyReferenceDescriptor,
+        val, DataBindingSource source, DataBindingListener listener, errors) {
+
         def propName = indexedPropertyReferenceDescriptor.propertyName
         def propertyType = metaProperty.type
         if (propertyType.isArray()) {
@@ -538,9 +545,9 @@ class SimpleDataBinder implements DataBinder {
         }
     }
 
-    protected bindProperty(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
+    protected bindProperty(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener, errors) {
         def propName = metaProperty.name
-        if (listener == null || listener.beforeBinding(obj, propName, propertyValue) != false) {
+        if (listener == null || listener.beforeBinding(obj, propName, propertyValue, errors) != false) {
             try {
                 def converter = getValueConverter obj, propName, propertyValue
                 if (converter) {
@@ -548,18 +555,18 @@ class SimpleDataBinder implements DataBinder {
                 }
                 setPropertyValue obj, source, metaProperty, propertyValue, listener
             } catch (Exception e) {
-                addBindingError(obj, propName, propertyValue, e, listener)
+                addBindingError(obj, propName, propertyValue, e, listener, errors)
             }
         } else if (listener != null && propertyValue instanceof Map && obj[propName] != null) {
             bind obj[propName], new SimpleMapDataBindingSource(propertyValue)
         }
-        listener?.afterBinding obj, propName
+        listener?.afterBinding obj, propName, errors
     }
 
-    protected addBindingError(obj, String propName, propertyValue, Exception e, DataBindingListener listener) {
+    protected addBindingError(obj, String propName, propertyValue, Exception e, DataBindingListener listener, errors) {
         if (listener) {
             def error = new SimpleBindingError(obj, propName, propertyValue, e.cause ?: e)
-            listener.bindingError error
+            listener.bindingError error, errors
         }
     }
 

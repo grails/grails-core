@@ -239,7 +239,7 @@ public class GrailsConsole {
         return AnsiConsole.wrapOutputStream(out);
     }
 
-    private boolean isWindows() {
+    public boolean isWindows() {
         return System.getProperty("os.name").toLowerCase().indexOf("windows") != -1;
     }
 

@@ -84,17 +84,17 @@ class BindingListenerSpec extends Specification {
 
 class PersonBindingListener2 extends DataBindingListenerAdapter {
 
-    @Override
-    Boolean beforeBinding(Object obj, String propertyName, Object value) {
-        if(value == 'one') {
+    Boolean beforeBinding(obj, String propertyName, value, errors) {
+        if (value == 'one') {
             return true
-        } else if(value == 'two') {
+        }
+        if (value == 'two') {
             return null
-        } else if(value == 'three') {
-            return false
-        } else {
+        }
+        if(value == 'three') {
             return false
         }
+        false
     }
 }
 
@@ -102,22 +102,22 @@ class PersonBindingListener extends DataBindingListenerAdapter {
 
     def valuesAfterBinding = [:]
 
-    @Override
-    void afterBinding(Object obj, String propertyName) {
+    void afterBinding(obj, String propertyName, errors) {
         valuesAfterBinding[propertyName] = obj[propertyName]
     }
 }
+
 class EmployeeBindingListener extends DataBindingListenerAdapter {
 
-    @Override
-    Boolean beforeBinding(Object obj, String propertyName, Object value) {
-        if('recipient' == propertyName && obj['recipient'] == null) {
+    Boolean beforeBinding(obj, String propertyName, value, errors) {
+        if ('recipient' == propertyName && obj['recipient'] == null) {
             obj['recipient'] = new Employee()
             return false
         }
         return true
     }
 }
+
 class Person {
     String name
 }

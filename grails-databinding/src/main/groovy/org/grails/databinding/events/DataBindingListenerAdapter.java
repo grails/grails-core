@@ -21,15 +21,26 @@ import org.grails.databinding.errors.BindingError;
  * @author Jeff Brown
  * @since 2.3
  */
-public abstract class DataBindingListenerAdapter implements DataBindingListener {
+public class DataBindingListenerAdapter implements DataBindingListener {
 
-    public Boolean beforeBinding(Object obj, String propertyName, Object value) {
+    public boolean supports(Class<?> clazz) {
         return true;
     }
 
-    public void afterBinding(Object obj, String propertyName) {
+    public Boolean beforeBinding(Object target, Object errors) {
+        return true;
     }
 
-    public void bindingError(BindingError error) {
+    public Boolean beforeBinding(Object obj, String propertyName, Object value, Object errors) {
+        return true;
+    }
+
+    public void afterBinding(Object obj, String propertyName, Object errors) {
+    }
+
+    public void afterBinding(Object target, Object errors) {
+    }
+
+    public void bindingError(BindingError error, Object errors) {
     }
 }

@@ -196,7 +196,7 @@ class InteractiveMode {
     boolean backgroundTestRunnerStarted = false
     @CompileStatic
     protected void startBackgroundTestRunner() {
-        if (backgroundTestRunnerStarted) return
+        if (backgroundTestRunnerStarted || console.isWindows()) return
 
         backgroundTestRunnerStarted = true
         Thread.start {

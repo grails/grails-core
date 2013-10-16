@@ -16,7 +16,21 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.GrailsWebUtil;
+<<<<<<< HEAD
 import grails.web.UrlConverter;
+=======
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import grails.web.UrlConverter;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+>>>>>>> 2.3.x
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
@@ -115,7 +129,6 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             return;
         }
 
-
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         boolean restoreOriginalRequestAttributes = false;
         final GrailsWebRequest webRequest;
@@ -136,15 +149,13 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             WrappedResponseHolder.setWrappedResponse(response);
             String viewName = urlMappingInfo.getViewName();
             if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, urlMappingInfo,
-                    webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
-                    webRequest.getAttributes().getGrailsApplication());
+                GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo( webRequest, urlMappingInfo,
+                                                                                            webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
+                                                                                            webRequest.getAttributes().getGrailsApplication());
                 if(controller != null) {
                     WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
                 }
-                else {
-                    renderDefaultResponse(response, statusCode);
-                }
+
             }
             else {
                 ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());

@@ -177,15 +177,13 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     // original request parameters.
                     webRequest.resetParams();
 
-                    final String viewName;
                     try {
                         info.configure(webRequest);
                         UrlConverter urlConverterToUse = urlConverter;
                         GrailsApplication grailsApplicationToUse = application;
-
                         GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
 
-                        if(controller == null) continue;
+                        if(controller == null && info.getViewName()==null && info.getURI()==null) continue;
                     }
                     catch (Exception e) {
                         if (e instanceof MultipartException) {
@@ -195,7 +193,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         LOG.error("Error when matching URL mapping [" + info + "]:" + e.getMessage(), e);
                         continue;
                     }
-
+                    
                     dispatched = true;
 
                     if (!WAR_DEPLOYED) {
@@ -248,7 +246,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         Set<HttpMethod> methods = new HashSet<HttpMethod>();
 
         for (UrlMappingInfo urlMappingInfo : urlMappingInfos) {
-            Object featureId = WebUtils.getControllerFeatureId(urlConverter,urlMappingInfo);
+            Object featureId = WebUtils.getFeatureId(urlConverter, urlMappingInfo);
             GrailsClass controllerClass = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
             if(controllerClass != null) {
                 if(urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
@@ -272,9 +270,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
         return version;
     }
-
-
-
 
     public static boolean isUriExcluded(UrlMappingsHolder holder, String uri) {
         boolean isExcluded = false;

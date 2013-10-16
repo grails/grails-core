@@ -49,6 +49,7 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
     RendererRegistry rendererRegistry
 
     String namedConfiguration
+    HttpStatus errorsHttpStatus = HttpStatus.UNPROCESSABLE_ENTITY
 
     DefaultJsonRenderer(Class<T> targetType) {
         this.targetType = targetType
@@ -85,7 +86,8 @@ class DefaultJsonRenderer<T> implements Renderer<T> {
             htmlRenderer.render(object, context)
         } else {
             if (object instanceof Errors) {
-                context.setStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+
+                context.setStatus(errorsHttpStatus)
             }
             renderJson(object, context)
         }

@@ -46,6 +46,12 @@ class DependencyManagerConfigurer {
             BuildSettings.initialiseDefaultLog4j(classLoader)
         }
         DependencyManager aetherDependencyManager = loadAetherDependencyManager(classLoader)
+        ConfigObject config = buildSettings.config
+        def grailsConfig = config.grails
+
+        setCacheDir(grailsConfig, aetherDependencyManager)
+
+        configureRepoAuthentication(grailsConfig, aetherDependencyManager)
 
         final coreDeps = classLoader.loadClass("org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies")
             .newInstance(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
@@ -54,12 +60,6 @@ class DependencyManagerConfigurer {
         if (buildSettings.proxySettings) {
             setProxy(aetherDependencyManager, buildSettings.proxySettings)
         }
-
-        ConfigObject config = buildSettings.config
-
-        def grailsConfig = config.grails
-
-        setCacheDir(grailsConfig, aetherDependencyManager)
 
         return aetherDependencyManager
     }
@@ -144,7 +144,7 @@ class DependencyManagerConfigurer {
             def coreDependencies = new GrailsIvyDependencies(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
             buildSettings.coreDependencies = coreDependencies
             configureGlobalFrameworkDependencies(coreDependencies, grailsConfig)
-            configureIvyAuthentication(grailsConfig, dependencyManager)
+            configureRepoAuthentication(grailsConfig, dependencyManager)
         }
         else {
 
@@ -192,8 +192,12 @@ class DependencyManagerConfigurer {
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected void configureIvyAuthentication(grailsConfig, IvyDependencyManager dependencyManager) {
+    protected void configureRepoAuthentication(grailsConfig, DependencyManager dependencyManager) {
         def credentials = grailsConfig.project.ivy.authentication
+        if (credentials instanceof Closure) {
+            dependencyManager.parseDependencies credentials
+        }
+        credentials = grailsConfig.project.dependency.authentication
         if (credentials instanceof Closure) {
             dependencyManager.parseDependencies credentials
         }

@@ -1,4 +1,7 @@
 #!/bin/sh
+trap "reset" EXIT
+trap "reset" INT
+trap "reset" TERM
 
 DIRNAME=`dirname "$0"`
 . "$DIRNAME/startGrails"

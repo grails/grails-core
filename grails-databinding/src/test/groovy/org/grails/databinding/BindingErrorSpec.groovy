@@ -33,19 +33,18 @@ class BindingErrorSpec extends Specification {
         then:
         box.width == 42
         box.height == null
-        listener.errors.size() == 1
-        listener.errors[0].rejectedValue == 'nine'
-        listener.errors[0].propertyName == 'height'
+        listener.bindingErrors.size() == 1
+        listener.bindingErrors[0].rejectedValue == 'nine'
+        listener.bindingErrors[0].propertyName == 'height'
     }
 }
 
 class BoxBindingListener extends DataBindingListenerAdapter {
 
-    def errors = []
+    def bindingErrors = []
 
-    @Override
-    void bindingError(BindingError error) {
-        errors << error
+    void bindingError(BindingError error, errors) {
+        bindingErrors << error
     }
 }
 

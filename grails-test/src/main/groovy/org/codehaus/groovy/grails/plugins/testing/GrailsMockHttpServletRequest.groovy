@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletResponse
 import javax.servlet.http.Part
 
 import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
@@ -72,6 +73,12 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      */
     void setFormat(String format) {
         setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
+    }
+    
+    @Override
+    void setContentType(String newContentType) {
+        super.setContentType(newContentType)
+        setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, [new MimeType(newContentType)] as MimeType[])
     }
 
     /**

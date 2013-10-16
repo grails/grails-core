@@ -411,6 +411,35 @@ class AetherDependencyManagerSpec extends Specification {
             authentication.password == "bar"
             repository.id == 'grailsCentral'
             repository.url == "http://repo.grails.org/grails/core"
+            repository.authentication == authentication
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }
+
+    void "Test configure authentication for a repo with no id" () {
+        given: "A dependency manager instance"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
+
+        when:"Credentials are specified"
+            Authentication authentication
+            RemoteRepository repository
+            dependencyManager.parseDependencies {
+                authentication = credentials {
+                    username = "foo"
+                    password = "bar"
+                    id = "repo.grails.org/grails/core"
+                }
+                repositories {
+                    repository  = mavenRepo("http://repo.grails.org/grails/core" )
+                }
+            }
+        then:"The credentials are correctly populated"
+            authentication.username == "foo"
+            authentication.password == "bar"
+            repository.id == 'repo.grails.org/grails/core'
+            repository.url == "http://repo.grails.org/grails/core"
+            repository.authentication == authentication
+            dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
+    }
+
 }
