@@ -22,7 +22,6 @@ import grails.util.Metadata
 import groovy.transform.CompileStatic
 
 import org.apache.log4j.Appender
-import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.ConsoleAppender
 import org.apache.log4j.FileAppender
 import org.apache.log4j.HTMLLayout
@@ -71,9 +70,6 @@ class Log4jConfig {
         Object o = config.get("log4j")
         Log4jConfig log4jConfig = new Log4jConfig(config)
         LogManager.resetConfiguration()
-        if(Environment.isFork()) {
-            initialiseDefaultLog4jConfiguration()
-        }
         if (o instanceof Closure) {
             log4jConfig.configure((Closure<?>)o)
         }
@@ -98,7 +94,6 @@ class Log4jConfig {
 
         PropertyConfigurator.configure(defaultLog4j)
     }
-
 
     def propertyMissing(String name) {
         if (LAYOUTS.containsKey(name)) {
@@ -292,7 +287,7 @@ class Log4jConfig {
             appenders.stacktrace = fileAppender
             return fileAppender
 
-        } catch (java.io.FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             LogLog.error("""WARNING: Unable to create the full stacktrace logger. The target file [$targetFile] is not writeable. Consider reconfiguring the stacktrace logger. Example:
 
 log4j = {
