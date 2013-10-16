@@ -17,8 +17,6 @@ package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
 
-import java.util.Map;
-
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;

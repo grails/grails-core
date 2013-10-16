@@ -31,7 +31,6 @@ import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.IncludeExcludePropertyMarshaller;
-import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 import org.springframework.beans.BeanUtils;
 
 /**

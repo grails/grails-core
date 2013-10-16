@@ -20,7 +20,6 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.codecs.DefaultCodecLookup;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.codehaus.groovy.grails.support.encoding.CodecLookup;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
