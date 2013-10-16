@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
-
+import org.apache.maven.repository.internal.MavenRepositorySystemSession
 import org.sonatype.aether.repository.ArtifactRepository
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.Proxy
@@ -32,9 +32,11 @@ import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 @CompileStatic
 class RepositoriesConfiguration {
     AetherDependencyManager dependencyManager
+    @Delegate MavenRepositorySystemSession session
 
-    RepositoriesConfiguration(AetherDependencyManager dependencyManager) {
+    RepositoriesConfiguration(AetherDependencyManager dependencyManager, MavenRepositorySystemSession session) {
         this.dependencyManager = dependencyManager
+        this.session = session
     }
 
     List<RemoteRepository> repositories = []
@@ -82,6 +84,7 @@ class RepositoriesConfiguration {
         final existing = repositories.find { ArtifactRepository ar -> ar.id == "mavenCentral" }
         if (!existing) {
             final repository = new RemoteRepository("mavenCentral", "default", "http://repo1.maven.org/maven2/")
+
             configureRepository(repository, configurer)
             repositories << repository
             return repository
@@ -104,6 +107,11 @@ class RepositoriesConfiguration {
                 repository.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),null))
             }
 
+        }
+
+        final auth = session.authenticationSelector.getAuthentication(repository)
+        if(auth) {
+            repository.setAuthentication(auth)
         }
         if (configurer) {
             final rc = new RepositoryConfiguration(repository)
