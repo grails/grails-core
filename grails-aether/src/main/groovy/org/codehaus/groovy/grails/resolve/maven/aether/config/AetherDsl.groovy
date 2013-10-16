@@ -69,6 +69,7 @@ class AetherDsl {
      */
     Authentication credentials(Closure c) {
         def map = [:]
+        c.resolveStrategy = Closure.DELEGATE_FIRST
         c.setDelegate(map)
 
         c.call()
@@ -163,7 +164,7 @@ class AetherDsl {
     }
 
     void repositories(Closure callable) {
-        def rc = new RepositoriesConfiguration(dependencyManager)
+        def rc = new RepositoriesConfiguration(dependencyManager, session)
         callable.delegate = rc
         callable.call()
 
