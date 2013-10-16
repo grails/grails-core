@@ -412,12 +412,14 @@ abstract class ForkedGrailsProcess {
     @CompileStatic
     protected Process attachOutputListener(Process process, boolean async = false) {
 
-        addShutdownHook {
-            process.destroy()
+        if(!isWindows()) {
+            addShutdownHook {
+                process.destroy()
 
-            new ProcessBuilder()
+                new ProcessBuilder()
                     .command('reset')
                     .start().waitFor()
+            }
         }
 
         def is = process.inputStream
