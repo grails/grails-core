@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.compiler.injection;
 import grails.build.logging.GrailsConsole;
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
+import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 import groovy.transform.CompileStatic;
 import groovy.transform.TypeCheckingMode;
@@ -31,6 +32,7 @@ import java.lang.annotation.Target;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -81,6 +83,7 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
@@ -584,7 +587,11 @@ public class GrailsASTUtils {
         return null;
     }
 
-    private static Parameter[] copyParameters(Parameter[] parameterTypes, Map<String, ClassNode> genericsPlaceholders) {
+    public static Parameter[] copyParameters(Parameter[] parameterTypes) {
+        return copyParameters(parameterTypes, null);
+    }
+
+    public static Parameter[] copyParameters(Parameter[] parameterTypes, Map<String, ClassNode> genericsPlaceholders) {
         Parameter[] newParameterTypes = new Parameter[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
             Parameter parameterType = parameterTypes[i];
@@ -595,8 +602,10 @@ public class GrailsASTUtils {
         return newParameterTypes;
     }
 
+    private static final Map<String, ClassNode> emptyGenericsPlaceHoldersMap = Collections.emptyMap();
+    
     public static ClassNode nonGeneric(ClassNode type) {
-        return replaceGenericsPlaceholders(type, null);
+        return replaceGenericsPlaceholders(type, emptyGenericsPlaceHoldersMap);
     }
 
     public static ClassNode replaceGenericsPlaceholders(ClassNode type, Map<String, ClassNode> genericsPlaceholders) {
@@ -608,8 +617,8 @@ public class GrailsASTUtils {
             return type.getPlainNodeReference();
         }
 
-        if(type.isGenericsPlaceHolder()) {
-            ClassNode placeHolderType = genericsPlaceholders != null ? genericsPlaceholders.get(type.getUnresolvedName()) : null;
+        if(type.isGenericsPlaceHolder() && genericsPlaceholders != null) {
+            ClassNode placeHolderType = genericsPlaceholders.get(type.getUnresolvedName());
             if(placeHolderType != null) {
                 return placeHolderType.getPlainNodeReference();
             } else {
@@ -618,28 +627,36 @@ public class GrailsASTUtils {
         }
 
         final ClassNode nonGen = type.getPlainNodeReference();
-
-        GenericsType[] parameterized = type.getGenericsTypes();
-        if (parameterized != null && parameterized.length > 0) {
-            GenericsType[] copiedGenericsTypes = new GenericsType[parameterized.length];
-            for (int i = 0; i < parameterized.length; i++) {
-                GenericsType parameterizedType = parameterized[i];
-                GenericsType copiedGenericsType = null;
-                if (parameterizedType.isPlaceholder()) {
-                    ClassNode placeHolderType = genericsPlaceholders != null ? genericsPlaceholders.get(parameterizedType.getName()) : null;
-                    if(placeHolderType != null) {
-                        copiedGenericsType = new GenericsType(placeHolderType.getPlainNodeReference());
-                    } else {
-                        copiedGenericsType = new GenericsType(ClassHelper.make(Object.class).getPlainNodeReference());
+        
+        if("java.lang.Object".equals(type.getName())) {
+            nonGen.setGenericsPlaceHolder(false);
+            nonGen.setGenericsTypes(null);
+            nonGen.setUsingGenerics(false);
+        } else {
+            if(type.isUsingGenerics()) {
+                GenericsType[] parameterized = type.getGenericsTypes();
+                if (parameterized != null && parameterized.length > 0) {
+                    GenericsType[] copiedGenericsTypes = new GenericsType[parameterized.length];
+                    for (int i = 0; i < parameterized.length; i++) {
+                        GenericsType parameterizedType = parameterized[i];
+                        GenericsType copiedGenericsType = null;
+                        if (parameterizedType.isPlaceholder() && genericsPlaceholders != null) {
+                            ClassNode placeHolderType = genericsPlaceholders.get(parameterizedType.getName());
+                            if(placeHolderType != null) {
+                                copiedGenericsType = new GenericsType(placeHolderType.getPlainNodeReference());
+                            } else {
+                                copiedGenericsType = new GenericsType(ClassHelper.make(Object.class).getPlainNodeReference());
+                            }
+                        } else {
+                            copiedGenericsType = new GenericsType(replaceGenericsPlaceholders(parameterizedType.getType(), genericsPlaceholders));
+                        }
+                        copiedGenericsTypes[i] = copiedGenericsType;
                     }
-                } else {
-                    copiedGenericsType = new GenericsType(replaceGenericsPlaceholders(parameterizedType.getType(), genericsPlaceholders));
+                    nonGen.setGenericsTypes(copiedGenericsTypes);
                 }
-                copiedGenericsTypes[i] = copiedGenericsType;
             }
-            nonGen.setGenericsTypes(copiedGenericsTypes);
         }
-
+        
         return nonGen;
     }
 
@@ -990,4 +1007,200 @@ public class GrailsASTUtils {
         }
         return annotatedNode;
     }
+    
+    /*
+     * Set the method target of a MethodCallExpression to the first matching method with same number of arguments.
+     * This doesn't check argument types.
+     * 
+     * @param methodCallExpression
+     * @param targetClassNode
+     */
+    public static MethodCallExpression applyDefaultMethodTarget(final MethodCallExpression methodCallExpression, final ClassNode targetClassNode) {
+        return applyMethodTarget(methodCallExpression, targetClassNode, (ClassNode[])null);
+    }
+    
+    /**
+     * Set the method target of a MethodCallExpression to the first matching method with same number of arguments.
+     * This doesn't check argument types.
+     * 
+     * @param methodCallExpression
+     * @param targetClass
+     * @return
+     */
+    public static MethodCallExpression applyDefaultMethodTarget(final MethodCallExpression methodCallExpression, final Class<?> targetClass) {
+        return applyDefaultMethodTarget(methodCallExpression, ClassHelper.make(targetClass).getPlainNodeReference());
+    }
+    
+    /**
+     * Set the method target of a MethodCallExpression to the first matching method with same number and type of arguments.
+     * 
+     * A null parameter type will match any type
+     * 
+     * @param methodCallExpression
+     * @param targetClassNode
+     * @param targetParameterTypes
+     * @return
+     */
+    public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final ClassNode targetClassNode, final ClassNode... targetParameterTypes) {
+        String methodName = methodCallExpression.getMethodAsString();
+        if(methodName==null) return methodCallExpression;
+        int argumentCount = methodCallExpression.getArguments() != null ? ((TupleExpression)methodCallExpression.getArguments()).getExpressions().size() : 0;
+        
+        String methodFoundInClass = null;
+        
+        
+        for (MethodNode method : targetClassNode.getMethods(methodName)) {
+            int methodParameterCount = method.getParameters() != null ? method.getParameters().length : 0;
+            if (methodParameterCount == argumentCount && (targetParameterTypes == null || (parameterTypesMatch(method.getParameters(), targetParameterTypes)))) {
+                String methodFromClass = method.getDeclaringClass().getName();
+                if(methodFoundInClass == null) {
+                    methodCallExpression.setMethodTarget(method);
+                    methodFoundInClass = methodFromClass;
+                } else if (methodFromClass.equals(methodFoundInClass)) {
+                    throw new RuntimeException("Multiple methods with same name '" + methodName + "' and argument count (" + argumentCount + ") in " + targetClassNode.getName() + ". Cannot apply default method target.");
+                }
+            }
+        }
+        return methodCallExpression;
+    }
+    
+    /**
+     * Set the method target of a MethodCallExpression to the first matching method with same number and type of arguments.
+     * 
+     * @param methodCallExpression
+     * @param targetClass
+     * @param targetParameterClassTypes
+     * @return
+     */
+    public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final Class<?> targetClass, final Class<?>... targetParameterClassTypes) {
+        return applyMethodTarget(methodCallExpression, ClassHelper.make(targetClass).getPlainNodeReference(), convertTargetParameterTypes(targetParameterClassTypes));
+    }
+    
+    /**
+     * Set the method target of a MethodCallExpression to the first matching method with same number and type of arguments.
+     * 
+     * @param methodCallExpression
+     * @param targetClassNode
+     * @param targetParameterClassTypes
+     * @return
+     */
+    public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final ClassNode targetClassNode, final Class<?>... targetParameterClassTypes) {
+        return applyMethodTarget(methodCallExpression, targetClassNode, convertTargetParameterTypes(targetParameterClassTypes));
+    }    
+
+    private static ClassNode[] convertTargetParameterTypes(final Class<?>[] targetParameterClassTypes) {
+        ClassNode[] targetParameterTypes = null;
+        if(targetParameterClassTypes != null) {
+            targetParameterTypes = new ClassNode[targetParameterClassTypes.length];
+            for(int i=0;i < targetParameterClassTypes.length;i++) {
+                targetParameterTypes[i] = targetParameterClassTypes[i] != null ? ClassHelper.make(targetParameterClassTypes[i]).getPlainNodeReference() : null;
+            }
+        }
+        return targetParameterTypes;
+    }
+
+    private static boolean parameterTypesMatch(Parameter[] parameters, ClassNode[] targetParameterTypes) {
+        if(targetParameterTypes==null || targetParameterTypes.length==0) return true;
+        for(int i=0;i < parameters.length;i++) {
+            if(targetParameterTypes.length > i && targetParameterTypes[i] != null && !parameters[i].getType().getName().equals(targetParameterTypes[i].getName())) {
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Build static direct call to getter of a property
+     * 
+     * @param objectExpression
+     * @param propertyName
+     * @param targetClassNode
+     * @return
+     */
+    public static MethodCallExpression buildGetPropertyExpression(final Expression objectExpression, final String propertyName, final ClassNode targetClassNode) {
+        return buildGetPropertyExpression(objectExpression, propertyName, targetClassNode, false);
+    }
+    
+    /**
+     * Build static direct call to getter of a property
+     * 
+     * @param objectExpression
+     * @param propertyName
+     * @param targetClassNode
+     * @param useBooleanGetter
+     * @return
+     */
+    public static MethodCallExpression buildGetPropertyExpression(final Expression objectExpression, final String propertyName, final ClassNode targetClassNode, final boolean useBooleanGetter) {
+        String methodName = (useBooleanGetter ? "is" : "get") + MetaClassHelper.capitalize(propertyName);
+        MethodCallExpression methodCallExpression = new MethodCallExpression(objectExpression, methodName, MethodCallExpression.NO_ARGUMENTS);
+        MethodNode getterMethod = targetClassNode.getGetterMethod(methodName);
+        if(getterMethod != null) {
+            methodCallExpression.setMethodTarget(getterMethod);
+        }
+        return methodCallExpression;
+    }
+    
+    /**
+     * Build static direct call to setter of a property
+     * 
+     * @param objectExpression
+     * @param propertyName
+     * @param targetClassNode
+     * @param valueExpression
+     * @return
+     */
+    public static MethodCallExpression buildSetPropertyExpression(final Expression objectExpression, final String propertyName, final ClassNode targetClassNode, final Expression valueExpression) {
+        String methodName = "set" + MetaClassHelper.capitalize(propertyName);
+        MethodCallExpression methodCallExpression = new MethodCallExpression(objectExpression, methodName, new ArgumentListExpression(valueExpression));
+        MethodNode setterMethod = targetClassNode.getSetterMethod(methodName);
+        if(setterMethod != null) {
+            methodCallExpression.setMethodTarget(setterMethod);
+        }
+        return methodCallExpression;
+    }
+    
+    /**
+     * Build static direct call to put entry in Map
+     * 
+     * @param objectExpression
+     * @param keyName
+     * @param valueExpression
+     * @return
+     */
+    public static MethodCallExpression buildPutMapExpression(final Expression objectExpression, final String keyName, final Expression valueExpression) {
+        return applyDefaultMethodTarget(new MethodCallExpression(objectExpression, "put", new ArgumentListExpression(new ConstantExpression(keyName), valueExpression)), Map.class);
+    }
+
+    /**
+     * Build static direct call to get entry from Map
+     * 
+     * @param objectExpression
+     * @param keyName
+     * @return
+     */
+    public static MethodCallExpression buildGetMapExpression(final Expression objectExpression, final String keyName) {
+        return applyDefaultMethodTarget(new MethodCallExpression(objectExpression, "get", new ArgumentListExpression(new ConstantExpression(keyName))), Map.class);
+    }
+    
+    public static Expression buildGetThisObjectExpression(boolean inClosureBlock) {
+        if (!inClosureBlock) {
+            return buildThisExpression();
+        } else {
+            return buildGetPropertyExpression(buildThisExpression(), "thisObject", ClassHelper.make(Closure.class).getPlainNodeReference());
+        }
+    }
+
+    public static Expression buildThisExpression() {
+        return new VariableExpression("this");
+    }
+    
+    public static MethodCallExpression noImplicitThis(MethodCallExpression methodCallExpression) {
+        return applyImplicitThis(methodCallExpression, false);
+    }
+    
+    public static MethodCallExpression applyImplicitThis(MethodCallExpression methodCallExpression, boolean useImplicitThis) {
+        methodCallExpression.setImplicitThis(useImplicitThis);
+        return methodCallExpression;
+    }
+    
 }
