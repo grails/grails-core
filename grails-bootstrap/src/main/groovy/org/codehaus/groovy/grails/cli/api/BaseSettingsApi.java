@@ -144,10 +144,24 @@ public class BaseSettingsApi {
         return serverPort;
     }
 
+    public void setServerPort(Integer port) {
+        if (port != null) {
+            System.setProperty("server.port", port.toString());
+            System.setProperty("grails.server.port.http", port.toString());
+        }
+    }
+
     public int getServerPortHttps() {
         int serverPortHttps = Integer.valueOf(getPropertyValue("server.port.https", 8443).toString());
         serverPortHttps = Integer.valueOf(getPropertyValue("grails.server.port.https", serverPortHttps).toString());
         return serverPortHttps;
+    }
+
+    public void setServerPortHttps(Integer port) {
+        if (port != null) {
+            System.setProperty("server.port.https", port.toString());
+            System.setProperty("grails.server.port.https", port.toString());
+        }
     }
 
     public String getServerHost() {

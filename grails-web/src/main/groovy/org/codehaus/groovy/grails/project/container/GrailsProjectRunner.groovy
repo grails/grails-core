@@ -195,7 +195,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
     EmbeddableServer runServer(Map args) {
         try {
             eventListener.triggerEvent("StatusUpdate","Running Grails application")
-            def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
+
 
             EmbeddableServer server = args["server"]
             if (server.hasProperty('eventListener')) {
@@ -205,6 +205,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
                 server.grailsConfig = config
             }
 
+            def httpsMessage = ""
             profile("start server") {
 
                 try { new ServerSocket(args.httpPort).close() }
@@ -225,12 +226,15 @@ class GrailsProjectRunner extends BaseSettingsApi {
                     server.startSecure args.host, args.httpPort, args.httpsPort
 
                     // Update the message to reflect the fact we are running HTTPS as well.
-                    message += " or https://${args.host ?: 'localhost'}:${args.httpsPort}$serverContextPath"
+                    setServerPortHttps(server.localHttpsPort)
+                    httpsMessage = " or https://${args.host ?: 'localhost'}:${server.localHttpsPort}$serverContextPath"
                 }
                 else {
                     server.start args.host, args.httpPort
                 }
             }
+            setServerPort(server.localHttpPort)
+            def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${server.localHttpPort}$serverContextPath" + httpsMessage
             eventListener.triggerEvent("StatusFinal", message)
 
             boolean isWindows = System.getProperty("os.name").toLowerCase().indexOf("windows") != -1
