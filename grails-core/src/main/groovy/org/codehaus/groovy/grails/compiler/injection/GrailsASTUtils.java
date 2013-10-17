@@ -44,6 +44,7 @@ import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
+import org.apache.commons.collections.map.DefaultedMap;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
@@ -611,6 +612,11 @@ public class GrailsASTUtils {
         return replaceGenericsPlaceholders(type, emptyGenericsPlaceHoldersMap);
     }
 
+    @SuppressWarnings("unchecked")
+    public static ClassNode nonGeneric(ClassNode type, ClassNode wildcardReplacement) {
+        return replaceGenericsPlaceholders(type, DefaultedMap.decorate(emptyGenericsPlaceHoldersMap, wildcardReplacement));
+    }
+    
     public static ClassNode replaceGenericsPlaceholders(ClassNode type, Map<String, ClassNode> genericsPlaceholders) {
         if (type.isArray()) {
             return replaceGenericsPlaceholders(type.getComponentType(), genericsPlaceholders).makeArray();
