@@ -82,6 +82,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.ThrowStatement;
 import org.codehaus.groovy.ast.stmt.TryCatchStatement;
+import org.codehaus.groovy.classgen.VariableScopeVisitor;
 import org.codehaus.groovy.control.Janitor;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
@@ -1264,5 +1265,19 @@ public class GrailsASTUtils {
     
     public static boolean isApplied(ASTNode astNode, Class<?> transformationClass) {
         return resolveRedirect(astNode).getNodeMetaData(appliedTransformationKey(transformationClass)) == Boolean.TRUE;
-    }    
+    }
+    
+    public static void processVariableScopes(SourceUnit source, ClassNode classNode) {
+        processVariableScopes(source, classNode, null);
+    }
+    
+    public static void processVariableScopes(SourceUnit source, ClassNode classNode, MethodNode methodNode) {
+        VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(source);
+        if(methodNode == null) {
+            scopeVisitor.visitClass(classNode);
+        } else {
+            scopeVisitor.prepareVisit(classNode);
+            scopeVisitor.visitMethod(methodNode);
+        }
+    }
 }
