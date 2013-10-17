@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package grails.rest.render.json
+package grails.rest.render.xml
 
-import grails.converters.JSON
+import grails.converters.XML
 import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
@@ -23,26 +23,28 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 
 /**
- * A JSON renderer for a collection of objects
- *
+ * 
+ * A XML renderer for a collection of objects
+ * 
  * @since 2.3.1
+ *
  */
 @CompileStatic
-class JsonCollectionRenderer extends JsonRenderer implements ContainerRenderer {
+class XmlCollectionRenderer extends XmlRenderer implements ContainerRenderer {
     final Class componentType
 
-    JsonCollectionRenderer(Class componentType) {
+    XmlCollectionRenderer(Class componentType) {
         super(Collection)
         this.componentType = componentType
     }
 
-    public JsonCollectionRenderer(Class targetType, MimeType... mimeTypes) {
+    public XmlCollectionRenderer(Class targetType, MimeType... mimeTypes) {
         super(targetType, mimeTypes);
     }
-    
+
     @Override
-    protected void renderJson(JSON converter, RenderContext context) {
-        converter.setExcludes(componentType, excludes != null ? excludes : context.excludes)
+    protected void renderXml(XML converter, RenderContext context) {
+        converter.setExcludes(componentType, excludes ?: context.excludes)
         converter.setIncludes(componentType, includes != null ? includes : context.includes)
         converter.render(context.getWriter())
     }
