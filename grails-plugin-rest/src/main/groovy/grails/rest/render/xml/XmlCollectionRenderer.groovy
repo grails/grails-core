@@ -18,6 +18,7 @@ package grails.rest.render.xml
 import grails.converters.XML
 import grails.rest.render.ContainerRenderer
 import grails.rest.render.RenderContext
+import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.mime.MimeType
 
@@ -28,6 +29,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
  * @since 2.3.1
  *
  */
+@CompileStatic
 class XmlCollectionRenderer extends XmlRenderer implements ContainerRenderer {
     final Class componentType
 
