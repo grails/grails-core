@@ -18,7 +18,7 @@ ext.providedDeps = []
 
 ext.provided = { providedDeps << it }
 ext {
-    grailsVersion = '2.3.1.BUILD-SNAPSHOT'
+    grailsVersion = '2.3.1'
     isBuildSnapshot = grailsVersion.endsWith(".BUILD-SNAPSHOT")
     antTraxVersion = "1.7.1"
     antVersion = "1.8.4"
@@ -39,7 +39,7 @@ ext {
     slf4jVersion = "1.7.5"
 
     spockVersion = '0.7-groovy-2.0'
-    springLoadedVersion = "1.1.3"
+    springLoadedVersion = "1.1.4"
     springLoadedCommonOptions = "-noverify -Dspringloaded.synchronize=true -Djdk.reflect.allowGetCallerClass=true"
     springVersion = "3.2.4.RELEASE"
     ehcacheVersion = "2.4.6"
