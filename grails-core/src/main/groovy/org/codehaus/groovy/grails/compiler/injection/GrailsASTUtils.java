@@ -1215,7 +1215,7 @@ public class GrailsASTUtils {
     public static void copyAnnotations(final AnnotatedNode from, final AnnotatedNode to) {
         copyAnnotations(from, to, null, null);
     }
-    
+     
     public static void copyAnnotations(final AnnotatedNode from, final AnnotatedNode to, final Set<String> included, final Set<String> excluded) {
         final List<AnnotationNode> annotationsToCopy = from.getAnnotations();
         for(final AnnotationNode node : annotationsToCopy) {
@@ -1246,4 +1246,23 @@ public class GrailsASTUtils {
     public static void removeCompileStaticAnnotations(final AnnotatedNode annotatedNode) {
         filterAnnotations(annotatedNode, null, new HashSet<String>(Arrays.asList(new String[]{CompileStatic.class.getName(), TypeChecked.class.getName()})));
     }
+    
+    public static void markApplied(ASTNode astNode, Class<?> transformationClass) {
+        resolveRedirect(astNode).setNodeMetaData(appliedTransformationKey(transformationClass), Boolean.TRUE);
+    }
+
+    private static ASTNode resolveRedirect(ASTNode astNode) {
+        if(astNode instanceof ClassNode) {
+            astNode = ((ClassNode)astNode).redirect();
+        }
+        return astNode;
+    }
+    
+    private static String appliedTransformationKey(Class<?> transformationClass) {
+        return "APPLIED_" + transformationClass.getName();
+    }
+    
+    public static boolean isApplied(ASTNode astNode, Class<?> transformationClass) {
+        return resolveRedirect(astNode).getNodeMetaData(appliedTransformationKey(transformationClass)) == Boolean.TRUE;
+    }    
 }
