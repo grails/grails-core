@@ -16,7 +16,6 @@
 package org.grails.plugins.web.rest.render.json
 
 import grails.converters.JSON
-import grails.converters.XML
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
