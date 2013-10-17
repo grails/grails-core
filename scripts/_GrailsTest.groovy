@@ -94,6 +94,7 @@ target(allTests: "Runs the project's tests.") {
     else {
         projectTestRunner.runAllTests(argsMap, false)
     }
+
 }
 
 /**
