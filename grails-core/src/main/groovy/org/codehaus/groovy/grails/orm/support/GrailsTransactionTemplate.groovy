@@ -88,7 +88,7 @@ class GrailsTransactionTemplate {
      * Internal holder class for a Throwable, used as a return value
      * from a TransactionCallback (to be subsequently unwrapped again).
      */
-    private static class ThrowableHolder {
+    static class ThrowableHolder {
 
         private final Throwable throwable;
 
@@ -105,7 +105,7 @@ class GrailsTransactionTemplate {
      * Internal holder class for a Throwable, used as a RuntimeException to be
      * thrown from a TransactionCallback (and subsequently unwrapped again).
      */
-    private static class ThrowableHolderException extends RuntimeException {
+    static class ThrowableHolderException extends RuntimeException {
 
         ThrowableHolderException(Throwable throwable) {
             super(throwable);
