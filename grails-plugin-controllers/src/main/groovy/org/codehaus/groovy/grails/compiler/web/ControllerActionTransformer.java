@@ -274,6 +274,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 method.getAnnotations(ACTION_ANNOTATION_NODE.getClassNode()).isEmpty() &&
                 method.getAnnotations(new ClassNode(ControllerMethod.class)).isEmpty() &&
                 method.getLineNumber() >= 0 &&
+                !method.getName().startsWith("$") &&
                 !method.getReturnType().getName().equals(VOID_TYPE) &&
                 !isExceptionHandlingMethod(method);
     }

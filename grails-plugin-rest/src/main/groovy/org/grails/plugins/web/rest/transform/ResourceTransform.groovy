@@ -225,7 +225,7 @@ class ResourceTransform implements ASTTransformation{
                     mn.addAnnotation(ControllerActionTransformer.ACTION_ANNOTATION_NODE)
                 }
             }
-            new TransactionalTransform().weaveTransactionalBehavior(newControllerClassNode, transactionalAnn)
+            new TransactionalTransform().weaveTransactionalBehavior(source, newControllerClassNode, transactionalAnn)
             newControllerClassNode.setModule(ast)
 
             final artefactAnnotation = new AnnotationNode(new ClassNode(Artefact))
