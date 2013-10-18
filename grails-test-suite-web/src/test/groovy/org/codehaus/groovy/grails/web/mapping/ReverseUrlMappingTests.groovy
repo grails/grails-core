@@ -44,6 +44,10 @@ name showBooks2: '/showSomeOtherBooks' {
     action = 'list'
 }
 
+name showBooksWithAction: "/showSomeOtherBooks/$action" {
+    controller = 'book'
+}
+
 "/$namespace/$controller/$action?"()
 
 "/invokePrimaryController" {
@@ -108,8 +112,12 @@ class ProductController {
    }
 
     void testSortableColumnWithNamedUrlMapping() {
-        def template = '<g:sortableColumn property="releaseDate" title="Release Date" mapping="showBooks2" />'
         webRequest.controllerName = 'book'
-        assertOutputEquals '<th class="sortable" ><a href="/showSomeOtherBooks?sort=releaseDate&amp;order=asc">Release Date</a></th>', template
+
+        def template1 = '<g:sortableColumn property="releaseDate" title="Release Date" mapping="showBooks2" />'
+        assertOutputEquals '<th class="sortable" ><a href="/showSomeOtherBooks?sort=releaseDate&amp;order=asc">Release Date</a></th>', template1
+
+        def template2 = '<g:sortableColumn property="releaseDate" title="Release Date" mapping="showBooksWithAction" action="action_name"/>'
+        assertOutputEquals '<th class="sortable" ><a href="/showSomeOtherBooks/action_name?sort=releaseDate&amp;order=asc">Release Date</a></th>', template2
    }
 }

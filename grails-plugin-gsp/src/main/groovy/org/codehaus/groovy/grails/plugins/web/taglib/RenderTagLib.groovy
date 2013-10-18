@@ -553,9 +553,10 @@ class RenderTagLib implements RequestConstants {
         def linkAttrs = [params: linkParams]
         if (mapping) {
             linkAttrs.mapping = mapping
-        } else {
-            linkAttrs.action = action
         }
+
+        linkAttrs.action = action
+        
         writer << link(linkAttrs) {
             title
         }
