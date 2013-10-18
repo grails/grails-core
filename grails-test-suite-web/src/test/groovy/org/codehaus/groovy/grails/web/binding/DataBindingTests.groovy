@@ -450,6 +450,7 @@ class AuthorBean {
         def params = c.params
 
         def myBean = ga.getDomainClass("databindingtests.MyBean").newInstance()
+        addValidationMethods(myBean.class)
 
         myBean.properties = params
 

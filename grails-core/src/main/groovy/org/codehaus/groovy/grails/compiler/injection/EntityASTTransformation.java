@@ -60,8 +60,18 @@ public class EntityASTTransformation implements ASTTransformation {
                     MY_TYPE_NAME + " not allowed for interfaces.");
         }
 
+        applyTransformation(sourceUnit, cNode);
+
+    }
+
+    public void applyTransformation(SourceUnit sourceUnit, ClassNode classNode) {
+        if(GrailsASTUtils.isApplied(classNode, EntityASTTransformation.class)) {
+            return;
+        }
+        GrailsASTUtils.markApplied(classNode, EntityASTTransformation.class);
+        
         GrailsDomainClassInjector domainInjector = new DefaultGrailsDomainClassInjector();
-        domainInjector.performInjectionOnAnnotatedEntity(cNode);
+        domainInjector.performInjectionOnAnnotatedEntity(classNode);
 
         ClassInjector[] classInjectors = GrailsAwareInjectionOperation.getClassInjectors();
 
@@ -69,12 +79,15 @@ public class EntityASTTransformation implements ASTTransformation {
 
         for (ClassInjector injector : domainInjectors) {
             try {
-                injector.performInjection(sourceUnit, cNode);
+                injector.performInjection(sourceUnit, classNode);
             } catch (RuntimeException e) {
-                GrailsConsole.getInstance().error("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage(), e);
+                try {
+                    GrailsConsole.getInstance().error("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage(), e);
+                } catch (Throwable t) {
+                    // ignore
+                }
                 throw e;
             }
         }
-
     }
 }

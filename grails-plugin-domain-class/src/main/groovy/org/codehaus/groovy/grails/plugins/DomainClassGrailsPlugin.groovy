@@ -39,6 +39,7 @@ import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
@@ -167,10 +168,6 @@ class DomainClassGrailsPlugin {
     }
 
     static enhanceDomainClasses(GrailsApplication application, ApplicationContext ctx) {
-
-        final mappingContext = ctx.getBean("grailsDomainClassMappingContext", MappingContext)
-        def datastore = new SimpleMapDatastore(mappingContext, ctx)
-
         for (GrailsDomainClass dc in application.domainClasses) {
             def domainClass = dc
             def isEnhanced = dc.clazz.getAnnotation(Enhanced) != null
@@ -200,18 +197,6 @@ class DomainClassGrailsPlugin {
                 addValidationMethods(application, domainClass, ctx)
             }
             else {
-                if (!domainClass.abstract) {
-                    Validator validator = ctx.getBean("${domainClass.fullName}Validator", Validator)
-                    def gormValidationApi
-                    metaClass.static.currentGormValidationApi = {->
-                        // lazy initialize this, since in all likelihood this method will be overriden by the hibernate plugin
-                        if (gormValidationApi == null) {
-                            gormValidationApi = GormApiSupport.getGormValidationApi(datastore, domainClass.clazz, validator)
-                        }
-                        return gormValidationApi
-                    }
-                }
-
                 AutowireCapableBeanFactory autowireCapableBeanFactory = ctx.autowireCapableBeanFactory
                 int byName = AutowireCapableBeanFactory.AUTOWIRE_BY_NAME
                 metaClass.static.autowireDomain = { instance ->
@@ -221,7 +206,25 @@ class DomainClassGrailsPlugin {
         }
     }
 
-    private static addValidationMethods(GrailsApplication application, GrailsDomainClass dc, ApplicationContext ctx) {
+    public static void addValidationMethods(GrailsApplication application, GrailsDomainClass dc, ApplicationContext ctx) {
+        def isEnhanced = dc.clazz.getAnnotation(Enhanced) != null
+        if(isEnhanced && ctx) { 
+            if(!dc.abstract) {
+                def datastore = new SimpleMapDatastore(ctx.getBean("grailsDomainClassMappingContext", MappingContext), ctx as ConfigurableApplicationContext)
+                String validatorBeanName = "${dc.fullName}Validator"
+                Validator validator
+                if(ctx.containsBean(validatorBeanName)) {
+                    validator = ctx.getBean(validatorBeanName, Validator)
+                } else {
+                    validator = new GrailsDomainClassValidator()
+                    validator.domainClass = dc
+                    validator.grailsApplication = application
+                }
+                dc.clazz.setInstanceGormValidationApi(GormApiSupport.getGormValidationApi(datastore, dc.clazz, validator))
+                return
+            }
+        }
+        
         def metaClass = dc.metaClass
         def domainClass = dc
 

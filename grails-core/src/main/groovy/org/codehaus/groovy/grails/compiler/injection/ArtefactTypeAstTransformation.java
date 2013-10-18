@@ -16,11 +16,12 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.artefact.Artefact;
+import grails.build.logging.GrailsConsole;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-import grails.build.logging.GrailsConsole;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -79,9 +80,12 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
     }
 
     public static void doPerformInjectionOnArtefactType(SourceUnit sourceUnit, ClassNode cNode, String artefactType) {
+        List<ClassInjector> injectors = findInjectors(artefactType, GrailsAwareInjectionOperation.getClassInjectors());
+        performInjection(sourceUnit, cNode, injectors);
+    }
+
+    public static void performInjection(SourceUnit sourceUnit, ClassNode cNode, Collection<ClassInjector> injectors) {
         try {
-            List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(
-                artefactType, GrailsAwareInjectionOperation.getClassInjectors());
             for (ClassInjector injector : injectors) {
                 injector.performInjectionOnAnnotatedClass(sourceUnit, cNode);
             }
@@ -94,7 +98,6 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
             throw e;
         }
     }
-
 
     public static List<ClassInjector> findInjectors(String artefactType, ClassInjector[] classInjectors) {
         List<ClassInjector> injectors = new ArrayList<ClassInjector>();
