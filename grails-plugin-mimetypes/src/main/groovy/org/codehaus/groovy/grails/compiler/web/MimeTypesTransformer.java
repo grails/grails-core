@@ -16,24 +16,33 @@
 package org.codehaus.groovy.grails.compiler.web;
 
 import grails.artefact.Artefact;
+import grails.web.controllers.ControllerMethod;
 import groovy.lang.Closure;
 
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.regex.Pattern;
 
-import org.codehaus.groovy.ast.*;
+import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.InnerClassNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.AttributeExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
+import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi;
@@ -77,6 +86,10 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector, Annota
     public String[] getArtefactTypes() {
         return new String[]{ControllerArtefactHandler.TYPE};
     }
+    
+    protected AnnotationNode getMarkerAnnotation() {
+        return new AnnotationNode(new ClassNode(ControllerMethod.class).getPlainNodeReference());
+    }    
 
     public void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if(classNode instanceof InnerClassNode) return;
@@ -84,16 +97,21 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector, Annota
         FieldNode field = classNode.getField(FIELD_MIME_TYPES_API);
         if (field == null) {
             final ClassNode mimeTypesApiClass = new ClassNode(ControllersMimeTypesApi.class);
-            field = new FieldNode(FIELD_MIME_TYPES_API, PRIVATE_STATIC_MODIFIER, mimeTypesApiClass,classNode, new ConstructorCallExpression(mimeTypesApiClass, GrailsArtefactClassInjector.ZERO_ARGS));
+            field = new FieldNode(FIELD_MIME_TYPES_API, PRIVATE_STATIC_MODIFIER, mimeTypesApiClass, classNode, new ConstructorCallExpression(mimeTypesApiClass, GrailsArtefactClassInjector.ZERO_ARGS));
 
             classNode.addField(field);
 
             final BlockStatement methodBody = new BlockStatement();
             final ArgumentListExpression args = new ArgumentListExpression();
-            args.addExpression(new VariableExpression("this"))
-                .addExpression(new VariableExpression("callable"));
-            methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression(FIELD_MIME_TYPES_API),  WITH_FORMAT_METHOD, args)));
-            classNode.addMethod(new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody));
+            args.addExpression(new VariableExpression("this", classNode))
+                .addExpression(new VariableExpression("callable", new ClassNode(Closure.class)));
+            MethodCallExpression methodCall = new MethodCallExpression(new AttributeExpression(new VariableExpression("this"), new ConstantExpression(FIELD_MIME_TYPES_API)),  WITH_FORMAT_METHOD, args);
+            methodCall.setMethodTarget(mimeTypesApiClass.getMethods(WITH_FORMAT_METHOD).get(0));
+            methodBody.addStatement(new ReturnStatement(methodCall));
+            MethodNode methodNode = new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody);
+            methodNode.addAnnotation(getMarkerAnnotation());
+            classNode.addMethod(methodNode);
+            GrailsASTUtils.addCompileStaticAnnotation(methodNode);
         }
     }
 }

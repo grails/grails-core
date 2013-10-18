@@ -170,18 +170,16 @@ public class TestMixinTransformation implements ASTTransformation{
                             continue;
                         }
 
+                        MethodNode methodNode;
                         if (mixinMethod.isStatic()) {
-                            MethodNode methodNode = GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod);
-
-                            if (methodNode != null) {
-                                methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
-                            }
+                            methodNode = GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod);
                         }
                         else {
-                            MethodNode methodNode = GrailsASTUtils.addDelegateInstanceMethod(classNode, fieldReference, mixinMethod, false);
-                            if (methodNode != null) {
-                                methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
-                            }
+                            methodNode = GrailsASTUtils.addDelegateInstanceMethod(classNode, fieldReference, mixinMethod, false);
+                        }
+                        if (methodNode != null) {
+                            methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
+                            GrailsASTUtils.addCompileStaticAnnotation(methodNode);
                         }
 
                         if (isJunit3) {

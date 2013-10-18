@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
+import grails.test.MockUtils
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import grails.util.Metadata
@@ -10,10 +11,13 @@ import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
+import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.plugins.PluginMetaManager
@@ -26,6 +30,7 @@ import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.grails.databinding.converters.DateConversionHelper
+import org.grails.datastore.gorm.config.GrailsDomainClassMappingContext
 import org.springframework.context.ApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.io.Resource
@@ -127,6 +132,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
 
+        ctx.registerMockBean("grailsDomainClassMappingContext", new GrailsDomainClassMappingContext(ga))
         appCtx = springConfig.getApplicationContext()
         ga.mainContext = appCtx
 
@@ -139,12 +145,15 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         request = new GrailsMockHttpServletRequest(characterEncoding: "utf-8")
         response = new GrailsMockHttpServletResponse()
         webRequest = GrailsWebUtil.bindMockWebRequest(appCtx, request, response)
+        domainClasses.each { c -> 
+            addValidationMethods c
+        }
     }
 
     protected setCurrentController(controller) {
         RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.class.name, "Controller")
     }
-
+    
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
         ExpandoMetaClass.disableGlobally()
@@ -198,5 +207,13 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         mainContext.registerMockBean UrlConverter.BEAN_NAME, new CamelCaseUrlConverter()
         app.mainContext = mainContext
         app
+    }
+    
+    public void addValidationMethods(Class clazz) {
+        addValidationMethods((GrailsDomainClass)ga.getDomainClass(clazz.name))
+    }
+    
+    public void addValidationMethods(GrailsDomainClass dc) {
+        DomainClassGrailsPlugin.addValidationMethods(ga, dc, appCtx)
     }
 }
