@@ -209,7 +209,9 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 if (isSingleEnded) {
                     Object value = entry.value
                     if (writtenObjects.contains(value)) {
-                        continue
+                        // ERROR: beginObject() + endObject called.  Removing continue makes this work
+                        // by forcing the object to be written again.
+                        // continue
                     }
 
                     if (value != null) {
@@ -284,8 +286,12 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         if(value instanceof Number) {
             jsonWriter.name(propertyName).value((Number)value)
         }
-        else if(value instanceof CharSequence) {
+        else if(value instanceof CharSequence || value instanceof Enum) {
             jsonWriter.name(propertyName).value(value.toString())
+        }
+        else if(value instanceof Date) {
+            // NOTE: Define some ISO8601 date class/utility/JodaTime/J2SE7 Dateformatter for this to work!
+            jsonWriter.name(propertyName).value(ISO8601.toString(value))
         }
         else {
             jsonWriter.name(propertyName).value(gson.toJson(value))
