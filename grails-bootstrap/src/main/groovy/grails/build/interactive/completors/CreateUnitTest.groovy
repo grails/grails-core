@@ -18,10 +18,9 @@ package grails.build.interactive.completors
 import org.codehaus.groovy.grails.cli.interactive.completors.ClassNameCompletor
 
  /**
- * A completor for the create-unit-test command
+ * A completor for the create-unit-test command.
  */
-class CreateUnitTest extends ClassNameCompletor{
+class CreateUnitTest extends ClassNameCompletor {
     @Override
     String getCommandName() { "create-unit-test" }
-
 }

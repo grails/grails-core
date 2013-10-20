@@ -92,35 +92,37 @@ class GrailsUnitTestMixin {
     @CompileStatic
     static void initGrailsApplication() {
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
-        CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.class.classLoader)
+        CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.classLoader)
         registerMetaClassRegistryWatcher()
         Promises.promiseFactory = new SynchronousPromiseFactory()
-        if (applicationContext == null) {
-            ExpandoMetaClass.enableGlobally()
-            applicationContext = new GrailsWebApplicationContext()
-            final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
-            autowiringPostProcessor.setBeanFactory( applicationContext.autowireCapableBeanFactory )
-            applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
-
-            registerBeans()
-            applicationContext.refresh()
-            grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
-            grailsApplication.metadata[Metadata.APPLICATION_NAME] =  GrailsUnitTestMixin.simpleName
-            applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
-            messageSource = applicationContext.getBean("messageSource", MessageSource)
-
-            mainContext = new GrailsWebApplicationContext(applicationContext)
-            mainContext.registerSingleton UrlConverter.BEAN_NAME, CamelCaseUrlConverter
-            mainContext.refresh()
-            grailsApplication.mainContext = mainContext
-            grailsApplication.initialise()
-            def servletContext = new MockServletContext()
-            servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mainContext
-            Holders.setServletContext servletContext
-
-            grailsApplication.applicationContext = applicationContext
-            config = grailsApplication.config
+        if (applicationContext != null) {
+            return
         }
+
+        ExpandoMetaClass.enableGlobally()
+        applicationContext = new GrailsWebApplicationContext()
+        final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
+        autowiringPostProcessor.setBeanFactory( applicationContext.autowireCapableBeanFactory )
+        applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
+
+        registerBeans()
+        applicationContext.refresh()
+        grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
+        grailsApplication.metadata[Metadata.APPLICATION_NAME] =  GrailsUnitTestMixin.simpleName
+        applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
+        messageSource = applicationContext.getBean("messageSource", MessageSource)
+
+        mainContext = new GrailsWebApplicationContext(applicationContext)
+        mainContext.registerSingleton UrlConverter.BEAN_NAME, CamelCaseUrlConverter
+        mainContext.refresh()
+        grailsApplication.mainContext = mainContext
+        grailsApplication.initialise()
+        def servletContext = new MockServletContext()
+        servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mainContext
+        Holders.setServletContext servletContext
+
+        grailsApplication.applicationContext = applicationContext
+        config = grailsApplication.config
     }
 
     protected static void registerBeans() {
@@ -193,7 +195,7 @@ class GrailsUnitTestMixin {
     @CompileStatic
     String shouldFail(Closure code) {
         boolean failed = false
-        String result = null
+        String result
         try {
             code.call()
         }
@@ -221,7 +223,7 @@ class GrailsUnitTestMixin {
      * @return the message of the expected Throwable
      */
     String shouldFail(Class clazz, Closure code) {
-        Throwable th = null
+        Throwable th
         try {
             code.call()
         } catch (GroovyRuntimeException gre) {
@@ -255,9 +257,7 @@ class GrailsUnitTestMixin {
 
         DefaultGrailsCodecClass grailsCodecClass = new DefaultGrailsCodecClass(codecClass)
         grailsCodecClass.configureCodecMethods()
-        if(grailsApplication != null) {
-            grailsApplication.addArtefact(CodecArtefactHandler.TYPE, grailsCodecClass)
-        }
+        grailsApplication?.addArtefact(CodecArtefactHandler.TYPE, grailsCodecClass)
     }
 
     @AfterClass

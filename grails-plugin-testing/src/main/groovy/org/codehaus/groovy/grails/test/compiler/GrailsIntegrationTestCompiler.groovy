@@ -17,10 +17,11 @@
 package org.codehaus.groovy.grails.test.compiler
 
 import grails.test.mixin.integration.Integration
+import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.control.CompilationUnit
 import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer
 import org.codehaus.groovy.grails.compiler.Grailsc
-import groovy.transform.CompileStatic
 
 /**
  * Compiles integration tests
@@ -29,17 +30,17 @@ import groovy.transform.CompileStatic
  * @since 2.3
  */
 @CompileStatic
-class GrailsIntegrationTestCompiler extends Grailsc{
+class GrailsIntegrationTestCompiler extends Grailsc {
 
     public GrailsTestCompiler() {
-        setEncoding("UTF-8");
+        setEncoding("UTF-8")
     }
 
     @Override
     protected CompilationUnit makeCompileUnit() {
-        ASTTransformationCustomizer astTransformationCustomizer = new ASTTransformationCustomizer(Integration.class);
-        configuration.addCompilationCustomizers(astTransformationCustomizer);
+        ASTTransformationCustomizer astTransformationCustomizer = new ASTTransformationCustomizer(Integration)
+        configuration.addCompilationCustomizers(astTransformationCustomizer)
 
-        return super.makeCompileUnit();
+        return super.makeCompileUnit()
     }
 }

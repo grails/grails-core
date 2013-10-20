@@ -37,7 +37,7 @@ class SynchronousPromiseFactory extends AbstractPromiseFactory {
         }
 
         def promiseList = new PromiseList()
-        for(p in closures) {
+        for (p in closures) {
             promiseList << p
         }
         return promiseList

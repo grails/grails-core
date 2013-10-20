@@ -120,7 +120,7 @@ class DefaultStackTracePrinter implements StackTracePrinter {
 
     protected void printCausedByMessage(PrintWriter sb, Throwable e) {
         sb.println()
-        sb.println "Caused by ${e.class.simpleName}: ${e.message}"
+        sb.println "Caused by ${e.getClass().simpleName}: ${e.message}"
     }
 
     protected void printHeader(PrintWriter sb, String header) {

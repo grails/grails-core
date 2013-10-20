@@ -1,9 +1,10 @@
 package org.codehaus.groovy.grails.reload
 
 import grails.spring.BeanBuilder
-import org.springframework.aop.framework.ProxyFactoryBean
+
 import org.aopalliance.intercept.MethodInterceptor
 import org.aopalliance.intercept.MethodInvocation
+import org.springframework.aop.framework.ProxyFactoryBean
 
 /**
  * @author Graeme Rocher
@@ -54,8 +55,8 @@ class SpringProxiedBeanReloadTests extends GroovyTestCase {
         assertEquals "The Shining", appCtx.getBean('myBean').title
         assertEquals "Stephen King", appCtx.getBean('myBean').author
     }
-
 }
+
 class DummyInterceptor implements MethodInterceptor {
     Object invoke(MethodInvocation methodInvocation) {
         methodInvocation.proceed()

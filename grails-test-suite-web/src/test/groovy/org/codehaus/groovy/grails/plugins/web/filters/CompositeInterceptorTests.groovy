@@ -17,8 +17,8 @@ class CompositeInterceptorTests extends GroovyTestCase {
     void testCompositeInterceptorPostHandle() {
         def t1
         def t2
-        def i1 = [postHandle: { HttpServletRequest request, HttpServletResponse response, Object o, ModelAndView mv -> t1='foo';true}] as HandlerInterceptor
-        def i2 = [postHandle:{ HttpServletRequest request, HttpServletResponse response, Object o,ModelAndView mv  ->t2='bar';true}] as HandlerInterceptor
+        def i1 = [postHandle: { HttpServletRequest request, HttpServletResponse response, o, ModelAndView mv -> t1='foo';true}] as HandlerInterceptor
+        def i2 = [postHandle:{ HttpServletRequest request, HttpServletResponse response, o,ModelAndView mv  ->t2='bar';true}] as HandlerInterceptor
 
         def ci= new CompositeInterceptor()
         ci.handlers = [i1,i2]
@@ -31,8 +31,8 @@ class CompositeInterceptorTests extends GroovyTestCase {
     void testCompositeInterceptorAfterCompletion() {
         def t1
         def t2
-        def i1 = [afterCompletion:{ HttpServletRequest request, HttpServletResponse response, Object o, Exception e -> t1='foo';true}] as HandlerInterceptor
-        def i2 = [afterCompletion:{ HttpServletRequest request, HttpServletResponse response, Object o,Exception e  ->t2='bar';true}] as HandlerInterceptor
+        def i1 = [afterCompletion:{ HttpServletRequest request, HttpServletResponse response, o, Exception e -> t1 = 'foo'; true}] as HandlerInterceptor
+        def i2 = [afterCompletion:{ HttpServletRequest request, HttpServletResponse response, o, Exception e -> t2 = 'bar'; true}] as HandlerInterceptor
 
         def ci= new CompositeInterceptor()
         ci.handlers = [i1,i2]
@@ -45,8 +45,8 @@ class CompositeInterceptorTests extends GroovyTestCase {
     void testCompositeInterceptorPreHandle() {
         def t1
         def t2
-        def i1 = [preHandle:{ HttpServletRequest request, HttpServletResponse response, Object o -> t1='foo';true}] as HandlerInterceptor
-        def i2 = [preHandle:{ HttpServletRequest request, HttpServletResponse response, Object o ->t2='bar';true}] as HandlerInterceptor
+        def i1 = [preHandle:{ HttpServletRequest request, HttpServletResponse response, o -> t1 = 'foo'; true}] as HandlerInterceptor
+        def i2 = [preHandle:{ HttpServletRequest request, HttpServletResponse response, o -> t2 = 'bar'; true}] as HandlerInterceptor
 
         def ci= new CompositeInterceptor()
         ci.handlers = [i1,i2]

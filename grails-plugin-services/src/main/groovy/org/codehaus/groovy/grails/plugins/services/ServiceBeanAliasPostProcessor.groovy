@@ -45,82 +45,104 @@ class ServiceBeanAliasPostProcessor implements BeanFactoryPostProcessor {
     void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
         def beanNames = beanFactory.beanDefinitionNames
         Map<String, List<String>> aliasNamesToListOfBeanNames = [:].withDefault { key -> []}
-        for(String beanName : beanNames) {
-            if(beanName.endsWith('Service')) {
-                def beanDefinition = beanFactory.getBeanDefinition(beanName)
-                def beanClassName = beanDefinition.beanClassName
+        for (String beanName : beanNames) {
+            if (!beanName.endsWith('Service')) {
+                continue
+            }
 
-                String serviceClassName
+            def beanDefinition = beanFactory.getBeanDefinition(beanName)
+            def beanClassName = beanDefinition.beanClassName
 
-                if(beanClassName.endsWith('Service')) {
-                    serviceClassName = beanClassName
-                } else if(TypeSpecifyableTransactionProxyFactoryBean.name == beanClassName){
-                    def ctorArgumentValues = beanDefinition.constructorArgumentValues
-                    if(ctorArgumentValues.argumentCount == 1) {
-                        def ctorArgumentValue = ctorArgumentValues.getArgumentValue(0, Class)?.value
-                        if(ctorArgumentValue instanceof Class) {
-                            Class argumentClass = ctorArgumentValue
-                            if(argumentClass.name.endsWith('Service')) {
-                                serviceClassName = argumentClass.name
-                            }
-                        }
-                    }
-                }
+            String serviceClassName
 
-                if(serviceClassName) {
-                    // The steps below are a more reliable mechanism for identifying service beans
-                    // than looking for bean names that end in 'Service'.  There are a number
-                    // of checks below but they are String comparisons and instanceof checks
-                    // which should all perform well, and are only applied for the small
-                    // subset of bean names that end with ServiceClass
-                    String beanServiceClassBeanWrapperName = "${serviceClassName}ServiceClass"
-                    if(beanNames.contains(beanServiceClassBeanWrapperName)) {
-                        def wrapperBeanDef = beanFactory.getBeanDefinition(beanServiceClassBeanWrapperName)
-                        def wrapperBeanClassName = wrapperBeanDef.beanClassName
-                        if(MethodInvokingFactoryBean.name == wrapperBeanClassName) {
-                            def propertyValues = wrapperBeanDef.getPropertyValues()
-                            def targetMethod = propertyValues.getPropertyValue('targetMethod')?.value
-                            if('getArtefact' == targetMethod) {
-                                def arguments = propertyValues.getPropertyValue('arguments')?.value
-                                if(arguments instanceof List) {
-                                    def argumentList = (List)arguments
-                                    if(argumentList.size() == 2) {
-                                        def firstArgument = argumentList[0]
-                                        if(ServiceArtefactHandler.TYPE == firstArgument) {
-                                            def secondArgument = argumentList[1]
-                                            if(secondArgument instanceof String && ((String)secondArgument).endsWith('Service')) {
-                                                String serviceClassBeanWrapperClassName = secondArgument
-                                                if(serviceClassBeanWrapperClassName == serviceClassName) {
-                                                    def indexOfLastDot = serviceClassName.lastIndexOf(".")
-                                                    def shortName = serviceClassName[(indexOfLastDot+1)..-1]
-                                                    def potentialAliasName = GrailsNameUtils.getPropertyName(shortName)
-
-                                                    // if the alias name does not conflict with another bean name,
-                                                    // add it to the Map for consideration
-                                                    if(!beanNames.contains(potentialAliasName)) {
-                                                        def aliasExists = false
-                                                        if(beanFactory instanceof AliasRegistry) {
-                                                            aliasExists = beanFactory.isAlias(potentialAliasName)
-                                                        }
-                                                        if(!aliasExists) {
-                                                            aliasNamesToListOfBeanNames[potentialAliasName] << beanName
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+            if (beanClassName.endsWith('Service')) {
+                serviceClassName = beanClassName
+            }
+            else if (TypeSpecifyableTransactionProxyFactoryBean.name == beanClassName){
+                def ctorArgumentValues = beanDefinition.constructorArgumentValues
+                if (ctorArgumentValues.argumentCount == 1) {
+                    def ctorArgumentValue = ctorArgumentValues.getArgumentValue(0, Class)?.value
+                    if (ctorArgumentValue instanceof Class) {
+                        Class argumentClass = ctorArgumentValue
+                        if (argumentClass.name.endsWith('Service')) {
+                            serviceClassName = argumentClass.name
                         }
                     }
                 }
             }
+
+            if (!serviceClassName) {
+                continue
+            }
+
+            // The steps below are a more reliable mechanism for identifying service beans
+            // than looking for bean names that end in 'Service'.  There are a number
+            // of checks below but they are String comparisons and instanceof checks
+            // which should all perform well, and are only applied for the small
+            // subset of bean names that end with ServiceClass
+            String beanServiceClassBeanWrapperName = "${serviceClassName}ServiceClass"
+            if (!beanNames.contains(beanServiceClassBeanWrapperName)) {
+                continue
+            }
+
+            def wrapperBeanDef = beanFactory.getBeanDefinition(beanServiceClassBeanWrapperName)
+            def wrapperBeanClassName = wrapperBeanDef.beanClassName
+            if (MethodInvokingFactoryBean.name == wrapperBeanClassName) {
+                def propertyValues = wrapperBeanDef.getPropertyValues()
+                def targetMethod = propertyValues.getPropertyValue('targetMethod')?.value
+                if ('getArtefact' != targetMethod) {
+                    continue
+                }
+
+                def arguments = propertyValues.getPropertyValue('arguments')?.value
+                if (!(arguments instanceof List)) {
+                    continue
+                }
+
+                def argumentList = (List)arguments
+                if (argumentList.size() != 2) {
+                    continue
+                }
+
+                def firstArgument = argumentList[0]
+                if (ServiceArtefactHandler.TYPE != firstArgument) {
+                    continue
+                }
+
+                def secondArgument = argumentList[1]
+                if (!(secondArgument instanceof String) || !((String)secondArgument).endsWith('Service')) {
+                    continue
+                }
+
+                String serviceClassBeanWrapperClassName = secondArgument
+                if (serviceClassBeanWrapperClassName != serviceClassName) {
+                    continue
+                }
+
+                def indexOfLastDot = serviceClassName.lastIndexOf(".")
+                def shortName = serviceClassName[(indexOfLastDot+1)..-1]
+                def potentialAliasName = GrailsNameUtils.getPropertyName(shortName)
+
+                // if the alias name does not conflict with another bean name,
+                // add it to the Map for consideration
+                if (beanNames.contains(potentialAliasName)) {
+                    continue
+                }
+
+                def aliasExists = false
+                if (beanFactory instanceof AliasRegistry) {
+                    aliasExists = beanFactory.isAlias(potentialAliasName)
+                }
+                if (!aliasExists) {
+                    aliasNamesToListOfBeanNames[potentialAliasName] << beanName
+                }
+            }
         }
+
         aliasNamesToListOfBeanNames.each { String aliasName, List<String> listOfBeanNames ->
             // only register the alias if their is only
             // one candidate target bean for the alias
-            if(listOfBeanNames.size() == 1) {
+            if (listOfBeanNames.size() == 1) {
                 beanFactory.registerAlias listOfBeanNames[0], aliasName
             }
         }

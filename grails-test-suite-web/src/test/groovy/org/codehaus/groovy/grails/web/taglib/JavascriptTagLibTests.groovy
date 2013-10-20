@@ -89,11 +89,11 @@ class TestUrlMappings {
         assertEquals(['testing'], request.getAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES"))
     }
 
-    def replaceMetaClass(Object o) {
+    def replaceMetaClass(o) {
         def old = o.metaClass
 
         // Create a new EMC for the class and attach it.
-        def emc = new ExpandoMetaClass(o.class, true, true)
+        def emc = new ExpandoMetaClass(o.getClass(), true, true)
         emc.initialize()
         o.metaClass = emc
 
@@ -295,9 +295,9 @@ class TestUrlMappings {
 
 class TestProvider implements JavascriptProvider {
 
-    def doRemoteFunction(Object taglib, Object attrs, Object out) {
+    def doRemoteFunction(taglib, attrs, out) {
         out << "<remote>"
     }
 
-    def prepareAjaxForm(Object attrs) {}
+    def prepareAjaxForm(attrs) {}
 }

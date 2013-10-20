@@ -24,7 +24,7 @@ class GrailsTestEnvironmentStatement extends Statement {
     private test
     private interceptor
 
-    GrailsTestEnvironmentStatement(Statement testStatement, Object test, GrailsTestInterceptor interceptor) {
+    GrailsTestEnvironmentStatement(Statement testStatement, test, GrailsTestInterceptor interceptor) {
         this.testStatement = testStatement
         this.test = test
         this.interceptor = interceptor

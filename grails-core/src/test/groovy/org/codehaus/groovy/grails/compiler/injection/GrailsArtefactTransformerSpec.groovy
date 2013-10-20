@@ -3,8 +3,10 @@ package org.codehaus.groovy.grails.compiler.injection
 import grails.artefact.Enhanced
 import grails.persistence.PersistenceMethod
 import grails.util.GrailsUtil
+
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
+
 import spock.lang.Specification
 
 class GrailsArtefactTransformerSpec extends Specification {
@@ -180,8 +182,8 @@ class TestTransformer extends AbstractGrailsArtefactTransformer {
 }
 
 class TestInstanceApi {
-    void setFirstName(Object instance, String firstName, String someArgWhichMakesThisNotAPropertySetterMethod) {}
-    String getFirstName(Object instance, String someArgumentWhichMakesThisNotAPropertyGetter) {}
-    void setSomePropertyDefinedInTestInstanceApi(Object instance, String arg) {}
-    String getSomePropertyDefinedInTestInstanceApi(Object instance) { }
+    void setFirstName(instance, String firstName, String someArgWhichMakesThisNotAPropertySetterMethod) {}
+    String getFirstName(instance, String someArgumentWhichMakesThisNotAPropertyGetter) {}
+    void setSomePropertyDefinedInTestInstanceApi(instance, String arg) {}
+    String getSomePropertyDefinedInTestInstanceApi(instance) { }
 }

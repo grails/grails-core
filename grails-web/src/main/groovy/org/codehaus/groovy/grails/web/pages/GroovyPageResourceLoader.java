@@ -105,28 +105,30 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
 
     protected Resource findInInlinePlugin(String pluginFullName, String pathRelativeToPlugin) {
         // find plugins between all available
-        for(GrailsPluginInfo pluginInfo: pluginSettings.getSupportedPluginInfos()) {
-            if (pluginInfo.getFullName().equals(pluginFullName)) {
-                try {
-                    // find out whether plugin is inline one
-                    if (!isInlinePlugin(pluginInfo)) {
-                        // plugin is not inline one, return null
-                        return null;
-                    }
-                    File pluginDir = pluginInfo.getPluginDir().getFile();
-                    File pageFile = new File(pluginDir, pathRelativeToPlugin);
-                    if (pageFile.exists()) {
-                        return new FileSystemResource(pageFile);
-                    }
+        for (GrailsPluginInfo pluginInfo: pluginSettings.getSupportedPluginInfos()) {
+            if (!pluginInfo.getFullName().equals(pluginFullName)) {
+                continue;
+            }
 
-                    String pathToInlinePluginView = buildPluginViewPathFromBase(pluginDir.getAbsolutePath(), pathRelativeToPlugin, new StringBuilder("file:"));
-                    Resource resource = super.getResource(pathToInlinePluginView);
-                    if (resource.exists()) {
-                        return resource;
-                    }
-                } catch (IOException e) {
-                    // ignore
+            try {
+                // find out whether plugin is inline one
+                if (!isInlinePlugin(pluginInfo)) {
+                    // plugin is not inline one, return null
+                    return null;
                 }
+                File pluginDir = pluginInfo.getPluginDir().getFile();
+                File pageFile = new File(pluginDir, pathRelativeToPlugin);
+                if (pageFile.exists()) {
+                    return new FileSystemResource(pageFile);
+                }
+
+                String pathToInlinePluginView = buildPluginViewPathFromBase(pluginDir.getAbsolutePath(), pathRelativeToPlugin, new StringBuilder("file:"));
+                Resource resource = super.getResource(pathToInlinePluginView);
+                if (resource.exists()) {
+                    return resource;
+                }
+            } catch (IOException e) {
+                // ignore
             }
         }
         return null;

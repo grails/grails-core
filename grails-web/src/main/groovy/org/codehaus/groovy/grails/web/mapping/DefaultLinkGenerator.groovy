@@ -20,13 +20,13 @@ import grails.util.GrailsNameUtils
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpMethod
@@ -113,7 +113,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 String controller
                 String action = urlAttrs.get(ATTRIBUTE_ACTION)?.toString()
                 def id = urlAttrs.get(ATTRIBUTE_ID)
-                String httpMethod;
+                String httpMethod
                 final methodAttribute = urlAttrs.get(ATTRIBUTE_METHOD)
                 final paramsAttribute = urlAttrs.get(ATTRIBUTE_PARAMS)
                 Map params = paramsAttribute && (paramsAttribute instanceof Map) ? (Map)paramsAttribute : [:]
@@ -124,7 +124,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                         resource = resourceAttribute.toString()
                     else if (DomainClassArtefactHandler.isDomainClass(resourceAttribute.getClass())) {
                         resource = GrailsNameUtils.getPropertyName(resourceAttribute.getClass())
-                        if(!id) {
+                        if (!id) {
                             id = getResourceId(resourceAttribute)
                         }
                     }
@@ -134,7 +134,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     List tokens = resource.contains('/') ?  resource.tokenize('/') :[resource]
                     controller = tokens[-1]
                     if (tokens.size()>1) {
-                        for(t in tokens[0..-2]) {
+                        for (t in tokens[0..-2]) {
                             final key = "${t}Id".toString()
                             params[key] = urlAttrs.remove(key)
                         }
@@ -154,13 +154,11 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     else {
                         httpMethod = methodAttribute == null ? requestStateLookupStrategy.getHttpMethod() ?: UrlMapping.ANY_HTTP_METHOD : methodAttribute.toString()
                     }
-
                 }
                 else {
                     controller = controllerAttribute == null ? requestStateLookupStrategy.getControllerName() : controllerAttribute.toString()
                     httpMethod = methodAttribute == null ? requestStateLookupStrategy.getHttpMethod() ?: UrlMapping.ANY_HTTP_METHOD : methodAttribute.toString()
                 }
-
 
                 String convertedControllerName = grailsUrlConverter.toUrlElement(controller)
 
@@ -175,7 +173,6 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 }
 
                 String frag = urlAttrs.get(ATTRIBUTE_FRAGMENT)?.toString()
-
 
                 def mappingName = urlAttrs.get(ATTRIBUTE_MAPPING)
                 if (mappingName != null) {
@@ -343,9 +340,5 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
     String getServerBaseURL() {
         return makeServerURL()
-    }
-
-    void setPluginManager(GrailsPluginManager pluginManager) {
-        this.pluginManager = pluginManager
     }
 }

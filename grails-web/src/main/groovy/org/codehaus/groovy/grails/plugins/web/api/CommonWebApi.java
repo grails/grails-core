@@ -15,6 +15,13 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
+import java.io.Serializable;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
@@ -33,12 +40,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.Serializable;
 
 /**
  * API shared by controllers, tag libraries and any other web artifact.
@@ -73,26 +74,24 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      */
     public Object raw(Object instance, Object value) {
         Encoder encoder = getRawEncoder(instance);
-        if(encoder != null) {
-            return encoder.encode(value);
-        }
-        else {
+        if (encoder == null) {
             return InvokerHelper.invokeMethod(value, "encodeAsRaw", null);
         }
+        return encoder.encode(value);
     }
 
     private Encoder getRawEncoder(GrailsApplication application) {
-        if(application != null) {
-            GrailsClass grailsClass = application.getArtefact(CodecArtefactHandler.TYPE, RAW_CODEC_NAME);
-            GrailsCodecClass codecClass = (GrailsCodecClass) grailsClass;
-            if(codecClass != null) {
-                return codecClass.getEncoder();
-            }
+        if (application == null) {
+            return null;
         }
-        return null;
+
+        GrailsClass grailsClass = application.getArtefact(CodecArtefactHandler.TYPE, RAW_CODEC_NAME);
+        GrailsCodecClass codecClass = (GrailsCodecClass) grailsClass;
+        return codecClass == null ? null : codecClass.getEncoder();
     }
+
     private Encoder getRawEncoder(Object instance) {
-        if(rawEncoder == null) {
+        if (rawEncoder == null) {
             GrailsApplication application = getGrailsApplication(instance);
             rawEncoder = getRawEncoder(application);
         }
@@ -221,7 +220,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
     public String getPluginContextPath(Object delegate) {
         GrailsPluginManager manager = getPluginManagerInternal(delegate);
         final String pluginPath = manager != null ? manager.getPluginPathForInstance(delegate) : null;
-        return pluginPath !=null ? pluginPath : "";
+        return pluginPath ==null ? "" : pluginPath;
     }
 
     private GrailsPluginManager getPluginManagerInternal(Object delegate) {

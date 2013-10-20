@@ -3,6 +3,7 @@ package org.grails.plugins.web.rest.render.xml
 import grails.converters.XML
 import grails.util.GrailsWebUtil
 import grails.validation.ValidationErrors
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
@@ -15,6 +16,7 @@ import org.grails.plugins.web.rest.render.html.Book
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.mock.web.MockServletContext
+
 import spock.lang.Specification
 
 /**
@@ -26,7 +28,7 @@ class DefaultXmlRendererSpec extends Specification {
         final initializer = new ConvertersConfigurationInitializer()
         initializer.initialize(new DefaultGrailsApplication())
         ValidationErrors.metaClass.asType = { Class type ->
-            ConverterUtil.createConverter(type, delegate, null);
+            ConverterUtil.createConverter(type, delegate, null)
         }
         XML.registerObjectMarshaller(new ValidationErrorsMarshaller())
     }
@@ -61,7 +63,7 @@ class DefaultXmlRendererSpec extends Specification {
 
         then:"It is correct"
             xml.title.text() == 'The Stand'
-     }
+    }
 
     void "Test that XML renderer sets a model and view correctly for an Error instance"() {
         when:"A domain instance is rendered"
@@ -81,7 +83,6 @@ class DefaultXmlRendererSpec extends Specification {
             errors.rejectValue("title", "title.blank.error")
 
             renderer.render(book.errors,renderContext)
-
 
         then:"The model and view are populated correctly"
             response.contentType == GrailsWebUtil.getContentType('text/xml', GrailsWebUtil.DEFAULT_ENCODING)

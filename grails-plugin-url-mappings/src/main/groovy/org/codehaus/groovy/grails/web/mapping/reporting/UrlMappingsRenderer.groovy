@@ -23,7 +23,7 @@ import org.codehaus.groovy.grails.web.mapping.UrlMapping
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface UrlMappingsRenderer {
+interface UrlMappingsRenderer {
 
     /**
      * Render the URL mappings to whatever output destination is defined by the implementation

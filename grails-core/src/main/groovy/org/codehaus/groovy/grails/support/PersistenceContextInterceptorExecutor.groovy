@@ -16,11 +16,11 @@
 package org.codehaus.groovy.grails.support
 
 import groovy.transform.CompileStatic
+
 import org.springframework.context.ApplicationContext
 
 /**
  * Executes persistence context interceptors phases.
- *
  *
  * @author Graeme Rocher
  * @since 2.3
@@ -41,7 +41,6 @@ class PersistenceContextInterceptorExecutor {
     void destroyPersistenceContext() {
         destroyPersistenceContextInternal(persistenceContextInterceptors)
     }
-
 
     static void initPersistenceContext(ApplicationContext appCtx) {
         if (appCtx) {
@@ -68,6 +67,4 @@ class PersistenceContextInterceptorExecutor {
             i.destroy()
         }
     }
-
-
 }

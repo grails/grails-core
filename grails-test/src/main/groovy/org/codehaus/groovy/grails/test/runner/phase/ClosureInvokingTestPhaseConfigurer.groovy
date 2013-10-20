@@ -32,7 +32,6 @@ class ClosureInvokingTestPhaseConfigurer implements TestPhaseConfigurer {
         this.cleanupClosure = cleanupClosure
     }
 
-
     @Override
     void prepare(Binding testExecutionContext, Map<String, Object> testOptions) {
         prepareClosure.call()

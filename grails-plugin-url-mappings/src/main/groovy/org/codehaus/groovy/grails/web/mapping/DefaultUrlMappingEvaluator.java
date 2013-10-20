@@ -430,7 +430,17 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                         Object uri;
                         Object redirectInfo = null;
 
-                        if (binding != null) {
+                        if (binding == null) {
+                            controllerName = this.controllerName;
+                            redirectInfo = this.redirectInfo;
+                            actionName = this.actionName;
+                            pluginName = this.pluginName;
+                            namespace = this.namespace;
+                            viewName = this.viewName;
+                            uri = this.uri;
+                            httpMethod = this.httpMethod;
+                        }
+                        else {
                             controllerName = variables.get(GrailsControllerClass.CONTROLLER);
                             actionName = variables.get(GrailsControllerClass.ACTION);
                             viewName = variables.get(GrailsControllerClass.VIEW);
@@ -440,16 +450,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             if (variables.containsKey(UrlMapping.HTTP_METHOD)) {
                                 httpMethod = variables.get(UrlMapping.HTTP_METHOD).toString();
                             }
-
-                        } else {
-                            controllerName = this.controllerName;
-                            redirectInfo = this.redirectInfo;
-                            actionName = this.actionName;
-                            pluginName = this.pluginName;
-                            namespace = this.namespace;
-                            viewName = this.viewName;
-                            uri = this.uri;
-                            httpMethod = this.httpMethod;
                         }
 
                         ConstrainedProperty[] constraints = getCurrentConstraints().toArray(new ConstrainedProperty[getCurrentConstraints().size()]);
@@ -555,7 +555,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 return super.invokeMethod(mappedURI, arg);
             }
         }
-
 
         private List<String> calculateIncludes(Map namedArguments, List<String> defaultResourcesIncludes) {
             List<String> includes = new ArrayList<String>(defaultResourcesIncludes);
@@ -711,10 +710,10 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private UrlMappingData createRelativeUrlDataWithIdAndFormat(UrlMappingData urlData) {
             return urlData.createRelative('/' + CAPTURING_WILD_CARD + UrlMapping.OPTIONAL_EXTENSION_WILDCARD + UrlMapping.QUESTION_MARK);
         }
+
         private UrlMappingData createFormatOnlyUrlMappingData(UrlMappingData urlData) {
             return urlData.createRelative(UrlMapping.OPTIONAL_EXTENSION_WILDCARD + UrlMapping.QUESTION_MARK);
         }
-
 
         protected UrlMapping createSaveActionResourcesRestfulMapping(String controllerName, Object pluginName, Object namespace, String version, UrlMappingData urlData, List<ConstrainedProperty> constraints) {
             UrlMappingData saveActionUrlMappingData = urlData.createRelative(UrlMapping.OPTIONAL_EXTENSION_WILDCARD + UrlMapping.QUESTION_MARK);
@@ -927,7 +926,6 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
             if (parseRequest instanceof Boolean) {
                 urlMapping.setParseRequest((Boolean) parseRequest);
             }
-
 
             return urlMapping;
         }

@@ -88,7 +88,6 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
         } catch (MissingPropertyException e) {
             targetMetaClass.setProperty(targetClass, property, newValue);
         }
-
     }
 
     @SuppressWarnings("rawtypes")

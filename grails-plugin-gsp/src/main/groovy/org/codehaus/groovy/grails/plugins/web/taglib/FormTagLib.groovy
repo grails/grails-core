@@ -599,7 +599,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         def minute
         def dfs = new DateFormatSymbols(RCU.getLocale(request))
 
-        def c = null
+        def c
         if (value instanceof Calendar) {
             c = value
         }

@@ -28,13 +28,13 @@ import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.plugins.resolver.ChainResolver
 import org.apache.ivy.plugins.resolver.FileSystemResolver
 import org.codehaus.groovy.grails.cli.ScriptExitException
+import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.codehaus.groovy.grails.io.support.FileSystemResource
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.BasicGrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.GrailsVersionUtils
-import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -114,10 +114,7 @@ class PluginInstallEngine {
                 installResolvedPlugin(zip)
             }
         } finally {
-            final im = InteractiveMode.current
-            if(im) {
-                im.refresh()
-            }
+            InteractiveMode.current?.refresh()
         }
     }
 

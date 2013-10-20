@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.domain
 
 import grails.persistence.Entity
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+
 import spock.lang.Specification
 
 /**
@@ -45,20 +47,14 @@ class Person {
     String name
     Person father
 
-    static hasMany = [
-        friends: Person
-    ]
+    static hasMany = [friends: Person]
 
-    static mappedBy = [
-        father: null, friends:null
-    ]
+    static mappedBy = [father: null, friends: null]
 
     static constraints = {
-        father (nullable: true)
+        father nullable: true
     }
-
 }
-
 
 @Entity
 class Person2 {
@@ -66,16 +62,11 @@ class Person2 {
     String name
     Person father
 
-    static hasMany = [
-        friends: Person
-    ]
+    static hasMany = [friends: Person]
 
-    static mappedBy = [
-        father: 'none', friends:'none'
-    ]
+    static mappedBy = [father: 'none', friends: 'none']
 
     static constraints = {
-        father (nullable: true)
+        father nullable: true
     }
-
 }

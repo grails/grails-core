@@ -31,7 +31,16 @@ import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.BooleanExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.GStringExpression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.TernaryExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.classgen.GeneratorContext;
@@ -54,7 +63,7 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         if (GrailsASTUtils.isDomainClass(classNode, source) && shouldInjectClass(classNode)) {
-            if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
+            if (!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
             performInjectionOnAnnotatedEntity(classNode);
         }
     }
@@ -220,18 +229,19 @@ public class DefaultGrailsDomainClassInjector implements GrailsDomainClassInject
     private void injectIdProperty(ClassNode classNode) {
         final boolean hasId = GrailsASTUtils.hasOrInheritsProperty(classNode, GrailsDomainClassProperty.IDENTITY);
 
-        if (!hasId) {
-            // inject into furthest relative
-            ClassNode parent = GrailsASTUtils.getFurthestUnresolvedParent(classNode);
-
-            parent.addProperty(GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
+        if (hasId) {
+            return;
         }
+
+        // inject into furthest relative
+        ClassNode parent = GrailsASTUtils.getFurthestUnresolvedParent(classNode);
+
+        parent.addProperty(GrailsDomainClassProperty.IDENTITY, Modifier.PUBLIC, new ClassNode(Long.class), null, null, null);
     }
 
     public void performInjection(SourceUnit source, ClassNode classNode) {
         performInjection(source, null, classNode);
     }
-
 
     public void performInjectionOnAnnotatedClass(SourceUnit source, ClassNode classNode) {
         performInjectionOnAnnotatedEntity(classNode);

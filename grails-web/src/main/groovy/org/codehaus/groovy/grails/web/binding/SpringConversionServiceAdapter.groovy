@@ -16,8 +16,8 @@
 package org.codehaus.groovy.grails.web.binding
 
 import org.grails.databinding.converters.ConversionService
-import org.springframework.core.convert.support.DefaultConversionService
 import org.springframework.core.convert.ConversionService as SpringConversionService
+import org.springframework.core.convert.support.DefaultConversionService
 
 /**
  * This class implements org.grails.databinding.converters.ConversionService
@@ -34,7 +34,7 @@ class SpringConversionServiceAdapter implements ConversionService {
         springConversionService.canConvert source, target
     }
 
-    def convert(Object object, Class<?> targetType) {
+    def convert(object, Class<?> targetType) {
         springConversionService.convert object, targetType
     }
 }

@@ -21,17 +21,16 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.NullView
 import org.codehaus.groovy.grails.web.util.WebUtils
-
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.util.AntPathMatcher
 import org.springframework.web.servlet.HandlerInterceptor
 import org.springframework.web.servlet.ModelAndView
 import org.springframework.web.util.UrlPathHelper
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
-import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
  * Adapter between a FilterConfig object and a Spring HandlerInterceptor.
@@ -113,7 +112,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         return uri.substring(request.getContextPath().length())
     }
 
-    boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) {
+    boolean preHandle(HttpServletRequest request, HttpServletResponse response, o) {
         if (filterConfig.before) {
 
             String controllerName = controllerName(request)
@@ -186,7 +185,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         view?.render(modelAndView.model, request, response)
     }
 
-    void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws java.lang.Exception {
+    void afterCompletion(HttpServletRequest request, HttpServletResponse response, o, Exception e) throws Exception {
         if (!filterConfig.afterView) {
             return
         }

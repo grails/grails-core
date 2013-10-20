@@ -15,12 +15,12 @@
  */
 package grails.rest
 
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-
 import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.transaction.Transactional
 import grails.util.GrailsNameUtils
+
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 
 /**
  * Base class that can be extended to get the basic CRUD operations needed for a RESTful API.

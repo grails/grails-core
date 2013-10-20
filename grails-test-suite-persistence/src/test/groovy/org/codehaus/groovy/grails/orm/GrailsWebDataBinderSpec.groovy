@@ -193,27 +193,27 @@ class GrailsWebDataBinderSpec extends Specification {
         listOfWidgets[1].isBindable == 'Is Tres (List)'
         listOfWidgets[1].isNotBindable == null
     }
-    
+
     void 'Test binding null id to a domain class reference in a non-domain class'() {
         given:
         def binder = new GrailsWebDataBinder(grailsApplication)
         def nonDomainClass = new SomeNonDomainClass()
-        
+
         when:
         binder.bind nonDomainClass, [publication:[id: null]] as SimpleMapDataBindingSource
-        
+
         then:
         nonDomainClass.publication == null
-        
+
         when:
         binder.bind nonDomainClass, [publication:[id: 'null']] as SimpleMapDataBindingSource
-        
+
         then:
         nonDomainClass.publication == null
-        
+
         when:
         binder.bind nonDomainClass, [publication:[id: '']] as SimpleMapDataBindingSource
-        
+
         then:
         nonDomainClass.publication == null
     }
@@ -727,7 +727,7 @@ class GrailsWebDataBinderSpec extends Specification {
         def a1 = publisher.authors.find { it.name == 'Author One' }
         def a2 = publisher.authors.find { it.name == 'Author Two' }
         def a3 = publisher.authors.find { it.name == 'Author Three' }
-        
+
         then:
         a1
         a2
@@ -968,19 +968,19 @@ class GrailsWebDataBinderSpec extends Specification {
         afterBindingArgs[0].object.is obj
         afterBindingArgs[0].propertyName == 'someNumber'
     }
-    
+
     void 'Test binding a List<String>'() {
         given:
         def binder = new GrailsWebDataBinder(grailsApplication)
         def obj = new CollectionContainer()
-        
+
         when:
         binder.bind obj, [listOfStrings: ['One', 'Two', 'Three']] as SimpleMapDataBindingSource
-        
+
         then:
         obj.listOfStrings == ['One', 'Two', 'Three']
     }
-    
+
     void 'Test one to many list binding with nested subscript operator can insert to empty index of List'() {
         when:
         def author = new AssociationBindingAuthor(name: "William Gibson").save()
@@ -1083,7 +1083,7 @@ class Widget implements Comparable {
         isNotBindable bindable: false
     }
 
-    int compareTo(Object rhs) {
+    int compareTo(rhs) {
         new CompareToBuilder().append(isBindable, rhs.isBindable).append(isNotBindable, rhs.isNotBindable).toComparison()
     }
 }

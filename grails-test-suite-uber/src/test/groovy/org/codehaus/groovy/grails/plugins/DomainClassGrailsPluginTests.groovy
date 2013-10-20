@@ -2,10 +2,10 @@ package org.codehaus.groovy.grails.plugins
 
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.control.SourceUnit
+import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.DefaultGrailsDomainClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.web.AbstractGrailsPluginTests
-import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 
 class DomainClassGrailsPluginTests extends AbstractGrailsPluginTests {
 
@@ -37,7 +37,6 @@ class Parent2 {
     String toString() {
         return 'my other toString'
     }
-
 } """, "myapp${fs}grails-app${fs}domain${fs}Child2.groovy")
 
        gcl.parseClass("""class Child3 extends grails.test.Parent2 {
@@ -56,7 +55,6 @@ class Parent2 {
             boolean shouldInject(URL url) {
                 true
             }
-
         }] as ClassInjector[]
         return gcl
     }

@@ -137,7 +137,7 @@ class Log4jConfig {
     @CompileStatic
     void populate(Appender appender, Map args) {
         final metaClass = GroovySystem.getMetaClassRegistry().getMetaClass(appender.getClass())
-        for(key in args.keySet()) {
+        for (key in args.keySet()) {
             final value = args.get(key)
             String prop = key.toString()
             if (appender.hasProperty(prop)) {
@@ -294,7 +294,6 @@ log4j = {
   appenders {
     console name:'stacktrace'
   }
-
 }
 """)
         }

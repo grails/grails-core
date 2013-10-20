@@ -82,7 +82,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
 
     def getActions(controller) {
         def instance = controllers[controller]
-        BeanUtils.getPropertyDescriptors(instance.class).findAll {
+        BeanUtils.getPropertyDescriptors(instance.getClass()).findAll {
             GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(instance, it.name) instanceof Closure
         }.collect {
         StringUtils.substringBeforeLast(it.name, "Flow")
@@ -91,7 +91,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
 
     def getDefaultAction(controllerName) {
         def controller = controllers[controllerName]
-        (controller.class.declaredFields.find { it.name == "defaultAction" }) ? controller.defaultAction : "index"
+        (controller.getClass().declaredFields.find { it.name == "defaultAction" }) ? controller.defaultAction : "index"
     }
 
     def assertController(controller, url) {

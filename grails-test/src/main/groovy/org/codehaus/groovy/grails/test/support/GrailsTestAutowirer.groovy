@@ -15,13 +15,13 @@
  */
 package org.codehaus.groovy.grails.test.support
 
+import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 
 /**
- * Convenience class to autowire test classes
+ * Convenience class to autowire test classes.
  */
 class GrailsTestAutowirer {
 
@@ -38,7 +38,7 @@ class GrailsTestAutowirer {
     void autowire(bean) {
         def beanFactory = applicationContext.autowireCapableBeanFactory
         beanFactory.autowireBeanProperties(bean, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
-        beanFactory.initializeBean(bean, bean.class.name)
+        beanFactory.initializeBean(bean, bean.getClass().name)
 
         def annotationProcessor = beanFactory.createBean(AutowiredAnnotationBeanPostProcessor, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)
         annotationProcessor.processInjection(bean)

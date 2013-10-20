@@ -193,7 +193,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
             grailsLinkGenerator(DefaultLinkGenerator, config?.grails?.serverURL ?: "http://localhost:8080")
 
-            final classLoader = ControllerUnitTestMixin.class.getClassLoader()
+            final classLoader = ControllerUnitTestMixin.getClassLoader()
             if (ClassUtils.isPresent("UrlMappings", classLoader)) {
                 grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, classLoader.loadClass("UrlMappings"))
             }

@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import com.google.gson.stream.JsonWriter
 
 /**
- * A HAL JSON renderer for a collection of objects
+ * A HAL JSON renderer for a collection of objects.
  *
  * @author Graeme Rocher
  * @since 2.3
@@ -33,19 +33,19 @@ class HalJsonCollectionRenderer extends HalJsonRenderer implements ContainerRend
 
     final Class componentType
     String collectionName
-    
+
     HalJsonCollectionRenderer(Class componentType) {
         super(Collection)
         this.componentType = componentType
-        this.collectionName = GrailsNameUtils.getPropertyName(componentType)
+        collectionName = GrailsNameUtils.getPropertyName(componentType)
     }
 
     HalJsonCollectionRenderer(Class componentType, MimeType... mimeTypes) {
         super(Collection, mimeTypes)
         this.componentType = componentType
-        this.embeddedName = GrailsNameUtils.getPropertyName(componentType)
+        embeddedName = GrailsNameUtils.getPropertyName(componentType)
     }
-    
+
     @Override
     protected renderEmbeddedAttributes(JsonWriter writer, object, RenderContext context, MimeType mimeType) {
         writer.beginObject()

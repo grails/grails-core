@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins.publishing
 import grails.util.BuildSettings
 import grails.util.GrailsUtil
 import groovy.xml.MarkupBuilder
+
 import org.codehaus.groovy.grails.io.support.Resource
 import org.springframework.util.AntPathMatcher
 
@@ -82,10 +83,9 @@ class PluginDescriptorGenerator {
 
         if (r.file.absolutePath.indexOf(commonResourceBase.absolutePath) == 0) {
             String path = r.file.absolutePath.substring(commonResourceBase.absolutePath.length()+1).tr(File.separator, "/")
-            for(String pattern : pluginExcludes) {
+            for (String pattern : pluginExcludes) {
                 if (antPathMatcher.match(pattern.tr(File.separator, "/"), path)) return true
             }
-
         }
 
         return false
@@ -97,9 +97,9 @@ class PluginDescriptorGenerator {
 
         if (pluginDir.absolutePath.endsWith(File.separator + ".")) {
             return new File(pluginDir.absolutePath.substring(0, pluginDir.absolutePath.lastIndexOf(File.separator)))
-        } else {
-            return pluginDir
         }
+
+        pluginDir
     }
 
     protected void generatePluginXml(pluginProps, MarkupBuilder xml) {
@@ -113,30 +113,34 @@ class PluginDescriptorGenerator {
 
         // check to see if we have the property, grab it if so
         def pluginExcludes
-        if (pluginProps['pluginExcludes'])
+        if (pluginProps['pluginExcludes']) {
             pluginExcludes = pluginProps.pluginExcludes
-        else
+        }
+        else {
             pluginExcludes = []
+        }
 
-        if (pluginProps != null) {
-            if (pluginProps["grailsVersion"]) {
-                pluginGrailsVersion = pluginProps["grailsVersion"]
+        if (pluginProps == null) {
+            return
+        }
+
+        if (pluginProps["grailsVersion"]) {
+            pluginGrailsVersion = pluginProps["grailsVersion"]
+        }
+
+        xml.plugin(name: "${pluginName}", version: "${pluginProps.version}", grailsVersion: pluginGrailsVersion) {
+            for (p in props) {
+                if (pluginProps[p]) "${p}"(pluginProps[p])
             }
+            xml.resources {
+                final pluginDir = pluginProps['pluginDir'] instanceof String ? new File(pluginProps['pluginDir']) : pluginProps['pluginDir']?.file
+                File commonResourceBase = filterPluginDir(pluginDir)
 
-            xml.plugin(name: "${pluginName}", version: "${pluginProps.version}", grailsVersion: pluginGrailsVersion) {
-                for (p in props) {
-                    if (pluginProps[p]) "${p}"(pluginProps[p])
-                }
-                xml.resources {
-                    final pluginDir = pluginProps['pluginDir'] instanceof String ? new File(pluginProps['pluginDir']) : pluginProps['pluginDir']?.file
-                    File commonResourceBase = filterPluginDir(pluginDir)
-
-                    for (r in resourceList) {
-                        def matcher = r.URL.toString() =~ ARTEFACT_PATTERN
-                        def name = matcher[0][1].replaceAll('/', /\./)
-                        if (!excludes.contains(name) && !matchesPluginExcludes(pluginExcludes, commonResourceBase, r)) {
-                            xml.resource(name)
-                        }
+                for (r in resourceList) {
+                    def matcher = r.URL.toString() =~ ARTEFACT_PATTERN
+                    def name = matcher[0][1].replaceAll('/', /\./)
+                    if (!excludes.contains(name) && !matchesPluginExcludes(pluginExcludes, commonResourceBase, r)) {
+                        xml.resource(name)
                     }
                 }
             }

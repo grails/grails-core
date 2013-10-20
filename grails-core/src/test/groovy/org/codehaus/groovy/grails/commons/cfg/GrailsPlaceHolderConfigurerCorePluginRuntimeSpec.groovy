@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.commons.cfg
 
 import grails.spring.BeanBuilder
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.CoreGrailsPlugin
+
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -39,8 +41,8 @@ class GrailsPlaceHolderConfigurerCorePluginRuntimeSpec extends Specification{
             appCtx != null
             bean.foo == 'test'
     }
-
 }
+
 class ReplacePropertyBean {
     String foo
 }

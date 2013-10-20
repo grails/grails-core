@@ -1,7 +1,6 @@
-package org.codehaus.groovy.grails.web.taglib;
+package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.runtime.InvokerHelper
-import org.codehaus.groovy.grails.commons.*
+import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
 
 class LinkRenderingTagLib2Tests extends AbstractGrailsTagTests {
 
@@ -20,7 +19,7 @@ class TestUrlMappings {
         }
     }
 }
-        ''')
+''')
 
         grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, mappingClass)
     }

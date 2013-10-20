@@ -160,5 +160,4 @@ public class ConstraintsEvaluatingPropertyTests extends TestCase {
 
         assertEquals("Incorrect number of constraints extracted: " +constraints, constraintCount, cons.size());
     }
-
 }

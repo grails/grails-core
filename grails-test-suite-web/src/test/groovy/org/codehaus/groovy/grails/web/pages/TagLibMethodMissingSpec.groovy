@@ -1,13 +1,8 @@
 package org.codehaus.groovy.grails.web.pages
 
-import org.junit.BeforeClass;
-
-import grails.test.AbstractGrailsEnvChangingSpec
-
-import spock.lang.Specification
-import grails.test.mixin.TestFor
-import grails.util.Environment;
 import grails.artefact.Artefact
+import grails.test.AbstractGrailsEnvChangingSpec
+import grails.test.mixin.TestFor
 
 @TestFor(TagLibMethodMissingTagLib)
 class TagLibMethodMissingSpec extends AbstractGrailsEnvChangingSpec {

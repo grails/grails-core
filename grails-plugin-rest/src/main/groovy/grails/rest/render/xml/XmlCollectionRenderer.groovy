@@ -23,11 +23,9 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.mime.MimeType
 
 /**
- * 
- * A XML renderer for a collection of objects
- * 
- * @since 2.3.1
+ * A XML renderer for a collection of objects.
  *
+ * @since 2.3.1
  */
 @CompileStatic
 class XmlCollectionRenderer extends XmlRenderer implements ContainerRenderer {
@@ -38,14 +36,14 @@ class XmlCollectionRenderer extends XmlRenderer implements ContainerRenderer {
         this.componentType = componentType
     }
 
-    public XmlCollectionRenderer(Class targetType, MimeType... mimeTypes) {
-        super(targetType, mimeTypes);
+    XmlCollectionRenderer(Class targetType, MimeType... mimeTypes) {
+        super(targetType, mimeTypes)
     }
 
     @Override
     protected void renderXml(XML converter, RenderContext context) {
         converter.setExcludes(componentType, excludes ?: context.excludes)
-        converter.setIncludes(componentType, includes != null ? includes : context.includes)
+        converter.setIncludes(componentType, includes == null ? context.includes : includes)
         converter.render(context.getWriter())
     }
 }

@@ -43,7 +43,7 @@ class ValidationSupport {
             }
 
             def messageSource = ctx?.containsBean('messageSource') ? ctx.getBean('messageSource') : null
-            def localErrors = new ValidationErrors(object, object.class.name)
+            def localErrors = new ValidationErrors(object, object.getClass().name)
             def originalErrors = object.errors
             for (originalError in originalErrors.allErrors) {
                 if (originalError instanceof FieldError) {

@@ -1046,7 +1046,6 @@ public class ConstrainedProperty {
             if (!validate) {
                 return c;
             }
-
         }
         return null;
     }

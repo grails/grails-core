@@ -186,8 +186,8 @@ class DemandProxy {
 
     DemandProxy(Class mockedClass, boolean loose) {
         this.mockedClass = mockedClass
-        this.mockMetaClass = new ExpandoMetaClass(mockedClass, false, true)
-        this.mockMetaClass.initialize()
+        mockMetaClass = new ExpandoMetaClass(mockedClass, false, true)
+        mockMetaClass.initialize()
         if (loose) {
             expectation = new LooseExpectation(demand)
         }
@@ -196,7 +196,7 @@ class DemandProxy {
         }
     }
 
-    def invokeMethod(String methodName, Object args) {
+    def invokeMethod(String methodName, args) {
         demand.invokeMethod(methodName, args)
 
         def c = new MockClosureProxy(args[-1], methodName, expectation)
@@ -226,13 +226,13 @@ class ExplicitDemandProxy {
         this.demandProxy = demandProxy
     }
 
-    def invokeMethod(String methodName, Object args) {
+    def invokeMethod(String methodName, args) {
         def closure = args[-1] //The mocked method
         assertHasMethod(demandProxy.mockedClass, methodName, closure.parameterTypes)
         demandProxy.invokeMethod(methodName, args)
     }
 
-    void assertHasMethod(Object obj, String name, Class[] types) {
+    void assertHasMethod(obj, String name, Class[] types) {
         def methods = obj.metaClass.respondsTo(obj, name, types)
         if (methods.isEmpty()) throw new ExplicitDemandException(obj, name, types)
     }

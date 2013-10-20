@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.resolve.maven
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherExcludeResolver
+
 import spock.lang.Specification
 
 /**
@@ -35,7 +36,6 @@ class AetherExcludeResolverSpec extends Specification{
             dependencies {
                 compile "commons-validator:commons-validator:1.4.0"
             }
-
         }
         def excludeResolver = new AetherExcludeResolver(dependencyManager)
 
@@ -47,6 +47,5 @@ class AetherExcludeResolverSpec extends Specification{
         !excludes.isEmpty()
         validatorExcludes.size() == 3
         validatorExcludes.find { Dependency d -> d.name == 'commons-beanutils'}
-
     }
 }

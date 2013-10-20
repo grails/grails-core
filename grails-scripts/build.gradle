@@ -49,7 +49,6 @@ sourceSets {
     }
 }
 
-
 eclipse {
     classpath {
         file {

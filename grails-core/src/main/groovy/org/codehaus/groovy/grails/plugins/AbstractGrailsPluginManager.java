@@ -282,7 +282,6 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
         } finally {
             shutdown = true;
         }
-
     }
 
     public boolean isShutdown() {

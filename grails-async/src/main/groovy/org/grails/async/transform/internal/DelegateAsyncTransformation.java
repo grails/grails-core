@@ -91,7 +91,7 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                 applyDelegateAsyncTransform(classNode, targetApi, fieldName);
             }
         }
-        else if(parent instanceof FieldNode) {
+        else if (parent instanceof FieldNode) {
             FieldNode fieldNode = (FieldNode)parent;
             ClassNode targetApi = fieldNode.getType().getPlainNodeReference();
             ClassNode classNode = fieldNode.getOwner();
@@ -107,15 +107,15 @@ public class DelegateAsyncTransformation implements ASTTransformation {
         MethodNode createPromiseMethodTargetWithDecorators = promisesClass.getDeclaredMethod("createPromise", new Parameter[]{new Parameter(new ClassNode(Closure.class), "c"), new Parameter(new ClassNode(List.class), "c")});
 
         DelegateAsyncTransactionalMethodTransformer delegateAsyncTransactionalMethodTransformer = lookupAsyncTransactionalMethodTransformer();
-        for(MethodNode m : methods) {
+        for (MethodNode m : methods) {
             if (isCandidateMethod(m)) {
                 MethodNode existingMethod = classNode.getMethod(m.getName(), m.getParameters());
                 if (existingMethod == null) {
                     ClassNode promiseNode = ClassHelper.make(Promise.class).getPlainNodeReference();
                     ClassNode originalReturnType = m.getReturnType();
-                    if(!originalReturnType.getNameWithoutPackage().equals(VOID)) {
+                    if (!originalReturnType.getNameWithoutPackage().equals(VOID)) {
                         ClassNode returnType;
-                        if(ClassHelper.isPrimitiveType(originalReturnType.redirect())) {
+                        if (ClassHelper.isPrimitiveType(originalReturnType.redirect())) {
                             returnType = ClassHelper.getWrapper(originalReturnType.redirect());
                         } else {
                             returnType = alignReturnType(classNode, originalReturnType);
@@ -141,7 +141,7 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                     getDecoratorsMethodCall.setMethodTarget(getPromiseDecoratorsMethodNode);
 
                     MethodCallExpression createPromiseWithDecorators = new MethodCallExpression(new ClassExpression(promisesClass), "createPromise",new ArgumentListExpression( closureExpression, getDecoratorsMethodCall));
-                    if(createPromiseMethodTargetWithDecorators != null) {
+                    if (createPromiseMethodTargetWithDecorators != null) {
                         createPromiseWithDecorators.setMethodTarget(createPromiseMethodTargetWithDecorators);
                     }
                     methodBody.addStatement(new ExpressionStatement(createPromiseWithDecorators));
@@ -149,7 +149,7 @@ public class DelegateAsyncTransformation implements ASTTransformation {
                     final ArgumentListExpression arguments = new ArgumentListExpression();
 
                     Parameter[] parameters = copyParameters(StaticTypeCheckingSupport.parameterizeArguments(classNode, m));
-                    for(Parameter p : parameters) {
+                    for (Parameter p : parameters) {
                         p.setClosureSharedVariable(true);
                         variableScope.putReferencedLocalVariable(p);
                         VariableExpression ve = new VariableExpression(p);
@@ -216,7 +216,7 @@ public class DelegateAsyncTransformation implements ASTTransformation {
             Parameter parameterType = parameterTypes[i];
             ClassNode parameterTypeCN = parameterType.getType();
             ClassNode newParameterTypeCN = parameterTypeCN.getPlainNodeReference();
-            if(parameterTypeCN.isUsingGenerics()) {
+            if (parameterTypeCN.isUsingGenerics()) {
                 newParameterTypeCN.setGenericsTypes(parameterTypeCN.getGenericsTypes());
             }
             Parameter newParameter = new Parameter(newParameterTypeCN, parameterType.getName(), parameterType.getInitialExpression());

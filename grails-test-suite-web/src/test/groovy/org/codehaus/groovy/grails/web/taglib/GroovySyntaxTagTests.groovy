@@ -1,24 +1,23 @@
-package org.codehaus.groovy.grails.web.taglib;
-
-import org.codehaus.groovy.grails.web.pages.GroovyPage
+package org.codehaus.groovy.grails.web.taglib
 
 import junit.framework.TestCase
+
+import org.codehaus.groovy.grails.web.pages.GroovyPage
 
 /**
  * @author graemerocher
  */
 class GroovySyntaxTagTests extends TestCase {
 
-    private tag = new MyGroovySyntaxTag()
+    private MyGroovySyntaxTag tag = new MyGroovySyntaxTag()
 
     /**
      * Test method for {@link org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag#init(java.util.Map)}.
      */
     void testInit() {
-        Map ctx = [:]
-        ctx.put(GroovyPage.OUT, new PrintWriter(new StringWriter()))
-        tag.init(ctx)
-        assertEquals(tag.out,ctx.get(GroovyPage.OUT))
+        Map ctx = [(GroovyPage.OUT): new PrintWriter(new StringWriter())]
+        tag.init ctx
+        assertEquals(tag.out, ctx.get(GroovyPage.OUT))
     }
 
     /**

@@ -17,13 +17,13 @@ package org.codehaus.groovy.grails.plugins.web.api
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.web.mime.MimeType
 
 import javax.servlet.ServletRequest
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.plugins.web.mimes.FormatInterceptor
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
@@ -44,8 +44,8 @@ class MimeTypesApiSupport {
         return withFormatInternal(response, getDefinedFormats(callable))
     }
 
-    protected Object withFormatInternal(formatProvider, LinkedHashMap<String, Object> formats) {
-        def result = null
+    protected withFormatInternal(formatProvider, LinkedHashMap<String, Object> formats) {
+        def result
         String format = lookupFormat(formatProvider)
         if (formats) {
             if (format == 'all') {
@@ -95,7 +95,7 @@ class MimeTypesApiSupport {
     }
 
     LinkedHashMap<String, Object> getDefinedFormats(Closure callable) {
-        LinkedHashMap<String, Object> formats = null
+        LinkedHashMap<String, Object> formats
         def original = callable.delegate
         try {
             final interceptor = new FormatInterceptor()
@@ -111,7 +111,7 @@ class MimeTypesApiSupport {
         return formats
     }
 
-    private Object getResponseForFormat(formatResponse, format, formatProvider) {
+    private getResponseForFormat(formatResponse, format, formatProvider) {
         if (formatProvider instanceof ServletRequest) {
             formatProvider.setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
         }
@@ -122,9 +122,7 @@ class MimeTypesApiSupport {
         if (formatResponse instanceof Closure) {
             return formatResponse?.call()
         }
-        else {
-            return formatResponse
-        }
 
+        return formatResponse
     }
 }

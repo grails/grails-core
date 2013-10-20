@@ -3,7 +3,7 @@ package grails.test.mixin
 import grails.artefact.Artefact
 import grails.persistence.Entity
 
-import org.junit.Assert;
+import org.junit.Assert
 import org.junit.Test
 
 @TestFor(ImpedimentsController)
@@ -17,9 +17,7 @@ class TestForControllerWithoutMockDomainTests {
             impedimentInstance.save()
             Assert.fail("Exception should have been thrown")
         }
-        catch(Exception e) {
-            
-        }
+        catch(Exception ignored) {}
     }
 }
 

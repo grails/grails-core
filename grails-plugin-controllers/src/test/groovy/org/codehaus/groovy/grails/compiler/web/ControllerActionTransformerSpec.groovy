@@ -44,8 +44,7 @@ class ControllerActionTransformerSpec extends Specification {
             def cls = gcl.parseClass('''
             class TestTransformedToController {
 
-                def action = {
-                }
+                def action = {}
 
                 }
             ''')
@@ -88,7 +87,7 @@ class ControllerActionTransformerSpec extends Specification {
         action2NoArgMethod.getAnnotation(Action)
         action2NoArgMethod.getAnnotation(Deprecated)
     }
-    
+
     void 'Test that a controller may have an abstract method - GRAILS-10509'() {
         given:
         def controllerClass = gcl.parseClass('''
@@ -99,13 +98,13 @@ class ControllerActionTransformerSpec extends Specification {
 ''')
         when:
         def method = controllerClass.getMethod('someAbstractMethod')
-        
+
         then:
         Modifier.isAbstract(method.modifiers)
-        
+
         when:
         method = controllerClass.getMethod('someAction')
-        
+
         then:
         !Modifier.isAbstract(method.modifiers)
     }

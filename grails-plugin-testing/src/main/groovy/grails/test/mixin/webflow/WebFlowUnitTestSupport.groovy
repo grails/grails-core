@@ -42,8 +42,8 @@ class WebFlowUnitTestSupport {
         this.setEventOnActionCallback = setEventOnActionCallback
     }
 
-    Object invokeMethod(String name, Object obj) {
-        Object[] args = obj.class.isArray() ? obj : [obj] as Object[]
+    Object invokeMethod(String name, obj) {
+        Object[] args = obj.getClass().isArray() ? obj : [obj] as Object[]
 
         if (!done) {
             if (name == BUILD) {
@@ -62,13 +62,13 @@ class WebFlowUnitTestSupport {
         MetaMethod metaMethod = metaClass.getMetaMethod(name, args)
 
         if (metaMethod == null) {
-            throw new MissingMethodException(name, this.class, args)
+            throw new MissingMethodException(name, getClass(), args)
         }
 
         return metaMethod.invoke(this, args)
     }
 
-    Object invokeClosureNode(Object args) {
+    Object invokeClosureNode(args) {
         Closure callable = args
         callable.delegate = this
         callable.resolveStrategy = Closure.DELEGATE_FIRST
@@ -144,7 +144,7 @@ class WebFlowUnitTestSupport {
         currentOnEvent = null
     }
 
-    void subflow(Object subflow) {
+    void subflow(subflow) {
         currentEvent.subflow = wrapWithEventName(subflow)
     }
 

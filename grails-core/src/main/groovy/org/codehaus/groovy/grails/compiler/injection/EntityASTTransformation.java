@@ -65,11 +65,11 @@ public class EntityASTTransformation implements ASTTransformation {
     }
 
     public void applyTransformation(SourceUnit sourceUnit, ClassNode classNode) {
-        if(GrailsASTUtils.isApplied(classNode, EntityASTTransformation.class)) {
+        if (GrailsASTUtils.isApplied(classNode, EntityASTTransformation.class)) {
             return;
         }
         GrailsASTUtils.markApplied(classNode, EntityASTTransformation.class);
-        
+
         GrailsDomainClassInjector domainInjector = new DefaultGrailsDomainClassInjector();
         domainInjector.performInjectionOnAnnotatedEntity(classNode);
 

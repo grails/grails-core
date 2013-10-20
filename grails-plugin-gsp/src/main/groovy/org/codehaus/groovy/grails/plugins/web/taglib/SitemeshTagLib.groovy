@@ -19,7 +19,6 @@ import grails.artefact.Artefact
 import groovy.transform.CompileStatic
 
 import org.apache.commons.lang.WordUtils
-import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
@@ -40,8 +39,8 @@ class SitemeshTagLib implements RequestConstants {
     static namespace = 'sitemesh'
 
     @CompileStatic
-    def captureTagContent(Writer writer, String tagname, Map attrs, Object body, boolean noEndTagForEmpty=false) {
-        def content = null
+    def captureTagContent(Writer writer, String tagname, Map attrs, body, boolean noEndTagForEmpty=false) {
+        def content
         if (body != null) {
             if (body instanceof Closure) {
                 content = body()
@@ -100,7 +99,7 @@ class SitemeshTagLib implements RequestConstants {
     }
 
     @CompileStatic
-    def StreamCharBuffer wrapContentInBuffer(Object content) {
+    def StreamCharBuffer wrapContentInBuffer(content) {
         if (content instanceof Closure) {
             content = content()
         }

@@ -1,7 +1,5 @@
 package grails.test
 
-import java.util.Map;
-
 import grails.util.GrailsWebUtil
 import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
@@ -421,7 +419,7 @@ class MockUrlMapping implements UrlMapping {
 
     UrlMappingData getUrlData() { null }
 
-    int compareTo(Object o) { 0 }
+    int compareTo(o) { 0 }
 
     String createURL(Map parameterValues, String encoding) { null }
 
@@ -474,19 +472,15 @@ class MockUrlMapping implements UrlMapping {
     void setMappingName(String name) {}
 
     boolean hasRuntimeVariable(String name) { false }
-    public Object getNamespace() { null }
-    public String createRelativeURL(String controller, String action,
+    Object getNamespace() { null }
+    String createRelativeURL(String controller, String action,
             String pluginName, Map parameterValues, String encoding) {
         null
     }
-    public String createURL(String controller, String action,
+    String createURL(String controller, String action,
             String pluginName, Map parameterValues, String encoding) { null }
     @Override
-    public Object getRedirectInfo() {
-        return null;
-    }
-
-
+    Object getRedirectInfo() {}
 }
 
 abstract class GrailsUrlMappingTestCaseTestsBaseController {

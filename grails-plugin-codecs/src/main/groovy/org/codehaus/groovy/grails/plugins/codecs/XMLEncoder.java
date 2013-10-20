@@ -54,7 +54,7 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
      */
     @Override
     protected String escapeCharacter(char ch, char previousChar) {
-      if(ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r') {
+      if (ch < ' ' && ch != '\t' && ch != '\n' && ch != '\r') {
           return "";
       }
       switch(ch) {

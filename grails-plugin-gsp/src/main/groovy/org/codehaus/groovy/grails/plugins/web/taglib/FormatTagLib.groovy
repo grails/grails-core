@@ -50,7 +50,7 @@ class FormatTagLib {
     CodecLookup codecLookup
 
     @CompileStatic
-    String messageHelper(String code, Object defaultMessage = null, List args = null, Locale locale = null) {
+    String messageHelper(String code, defaultMessage = null, List args = null, Locale locale = null) {
         if (locale == null) {
             locale = GrailsWebRequest.lookup().getLocale()
         }
@@ -349,7 +349,7 @@ class FormatTagLib {
     }
 
     @CompileStatic
-    static Locale resolveLocale(Object localeAttr) {
+    static Locale resolveLocale(localeAttr) {
         Locale locale
         if (localeAttr instanceof Locale) {
             locale = (Locale)localeAttr

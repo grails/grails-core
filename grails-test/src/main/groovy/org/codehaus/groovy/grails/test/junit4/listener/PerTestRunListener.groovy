@@ -16,15 +16,15 @@
 package org.codehaus.groovy.grails.test.junit4.listener
 
 import groovy.transform.CompileStatic
+import junit.framework.AssertionFailedError
+import junit.framework.JUnit4TestCaseFacade
+
 import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
 import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper
 import org.codehaus.groovy.grails.test.report.junit.JUnitReports
 import org.junit.runner.Description
 import org.junit.runner.notification.Failure
-
-import junit.framework.JUnit4TestCaseFacade
-import junit.framework.AssertionFailedError
 
 @CompileStatic
 class PerTestRunListener {
@@ -77,7 +77,7 @@ class PerTestRunListener {
         def testName = description.methodName
         eventPublisher.testStart(testName)
         runCount++
-        for(OutputStream os in [outStream, errStream]) {
+        for (OutputStream os in [outStream, errStream]) {
             new PrintStream(os).println("--Output from ${testName}--")
         }
         reports.startTest(getTest(description))

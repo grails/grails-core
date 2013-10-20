@@ -38,10 +38,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
         this.grailsApplication = grailsApplication;
         getPropertySources().addFirst(new GrailsConfigPropertySource());
         getPropertySources().addFirst(new PropertiesPropertySource("systemProperties", System.getProperties()));
-
-
     }
-
 
     @Override
     protected Set<String> doGetActiveProfiles() {

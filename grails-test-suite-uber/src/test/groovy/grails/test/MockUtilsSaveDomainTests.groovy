@@ -14,11 +14,11 @@
  */
 package grails.test
 
+import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 class MockUtilsSaveDomainTests extends GroovyTestCase {
 

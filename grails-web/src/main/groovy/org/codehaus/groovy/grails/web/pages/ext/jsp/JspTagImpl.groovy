@@ -51,7 +51,7 @@ class JspTagImpl implements JspTag {
     }
 
     void doTag(Writer targetWriter, Map attributes) {
-        doTag targetWriter,attributes, null
+        doTag targetWriter, attributes, null
     }
 
     private createTagInstance() {
@@ -110,7 +110,8 @@ class JspTagImpl implements JspTag {
                             state = tag.doAfterBody()
 
                             while (state != IterationTag.SKIP_BODY) {
-                                out << body.call(); state = tag.doAfterBody()
+                                out << body.call()
+                                state = tag.doAfterBody()
                             }
                         }
                     }

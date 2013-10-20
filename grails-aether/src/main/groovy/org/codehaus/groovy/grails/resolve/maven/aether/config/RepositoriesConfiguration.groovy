@@ -15,15 +15,16 @@
  */
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
+import grails.build.logging.GrailsConsole
+import grails.util.Environment
 import groovy.transform.CompileStatic
+
 import org.apache.maven.repository.internal.MavenRepositorySystemSession
+import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.sonatype.aether.repository.ArtifactRepository
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.Proxy
 import org.sonatype.aether.repository.RemoteRepository
-import grails.util.Environment
-import grails.build.logging.GrailsConsole
-import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 
 /**
  * @author Graeme Rocher
@@ -33,13 +34,12 @@ import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 class RepositoriesConfiguration {
     AetherDependencyManager dependencyManager
     @Delegate MavenRepositorySystemSession session
+    List<RemoteRepository> repositories = []
 
     RepositoriesConfiguration(AetherDependencyManager dependencyManager, MavenRepositorySystemSession session) {
         this.dependencyManager = dependencyManager
         this.session = session
     }
-
-    List<RemoteRepository> repositories = []
 
     /**
      * Environment support
@@ -49,7 +49,7 @@ class RepositoriesConfiguration {
      */
     def environments(Closure callable) {
         final environmentCallable = Environment.getEnvironmentSpecificBlock(callable)
-        if(environmentCallable) {
+        if (environmentCallable) {
             environmentCallable.setDelegate(this)
             environmentCallable.call()
         }
@@ -82,16 +82,15 @@ class RepositoriesConfiguration {
 
     RemoteRepository mavenCentral(Closure configurer = null) {
         final existing = repositories.find { ArtifactRepository ar -> ar.id == "mavenCentral" }
-        if (!existing) {
-            final repository = new RemoteRepository("mavenCentral", "default", "http://repo1.maven.org/maven2/")
-
-            configureRepository(repository, configurer)
-            repositories << repository
-            return repository
-        }
-        else {
+        if (existing) {
             return existing
         }
+
+        final repository = new RemoteRepository("mavenCentral", "default", "http://repo1.maven.org/maven2/")
+
+        configureRepository(repository, configurer)
+        repositories << repository
+        return repository
     }
 
     protected void configureRepository(RemoteRepository repository, Closure configurer) {
@@ -106,11 +105,10 @@ class RepositoriesConfiguration {
             else {
                 repository.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),null))
             }
-
         }
 
         final auth = session.authenticationSelector.getAuthentication(repository)
-        if(auth) {
+        if (auth) {
             repository.setAuthentication(auth)
         }
         if (configurer) {
@@ -122,54 +120,54 @@ class RepositoriesConfiguration {
 
     RemoteRepository grailsCentral(Closure configurer = null) {
         final existing = repositories.find { ArtifactRepository ar -> ar.id == "grailsCentral" }
-        if (!existing) {
-            final repository = new RemoteRepository("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
-            configureRepository(repository, configurer)
-            repositories << repository
-            return repository
-        }
-        else {
+        if (existing) {
             configureRepository(existing, configurer)
             return existing
         }
+
+        final repository = new RemoteRepository("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
+        configureRepository(repository, configurer)
+        repositories << repository
+        return repository
     }
 
     RemoteRepository mavenRepo(String url, Closure configurer = null) {
         final existing = repositories.find { ArtifactRepository ar -> ar.id == url }
-        if (!existing) {
-            final i = url.indexOf('//')
-            String name = url
-            if(i > -1)
-                name = url[i+2..-1]
-            name.replaceAll(/[\.\/]/,'-')
-
-            final repository = new RemoteRepository(name, "default", url)
-            configureRepository(repository, configurer)
-            repositories << repository
-            return repository
-        }
-        else {
+        if (existing) {
             configureRepository(existing, configurer)
             return existing
         }
+
+        final i = url.indexOf('//')
+        String name = url
+        if (i > -1) {
+            name = url[i+2..-1]
+        }
+        name.replaceAll(/[\.\/]/,'-')
+
+        final repository = new RemoteRepository(name, "default", url)
+        configureRepository(repository, configurer)
+        repositories << repository
+        return repository
     }
 
     RemoteRepository mavenRepo(Map<String, String> properties, Closure configurer = null) {
         final url = properties.url
         def id = properties.id ?: properties.name ?: url
 
-        if (id && properties.url) {
-            final existing = repositories.find { ArtifactRepository ar -> ar.id == url }
-            if (!existing) {
-                final repository = new RemoteRepository(id, "default", url)
-                configureRepository(repository, configurer)
-                repositories << repository
-                return repository
-            }
-            else {
-                configureRepository(existing, configurer)
-                return existing
-            }
+        if (!id || !properties.url) {
+            return
         }
+
+        final existing = repositories.find { ArtifactRepository ar -> ar.id == url }
+        if (existing) {
+            configureRepository(existing, configurer)
+            return existing
+        }
+
+        final repository = new RemoteRepository(id, "default", url)
+        configureRepository(repository, configurer)
+        repositories << repository
+        return repository
     }
 }

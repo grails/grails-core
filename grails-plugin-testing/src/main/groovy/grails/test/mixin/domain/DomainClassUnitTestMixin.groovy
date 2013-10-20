@@ -18,6 +18,7 @@ package grails.test.mixin.domain
 import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
@@ -82,7 +83,6 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         if (applicationContext == null) {
             initGrailsApplication()
         }
-
 
         defineBeans {
             grailsDatastore(SimpleMapDatastore, applicationContext)

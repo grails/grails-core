@@ -37,7 +37,7 @@ class ClosureValueConverter implements ValueConverter {
         targetType
     }
 
-    boolean canConvert(Object value) {
+    boolean canConvert(value) {
         true
     }
 }

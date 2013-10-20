@@ -17,12 +17,12 @@
 package org.codehaus.groovy.grails.web.converters
 
 /**
- * Interface for converters that can be configured at runtime
+ * A converter that can be configured at runtime.
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-public interface ConfigurableConverter<W> extends Converter<W>{
+interface ConfigurableConverter<W> extends Converter<W>{
     /**
      * Sets the content type of the converter
      * @param contentType The content type

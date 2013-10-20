@@ -1,7 +1,6 @@
-package org.codehaus.groovy.grails.domain;
+package org.codehaus.groovy.grails.domain
 
 class UniOneToManyTest {
-
-    int id;
-    int version;
+    int id
+    int version
 }

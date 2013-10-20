@@ -23,7 +23,6 @@ class Pirate {
     def pirateShipService
 }
 
-
 @Entity
 class Ship {
     static hasMany = [pirates: Pirate]

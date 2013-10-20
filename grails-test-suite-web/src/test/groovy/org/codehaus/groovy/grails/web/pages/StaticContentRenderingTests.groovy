@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.web.pages
 
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * Tests rendering of static content.
@@ -74,7 +73,7 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
 
         assertOutputEquals('<div>\n</div>', template, [numbers:[1,2,3]])
     }
-    
+
     void testNamespacedXmlNoBody() {
         // GRAILS-10525
         def template = '''<esi:include src="foo.html"/>'''
@@ -85,5 +84,4 @@ class StaticContentRenderingTests extends AbstractGrailsTagTests {
         def template = '''<xhtml:p>body</xhtml:p>'''
         assertOutputEquals('<xhtml:p>body</xhtml:p>', template, [:])
     }
-
 }

@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import grails.build.logging.GrailsConsole
+import grails.util.Environment
 import groovy.transform.CompileStatic
 
 import org.apache.maven.repository.internal.MavenRepositorySystemSession
@@ -28,7 +29,6 @@ import org.sonatype.aether.repository.RepositoryPolicy
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 import org.sonatype.aether.util.repository.DefaultAuthenticationSelector
-import grails.util.Environment
 
 /**
  * Core of the DSL for configuring Aether dependency resolution
@@ -55,7 +55,7 @@ class AetherDsl {
      */
     def environments(Closure callable) {
         final environmentCallable = Environment.getEnvironmentSpecificBlock(callable)
-        if(environmentCallable) {
+        if (environmentCallable) {
             environmentCallable.setDelegate(this)
             environmentCallable.call()
         }

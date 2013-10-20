@@ -118,12 +118,14 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
         ApplicationContext context = webRequest.getApplicationContext();
         DataBindingSourceRegistry dataBindingSourceRegistry = null;
-        if(context.containsBean(DataBindingSourceRegistry.BEAN_NAME))
+        if (context.containsBean(DataBindingSourceRegistry.BEAN_NAME)) {
             dataBindingSourceRegistry = context.getBean(DataBindingSourceRegistry.BEAN_NAME, DataBindingSourceRegistry.class);
+        }
 
         MimeTypeResolver mimeTypeResolver = null;
-        if(context.containsBean(MimeTypeResolver.BEAN_NAME))
+        if (context.containsBean(MimeTypeResolver.BEAN_NAME)) {
             mimeTypeResolver = context.getBean(MimeTypeResolver.BEAN_NAME, MimeTypeResolver.class);
+        }
 
         MimeType mimeType = DataBindingUtils.resolveMimeType(this, mimeTypeResolver);
         return dataBindingSourceRegistry != null ? dataBindingSourceRegistry.createDataBindingSource(mimeType, targetType, this) : new SimpleMapDataBindingSource(this);
@@ -142,17 +144,17 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
     public Object clone() {
         if (wrappedMap.isEmpty()) {
             return new GrailsParameterMap(new LinkedHashMap(), request);
-        } else {
-            Map clonedMap = new LinkedHashMap(wrappedMap);
-            // deep clone nested entries
-            for(Iterator it=clonedMap.entrySet().iterator();it.hasNext();) {
-                Map.Entry entry = (Map.Entry)it.next();
-                if (entry.getValue() instanceof GrailsParameterMap) {
-                    entry.setValue(((GrailsParameterMap)entry.getValue()).clone());
-                }
-            }
-            return new GrailsParameterMap(clonedMap, request);
         }
+
+        Map clonedMap = new LinkedHashMap(wrappedMap);
+        // deep clone nested entries
+        for (Iterator it = clonedMap.entrySet().iterator(); it.hasNext();) {
+            Map.Entry entry = (Map.Entry)it.next();
+            if (entry.getValue() instanceof GrailsParameterMap) {
+                entry.setValue(((GrailsParameterMap)entry.getValue()).clone());
+            }
+        }
+        return new GrailsParameterMap(clonedMap, request);
     }
 
     public void addParametersFrom(GrailsParameterMap otherMap) {

@@ -287,8 +287,6 @@ class GrailsProjectPackager extends BaseSettingsApi {
             throw new PackagingException("Error occurred processing message bundles: ${e.message}", e)
         }
 
-
-
         packageMetadataFile()
 
         startLogging(config)
@@ -329,7 +327,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         if (config == null) {
             config = new ConfigObject()
             if (configFile.exists()) {
-                Class configClass = null
+                Class configClass
                 try {
                     configClass = classLoader.loadClass("Config")
                 }

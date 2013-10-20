@@ -20,7 +20,6 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import javax.servlet.http.HttpServletResponse
 
@@ -29,6 +28,7 @@ import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.beans.factory.annotation.Autowired
@@ -79,10 +79,10 @@ class ControllersRestApi {
      * @param args The arguments
      * @return
      */
-    Object respond(Object controller, Object value, Map args = [:]) {
+    Object respond(controller, value, Map args = [:]) {
         Integer statusCode
         if (args.status) {
-            final Object statusValue = args.status
+            final statusValue = args.status
             if (statusValue instanceof Number) {
                 statusCode = statusValue.intValue()
             } else {
@@ -106,7 +106,7 @@ class ControllersRestApi {
             final allMimeTypes = MimeType.getConfiguredMimeTypes()
             final firstFormat = formats[0]
             mimeType = allMimeTypes.find { MimeType mt -> mt.extension == firstFormat}
-            if(mimeType) {
+            if (mimeType) {
                 webRequest.currentRequest.setAttribute(GrailsApplicationAttributes.RESPONSE_MIME_TYPE, mimeType)
             }
         }
@@ -117,13 +117,13 @@ class ControllersRestApi {
             Renderer renderer
             if (errors && errors.hasErrors()) {
                 def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
-                Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
+                Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors, target)
                 if (errorsRenderer) {
                     final context = new ServletRenderContext(webRequest, (Map)args.model)
                     if (args.view) {
                         context.viewName = args.view
                     }
-                    if(statusCode != null) {
+                    if (statusCode != null) {
                         context.setStatus(HttpStatus.valueOf(statusCode))
                     }
                     return errorsRenderer.render(errors, context)
@@ -144,7 +144,7 @@ class ControllersRestApi {
 
             if (renderer) {
                 final context = new ServletRenderContext(webRequest, args)
-                if(statusCode != null) {
+                if (statusCode != null) {
                     context.setStatus(HttpStatus.valueOf(statusCode))
                 }
                 renderer.render(value, context)

@@ -16,6 +16,14 @@
 package org.codehaus.groovy.grails.compiler.web.taglib;
 
 import groovy.lang.Closure;
+
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
@@ -31,15 +39,6 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.springframework.web.context.request.RequestContextHolder;
-
-import java.lang.Override;
-import java.lang.String;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 /**
  * Enhances tag library classes with the appropriate API at compile time.
@@ -84,7 +83,6 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
     public Class<?> getStaticImplementation() {
         return null;  // no static methods
     }
-
 
     @Override
     public String[] getArtefactTypes() {

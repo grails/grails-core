@@ -59,7 +59,7 @@ public class GrailsWrapper {
         System.setProperty("grails.home", grailsHome.getAbsolutePath());
 
         final List<String> newArgsList = new ArrayList<String>();
-        for(int i = 0; i < args.length; i++) {
+        for (int i = 0; i < args.length; i++) {
             final String arg = args[i];
             if ("--main".equals(arg) && i < args.length - 1) {
                 // skip --main and the following argument
@@ -105,7 +105,7 @@ public class GrailsWrapper {
 
     private static File findGroovyAllJar(final File directoryToSearch) {
         final File[] files = directoryToSearch.listFiles();
-        for(File file : files) {
+        for (File file : files) {
             if (file.isDirectory()) {
                 return findGroovyAllJar(file);
             }
@@ -138,7 +138,7 @@ public class GrailsWrapper {
                 extract(downloadFile, installDir);
             } finally {
                 try {
-                    if(downloadFile != null && downloadFile.exists()) {
+                    if (downloadFile != null && downloadFile.exists()) {
                         downloadFile.delete();
                     }
                 } catch (Exception e) {}

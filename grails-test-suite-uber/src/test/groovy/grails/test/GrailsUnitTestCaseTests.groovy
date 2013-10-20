@@ -16,6 +16,7 @@ package grails.test
 
 import grails.converters.JSON
 import grails.converters.XML
+
 import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
@@ -403,7 +404,7 @@ class GrailsUnitTestPerson {
 
     int hashCode() { name.hashCode() }
 
-    boolean equals(Object obj) {
+    boolean equals(obj) {
         obj instanceof GrailsUnitTestPerson && name == obj?.name
     }
 }

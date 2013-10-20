@@ -34,7 +34,6 @@ public class GroovyPageTagWriter extends FastStringWriter {
 
     @Override
     public String getValue() {
-        return super.toString();
+        return toString();
     }
-
 }

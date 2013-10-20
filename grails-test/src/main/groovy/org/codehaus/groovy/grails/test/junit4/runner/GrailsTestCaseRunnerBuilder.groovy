@@ -15,11 +15,10 @@
  */
 package org.codehaus.groovy.grails.test.junit4.runner
 
-import org.junit.runner.Runner
-import org.junit.runners.model.RunnerBuilder
-
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
+import org.junit.runner.Runner
+import org.junit.runners.model.RunnerBuilder
 import org.springframework.context.ApplicationContext
 
 class GrailsTestCaseRunnerBuilder extends RunnerBuilder {
@@ -52,5 +51,4 @@ class GrailsTestCaseRunnerBuilder extends RunnerBuilder {
             new GrailsTestCaseRunner(testClass, *testTargetPatterns)
         }
     }
-
 }

@@ -12,7 +12,7 @@ import spock.lang.Specification
 class LinkGeneratorWithUrlMappingsSpec extends Specification{
 
     def baseUrl = "http://myserver.com/foo"
-    def context = null
+    def context
     def path = "welcome"
     def action = [controller:'home', action:'index']
 

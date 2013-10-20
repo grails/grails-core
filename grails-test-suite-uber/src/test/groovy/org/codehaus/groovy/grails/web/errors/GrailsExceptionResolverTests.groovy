@@ -40,10 +40,9 @@ class GrailsExceptionResolverTests extends GroovyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        super.setUp();
-        def mainContext = new MockApplicationContext();
-        mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter());
-        application.mainContext =  mainContext
+        super.setUp()
+        application.mainContext = new MockApplicationContext()
+        application.mainContext.registerMockBean(UrlConverter.BEAN_NAME, new CamelCaseUrlConverter())
     }
 
     void testGetRootCause() {

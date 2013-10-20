@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.controllers;
+package org.codehaus.groovy.grails.web.controllers
 
 import groovy.transform.Immutable
 
 /**
  * Represents meta data which describes an exception handling method
- * in a controller
+ * in a controller.
  * @since 2.3
- *
  */
 @Immutable(knownImmutableClasses = [Class])
 class DefaultControllerExceptionHandlerMetaData implements ControllerExceptionHandlerMetaData {

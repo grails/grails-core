@@ -135,7 +135,7 @@ class MockUtils {
                 callable.resolveStrategy = Closure.OWNER_FIRST
             }
             def formats = formatInterceptor.formatOptions
-            def response = null
+            def response
             if (request.format && formats.containsKey(request.format)) {
                 response = formats[request.format]
             }
@@ -461,7 +461,7 @@ class MockUtils {
         }
 
         def rootInstances = testInstances.findAll { clazz.isInstance(it) }
-        def childInstances = testInstances.findAll { clazz.isInstance(it) && it.class != clazz }.groupBy { it.class }
+        def childInstances = testInstances.findAll { clazz.isInstance(it) && it.getClass() != clazz }.groupBy { it.getClass() }
 
         TEST_INSTANCES[clazz] = rootInstances
         addDynamicFinders(clazz, rootInstances)
@@ -556,7 +556,7 @@ class MockUtils {
      * constraints.
      */
     static void prepareForConstraintsTests(Class clazz, Map errorsMap, List testInstances = [], Map defaultConstraints = [:]) {
-        def dc = null
+        def dc
         if (DomainClassArtefactHandler.isDomainClass(clazz))
            dc = new DefaultGrailsDomainClass(clazz, defaultConstraints)
 
@@ -744,7 +744,7 @@ class MockUtils {
         clazz.metaClass.static.create = {-> clazz.newInstance()}
     }
 
-    private static void triggerEvent(Object delegate, String eventName) {
+    private static void triggerEvent(delegate, String eventName) {
         if (delegate.respondsTo(eventName, [] as Object[])) {
             delegate."$eventName"()
         } else if (delegate.hasProperty(eventName) && delegate."$eventName" instanceof Closure) {
@@ -752,7 +752,7 @@ class MockUtils {
         }
     }
 
-    private static void setTimestamp(Object delegate, String propertyName, PropertyDescriptor[] properties, Map mapping) {
+    private static void setTimestamp(delegate, String propertyName, PropertyDescriptor[] properties, Map mapping) {
         def property = properties.find { it.name == propertyName }
         if (property && mapping.autoTimestamp) {
             def value = property.propertyType.newInstance(System.currentTimeMillis())
@@ -995,7 +995,7 @@ class MockUtils {
             return obj
         }
 
-        clazz.metaClass.setProperties = { Object o ->
+        clazz.metaClass.setProperties = { o ->
             DataBindingUtils.bindObjectToInstance(delegate,o)
         }
 
@@ -1337,7 +1337,7 @@ class MockUtils {
      * necessary.
      */
     private static convertToType(value, Class targetType) {
-        if (value instanceof Number && Long.class.equals(targetType)) {
+        if (value instanceof Number && Long.equals(targetType)) {
             return value.toLong()
         }
 

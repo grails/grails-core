@@ -19,9 +19,11 @@ package org.grails.plugins.web.rest.render
 import grails.rest.render.AbstractRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.hal.HalJsonCollectionRenderer
+
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
+
 import spock.lang.Specification
 
 class DefaultRendererRegistrySpec extends Specification {
@@ -52,7 +54,7 @@ class DefaultRendererRegistrySpec extends Specification {
         when:"A collection renderer is specified"
             registry.addContainerRenderer(URL, new AbstractRenderer(List, MimeType.XML) {
                 @Override
-                void render(Object object, RenderContext context) {
+                void render(object, RenderContext context) {
                     //To change body of implemented methods use File | Settings | File Templates.
                 }
             })
@@ -70,9 +72,7 @@ class DefaultRendererRegistrySpec extends Specification {
             def mimeType = new MimeType("text/xml", 'xml')
             registry.addRenderer(new AbstractRenderer(URL,mimeType) {
                 @Override
-                void render(Object object, RenderContext context) {
-
-                }
+                void render(object, RenderContext context) {}
             })
 
         expect:"A renderer is found"
@@ -89,9 +89,7 @@ class DefaultRendererRegistrySpec extends Specification {
             def mimeType = new MimeType("text/xml", 'xml')
             registry.addRenderer(new AbstractRenderer(CharSequence,mimeType) {
                 @Override
-                void  render(Object object, RenderContext context) {
-
-                }
+                void  render(object, RenderContext context) {}
             })
 
         expect:"A renderer is found"
@@ -109,9 +107,7 @@ class DefaultRendererRegistrySpec extends Specification {
             def mimeType = new MimeType("text/xml", 'xml')
             registry.addDefaultRenderer(new AbstractRenderer(Object,mimeType) {
                 @Override
-                void  render(Object object, RenderContext context) {
-
-                }
+                void  render(object, RenderContext context) {}
             })
 
         expect:"A renderer is found"

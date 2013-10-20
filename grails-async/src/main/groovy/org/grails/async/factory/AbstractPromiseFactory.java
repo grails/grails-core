@@ -60,14 +60,13 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
         return createPromise(c);
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     public <T> Closure<T> applyDecorators(Closure<T> c, List<PromiseDecorator> decorators) {
         List<PromiseDecorator> allDecorators = decorators != null ? new ArrayList<PromiseDecorator>(decorators): new ArrayList<PromiseDecorator>();
         for (PromiseDecoratorLookupStrategy lookupStrategy : lookupStrategies) {
             allDecorators.addAll(lookupStrategy.findDecorators());
         }
         if (!allDecorators.isEmpty()) {
-            for(PromiseDecorator d : allDecorators) {
+            for (PromiseDecorator d : allDecorators) {
                 c = d.decorate(c);
             }
         }
@@ -84,7 +83,6 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
     /**
      * @see PromiseFactory#createPromise(java.util.List, java.util.List)
      */
-    @SuppressWarnings("unchecked")
     public <T> Promise<List<T>> createPromise(List<Closure<T>> closures, List<PromiseDecorator> decorators) {
 
         List<Closure<T>> newClosures = new ArrayList<Closure<T>>(closures.size());
@@ -105,7 +103,7 @@ public abstract class AbstractPromiseFactory implements PromiseFactory {
      */
     public <T> Promise<List<T>> createPromise(Promise<T>... promises) {
         PromiseList<T> promiseList = new PromiseList<T>();
-        for(Promise<T> p : promises) {
+        for (Promise<T> p : promises) {
             promiseList.add(p);
         }
         return promiseList;

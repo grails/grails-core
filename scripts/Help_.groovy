@@ -22,8 +22,9 @@
  * @since 0.4
  */
 
-import grails.util.GrailsNameUtils
 import grails.util.Environment
+import grails.util.GrailsNameUtils
+
 import org.codehaus.groovy.grails.cli.GrailsScriptRunner
 
 includeTargets << grailsScript("_GrailsInit")
@@ -32,7 +33,7 @@ class HelpEvaluatingCategory {
 
     static defaultTask = ""
     static helpText = [:]
-    static target(Object obj, Map args, Closure callable) {
+    static target(obj, Map args, Closure callable) {
         def entry = args.entrySet().iterator().next()
         obj[entry.key] = entry.key
         helpText[(entry.key)] = entry.value
@@ -42,11 +43,11 @@ class HelpEvaluatingCategory {
         }
     }
 
-    static getDefaultDescription(Object obj) {
+    static getDefaultDescription(obj) {
         return helpText[defaultTask]
     }
 
-    static setDefaultTarget(Object obj, val) {
+    static setDefaultTarget(obj, val) {
         defaultTask = val
     }
 }

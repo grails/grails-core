@@ -30,7 +30,6 @@ class CheckboxBindingController {
         [pizza: p]
     }
 }
-
 """
     }
 
@@ -51,7 +50,6 @@ class CheckboxBindingController {
         assertTrue "checked value 'delivery' failed to bind", model.pizza.delivery
         assertTrue "nested checked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
         assertTrue "nested checked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
-
     }
 
     void testBindingUncheckedValuesToObject() {
@@ -67,7 +65,5 @@ class CheckboxBindingController {
         assertFalse "unchecked value 'delivery' failed to bind", model.pizza.delivery
         assertFalse "nested unchecked value 'options.extraAnchovies' failed to bind", model.pizza.options.extraAnchovies
         assertFalse "nested unchecked value 'options.stuffedCrust' failed to bind", model.pizza.options.stuffedCrust
-
     }
-
 }

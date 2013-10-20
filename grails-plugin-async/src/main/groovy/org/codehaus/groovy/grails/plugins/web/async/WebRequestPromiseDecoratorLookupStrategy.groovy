@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.web.async
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.grails.async.decorator.PromiseDecorator
@@ -69,7 +70,7 @@ class WebRequestPromsiseDecorator implements PromiseDecorator{
         if (args == null) {
             c.call(null)
         }
-        else if(args && args.getClass().isArray()) {
+        else if (args && args.getClass().isArray()) {
             c.call(*args)
         }
         else if (args instanceof List) {

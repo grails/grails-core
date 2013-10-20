@@ -16,7 +16,6 @@
 package grails.rest.render.util
 
 import grails.rest.Link
-import grails.rest.Resource
 import grails.rest.render.AbstractIncludeExcludeRenderer
 import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
@@ -25,6 +24,7 @@ import grails.util.Environment
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.apache.commons.beanutils.PropertyUtils
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
@@ -113,7 +113,6 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
         } else {
             renderInternal(object, context)
         }
-
     }
 
     abstract void renderInternal(T object, RenderContext context)
@@ -174,7 +173,6 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
                 } else if (!(a instanceof Basic)) {
                     associationMap[a] = metaClass.getProperty(object, propertyName)
                 }
-
             } else if ((a instanceof ToOne) && (proxyHandler instanceof EntityProxyHandler)) {
                 if (associatedEntity) {
                     final proxy = PropertyUtils.getProperty(object, propertyName)
@@ -206,24 +204,25 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
      * @param writer The writer
      * @return Any associations embedded within the object
      */
-    protected void writeDomain(RenderContext context, MetaClass metaClass, PersistentEntity entity, Object object, writer) {
+    protected void writeDomain(RenderContext context, MetaClass metaClass, PersistentEntity entity, object, writer) {
+        if (!entity) {
+            return
+        }
 
-        if (entity) {
-            for (PersistentProperty p in entity.persistentProperties) {
-                final propertyName = p.name
-                if (!shouldIncludeProperty(context, object, propertyName)) {
-                    continue
-                }
-                if ((p instanceof Basic) || !(p instanceof Association)) {
-                    final value = metaClass.getProperty(object, propertyName)
-                    if (value != null) {
-                        writeDomainProperty(value, propertyName, writer)
-                    }
+        for (PersistentProperty p in entity.persistentProperties) {
+            final propertyName = p.name
+            if (!shouldIncludeProperty(context, object, propertyName)) {
+                continue
+            }
+            if ((p instanceof Basic) || !(p instanceof Association)) {
+                final value = metaClass.getProperty(object, propertyName)
+                if (value != null) {
+                    writeDomainProperty(value, propertyName, writer)
                 }
             }
         }
     }
 
     protected abstract void writeLink(Link link, Locale locale, writerObject)
-    protected abstract  void writeDomainProperty(value, String propertyName, writer)
+    protected abstract void writeDomainProperty(value, String propertyName, writer)
 }

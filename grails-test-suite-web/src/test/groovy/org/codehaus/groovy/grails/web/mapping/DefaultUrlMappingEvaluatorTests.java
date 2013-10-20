@@ -148,7 +148,6 @@ public class DefaultUrlMappingEvaluatorTests extends AbstractGrailsMappingTests 
             assertEquals("1.0", mapping.getVersion());
             assertEquals("v1", mapping.getNamespace());
         }
-
     }
 
     private boolean makeSureMatchesConstraintExistsOnId(UrlMapping mapping) {

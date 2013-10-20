@@ -85,12 +85,11 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
 
     @Override
     protected ServletRequestAttributes buildRequestAttributes(HttpServletRequest request, HttpServletResponse response, RequestAttributes previousAttributes) {
-        if(previousAttributes instanceof GrailsWebRequest) {
+        if (previousAttributes instanceof GrailsWebRequest) {
             return null;
         }
-        else {
-            return super.buildRequestAttributes(request, response, previousAttributes);
-        }
+
+        return super.buildRequestAttributes(request, response, previousAttributes);
     }
 
     /**
@@ -113,7 +112,6 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         webApplicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(this, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
         groovyPagesTemplateEngine = webApplicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID,
                 GroovyPagesTemplateEngine.class);
-
     }
 
     public void setGroovyPagesTemplateEngine(GroovyPagesTemplateEngine groovyPagesTemplateEngine) {
@@ -165,27 +163,31 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
     }
 
     protected GroovyPageScriptSource findPageInBinaryPlugins(String pageName) {
-        if (pageName != null) {
-            Class<?> pageClass = binaryPluginViewsMap.get(pageName);
-            if (pageClass == null && pluginManager != null) {
-                final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
-                for (GrailsPlugin plugin : allPlugins) {
-                    if (plugin instanceof BinaryGrailsPlugin) {
-                        BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+        if (pageName == null) {
+            return null;
+        }
 
-                        pageClass = binaryPlugin.resolveView(pageName);
-                        if (pageClass != null) {
-                            binaryPluginViewsMap.put(pageName, pageClass);
-                            break;
-                        }
+        Class<?> pageClass = binaryPluginViewsMap.get(pageName);
+        if (pageClass == null && pluginManager != null) {
+            final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
+            for (GrailsPlugin plugin : allPlugins) {
+                if (plugin instanceof BinaryGrailsPlugin) {
+                    BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
+
+                    pageClass = binaryPlugin.resolveView(pageName);
+                    if (pageClass != null) {
+                        binaryPluginViewsMap.put(pageName, pageClass);
+                        break;
                     }
                 }
             }
-            if (pageClass != null) {
-                return new GroovyPageCompiledScriptSource(pageName, pageName, pageClass);
-            }
         }
-        return null;
+
+        if (pageClass == null) {
+            return null;
+        }
+
+        return new GroovyPageCompiledScriptSource(pageName, pageName, pageClass);
     }
 
     /**

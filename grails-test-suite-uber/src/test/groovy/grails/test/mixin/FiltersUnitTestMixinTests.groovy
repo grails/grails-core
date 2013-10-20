@@ -2,6 +2,7 @@ package grails.test.mixin
 
 import grails.test.GrailsMock
 import grails.test.mixin.web.FiltersUnitTestMixin
+
 import org.junit.Before
 import org.junit.Test
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
@@ -14,9 +15,7 @@ class FiltersUnitTestMixinTests {
 
     @Before
     void setUp() {
-
         controller = mockController(AuthorController)
-
     }
 
     @Test
@@ -57,7 +56,6 @@ class FiltersUnitTestMixinTests {
         assert request.filterAfter == null
         assert request.filterView == null
         assert response.redirectedUrl == '/book/list'
-
     }
 
     @Test
@@ -111,9 +109,9 @@ class FiltersUnitTestMixinTests {
     }
 
     AutowiredService mockAutowiredService() {
-        this.autowiredServiceMock = mockFor(AutowiredService)
-        this.autowiredServiceMock.demand.setupSession(1) {}
-        return this.autowiredServiceMock.createMock()
+        autowiredServiceMock = mockFor(AutowiredService)
+        autowiredServiceMock.demand.setupSession(1) {}
+        return autowiredServiceMock.createMock()
     }
 }
 
@@ -136,6 +134,7 @@ class SimpleFilters {
         }
     }
 }
+
 class CancellingFilters {
     def filters = {
         all(controller:"author", action:"list") {
@@ -153,6 +152,7 @@ class CancellingFilters {
         }
     }
 }
+
 class ExceptionThrowingFilters {
     def filters = {
         all(controller:"author", action:"list") {
@@ -183,6 +183,5 @@ class AutowiredFilters {
 }
 
 class AutowiredService {
-
     void setupSession() {}
 }

@@ -17,6 +17,7 @@
 package org.codehaus.groovy.grails.resolve
 
 import org.codehaus.groovy.grails.resolve.ivy.IvyExcludeResolver
+
 import spock.lang.Specification
 
 /**
@@ -33,7 +34,6 @@ class IvyExcludeResolverSpec extends Specification{
                 dependencies {
                     compile "commons-validator:commons-validator:1.4.0"
                 }
-
             }
             def excludeResolver = new IvyExcludeResolver(dependencyManager)
 
@@ -45,6 +45,5 @@ class IvyExcludeResolverSpec extends Specification{
             !excludes.isEmpty()
             validatorExcludes.size() == 4
             validatorExcludes.find { Dependency d -> d.name == 'commons-beanutils'}
-
     }
 }

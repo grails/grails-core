@@ -35,7 +35,7 @@ class GspTagSourceMacro extends BaseMacro {
 
                 // Recursively search for the tag library source file in the
                 // configured base directory.
-                def tagLibFile = null
+                def tagLibFile
                 baseDirs.find { dir ->
                     dir.traverse(nameFilter: /${className}.groovy/) { tagLibFile = it }
                     return tagLibFile

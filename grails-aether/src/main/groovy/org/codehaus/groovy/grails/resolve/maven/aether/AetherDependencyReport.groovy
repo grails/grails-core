@@ -67,7 +67,7 @@ class AetherDependencyReport implements DependencyReport {
 
     List<ResolvedArtifactReport> getResolvedArtifacts() {
         List<ResolvedArtifactReport> reports = []
-        for(DependencyNode node in resolveResult.nodes) {
+        for (DependencyNode node in resolveResult.nodes) {
             final dependency = node.dependency
             def f = dependency?.artifact?.file
             if (f) {

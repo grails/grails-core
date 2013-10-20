@@ -41,7 +41,7 @@ class DependencyConfiguration {
     }
 
     void excludes(Object...excludes) {
-        for(o in excludes) {
+        for (o in excludes) {
             if (o instanceof CharSequence) {
                 exclude( o.toString() )
             }

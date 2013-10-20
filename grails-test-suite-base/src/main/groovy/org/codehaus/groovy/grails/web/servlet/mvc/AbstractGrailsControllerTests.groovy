@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import grails.test.MockUtils
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import grails.util.Metadata
@@ -12,7 +11,6 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
@@ -145,15 +143,13 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         request = new GrailsMockHttpServletRequest(characterEncoding: "utf-8")
         response = new GrailsMockHttpServletResponse()
         webRequest = GrailsWebUtil.bindMockWebRequest(appCtx, request, response)
-        domainClasses.each { c -> 
-            addValidationMethods c
-        }
+        domainClasses.each { c -> addValidationMethods c }
     }
 
     protected setCurrentController(controller) {
-        RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.class.name, "Controller")
+        RequestContextHolder.requestAttributes.controllerName = GrailsNameUtils.getLogicalName(controller.getClass().name, "Controller")
     }
-    
+
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes(null)
         ExpandoMetaClass.disableGlobally()
@@ -208,12 +204,12 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         app.mainContext = mainContext
         app
     }
-    
-    public void addValidationMethods(Class clazz) {
+
+    void addValidationMethods(Class clazz) {
         addValidationMethods((GrailsDomainClass)ga.getDomainClass(clazz.name))
     }
-    
-    public void addValidationMethods(GrailsDomainClass dc) {
+
+    void addValidationMethods(GrailsDomainClass dc) {
         DomainClassGrailsPlugin.addValidationMethods(ga, dc, appCtx)
     }
 }

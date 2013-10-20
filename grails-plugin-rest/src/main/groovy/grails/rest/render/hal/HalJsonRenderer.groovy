@@ -15,15 +15,17 @@
  */
 package grails.rest.render.hal
 
-import com.google.gson.Gson
-import com.google.gson.stream.JsonWriter
 import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.util.AbstractLinkingRenderer
 import groovy.transform.CompileStatic
+
+import javax.annotation.PostConstruct
+
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.datastore.mapping.model.MappingFactory
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ToOne
@@ -32,8 +34,8 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
 
-import javax.annotation.PostConstruct
-import org.grails.datastore.mapping.model.MappingFactory
+import com.google.gson.Gson
+import com.google.gson.stream.JsonWriter
 
 import javax.xml.bind.DatatypeConverter
 /**
@@ -125,7 +127,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             if (prettyPrint)
                 writer.setIndent('  ')
 
-            final clazz = object.class
+            final clazz = object.getClass()
 
             if (isDomainResource(clazz)) {
                 writeDomainWithEmbeddedAndLinks(context, clazz, object, writer, context.locale, mimeType, [] as Set)
@@ -142,17 +144,16 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         } finally {
             writer.flush()
         }
-
     }
 
     protected renderEmbeddedAttributes(JsonWriter writer, object, RenderContext context, MimeType mimeType) {
         writer.beginArray()
 
         final writtenObjects = [] as Set
-        for(o in ((Collection)object)) {
+        for (o in ((Collection)object)) {
             if (o) {
-                if(isDomainResource(o.getClass())) {
-                    writeDomainWithEmbeddedAndLinks(context, o.class, o, writer, context.locale, mimeType, writtenObjects)
+                if (isDomainResource(o.getClass())) {
+                    writeDomainWithEmbeddedAndLinks(context, o.getClass(), o, writer, context.locale, mimeType, writtenObjects)
                 } else {
                     writeSimpleObjectAndLink(o, context, writer, mimeType)
                 }
@@ -161,15 +162,15 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         writer.endArray()
     }
 
-    protected writeSimpleObjectAndLink(Object o, RenderContext context, JsonWriter writer, MimeType mimeType) {
+    protected writeSimpleObjectAndLink(o, RenderContext context, JsonWriter writer, MimeType mimeType) {
         beginLinks(writer)
         writeLinkForCurrentPath(context, mimeType, writer)
         writeExtraLinks(o, context.locale, writer)
         writer.endObject()
         writeSimpleObject(o, context, writer)
     }
-    
-    protected void writeSimpleObject(Object object, RenderContext context, JsonWriter writer) {
+
+    protected void writeSimpleObject(object, RenderContext context, JsonWriter writer) {
         final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
         final propertyDescriptors = bean.propertyDescriptors
         for (pd in propertyDescriptors) {
@@ -217,8 +218,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             .beginObject()
     }
 
-
-    protected void writeDomainWithEmbeddedAndLinks( RenderContext context, Class clazz, Object object, JsonWriter writer, Locale locale, MimeType contentType, Set writtenObjects) {
+    protected void writeDomainWithEmbeddedAndLinks( RenderContext context, Class clazz, object, JsonWriter writer, Locale locale, MimeType contentType, Set writtenObjects) {
 
         PersistentEntity entity = mappingContext.getPersistentEntity(clazz.name)
         final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
@@ -264,7 +264,6 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                         writer.endArray()
                     }
                 }
-
             }
             if (hasWrittenObject) {
                 writer.endObject()
@@ -279,7 +278,6 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         writer.beginObject()
         final entityHref = linkGenerator.link(resource: object, method: HttpMethod.GET.toString(), absolute: absoluteLinks)
         final title = getLinkTitle(entity, locale)
-
 
         def link = new Link(RELATIONSHIP_SELF, entityHref)
         link.contentType = contentType ? contentType.name : null
@@ -317,13 +315,13 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     protected void writeDomainProperty(value, String propertyName, writer) {
         final jsonWriter = (JsonWriter) writer
-        if(value instanceof Number) {
+        if (value instanceof Number) {
             jsonWriter.name(propertyName).value((Number)value)
         }
-        else if(value instanceof CharSequence || value instanceof Enum) {
+        else if (value instanceof CharSequence || value instanceof Enum) {
             jsonWriter.name(propertyName).value(value.toString())
         }
-        else if(value instanceof Date) {
+        else if (value instanceof Date) {
             final asStringDate = dateToStringConverter.convert((Date)value)
             jsonWriter.name(propertyName).value(asStringDate)
         }

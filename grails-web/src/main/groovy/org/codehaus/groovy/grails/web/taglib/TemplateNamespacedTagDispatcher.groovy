@@ -33,7 +33,7 @@ class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
         renderTagLib = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, 'render')
     }
 
-    def methodMissing(String name, Object args) {
+    def methodMissing(String name, args) {
         List<MetaMethod> methods=renderTagLib.getMetaClass().respondsTo(renderTagLib, 'render', (Object[])args)
         if (methods) {
             MetaMethod method = methods.first()
@@ -54,7 +54,7 @@ class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
         throw new MissingMethodException(name, type, args)
     }
 
-    protected Map argsToAttrs(String name, Object args) {
+    protected Map argsToAttrs(String name, args) {
         Map<String, Object> attr = [:]
         attr.template = name
         if (args instanceof Object[]) {

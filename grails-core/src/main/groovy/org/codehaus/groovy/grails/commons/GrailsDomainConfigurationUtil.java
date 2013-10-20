@@ -318,19 +318,19 @@ public class GrailsDomainConfigurationUtil {
     static {
         Set<String> configurational = CollectionUtils.newSet(
                 GrailsDomainClassProperty.META_CLASS,
-                GrailsDomainClassProperty.CLASS, 
+                GrailsDomainClassProperty.CLASS,
                 GrailsDomainClassProperty.TRANSIENT,
-                GrailsDomainClassProperty.ATTACHED, 
+                GrailsDomainClassProperty.ATTACHED,
                 GrailsDomainClassProperty.DIRTY,
-                GrailsDomainClassProperty.DIRTY_PROPERTY_NAMES, 
+                GrailsDomainClassProperty.DIRTY_PROPERTY_NAMES,
                 GrailsDomainClassProperty.RELATES_TO_MANY,
-                GrailsDomainClassProperty.HAS_MANY, 
+                GrailsDomainClassProperty.HAS_MANY,
                 GrailsDomainClassProperty.EVANESCENT,
-                GrailsDomainClassProperty.CONSTRAINTS, 
+                GrailsDomainClassProperty.CONSTRAINTS,
                 GrailsDomainClassProperty.MAPPING_STRATEGY,
-                GrailsDomainClassProperty.MAPPED_BY, 
+                GrailsDomainClassProperty.MAPPED_BY,
                 GrailsDomainClassProperty.BELONGS_TO,
-                GrailsDomainClassProperty.ERRORS, 
+                GrailsDomainClassProperty.ERRORS,
                 PROPERTIES_PROPERTY);
         CONFIGURATIONAL_PROPERTIES = Collections.unmodifiableSet(configurational);
     }

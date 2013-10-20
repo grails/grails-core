@@ -115,7 +115,6 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
                 Holders.setPluginManager(pluginManager);
                 pluginManager.loadPlugins();
             }
-
         }
 
         pluginManager.setApplication(application);

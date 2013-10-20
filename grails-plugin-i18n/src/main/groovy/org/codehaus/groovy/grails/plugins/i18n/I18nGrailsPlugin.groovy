@@ -113,7 +113,7 @@ class I18nGrailsPlugin {
                         isPluginResource = true
                     }
                 }
-                String path = null
+                String path
 
                 // If the resource is from an inline plugin, use the absolute path of the resource.  Otherwise,
                 // generate the path to the resource based on its relativity to the application.
@@ -183,7 +183,7 @@ class I18nGrailsPlugin {
 
     def findGrailsPluginDir(File propertiesFile) {
         File currentFile = propertiesFile.canonicalFile
-        File previousFile = null
+        File previousFile
         while (currentFile != null) {
             if (currentFile.name == 'grails-app' && previousFile?.name == 'i18n') {
                 return currentFile.parentFile

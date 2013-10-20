@@ -1,17 +1,17 @@
-package org.codehaus.groovy.grails.plugins.i18n;
+package org.codehaus.groovy.grails.plugins.i18n
+
+import grails.util.Metadata
 
 import org.apache.commons.lang.StringUtils
-import org.codehaus.groovy.grails.commons.test.*
-import org.codehaus.groovy.grails.commons.*
-import org.codehaus.groovy.grails.commons.spring.*
-import org.codehaus.groovy.grails.plugins.*
-import grails.util.Metadata
+import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
+import org.codehaus.groovy.grails.commons.test.AbstractGrailsMockTests
+import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 
 class I18nGrailsPluginTests extends AbstractGrailsMockTests {
 
     void testI18nPlugin() {
 
-        ga.@applicationMeta = ['grails.war.deployed':'true', (Metadata.APPLICATION_NAME): getClass().name ] as Metadata
+        ga.@applicationMeta = ['grails.war.deployed':'true', (Metadata.APPLICATION_NAME): getClass().name] as Metadata
         ctx.registerMockResource("WEB-INF/grails-app/i18n/messages.properties")
         ctx.registerMockResource("WEB-INF/grails-app/i18n/messages-site_en.properties")
         ctx.registerMockResource("WEB-INF/grails-app/i18n/foo-site_en.properties")
@@ -40,8 +40,8 @@ class I18nGrailsPluginTests extends AbstractGrailsMockTests {
         // nasty way of asserting/inspecting the basenames set in the messageSource
         // this is needed because messageSource has no API method for retrieving the basenames
         def messageSource = appCtx.getBean("messageSource")
-        def field = messageSource.class.superclass.getDeclaredField("fallbackToSystemLocale")
-        field.accessible=true
+        def field = messageSource.getClass().superclass.getDeclaredField("fallbackToSystemLocale")
+        field.accessible = true
         assert !field.get(messageSource)
 
         def messageSourceString = messageSource?.toString()

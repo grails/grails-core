@@ -19,6 +19,9 @@ import grails.converters.JSON
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
+import javax.annotation.PostConstruct
+
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
@@ -29,8 +32,6 @@ import org.codehaus.groovy.grails.web.converters.marshaller.json.GroovyBeanMarsh
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.springframework.beans.factory.annotation.Autowired
-
-import javax.annotation.PostConstruct
 
 /**
  *
@@ -75,24 +76,24 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
         if (domain) {
             marshaller = new DeepDomainClassMarshaller(false, proxyHandler, grailsApplication) {
                 @Override
-                protected boolean includesProperty(Object o, String property) {
+                protected boolean includesProperty(o, String property) {
                     return includes == null || includes.contains(property)
                 }
 
                 @Override
-                protected boolean excludesProperty(Object o, String property) {
+                protected boolean excludesProperty(o, String property) {
                     return excludes.contains(property)
                 }
             }
         } else {
             marshaller = (ObjectMarshaller<JSON>)new GroovyBeanMarshaller() {
                 @Override
-                protected boolean includesProperty(Object o, String property) {
+                protected boolean includesProperty(o, String property) {
                     return includes == null || includes.contains(property)
                 }
 
                 @Override
-                protected boolean excludesProperty(Object o, String property) {
+                protected boolean excludesProperty(o, String property) {
                     return excludes.contains(property)
                 }
             }
@@ -102,7 +103,7 @@ class JsonRenderer <T> extends DefaultJsonRenderer<T> {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void registerCustomMarshaller(ObjectMarshaller marshaller) {
-        JSON.registerObjectMarshaller(targetType, { Object object, JSON json ->
+        JSON.registerObjectMarshaller(targetType, { object, JSON json ->
             marshaller.marshalObject(object, json)
         })
     }

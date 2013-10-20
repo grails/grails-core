@@ -41,7 +41,7 @@ createArtifact = { Map args = [:] ->
 
     // Extract the package name if one is given.
     def name = args["name"]
-    def pkg = null
+    def pkg
     def pos = name.lastIndexOf('.')
     if (pos != -1) {
         pkg = name[0..<pos]

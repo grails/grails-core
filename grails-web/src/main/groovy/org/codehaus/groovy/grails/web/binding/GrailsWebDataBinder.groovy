@@ -24,7 +24,6 @@ import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
 import java.lang.reflect.Modifier
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
@@ -112,14 +111,14 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     protected populateErrors(obj, BindingResult bindingResult) {
-        GrailsDomainClass domain = null
+        GrailsDomainClass domain
         if (grailsApplication != null) {
             domain = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE,obj.getClass().name)
         }
 
         if (domain != null && bindingResult != null) {
             def newResult = new ValidationErrors(obj)
-            for (Object error : bindingResult.getAllErrors()) {
+            for (error in bindingResult.getAllErrors()) {
                 if (error instanceof FieldError) {
                     def fieldError = (FieldError)error
                     final boolean isBlank = ''.equals(fieldError.getRejectedValue())
@@ -150,9 +149,8 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
     }
 
-
     @Override
-    protected Class<?> getReferencedTypeForCollection(String name, Object target) {
+    protected Class<?> getReferencedTypeForCollection(String name, target) {
         def referencedType = super.getReferencedTypeForCollection(name, target)
         if (referencedType == null && grailsApplication != null) {
             def dc = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, target.getClass().name)
@@ -169,7 +167,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     @Override
     protected initializeProperty(obj, String propName, Class propertyType, DataBindingSource source) {
         def isInitialized = false
-        if(source.dataSourceAware) {
+        if (source.dataSourceAware) {
             def isDomainClass = isDomainClass propertyType
             if (isDomainClass && source.containsProperty(propName)) {
                 def val = source.getPropertyValue propName
@@ -203,7 +201,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         def domainClassType
         def objClass = obj.getClass()
         def propertyType = GrailsClassUtils.getPropertyType(objClass, propName)
-        if(propertyType && isDomainClass(propertyType)) {
+        if (propertyType && isDomainClass(propertyType)) {
             domainClassType = propertyType
         }
         domainClassType
@@ -214,14 +212,14 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     protected getIdentifierValueFrom(source) {
-        def idValue = null
-        if(source instanceof DataBindingSource && source.hasIdentifier()) {
+        def idValue
+        if (source instanceof DataBindingSource && source.hasIdentifier()) {
             idValue = source.getIdentifierValue()
-        } else if(source instanceof CharSequence){
+        } else if (source instanceof CharSequence){
             idValue = source
-        } else if(source instanceof Map && source.containsKey('id')) {
+        } else if (source instanceof Map && source.containsKey('id')) {
             idValue = source['id']
-        } else if(source instanceof Number) {
+        } else if (source instanceof Number) {
             idValue = source.toString()
         }
         if (idValue instanceof GString) {
@@ -254,46 +252,46 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     }
                 } else {
                     boolean shouldBindNull = false
-                    if(val instanceof DataBindingSource) {
+                    if (val instanceof DataBindingSource) {
                         // bind null if this binding source does contain an identifier
                         shouldBindNull = ((DataBindingSource)val).hasIdentifier()
-                    } else if(val instanceof Map) {
+                    } else if (val instanceof Map) {
                         // bind null if this Map does contain an id
                         shouldBindNull = ((Map)val).containsKey('id')
-                    } else if(idValue instanceof CharSequence) {
+                    } else if (idValue instanceof CharSequence) {
                         // bind null if idValue is a CharSequence because it would have
                         // to be 'null' or '' in order for control to be in this else block
                         shouldBindNull = true
                     }
-                    if(shouldBindNull) {
+                    if (shouldBindNull) {
                         needsBinding = false
                         bindProperty obj, source, metaProperty, null, listener, errors
                     }
                 }
-            } else if(Collection.isAssignableFrom(metaProperty.type)) {
+            } else if (Collection.isAssignableFrom(metaProperty.type)) {
                 def referencedType = getReferencedTypeForCollection(propName, obj)
-                if(referencedType && isDomainClass(referencedType) && val instanceof List) {
+                if (referencedType && isDomainClass(referencedType) && val instanceof List) {
                     needsBinding = false
                     def itemsWhichNeedBinding = []
                     val.each { item ->
-                        if(item instanceof Map || item instanceof DataBindingSource) {
+                        if (item instanceof Map || item instanceof DataBindingSource) {
                             def idValue = getIdentifierValueFrom(item)
                             def persistentInstance
-                            if(idValue != null) {
+                            if (idValue != null) {
                                 persistentInstance = getPersistentInstance(referencedType, idValue)
-                                if(persistentInstance != null) {
+                                if (persistentInstance != null) {
                                     bind persistentInstance, new SimpleMapDataBindingSource(item), listener
                                 }
                             }
-                            if(persistentInstance == null) {
+                            if (persistentInstance == null) {
                                 itemsWhichNeedBinding << item
                             }
                         } else {
                             itemsWhichNeedBinding << item
                         }
                     }
-                    if(itemsWhichNeedBinding) {
-                        for(item in itemsWhichNeedBinding) {
+                    if (itemsWhichNeedBinding) {
+                        for (item in itemsWhichNeedBinding) {
                             addElementToCollection obj, metaProperty.name, metaProperty.type, item, false
                         }
                     }
@@ -347,10 +345,10 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     } else if (Collection.isAssignableFrom(metaProperty.type)) {
                         def collection = initializeCollection obj, propName, metaProperty.type
                         def idx = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
-                        if('null' == idValue) {
-                            if(idx < collection.size()) {
+                        if ('null' == idValue) {
+                            if (idx < collection.size()) {
                                 def element = collection[idx]
-                                if(element != null) {
+                                if (element != null) {
                                     collection.remove element
                                 }
                             }
@@ -403,7 +401,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
     }
 
-    private static List getBindingIncludeList(final Object object) {
+    private static List getBindingIncludeList(final object) {
         List includeList = Collections.EMPTY_LIST
         try {
             final Class<? extends Object> objectClass = object.getClass()
@@ -413,7 +411,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 def whiteListField = objectClass.getDeclaredField DefaultASTDatabindingHelper.DEFAULT_DATABINDING_WHITELIST
                 if (whiteListField != null) {
                     if ((whiteListField.getModifiers() & Modifier.STATIC) != 0) {
-                        final Object whiteListValue = whiteListField.get objectClass
+                        final whiteListValue = whiteListField.get objectClass
                         if (whiteListValue instanceof List) {
                             includeList = (List)whiteListValue
                         }
@@ -447,8 +445,9 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             }
         }
     }
+
     private Map resolveConstrainedProperties(object) {
-        Map constrainedProperties = null
+        Map constrainedProperties
         MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(object.getClass())
         MetaProperty metaProp = mc.getMetaProperty('constraints')
         if (metaProp != null) {
@@ -459,6 +458,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
         constrainedProperties
     }
+
     private getMetaPropertyValue(MetaProperty metaProperty, delegate) {
         if (metaProperty instanceof ThreadManagedMetaBeanProperty) {
             return ((ThreadManagedMetaBeanProperty)metaProperty).getGetter().invoke(delegate, MetaClassHelper.EMPTY_ARRAY)
@@ -519,7 +519,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
         return stringValue
     }
-    
+
     protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
         boolean isSet = false
         def coll = initializeCollection obj, propName, propertyType
@@ -606,11 +606,10 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     protected String getFormatString(BindingFormat annotation) {
         def formatString
         def code = annotation.code()
-        if(code) {
-            def locale = getLocale()
-            formatString = messageSource.getMessage(code, [] as Object[], locale)
+        if (code) {
+            formatString = messageSource.getMessage(code, [] as Object[], getLocale())
         }
-        if(!formatString) {
+        if (!formatString) {
             formatString = super.getFormatString(annotation)
         }
         formatString
@@ -647,7 +646,7 @@ class DataBindingEventMulticastListener implements DataBindingListener {
                 bind = false
             }
         }
-        
+
         bind
     }
 

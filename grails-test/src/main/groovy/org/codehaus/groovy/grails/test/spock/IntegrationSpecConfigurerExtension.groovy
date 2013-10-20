@@ -16,56 +16,52 @@
 
 package org.codehaus.groovy.grails.test.spock
 
-import org.spockframework.runtime.extension.IGlobalExtension
-import org.spockframework.runtime.model.SpecInfo
+import grails.util.Holders
+import groovy.transform.CompileStatic
+
+import java.lang.annotation.Annotation
+
+import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
+import org.codehaus.groovy.grails.test.support.GrailsTestMode
+import org.spockframework.runtime.extension.AbstractAnnotationDrivenExtension
 import org.spockframework.runtime.extension.IMethodInterceptor
 import org.spockframework.runtime.extension.IMethodInvocation
-import grails.util.Holders
-import org.springframework.context.ApplicationContext
-import org.codehaus.groovy.grails.test.support.GrailsTestMode
-import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
-import groovy.transform.CompileStatic
-import org.spockframework.runtime.extension.AbstractAnnotationDrivenExtension
-import java.lang.annotation.Annotation
 import org.spockframework.runtime.model.FeatureInfo
+import org.spockframework.runtime.model.SpecInfo
+import org.springframework.context.ApplicationContext
 
 /**
- * Spock extension that can be applied to Integration tests to make them Grails aware
+ * Spock extension that can be applied to Integration tests to make them Grails aware.
  *
  * @author Graeme Rocher
  * @since 2.3
- *
  */
 @CompileStatic
 class IntegrationSpecConfigurerExtension extends AbstractAnnotationDrivenExtension {
     @Override
     void visitSpecAnnotation(Annotation annotation, SpecInfo spec) {
         final context = Holders.getApplicationContext()
-        if(context) {
-            for(FeatureInfo info in spec.getAllFeatures()) {
+        if (context) {
+            for (FeatureInfo info in spec.getAllFeatures()) {
                 info.addInterceptor(new IntegrationSpecMethodInterceptor(context))
             }
         }
-
     }
-
 
     @CompileStatic
     class IntegrationSpecMethodInterceptor implements IMethodInterceptor {
         ApplicationContext applicationContext
         GrailsTestMode mode
 
-
         IntegrationSpecMethodInterceptor(ApplicationContext applicationContext) {
             this.applicationContext = applicationContext
             this.mode = new GrailsTestMode(autowire: true, wrapInTransaction: true, wrapInRequestEnvironment: true)
-
         }
 
         @Override
         void intercept(IMethodInvocation invocation) {
             final instance = invocation.instance ?: invocation.sharedInstance
-            if(instance) {
+            if (instance) {
                 GrailsTestInterceptor interceptor = new GrailsTestInterceptor(instance, mode, applicationContext, ["Spec", "Specification", "Tests", "Test"] as String[])
                 interceptor.wrap {
                     invocation.proceed()

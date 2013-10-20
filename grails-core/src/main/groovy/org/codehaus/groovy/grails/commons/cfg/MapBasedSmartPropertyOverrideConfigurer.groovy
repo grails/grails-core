@@ -17,16 +17,14 @@ package org.codehaus.groovy.grails.commons.cfg
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.commons.GrailsApplication
 
+import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.springframework.beans.factory.BeanCreationException
+import org.springframework.beans.factory.FactoryBean
+import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory
-import org.springframework.beans.factory.config.BeanDefinition
-
 import org.springframework.transaction.interceptor.TransactionProxyFactoryBean
-import org.springframework.beans.factory.FactoryBean
-
-import org.springframework.beans.factory.BeanCreationException
 
 /**
  * Applies property configuration from a Map with bean names as keys and bean properties as name/value Maps
@@ -49,25 +47,21 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
         if (!beans) {
             return
         }
-        for(beanName in beans.keySet()) {
+        for (beanName in beans.keySet()) {
             def beanProperties = beans.get(beanName)
             if (!(beanProperties instanceof Map)) {
                 throw new IllegalArgumentException("Entry in bean config for bean '" + beanName + "' must be a Map")
             }
-            else {
-                final beanPropertiesMap = (Map) beanProperties
-                for(beanPropertyName in beanPropertiesMap.keySet()) {
-                    final beanPropertyValue = beanPropertiesMap.get(beanPropertyName)
-                    applyPropertyValue(factory, beanName.toString(), beanPropertyName.toString(), beanPropertyValue)
-                }
 
+            final beanPropertiesMap = (Map) beanProperties
+            for (beanPropertyName in beanPropertiesMap.keySet()) {
+                final beanPropertyValue = beanPropertiesMap.get(beanPropertyName)
+                applyPropertyValue(factory, beanName.toString(), beanPropertyName.toString(), beanPropertyValue)
             }
-
         }
-
     }
 
-    protected void applyPropertyValue(ConfigurableListableBeanFactory factory, String beanName, String property, Object value) {
+    protected void applyPropertyValue(ConfigurableListableBeanFactory factory, String beanName, String property, value) {
         def bd = getTargetBeanDefinition(factory, beanName)
         if (bd != null) {
             bd.propertyValues.addPropertyValue(property, value)
@@ -86,9 +80,6 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
     protected BeanDefinition getTargetBeanDefinition(ConfigurableListableBeanFactory factory, String beanName) {
         if (factory.containsBeanDefinition(beanName)) {
             getTargetBeanDefinition(factory, beanName, factory.getBeanDefinition(beanName))
-        }
-        else {
-            null
         }
     }
 
@@ -118,13 +109,12 @@ class MapBasedSmartPropertyOverrideConfigurer implements BeanFactoryPostProcesso
     protected BeanDefinition getTargetBeanDefinitionForFactoryBean(ConfigurableListableBeanFactory factory,
             String beanName, BeanDefinition beanDefinition, Class beanClass) {
 
-        if (TransactionProxyFactoryBean.isAssignableFrom(beanClass)) {
-            getTargetBeanDefinition(factory, beanName,
-                    (BeanDefinition)beanDefinition.propertyValues.getPropertyValue("target").value)
-        }
-        else {
+        if (!TransactionProxyFactoryBean.isAssignableFrom(beanClass)) {
             throw new BeanCreationException(beanName,
                  "Unable to determine target bean definition for FactoryBeans of type " + beanClass.name)
         }
+
+        getTargetBeanDefinition(factory, beanName,
+            (BeanDefinition)beanDefinition.propertyValues.getPropertyValue("target").value)
     }
 }

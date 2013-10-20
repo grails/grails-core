@@ -16,33 +16,33 @@
 
 package org.grails.plugins.web.rest.render.hal
 
-import grails.rest.render.hal.HalJsonCollectionRenderer
-import org.springframework.core.convert.converter.Converter
-import spock.lang.Specification
-import grails.rest.render.hal.HalJsonRenderer
-import org.springframework.context.support.StaticMessageSource
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
-import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
-import grails.web.CamelCaseUrlConverter
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.springframework.mock.web.MockServletContext
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
 import grails.persistence.Entity
+import grails.rest.render.hal.HalJsonCollectionRenderer
+import grails.rest.render.hal.HalJsonRenderer
 import grails.util.GrailsWebUtil
-import org.springframework.web.util.WebUtils
+import grails.web.CamelCaseUrlConverter
+
+import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
+import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.datastore.mapping.model.MappingContext
 import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.springframework.context.support.StaticMessageSource
+import org.springframework.core.convert.converter.Converter
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.util.WebUtils
+
 import spock.lang.Issue
+import spock.lang.Specification
 
 import javax.xml.bind.DatatypeConverter
 
 /**
  */
-class HalJsonRendererSpec extends Specification{
-
-
+class HalJsonRendererSpec extends Specification {
 
     @Issue('GRAILS-10372')
     void "Test that the HAL renderer renders JSON values correctly for domains"() {
@@ -164,7 +164,7 @@ class HalJsonRendererSpec extends Specification{
 }'''
 
     }
-    
+
     @Issue('GRAILS-10533')
     void "Test customizing the embedded name for a rendered collection of domain objects" () {
         given: "A HAL Collection renderer with a custom embedded name"
@@ -278,13 +278,13 @@ class HalJsonRendererSpec extends Specification{
 }'''
 
     }
-    
+
     @Issue('GRAILS-10512')
     void "Test that the HAL renderer renders JSON values correctly for a collection of simple POGOs"() {
         given:"A HAL renderer"
             HalJsonRenderer renderer = getRenderer()
             renderer.prettyPrint = true
- 
+
             when:"A collection of POGO is rendered"
             def webRequest = GrailsWebUtil.bindMockWebRequest()
             webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
@@ -295,7 +295,7 @@ class HalJsonRendererSpec extends Specification{
                 new SimpleProduct(name: "iMac", numberInStock: 8, category: new SimpleCategory(name: 'Desktops'))
             ]
             renderer.render(products, renderContext)
- 
+
         then:"The resulting HAL is correct"
             response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '''{
@@ -337,7 +337,6 @@ class HalJsonRendererSpec extends Specification{
     }
   ]
 }'''
- 
     }
 
     @Issue('GRAILS-10499')
@@ -647,12 +646,14 @@ class HalJsonRendererSpec extends Specification{
         context.addPersistentEntity(Event)
         return context
     }
+
     LinkGenerator getLinkGenerator(Closure mappings) {
         def generator = new DefaultLinkGenerator("http://localhost", null)
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
         generator.urlMappingsHolder = getUrlMappingsHolder mappings
-        return generator;
+        return generator
     }
+
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         def allMappings = evaluator.evaluateMappings mappings

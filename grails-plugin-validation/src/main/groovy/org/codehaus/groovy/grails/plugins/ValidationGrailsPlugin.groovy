@@ -81,7 +81,7 @@ class ValidationGrailsPlugin {
 
         metaClass.getErrors = {->
             def errors
-            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
+            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.getClass().name}_${System.identityHashCode(delegate)}"
             errors = get(key)
             if (!errors) {
                 errors = new BeanPropertyBindingResult(delegate, delegate.getClass().getName())
@@ -90,7 +90,7 @@ class ValidationGrailsPlugin {
             errors
         }
         metaClass.setErrors = {Errors errors ->
-            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
+            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.getClass().name}_${System.identityHashCode(delegate)}"
             put key, errors
         }
         metaClass.clearErrors = {->

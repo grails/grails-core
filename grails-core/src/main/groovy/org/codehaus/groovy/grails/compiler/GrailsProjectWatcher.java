@@ -297,7 +297,6 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         }
     }
 
-
     private void sleep(int time) {
         try {
             Thread.sleep(time);

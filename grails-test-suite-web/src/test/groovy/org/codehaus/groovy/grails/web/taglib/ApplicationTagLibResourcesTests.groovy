@@ -9,11 +9,11 @@ class ApplicationTagLibResourcesTests extends AbstractGrailsTagTests {
         grailsApplication.parentContext.registerMockBean('grailsResourceProcessor', [something:'value'])
     }
 
-    def replaceMetaClass(Object o) {
+    def replaceMetaClass(o) {
         def old = o.metaClass
 
         // Create a new EMC for the class and attach it.
-        def emc = new ExpandoMetaClass(o.class, true, true)
+        def emc = new ExpandoMetaClass(o.getClass(), true, true)
         emc.initialize()
         o.metaClass = emc
 
@@ -44,7 +44,7 @@ class ApplicationTagLibResourcesTests extends AbstractGrailsTagTests {
         request.contextPath = '/test'
         def template = '${resource(dir:"jquery", file:"jqtest.js")}'
 
-        def taglib = appCtx.getBean(ApplicationTagLib.class.name)
+        def taglib = appCtx.getBean(ApplicationTagLib.name)
         taglib.hasResourceProcessor = true
         def oldMC = replaceMetaClass(taglib)
 

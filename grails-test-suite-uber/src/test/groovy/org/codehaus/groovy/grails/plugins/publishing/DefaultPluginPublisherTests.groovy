@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.plugins.publishing
 
 import groovy.util.slurpersupport.GPathResult
+
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 
@@ -243,7 +244,7 @@ class TestPluginPublisher extends DefaultPluginPublisher {
     String testMetadata
 
     TestPluginPublisher(String revNumber) {
-        super("0", "http://testrepo.com");
+        super("0", "http://testrepo.com")
     }
 
     protected GPathResult getPluginMetadata(String pluginName) {

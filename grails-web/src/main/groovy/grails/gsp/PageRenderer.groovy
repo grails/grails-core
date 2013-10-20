@@ -143,7 +143,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
             def params = new ConcurrentHashMap()
             def attributes = new ConcurrentHashMap()
 
-            String contentType = null
+            String contentType
             String characterEncoding = "UTF-8"
 
             (HttpServletRequest)Proxy.newProxyInstance(HttpServletRequest.classLoader, [HttpServletRequest] as Class[], new InvocationHandler() {
@@ -309,7 +309,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
         static HttpServletResponse createInstance(final PrintWriter writer) {
 
             String characterEncoding = "UTF-8"
-            String contentType = null
+            String contentType
             int bufferSize = 0
 
             (HttpServletResponse)Proxy.newProxyInstance(HttpServletResponse.classLoader, [HttpServletResponse] as Class[], new InvocationHandler() {

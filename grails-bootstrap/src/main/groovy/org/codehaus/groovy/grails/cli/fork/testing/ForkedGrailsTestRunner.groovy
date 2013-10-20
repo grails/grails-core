@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.cli.fork.testing
 
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
-import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -60,7 +59,7 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
         final classLoader = super.createClassLoader(buildSettings)
         final urls = classLoader.URLs.toList()
 
-        for(File f in buildSettings.testDependencies) {
+        for (File f in buildSettings.testDependencies) {
             def url = f.toURI().toURL()
             if (!urls.contains(url)) {
                 classLoader.addURL(url)
@@ -86,7 +85,7 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
     }
 
     @Override
-    protected Object createInstance(Class projectComponentClass, BuildSettings buildSettings) {
+    protected createInstance(Class projectComponentClass, BuildSettings buildSettings) {
         final pluginSettings = GrailsPluginUtils.getPluginBuildSettings(buildSettings)
         Binding scriptBinding = createExecutionContext(buildSettings, pluginSettings)
 
@@ -109,7 +108,7 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected Object instantiateIntegrationPhaseConfig(testRunner, projectLoader) {
+    protected instantiateIntegrationPhaseConfig(testRunner, projectLoader) {
         forkedClassLoader.loadClass("org.codehaus.groovy.grails.test.runner.phase.IntegrationTestPhaseConfigurer").newInstance(testRunner.projectTestCompiler, projectLoader)
     }
 

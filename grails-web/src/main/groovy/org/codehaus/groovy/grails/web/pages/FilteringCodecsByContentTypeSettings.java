@@ -47,7 +47,7 @@ public class FilteringCodecsByContentTypeSettings {
                 contentTypeToEncoderMapping=new LinkedHashMap<String, Encoder>();
                 contentTypePatternToEncoderMapping=new LinkedHashMap<Pattern, Encoder>();
                 Map codecForContentTypeMapping=(Map)codecForContentTypeConfig;
-                for(Iterator i=codecForContentTypeMapping.entrySet().iterator();i.hasNext();) {
+                for (Iterator i=codecForContentTypeMapping.entrySet().iterator();i.hasNext();) {
                     Map.Entry entry=(Map.Entry)i.next();
                     Encoder encoder=WithCodecHelper.lookupEncoder(grailsApplication, String.valueOf(entry.getValue()));
                     if (entry.getKey() instanceof Pattern) {
@@ -73,7 +73,7 @@ public class FilteringCodecsByContentTypeSettings {
         if (encoder != null) {
             return encoder;
         }
-        for(Map.Entry<Pattern, Encoder> entry : contentTypePatternToEncoderMapping.entrySet()) {
+        for (Map.Entry<Pattern, Encoder> entry : contentTypePatternToEncoderMapping.entrySet()) {
             if (entry.getKey().matcher(contentType).matches()) {
                 return encoder;
             }

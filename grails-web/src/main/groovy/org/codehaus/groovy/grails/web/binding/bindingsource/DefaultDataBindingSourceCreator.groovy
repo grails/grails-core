@@ -43,13 +43,13 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
     }
 
     @Override
-    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, bindingSource) {
         final DataBindingSource dataBindingSource
-        if(bindingSource instanceof DataBindingSource) {
+        if (bindingSource instanceof DataBindingSource) {
             dataBindingSource = (DataBindingSource) bindingSource
-        } else if(bindingSource instanceof HttpServletRequest) {
+        } else if (bindingSource instanceof HttpServletRequest) {
             dataBindingSource = createDataBindingSource(bindingTargetType, (HttpServletRequest)bindingSource)
-        } else if(bindingSource instanceof Map) {
+        } else if (bindingSource instanceof Map) {
             dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource))
         } else {
             dataBindingSource = new SimpleMapDataBindingSource(new BeanMap(bindingSource))
@@ -58,11 +58,11 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
     }
 
     @Override
-    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, bindingSource) {
         throw new UnsupportedOperationException()
     }
 
-    protected  DataBindingSource createDataBindingSource(Object bindingTarget, HttpServletRequest req) {
+    protected  DataBindingSource createDataBindingSource(bindingTarget, HttpServletRequest req) {
         final GrailsWebRequest grailsWebRequest = GrailsWebRequest.lookup(req)
         final GrailsParameterMap parameterMap = grailsWebRequest.getParams()
         new SimpleMapDataBindingSource(parameterMap)

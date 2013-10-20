@@ -31,7 +31,6 @@ class UrlMappingRsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
             urlMappingsHolder.match('/book/list')
             urlMappingsHolder.match('/book/list').parameters.format == null
             urlMappingsHolder.match('/book/list.xml').parameters.format == 'xml'
-
     }
 
     void "Test that dynamic URL mappings can be specified with an optional parameter and an optional extension"() {
@@ -53,7 +52,7 @@ class UrlMappingRsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
             def urlMappingsHolder = getUrlMappingsHolder {
                 "/$controller/$action(.$format)?"()
             }
-            
+
         expect:"URLs with and without the format specified match"
             urlMappingsHolder.match('/book/list.xml')
             urlMappingsHolder.match('/book/list.xml').parameters.format == 'xml'
@@ -76,7 +75,6 @@ class UrlMappingRsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
             urlMappingsHolder.match('/book')
             urlMappingsHolder.match('/book/list')
             urlMappingsHolder.match('/book/list').parameters.format == null
-
     }
 
     void "Test that dynamic URL mappings generated correct links when specified with an optional extension"() {
@@ -89,9 +87,6 @@ class UrlMappingRsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
             linkGenerator.link(controller:"book") == "http://localhost/book"
             linkGenerator.link(controller:"book", action:"list", params:[format:'xml']) == "http://localhost/book/list.xml"
             linkGenerator.link(controller:"book", action:"list") == "http://localhost/book/list"
-
-
-
     }
 
     void "Test that URL mappings with optional extensions generate the correct links"() {

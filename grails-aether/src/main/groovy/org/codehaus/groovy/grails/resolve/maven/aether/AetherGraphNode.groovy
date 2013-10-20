@@ -38,7 +38,7 @@ class AetherGraphNode extends GraphNode {
     }
 
     void createGraph(GraphNode current, List<DependencyNode> nodes, List<Artifact> unresolved) {
-        for(DependencyNode node in nodes) {
+        for (DependencyNode node in nodes) {
             def dependency = node.dependency
             if (!dependency) {
                 continue

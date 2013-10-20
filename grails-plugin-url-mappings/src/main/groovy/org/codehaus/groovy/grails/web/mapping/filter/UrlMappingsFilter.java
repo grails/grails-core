@@ -116,7 +116,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
 
         Map<String, MimeTypeResolver> mimeTypeResolvers = applicationContext.getBeansOfType(MimeTypeResolver.class);
-        if(!mimeTypeResolvers.isEmpty()) {
+        if (!mimeTypeResolvers.isEmpty()) {
             mimeTypeResolver = mimeTypeResolvers.values().iterator().next();
         }
         this.allowHeaderForWrongHttpMethod = grailsConfig.get(WebUtils.SEND_ALLOW_HEADER_FOR_INVALID_HTTP_METHOD, Boolean.TRUE);
@@ -157,9 +157,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             for (UrlMappingInfo info : urlInfos) {
                 if (info != null) {
                     Object redirectInfo = info.getRedirectInfo();
-                    if(redirectInfo != null) {
+                    if (redirectInfo != null) {
                         final Map redirectArgs;
-                        if(redirectInfo instanceof Map) {
+                        if (redirectInfo instanceof Map) {
                             redirectArgs = (Map) redirectInfo;
                         } else {
                             redirectArgs = CollectionUtils.newMap("uri", redirectInfo);
@@ -183,7 +183,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         GrailsApplication grailsApplicationToUse = application;
                         GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
 
-                        if(controller == null && info.getViewName()==null && info.getURI()==null) continue;
+                        if (controller == null && info.getViewName()==null && info.getURI()==null) continue;
                     }
                     catch (Exception e) {
                         if (e instanceof MultipartException) {
@@ -193,7 +193,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         LOG.error("Error when matching URL mapping [" + info + "]:" + e.getMessage(), e);
                         continue;
                     }
-                    
+
                     dispatched = true;
 
                     if (!WAR_DEPLOYED) {
@@ -228,14 +228,14 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         if (!dispatched) {
             Set<HttpMethod> allowedHttpMethods = allowHeaderForWrongHttpMethod ? allowedMethods(holder, uri) : Collections.EMPTY_SET;
 
-            if(allowedHttpMethods.isEmpty()) {
+            if (allowedHttpMethods.isEmpty()) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("No match found, processing remaining filter chain.");
                 }
                 processFilterChain(request, response, filterChain);
             }
             else {
-                response.addHeader(HttpHeaders.ALLOW, DefaultGroovyMethods.join(allowedHttpMethods, ","));
+                response.addHeader(HttpHeaders.ALLOW, DefaultGroovyMethods.join((Iterable<HttpMethod>)allowedHttpMethods, ","));
                 response.sendError(HttpStatus.METHOD_NOT_ALLOWED.value());
             }
         }
@@ -248,8 +248,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         for (UrlMappingInfo urlMappingInfo : urlMappingInfos) {
             Object featureId = WebUtils.getFeatureId(urlConverter, urlMappingInfo);
             GrailsClass controllerClass = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
-            if(controllerClass != null) {
-                if(urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
+            if (controllerClass != null) {
+                if (urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
                     methods.addAll(Arrays.asList(HttpMethod.values())); break;
                 }
                 else {
@@ -264,7 +264,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
     private String findRequestedVersion(GrailsWebRequest currentRequest) {
         String version = currentRequest.getHeader(HttpHeaders.ACCEPT_VERSION);
-        if(version == null && mimeTypeResolver != null) {
+        if (version == null && mimeTypeResolver != null) {
             MimeType mimeType = mimeTypeResolver.resolveResponseMimeType(currentRequest);
             version = mimeType.getVersion();
         }
@@ -294,7 +294,6 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
         return isExcluded;
     }
-
 
     private boolean noRegexMappings(UrlMappingsHolder holder) {
         for (UrlMapping mapping : holder.getUrlMappings()) {

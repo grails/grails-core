@@ -62,7 +62,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
      */
     protected Statement methodBlock(FrameworkMethod method) {
         if (mode) {
-            def test = null
+            def test
 
             // Create test instantiates the test object reflectively, so we unwrap
             // the InvocationTargetException if an exception occurs.
@@ -87,7 +87,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    private Statement withRules(FrameworkMethod method, Object target, Statement statement) {
+    private Statement withRules(FrameworkMethod method, target, Statement statement) {
         Statement result = statement
         for (MethodRule each : rules(target)) {
             result = each.apply(result, method, target)
@@ -95,7 +95,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
         return result
     }
 
-    protected withGrailsTestEnvironment(Statement statement, Object test) {
+    protected withGrailsTestEnvironment(Statement statement, test) {
         if (!mode) {
             throw new IllegalStateException("withGrailsTestEnvironment can not be called without a test mode set")
         }
@@ -132,7 +132,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    protected Statement withBefores(FrameworkMethod method, Object target, Statement statement) {
+    protected Statement withBefores(FrameworkMethod method, target, Statement statement) {
         def superResult = super.withBefores(method, target, statement)
         if (superResult.is(statement)) {
             def setupMethod = ReflectionUtils.findMethod(testClass.javaClass, 'setUp')
@@ -149,7 +149,7 @@ class GrailsTestCaseRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    protected Statement withAfters(FrameworkMethod method, Object target, Statement statement) {
+    protected Statement withAfters(FrameworkMethod method, target, Statement statement) {
         def superResult = super.withAfters(method, target, statement)
         if (superResult.is(statement)) {
             def tearDownMethod = ReflectionUtils.findMethod(testClass.javaClass, 'tearDown')

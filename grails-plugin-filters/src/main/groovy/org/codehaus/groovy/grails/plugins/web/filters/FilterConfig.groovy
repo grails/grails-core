@@ -60,7 +60,7 @@ class FilterConfig extends ControllersApi {
      * Redirects attempt to access an 'errors' property, so we provide
      * one here with a null value.
      */
-    def errors = null
+    def errors
 
     /**
      * This is the filters definition bean that declared the filter
@@ -86,7 +86,7 @@ class FilterConfig extends ControllersApi {
 
     def getWiredFiltersDefinition() {
         final webRequest = GrailsWebRequest.lookup()
-        final grailsFilter = webRequest ? grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.class.name) : null
+        final grailsFilter = webRequest ? grailsApplication.getArtefact(FiltersConfigArtefactHandler.TYPE, filtersDefinition.getClass().name) : null
         if (grailsFilter) {
             applicationContext.getBean(grailsFilter.fullName)
         }
@@ -167,7 +167,7 @@ class FilterConfig extends ControllersApi {
         return super.chain(this, args)
     }
 
-    Object render(Object o) {
+    Object render(o) {
         return super.render(this, o)
     }
 
@@ -187,31 +187,31 @@ class FilterConfig extends ControllersApi {
         return super.render(this, args, c)
     }
 
-    Object bindData(Object target, Object args) {
+    Object bindData(target, args) {
         return super.bindData(this, target, args)
     }
 
-    Object bindData(Object target, Object args, List disallowed) {
+    Object bindData(target, args, List disallowed) {
         return super.bindData(this, target, args, disallowed)
     }
 
-    Object bindData(Object target, Object args, List disallowed, String filter) {
+    Object bindData(target, args, List disallowed, String filter) {
         return super.bindData(this, target, args, disallowed, filter)
     }
 
-    Object bindData(Object target, Object args, Map includeExclude) {
+    Object bindData(target, args, Map includeExclude) {
         return super.bindData(this, target, args, includeExclude)
     }
 
-    Object bindData(Object target, Object args, Map includeExclude, String filter) {
+    Object bindData(target, args, Map includeExclude, String filter) {
         return super.bindData(this, target, args, includeExclude, filter)
     }
 
-    Object bindData(Object target, Object args, String filter) {
+    Object bindData(target, args, String filter) {
         return super.bindData(this, target, args, filter)
     }
 
-    void header(String headerName, Object headerValue) {
+    void header(String headerName, headerValue) {
         super.header(this, headerName, headerValue)
     }
 

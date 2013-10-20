@@ -17,15 +17,13 @@ package org.codehaus.groovy.grails.plugins.web.mimes
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
 import org.springframework.beans.factory.FactoryBean
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.springframework.beans.factory.InitializingBean
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.context.ApplicationContextAware
 import org.springframework.context.ApplicationContext
+import org.springframework.context.ApplicationContextAware
 
 /**
  * Creates the MimeType[] object that defines the configured mime types.
@@ -62,8 +60,8 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
                 mimes << new MimeType(entry.value.toString(), entry.key.toString())
             }
         }
-        for(MimeTypeProvider mtp in mimeTypeProviders) {
-            for(MimeType mt in mtp.mimeTypes) {
+        for (MimeTypeProvider mtp in mimeTypeProviders) {
+            for (MimeType mt in mtp.mimeTypes) {
                 if (!mimes.contains(mt)) {
                     mimes << mt
                 }
@@ -77,7 +75,6 @@ class MimeTypesFactoryBean implements FactoryBean<MimeType[]>, ApplicationContex
     Class<?> getObjectType() { MimeType[] }
 
     boolean isSingleton() { true }
-
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected Map<CharSequence, CharSequence> getMimeConfig(ConfigObject config) {

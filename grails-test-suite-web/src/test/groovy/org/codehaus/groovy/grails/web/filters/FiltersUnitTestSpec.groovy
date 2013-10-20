@@ -1,11 +1,13 @@
 package org.codehaus.groovy.grails.web.filters
 
-import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import grails.artefact.Artefact
+import grails.test.mixin.Mock
+import grails.test.mixin.TestFor
 
 import javax.servlet.http.HttpServletResponse
-import grails.artefact.Artefact
-import grails.test.mixin.TestFor
-import grails.test.mixin.Mock
+
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+
 import spock.lang.Specification
 
 @TestFor(UserController)
@@ -112,7 +114,6 @@ class AuthenticationFilters {
                     return false
                 }
             }
-
         }
         update(controller: 'user', action: 'update') {
             before = {

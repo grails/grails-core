@@ -13,7 +13,7 @@ class TestForSpec extends Specification{
 
         then:
             test != null
-            test.getClass().getDeclaredMethod("testIndex", null).getAnnotation(Test.class) != null
+            test.getClass().getDeclaredMethod("testIndex", null).getAnnotation(Test) != null
             test.retrieveLog() instanceof Log
     }
 
@@ -23,7 +23,7 @@ class TestForSpec extends Specification{
 
         then:
             test != null
-            test.getClass().getDeclaredMethod("testIndex", null).getAnnotation(Test.class) == null
+            test.getClass().getDeclaredMethod("testIndex", null).getAnnotation(Test) == null
             test.retrieveLog() instanceof Log
     }
 

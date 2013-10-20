@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.compiler.web.rest
 
 import grails.web.controllers.ControllerMethod
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
@@ -36,9 +37,7 @@ import org.grails.plugins.web.rest.api.ControllersRestApi
 class ControllerRestTransformer extends AbstractGrailsArtefactTransformer{
 
     @Override
-    public String getArtefactType() {
-        return ControllerArtefactHandler.TYPE;
-    }
+    String getArtefactType() { ControllerArtefactHandler.TYPE }
 
     @Override
     Class<?> getInstanceImplementation() { ControllersRestApi }
@@ -52,6 +51,6 @@ class ControllerRestTransformer extends AbstractGrailsArtefactTransformer{
 
     @Override
     protected AnnotationNode getMarkerAnnotation() {
-        return new AnnotationNode(new ClassNode(ControllerMethod.class).getPlainNodeReference());
+        return new AnnotationNode(new ClassNode(ControllerMethod).getPlainNodeReference())
     }
 }

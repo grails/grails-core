@@ -17,26 +17,24 @@ package org.codehaus.groovy.grails.test.spock.listener
 
 import groovy.transform.CompileStatic
 
-/**
- * @author Luke Daley
- * @author Graeme Rocher
- */
-
-
-import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest
-import org.codehaus.groovy.grails.test.event.GrailsTestRunNotifier
-import org.codehaus.groovy.grails.test.spock.GrailsSpecTestTypeResult
-import org.junit.runner.Description
-import org.junit.runner.notification.Failure
-import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
-import org.codehaus.groovy.grails.test.report.junit.JUnitReports
-import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper
+import java.lang.reflect.Constructor
 
 import junit.framework.AssertionFailedError
 import junit.framework.JUnit4TestCaseFacade
 
-import java.lang.reflect.Constructor
+import org.apache.tools.ant.taskdefs.optional.junit.JUnitTest
+import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+import org.codehaus.groovy.grails.test.event.GrailsTestRunNotifier
+import org.codehaus.groovy.grails.test.io.SystemOutAndErrSwapper
+import org.codehaus.groovy.grails.test.report.junit.JUnitReports
+import org.codehaus.groovy.grails.test.spock.GrailsSpecTestTypeResult
+import org.junit.runner.Description
+import org.junit.runner.notification.Failure
 
+/**
+ * @author Luke Daley
+ * @author Graeme Rocher
+ */
 @CompileStatic
 class PerSpecRunListener {
     final String name
@@ -128,7 +126,7 @@ class PerSpecRunListener {
 
         reports.startTest(getTest(description))
 
-        for(OutputStream os in [outStream, errStream]) {
+        for (OutputStream os in [outStream, errStream]) {
             new PrintStream(os).println("--Output from ${testName}--")
         }
         testFailed = false

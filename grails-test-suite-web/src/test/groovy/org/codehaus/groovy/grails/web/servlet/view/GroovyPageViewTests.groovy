@@ -1,16 +1,13 @@
-package org.codehaus.groovy.grails.web.servlet.view;
+package org.codehaus.groovy.grails.web.servlet.view
 
-import grails.util.*
-import org.springframework.web.context.request.*
-import org.springframework.mock.web.*
-import org.springframework.core.io.*
-import org.springframework.web.context.request.*
-import org.codehaus.groovy.grails.web.servlet.mvc.*
-import org.codehaus.groovy.grails.web.errors.*
-import org.codehaus.groovy.grails.web.pages.*
-import org.codehaus.groovy.grails.support.*
+import grails.util.GrailsWebUtil
 
-@SuppressWarnings("unused")
+import org.codehaus.groovy.grails.support.MockApplicationContext
+import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.context.request.RequestContextHolder
+
 class GroovyPageViewTests extends GroovyTestCase {
 
     void testGroovyPageView() {
@@ -43,6 +40,7 @@ class GroovyPageViewTests extends GroovyTestCase {
     }
 
     void tearDown() {
-         RequestContextHolder.setRequestAttributes(null)
+        super.tearDown()
+        RequestContextHolder.setRequestAttributes(null)
     }
 }

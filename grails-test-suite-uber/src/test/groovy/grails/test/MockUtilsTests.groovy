@@ -1639,7 +1639,7 @@ class TestDomain {
 
     def afterDelete() { afterDeleted++ }
 
-    boolean equals(Object obj) {
+    boolean equals(obj) {
         if (!(obj instanceof TestDomain)) return null
 
         return this.name == obj.name &&
@@ -1695,7 +1695,7 @@ class TestDomainWithUUID {
         age(min: 8, max: 65)
     }
 
-    boolean equals(Object obj) {
+    boolean equals(obj) {
         if (!(obj instanceof TestDomainWithUUID)) return null
 
         return this.name == obj.name &&
@@ -1725,7 +1725,7 @@ class TestDomainWithAssignedId {
         id generator: "assigned"
     }
 
-    boolean equals(Object obj) {
+    boolean equals(obj) {
         if (!(obj instanceof TestDomainWithAssignedId)) return null
         return this.name == obj.name
     }

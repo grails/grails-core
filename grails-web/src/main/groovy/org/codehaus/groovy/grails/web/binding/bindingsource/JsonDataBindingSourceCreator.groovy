@@ -62,16 +62,15 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
     }
 
     @Override
-    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) {
-        if(bindingSource instanceof JsonObject) {
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, bindingSource) {
+        if (bindingSource instanceof JsonObject) {
             return new SimpleMapDataBindingSource(createJsonObjectMap((JsonObject)bindingSource))
         }
-        else if(bindingSource instanceof JSONObject) {
+        if (bindingSource instanceof JSONObject) {
             return new SimpleMapDataBindingSource((JSONObject)bindingSource)
         }
-        else {
-            return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
-        }
+
+        return super.createDataBindingSource(mimeType, bindingTargetType, bindingSource)
     }
 
     @Override
@@ -159,51 +158,49 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
             jsonObject.entrySet().isEmpty()
         }
 
-        boolean containsKey(Object o) {
+        boolean containsKey(o) {
             jsonObject.has(o.toString())
         }
 
-        boolean containsValue(Object o) {
+        boolean containsValue(o) {
             get(o) != null
         }
 
-        Object get(Object o) {
+        Object get(o) {
             final key = o.toString()
             final value = jsonObject.get(key)
-            if(value != null) {
+            if (value != null) {
                 return getValueForJsonElement(value, gson)
             }
-            else {
-                final matcher = INDEX_PATTERN.matcher(key)
-                if(matcher.find()) {
-                    String newKey = matcher.group(1)
-                    final listValue = jsonObject.get(newKey)
-                    if(listValue.isJsonArray()) {
-                        JsonArray array = (JsonArray)listValue
-                        int index = matcher.group(2).toInteger()
-                        getValueForJsonElement(array.get(index), gson)
-                    }
+
+            final matcher = INDEX_PATTERN.matcher(key)
+            if (matcher.find()) {
+                String newKey = matcher.group(1)
+                final listValue = jsonObject.get(newKey)
+                if (listValue.isJsonArray()) {
+                    JsonArray array = (JsonArray)listValue
+                    int index = matcher.group(2).toInteger()
+                    getValueForJsonElement(array.get(index), gson)
                 }
             }
         }
 
-
-        Object put(Object k, Object v) {
+        Object put(k, v) {
             jsonObject.add(k.toString(), gson.toJsonTree(v))
         }
 
-        Object remove(Object o) {
+        Object remove(o) {
             jsonObject.remove(o.toString())
         }
 
         void putAll(Map map) {
-            for(entry in map.entrySet()) {
+            for (entry in map.entrySet()) {
                 put(entry.key, entry.value)
             }
         }
 
         void clear() {
-            for(entry in entrySet())  {
+            for (entry in entrySet())  {
                 remove(entry.key)
             }
         }
@@ -241,10 +238,10 @@ class JsonDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceC
             return getValueForJsonElement(jsonElement, gson)
         }
     }
-    
+
     @Override
     protected DataBindingSourceCreationException createBindingSourceCreationException(Exception e) {
-        if(e instanceof JsonParseException) {
+        if (e instanceof JsonParseException) {
             return new InvalidRequestBodyException(e)
         }
         return super.createBindingSourceCreationException(e)

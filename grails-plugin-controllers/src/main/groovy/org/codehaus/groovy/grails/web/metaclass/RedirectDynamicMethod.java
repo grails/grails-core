@@ -128,7 +128,7 @@ public class RedirectDynamicMethod extends AbstractDynamicMethodInvocation {
             throw new CannotRedirectException("Cannot issue a redirect(..) here. The response has already been committed either by another redirect or by directly writing to the response.");
         }
 
-        if(target instanceof GroovyObject) {
+        if (target instanceof GroovyObject) {
             GroovyObject controller = (GroovyObject)target;
 
             // if there are errors add it to the list of errors

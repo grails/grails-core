@@ -20,6 +20,7 @@ import grails.rest.Link
 import grails.rest.render.RenderContext
 import grails.rest.render.util.AbstractLinkingRenderer
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter
 import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter
@@ -63,7 +64,7 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
         XML xml = new XML(w)
 
 
-        final entity = mappingContext.getPersistentEntity(object.class.name)
+        final entity = mappingContext.getPersistentEntity(object.getClass().name)
         boolean isDomain = entity != null
 
         Set writtenObjects = []
@@ -75,8 +76,8 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
         else if (object instanceof Collection) {
             XMLStreamWriter writer = xml.getWriter()
             startResourceTagForCurrentPath(context, writer)
-            for(o in ((Collection)object)) {
-                final currentEntity = mappingContext.getPersistentEntity(o.class.name)
+            for (o in ((Collection)object)) {
+                final currentEntity = mappingContext.getPersistentEntity(o.getClass().name)
                 if (currentEntity) {
                     writeDomainWithEmbeddedAndLinks(currentEntity, o, context, xml, writtenObjects)
                 }
@@ -89,7 +90,7 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
             writeExtraLinks(object, context.locale, xml)
             final bean = PropertyAccessorFactory.forBeanPropertyAccess(object)
             final propertyDescriptors = bean.propertyDescriptors
-            for(pd in propertyDescriptors) {
+            for (pd in propertyDescriptors) {
                 final propertyName = pd.name
                 if (DEFAULT_EXCLUDES.contains(propertyName)) continue
                 if (shouldIncludeProperty(context, object, propertyName)) {
@@ -101,10 +102,7 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
                 }
             }
             writer.end()
-
         }
-
-
     }
 
     protected void startResourceTagForCurrentPath(RenderContext context, XMLStreamWriter writer) {
@@ -150,7 +148,6 @@ class HalXmlRenderer<T> extends AbstractLinkingRenderer<T> {
                         }
                     }
                 }
-
             }
         }
         writer.end()

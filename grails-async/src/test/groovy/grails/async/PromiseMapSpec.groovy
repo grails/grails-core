@@ -38,8 +38,8 @@ class PromiseMapSpec extends Specification{
             result["one"] == 1
             result["four"] == 4
             result["eight"] == 8
-
     }
+
     void "Test PromiseMap with mixture of normal entries and promises"() {
         when:"A promise map is used with an onComplete handler"
             def map = new PromiseMap<String, Integer>()
@@ -59,7 +59,6 @@ class PromiseMapSpec extends Specification{
             result["one"] == 1
             result["four"] == 4
             result["eight"] == 8
-
     }
 
     void "Test that a PromiseMap populates values from promises onComplete"() {
@@ -81,10 +80,7 @@ class PromiseMapSpec extends Specification{
             result["one"] == 1
             result["four"] == 4
             result["eight"] == 8
-
-
     }
-
 
     void "Test that a PromiseMap triggers onError for an exception and ignoresonComplete"() {
         when:"A promise map is used with an onComplete handler"
@@ -108,7 +104,6 @@ class PromiseMapSpec extends Specification{
             result == null
             err != null
             err.message == "bad"
-
     }
 
     void "Test PromiseMap with then chaining"() {
@@ -122,6 +117,5 @@ class PromiseMapSpec extends Specification{
             result["one"] == 1
             result["four"] == 4
             result["eight"] == 8
-
     }
 }

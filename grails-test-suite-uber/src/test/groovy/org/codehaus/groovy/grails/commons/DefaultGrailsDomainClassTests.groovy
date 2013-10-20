@@ -184,13 +184,14 @@ class OneToOneTest1 {
 
     void testCircularOneToManyRelationship() throws Exception {
         GroovyClassLoader gcl = new GroovyClassLoader()
-        Class a = gcl.parseClass("class A { \n" +
-                                    " Long id\n" +
-                                    " Long version\n" +
-                                    " static hasMany = [ children : A]\n" +
-                                    " A parent\n" +
-                                    " Set children\n" +
-                                    "}")
+        Class a = gcl.parseClass('''\
+class A {
+    Long id
+    Long version
+    static hasMany = [ children : A]
+    A parent
+    Set children
+}''')
         GrailsDomainClass dc = new DefaultGrailsDomainClass(a)
         GrailsDomainClass[] dcs = new GrailsDomainClass[1]
         dcs[0] =dc
@@ -210,9 +211,9 @@ class OneToOneTest1 {
 
         gcl.parseClass '''
 class RelationshipsTest2 {
-   static hasMany = [     "ones" : OneToManyTest2.class,
-                                  "manys" : ManyToManyTest2.class,
-                                  "uniones" : UniOneToManyTest2.class ]
+    static hasMany = ["ones" : OneToManyTest2,
+                      "manys" : ManyToManyTest2,
+                      "uniones" : UniOneToManyTest2 ]
 
     Long id
     Long version
@@ -222,6 +223,7 @@ class RelationshipsTest2 {
     Set ones // bi-directional one-to-many relationship
     Set uniones // uni-directional one-to-many relationship
 }
+
 class OneToManyTest2 {
     Long id
     Long version
@@ -267,23 +269,28 @@ class OneToOneTest2 {
     }
 
     void testPersistentPropertyInheritance() {
-        Class topClass = gcl.parseClass("class Top {\n" +
-                "int id\n" +
-                "int version\n" +
-                "String topString\n" +
-                "String transientString\n" +
-                "static transients=['transientString']\n"+
-                "}")
-        Class middleClass = gcl.parseClass("class Middle extends Top {\n" +
-                "String middleString\n" +
-                "String transientString2\n" +
-                "static transients=['transientString2']\n"+
-        "}")
-        Class bottomClass = gcl.parseClass("class Bottom extends Middle {\n" +
-                "String bottomString\n" +
-                "String transientString3\n" +
-                "static transients=['transientString3']\n"+
-        "}")
+        Class topClass = gcl.parseClass('''\
+class Top {
+    int id
+    int version
+    String topString
+    String transientString
+    static transients=['transientString']
+}''')
+
+        Class middleClass = gcl.parseClass('''\
+class Middle extends Top {
+    String middleString
+    String transientString2
+    static transients=['transientString2']
+}''')
+
+        Class bottomClass = gcl.parseClass('''\
+class Bottom extends Middle {
+    String bottomString
+    String transientString3
+    static transients=['transientString3']
+}''')
 
         def ga = new DefaultGrailsApplication(gcl.loadedClasses, gcl)
         ga.initialise()
@@ -346,14 +353,15 @@ class OneToOneTest2 {
 
     void testDefaultGrailsDomainClass() throws Exception {
 
-        Class clazz = gcl.parseClass("class UserTest { " +
-                " int id\n" +
-                " int version\n" +
-                " List transients = [ \"age\" ]\n" +
-                " String firstName\n" +
-                " String lastName\n" +
-                " Date age\n" +
-                "}")
+        Class clazz = gcl.parseClass('''\
+class UserTest {
+    int id
+    int version
+    List transients = ["age"]
+    String firstName
+    String lastName
+    Date age
+}''')
 
         GrailsDomainClass domainClass = new DefaultGrailsDomainClass(clazz)
 
@@ -363,12 +371,8 @@ class OneToOneTest2 {
         assertNotNull(domainClass.getVersion())
         assertTrue(domainClass.getIdentifier().isIdentity())
 
-        try {
+        shouldFail(InvalidPropertyException) {
             domainClass.getPropertyByName("rubbish")
-            fail("should throw exception")
-        }
-        catch(InvalidPropertyException ipe) {
-            // expected
         }
 
         GrailsDomainClassProperty age = domainClass.getPropertyByName("age")

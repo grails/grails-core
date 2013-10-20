@@ -69,12 +69,11 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
             }
         }
         else {
-            Object projectClassInstance = initializeProjectInstance()
-            runInstance(projectClassInstance)
+            runInstance initializeProjectInstance()
         }
     }
 
-    protected Object initializeProjectInstance() {
+    protected initializeProjectInstance() {
         ExecutionContext ec = executionContext
         BuildSettings buildSettings = initializeBuildSettings(ec)
         URLClassLoader classLoader = initializeClassLoader(buildSettings)
@@ -86,7 +85,7 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
         projectClassInstance
     }
 
-    protected Object createInstance(Class projectComponentClass, BuildSettings buildSettings) {
+    protected createInstance(Class projectComponentClass, BuildSettings buildSettings) {
         projectComponentClass.newInstance(buildSettings)
     }
 

@@ -62,7 +62,7 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
             }
         });
         Map<String,Object> sortedParams = new LinkedHashMap<String,Object>();
-        for(Object key : keys) {
+        for (Object key : keys) {
             sortedParams.put(String.valueOf(key), newParams.get(key));
         }
         this.params = Collections.unmodifiableMap(sortedParams);

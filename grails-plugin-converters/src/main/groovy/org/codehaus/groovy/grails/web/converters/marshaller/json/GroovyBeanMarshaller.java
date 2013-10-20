@@ -57,11 +57,11 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
                 Method readMethod = property.getReadMethod();
                 String name = property.getName();
 
-                if(!shouldInclude(includeExcludeSupport, includes, excludes, o, name)) continue;
+                if (!shouldInclude(includeExcludeSupport, includes, excludes, o, name)) continue;
 
                 if (readMethod != null && !(name.equals("metaClass"))&& !(name.equals("class"))) {
-                    if(readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
-                    if(readMethod.getAnnotation(ControllerMethod.class) != null) continue;
+                    if (readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
+                    if (readMethod.getAnnotation(ControllerMethod.class) != null) continue;
                     Object value = readMethod.invoke(o, (Object[]) null);
                     writer.key(name);
                     json.convertAnother(value);
@@ -71,7 +71,7 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
                 int modifiers = field.getModifiers();
                 if (Modifier.isPublic(modifiers) && !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))) {
                     String name = field.getName();
-                    if(!shouldInclude(includeExcludeSupport,includes,excludes,o,name)) continue;
+                    if (!shouldInclude(includeExcludeSupport,includes,excludes,o,name)) continue;
                     writer.key(name);
                     json.convertAnother(field.get(o));
                 }
@@ -89,5 +89,4 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<JSON>
     private boolean shouldInclude(IncludeExcludeSupport<String> includeExcludeSupport, List<String> includes, List<String> excludes, Object o, String name) {
         return includeExcludeSupport.shouldInclude(includes,excludes, name) && shouldInclude(o,name);
     }
-
 }

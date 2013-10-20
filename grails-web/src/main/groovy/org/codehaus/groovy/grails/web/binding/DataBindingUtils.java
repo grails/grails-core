@@ -173,7 +173,7 @@ public class DataBindingUtils {
             domain = (GrailsDomainClass) application.getArtefact(DomainClassArtefactHandler.TYPE,targetType.getName());
         }
         final List<DataBindingSource> dataBindingSources = collectionBindingSource.getDataBindingSources();
-        for(final DataBindingSource dataBindingSource : dataBindingSources) {
+        for (final DataBindingSource dataBindingSource : dataBindingSources) {
             final T newObject = targetType.newInstance();
             bindObjectToDomainInstance(domain, newObject, dataBindingSource, getBindingIncludeList(newObject), Collections.EMPTY_LIST, null);
             collectionToPopulate.add(newObject);
@@ -327,15 +327,15 @@ public class DataBindingUtils {
 
     public static DataBindingSourceRegistry getDataBindingSourceRegistry(GrailsApplication grailsApplication) {
         DataBindingSourceRegistry registry = null;
-        if(grailsApplication != null) {
+        if (grailsApplication != null) {
             ApplicationContext context = grailsApplication.getMainContext();
-            if(context != null) {
-                if(context.containsBean(DataBindingSourceRegistry.BEAN_NAME)) {
+            if (context != null) {
+                if (context.containsBean(DataBindingSourceRegistry.BEAN_NAME)) {
                     registry = context.getBean(DataBindingSourceRegistry.BEAN_NAME, DataBindingSourceRegistry.class);
                 }
             }
         }
-        if(registry == null) {
+        if (registry == null) {
             registry = new DefaultDataBindingSourceRegistry();
         }
 
@@ -363,10 +363,10 @@ public class DataBindingUtils {
     public static MimeTypeResolver getMimeTypeResolver(
             GrailsApplication grailsApplication) {
         MimeTypeResolver mimeTypeResolver = null;
-        if(grailsApplication != null) {
+        if (grailsApplication != null) {
             ApplicationContext context = grailsApplication.getMainContext();
-            if(context != null) {
-                if(context.containsBean(MimeTypeResolver.BEAN_NAME)) {
+            if (context != null) {
+                if (context.containsBean(MimeTypeResolver.BEAN_NAME)) {
                     mimeTypeResolver = context.getBean(MimeTypeResolver.BEAN_NAME, MimeTypeResolver.class);
                 }
             }
@@ -376,14 +376,14 @@ public class DataBindingUtils {
 
     public static MimeType resolveMimeType(Object bindingSource, MimeTypeResolver mimeTypeResolver) {
         final MimeType mimeType;
-        if(mimeTypeResolver != null) {
+        if (mimeTypeResolver != null) {
             MimeType resolvedMimeType = mimeTypeResolver.resolveRequestMimeType();
             mimeType = resolvedMimeType != null ? resolvedMimeType : MimeType.ALL;
         }
-        else if(bindingSource instanceof HttpServletRequest) {
+        else if (bindingSource instanceof HttpServletRequest) {
             HttpServletRequest req = (HttpServletRequest) bindingSource;
             String contentType = req.getContentType();
-            if(contentType != null) {
+            if (contentType != null) {
                 mimeType = new MimeType(contentType);
             }
             else {

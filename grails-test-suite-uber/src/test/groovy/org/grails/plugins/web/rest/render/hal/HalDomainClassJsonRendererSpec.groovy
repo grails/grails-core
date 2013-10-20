@@ -6,6 +6,7 @@ import grails.rest.Resource
 import grails.rest.render.hal.HalJsonRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
+
 import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
@@ -18,6 +19,7 @@ import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.util.WebUtils
+
 import spock.lang.Specification
 
 /**
@@ -25,10 +27,10 @@ import spock.lang.Specification
  */
 class HalDomainClassJsonRendererSpec extends Specification {
 
-
     void cleanup() {
         RequestContextHolder.resetRequestAttributes()
     }
+
     void "Test that the HAL renderer renders domain objects with appropriate links"() {
         given:"A HAL renderer"
             HalJsonRenderer renderer = getRenderer()
@@ -131,20 +133,20 @@ class HalDomainClassJsonRendererSpec extends Specification {
         renderer
     }
 
-
-
     MappingContext getMappingContext() {
         final context = new KeyValueMappingContext("")
         context.addPersistentEntity(Book)
         context.addPersistentEntity(Author)
         return context
     }
+
     LinkGenerator getLinkGenerator(Closure mappings) {
         def generator = new DefaultLinkGenerator("http://localhost", null)
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
         generator.urlMappingsHolder = getUrlMappingsHolder mappings
-        return generator;
+        return generator
     }
+
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         def allMappings = evaluator.evaluateMappings mappings
@@ -157,9 +159,11 @@ class Product {
     String name
     Category category
 }
+
 class Category {
     String name
 }
+
 @Entity
 @Resource
 class Book {

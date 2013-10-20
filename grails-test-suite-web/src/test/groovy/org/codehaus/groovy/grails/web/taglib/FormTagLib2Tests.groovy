@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import java.text.DateFormat
+
 import org.w3c.dom.Document
 
 /**
@@ -13,7 +14,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
 
     /** The name used for the datePicker tags created in the test cases. */
     private static final String DATE_PICKER_TAG_NAME = "testDatePicker"
-    private static final def SELECT_TAG_NAME = "testSelect"
+    private static final String SELECT_TAG_NAME = "testSelect"
 
     private static final Collection DATE_PRECISIONS_INCLUDING_MINUTE = ["minute", null].asImmutable()
     private static final Collection DATE_PRECISIONS_INCLUDING_HOUR = ["hour", "minute", null].asImmutable()
@@ -164,7 +165,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
     private void validateSelectedMonthValue(Document document, Calendar calendar, String precision) {
         final String FIELD_NAME = DATE_PICKER_TAG_NAME + "_month"
 
-        String expectedMonthValue = Integer.toString(1); // January
+        String expectedMonthValue = Integer.toString(1) // January
 
         if (DATE_PRECISIONS_INCLUDING_MONTH.contains(precision)) {
             expectedMonthValue = Integer.toString(calendar.get(Calendar.MONTH) + 1)
@@ -178,7 +179,7 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
     private void validateSelectedDayValue(Document document, Calendar calendar, String precision) {
         final String FIELD_NAME = DATE_PICKER_TAG_NAME + "_day"
 
-        String expectedDayValue = Integer.toString(1); // 1st day of the month
+        String expectedDayValue = Integer.toString(1) // 1st day of the month
         if (DATE_PRECISIONS_INCLUDING_DAY.contains(precision)) {
             expectedDayValue = Integer.toString(calendar.get(Calendar.DAY_OF_MONTH))
             assertSelectFieldPresentWithSelectedValue(document, FIELD_NAME, expectedDayValue)
@@ -277,7 +278,6 @@ class FormTagLib2Tests extends AbstractGrailsTagTests {
             attrs.noSelection = ['': 'Please choose']
             tag.call(attrs)
         }
-        String enclosed = "<test>" + sw.toString() + "</test>"
-        return parseText(enclosed)
+        return parseText("<test>" + sw + "</test>")
     }
 }

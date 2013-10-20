@@ -322,7 +322,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
                     }
                 }
                 else {
-                    if(mappedBy.containsKey(property.getName()) && mappedBy.get(property.getName()) == null) return;
+                    if (mappedBy.containsKey(property.getName()) && mappedBy.get(property.getName()) == null) return;
                     // if the related type has a relationships map it may be a many-to-many
                     // figure out if there is a many-to-many relationship defined
                     if (isRelationshipManyToMany(property, relatedClassType, relatedClassRelationships)) {
@@ -512,7 +512,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
 
         Class<?> relatedClassPropertyType = null;
 
-        if(mappedBy.containsKey(property.getName()) && mappedBy.get(property.getName()) == null) return;
+        if (mappedBy.containsKey(property.getName()) && mappedBy.get(property.getName()) == null) return;
 
         // if there is a relationships map use that to find out
         // whether it is mapped to a Set

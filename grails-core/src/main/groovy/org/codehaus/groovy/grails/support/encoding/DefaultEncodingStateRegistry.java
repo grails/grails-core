@@ -80,7 +80,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
      * @see org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry#shouldEncodeWith(org.codehaus.groovy.grails.support.encoding.Encoder, java.lang.CharSequence)
      */
     public boolean shouldEncodeWith(Encoder encoderToApply, CharSequence string) {
-        if(encoderToApply==NONE_ENCODER) return false;
+        if (encoderToApply==NONE_ENCODER) return false;
         EncodingState encodingState = getEncodingStateFor(string);
         return shouldEncodeWith(encoderToApply, encodingState);
     }
@@ -95,7 +95,7 @@ public final class DefaultEncodingStateRegistry implements EncodingStateRegistry
      * @return true, if should encode
      */
     public static boolean shouldEncodeWith(Encoder encoderToApply, EncodingState currentEncodingState) {
-        if(encoderToApply==NONE_ENCODER) return false;
+        if (encoderToApply==NONE_ENCODER) return false;
         if (currentEncodingState != null && currentEncodingState.getEncoders() != null) {
             for (Encoder encoder : currentEncodingState.getEncoders()) {
                 if (isPreviousEncoderSafeOrEqual(encoderToApply, encoder)) {

@@ -64,15 +64,14 @@ class TransactionalTransform implements ASTTransformation{
             throw new RuntimeException('Internal error: wrong types: $node.class / $parent.class')
         }
 
-        AnnotatedNode parent = (AnnotatedNode) astNodes[1];
-        AnnotationNode annotationNode = (AnnotationNode) astNodes[0];
+        AnnotatedNode parent = (AnnotatedNode) astNodes[1]
+        AnnotationNode annotationNode = (AnnotationNode) astNodes[0]
         if (!MY_TYPE.equals(annotationNode.getClassNode())) {
-            return;
+            return
         }
 
         if (parent instanceof MethodNode) {
             MethodNode methodNode = (MethodNode)parent
-
 
             final declaringClassNode = methodNode.getDeclaringClass()
 
@@ -82,44 +81,39 @@ class TransactionalTransform implements ASTTransformation{
         else if (parent instanceof ClassNode) {
             weaveTransactionalBehavior(source, parent, annotationNode)
         }
-
     }
 
-    public void weaveTransactionalBehavior(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode) {
+    void weaveTransactionalBehavior(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode) {
         weaveTransactionManagerAware(source, classNode)
 
         ClassNode controllerMethodAnn = getAnnotationClassNode("grails.web.controllers.ControllerMethod")
 
-        List<MethodNode> methods = new ArrayList<MethodNode>(classNode.getMethods());
-        
-        for (MethodNode md in methods) {
+        for (MethodNode md in new ArrayList<MethodNode>(classNode.getMethods())) {
             if (Modifier.isPublic(md.modifiers) && !Modifier.isAbstract(md.modifiers)) {
                 if (md.getAnnotations(MY_TYPE)) continue
 
                 if (controllerMethodAnn && md.getAnnotations(controllerMethodAnn)) continue
-                weaveTransactionalMethod(source, classNode, annotationNode, md);
+                weaveTransactionalMethod(source, classNode, annotationNode, md)
             }
         }
     }
 
     ClassNode getAnnotationClassNode(String annotationName) {
         try {
-            final classLoader = Thread.currentThread().contextClassLoader
-            final clazz = classLoader.loadClass(annotationName)
-            return new ClassNode(clazz)
+            return new ClassNode(Thread.currentThread().contextClassLoader.loadClass(annotationName))
         } catch (e) {
             return null
         }
     }
 
     protected void weaveTransactionalMethod(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode, MethodNode methodNode) {
-        if(isApplied(methodNode, this.getClass())) {
+        if (isApplied(methodNode, getClass())) {
             return
         }
-        markApplied(methodNode, this.getClass())
-        
+        markApplied(methodNode, getClass())
+
         MethodCallExpression originalMethodCall = moveOriginalCodeToNewMethod(source, classNode, methodNode)
-        
+
         BlockStatement methodBody = new BlockStatement()
 
         final transactionAttributeClassNode = ClassHelper.make(RuleBasedTransactionAttribute)
@@ -133,13 +127,14 @@ class TransactionalTransform implements ASTTransformation{
                 )
             )
         )
+
         // remove possible @CS & @TC SKIP annotation from original method node
         removeCompileStaticAnnotations(methodNode)
         // add @CS annotation to original method node
         addCompileStaticAnnotation(methodNode)
-        
+
         applyTransactionalAttributeSettings(annotationNode, transactionAttributeVar, methodBody)
-        
+
         final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")] as Parameter[]
         final callCallExpression = new ClosureExpression(executeMethodParameterTypes, new ExpressionStatement(originalMethodCall))
 
@@ -163,13 +158,13 @@ class TransactionalTransform implements ASTTransformation{
         final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, METHOD_EXECUTE, methodArgs)
         final executeMethodNode = transactionTemplateClassNode.getMethod("execute", executeMethodParameterTypes)
         executeMethodCallExpression.setMethodTarget(executeMethodNode)
-        
-        if(methodNode.getReturnType() != ClassHelper.VOID_TYPE) {
+
+        if (methodNode.getReturnType() != ClassHelper.VOID_TYPE) {
             methodBody.addStatement(new ReturnStatement(new CastExpression(methodNode.getReturnType(), executeMethodCallExpression)))
         } else {
-            methodBody.addStatement(new ExpressionStatement(executeMethodCallExpression));
+            methodBody.addStatement(new ExpressionStatement(executeMethodCallExpression))
         }
-        
+
         methodNode.setCode(methodBody)
         processVariableScopes(source, classNode, methodNode)
     }
@@ -184,7 +179,7 @@ class TransactionalTransform implements ASTTransformation{
                 final targetClassNode = (name == 'rollbackFor' || name == 'rollbackForClassName') ? rollbackRuleAttributeClassNode : noRollbackRuleAttributeClassNode
                 name = 'rollbackRules'
                 if (expr instanceof ListExpression) {
-                    for(exprItem in ((ListExpression)expr).expressions) {
+                    for (exprItem in ((ListExpression)expr).expressions) {
                         appendRuleElement(methodBody, transactionAttributeVar, name, new ConstructorCallExpression(targetClassNode, exprItem))
                     }
                 } else {
@@ -199,12 +194,12 @@ class TransactionalTransform implements ASTTransformation{
                     expr = new MethodCallExpression(expr, "value", new ArgumentListExpression())
                 }
                 methodBody.addStatement(
-                        new ExpressionStatement(
+                    new ExpressionStatement(
                         new BinaryExpression(new PropertyExpression(transactionAttributeVar, name),
-                        Token.newSymbol(Types.EQUAL, 0, 0),
-                        expr)
-                        )
-                        )
+                            Token.newSymbol(Types.EQUAL, 0, 0),
+                            expr)
+                    )
+                )
             }
         }
     }
@@ -213,14 +208,14 @@ class TransactionalTransform implements ASTTransformation{
         final rollbackRuleAttributeClassNode = ClassHelper.make(RollbackRuleAttribute)
         ClassNode rollbackRulesListClassNode = nonGeneric(ClassHelper.make(List), rollbackRuleAttributeClassNode)
         methodBody.addStatement(
-                new ExpressionStatement(
+            new ExpressionStatement(
                 new MethodCallExpression(
-                new CastExpression(rollbackRulesListClassNode, buildGetPropertyExpression(transactionAttributeVar, name, transactionAttributeVar.getType())),
-                'add',
-                expr
+                    new CastExpression(rollbackRulesListClassNode, buildGetPropertyExpression(transactionAttributeVar, name, transactionAttributeVar.getType())),
+                    'add',
+                    expr
                 )
-                )
-                )
+            )
+        )
     }
 
     protected MethodCallExpression moveOriginalCodeToNewMethod(SourceUnit source, ClassNode classNode, MethodNode methodNode) {
@@ -229,37 +224,36 @@ class TransactionalTransform implements ASTTransformation{
         def newParameters = methodNode.getParameters() ? (copyParameters(((methodNode.getParameters() as List) + [transactionStatusParameter]) as Parameter[])) : [transactionStatusParameter] as Parameter[]
 
         MethodNode renamedMethodNode = new MethodNode(
-                renamedMethodName,
-                Modifier.PROTECTED, methodNode.getReturnType().getPlainNodeReference(),
-                newParameters,
-                GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
-                methodNode.code
-                );
+            renamedMethodName,
+            Modifier.PROTECTED, methodNode.getReturnType().getPlainNodeReference(),
+            newParameters,
+            GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
+            methodNode.code)
         methodNode.setCode(null)
         copyAnnotations(methodNode, renamedMethodNode, null, ["grails.transaction.Transactional"] as Set)
         classNode.addMethod(renamedMethodNode)
-        
+
         processVariableScopes(source, classNode, renamedMethodNode)
-        
+
         final originalMethodCall = new MethodCallExpression(new VariableExpression("this"), renamedMethodName, new ArgumentListExpression(renamedMethodNode.parameters))
         originalMethodCall.setImplicitThis(false)
         originalMethodCall.setMethodTarget(renamedMethodNode)
-        
+
         originalMethodCall
     }
 
     protected void weaveTransactionManagerAware(SourceUnit source, ClassNode declaringClassNode) {
         ClassNode transactionManagerAwareInterface = ClassHelper.make(TransactionManagerAware)
+        if (GrailsASTUtils.findInterface(declaringClassNode, transactionManagerAwareInterface)) {
+            return
+        }
 
-        if (!GrailsASTUtils.findInterface(declaringClassNode, transactionManagerAwareInterface)) {
-            declaringClassNode.addInterface(transactionManagerAwareInterface)
+        declaringClassNode.addInterface(transactionManagerAwareInterface)
 
-            //add the transactionManager property
-            final transactionManagerProperty = declaringClassNode.getProperty(PROPERTY_TRANSACTION_MANAGER)
-            if (!transactionManagerProperty) {
-                declaringClassNode.addProperty(PROPERTY_TRANSACTION_MANAGER, Modifier.PUBLIC, ClassHelper.make(PlatformTransactionManager), null, null, null);
-            }
-
+        //add the transactionManager property
+        final transactionManagerProperty = declaringClassNode.getProperty(PROPERTY_TRANSACTION_MANAGER)
+        if (!transactionManagerProperty) {
+            declaringClassNode.addProperty(PROPERTY_TRANSACTION_MANAGER, Modifier.PUBLIC, ClassHelper.make(PlatformTransactionManager), null, null, null)
         }
     }
 }

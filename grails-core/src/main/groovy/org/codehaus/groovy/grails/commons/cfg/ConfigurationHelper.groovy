@@ -202,7 +202,7 @@ class ConfigurationHelper {
                 }
                 else {
                     def resource = resolver.getResource(location.toString())
-                    InputStream stream = null
+                    InputStream stream
                     try {
                         stream = resource.getInputStream()
                         if (resource.filename.endsWith('.groovy')) {

@@ -1,8 +1,10 @@
 package org.codehaus.groovy.grails.plugins
 
 import grails.persistence.Entity
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+
 import spock.lang.Specification
 
 class AddToSpec extends Specification {
@@ -48,7 +50,6 @@ class AddToSpec extends Specification {
             project.sales.size() == 2
             project.sales instanceof List
     }
-
 }
 
 @Entity
@@ -70,5 +71,5 @@ class Member implements Comparable {
     String name
 
     @Override
-    int compareTo(Object o) { name <=> o?.name }
+    int compareTo(o) { name <=> o?.name }
 }

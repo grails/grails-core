@@ -24,16 +24,16 @@ import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 
 /**
- * Responsible for cleaning a Grails project
+ * Responsible for cleaning a Grails project.
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-
 class GrailsProjectCleaner extends BaseSettingsApi {
     private static final GrailsConsole CONSOLE  = GrailsConsole.getInstance()
 
     AntBuilder ant
+
     GrailsProjectCleaner(BuildSettings settings, GrailsBuildEventListener buildEventListener) {
         super(settings, buildEventListener, false)
     }
@@ -83,7 +83,6 @@ class GrailsProjectCleaner extends BaseSettingsApi {
         if (triggerEvents) {
             buildEventListener.triggerEvent("CleanEnd")
         }
-
     }
 
     void cleanWork() {
@@ -153,14 +152,10 @@ class GrailsProjectCleaner extends BaseSettingsApi {
             buildEventListener.triggerEvent("CleanWarFileStart")
         }
 
-        AntBuilder ant = getAnt()
-        ant.delete(file:buildSettings.projectWarFile, failonerror:false)
+        getAnt().delete(file:buildSettings.projectWarFile, failonerror:false)
 
         if (triggerEvents) {
             buildEventListener.triggerEvent("CleanWarFileEnd")
         }
-
     }
 }
-
-

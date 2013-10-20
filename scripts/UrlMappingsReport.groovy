@@ -32,7 +32,7 @@ target(urlMappingsReport:"Produces a URL mappings report for the current Grails 
     def evaluator = classLoader.loadClass("org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator").newInstance(classLoader.loadClass('org.springframework.mock.web.MockServletContext').newInstance())
     def allMappings = []
 
-    for(m in mappings) {
+    for (m in mappings) {
         List grailsClassMappings
         if (Script.isAssignableFrom(m.getClazz())) {
             grailsClassMappings = evaluator.evaluateMappings(m.getClazz())

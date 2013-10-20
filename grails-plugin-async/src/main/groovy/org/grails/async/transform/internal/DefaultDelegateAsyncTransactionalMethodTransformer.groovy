@@ -16,6 +16,9 @@
 package org.grails.async.transform.internal
 
 import groovy.transform.CompileStatic
+
+import java.lang.reflect.Modifier
+
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.FieldNode
@@ -40,8 +43,6 @@ import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
-
-import java.lang.reflect.Modifier
 
 /**
  * Modifies the @DelegateAsync transform to take into account transactional services. New instance should be created per class transform, as state is held.
@@ -75,9 +76,9 @@ class DefaultDelegateAsyncTransactionalMethodTransformer implements DelegateAsyn
         if (transactionalField == null) {
             transactionalField = delegateClassNode.getField(TRANSACTIONAL_FIELD)
             isTransactional = false
-            if(transactionalField) {
+            if (transactionalField) {
                 def ie = transactionalField.getInitialExpression()
-                if(ie instanceof ConstantExpression) {
+                if (ie instanceof ConstantExpression) {
                     isTransactional = ie.isTrueExpression()
                 }
             }
@@ -91,7 +92,7 @@ class DefaultDelegateAsyncTransactionalMethodTransformer implements DelegateAsyn
 
 
             final methodLookupArguments = new ArgumentListExpression(new ConstantExpression(methodNode.getName()))
-            for(Parameter p in methodNode.getParameters()) {
+            for (Parameter p in methodNode.getParameters()) {
                 methodLookupArguments.addExpression(new ClassExpression(p.getType().getPlainNodeReference()))
             }
             final promiseLookupExpression = new BinaryExpression(new PropertyExpression(EXPRESSION_THIS, FIELD_NAME_PROMISE_DECORATORS), Token.newSymbol(Types.LEFT_SQUARE_BRACKET, -1, -1), new ConstantExpression(currentIndex))
@@ -110,15 +111,12 @@ class DefaultDelegateAsyncTransactionalMethodTransformer implements DelegateAsyn
                                                         )
                              )
                         )
-
                     )
                 )
             )
 
             promiseDecorators.addExpression(promiseLookupExpression)
-
         }
-
     }
 
     BlockStatement getSetTransactionManagerMethodBody(ClassNode classNode) {
@@ -134,7 +132,7 @@ class DefaultDelegateAsyncTransactionalMethodTransformer implements DelegateAsyn
                 classNode.addField(new FieldNode(FIELD_NAME_TRANSACTION_MANAGER, Modifier.PRIVATE, INTERFACE_TRANSACTION_MANAGER, classNode, GrailsASTUtils.NULL_EXPRESSION))
             }
             final promiseDecoratorsField = classNode.getField(FIELD_NAME_PROMISE_DECORATORS)
-            if(promiseDecoratorsField == null) {
+            if (promiseDecoratorsField == null) {
                 classNode.addField(new FieldNode(FIELD_NAME_PROMISE_DECORATORS, Modifier.PRIVATE, CLASS_NODE_MAP, classNode, new MapExpression()))
             }
 
@@ -162,7 +160,6 @@ class DefaultDelegateAsyncTransactionalMethodTransformer implements DelegateAsyn
             )
             method = new MethodNode(METHOD_NAME_SET_TRANSACTION_MANAGER, Modifier.PUBLIC, ClassHelper.VOID_TYPE, parameters, [] as ClassNode[], methodBody)
             classNode.addMethod(method)
-
         }
 
         return (BlockStatement)method.getCode()

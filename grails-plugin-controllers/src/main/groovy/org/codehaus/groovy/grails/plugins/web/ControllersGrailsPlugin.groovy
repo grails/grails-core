@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.plugins.web
 
 import grails.artefact.Enhanced
-import grails.util.Environment
 import grails.util.GrailsUtil
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
@@ -34,7 +33,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequestFilter
 import org.codehaus.groovy.grails.web.servlet.mvc.MixedGrailsControllerHelper
 import org.codehaus.groovy.grails.web.servlet.mvc.RedirectEventListener
 import org.codehaus.groovy.grails.web.servlet.mvc.SimpleGrailsController
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
+import org.springframework.beans.factory.support.AbstractBeanDefinition
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter

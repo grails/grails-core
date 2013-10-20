@@ -79,7 +79,7 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
      * Registers the end transition state of a web flow if it is returned as
      * <code>return success()</code>
      */
-    protected Object methodMissing(String name, Object args) {
+    protected methodMissing(String name, args) {
         if (isOutput) {
             doOutput(name, args[0])
             return
@@ -102,7 +102,7 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
                 return name
             }
         }
-        throw new MissingMethodException(name, this.class, args)
+        throw new MissingMethodException(name, getClass(), args)
     }
 
     protected doOutput(String name, Closure valueClosure) {
@@ -119,7 +119,7 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
         currentEvent.attributes[name] = valueMap.value
     }
 
-    protected doOutput(String name, Object value) {
+    protected doOutput(String name, value) {
         if (currentEvent.attributes == null) {
             currentEvent.attributes = [:]
         }
@@ -134,7 +134,7 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
         doInput(name, false, valueClosure)
     }
 
-    protected doInput(String name, Object defaultValue) {
+    protected doInput(String name, defaultValue) {
         doInput(name, false, defaultValue)
     }
 
@@ -147,7 +147,7 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
         doInput(name, required, value)
     }
 
-    protected doInput(String name, Boolean required, Object defaultValue) {
+    protected doInput(String name, Boolean required, defaultValue) {
         def value = inputParams[name] ?: defaultValue
         if (required && !value) {
             throw new MissingPropertyException("Missing required attribute $name")

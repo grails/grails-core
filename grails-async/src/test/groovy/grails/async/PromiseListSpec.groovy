@@ -21,8 +21,7 @@ import spock.lang.Specification
  * @author Graeme Rocher
  * @since 2.3
  */
-class PromiseListSpec extends Specification{
-
+class PromiseListSpec extends Specification {
 
     void "Test promise list handling"() {
         when:"A list of promises is created"
@@ -64,7 +63,6 @@ class PromiseListSpec extends Specification{
             def result = promise.get()
         then:"An appropriately populated list is produced"
             result == [1,2,3]
-
     }
 
     void "Test promise list with an exception"() {

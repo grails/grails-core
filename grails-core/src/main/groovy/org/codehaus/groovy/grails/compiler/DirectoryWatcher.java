@@ -97,7 +97,7 @@ public class DirectoryWatcher extends Thread {
 
     protected void trackDirectoryExtensions(File dir, List<String> fileExtensions) {
         Collection<String> existingExtensions = directoryToExtensionsMap.get(dir);
-        if(existingExtensions == null) {
+        if (existingExtensions == null) {
             directoryToExtensionsMap.put(dir, new ArrayList<String>(fileExtensions));
         }
         else {

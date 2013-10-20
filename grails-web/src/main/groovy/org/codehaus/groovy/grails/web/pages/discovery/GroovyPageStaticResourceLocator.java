@@ -72,5 +72,4 @@ public class GroovyPageStaticResourceLocator extends DefaultResourceLocator {
         }
         return null;
     }
-
 }

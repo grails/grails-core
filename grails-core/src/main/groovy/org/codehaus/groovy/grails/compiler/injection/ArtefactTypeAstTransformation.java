@@ -118,7 +118,7 @@ public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransf
 
     public static boolean hasArtefactType(String artefactType, GrailsArtefactClassInjector gace) {
         for (String _artefactType : gace.getArtefactTypes()) {
-            if(_artefactType.equals("*")) return true;
+            if (_artefactType.equals("*")) return true;
             if (_artefactType.equals(artefactType)) {
                 return true;
             }

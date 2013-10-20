@@ -16,11 +16,12 @@ class ChainMethodTests extends AbstractGrailsControllerTests {
     void registerRequestDataValueProcessor() {
         RequestDataValueProcessor requestDataValueProcessor = new MockRequestDataValueProcessor()
         MockApplicationContext applicationContext = (MockApplicationContext)ctx
-        applicationContext.registerMockBean("requestDataValueProcessor",requestDataValueProcessor)
+        applicationContext.registerMockBean("requestDataValueProcessor", requestDataValueProcessor)
     }
+
     void unRegisterRequestDataValueProcessor() {
         MockApplicationContext applicationContext = (MockApplicationContext)ctx
-        applicationContext.registerMockBean("requestDataValueProcessor",null)
+        applicationContext.registerMockBean("requestDataValueProcessor", null)
     }
 
     protected void onSetUp() {
@@ -70,7 +71,7 @@ class TestChainBook {
     }
 
     void testChainMethodWithModelAndRequestDataValueProcessor() {
-        this.registerRequestDataValueProcessor()
+        registerRequestDataValueProcessor()
         def domainClass = ga.getDomainClass("TestChainBook").clazz
         domainClass.metaClass.save = { false }
         def controller = ga.getControllerClass("TestChainController").newInstance()
@@ -88,7 +89,7 @@ class TestChainBook {
         org.springframework.mock.web.MockHttpServletResponse response = controller.response
 
         assertEquals '/testChain/create?requestDataValueProcessorParamName=paramValue', response.redirectedUrl
-        this.unRegisterRequestDataValueProcessor()
+        unRegisterRequestDataValueProcessor()
     }
 
     void testChainMethodWithId() {

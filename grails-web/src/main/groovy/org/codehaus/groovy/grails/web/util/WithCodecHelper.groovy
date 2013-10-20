@@ -72,7 +72,7 @@ class WithCodecHelper {
      * @param closure the closure to execute
      * @return the return value of the closure
      */
-    static withCodec(GrailsApplication grailsApplication, Object codecInfo, Closure closure) {
+    static withCodec(GrailsApplication grailsApplication, codecInfo, Closure closure) {
         GroovyPageOutputStack outputStack=GroovyPageOutputStack.currentStack()
         try {
             outputStack.push(createOutputStackAttributesBuilder(codecInfo, grailsApplication).build(), false)
@@ -89,13 +89,13 @@ class WithCodecHelper {
      * @param grailsApplication the grails application
      * @return the builder instance for building {@link GroovyPageOutputStackAttributes} instance
      */
-    static org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes.Builder createOutputStackAttributesBuilder(Object codecInfo, GrailsApplication grailsApplication) {
+    static org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes.Builder createOutputStackAttributesBuilder(codecInfo, GrailsApplication grailsApplication) {
         GroovyPageOutputStackAttributes.Builder builder=new GroovyPageOutputStackAttributes.Builder()
         builder.inheritPreviousEncoders(true)
         if (codecInfo != null) {
             Map<String, Object> codecInfoMap = makeSettingsCanonical(codecInfo)
             Map<String, Encoder> encoders = [:]
-            codecInfoMap.each { String codecWriterName, Object codecName ->
+            codecInfoMap.each { String codecWriterName, codecName ->
                 if (codecName instanceof String && !encoders.containsKey(codecName)) {
                     encoders.put(codecName, lookupEncoder(grailsApplication, codecName))
                 }
@@ -120,8 +120,8 @@ class WithCodecHelper {
             if (codecInfo.get(ALREADY_CANONICAL_KEY_NAME)) {
                 return (Map<String, Object>)codecInfo
             }
-            String allFallback = null
-            String nameFallback = null
+            String allFallback
+            String nameFallback
             (Map<String,String>)((Map)codecInfo).each { k, v ->
                 String codecWriterName = k.toString().toLowerCase() - 'codec'
                 if (codecWriterName == GroovyPageConfig.INHERIT_SETTING_NAME) {
@@ -143,7 +143,7 @@ class WithCodecHelper {
             }
 
             if (allFallback || nameFallback) {
-                for(String codecWriterName : GroovyPageConfig.VALID_CODEC_SETTING_NAMES) {
+                for (String codecWriterName : GroovyPageConfig.VALID_CODEC_SETTING_NAMES) {
                     String codecName=codecInfoMap.get(codecWriterName)?.toString()
                     if (!codecName) {
                         if (nameFallback && codecWriterName != GroovyPageConfig.STATIC_CODEC_NAME) {
@@ -157,7 +157,7 @@ class WithCodecHelper {
             }
         } else {
             String codecName = codecInfo.toString()
-            for(String codecWriterName : GroovyPageConfig.VALID_CODEC_SETTING_NAMES) {
+            for (String codecWriterName : GroovyPageConfig.VALID_CODEC_SETTING_NAMES) {
                 if (codecWriterName != GroovyPageConfig.STATIC_CODEC_NAME) {
                     codecInfoMap.put(codecWriterName, codecName)
                 }
@@ -180,7 +180,7 @@ class WithCodecHelper {
      */
     static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
         try {
-            CodecLookup codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup.class)
+            CodecLookup codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup)
             return codecLookup.lookupEncoder(codecName)
         } catch (NullPointerException e) {
             // ignore NPE for encoder lookups
@@ -188,8 +188,7 @@ class WithCodecHelper {
         }
     }
 
-    static Map<String, Object> mergeSettingsAndMakeCanonical(Object currentSettings,
-            Map<String, Object> parentSettings) {
+    static Map<String, Object> mergeSettingsAndMakeCanonical(currentSettings, Map<String, Object> parentSettings) {
         Map<String, Object> codecInfoMap
         if (currentSettings) {
             Map<String, Object> canonicalCodecInfo = makeSettingsCanonical(currentSettings)

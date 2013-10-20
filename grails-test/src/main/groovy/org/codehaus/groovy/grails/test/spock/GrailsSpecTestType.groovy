@@ -2,28 +2,27 @@ package org.codehaus.groovy.grails.test.spock
 
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
+import java.lang.reflect.Modifier
+
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
-import org.codehaus.groovy.grails.test.event.GrailsTestRunNotifier
-import org.codehaus.groovy.grails.test.junit4.runner.GrailsTestCaseRunnerBuilder
-import org.codehaus.groovy.grails.test.spock.listener.OverallRunListener
-
-/**
- * @author Graeme Rocher
- */
-
-import org.junit.runner.JUnitCore
 import org.codehaus.groovy.grails.test.GrailsTestTypeResult
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
-import org.codehaus.groovy.grails.test.support.GrailsTestTypeSupport
+import org.codehaus.groovy.grails.test.event.GrailsTestRunNotifier
+import org.codehaus.groovy.grails.test.junit4.runner.GrailsTestCaseRunnerBuilder
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportsFactory
+import org.codehaus.groovy.grails.test.spock.listener.OverallRunListener
+import org.codehaus.groovy.grails.test.support.GrailsTestMode
+import org.codehaus.groovy.grails.test.support.GrailsTestTypeSupport
+import org.junit.runner.JUnitCore
 import org.junit.runners.Suite
 import org.spockframework.runtime.SpecUtil
 
 import spock.config.RunnerConfiguration
 
-import java.lang.reflect.Modifier
-import org.codehaus.groovy.grails.test.support.GrailsTestMode
-
+/**
+ * @author Graeme Rocher
+ */
 @CompileStatic
 class GrailsSpecTestType extends GrailsTestTypeSupport {
     public static final List<String> TEST_SUFFIXES = ["Test", "Tests", "Spec", "Specification"].asImmutable()
@@ -57,7 +56,7 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
     protected int doPrepare() {
         eachSourceFile { GrailsTestTargetPattern testTargetPattern, File specSourceFile ->
             def specClass = sourceFileToClass(specSourceFile)
-            if(!Modifier.isAbstract(specClass.getModifiers()))
+            if (!Modifier.isAbstract(specClass.getModifiers()))
                 specClasses << specClass
         }
         def testClasses = specClasses
@@ -73,14 +72,13 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
     }
 
     protected Suite createSuite(classes) {
-        if(mode) {
+        if (mode) {
             new Suite(new GrailsTestCaseRunnerBuilder(mode, getApplicationContext(), testTargetPatterns), classes as Class[])
         }
         else {
             new Suite(new GrailsTestCaseRunnerBuilder(testTargetPatterns), classes as Class[])
         }
     }
-
 
     @CompileStatic(TypeCheckingMode.SKIP)
     protected GrailsTestTypeResult doRun(GrailsTestEventPublisher eventPublisher) {

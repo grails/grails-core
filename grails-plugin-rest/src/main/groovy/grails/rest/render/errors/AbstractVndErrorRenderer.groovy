@@ -21,6 +21,7 @@ import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.MessageSource
@@ -40,7 +41,6 @@ abstract class AbstractVndErrorRenderer  implements ContainerRenderer<Errors, Ob
     public static final String RESOURCE_ATTRIBUTE = "resource"
     public static final String HREF_ATTRIBUTE = "href"
 
-
     String encoding = GrailsWebUtil.DEFAULT_ENCODING
     boolean absoluteLinks = true
     boolean prettyPrint = Environment.isDevelopmentMode()
@@ -50,7 +50,6 @@ abstract class AbstractVndErrorRenderer  implements ContainerRenderer<Errors, Ob
 
     @Autowired
     LinkGenerator linkGenerator
-
 
     @Override
     Class<Errors> getTargetType() {
@@ -65,17 +64,15 @@ abstract class AbstractVndErrorRenderer  implements ContainerRenderer<Errors, Ob
      */
     protected String resolveLogRef(target, ObjectError oe) {
         final objectId = getObjectId(target)
-        final name = GrailsNameUtils.getPropertyName(target.class)
+        final name = GrailsNameUtils.getPropertyName(target.getClass())
         final code = oe.code
-        def logref = "${name}.${code}${objectId ? '.' + objectId: ''}".toString()
-        logref
+        "${name}.${code}${objectId ? '.' + objectId: ''}"
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected Object getObjectId(target) {
+    protected getObjectId(target) {
         target.id
     }
-
 
     @Override
     Class<Object> getComponentType() {

@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.resolve
 
 import grails.util.BuildSettings
-
 import groovy.xml.MarkupBuilder
 
 import org.apache.ivy.core.module.descriptor.DefaultDependencyDescriptor
@@ -30,7 +29,6 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClass(System)
     }
 
-
     void testResolveAgent() {
         def settings = new BuildSettings()
 
@@ -48,8 +46,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
         assert report != null
         assert report.jarFiles.find { File f -> f.name.contains('springloaded')}
-
     }
+
     // test that when a plugin is declared as test scoped then its dependencies are test scoped as well
     void testPluginScopeMapping() {
         def settings = new BuildSettings()
@@ -730,8 +728,8 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             dependencies {
                 test "junit:junit:4.8.1"
             }
-
         }
+
         // test simple exclude
         manager.parseDependencies {
             inherits('test') {

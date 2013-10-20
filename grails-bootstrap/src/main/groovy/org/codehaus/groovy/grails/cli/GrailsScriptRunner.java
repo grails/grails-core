@@ -74,7 +74,7 @@ public class GrailsScriptRunner {
     private static PrintStream originalOut;
     @SuppressWarnings("rawtypes")
     public static final Closure DO_NOTHING_CLOSURE = new Closure(GrailsScriptRunner.class) {
-        private static final long serialVersionUID = 1L;
+        private static final long serialVersionUID = 1;
         @Override public Object call(Object arguments) { return null; }
         @Override public Object call() { return null; }
         @Override public Object call(Object... args) { return null; }
@@ -156,7 +156,7 @@ public class GrailsScriptRunner {
             build = new BuildSettings(new File(grailsHome));
             build.setModified(commandLine.hasOption(CommandLine.REFRESH_DEPENDENCIES_ARGUMENT));
             build.setOffline(commandLine.hasOption(CommandLine.OFFLINE_ARGUMENT));
-            if(commandLine.hasOption(CommandLine.DEBUG_FORK)) {
+            if (commandLine.hasOption(CommandLine.DEBUG_FORK)) {
                 System.setProperty(ForkedGrailsProcess.DEBUG_FORK, "true");
             }
             if (build.getRootLoader() == null) {
@@ -239,7 +239,7 @@ public class GrailsScriptRunner {
 
     private static void loadConfigEnvironment(CommandLine commandLine, BuildSettings build) {
         String env;
-        if(commandLine.isEnvironmentSet()) {
+        if (commandLine.isEnvironmentSet()) {
             env = commandLine.getEnvironment();
         }
         else {

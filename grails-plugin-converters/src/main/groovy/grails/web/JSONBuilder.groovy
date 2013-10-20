@@ -69,7 +69,7 @@ class JSONBuilder {
         return list
     }
 
-    def invokeMethod(String methodName, Object args) {
+    def invokeMethod(String methodName, args) {
         if (args.size()) {
             if (args[0] instanceof Map) {
                 // switch root to an array if elements used at top level
@@ -91,7 +91,7 @@ class JSONBuilder {
                 n.putAll(args[0])
             }
             else if (args[-1] instanceof Closure) {
-                final Object callable = args[-1]
+                final callable = args[-1]
                 handleClosureNode(methodName, callable)
             }
             else if (args.size() == 1) {
@@ -140,7 +140,7 @@ class JSONBuilder {
         current = nestingStack.pop()
     }
 
-    void setProperty(String propName, Object value) {
+    void setProperty(String propName, value) {
         if (value instanceof Closure) {
             handleClosureNode(propName, value)
         }
@@ -151,8 +151,7 @@ class JSONBuilder {
                     final JSONBuilder localBuilder = new JSONBuilder()
                     callable.delegate = localBuilder
                     callable.resolveStrategy = Closure.DELEGATE_FIRST
-                    final Map nestedObject = localBuilder.buildRoot(callable)
-                    return nestedObject
+                    return localBuilder.buildRoot(callable)
                 }
 
                 return it

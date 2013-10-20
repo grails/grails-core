@@ -86,7 +86,7 @@ target(allTests: "Runs the project's tests.") {
     depends(compile, startLogging, packagePlugins, configureServerContextPath)
     if(grailsSettings.forkSettings.test) {
         def forkedTestRunner = new ForkedGrailsTestRunner(grailsSettings)
-        if(grailsSettings.forkSettings.test instanceof Map) {
+        if (grailsSettings.forkSettings.test instanceof Map) {
             forkedTestRunner.configure(grailsSettings.forkSettings.test)
         }
         forkedTestRunner.fork(argsMap)
@@ -94,7 +94,6 @@ target(allTests: "Runs the project's tests.") {
     else {
         projectTestRunner.runAllTests(argsMap, false)
     }
-
 }
 
 /**

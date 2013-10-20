@@ -5,8 +5,7 @@ import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
-import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter;
+import org.codehaus.groovy.grails.web.util.GrailsPrintWriterAdapter
 import org.springframework.context.ApplicationContext
 
 /**
@@ -54,7 +53,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
         "\n"+
         "class test_index_gsp extends GroovyPage {\n"+
         "String getGroovyPageFileName() { \"test\" }\n"+
-        "public Object run() {\n"+
+        "Object run() {\n"+
         "def out=getOut()\n"+
         "out.print('<div>RunPage test</div>')\n"+
         "}\n"+
@@ -65,7 +64,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
     }
 
     def runPageCode(pageCode) {
-        def result = null
+        def result
         runTest {
             StringWriter sw = new StringWriter()
             PrintWriter pw = new GrailsPrintWriterAdapter(sw)
@@ -98,7 +97,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
-                "public Object run() {\n"+
+                "Object run() {\n"+
                 "setBodyClosure(1) { out.print('Boo!') }\n"+
                 "invokeTag('isaid', 'g', -1, [:], 1)\n"+
                 "}\n"+
@@ -116,7 +115,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
-                "public Object run() {\n"+
+                "Object run() {\n"+
                 "def out = getOut()\n"+
                 "setBodyClosure(1) { out.print('Boo!') }\n"+
                 "invokeTag('Person','foaf', -1, [a:'b',c:'d'], 1)\n"+
@@ -134,7 +133,7 @@ class GroovyPageTests extends AbstractGrailsControllerTests {
                 "\n"+
                 "class test_index_gsp extends GroovyPage {\n"+
                 "String getGroovyPageFileName() { \"test\" }\n"+
-                "public Object run() {\n"+
+                "Object run() {\n"+
                 "out.print(isaid([:],'Boo!'))\n"+
                 "}\n"+
                 "}"

@@ -148,7 +148,7 @@ class ValidationTagLib {
         def resultErrorsList = []
 
         for (i in checkList) {
-            def errors = null
+            def errors
             if (i instanceof Errors) {
                 errors = i
             }

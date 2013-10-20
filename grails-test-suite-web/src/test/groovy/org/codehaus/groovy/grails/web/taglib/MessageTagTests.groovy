@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.web.taglib;
+package org.codehaus.groovy.grails.web.taglib
 
 class MessageTagTests extends AbstractGrailsTagTests {
 
@@ -10,10 +10,7 @@ class MessageTagTests extends AbstractGrailsTagTests {
     }
 
     void testMessageTag() {
-        StringWriter sw = new StringWriter();
-
-        withTag("message", sw) { tag ->
-
+        withTag("message", new StringWriter()) { tag ->
             // test when no message found it returns code
             def attrs = [code:"test.code"]
             def result=tag.call(attrs)
@@ -35,10 +32,7 @@ class MessageTagTests extends AbstractGrailsTagTests {
     }
 
     void testMessageTagWithCodec() {
-        StringWriter sw = new StringWriter();
-
-        withTag("message", sw) { tag ->
-
+        withTag("message", new StringWriter()) { tag ->
             def attrs = [code:"test.code", encodeAs:'HTML']
             messageSource.addMessage("test.code", new Locale("en"), ">>&&")
             def result = tag.call(attrs)

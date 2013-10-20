@@ -116,7 +116,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
      * @return The resulting rendering GSP
      */
     String render(Map args) {
-        def uri = null
+        def uri
         final attributes = webRequest.attributes
         if (args.template) {
             uri = attributes.getTemplateUri(args.template, request)
