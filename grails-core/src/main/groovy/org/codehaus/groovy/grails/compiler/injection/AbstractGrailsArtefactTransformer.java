@@ -20,6 +20,8 @@ import grails.artefact.Enhanced;
 import grails.util.GrailsUtil;
 import groovy.lang.Mixin;
 
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
@@ -37,11 +39,15 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.AttributeExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
+import org.codehaus.groovy.ast.expr.CastExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.FieldExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
@@ -55,6 +61,8 @@ import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import static org.codehaus.groovy.transform.AbstractASTTransformUtil.*;
 
 /**
  * Abstract transformer that takes an implementation class and creates methods
@@ -139,14 +147,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         String apiInstanceProperty = INSTANCE_PREFIX + instanceImplementation.getSimpleName();
         Expression apiInstance = new VariableExpression(apiInstanceProperty, implementationNode);
 
-        if (requiresStaticLookupMethod()) {
-            final String lookupMethodName = CURRENT_PREFIX + instanceImplementation.getSimpleName();
-            MethodNode lookupMethod = createStaticLookupMethod(classNode, implementationNode, apiInstanceProperty, lookupMethodName);
-            apiInstance = new MethodCallExpression(new ClassExpression(classNode), lookupMethodName, ZERO_ARGS);
-            ((MethodCallExpression)apiInstance).setMethodTarget(lookupMethod);
-        }
-        else if (requiresAutowiring()) {
-
+        if (!requiresStaticLookupMethod() && requiresAutowiring()) {
             final ConstructorCallExpression constructorCallExpression = GrailsASTUtils.hasZeroArgsConstructor(implementationNode) ? new ConstructorCallExpression(implementationNode, ZERO_ARGS) : null;
 
             PropertyNode propertyNode = new PropertyNode(apiInstanceProperty, Modifier.PUBLIC, implementationNode, classNode, constructorCallExpression, null, null);
@@ -157,12 +158,14 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
             classNode.addProperty(propertyNode);
         }
         else {
-            final ConstructorCallExpression constructorCallExpression = new ConstructorCallExpression(implementationNode, ZERO_ARGS);
-            FieldNode fieldNode = classNode.getField(apiInstanceProperty);
-            if (fieldNode == null || (Modifier.isPrivate(fieldNode.getModifiers()) && !fieldNode.getDeclaringClass().equals(classNode))) {
-                fieldNode = new FieldNode(apiInstanceProperty, PRIVATE_STATIC_MODIFIER,implementationNode, classNode,constructorCallExpression);
-                classNode.addField(fieldNode);
+            Expression initialValueExpression = null;
+            if (!requiresStaticLookupMethod()) {
+                initialValueExpression = new ConstructorCallExpression(implementationNode, ZERO_ARGS);
             }
+            final String lookupMethodName = CURRENT_PREFIX + instanceImplementation.getSimpleName();
+            MethodNode lookupMethod = createStaticLookupMethod(classNode, implementationNode, apiInstanceProperty, lookupMethodName, initialValueExpression);
+            apiInstance = new MethodCallExpression(new ClassExpression(classNode), lookupMethodName, ZERO_ARGS);
+            ((MethodCallExpression)apiInstance).setMethodTarget(lookupMethod);
         }
 
         while (!implementationNode.equals(AbstractGrailsArtefactTransformer.OBJECT_CLASS)) {
@@ -189,12 +192,12 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         String apiInstanceProperty = STATIC_PREFIX + staticImplementationSimpleName;
         final String lookupMethodName = CURRENT_PREFIX + staticImplementationSimpleName;
 
+        Expression initialValueExpression = null;
         if (!requiresStaticLookupMethod()) {
-            final ConstructorCallExpression constructorCallExpression = new ConstructorCallExpression(staticImplementationNode, ZERO_ARGS);
-            addApiLookupFieldAndSetter(classNode, staticImplementationNode, apiInstanceProperty, constructorCallExpression);
+            initialValueExpression = new ConstructorCallExpression(staticImplementationNode, ZERO_ARGS);
         }
 
-        MethodNode lookupMethod = createStaticLookupMethod(classNode, staticImplementationNode, apiInstanceProperty, lookupMethodName);
+        MethodNode lookupMethod = createStaticLookupMethod(classNode, staticImplementationNode, apiInstanceProperty, lookupMethodName, initialValueExpression);
         MethodCallExpression apiLookupMethod = new MethodCallExpression(new ClassExpression(classNode), lookupMethodName, ZERO_ARGS);
         apiLookupMethod.setMethodTarget(lookupMethod);        
 
@@ -275,13 +278,10 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
         return GrailsASTUtils.isCandidateMethod(declaredMethod);
     }
 
-    private MethodNode createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiProperty, String lookupMethodName) {
-        // if autowiring is required we add a default method that throws an exception
-        // the method should be override via meta-programming in the Grails environment
+    private MethodNode createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiProperty, String lookupMethodName, Expression initialValue) {
         MethodNode lookupMethod = classNode.getMethod(lookupMethodName, ZERO_PARAMETERS);
         if (lookupMethod == null  || !lookupMethod.getDeclaringClass().equals(classNode)) {
-            BlockStatement methodBody = new BlockStatement();
-            lookupMethod = populateAutowiredApiLookupMethod(classNode, implementationNode, apiProperty, lookupMethodName, methodBody);
+            lookupMethod = populateAutowiredApiLookupMethod(classNode, implementationNode, apiProperty, lookupMethodName, initialValue);
             classNode.addMethod(lookupMethod);
             GrailsASTUtils.addCompileStaticAnnotation(lookupMethod);
         }
@@ -299,40 +299,68 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected MethodNode populateAutowiredApiLookupMethod(ClassNode classNode, ClassNode implementationNode,
-                                                          String apiProperty, String methodName, BlockStatement methodBody) {
+                                                          String apiProperty, String methodName, Expression initialValueExpression) {
+        FieldNode fieldNode = addApiLookupFieldAndSetter(classNode, implementationNode, apiProperty, initialValueExpression);
+        FieldExpression apiVar = new FieldExpression(fieldNode);
         
-        addApiLookupFieldAndSetter(classNode, implementationNode, apiProperty, null);
-        
-        VariableExpression apiVar = new VariableExpression(apiProperty, implementationNode);
+        ClassNode referenceClassNode = resolveReferenceClassNode(implementationNode, initialValueExpression);
         
         BlockStatement ifBlock = new BlockStatement();
-        ArgumentListExpression arguments = new ArgumentListExpression();
-        arguments.addExpression(new ConstantExpression("Method on class ["+classNode+"] was used outside of a Grails application. If running in the context of a test using the mocking API or bootstrap Grails correctly."));
-        ifBlock.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));        
+        if(initialValueExpression==null) {
+            ArgumentListExpression arguments = new ArgumentListExpression();
+            arguments.addExpression(new ConstantExpression("Method on class ["+classNode+"] was used outside of a Grails application. If running in the context of a test using the mocking API or bootstrap Grails correctly."));
+            ifBlock.addStatement(new ThrowStatement(new ConstructorCallExpression(new ClassNode(IllegalStateException.class), arguments)));
+        } else {
+            VariableExpression apiVarLocal = new VariableExpression("$local_" + apiProperty, implementationNode);
+            DeclarationExpression de = new DeclarationExpression(apiVarLocal, GrailsASTUtils.ASSIGNMENT_OPERATOR, initialValueExpression);
+            ifBlock.addStatement(new ExpressionStatement(de));
+            String setterName = "set" + MetaClassHelper.capitalize(apiProperty);
+            ifBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(classNode), setterName, apiVarLocal)));
+            ifBlock.addStatement(new ReturnStatement(new CastExpression(implementationNode, apiVarLocal)));
+        }
         BlockStatement elseBlock = new BlockStatement();
-        elseBlock.addStatement(new ReturnStatement(apiVar));
-        methodBody.addStatement(new IfStatement(new BooleanExpression(new BinaryExpression(apiVar, GrailsASTUtils.EQUALS_OPERATOR, GrailsASTUtils.NULL_EXPRESSION)),ifBlock,elseBlock));
-        
-        MethodNode methodNode = new MethodNode(methodName, PUBLIC_STATIC_MODIFIER, implementationNode,ZERO_PARAMETERS,null,methodBody);        
+        elseBlock.addStatement(new ReturnStatement(buildGetReferenceCall(apiVar, referenceClassNode)));
+        BlockStatement methodBody = new BlockStatement();
+        methodBody.addStatement(
+                        new IfStatement(
+                                new BooleanExpression(new BinaryExpression(
+                                        equalsNullExpr(apiVar), 
+                                        Token.newSymbol(Types.LOGICAL_OR, -1, -1), 
+                                        equalsNullExpr(buildGetReferenceCall(apiVar, referenceClassNode)))), 
+                                ifBlock,
+                                elseBlock));
+        MethodNode methodNode = new MethodNode(methodName, PUBLIC_STATIC_MODIFIER, implementationNode, ZERO_PARAMETERS, null, methodBody);        
         return methodNode;
     }
 
-    protected void addApiLookupFieldAndSetter(ClassNode classNode, ClassNode implementationNode,
+    private MethodCallExpression buildGetReferenceCall(FieldExpression apiVar, ClassNode referenceClassNode) {
+        return GrailsASTUtils.applyDefaultMethodTarget(new MethodCallExpression(apiVar, "get", MethodCallExpression.NO_ARGUMENTS), referenceClassNode);
+    }
+
+    private ClassNode resolveReferenceClassNode(ClassNode implementationNode, Expression initialValueExpression) {
+        return GrailsASTUtils.nonGeneric(ClassHelper.makeWithoutCaching((initialValueExpression != null) ? SoftReference.class : WeakReference.class), implementationNode);
+    }
+
+    protected FieldNode addApiLookupFieldAndSetter(ClassNode classNode, ClassNode implementationNode,
             String apiProperty, Expression initialValueExpression) {
         FieldNode fieldNode = classNode.getField(apiProperty);
         if (fieldNode == null || !fieldNode.getDeclaringClass().equals(classNode)) {
-            fieldNode = new FieldNode(apiProperty, Modifier.PRIVATE | Modifier.STATIC, implementationNode, classNode, initialValueExpression);
-            classNode.addField(fieldNode);
+            ClassNode referenceClassNode = resolveReferenceClassNode(implementationNode, initialValueExpression);
+            ConstructorCallExpression referenceInitialValue = (initialValueExpression != null) ? new ConstructorCallExpression(referenceClassNode, initialValueExpression) : null;
             
+            fieldNode = new FieldNode(apiProperty, Modifier.PRIVATE | Modifier.STATIC, referenceClassNode, classNode, referenceInitialValue);
+            classNode.addField(fieldNode);
+                        
             String setterName = "set" + MetaClassHelper.capitalize(apiProperty);
             Parameter setterParameter = new Parameter(implementationNode, apiProperty);
             BlockStatement setterBody = new BlockStatement();
             setterBody.addStatement(new ExpressionStatement(new BinaryExpression(new AttributeExpression(
                     new ClassExpression(classNode), new ConstantExpression(apiProperty)), Token.newSymbol(Types.EQUAL, 0, 0),
-                    new VariableExpression(setterParameter))));
+                    new ConstructorCallExpression(referenceClassNode, new VariableExpression(setterParameter)))));
 
             GrailsASTUtils.addCompileStaticAnnotation(classNode.addMethod(setterName, Modifier.PUBLIC | Modifier.STATIC, ClassHelper.VOID_TYPE, new Parameter[]{setterParameter}, null, setterBody));
         }
+        return fieldNode;
     }
 
     protected MethodNode populateDefaultApiLookupMethod(ClassNode implementationNode, String apiInstanceProperty, String methodName, BlockStatement methodBody) {
