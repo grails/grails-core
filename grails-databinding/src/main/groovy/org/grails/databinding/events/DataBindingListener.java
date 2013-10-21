@@ -22,6 +22,7 @@ import org.grails.databinding.errors.BindingError;
  *
  * @author Jeff Brown
  * @since 2.3
+ * @see DataBindingListenerAdapter
  */
 public interface DataBindingListener {
 
