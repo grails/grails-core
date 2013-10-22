@@ -326,6 +326,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
      */
     @CompileStatic
     ConfigObject createConfig() {
+
         if (config == null) {
             config = new ConfigObject()
             if (configFile.exists()) {
