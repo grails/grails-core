@@ -267,8 +267,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
+        grailsApplication.mainContext = springConfig.getUnrefreshedApplicationContext()
         appCtx = springConfig.getApplicationContext()
-        grailsApplication.mainContext = appCtx
 
         ctx.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 

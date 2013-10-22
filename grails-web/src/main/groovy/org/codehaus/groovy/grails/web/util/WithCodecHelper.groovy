@@ -26,6 +26,8 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.context.ApplicationContext
 
 /**
  * Helper methods for {@link #withCodec} feature.
@@ -179,13 +181,17 @@ class WithCodecHelper {
      * @return the encoder instance
      */
     static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
-        try {
-            CodecLookup codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup.class)
-            return codecLookup.lookupEncoder(codecName)
-        } catch (NullPointerException e) {
-            // ignore NPE for encoder lookups
-            log.debug("NPE in lookupEncoder, grailsApplication.mainContext is null or codecLookup bean is missing from test context.", e)
+        ApplicationContext ctx = grailsApplication.getMainContext()
+        if(ctx != null) {
+            try {
+                CodecLookup codecLookup = ctx.getBean("codecLookup", CodecLookup.class)
+                return codecLookup.lookupEncoder(codecName)
+            } catch (NoSuchBeanDefinitionException e) {
+                // ignore missing codecLookup bean in tests
+                log.debug("codecLookup bean is missing from test context.", e)
+            }
         }
+        return null
     }
 
     static Map<String, Object> mergeSettingsAndMakeCanonical(Object currentSettings,

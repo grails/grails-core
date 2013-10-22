@@ -33,7 +33,10 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
  * @since 2.3
  */
 public class RawCodec implements Encoder, Decoder, StreamingEncoder {
-    static final CodecIdentifier RAW_CODEC_IDENTIFIER = new DefaultCodecIdentifier("Raw");
+    static final CodecIdentifier RAW_CODEC_IDENTIFIER = new DefaultCodecIdentifier("Raw") {
+        // using RawCodec will prevent all other codecs from encoding a part encoded with this codec
+        public boolean isEquivalent(CodecIdentifier other) { return true; };
+    };
 
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.support.encoding.Decoder#decode(java.lang.Object)

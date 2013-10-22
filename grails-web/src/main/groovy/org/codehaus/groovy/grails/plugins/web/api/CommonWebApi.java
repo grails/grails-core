@@ -15,10 +15,14 @@
  */
 package org.codehaus.groovy.grails.plugins.web.api;
 
-import org.codehaus.groovy.grails.commons.CodecArtefactHandler;
+import java.io.Serializable;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsCodecClass;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
@@ -26,6 +30,7 @@ import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -33,12 +38,6 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.support.WebApplicationContextUtils;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import java.io.Serializable;
 
 /**
  * API shared by controllers, tag libraries and any other web artifact.
@@ -83,11 +82,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
 
     private Encoder getRawEncoder(GrailsApplication application) {
         if(application != null) {
-            GrailsClass grailsClass = application.getArtefact(CodecArtefactHandler.TYPE, RAW_CODEC_NAME);
-            GrailsCodecClass codecClass = (GrailsCodecClass) grailsClass;
-            if(codecClass != null) {
-                return codecClass.getEncoder();
-            }
+            return WithCodecHelper.lookupEncoder(application, "Raw");
         }
         return null;
     }

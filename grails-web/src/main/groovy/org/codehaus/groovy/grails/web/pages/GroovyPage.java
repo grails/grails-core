@@ -225,10 +225,7 @@ public abstract class GroovyPage extends Script {
             request = grailsWebRequest.getCurrentRequest();
             GrailsApplication grailsApplication = grailsWebRequest.getAttributes().getGrailsApplication();
             if (grailsApplication != null) {
-                GrailsCodecClass codecClass = (GrailsCodecClass) grailsApplication.getArtefact(CodecArtefactHandler.TYPE, CommonWebApi.RAW_CODEC_NAME);
-                if (codecClass != null) {
-                    rawEncoder = codecClass.getEncoder();
-                }
+                rawEncoder = WithCodecHelper.lookupEncoder(grailsApplication, "Raw");
             }
         }
 
