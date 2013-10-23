@@ -15,32 +15,32 @@
  */
 package org.codehaus.groovy.grails.cli.interactive
 
+import grails.build.interactive.completors.StringsCompleter
 import grails.util.BuildSettings
 import grails.util.GrailsNameUtils
 import grails.build.interactive.completors.EscapingFileNameCompletor
 import grails.build.interactive.completors.RegexCompletor
+import jline.console.completer.ArgumentCompleter
+import jline.console.completer.Completer
 
 import java.util.concurrent.ConcurrentHashMap
 
-import jline.ArgumentCompletor
-import jline.SimpleCompletor
 
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import groovy.transform.CompileStatic
-import jline.Completor
 
 /**
- * A JLine completor for Grails' interactive mode.
+ * A JLine completer for Grails' interactive mode.
  *
  * @author Graeme Rocher
  * @since 2.0
  */
 @CompileStatic
-class GrailsInteractiveCompletor extends SimpleCompletor {
+class GrailsInteractiveCompletor extends StringsCompleter {
     BuildSettings settings
     Map completorCache = new ConcurrentHashMap()
 
-    private ArgumentCompletor bangCompletor = new ArgumentCompletor(
+    private ArgumentCompleter bangCompletor = new ArgumentCompleter(
         new RegexCompletor("!\\w+"), new EscapingFileNameCompletor())
 
     GrailsInteractiveCompletor(BuildSettings settings, List<File> scriptResources) throws IOException{
@@ -59,25 +59,25 @@ class GrailsInteractiveCompletor extends SimpleCompletor {
             trimmedBuffer = trimmedBuffer.split(' ')[0]
         }
 
-        Completor completor = (Completor)trimmedBuffer[0] == '!' ? bangCompletor : completorCache.get(trimmedBuffer)
-        if (completor == null) {
+        Completer completer = (Completer) trimmedBuffer[0] == '!' ? bangCompletor : completorCache.get(trimmedBuffer)
+        if (completer == null) {
             def className = GrailsNameUtils.getNameFromScript(trimmedBuffer)
             className = "grails.build.interactive.completors.$className"
 
             try {
                 def completorClass = getClass().classLoader.loadClass(className)
-                completor = (Completor)completorClass.newInstance()
-                if (completor instanceof BuildSettingsAware) {
-                    completor.buildSettings = settings
+                completer = (Completer)completorClass.newInstance()
+                if (completer instanceof BuildSettingsAware) {
+                    completer.buildSettings = settings
                 }
-                completorCache.put(trimmedBuffer, completor)
+                completorCache.put(trimmedBuffer, completer)
             } catch (e) {
                 return super.complete(buffer, cursor, clist)
             }
         }
 
         try {
-            return completor.complete(buffer, cursor, clist)
+            return completer.complete(buffer, cursor, clist)
         } catch (e) {
             return super.complete(buffer, cursor, clist)
         }

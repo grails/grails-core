@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.grails.cli.interactive.completors
 
+import grails.build.interactive.completors.StringsCompleter
 import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
-import jline.SimpleCompletor
-
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.BuildSettingsAware
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 import org.codehaus.groovy.grails.io.support.Resource
@@ -27,7 +27,8 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 /**
  * A completor that completes
  */
-abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettingsAware {
+@CompileStatic
+abstract class ClassNameCompletor extends StringsCompleter implements BuildSettingsAware {
 
     BuildSettings buildSettings
 
@@ -49,11 +50,11 @@ abstract class ClassNameCompletor extends SimpleCompletor implements BuildSettin
         def classNames = []
         resources.each { Resource r ->
             if (shouldInclude(r)) {
-                classNames << "${commandName} ${GrailsResourceUtils.getClassName(r)}"
+                classNames << "${commandName} ${GrailsResourceUtils.getClassName(r)}".toString()
             }
         }
 
-        setCandidateStrings classNames as String[]
+        setStrings new TreeSet<String>(classNames)
 
         return super.complete(buffer, cursor, clist)
     }
