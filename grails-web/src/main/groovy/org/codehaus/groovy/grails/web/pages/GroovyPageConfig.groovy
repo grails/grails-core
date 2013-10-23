@@ -33,6 +33,8 @@ class GroovyPageConfig {
     public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibdefault"
     /** allow inheriting codecs from parent levels */
     public static final String INHERIT_SETTING_NAME="inherit"
+    /** only use for safe codecs for replacement */
+    public static final String REPLACE_ONLY_SETTING_NAME="replaceonly"
 
     public static final Set<String> VALID_CODEC_SETTING_NAMES =
         ([OUT_CODEC_NAME, EXPRESSION_CODEC_NAME, STATIC_CODEC_NAME, TAGLIB_CODEC_NAME, TAGLIB_DEFAULT_CODEC_NAME] as Set).asImmutable()

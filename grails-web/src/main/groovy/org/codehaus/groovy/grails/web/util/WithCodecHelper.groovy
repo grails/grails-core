@@ -66,7 +66,8 @@ class WithCodecHelper {
      * </ul>
      * In addition there is
      * <ul>
-     * <li>inherit (boolean) - defaults to true. Control whether codecs should be inherited to deeper level (taglib calls)</li>
+     * <li>inherit (boolean) - defaults to true. Controls whether codecs should be inherited to deeper level (taglib calls)</li>
+     * <li>replaceonly (boolean) - defaults to false. Codecs will be only replaced if the previous inherited codec is safe.</li> 
      * </ul>
      *
      * @param grailsApplication the grailsApplication instance
@@ -109,6 +110,9 @@ class WithCodecHelper {
             if (codecInfoMap.containsKey(GroovyPageConfig.INHERIT_SETTING_NAME)) {
                 builder.inheritPreviousEncoders(codecInfoMap.get(GroovyPageConfig.INHERIT_SETTING_NAME) as boolean)
             }
+            if (codecInfoMap.containsKey(GroovyPageConfig.REPLACE_ONLY_SETTING_NAME)) {
+                builder.replaceOnly(codecInfoMap.get(GroovyPageConfig.REPLACE_ONLY_SETTING_NAME) as boolean)
+            }
         }
         return builder
     }
@@ -126,12 +130,8 @@ class WithCodecHelper {
             String nameFallback = null
             (Map<String,String>)((Map)codecInfo).each { k, v ->
                 String codecWriterName = k.toString().toLowerCase() - 'codec'
-                if (codecWriterName == GroovyPageConfig.INHERIT_SETTING_NAME) {
-                    Boolean inheritPrevious = v as Boolean
-                    if (inheritPrevious && v instanceof CharSequence && (v.toString()=="false" || v.toString()=="no")) {
-                        inheritPrevious = false
-                    }
-                    codecInfoMap.put(GroovyPageConfig.INHERIT_SETTING_NAME, inheritPrevious)
+                if (codecWriterName == GroovyPageConfig.INHERIT_SETTING_NAME || codecWriterName == GroovyPageConfig.REPLACE_ONLY_SETTING_NAME) {
+                    codecInfoMap.put(codecWriterName, convertToBoolean(v))
                 } else {
                     String codecName=v?.toString() ?: 'none'
                     if (GroovyPageConfig.VALID_CODEC_SETTING_NAMES.contains(codecWriterName)) {
@@ -167,6 +167,14 @@ class WithCodecHelper {
         }
         codecInfoMap.put(ALREADY_CANONICAL_KEY_NAME, true)
         codecInfoMap
+    }
+
+    private static boolean convertToBoolean(v) {
+        Boolean booleanValue = v as Boolean
+        if (booleanValue && v instanceof CharSequence && (v.toString()=="false" || v.toString()=="no")) {
+            booleanValue = false
+        }
+        return booleanValue
     }
 
     private static Encoder lookupEncoderFromMap(Map<String, Encoder> encoders, String codecName) {

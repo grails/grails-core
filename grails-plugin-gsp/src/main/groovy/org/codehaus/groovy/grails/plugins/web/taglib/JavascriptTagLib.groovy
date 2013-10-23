@@ -47,7 +47,7 @@ class JavascriptTagLib implements ApplicationContextAware {
     Class<JavascriptProvider> defaultProvider
     boolean hasResourceProcessor = false
 
-    static encodeAsForTags = [escapeJavascript: 'JavaScript', javascript: [expressionCodec:"JavaScript"]]
+    static encodeAsForTags = [escapeJavascript: 'JavaScript', javascript: [expressionCodec:"JavaScript", scriptletCodec:"JavaScript", replaceOnly:true]]
 
     JavascriptTagLib() {
         def cl = Thread.currentThread().contextClassLoader
