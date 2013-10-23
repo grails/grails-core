@@ -251,13 +251,9 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
             return codecIdentifier;
         }
 
-        public CharSequence encode(Object target) {
+        public Object encode(Object target) {
             if (target==null) return null;
-            Object encoded = closure.call(target);
-            if (encoded != null && !(encoded instanceof CharSequence)) {
-                return String.valueOf(encoded);
-            }
-            return (CharSequence)encoded;
+            return closure.call(target);
         }
 
         public void markEncoded(CharSequence string) {
