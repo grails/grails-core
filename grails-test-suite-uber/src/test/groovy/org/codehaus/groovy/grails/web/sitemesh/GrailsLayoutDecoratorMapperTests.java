@@ -73,6 +73,7 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         appCtx.registerMockBean("groovyPageLayoutFinder", layoutFinder);
         DefaultCodecLookup codecLookup=new DefaultCodecLookup();
         codecLookup.setGrailsApplication(grailsApplication);
+        codecLookup.afterPropertiesSet();
         appCtx.registerMockBean("codecLookup", codecLookup);
         appCtx.getServletContext().setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx);
         appCtx.getServletContext().setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx);
