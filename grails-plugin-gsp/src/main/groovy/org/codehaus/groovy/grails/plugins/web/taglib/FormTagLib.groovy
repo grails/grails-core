@@ -1084,7 +1084,6 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         values.eachWithIndex {val, idx ->
             def it = new Expando()
             def radioWriter = new FastStringWriter()
-            it.radio = radioWriter.buffer
             radioWriter << "<input type=\"radio\" name=\"${name}\" "
             if (value?.toString().equals(val.toString())) {
                 radioWriter << 'checked="checked" '
@@ -1096,7 +1095,9 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
             // process remaining attributes
             outputAttributes(attrs, radioWriter)
             radioWriter << "/>"
-
+            
+            it.radio = raw(radioWriter.buffer)
+            
             it.label = labels == null ? 'Radio ' + val : labels[idx]
 
             out << body(it)
