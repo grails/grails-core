@@ -101,7 +101,7 @@ public class TagLibraryApi extends CommonWebApi {
      * @return The writer to use
      */
     public Writer getOut(Object instance) {
-        return GroovyPageOutputStack.currentWriter();
+        return GroovyPageOutputStack.currentStack().getTaglibWriter();
     }
 
     /**
