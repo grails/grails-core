@@ -321,6 +321,56 @@ class TestUrlMappings {
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
         assertOutputEquals('''<script type="text/javascript">\r\nvar value='<>';\r\n</script>\r\n''', template)
     }
+    
+    void testJavascriptExpressionNoneDefaultCodecLegacySettings() {
+        withConfig("grails.views.default.codec='none'") {
+            def template = '''<g:javascript>var value='${'<>'}';</g:javascript>'''
+            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
+            assertOutputEquals('''<script type="text/javascript">\r\nvar value='<>';\r\n</script>\r\n''', template)
+        }
+    }
+
+    void testJavascriptExpressionNoneDefaultCodecNewSettings() {
+        withConfig('''
+grails {
+    views {
+        gsp {
+            codecs {
+                expression = 'none'
+                scriptlet = 'none'
+                taglib = 'none'
+                staticparts = 'none'
+            }
+        }
+    }
+}
+''') {
+            def template = '''<g:javascript>var value='${'<>'}';</g:javascript>'''
+            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
+            assertOutputEquals('''<script type="text/javascript">\r\nvar value='<>';\r\n</script>\r\n''', template)
+        }
+    }
+
+    void testJavascriptExpressionHtmlDefaultCodecNewSettings() {
+        withConfig('''
+grails {
+    views {
+        gsp {
+            codecs {
+                expression = 'html'
+                scriptlet = 'html'
+                taglib = 'none'
+                staticparts = 'none'
+            }
+        }
+    }
+}
+''') {
+            def template = '''<g:javascript>var value='${'<>'}';</g:javascript>'''
+            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
+            assertOutputEquals('''<script type="text/javascript">\r\nvar value='\\u003c\\u003e';\r\n</script>\r\n''', template)
+        }
+    }
 }
 
 class TestProvider implements JavascriptProvider {
