@@ -416,7 +416,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         w.writeTo(writer)
 
         writer.flush()
-        assert expected == transform(mockResponse.contentAsString)
+        assertEquals(expected, transform(mockResponse.contentAsString))
     }
 
     def applyTemplate(template, params = [:], target = null, String filename = null) {
