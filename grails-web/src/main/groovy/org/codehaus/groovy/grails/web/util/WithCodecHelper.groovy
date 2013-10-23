@@ -181,7 +181,7 @@ class WithCodecHelper {
      * @return the encoder instance
      */
     static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
-        ApplicationContext ctx = grailsApplication.getMainContext()
+        ApplicationContext ctx = grailsApplication != null ? grailsApplication.getMainContext() : null
         if(ctx != null) {
             try {
                 CodecLookup codecLookup = ctx.getBean("codecLookup", CodecLookup.class)
