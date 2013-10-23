@@ -64,6 +64,7 @@ class InteractiveMode {
     InteractiveMode(BuildSettings settings, GrailsScriptRunner scriptRunner) {
         this.scriptRunner = scriptRunner
         this.settings = settings
+        this.interactiveCompletor = new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts)
         BuildSettingsHolder.settings = settings
         GroovySystem.getMetaClassRegistry().addMetaClassRegistryChangeEventListener(registryCleaner)
 
@@ -90,7 +91,7 @@ class InteractiveMode {
         current = this
         System.setProperty("grails.disable.exit", "true") // you can't exit completely in interactive mode from a script
 
-        console.reader.addCompleter(new GrailsInteractiveCompletor(settings, scriptRunner.availableScripts))
+        console.reader.addCompleter(interactiveCompletor)
         interactiveModeActive = true
         System.setProperty(Environment.INTERACTIVE_MODE_ENABLED, "true")
 
@@ -353,6 +354,6 @@ class InteractiveMode {
 
     void refresh() {
         final scripts = scriptRunner.getAvailableScripts()
-        interactiveCompletor.setCandidateStrings(GrailsInteractiveCompletor.getScriptNames(scripts))
+        interactiveCompletor.setStrings(new TreeSet<String>(GrailsInteractiveCompletor.getScriptNames(scripts).toList()))
     }
 }
