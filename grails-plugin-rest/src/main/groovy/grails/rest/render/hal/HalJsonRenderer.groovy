@@ -29,11 +29,13 @@ import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ToOne
 import org.springframework.beans.PropertyAccessorFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
 
 import javax.annotation.PostConstruct
 import org.grails.datastore.mapping.model.MappingFactory
 
+import javax.xml.bind.DatatypeConverter
 /**
  * Renders domain instances in HAL JSON format (see http://tools.ietf.org/html/draft-kelly-json-hal-05)
  *
@@ -51,6 +53,17 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     private Gson gson = new Gson()
 
+    private static class UTCDateConverter implements Converter<Date, String> {
+        private final static TimeZone UtcTZ = TimeZone.getTimeZone('UTC')
+        @Override
+        String convert(Date source) {
+            final GregorianCalendar cal = new GregorianCalendar()
+            cal.setTime(source)
+            cal.setTimeZone(UtcTZ)
+            DatatypeConverter.printDateTime(cal)
+        }
+    }
+
     HalJsonRenderer(Class<T> targetType) {
         super(targetType, DEFAULT_MIME_TYPES)
     }
@@ -66,6 +79,20 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
 
     @Autowired(required = false)
     DataBindingSourceRegistry dataBindingSourceRegistry
+
+    Converter<Date, String> dateToStringConverter = new UTCDateConverter()
+
+    @Autowired(required = false)
+    void setDateToStringConverter(Converter<Date, String> converter) {
+        this.dateToStringConverter = converter
+    }
+
+    Boolean elideDuplicates = true
+
+    @Autowired(required = false)
+    void setElideDuplicates(Boolean isElided) {
+        this.elideDuplicates = isElided
+    }
 
     @PostConstruct
     void initialize() {
@@ -200,20 +227,25 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         writeDomain(context, metaClass, entity, object, writer)
 
         if (associationMap) {
-            writer.name(EMBEDDED_ATTRIBUTE)
-            writer.beginObject()
+            boolean hasWrittenObject = false
             for (entry in associationMap.entrySet()) {
                 final property = entry.key
-                writer.name(property.name)
                 final isSingleEnded = property instanceof ToOne
-                if (isSingleEnded) {
-                    Object value = entry.value
-                    if (writtenObjects.contains(value)) {
-                        // ERROR: beginObject() + endObject called.  Removing continue makes this work
-                        // by forcing the object to be written again.
-                        // continue
-                    }
+                final Object value = entry.value
 
+                if (isSingleEnded && elideDuplicates && writtenObjects.contains(value)) {
+                    // Don't write the same object out twice.
+                    continue
+                }
+
+                if (!hasWrittenObject) {
+                    writer.name(EMBEDDED_ATTRIBUTE)
+                    writer.beginObject()
+                    writer.name(property.name)
+                    hasWrittenObject = true
+                }
+
+                if (isSingleEnded) {
                     if (value != null) {
                         final associatedEntity = property.associatedEntity
                         if (associatedEntity) {
@@ -234,7 +266,9 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 }
 
             }
-            writer.endObject()
+            if (hasWrittenObject) {
+                writer.endObject()
+            }
         }
         writer.endObject()
     }
@@ -290,8 +324,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             jsonWriter.name(propertyName).value(value.toString())
         }
         else if(value instanceof Date) {
-            // NOTE: Define some ISO8601 date class/utility/JodaTime/J2SE7 Dateformatter for this to work!
-            jsonWriter.name(propertyName).value(ISO8601.toString(value))
+            final asStringDate = dateToStringConverter.convert((Date)value)
+            jsonWriter.name(propertyName).value(asStringDate)
         }
         else {
             jsonWriter.name(propertyName).value(gson.toJson(value))
