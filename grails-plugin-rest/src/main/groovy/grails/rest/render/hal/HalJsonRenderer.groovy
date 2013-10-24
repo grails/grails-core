@@ -232,8 +232,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 final property = entry.key
                 final isSingleEnded = property instanceof ToOne
 
+                Object value = entry.value
                 if (isSingleEnded && elideDuplicates && writtenObjects.contains(value)) {
-                    Object value = entry.value
                     if (writtenObjects.contains(value)) {
                         continue
                     }

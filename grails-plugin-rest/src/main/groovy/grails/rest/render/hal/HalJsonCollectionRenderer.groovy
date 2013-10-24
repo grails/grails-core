@@ -43,7 +43,7 @@ class HalJsonCollectionRenderer extends HalJsonRenderer implements ContainerRend
     HalJsonCollectionRenderer(Class componentType, MimeType... mimeTypes) {
         super(Collection, mimeTypes)
         this.componentType = componentType
-        this.embeddedName = GrailsNameUtils.getPropertyName(componentType)
+        this.collectionName = GrailsNameUtils.getPropertyName(componentType)
     }
     
     @Override
