@@ -36,8 +36,9 @@ class JsonCollectionRenderer extends JsonRenderer implements ContainerRenderer {
         this.componentType = componentType
     }
 
-    public JsonCollectionRenderer(Class targetType, MimeType... mimeTypes) {
-        super(targetType, mimeTypes);
+    public JsonCollectionRenderer(Class componentType, MimeType... mimeTypes) {
+        super(Collection, mimeTypes)
+        this.componentType = componentType
     }
     
     @Override
