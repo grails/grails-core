@@ -243,10 +243,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     /**
-     * Parses the given JSON String and returns ether a JSONObject or a JSONArry
+     * Parses the given JSON String and returns either a JSONObject or a JSONArray
      *
      * @param reader JSON source
-     * @return ether a JSONObject or a JSONArray - depending on the given JSON
+     * @return either a JSONObject or a JSONArray - depending on the given JSON
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(Reader reader) throws ConverterException {
@@ -268,10 +268,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     /**
-     * Parses the given JSON String and returns ether a JSONObject or a JSONArry
+     * Parses the given JSON String and returns either a JSONObject or a JSONArray
      *
      * @param source A string containing some JSON
-     * @return ether a JSONObject or a JSONArray - depending on the given JSON
+     * @return either a JSONObject or a JSONArray - depending on the given JSON
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(String source) throws ConverterException {
@@ -291,11 +291,11 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     /**
-     * Parses the given JSON and returns ether a JSONObject or a JSONArry
+     * Parses the given JSON and returns either a JSONObject or a JSONArray
      *
      * @param is       An InputStream which delivers some JSON
      * @param encoding the Character Encoding to use
-     * @return ether a JSONObject or a JSONArray - depending on the given JSON
+     * @return either a JSONObject or a JSONArray - depending on the given JSON
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(InputStream is, String encoding) throws ConverterException {
@@ -316,10 +316,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     /**
-     * Parses the given request's InputStream and returns ether a JSONObject or a JSONArry
+     * Parses the given request's InputStream and returns either a JSONObject or a JSONArray
      *
      * @param request the JSON Request
-     * @return ether a JSONObject or a JSONArray - depending on the given JSON
+     * @return either a JSONObject or a JSONArray - depending on the given JSON
      * @throws ConverterException when the JSON content is not valid
      */
     public static Object parse(HttpServletRequest request) throws ConverterException {
