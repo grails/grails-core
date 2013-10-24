@@ -17,6 +17,7 @@
 package org.grails.plugins.web.rest.render.hal
 
 import grails.rest.render.hal.HalJsonCollectionRenderer
+import org.springframework.core.convert.converter.Converter
 import spock.lang.Specification
 import grails.rest.render.hal.HalJsonRenderer
 import org.springframework.context.support.StaticMessageSource
@@ -34,6 +35,8 @@ import grails.util.GrailsWebUtil
 import org.springframework.web.util.WebUtils
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import spock.lang.Issue
+
+import javax.xml.bind.DatatypeConverter
 
 /**
  */
@@ -337,6 +340,276 @@ class HalJsonRendererSpec extends Specification{
  
     }
 
+    @Issue('GRAILS-10499')
+    void "Test that the HAL rendered renders JSON values correctly for collections with repeated elements" () {
+        given: "A HAL Collection renderer"
+        HalJsonCollectionRenderer renderer = getCollectionRenderer()
+        renderer.prettyPrint = true
+        renderer.elideDuplicates = false
+
+        when: "A collection of domian objects is rendered"
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
+        def response = webRequest.response
+        def renderContext = new ServletRenderContext(webRequest)
+        def products = [
+            new Product(name: "MacBook", numberInStock: 10, category:  new Category(name: 'Laptops')),
+            new Product(name: "iMac", numberInStock: 42, category:  new Category(name: 'Desktops')),
+            new Product(name: "MacBook", numberInStock: 10, category:  new Category(name: 'Laptops'))
+        ]
+        renderer.render(products, renderContext)
+
+        then:"The resulting HAL is correct"
+        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name,
+            GrailsWebUtil.DEFAULT_ENCODING)
+        response.contentAsString == '''{
+  "_links": {
+    "self": {
+      "href": "http://localhost/product/Macbook",
+      "hreflang": "en",
+      "type": "application/hal+json"
+    }
+  },
+  "_embedded": {
+    "product": [
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
+          }
+        },
+        "name": "MacBook",
+        "numberInStock": 10,
+        "_embedded": {
+          "category": {
+            "_links": {
+              "self": {
+                "href": "http://localhost/category/index",
+                "hreflang": "en"
+              }
+            },
+            "name": "Laptops"
+          }
+        }
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
+          }
+        },
+        "name": "iMac",
+        "numberInStock": 42,
+        "_embedded": {
+          "category": {
+            "_links": {
+              "self": {
+                "href": "http://localhost/category/index",
+                "hreflang": "en"
+              }
+            },
+            "name": "Desktops"
+          }
+        }
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
+          }
+        },
+        "name": "MacBook",
+        "numberInStock": 10,
+        "_embedded": {
+          "category": {
+            "_links": {
+              "self": {
+                "href": "http://localhost/category/index",
+                "hreflang": "en"
+              }
+            },
+            "name": "Laptops"
+          }
+        }
+      }
+    ]
+  }
+}'''
+
+    }
+
+    @Issue('GRAILS-10499')
+    void "Test that the HAL rendered renders JSON values correctly for collections with elided elements" () {
+        given: "A HAL Collection renderer"
+        HalJsonCollectionRenderer renderer = getCollectionRenderer()
+        renderer.prettyPrint = true
+
+        when: "A collection of domian objects is rendered"
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
+        def response = webRequest.response
+        def renderContext = new ServletRenderContext(webRequest)
+        def products = [
+            new Product(name: "MacBook", numberInStock: 10, category:  new Category(name: 'Laptops')),
+            new Product(name: "iMac", numberInStock: 42, category:  new Category(name: 'Desktops')),
+            new Product(name: "MacBook", numberInStock: 10, category:  new Category(name: 'Laptops'))
+        ]
+        renderer.render(products, renderContext)
+
+        then:"The resulting HAL is correct"
+        renderer.elideDuplicates
+        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name,
+            GrailsWebUtil.DEFAULT_ENCODING)
+        response.contentAsString == '''{
+  "_links": {
+    "self": {
+      "href": "http://localhost/product/Macbook",
+      "hreflang": "en",
+      "type": "application/hal+json"
+    }
+  },
+  "_embedded": {
+    "product": [
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
+          }
+        },
+        "name": "MacBook",
+        "numberInStock": 10,
+        "_embedded": {
+          "category": {
+            "_links": {
+              "self": {
+                "href": "http://localhost/category/index",
+                "hreflang": "en"
+              }
+            },
+            "name": "Laptops"
+          }
+        }
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
+          }
+        },
+        "name": "iMac",
+        "numberInStock": 42,
+        "_embedded": {
+          "category": {
+            "_links": {
+              "self": {
+                "href": "http://localhost/category/index",
+                "hreflang": "en"
+              }
+            },
+            "name": "Desktops"
+          }
+        }
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "http://localhost/products",
+            "hreflang": "en",
+            "type": "application/hal+json"
+          }
+        },
+        "name": "MacBook",
+        "numberInStock": 10
+      }
+    ]
+  }
+}'''
+
+    }
+
+    @Issue('GRAILS-10372')
+    void "Test that the HAL renderer renders mixed fields (dates, enums) successfully for domains"() {
+        given:"A HAL renderer"
+        HalJsonRenderer renderer = getEventRenderer()
+        renderer.prettyPrint = true
+
+        when:"A domain object is rendered"
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/event/Lollapalooza")
+        def response = webRequest.response
+        def renderContext = new ServletRenderContext(webRequest)
+        def event = new Event(name: "Lollapalooza", date: new Date(113, 10, 8, 13, 12, 30), state: Event.State.OPEN)
+
+        renderer.render(event, renderContext)
+
+        then:"The resulting HAL is correct"
+        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+        response.contentAsString == '''{
+  "_links": {
+    "self": {
+      "href": "http://localhost/events",
+      "hreflang": "en",
+      "type": "application/hal+json"
+    }
+  },
+  "date": "2013-11-08T21:12:30Z",
+  "name": "Lollapalooza",
+  "state": "OPEN"
+}'''
+
+    }
+
+    @Issue('GRAILS-10372')
+    void "Test that the HAL renderer allows for different date converters"() {
+        given:"A HAL renderer"
+        HalJsonRenderer renderer = getEventRenderer()
+        renderer.prettyPrint = true
+        renderer.dateToStringConverter =  new Converter<Date, String>() {
+            @Override
+            String convert(Date source) {
+                final GregorianCalendar cal = new GregorianCalendar()
+                cal.setTime(source)
+                cal.setTimeZone(TimeZone.getTimeZone('America/Los_Angeles'))
+                DatatypeConverter.printDateTime(cal)
+            }
+        }
+
+        when:"A domain object is rendered"
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/event/Lollapalooza")
+        def response = webRequest.response
+        def renderContext = new ServletRenderContext(webRequest)
+        def event = new Event(name: "Lollapalooza", date: new Date(113, 10, 8, 13, 12, 30), state: Event.State.OPEN)
+
+        renderer.render(event, renderContext)
+
+        then:"The resulting HAL is correct"
+        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+        response.contentAsString == '''{
+  "_links": {
+    "self": {
+      "href": "http://localhost/events",
+      "hreflang": "en",
+      "type": "application/hal+json"
+    }
+  },
+  "date": "2013-11-08T13:12:30-08:00",
+  "name": "Lollapalooza",
+  "state": "OPEN"
+}'''
+
+    }
+
     protected HalJsonCollectionRenderer getCollectionRenderer() {
         def renderer = new HalJsonCollectionRenderer(Product)
         renderer.mappingContext = mappingContext
@@ -357,12 +630,21 @@ class HalJsonRendererSpec extends Specification{
         renderer
     }
 
-
+    protected HalJsonRenderer getEventRenderer() {
+        def renderer = new HalJsonRenderer(Event)
+        renderer.mappingContext = mappingContext
+        renderer.messageSource = new StaticMessageSource()
+        renderer.linkGenerator = getLinkGenerator {
+            "/events"(resources: "event")
+        }
+        renderer
+    }
 
     MappingContext getMappingContext() {
         final context = new KeyValueMappingContext("")
         context.addPersistentEntity(Product)
         context.addPersistentEntity(Category)
+        context.addPersistentEntity(Event)
         return context
     }
     LinkGenerator getLinkGenerator(Closure mappings) {
@@ -390,8 +672,47 @@ class Product {
 @Entity
 class Category {
     String name
+
+    @Override
+    String toString() {
+        name
+    }
+
+    /*
+     * We need these defined for when we're checking if objects are actually written (since we're checking our
+     * set 'writtenObjects' if something's there already)
+     */
+    boolean equals(o) {
+        if (this.is(o)) {
+            return true
+        }
+        if (getClass() != o.class) {
+            return false
+        }
+
+        Category category = (Category) o
+
+        if (name != category.name) {
+            return false
+        }
+
+        return true
+    }
+
+    int hashCode() {
+        return name.hashCode()
+    }
 }
 
+@Entity
+class Event {
+    String name
+    Date date
+    enum State {
+        OPEN, CLOSED
+    }
+    State state
+}
 
 class SimpleProduct {
     String name
