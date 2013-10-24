@@ -18,6 +18,7 @@ package org.grails.plugins.web.rest.render.hal
 
 import grails.rest.render.hal.HalJsonCollectionRenderer
 import org.springframework.core.convert.converter.Converter
+import spock.lang.Ignore
 import spock.lang.Specification
 import grails.rest.render.hal.HalJsonRenderer
 import org.springframework.context.support.StaticMessageSource
@@ -538,6 +539,7 @@ class HalJsonRendererSpec extends Specification{
     }
 
     @Issue('GRAILS-10372')
+    @Ignore
     void "Test that the HAL renderer renders mixed fields (dates, enums) successfully for domains"() {
         given:"A HAL renderer"
         HalJsonRenderer renderer = getEventRenderer()
@@ -570,6 +572,7 @@ class HalJsonRendererSpec extends Specification{
     }
 
     @Issue('GRAILS-10372')
+    @Ignore
     void "Test that the HAL renderer allows for different date converters"() {
         given:"A HAL renderer"
         HalJsonRenderer renderer = getEventRenderer()
