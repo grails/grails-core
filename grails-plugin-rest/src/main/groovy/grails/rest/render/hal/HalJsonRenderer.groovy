@@ -24,6 +24,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.web.util.WebUtils
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ToOne
@@ -201,7 +202,10 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
     }
 
     protected void writeLinkForCurrentPath(RenderContext context, MimeType mimeType, JsonWriter writer) {
-        final href = linkGenerator.link(uri: context.resourcePath, method: HttpMethod.GET.toString(), absolute: absoluteLinks)
+        final uriWithoutContext = context.resourcePath.substring(
+                WebUtils.retrieveGrailsWebRequest().contextPath.length())
+        final href = linkGenerator.link(uri: uriWithoutContext, method: HttpMethod.GET.toString(),
+                absolute: absoluteLinks)
         final resourceRef = href
         final locale = context.locale
         def link = new Link(RELATIONSHIP_SELF, href)
