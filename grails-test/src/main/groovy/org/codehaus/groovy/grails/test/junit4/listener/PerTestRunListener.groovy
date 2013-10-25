@@ -116,7 +116,7 @@ class PerTestRunListener {
         return test
     }
 
-    private toAssertionFailedError(AssertionError assertionError) {
+    private AssertionFailedError toAssertionFailedError(AssertionError assertionError) {
         def result = new AssertionFailedError(assertionError.toString())
         result.stackTrace = assertionError.getStackTrace()
         result
