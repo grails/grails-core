@@ -21,6 +21,7 @@ import org.codehaus.groovy.grails.support.encoding.EncodedAppender
 import org.codehaus.groovy.grails.support.encoding.EncodingState
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder
 
+import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -70,4 +71,16 @@ class HTMLEncoderSpec extends Specification {
         where:
             streamingEncoder << [new HTMLEncoder(), new HTML4Encoder(), new XMLEncoder()]
     }
+    
+    @Issue("GRAILS-10684")
+    def "html encoder shouldn't throw NPE when toString() returns null"() {
+        given:
+            def encoder=new HTMLEncoder()
+        expect:
+            encoder.encode(new ToStringNull())==null
+    }
+}
+
+class ToStringNull {
+     public String toString() { null }   
 }
