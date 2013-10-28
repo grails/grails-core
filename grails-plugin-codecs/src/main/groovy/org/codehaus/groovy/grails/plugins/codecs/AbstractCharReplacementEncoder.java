@@ -72,7 +72,7 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
             str = String.valueOf(o);
         }
 
-        if (str.length() == 0) {
+        if (str == null || str.length() == 0) {
             return str;
         }
 

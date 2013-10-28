@@ -56,7 +56,6 @@ class Log4jConfig {
     private Map appenders = [:]
     private ConfigObject config
 
-    @CompileStatic
     Log4jConfig(ConfigObject config) {
         this.config = config
     }

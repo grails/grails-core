@@ -73,7 +73,7 @@ class GrailsTestInterceptor {
         transactionInterceptor = null
     }
 
-    protected getControllerName() {
+    protected String getControllerName() {
         ControllerNameExtractor.extractControllerNameFromTestClassName(test.class.name, testClassSuffixes)
     }
 
@@ -90,15 +90,15 @@ class GrailsTestInterceptor {
         requestEnvironmentInterceptor = null
     }
 
-    protected createAutowirer() {
+    protected GrailsTestAutowirer createAutowirer() {
         new GrailsTestAutowirer(appCtx)
     }
 
-    protected createTransactionInterceptor() {
+    protected GrailsTestTransactionInterceptor createTransactionInterceptor() {
         new GrailsTestTransactionInterceptor(appCtx)
     }
 
-    protected createRequestEnvironmentInterceptor() {
+    protected GrailsTestRequestEnvironmentInterceptor createRequestEnvironmentInterceptor() {
         new GrailsTestRequestEnvironmentInterceptor(appCtx)
     }
 }

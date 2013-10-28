@@ -178,7 +178,7 @@ class PerSpecRunListener {
     // JUnitReports requires us to always pass the same Test instance
     // for a test, so we cache it; this scheme also works for the case
     // where testFailure() is invoked without a prior call to testStarted()
-    private getTest(Description description) {
+    private JUnit4TestCaseFacade getTest(Description description) {
         def test = testsByDescription.get(description)
         if (test == null) {
 
