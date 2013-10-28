@@ -57,6 +57,9 @@ if [ -z "$JAVA_HOME" ]; then
 	# Set JAVA_HOME for Darwin
 	if $darwin; then
 
+		[ -z "$JAVA_HOME" -a -f "/usr/libexec/java_home" ] &&
+			export JAVA_HOME=`/usr/libexec/java_home`
+
 		[ -z "$JAVA_HOME" -a -d "/Library/Java/Home" ] &&
 			export JAVA_HOME="/Library/Java/Home"
 
