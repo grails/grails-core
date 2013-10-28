@@ -508,24 +508,27 @@ class AetherDependencyManager implements DependencyManager {
         }
     }
 
-    void addBuildDependency(org.codehaus.groovy.grails.resolve.Dependency dependency) {
+    void addBuildDependency(org.codehaus.groovy.grails.resolve.Dependency dependency, ExclusionDependencySelector exclusionDependencySelector = null) {
         Collection<Exclusion> exclusions = new ArrayList<>()
         for( exc in dependency.excludes) {
             exclusions << new Exclusion(exc.group, exc.name, "*", "*")
         }
+
         final mavenDependency = new Dependency(new DefaultArtifact(dependency.pattern), "compile", false, exclusions)
-        grailsDependencies << dependency
-        grailsDependenciesByScope["build"] << dependency
-        buildDependencies << mavenDependency
-        if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
-            grailsPluginDependencies << dependency
-            grailsPluginDependenciesByScope["build"] << dependency
+        if (exclusionDependencySelector == null || exclusionDependencySelector.selectDependency(mavenDependency)) {
+            grailsDependencies << dependency
+            grailsDependenciesByScope["build"] << dependency
+            buildDependencies << mavenDependency
+            if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
+                grailsPluginDependencies << dependency
+                grailsPluginDependenciesByScope["build"] << dependency
+            }
         }
     }
 
     void addBuildDependency(Dependency dependency, DependencyConfiguration configuration = null) {
-        final grailsDependency = createGrailsDependency(dependency,configuration
-        )
+
+        final grailsDependency = createGrailsDependency(dependency,configuration)
         grailsDependencies << grailsDependency
         grailsDependenciesByScope["build"] << grailsDependency
         buildDependencies << dependency

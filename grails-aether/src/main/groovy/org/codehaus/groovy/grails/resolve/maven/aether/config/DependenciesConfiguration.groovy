@@ -98,7 +98,7 @@ class DependenciesConfiguration {
     }
 
     void addBuildDependency(org.codehaus.groovy.grails.resolve.Dependency dependency) {
-        dependencyManager.addBuildDependency dependency
+        dependencyManager.addBuildDependency dependency, exclusionDependencySelector
     }
 
     /**

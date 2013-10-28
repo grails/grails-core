@@ -325,6 +325,26 @@ class AetherDependencyManagerSpec extends Specification {
         report.files.find { it.name.contains('feeds')}
     }
 
+    @Issue('GRAILS-10671')
+    void "Test exclude build dependency inherited from framework"() {
+        given: "A dependency manager instance"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
+            dependencyManager.parseDependencies {
+                inherits("global") {
+                    excludes 'grails-docs'
+                }
+                repositories {
+                    mavenRepo "http://repo.grails.org/grails/core"
+                }
+            }
+
+        when:"The dependencies are resolved"
+            def dependencies = dependencyManager.getApplicationDependencies('build')
+        then:"The resolve is successful"
+            !dependencies.find { it.name == 'grails-docs' }
+    }
+
     void "Test dependencies inherited from framework"() {
         given: "A dependency manager instance"
         def dependencyManager = new AetherDependencyManager()
