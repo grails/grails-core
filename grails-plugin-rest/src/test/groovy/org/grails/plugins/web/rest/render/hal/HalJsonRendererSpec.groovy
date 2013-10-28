@@ -17,6 +17,7 @@
 package org.grails.plugins.web.rest.render.hal
 
 import grails.rest.render.hal.HalJsonCollectionRenderer
+import groovy.transform.NotYetImplemented
 import org.springframework.core.convert.converter.Converter
 import spock.lang.Ignore
 import spock.lang.Specification
@@ -342,6 +343,7 @@ class HalJsonRendererSpec extends Specification{
     }
 
     @Issue('GRAILS-10499')
+    @NotYetImplemented
     void "Test that the HAL rendered renders JSON values correctly for collections with repeated elements" () {
         given: "A HAL Collection renderer"
         HalJsonCollectionRenderer renderer = getCollectionRenderer()
@@ -446,6 +448,7 @@ class HalJsonRendererSpec extends Specification{
     }
 
     @Issue('GRAILS-10499')
+    @NotYetImplemented
     void "Test that the HAL rendered renders JSON values correctly for collections with elided elements" () {
         given: "A HAL Collection renderer"
         HalJsonCollectionRenderer renderer = getCollectionRenderer()
