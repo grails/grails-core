@@ -479,6 +479,22 @@ class SimpleDataBinderSpec extends Specification {
         widget.names[1] == null
         widget.names[2] == 'two'
     }
+    
+    void 'Test @BindUsing with typed Collection'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+        
+        when:
+        binder.bind widget, [collectionOfIntegers: '1,2,42,2112'] as SimpleMapDataBindingSource
+        
+        then:
+        widget.collectionOfIntegers?.size() == 4
+        widget.collectionOfIntegers[0] == 1
+        widget.collectionOfIntegers[1] == 2
+        widget.collectionOfIntegers[2] == 42
+        widget.collectionOfIntegers[3] == 2112
+    }
 }
 
 class Factory {
@@ -499,6 +515,15 @@ class Widget {
     byte[] byteArray
     Integer[] integers
     List<String> names
+    
+    @BindUsing({ obj, source ->
+        def numbers = []
+        source['collectionOfIntegers'].split(',').each { integer ->
+            numbers << Integer.parseInt(integer)
+        }
+        numbers
+    })
+    Collection<Integer> collectionOfIntegers
 }
 
 class Gadget extends Widget {

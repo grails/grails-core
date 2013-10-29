@@ -424,10 +424,15 @@ class SimpleDataBinder implements DataBinder {
         def converter
         def formattedConverter = formattedValueConvertersionHelpers[field.type]
         if (formattedConverter) {
-            converter = { SimpleMapDataBindingSource source ->
+            def converterMap = [:]
+            converterMap.convert = { SimpleMapDataBindingSource source ->
                 def value = source.getPropertyValue field.name
                 formattedConverter.convert (value, formattingValue)
-            } as ValueConverter
+            }
+            converterMap.getTargetType = { ->
+                field.type
+            }
+            converter = converterMap as ValueConverter
         }
         converter
     }
@@ -578,8 +583,14 @@ class SimpleDataBinder implements DataBinder {
                 def converter = getValueConverter obj, propName, propertyValue
                 if (converter) {
                     propertyValue = converter.convert source
+                    if(metaProperty.type && converter.targetType?.isAssignableFrom(metaProperty.type)) {
+                        obj[propName] = propertyValue
+                    } else {
+                        setPropertyValue obj, source, metaProperty, propertyValue, listener
+                    }
+                } else {
+                    setPropertyValue obj, source, metaProperty, propertyValue, listener
                 }
-                setPropertyValue obj, source, metaProperty, propertyValue, listener
             } catch (Exception e) {
                 addBindingError(obj, propName, propertyValue, e, listener, errors)
             }
