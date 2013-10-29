@@ -1,19 +1,22 @@
 ext {
-    aetherVersion = "0.9.0.M3"
-    aetherProviderVersion = "0.9.0.M2"
-    mavenVersion = "3.1.1"
+    aetherVersion = "1.13.1"
+    mavenVersion = "3.0.4"
 }
 
 dependencies {
-    compile("org.eclipse.aether:aether-api:${aetherVersion}")
-    compile("org.eclipse.aether:aether-util:${aetherVersion}")
-    compile("org.eclipse.aether:aether-impl:${aetherVersion}")
-    compile("org.eclipse.aether:aether-connector-file:${aetherProviderVersion}")
-    compile("org.eclipse.aether:aether-connector-wagon:${aetherProviderVersion}")
-    compile("org.eclipse.aether:aether-connector-asynchttpclient:${aetherProviderVersion}")
+    compile("org.sonatype.aether:aether-api:${aetherVersion}")
+    compile("org.sonatype.aether:aether-util:${aetherVersion}")
+    compile("org.sonatype.aether:aether-impl:${aetherVersion}")
+    compile("org.sonatype.aether:aether-connector-file:${aetherVersion}")
+    compile("org.sonatype.aether:aether-connector-wagon:${aetherVersion}") {
+//        exclude module:'plexus-component-annotations'
+//        exclude module:'plexus-classworlds'
+//        exclude module:'plexus-utils'
+//        exclude module:'sisu-inject-plexus'
+    }
+    compile("org.sonatype.aether:aether-connector-asynchttpclient:${aetherVersion}")
     compile("org.apache.maven:maven-aether-provider:$mavenVersion")
     compile "org.apache.maven:maven-settings-builder:$mavenVersion"
-    compile 'org.eclipse.sisu:org.eclipse.sisu.plexus:0.0.0.M5'
 
     compile project(":grails-bootstrap")
 

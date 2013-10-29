@@ -16,11 +16,9 @@
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
-import org.eclipse.aether.repository.Authentication
-import org.eclipse.aether.repository.Proxy
-import org.eclipse.aether.repository.RemoteRepository
-import org.eclipse.aether.repository.RepositoryPolicy
-import org.eclipse.aether.util.repository.AuthenticationBuilder
+import org.sonatype.aether.repository.Authentication
+import org.sonatype.aether.repository.Proxy
+import org.sonatype.aether.repository.RemoteRepository
 
 /**
  * Allows configurations a repository's policy
@@ -30,25 +28,23 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder
  */
 @CompileStatic
 class RepositoryConfiguration {
-    @Delegate RemoteRepository.Builder remoteRepository
+    @Delegate RemoteRepository remoteRepository
 
-    RepositoryPolicy defaultRepositoryPolicy = new RepositoryPolicy()
-
-    RepositoryConfiguration(RemoteRepository.Builder remoteRepository) {
+    RepositoryConfiguration(RemoteRepository remoteRepository) {
         this.remoteRepository = remoteRepository
     }
 
     void updatePolicy(String updatePolicy) {
-        final newPolicy = new RepositoryPolicy(defaultRepositoryPolicy.enabled, updatePolicy, defaultRepositoryPolicy.checksumPolicy)
-        this.defaultRepositoryPolicy = newPolicy
-        remoteRepository.setPolicy(newPolicy)
+        final policy = remoteRepository.getPolicy(true)
+
+        remoteRepository.setPolicy(true, policy.setUpdatePolicy(updatePolicy))
     }
 
     void checksumPolicy(String checksumPolicy) {
+        final policy = remoteRepository.getPolicy(true)
+
         if (['ignore', 'warn', 'fail'].contains(checksumPolicy)) {
-            final newPolicy = new RepositoryPolicy(defaultRepositoryPolicy.enabled, defaultRepositoryPolicy.updatePolicy,checksumPolicy)
-            this.defaultRepositoryPolicy = newPolicy
-            remoteRepository.setPolicy(newPolicy)
+            remoteRepository.setPolicy(true, policy.setChecksumPolicy(checksumPolicy))
         }
     }
 
@@ -58,11 +54,11 @@ class RepositoryConfiguration {
 
     Authentication auth(Map<String, String> credentials) {
         Authentication auth
-        if (credentials.privateKeyFile && credentials.passphrase) {
-            auth = new AuthenticationBuilder().addUsername(credentials.username).addPassword(credentials.password).addPrivateKey(credentials.privateKeyFile, credentials.passphrase).build()
+        if (credentials.privateKeyFile) {
+            auth = new Authentication(credentials.username, credentials.password, credentials.privateKeyFile, credentials.passphrase)
         }
         else {
-            auth = new AuthenticationBuilder().addUsername(credentials.username).addPassword(credentials.password).build()
+            auth = new Authentication(credentials.username, credentials.password)
         }
 
         remoteRepository.setAuthentication(auth)

@@ -23,9 +23,9 @@ import groovy.transform.TypeCheckingMode
 import java.util.regex.Pattern
 
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
-import org.eclipse.aether.graph.Dependency
-import org.eclipse.aether.artifact.DefaultArtifact
-import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector
+import org.sonatype.aether.graph.Dependency
+import org.sonatype.aether.util.artifact.DefaultArtifact
+import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 import grails.util.Environment
 
 /**

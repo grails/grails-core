@@ -20,7 +20,7 @@ import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
-import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector
+import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
 
 /**
  * Adapts Grails' dependencies to Aether dependencies

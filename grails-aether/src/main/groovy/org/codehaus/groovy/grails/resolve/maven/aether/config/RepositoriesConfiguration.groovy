@@ -16,14 +16,14 @@
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import groovy.transform.CompileStatic
-import org.eclipse.aether.DefaultRepositorySystemSession
-import org.eclipse.aether.repository.ArtifactRepository
-import org.eclipse.aether.repository.Proxy
-import org.eclipse.aether.repository.RemoteRepository
+import org.apache.maven.repository.internal.MavenRepositorySystemSession
+import org.sonatype.aether.repository.ArtifactRepository
+import org.sonatype.aether.repository.Authentication
+import org.sonatype.aether.repository.Proxy
+import org.sonatype.aether.repository.RemoteRepository
 import grails.util.Environment
 import grails.build.logging.GrailsConsole
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
-import org.eclipse.aether.util.repository.AuthenticationBuilder
 
 /**
  * @author Graeme Rocher
@@ -31,11 +31,11 @@ import org.eclipse.aether.util.repository.AuthenticationBuilder
  */
 @CompileStatic
 class RepositoriesConfiguration {
-    AetherDependencyManager aetherDependencyManager
-    @Delegate DefaultRepositorySystemSession session
+    AetherDependencyManager dependencyManager
+    @Delegate MavenRepositorySystemSession session
 
-    RepositoriesConfiguration(AetherDependencyManager dependencyManager, DefaultRepositorySystemSession session) {
-        this.aetherDependencyManager = dependencyManager
+    RepositoriesConfiguration(AetherDependencyManager dependencyManager, MavenRepositorySystemSession session) {
+        this.dependencyManager = dependencyManager
         this.session = session
     }
 
@@ -77,16 +77,15 @@ class RepositoriesConfiguration {
     }
 
     void mavenLocal(String location) {
-        aetherDependencyManager.cacheDir = location
+        dependencyManager.cacheDir = location
     }
 
     RemoteRepository mavenCentral(Closure configurer = null) {
         final existing = repositories.find { ArtifactRepository ar -> ar.id == "mavenCentral" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("mavenCentral", "default", "http://repo1.maven.org/maven2/")
+            final repository = new RemoteRepository("mavenCentral", "default", "http://repo1.maven.org/maven2/")
 
-            configureRepository(repositoryBuilder, configurer)
-            final repository = repositoryBuilder.build()
+            configureRepository(repository, configurer)
             repositories << repository
             return repository
         }
@@ -95,27 +94,27 @@ class RepositoriesConfiguration {
         }
     }
 
-    protected void configureRepository(RemoteRepository.Builder repositoryBuilder, Closure configurer) {
+    protected void configureRepository(RemoteRepository repository, Closure configurer) {
         final proxyHost = System.getProperty("http.proxyHost")
         final proxyPort = System.getProperty("http.proxyPort")
         if (proxyHost && proxyPort) {
             final proxyUser = System.getProperty("http.proxyUser")
             final proxyPass = System.getProperty("http.proxyPassword")
             if (proxyUser && proxyPass) {
-                repositoryBuilder.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),new AuthenticationBuilder().addUsername(proxyUser).addPassword( proxyPass).build()))
+                repository.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),new Authentication(proxyUser, proxyPass)))
             }
             else {
-                repositoryBuilder.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),null))
+                repository.setProxy(new Proxy(Proxy.TYPE_HTTP, proxyHost, proxyPort.toInteger(),null))
             }
 
         }
 
-        final auth = session.authenticationSelector.getAuthentication(repositoryBuilder.build())
+        final auth = session.authenticationSelector.getAuthentication(repository)
         if(auth) {
-            repositoryBuilder.setAuthentication(auth)
+            repository.setAuthentication(auth)
         }
         if (configurer) {
-            final rc = new RepositoryConfiguration(repositoryBuilder)
+            final rc = new RepositoryConfiguration(repository)
             configurer.setDelegate(rc)
             configurer.call()
         }
@@ -124,15 +123,14 @@ class RepositoriesConfiguration {
     RemoteRepository grailsCentral(Closure configurer = null) {
         final existing = repositories.find { ArtifactRepository ar -> ar.id == "grailsCentral" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
-            configureRepository(repositoryBuilder, configurer)
-            final repository = repositoryBuilder.build()
+            final repository = new RemoteRepository("grailsCentral", "default", "http://repo.grails.org/grails/plugins")
+            configureRepository(repository, configurer)
             repositories << repository
             return repository
-
         }
         else {
-            return reconfigureExisting(existing, configurer)
+            configureRepository(existing, configurer)
+            return existing
         }
     }
 
@@ -145,14 +143,14 @@ class RepositoriesConfiguration {
                 name = url[i+2..-1]
             name.replaceAll(/[\.\/]/,'-')
 
-            final repositoryBuilder = new RemoteRepository.Builder(name, "default", url)
-            configureRepository(repositoryBuilder, configurer)
-            final repository = repositoryBuilder.build()
+            final repository = new RemoteRepository(name, "default", url)
+            configureRepository(repository, configurer)
             repositories << repository
             return repository
         }
         else {
-            return reconfigureExisting(existing, configurer)
+            configureRepository(existing, configurer)
+            return existing
         }
     }
 
@@ -163,24 +161,15 @@ class RepositoriesConfiguration {
         if (id && properties.url) {
             final existing = repositories.find { ArtifactRepository ar -> ar.id == url }
             if (!existing) {
-                final repositoryBuilder = new RemoteRepository.Builder(id, "default", url)
-                configureRepository(repositoryBuilder, configurer)
-                final repository = repositoryBuilder.build()
+                final repository = new RemoteRepository(id, "default", url)
+                configureRepository(repository, configurer)
                 repositories << repository
                 return repository
             }
             else {
-                return reconfigureExisting(existing, configurer)
+                configureRepository(existing, configurer)
+                return existing
             }
         }
-    }
-
-    protected RemoteRepository reconfigureExisting(RemoteRepository existing, Closure configurer) {
-        repositories.remove(existing)
-        final repositoryBuilder = new RemoteRepository.Builder(existing)
-        configureRepository(repositoryBuilder, configurer)
-        final newRepo = repositoryBuilder.build()
-        repositories << newRepo
-        return newRepo
     }
 }
