@@ -31,6 +31,7 @@ import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.context.support.StaticMessageSource
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 import com.google.gson.internal.LazilyParsedNumber
@@ -1020,6 +1021,7 @@ class GrailsWebDataBinderSpec extends Specification {
         ]
     }
     
+    @Issue('GRAILS-10696')
     void 'Test binding a simple String to a List<Long> on a non domain class'() {
         given:
         def obj = new SomeNonDomainClass()
@@ -1031,6 +1033,7 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.listOfLong[0] == 42
     }
     
+    @Issue('GRAILS-10689')
     void 'Test binding a String[] to a List<Long> on a non domain class'() {
         given:
         def obj = new SomeNonDomainClass()
@@ -1044,6 +1047,7 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.listOfLong[1] == 2112
     }
 
+    @Issue('GRAILS-10696')
     void 'Test binding a simple String to a List<Long> on a domain class'() {
         given:
         def obj = new CollectionContainer()
@@ -1055,6 +1059,7 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.listOfLong[0] == 42
     }
 
+    @Issue('GRAILS-10689')
     void 'Test binding  String[] to a List<Long> on a domain class'() {
         given:
         def obj = new CollectionContainer()
