@@ -20,8 +20,8 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
-import org.sonatype.aether.graph.DependencyNode
-import org.sonatype.aether.util.graph.PreorderNodeListGenerator
+import org.eclipse.aether.graph.DependencyNode
+import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator
 
 /**
  * Implementation of the {@link DependencyReport} interface that adapts Aether's PreorderNodeListGenerator
@@ -67,7 +67,7 @@ class AetherDependencyReport implements DependencyReport {
 
     List<ResolvedArtifactReport> getResolvedArtifacts() {
         List<ResolvedArtifactReport> reports = []
-        for(DependencyNode node in resolveResult.nodes) {
+        resolveResult.getNodes().each { DependencyNode node ->
             final dependency = node.dependency
             def f = dependency?.artifact?.file
             if (f) {

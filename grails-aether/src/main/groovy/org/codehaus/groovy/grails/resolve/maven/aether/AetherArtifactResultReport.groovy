@@ -19,7 +19,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
-import org.sonatype.aether.resolution.ArtifactResult
+import org.eclipse.aether.resolution.ArtifactResult
 
 /**
  * Implementation of the {@link DependencyReport} interface that adapts Aether's ArtifactResult class

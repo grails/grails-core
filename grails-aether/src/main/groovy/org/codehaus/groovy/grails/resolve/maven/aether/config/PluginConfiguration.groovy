@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.resolve.maven.aether.config
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
-import org.sonatype.aether.graph.Dependency
+import org.eclipse.aether.graph.Dependency
 
 /**
  * @author Graeme Rocher
