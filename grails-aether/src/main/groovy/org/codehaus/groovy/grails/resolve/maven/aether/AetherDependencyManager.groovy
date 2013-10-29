@@ -24,7 +24,7 @@ import groovy.util.slurpersupport.GPathResult
 import org.apache.maven.model.building.DefaultModelBuildingRequest
 import org.apache.maven.model.building.ModelBuilder
 import org.apache.maven.model.building.ModelBuildingResult
-import org.apache.maven.repository.internal.MavenRepositorySystemSession
+import org.apache.maven.repository.internal.MavenRepositorySystemUtils
 import org.apache.maven.settings.Settings
 import org.apache.maven.settings.building.DefaultSettingsBuildingRequest
 import org.apache.maven.settings.building.SettingsBuilder
@@ -38,34 +38,42 @@ import org.codehaus.groovy.grails.resolve.maven.aether.config.DependencyConfigur
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsConsoleLoggerManager
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
 import org.codehaus.plexus.DefaultPlexusContainer
-import org.sonatype.aether.RepositorySystem
-import org.sonatype.aether.artifact.Artifact
-import org.sonatype.aether.collection.CollectRequest
-import org.sonatype.aether.collection.DependencyCollectionException
-import org.sonatype.aether.graph.Dependency
-import org.sonatype.aether.graph.DependencyNode
-import org.sonatype.aether.graph.Exclusion
-import org.sonatype.aether.repository.Authentication
-import org.sonatype.aether.repository.LocalRepository
-import org.sonatype.aether.repository.Proxy
-import org.sonatype.aether.repository.RemoteRepository
-import org.sonatype.aether.repository.RepositoryPolicy
-import org.sonatype.aether.resolution.ArtifactRequest
-import org.sonatype.aether.resolution.ArtifactResolutionException
-import org.sonatype.aether.resolution.ArtifactResult
-import org.sonatype.aether.resolution.DependencyRequest
-import org.sonatype.aether.resolution.DependencyResolutionException
-import org.sonatype.aether.resolution.DependencyResult
-import org.sonatype.aether.transfer.AbstractTransferListener
-import org.sonatype.aether.transfer.ArtifactTransferException
-import org.sonatype.aether.transfer.TransferCancelledException
-import org.sonatype.aether.transfer.TransferEvent
-import org.sonatype.aether.util.artifact.DefaultArtifact
-import org.sonatype.aether.util.filter.ScopeDependencyFilter
-import org.sonatype.aether.util.graph.DefaultDependencyNode
-import org.sonatype.aether.util.graph.PreorderNodeListGenerator
-import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
-import org.sonatype.aether.util.repository.DefaultProxySelector
+import org.eclipse.aether.DefaultRepositorySystemSession
+import org.eclipse.aether.RepositorySystem
+import org.eclipse.aether.RepositorySystemSession
+import org.eclipse.aether.artifact.Artifact
+import org.eclipse.aether.collection.CollectRequest
+import org.eclipse.aether.collection.DependencyCollectionException
+import org.eclipse.aether.connector.async.AsyncRepositoryConnectorFactory
+import org.eclipse.aether.connector.wagon.WagonRepositoryConnectorFactory
+import org.eclipse.aether.graph.Dependency
+import org.eclipse.aether.graph.DependencyNode
+import org.eclipse.aether.graph.Exclusion
+import org.eclipse.aether.impl.DefaultServiceLocator
+import org.eclipse.aether.repository.LocalRepository
+import org.eclipse.aether.repository.Proxy
+import org.eclipse.aether.repository.RemoteRepository
+import org.eclipse.aether.repository.RepositoryPolicy
+import org.eclipse.aether.resolution.ArtifactRequest
+import org.eclipse.aether.resolution.ArtifactResolutionException
+import org.eclipse.aether.resolution.ArtifactResult
+import org.eclipse.aether.resolution.DependencyRequest
+import org.eclipse.aether.resolution.DependencyResolutionException
+import org.eclipse.aether.resolution.DependencyResult
+import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
+import org.eclipse.aether.transfer.AbstractTransferListener
+import org.eclipse.aether.transfer.ArtifactTransferException
+import org.eclipse.aether.transfer.TransferCancelledException
+import org.eclipse.aether.transfer.TransferEvent
+import org.eclipse.aether.artifact.DefaultArtifact
+import org.eclipse.aether.util.filter.ScopeDependencyFilter
+import org.eclipse.aether.graph.DefaultDependencyNode
+import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector
+import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator
+import org.eclipse.aether.util.repository.AuthenticationBuilder
+import org.eclipse.aether.util.repository.DefaultAuthenticationSelector
+import org.eclipse.aether.util.repository.DefaultMirrorSelector
+import org.eclipse.aether.util.repository.DefaultProxySelector
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsModelResolver
 
 /**
@@ -105,7 +113,7 @@ class AetherDependencyManager implements DependencyManager {
 
     Map<String, Closure> inheritedDependencies = [:]
 
-    private MavenRepositorySystemSession session  = new MavenRepositorySystemSession()
+    private DefaultRepositorySystemSession session  = (DefaultRepositorySystemSession)MavenRepositorySystemUtils.newSession()
 
     private RepositorySystem repositorySystem
 
@@ -135,16 +143,24 @@ class AetherDependencyManager implements DependencyManager {
             loggerManager = new GrailsConsoleLoggerManager()
             container.setLoggerManager(loggerManager)
 
-            repositorySystem = container.lookup(RepositorySystem.class)
             settingsBuilder = container.lookup(SettingsBuilder.class)
             modelBuilder = container.lookup(ModelBuilder.class)
+
+            DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
+            locator.addService( RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class );
+
+            repositorySystem = locator.getService( RepositorySystem.class );
+
+            session.setAuthenticationSelector(new DefaultAuthenticationSelector())
+            session.setProxySelector(new DefaultProxySelector())
+            session.setMirrorSelector(new DefaultMirrorSelector())
         }
         finally {
             currentThread.setContextClassLoader(contextLoader)
         }
     }
 
-    MavenRepositorySystemSession getSession() {
+    RepositorySystemSession getSession() {
         return session
     }
 
@@ -419,7 +435,7 @@ class AetherDependencyManager implements DependencyManager {
         session.setChecksumPolicy(checksumPolicy)
 
         LocalRepository localRepo = new LocalRepository(cacheDir ?: settings.localRepository ?: DEFAULT_CACHE)
-        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(localRepo))
+        session.setLocalRepositoryManager(repositorySystem.newLocalRepositoryManager(session, localRepo))
 
         if (readPom) {
             def pomFile = new File(basedir, "pom.xml")
@@ -455,7 +471,7 @@ class AetherDependencyManager implements DependencyManager {
         Proxy proxy
         if (proxyHost && proxyPort ) {
             if (proxyUser && proxyPass) {
-                proxy = new Proxy("http", proxyHost, proxyPort.toInteger(), new Authentication(proxyUser, proxyPass))
+                proxy = new Proxy("http", proxyHost, proxyPort.toInteger(), new AuthenticationBuilder().addUsername(proxyUser).addPassword(proxyPass).build())
             } else {
 
                 proxy = new Proxy("http", proxyHost, proxyPort.toInteger(), null)

@@ -18,8 +18,8 @@ package org.codehaus.groovy.grails.resolve.maven
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
-import org.sonatype.aether.repository.Authentication
-import org.sonatype.aether.repository.RemoteRepository
+import org.eclipse.aether.repository.Authentication
+import org.eclipse.aether.repository.RemoteRepository
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -29,6 +29,26 @@ import spock.lang.Specification
  * @since 2.3
  */
 class AetherDependencyManagerSpec extends Specification {
+
+    @Issue('GRAILS-10638')
+    void "Test that a dependency included in both compile and test scopes ends up in both scopes"() {
+        given:"A dependency manager with a dependency that contains exclusions"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                dependencies {
+                    compile 'mysql:mysql-connector-java:5.1.24'
+                    test 'mysql:mysql-connector-java:5.1.24'
+                }
+            }
+        when:"The grails dependencies are obtained"
+            def compileFiles = dependencyManager.resolve('compile').allArtifacts
+            def testFiles = dependencyManager.resolve('test').allArtifacts
+
+        then:"The exclusions are present"
+            testFiles.size() == 1
+            compileFiles.size() == 1
+
+    }
 
     @Issue('GRAILS-10513')
     void "Test that plugin scopes are correct"() {
@@ -140,7 +160,7 @@ class AetherDependencyManagerSpec extends Specification {
             repo.getPolicy(true).updatePolicy == 'interval:1'
             repo.proxy.host == 'foo'
             repo.proxy.port == 8080
-            repo.proxy.authentication.username == 'bob'
+            repo.proxy.authentication != null
     }
 
     void "Test grails dependency transitive setting"() {
@@ -427,8 +447,7 @@ class AetherDependencyManagerSpec extends Specification {
                 }
             }
         then:"The credentials are correctly populated"
-            authentication.username == "foo"
-            authentication.password == "bar"
+            authentication != null
             repository.id == 'grailsCentral'
             repository.url == "http://repo.grails.org/grails/core"
             repository.authentication == authentication
@@ -454,8 +473,7 @@ class AetherDependencyManagerSpec extends Specification {
                 }
             }
         then:"The credentials are correctly populated"
-            authentication.username == "foo"
-            authentication.password == "bar"
+            authentication != null
             repository.id == 'repo.grails.org/grails/core'
             repository.url == "http://repo.grails.org/grails/core"
             repository.authentication == authentication

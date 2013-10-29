@@ -22,12 +22,12 @@ import org.apache.maven.model.building.FileModelSource
 import org.apache.maven.model.building.ModelSource
 import org.apache.maven.model.resolution.ModelResolver
 import org.apache.maven.model.resolution.UnresolvableModelException
-import org.sonatype.aether.RepositorySystem
-import org.sonatype.aether.RepositorySystemSession
-import org.sonatype.aether.repository.RemoteRepository
-import org.sonatype.aether.resolution.ArtifactRequest
-import org.sonatype.aether.resolution.ArtifactResolutionException
-import org.sonatype.aether.util.artifact.DefaultArtifact
+import org.eclipse.aether.RepositorySystem
+import org.eclipse.aether.RepositorySystemSession
+import org.eclipse.aether.repository.RemoteRepository
+import org.eclipse.aether.resolution.ArtifactRequest
+import org.eclipse.aether.resolution.ArtifactResolutionException
+import org.eclipse.aether.artifact.DefaultArtifact
 
 /**
  * @author Graeme Rocher
@@ -64,7 +64,7 @@ class GrailsModelResolver implements ModelResolver{
 
     @Override
     void addRepository(Repository repository) {
-        repositories << new RemoteRepository(repository.id, "default",repository.url)
+        repositories << new RemoteRepository.Builder(repository.id, "default",repository.url).build()
     }
 
     @Override

@@ -19,9 +19,9 @@ import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.reporting.GraphNode
-import org.sonatype.aether.artifact.Artifact
-import org.sonatype.aether.graph.DependencyNode
-import org.sonatype.aether.resolution.DependencyResult
+import org.eclipse.aether.artifact.Artifact
+import org.eclipse.aether.graph.DependencyNode
+import org.eclipse.aether.resolution.DependencyResult
 
 /**
  * Adapts a Aether dependency graph into the Grails graph node API for reporting
