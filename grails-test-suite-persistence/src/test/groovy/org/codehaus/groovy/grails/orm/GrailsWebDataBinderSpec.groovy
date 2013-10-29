@@ -28,7 +28,6 @@ import org.grails.databinding.BindingFormat
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.errors.BindingError
-import org.grails.databinding.events.DataBindingListener
 import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.context.support.StaticMessageSource
 
@@ -1020,6 +1019,28 @@ class GrailsWebDataBinderSpec extends Specification {
             "typeMismatch"
         ]
     }
+    
+    void 'Test binding a simple String to a List<Long> on a non domain class'() {
+        given:
+        def obj = new SomeNonDomainClass()
+        
+        when:
+        binder.bind obj, [listOfLong: '42'] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong[0] == 42
+    }
+    
+    void 'Test binding a simple String to a List<Long> on a domain class'() {
+        given:
+        def obj = new CollectionContainer()
+        
+        when:
+        binder.bind obj, [listOfLong: '42'] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong[0] == 42
+    }
 }
 
 @Entity
@@ -1038,6 +1059,7 @@ class Publisher {
 
 class SomeNonDomainClass {
     Publication publication
+    List<Long> listOfLong
 }
 
 @Entity
@@ -1123,6 +1145,7 @@ class CollectionContainer {
     SortedSet sortedSetOfWidgets
     Collection collectionOfWidgets
     List<String> listOfStrings
+    List<Long> listOfLong
 }
 
 class PrimitiveContainer {

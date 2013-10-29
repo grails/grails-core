@@ -539,10 +539,34 @@ class SimpleDataBinder implements DataBinder {
                     }
                     bind obj[propName], propertyValue, listener
                 }
+            } else if(Collection.isAssignableFrom(propertyType) && propertyValue instanceof String) {
+                addElementToCollection obj, propName, propertyType, propertyValue, true
             } else {
                 obj[propName] = convert(propertyType, propertyValue)
             }
         }
+    }
+    protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
+        boolean isSet = false
+        def coll = initializeCollection obj, propName, propertyType
+        if (coll != null) {
+            if (clearCollection) {
+                coll.clear()
+            }
+            def referencedType = getReferencedTypeForCollection propName, obj
+            if (referencedType != null) {
+                if (propertyValue == null || referencedType.isAssignableFrom(propertyValue.getClass())) {
+                    coll << propertyValue
+                    isSet = true
+                } else {
+                    try {
+                        coll << convert(referencedType, propertyValue)
+                        isSet = true
+                    } catch(Exception e){}
+                }
+            }
+        }
+        isSet
     }
 
     protected bindProperty(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener, errors) {
