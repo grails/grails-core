@@ -31,7 +31,7 @@ ext {
     datastoreVersion = "2.0.2.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
-    groovyVersion = "2.1.8"
+    groovyVersion = "2.1.9"
     ivyVersion = "2.3.0"
     jansiVersion = "1.2.1"
     jlineVersion = "2.11"
