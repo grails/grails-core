@@ -1031,6 +1031,19 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.listOfLong[0] == 42
     }
     
+    void 'Test binding a String[] to a List<Long> on a non domain class'() {
+        given:
+        def obj = new SomeNonDomainClass()
+        
+        when:
+        binder.bind obj, [listOfLong: ['42', '2112'] as String[]] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong.size() == 2
+        obj.listOfLong[0] == 42
+        obj.listOfLong[1] == 2112
+    }
+
     void 'Test binding a simple String to a List<Long> on a domain class'() {
         given:
         def obj = new CollectionContainer()
@@ -1040,6 +1053,19 @@ class GrailsWebDataBinderSpec extends Specification {
         
         then:
         obj.listOfLong[0] == 42
+    }
+
+    void 'Test binding  String[] to a List<Long> on a domain class'() {
+        given:
+        def obj = new CollectionContainer()
+        
+        when:
+        binder.bind obj, [listOfLong: ['42', '2112'] as String[]] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong.size() == 2
+        obj.listOfLong[0] == 42
+        obj.listOfLong[1] == 2112
     }
 }
 
