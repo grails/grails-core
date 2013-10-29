@@ -17,14 +17,15 @@ package grails.util
 
 import org.codehaus.groovy.grails.io.support.IOUtils
 
-import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import grails.build.logging.GrailsConsole
+import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
+
+import static grails.build.logging.GrailsConsole.instance as CONSOLE
 import groovy.transform.CompileStatic
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 
-import org.codehaus.groovy.grails.cli.fork.ForkedGrailsProcess
 import org.codehaus.groovy.grails.cli.support.ClasspathConfigurer
 import org.codehaus.groovy.grails.cli.support.OwnerlessClosure
 import org.codehaus.groovy.grails.io.support.IOUtils
@@ -34,6 +35,7 @@ import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.EnhancedDefaultDependencyDescriptor
 import org.codehaus.groovy.grails.resolve.GrailsCoreDependencies
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.runtime.StackTraceUtils
 
 /**
  * <p>Represents the project paths and other build settings
@@ -391,7 +393,8 @@ class BuildSettings extends AbstractBuildSettings {
     Closure getGrailsScriptClosure() {
         return new OwnerlessClosure() {
             Object doCall(String name) {
-                if (grailsHome != null) {
+                if(grailsHome != null) {
+
                     def potentialScript = new File(grailsHome, "scripts/${name}.groovy")
                     potentialScript = potentialScript.exists() ? potentialScript : new File(grailsHome, "scripts/${name}_.groovy")
                     if (potentialScript.exists()) {
@@ -523,7 +526,7 @@ class BuildSettings extends AbstractBuildSettings {
             jarFiles = resolveReport.jarFiles
         }
         pluginZips.addAll(resolveReport.pluginZips)
-        pluginDependencies.addAll(resolveReport.pluginZips)
+        this.pluginDependencies.addAll(resolveReport.pluginZips)
         pluginDependencies.unique(true)
         resolveCache[scope] = resolveReport.allArtifacts
         jarFiles
@@ -867,7 +870,7 @@ class BuildSettings extends AbstractBuildSettings {
     }
 
     void setDependenciesExternallyConfigured(boolean dependenciesExternallyConfigured) {
-        if (dependenciesExternallyConfigured) {
+        if(dependenciesExternallyConfigured) {
             setForkSettings([run:false, test:false, console:false, shell:false, compile:false])
         }
         this.dependenciesExternallyConfigured = dependenciesExternallyConfigured
@@ -1078,7 +1081,7 @@ class BuildSettings extends AbstractBuildSettings {
      * returns an empty config.
      */
     @CompileStatic
-    ConfigObject loadConfig(Script script, String environment = null) {
+    public ConfigObject loadConfig(Script script, String environment = null) {
         ConfigSlurper slurper = createConfigSlurper()
         slurper.setEnvironment(environment)
         return loadConfig(slurper.parse(script))
@@ -1262,7 +1265,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
     }
 
-    protected getInlinePluginDependencyConfig(ConfigObject pluginConfig) {
+    protected Object getInlinePluginDependencyConfig(ConfigObject pluginConfig) {
         pluginConfig.grails.project.dependency.resolution
     }
 
@@ -1655,6 +1658,7 @@ class BuildSettings extends AbstractBuildSettings {
                 GrailsConsole.getInstance().error("Error initializing resources from grails-app/conf: ${e.message}", e)
             }
         }
+
     }
 
     @CompileStatic

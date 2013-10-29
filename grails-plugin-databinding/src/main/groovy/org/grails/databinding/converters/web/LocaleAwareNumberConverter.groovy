@@ -26,29 +26,31 @@ import org.grails.databinding.converters.ValueConverter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.web.servlet.LocaleResolver
 
+
 /**
- * Knows how to convert a String to any numeric type and is Locale aware.  The
+ * A ValueConverter that knows how to convert a String to any numeric type and is Locale aware.  The
  * converter will use the Locale of the current request if being invoked as part of a
  * request, otherwise will use Locale.getDefault()
- *
+ * 
  * @author Jeff Brown
  * @since 2.3
+ *
  */
 @CompileStatic
 class LocaleAwareNumberConverter implements ValueConverter {
 
     Class<?> targetType
-
+    
     @Autowired(required=false)
     LocaleResolver localeResolver
 
     @Override
-    boolean canConvert(value) {
+    public boolean canConvert(Object value) {
         value instanceof String
     }
 
     @Override
-    Object convert(value) {
+    public Object convert(Object value) {
         numberFormatter.parse((String)value).asType(getTargetType())
     }
 
@@ -59,10 +61,10 @@ class LocaleAwareNumberConverter implements ValueConverter {
     protected Locale getLocale() {
         def locale
         def request = GrailsWebRequest.lookup()?.currentRequest
-        if (request instanceof HttpServletRequest) {
+        if(request instanceof HttpServletRequest) {
             locale = localeResolver?.resolveLocale(request)
         }
-        if (locale == null) {
+        if(locale == null) {
             locale = Locale.default
         }
         return locale

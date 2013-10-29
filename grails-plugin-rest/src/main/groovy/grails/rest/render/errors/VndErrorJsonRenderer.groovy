@@ -15,20 +15,18 @@
  */
 package grails.rest.render.errors
 
+import com.google.gson.Gson
+import com.google.gson.stream.JsonWriter
 import grails.rest.render.RenderContext
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
-
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.ObjectError
-
-import com.google.gson.Gson
-import com.google.gson.stream.JsonWriter
+import org.springframework.http.HttpStatus
 
 /**
  * A JSON renderer that renders errors in in the Vnd.Error format (see https://github.com/blongden/vnd.error)
@@ -63,7 +61,7 @@ class VndErrorJsonRenderer extends AbstractVndErrorRenderer {
                 writer.indent = FOUR_SPACES
             }
             writer.beginArray()
-            for (ObjectError oe in object.allErrors) {
+            for(ObjectError oe in object.allErrors) {
                 final msg = messageSource.getMessage(oe, locale)
                 writer
 

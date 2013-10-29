@@ -39,7 +39,7 @@ import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
@@ -208,12 +208,12 @@ class DomainClassGrailsPlugin {
 
     public static void addValidationMethods(GrailsApplication application, GrailsDomainClass dc, ApplicationContext ctx) {
         def isEnhanced = dc.clazz.getAnnotation(Enhanced) != null
-        if (isEnhanced && ctx) {
-            if (!dc.abstract) {
+        if(isEnhanced && ctx) { 
+            if(!dc.abstract) {
                 def datastore = new SimpleMapDatastore(ctx.getBean("grailsDomainClassMappingContext", MappingContext), ctx as ConfigurableApplicationContext)
                 String validatorBeanName = "${dc.fullName}Validator"
                 Validator validator
-                if (ctx.containsBean(validatorBeanName)) {
+                if(ctx.containsBean(validatorBeanName)) {
                     validator = ctx.getBean(validatorBeanName, Validator)
                 } else {
                     validator = new GrailsDomainClassValidator()
@@ -224,7 +224,7 @@ class DomainClassGrailsPlugin {
                 return
             }
         }
-
+        
         def metaClass = dc.metaClass
         def domainClass = dc
 
@@ -258,7 +258,7 @@ class DomainClassGrailsPlugin {
 
         metaClass.getErrors = { ->
             def errors
-            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.getClass().name}_${System.identityHashCode(delegate)}"
+            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
             errors = get(key)
             if (!errors) {
                 errors =  new ValidationErrors(delegate)
@@ -267,7 +267,7 @@ class DomainClassGrailsPlugin {
             errors
         }
         metaClass.setErrors = { Errors errors ->
-            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.getClass().name}_${System.identityHashCode(delegate)}"
+            def key = "org.codehaus.groovy.grails.ERRORS_${delegate.class.name}_${System.identityHashCode(delegate)}"
             put key, errors
         }
         metaClass.clearErrors = { ->
@@ -345,7 +345,7 @@ class DomainClassGrailsPlugin {
                     def collectionName = GrailsClassUtils.getClassNameRepresentation(propertyName)
                     def otherDomainClass = prop.referencedDomainClass
 
-                    metaClass."addTo${collectionName}" = { arg ->
+                    metaClass."addTo${collectionName}" = { Object arg ->
                         Object obj
                         if (delegate[prop.name] == null) {
                             delegate[prop.name] = GrailsClassUtils.createConcreteCollection(prop.type)
@@ -377,7 +377,7 @@ class DomainClassGrailsPlugin {
                         }
                         delegate
                     }
-                    metaClass."removeFrom${collectionName}" = { arg ->
+                    metaClass."removeFrom${collectionName}" = {Object arg ->
                         if (otherDomainClass.clazz.isInstance(arg)) {
                             delegate[prop.name]?.remove(arg)
                             if (prop.bidirectional) {

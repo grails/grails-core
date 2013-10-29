@@ -55,11 +55,13 @@ If you run `create-pom` in the sub-projects, you will have to manually add the i
             println msg()
             exit 1
         }
+
     }
     catch(e) {
         grailsConsole.error "Error occurred creating multi-project build: ${e.message}", e
         exit 1
     }
+
 }
 
 String msg() {

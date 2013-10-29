@@ -19,10 +19,11 @@ package grails.rest.render
 import org.codehaus.groovy.grails.web.mime.MimeType
 
 /**
+ *
  * @author Graeme Rocher
  * @since 2.3
  */
-interface RendererRegistry {
+public interface RendererRegistry {
 
     /**
      * Adds a new renderer
@@ -36,7 +37,7 @@ interface RendererRegistry {
      *
      * @param renderer The renderer to add
      */
-    void addDefaultRenderer(Renderer<Object> renderer)
+    public void addDefaultRenderer(Renderer<Object> renderer)
 
     /**
      * Adds a container renderer
@@ -44,7 +45,7 @@ interface RendererRegistry {
      * @param objectType The object type
      * @param renderer The renderer
      */
-    void addContainerRenderer(Class objectType, Renderer renderer)
+    public void addContainerRenderer(Class objectType, Renderer renderer)
 
     /**
      * Finds a renderer

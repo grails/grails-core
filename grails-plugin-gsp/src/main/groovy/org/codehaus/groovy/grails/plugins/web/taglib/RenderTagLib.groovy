@@ -109,7 +109,7 @@ class RenderTagLib implements RequestConstants {
         def contentType = attrs.contentType ? attrs.contentType : "text/html"
 
         def content = ""
-        GSPSitemeshPage gspSiteMeshPage
+        GSPSitemeshPage gspSiteMeshPage = null
         if (attrs.url) {
             content = new URL(attrs.url).text
         }
@@ -144,7 +144,7 @@ class RenderTagLib implements RequestConstants {
             }
         }
 
-        def page
+        def page = null
         if (!attrs.boolean('parse') && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
             page = gspSiteMeshPage
         }
@@ -247,7 +247,7 @@ class RenderTagLib implements RequestConstants {
 
         def invokeBody = true
         for (i in 0..<names.size()) {
-            def propertyValue
+            def propertyValue = null
             if (htmlPage instanceof GSPSitemeshPage) {
                 // check if there is an component content buffer
                 propertyValue = htmlPage.getContentBuffer(names[i])
@@ -556,7 +556,7 @@ class RenderTagLib implements RequestConstants {
         }
 
         linkAttrs.action = action
-
+        
         writer << link(linkAttrs) {
             title
         }

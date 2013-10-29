@@ -10,7 +10,7 @@ class ReverseUrlMappingTests extends AbstractGrailsTagTests {
 
     protected void onSetUp() {
         gcl.parseClass '''
-class CustomUrlMappings {
+public class CustomUrlMappings {
 static mappings = {
 "/$mslug/$controller/$action/$id?" {}
 

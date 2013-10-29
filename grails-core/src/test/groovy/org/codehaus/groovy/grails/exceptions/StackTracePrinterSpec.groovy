@@ -16,7 +16,7 @@ class StackTracePrinterSpec extends Specification {
             def controller = gcl.parseClass(getControllerResource().inputStream, controllerResource.filename).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultErrorsPrinter()
-            def result
+            def result = null
             try {
                 controller.show()
             } catch (e) {
@@ -36,7 +36,7 @@ class StackTracePrinterSpec extends Specification {
             def controller = gcl.parseClass(getControllerResource().inputStream, controllerResource.filename).newInstance()
         when:"An exception is pretty printed"
             def printer = new DefaultErrorsPrinter()
-            def result
+            def result = null
             try {
                 controller.nesting()
             } catch (e) {
@@ -62,7 +62,7 @@ class StackTracePrinterSpec extends Specification {
             final locator = new StaticResourceLocator()
             locator.addClassResource("test.FooController", getControllerResource())
             def printer = new DefaultErrorsPrinter(locator)
-            def result
+            def result = null
             try {
                 controller.show()
             } catch (e) {
@@ -102,7 +102,7 @@ Around line 5 of FooController.groovy
 
         when:"The code snippet is printed"
             def printer = new DefaultErrorsPrinter(locator)
-            def result
+            def result = null
             try {
                 controller.nesting()
             } catch (e) {

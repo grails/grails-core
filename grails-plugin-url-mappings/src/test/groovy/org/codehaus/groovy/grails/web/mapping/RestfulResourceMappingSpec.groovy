@@ -1,12 +1,10 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import static org.springframework.http.HttpMethod.*
 import grails.web.CamelCaseUrlConverter
-
 import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
-
 import spock.lang.Specification
+import static org.springframework.http.HttpMethod.*
 
 /**
  * @author Graeme Rocher
@@ -20,6 +18,7 @@ class RestfulResourceMappingSpec extends Specification{
                 '/authors'(resources:'author') {
                     "/publisher"(resource:"publisher")
                 }
+
             }
         }
 
@@ -33,6 +32,8 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1/authors/create', 'GET')
             urlMappingsHolder.matchAll('/books/1/authors/create', 'GET')[0].actionName == 'create'
             urlMappingsHolder.matchAll('/books/1/authors/create', 'GET')[0].httpMethod == 'GET'
+
+
     }
 
     void "Test that normal URL mappings can be nested within resources"() {
@@ -80,6 +81,7 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'DELETE')
             urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].actionName == 'delete'
             urlMappingsHolder.matchAll('/books/1', 'DELETE')[0].httpMethod == 'DELETE'
+
     }
 
     void "Test nested resource within another resource produce the correct URL mappings"() {
@@ -309,6 +311,8 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
 
+
+
             urlMappingsHolder.matchAll('/books', 'GET')
             urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
             urlMappingsHolder.matchAll('/books', 'GET')[0].httpMethod == 'GET'
@@ -338,6 +342,8 @@ class RestfulResourceMappingSpec extends Specification{
             urlMappingsHolder.matchAll('/books/1', 'PUT')
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].actionName == 'update'
             urlMappingsHolder.matchAll('/books/1', 'PUT')[0].httpMethod == 'PUT'
+
+
 
             urlMappingsHolder.matchAll('/books', 'GET')
             urlMappingsHolder.matchAll('/books', 'GET')[0].actionName == 'index'
@@ -542,7 +548,9 @@ class RestfulResourceMappingSpec extends Specification{
             linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
             linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
             linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+
     }
+
 
     void "Test it is possible to link to a resource nested within another resource"() {
         given:"A link generator with nested resources"
@@ -575,7 +583,9 @@ class RestfulResourceMappingSpec extends Specification{
         linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
         linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
         linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+
     }
+
 
     void "Test it is possible to link to a regular URL mapping nested within another resource"() {
         given:"A link generator with nested resources"
@@ -591,21 +601,23 @@ class RestfulResourceMappingSpec extends Specification{
         linkGenerator.link(resource:"book/publisher", method:"GET", bookId:1) == "http://localhost/books/1/publisher"
         linkGenerator.link(resource:"book/publisher", bookId:1) == "http://localhost/books/1/publisher"
 
+
+
         linkGenerator.link(controller:"book", action:"create", method:"GET") == "http://localhost/books/create"
         linkGenerator.link(controller:"book", action:"save", method:"POST") == "http://localhost/books"
         linkGenerator.link(controller:"book", action:"show", id:1, method:"GET") == "http://localhost/books/1"
         linkGenerator.link(controller:"book", action:"edit", id:1, method:"GET") == "http://localhost/books/1/edit"
         linkGenerator.link(controller:"book", action:"delete", id:1, method:"DELETE") == "http://localhost/books/1"
         linkGenerator.link(controller:"book", action:"update", id:1, method:"PUT") == "http://localhost/books/1"
+
     }
 
     LinkGenerator getLinkGenerator(Closure mappings) {
         def generator = new DefaultLinkGenerator("http://localhost", null)
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
         generator.urlMappingsHolder = getUrlMappingsHolder mappings
-        return generator
+        return generator;
     }
-
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         def allMappings = evaluator.evaluateMappings mappings

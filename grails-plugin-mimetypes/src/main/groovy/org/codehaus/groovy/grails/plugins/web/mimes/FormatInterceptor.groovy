@@ -16,9 +16,10 @@
 package org.codehaus.groovy.grails.plugins.web.mimes
 
 import groovy.transform.CompileStatic
+import org.apache.commons.collections.map.ListOrderedMap
 
 /**
- * Intercepts a closure call and gathers method calls that take a closure into a map format->closure.
+ * Interceptors a closure call and gathers method calls that take a closure into a map format->closure
  *
  * @author Graeme Rocher
  * @since 1.2

@@ -19,12 +19,13 @@ package org.codehaus.groovy.grails.web.mime
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 /**
- * Resolves the response format.
+ *
+ * Resolves the response format
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-interface MimeTypeResolver {
+public interface MimeTypeResolver {
 
     String BEAN_NAME = "mimeTypeResolver"
 

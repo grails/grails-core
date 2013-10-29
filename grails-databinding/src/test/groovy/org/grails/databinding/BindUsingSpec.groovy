@@ -60,7 +60,7 @@ class ClassWithBindUsing {
 }
 
 class MultiplyingBindingHelper implements BindingHelper<Integer> {
-    Integer getPropertyValue(obj, String propertyName, DataBindingSource source) {
+    Integer getPropertyValue(Object obj, String propertyName, DataBindingSource source) {
         def value = source[propertyName]
         def convertedValue = value
         switch(propertyName) {

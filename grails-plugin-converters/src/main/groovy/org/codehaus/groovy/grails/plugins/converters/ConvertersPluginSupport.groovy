@@ -59,7 +59,7 @@ class ConvertersPluginSupport {
     }
 
     static void enhanceDomainClasses(GrailsApplication grailsApplication, MetaClassEnhancer metaClassEnhancer) {
-        for (GrailsDomainClass dc in grailsApplication.domainClasses) {
+        for(GrailsDomainClass dc in grailsApplication.domainClasses) {
             if (!dc.getClazz().getAnnotation(Enhanced)) {
                 metaClassEnhancer.enhance(dc.metaClass)
             }

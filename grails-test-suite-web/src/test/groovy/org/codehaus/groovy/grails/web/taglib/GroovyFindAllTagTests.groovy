@@ -1,5 +1,10 @@
 package org.codehaus.groovy.grails.web.taglib
 
+import java.io.ByteArrayInputStream
+import java.io.PrintWriter
+import java.util.HashMap
+import java.util.Map
+
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
@@ -9,14 +14,16 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
  */
 class GroovyFindAllTagTests extends GroovyTestCase {
 
-    private GroovyFindAllTag tag = new GroovyFindAllTag()
-    private StringWriter sw = new StringWriter()
+    def tag = new GroovyFindAllTag()
+    def sw = new StringWriter()
 
     protected void setUp() {
         super.setUp()
-        GroovyPageParser parser = new GroovyPageParser("test", "test", "test", new ByteArrayInputStream([] as byte[]))
-        Map context = [(GroovyPage.OUT): new PrintWriter(sw), (GroovyPageParser): parser]
-        tag.init context
+        Map context = new HashMap();
+        context.put(GroovyPage.OUT, new PrintWriter(sw));
+        GroovyPageParser parser=new GroovyPageParser("test", "test", "test", new ByteArrayInputStream([] as byte[]));
+        context.put(GroovyPageParser.class, parser);
+        tag.init(context);
     }
 
     void testIsBufferWhiteSpace() {

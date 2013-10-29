@@ -17,13 +17,14 @@ package org.codehaus.groovy.grails.web.util
 
 import grails.util.Environment
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.mime.MimeTypeProvider
+import org.springframework.util.ClassUtils
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
 
@@ -57,7 +58,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
     }
 
     Collection<R> getRegisteredObjects(Class targetType) {
-        if (targetType == null) {
+        if(targetType == null) {
             return null
         }
         final registeredObjects = registeredObjectsByType.get(targetType)
@@ -69,7 +70,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
     }
 
     R findMatchingObjectForMimeType(MimeType mimeType, object) {
-        if (object == null) return null
+        if(object == null) return null
 
         final clazz = object instanceof Class ? (Class)object : object.getClass()
 
@@ -90,7 +91,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
             }
 
             final interfaces = GrailsClassUtils.getAllInterfaces(object)
-            for (i in interfaces) {
+            for(i in interfaces) {
                 registeredObject = findRegisteredObjectForType(i, mimeType)
                 if (registeredObject) break
             }
@@ -103,17 +104,17 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
             }
         }
 
-        if (registeredObject == null && !Environment.isDevelopmentMode()) {
+        if(registeredObject == null && !Environment.isDevelopmentMode()) {
             resolvedObjectCache.put(cacheKey, (R)NULL_RESOLVE)
         }
-        else if (NULL_RESOLVE.is(registeredObject)) {
+        else if(NULL_RESOLVE.is(registeredObject)) {
             return null
         }
         return registeredObject
     }
 
     protected R findRegisteredObjectForType(Class currentClass, MimeType mimeType) {
-        R findObject
+        R findObject = null
         final objectList = registeredObjectsByType.get(currentClass)
         if (objectList) {
             findObject = (R)objectList.find { MimeTypeProvider r ->
@@ -121,7 +122,7 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
                     mt  == mimeType
                 }
             }
-            if (findObject == null) {
+            if(findObject == null) {
                 findObject = (R)objectList.find { MimeTypeProvider r ->
                     r.mimeTypes.any { MimeType mt ->
                         mt.name == mimeType.name

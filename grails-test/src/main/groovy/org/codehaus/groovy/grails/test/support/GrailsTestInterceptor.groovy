@@ -15,9 +15,8 @@
  */
 package org.codehaus.groovy.grails.test.support
 
-import groovy.transform.CompileStatic
-
 import org.springframework.context.ApplicationContext
+import groovy.transform.CompileStatic
 
 @CompileStatic
 class GrailsTestInterceptor {
@@ -30,7 +29,7 @@ class GrailsTestInterceptor {
     private GrailsTestTransactionInterceptor transactionInterceptor
     private GrailsTestRequestEnvironmentInterceptor requestEnvironmentInterceptor
 
-    GrailsTestInterceptor(test, GrailsTestMode mode, ApplicationContext appCtx, String[] testClassSuffixes) {
+    GrailsTestInterceptor(Object test, GrailsTestMode mode, ApplicationContext appCtx, String[] testClassSuffixes) {
         this.test = test
         this.mode = mode
         this.appCtx = appCtx
@@ -75,7 +74,7 @@ class GrailsTestInterceptor {
     }
 
     protected getControllerName() {
-        ControllerNameExtractor.extractControllerNameFromTestClassName(test.getClass().name, testClassSuffixes)
+        ControllerNameExtractor.extractControllerNameFromTestClassName(test.class.name, testClassSuffixes)
     }
 
     protected initRequestEnvironmentIfNecessary() {

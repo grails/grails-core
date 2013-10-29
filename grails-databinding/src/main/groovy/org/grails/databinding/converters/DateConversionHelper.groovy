@@ -49,7 +49,7 @@ class DateConversionHelper implements ValueConverter {
                     }
                 }
             }
-            if (dateValue == null && firstException) {
+            if(dateValue == null && firstException) {
                 throw firstException
             }
         }
@@ -60,7 +60,7 @@ class DateConversionHelper implements ValueConverter {
         Date
     }
 
-    boolean canConvert(value) {
+    boolean canConvert(Object value) {
         value instanceof String
     }
 }

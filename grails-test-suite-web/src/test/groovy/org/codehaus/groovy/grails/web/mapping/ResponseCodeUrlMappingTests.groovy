@@ -72,6 +72,6 @@ mappings {
     void testNoReverseMappingOccures() {
         def creator = holder.getReverseMapping("errors", "error404", null)
 
-        assertTrue ("Creator is of wrong type: " + creator.getClass(), creator instanceof DefaultUrlCreator)
+        assertTrue ("Creator is of wrong type: " + creator.class, creator instanceof DefaultUrlCreator)
     }
 }

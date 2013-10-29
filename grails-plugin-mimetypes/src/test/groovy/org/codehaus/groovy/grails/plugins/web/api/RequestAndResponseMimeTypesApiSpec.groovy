@@ -1,16 +1,13 @@
 package org.codehaus.groovy.grails.plugins.web.api
 
 import grails.util.GrailsWebUtil
-
 import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
-import org.springframework.mock.web.MockHttpServletRequest
-
 import spock.lang.Specification
+import javax.servlet.http.HttpServletResponse
+import org.springframework.mock.web.MockHttpServletRequest
 
 /**
  * Tests for {@link RequestMimeTypesApi}
@@ -95,6 +92,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
         then: 'The xml closure is invoked'
             requestResult == 'got xml'
             responseResult == 'got html'
+
     }
 
     void "Test withFormat method with ACCEPT header only"() {
@@ -108,6 +106,7 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             def requestResult = request.withFormat {
                 html { "got html"}
                 xml { "got xml"}
+
             }
 
             def responseResult = response.withFormat {
@@ -131,7 +130,10 @@ class RequestAndResponseMimeTypesApiSpec extends Specification{
             }
         then: 'The * closure is invoked'
             responseResult == 'got everything'
+
     }
+
+
 
     void "Test withFormat returns first block if no format provided"() {
         when: "No Accept header, URI extension or format param"

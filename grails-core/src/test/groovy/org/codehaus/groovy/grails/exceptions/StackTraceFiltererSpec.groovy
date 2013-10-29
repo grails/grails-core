@@ -60,6 +60,7 @@ class FooController {
         catch(e) {
             throw new RuntimeException("Bad things happened", e)
         }
+
     }
 }
 class FooService {

@@ -210,12 +210,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static View resolveView(HttpServletRequest request, String viewName, String controllerName, ViewResolver viewResolver) throws Exception {
         return viewResolver.resolveViewName(addViewPrefix(viewName, controllerName), GrailsWebRequest.lookup(request).getLocale());
     }
-
+    
     public static String addViewPrefix(String viewName) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         return addViewPrefix(viewName, webRequest != null ? webRequest.getControllerName() : null);
     }
-
+    
     public static String addViewPrefix(String viewName, String controllerName) {
         if (!viewName.startsWith(String.valueOf(SLASH))) {
             StringBuilder buf = new StringBuilder();
@@ -329,7 +329,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         dispatcher.forward(request, response);
         return forwardUrl;
     }
-
+    
     /**
      * Include whatever the given UrlMappingInfo maps to within the current response
      *
@@ -718,10 +718,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             ControllerArtefactHandler.ControllerCacheKey featureId = getFeatureId(urlConverterToUse, info);
             controller = grailsApplicationToUse.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
             if (controller != null) {
+
                 webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
                 webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
                 webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, Boolean.TRUE, WebRequest.SCOPE_REQUEST);
             }
+
         }
         return controller;
     }

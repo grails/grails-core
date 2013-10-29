@@ -15,15 +15,15 @@
  */
 package org.grails.databinding.bindingsource;
 
-/**
+/** 
  * Represents an error creation a data binding source because the request
  * body is invalid.  Examples would be malformed JSON or XML.
- *
+ * 
  * @author Jeff Brown
  * @since 2.3
  */
 public class InvalidRequestBodyException extends DataBindingSourceCreationException {
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 1L;
 
     public InvalidRequestBodyException(Exception cause) {
         super(cause);

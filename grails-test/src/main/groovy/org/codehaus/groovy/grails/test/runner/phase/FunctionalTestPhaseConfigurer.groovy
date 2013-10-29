@@ -15,7 +15,6 @@
  */
 package org.codehaus.groovy.grails.test.runner.phase
 
-import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.Holders
 import groovy.transform.CompileStatic
@@ -25,6 +24,7 @@ import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.project.container.GrailsProjectRunner
 import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
+import grails.build.logging.GrailsConsole
 
 /**
  * Test phase configurer for the functional phase
@@ -136,6 +136,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                     }
                 }
             }
+
         }
         else {
             existingServer = true

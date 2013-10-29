@@ -34,12 +34,12 @@ class ServletsGrailsPluginSupport {
     static enhanceServletApi(ConfigObject config = new ConfigObject()) {
 
         def getAttributeClosure = { String name ->
-            def mp = delegate.getClass().metaClass.getMetaProperty(name)
+            def mp = delegate.class.metaClass.getMetaProperty(name)
             return mp ? mp.getProperty(delegate) : delegate.getAttribute(name)
         }
 
         def setAttributeClosure = { String name, value ->
-            def mp = delegate.getClass().metaClass.getMetaProperty(name)
+            def mp = delegate.class.metaClass.getMetaProperty(name)
             if (mp) {
                 mp.setProperty(delegate, value)
             }
@@ -51,7 +51,7 @@ class ServletsGrailsPluginSupport {
         def getAttributeSubscript = { String key ->
             delegate.getAttribute(key)
         }
-        def setAttributeSubScript = { String key, val ->
+        def setAttributeSubScript = { String key, Object val ->
             delegate.setAttribute(key, val)
         }
         // enables access to servlet context with servletContext.foo syntax
@@ -72,7 +72,7 @@ class ServletsGrailsPluginSupport {
             delegate.getAttribute(key)
         }
         // enables setting of request attributes with request["foo"] = "bar" syntax
-        HttpServletRequest.metaClass.putAt = { String key, val ->
+        HttpServletRequest.metaClass.putAt = { String key, Object val ->
             delegate.setAttribute(key, val)
         }
         // enables access to request attributes using property syntax
@@ -89,7 +89,7 @@ class ServletsGrailsPluginSupport {
         requestEnhancer.enhance HttpServletRequest.metaClass
 
         // allows the syntax response << "foo"
-        HttpServletResponse.metaClass.leftShift = { o ->
+        HttpServletResponse.metaClass.leftShift = { Object o ->
             delegate.writer << o
         }
     }

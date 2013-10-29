@@ -1,7 +1,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.support.MockStringResourceLoader
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 
 /**
  * @author Graeme Rocher
@@ -21,6 +21,7 @@ class WithNamespaceTagLib {
     Closure tag2 = { attrs, body ->
         out << render(template: "/bug1/t2n")
     }
+
 }
 ''')
        def tagClass2 = gcl.parseClass('''
@@ -32,8 +33,9 @@ class NormalTagLib {
     Closure tag2 = { attrs, body ->
         out << render(template: "/bug1/t2")
     }
+
 }
-''')
+       ''')
 
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass)
         grailsApplication.addArtefact(TagLibArtefactHandler.TYPE,tagClass2)

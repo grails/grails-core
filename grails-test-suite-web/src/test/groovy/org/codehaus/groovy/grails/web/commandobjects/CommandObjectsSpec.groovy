@@ -418,11 +418,11 @@ class TestController {
         [person: p]
     }
 
-    def methodActionWithDate(DateCommandObject co) {
+    def methodActionWithDate(DateComamndObject co) {
         [command: co]
     }
 
-    def closureActionWithDate = { DateCommandObject co ->
+    def closureActionWithDate = { DateComamndObject co ->
         [command: co]
     }
 
@@ -479,7 +479,7 @@ class TestController {
     }
 }
 
-class DateCommandObject {
+class DateComamndObject {
     Date birthday
 }
 

@@ -120,7 +120,7 @@ class ResourceTransform implements ASTTransformation{
     @Override
     void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof ClassNode)) {
-            throw new RuntimeException('Internal error: wrong types: $node.getClass() / $parent.getClass()')
+            throw new RuntimeException('Internal error: wrong types: $node.class / $parent.class')
         }
 
         ClassNode parent = (ClassNode) astNodes[1]
@@ -141,11 +141,11 @@ class ResourceTransform implements ASTTransformation{
             final transactionalAnn = new AnnotationNode(TransactionalTransform.MY_TYPE)
             transactionalAnn.addMember(ATTR_READY_ONLY,ConstantExpression.PRIM_TRUE)
             newControllerClassNode.addAnnotation(transactionalAnn)
-
-            List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(ControllerArtefactHandler.TYPE, GrailsAwareInjectionOperation.getClassInjectors())
-
+            
+            List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(ControllerArtefactHandler.TYPE, GrailsAwareInjectionOperation.getClassInjectors());
+                        
             ArtefactTypeAstTransformation.performInjection(source, newControllerClassNode, injectors.findAll { !(it instanceof ControllerActionTransformer) })
-
+            
             final readOnlyAttr = annotationNode.getMember(ATTR_READY_ONLY)
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)
             final uriAttr = annotationNode.getMember(ATTR_URI)
@@ -162,11 +162,8 @@ class ResourceTransform implements ASTTransformation{
                 }
                 else if (responseFormatsAttr instanceof ListExpression) {
                     responseFormatsExpression = (ListExpression)responseFormatsAttr
-                    for (Expression expr in responseFormatsExpression.expressions) {
-                        if (expr.text.equalsIgnoreCase('html')) {
-                            hasHtml = true
-                            break
-                        }
+                    for(Expression expr in responseFormatsExpression.expressions) {
+                        if (expr.text.equalsIgnoreCase('html')) hasHtml = true; break
                     }
                 }
             } else {
@@ -176,7 +173,7 @@ class ResourceTransform implements ASTTransformation{
 
             if (uriAttr != null) {
                 final uri = uriAttr.getText()
-                if (uri) {
+                if(uri) {
                     final urlMappingsClassNode = new ClassNode(UrlMappings).getPlainNodeReference()
                     final urlMappingsField = new FieldNode('$urlMappings', PRIVATE, urlMappingsClassNode,newControllerClassNode, null)
                     newControllerClassNode.addField(urlMappingsField)
@@ -203,7 +200,7 @@ class ResourceTransform implements ASTTransformation{
 
                     def addMappingsMethodCall = applyDefaultMethodTarget(new MethodCallExpression(urlMappingsVar, "addMappings", urlMappingsClosure), urlMappingsClassNode)
                     methodBody.addStatement(new IfStatement(new BooleanExpression(urlMappingsVar), new ExpressionStatement(addMappingsMethodCall),new EmptyStatement()))
-
+                    
                     def initialiseUrlMappingsMethod = new MethodNode("initializeUrlMappings", PUBLIC, VOID_CLASS_NODE, ZERO_PARAMETERS, null, methodBody)
                     initialiseUrlMappingsMethod.addAnnotation(new AnnotationNode(new ClassNode(PostConstruct).getPlainNodeReference()))
                     initialiseUrlMappingsMethod.addAnnotation(controllerMethodAnnotation)
@@ -225,14 +222,14 @@ class ResourceTransform implements ASTTransformation{
                 mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_SAVE),new ConstantExpression(POST.toString()))
                 mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_UPDATE),new ConstantExpression(PUT.toString()))
                 mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_DELETE),new ConstantExpression(DELETE.toString()))
-                newControllerClassNode.addField("allowedMethods", publicStaticFinal,new ClassNode(Map).getPlainNodeReference(), mapExpression)
+                newControllerClassNode.addField("allowedMethods", publicStaticFinal,new ClassNode(Map.class).getPlainNodeReference(), mapExpression)
                 weaveWriteActions(parent,domainPropertyName, newControllerClassNode, hasHtml, annotationNode.lineNumber,weavedMethods)
             }
 
             ArtefactTypeAstTransformation.performInjection(source, newControllerClassNode, injectors.findAll { it instanceof ControllerActionTransformer })
-
-            for (MethodNode mn in weavedMethods) {
-                if (!mn.getAnnotations(ControllerActionTransformer.ACTION_ANNOTATION_NODE.classNode)) {
+            
+            for(MethodNode mn in weavedMethods) {
+                if(!mn.getAnnotations(ControllerActionTransformer.ACTION_ANNOTATION_NODE.classNode)) {
                     mn.addAnnotation(ControllerActionTransformer.ACTION_ANNOTATION_NODE)
                 }
             }
@@ -259,7 +256,7 @@ class ResourceTransform implements ASTTransformation{
         weaveDeleteAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
         weaveUpdateAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
     }
-
+    
     private ExpressionStatement createWithFormatStatement(Expression thisExpression, Expression withFormatClosure, ClassNode controllerClass) {
         new ExpressionStatement(applyDefaultMethodTarget(new MethodCallExpression(thisExpression, "withFormat", withFormatClosure), controllerClass))
     }
@@ -497,11 +494,11 @@ class ResourceTransform implements ASTTransformation{
         final paginationArgs = new ArgumentListExpression()
         paginationArgs.addExpression(new ElvisOperatorExpression(new VariableExpression(maxParam), new ConstantExpression(10)))
         paginationArgs.addExpression(new ConstantExpression(100))
-        Expression getParamsExpression = buildGetPropertyExpression(new VariableExpression("this"), "params", controllerClass)
+        Expression getParamsExpression = buildGetPropertyExpression(new VariableExpression("this"), "params", controllerClass);
         methodBody.addStatement(
                 new ExpressionStatement(
                 buildPutMapExpression(getParamsExpression, "max",
-                applyMethodTarget(new MethodCallExpression(new ClassExpression(new ClassNode(Math)), "max", paginationArgs), Math, int, int)))
+                applyMethodTarget(new MethodCallExpression(new ClassExpression(new ClassNode(Math)), "max", paginationArgs), Math.class, int.class, int.class)))
                 )
 
         listArgs.addExpression(new VariableExpression(PARAMS_VARIABLE))

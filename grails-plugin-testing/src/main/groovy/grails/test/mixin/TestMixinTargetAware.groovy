@@ -22,6 +22,6 @@ package grails.test.mixin
  * @author Graeme Rocher
  * @since 2.3.0
  */
-interface TestMixinTargetAware {
-    void setTarget(target)
+public interface TestMixinTargetAware {
+    void setTarget(Object target)
 }

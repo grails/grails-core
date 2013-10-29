@@ -19,6 +19,7 @@ class RegisterMetaClassTests extends GrailsUnitTestCase {
         shouldFail(MissingMethodException) {
             assert "afterRegister exists" == Book.afterRegister()
         }
+
     }
 
     void testSomething() {

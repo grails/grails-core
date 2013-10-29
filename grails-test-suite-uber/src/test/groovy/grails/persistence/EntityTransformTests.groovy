@@ -35,8 +35,8 @@ u = new User(username:"bob")
 p = new Permission(user:u, permission:"uber")
 ''')
 
-        assertEquals "User", p.user.getClass().name
-        assertEquals "User", p.getClass().methods.find { it.name == 'getUser' }.returnType.name
+        assertEquals "User", p.user.class.name
+        assertEquals "User", p.class.methods.find { it.name == 'getUser' }.returnType.name
     }
 
     void testDefaultConstructorBehaviourNotOverriden() {
@@ -104,7 +104,7 @@ p = new Permission(user:u, permission:"uber")
         entity.many = new HashSet()
         assertEquals 0, entity.many.size()
 
-        entity.one = entity.getClass().newInstance()
+        entity.one = entity.class.newInstance()
 
         assertNotNull entity.one
     }

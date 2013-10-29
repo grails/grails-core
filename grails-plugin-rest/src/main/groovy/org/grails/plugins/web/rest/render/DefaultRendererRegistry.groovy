@@ -20,12 +20,12 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 import java.util.concurrent.ConcurrentHashMap
 
 import javax.annotation.PostConstruct
 
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
@@ -33,6 +33,7 @@ import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.util.ClassUtils
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -81,7 +82,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     @Autowired(required = false)
     void setRenderers(Renderer[] renderers) {
-        for (Renderer r in renderers) {
+        for(Renderer r in renderers) {
             addRenderer(r)
         }
     }
@@ -99,7 +100,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     @Override
     void addDefaultRenderer(Renderer<Object> renderer) {
-        for (MimeType mt in renderer.mimeTypes) {
+        for(MimeType mt in renderer.mimeTypes) {
             registerDefault(mt, renderer)
             removeFromCache(renderer.getTargetType(), mt)
         }
@@ -107,7 +108,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
     @Override
     void addContainerRenderer(Class objectType, Renderer renderer) {
-        for (MimeType mt in renderer.mimeTypes) {
+        for(MimeType mt in renderer.mimeTypes) {
             def key = new ContainerRendererCacheKey(renderer.getTargetType(), objectType, mt)
 
             containerRendererCache.remove(key)
@@ -143,7 +144,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
                     if (renderer != null) break
                     else {
                         final containerInterfaces = GrailsClassUtils.getAllInterfacesForClass(containerType)
-                        for (Class i in containerInterfaces) {
+                        for(Class i in containerInterfaces) {
                             key = new ContainerRendererCacheKey(i, targetClass, mimeType)
                             renderer = containerRenderers.get(key)
                             if (renderer != null) break
@@ -156,13 +157,13 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
 
             if (renderer == null) {
                 final interfaces = GrailsClassUtils.getAllInterfaces(object)
-                for (Class i in interfaces) {
+                for(Class i in interfaces) {
                     key = new ContainerRendererCacheKey(containerType, i, mimeType)
                     renderer = containerRenderers.get(key)
                     if (renderer) break
                     else {
                         final containerInterfaces = GrailsClassUtils.getAllInterfacesForClass(containerType)
-                        for (Class ci in containerInterfaces) {
+                        for(Class ci in containerInterfaces) {
                             key = new ContainerRendererCacheKey(ci, i, mimeType)
                             renderer = containerRenderers.get(key)
                             if (renderer != null) break
@@ -179,7 +180,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         return renderer
     }
 
-    protected Class<? extends Object> getTargetClassForContainer(Class containerClass, object) {
+    protected Class<? extends Object> getTargetClassForContainer(Class containerClass, Object object) {
         Class targetClass = containerClass
         if (containerClass.isArray()) {
             targetClass = containerClass.getComponentType()

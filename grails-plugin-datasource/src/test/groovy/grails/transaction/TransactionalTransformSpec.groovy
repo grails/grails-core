@@ -16,15 +16,14 @@
 
 package grails.transaction
 
-import javax.sql.DataSource
-
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.support.DefaultTransactionStatus
-
 import spock.lang.Issue
 import spock.lang.Specification
+import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+
+import javax.sql.DataSource
 
 /**
  */
@@ -94,7 +93,11 @@ class TransactionalTransformSpec extends Specification {
 
         then:"The transaction was started"
             transactionManager.transactionStarted == true
+
+
+
     }
+
 
     void "Test that a @Transactional annotation on a class results in a call to TransactionTemplate"() {
         when:"A new instance of a class with a @Transactional method is created"
@@ -129,6 +132,7 @@ new BookService()
         then:"It implements TransactionManagerAware"
             bookService instanceof TransactionManagerAware
 
+
         when:"A transactionManager is set"
             final transactionManager = getPlatformTransactionManager()
             bookService.transactionManager = transactionManager
@@ -142,6 +146,7 @@ new BookService()
         then:"The transaction was started"
             transactionManager.transactionStarted == true
 
+
         when:"A transactional method that takes arguments is called"
             def result = bookService.add(1, 2)
 
@@ -153,6 +158,7 @@ new BookService()
 
         then:"The transaction definition is read-only"
             status.isReadOnly()
+
     }
 
     void "Test that a @Transactional annotation on a method results in a call to TransactionTemplate"() {
@@ -240,6 +246,7 @@ class BookService {
     void throwException() {
         throw new TestTransactionException()
     }
+
 }
 
 new BookService()
@@ -303,6 +310,7 @@ class BookService {
     void rollbackForClassNameMethod() {
         throw new TestTransactionException()
     }
+
 }
 
 new BookService()
@@ -358,14 +366,13 @@ new BookService()
 
     TestTransactionManager getPlatformTransactionManager() {
         def dataSource =  new DriverManagerDataSource("jdbc:h2:mem:${TransactionalTransformSpec.name};MVCC=TRUE;LOCK_TIMEOUT=10000", "sa", "")
-
-        // this may not be necessary...
+        
+        // this may not be necessary... 
         dataSource.driverClassName = "org.h2.Driver"
 
         return new TestTransactionManager(dataSource) {}
     }
 }
-
 class TestTransactionManager extends DataSourceTransactionManager {
     boolean transactionStarted = false
     boolean transactionRolledBack = false
@@ -375,7 +382,7 @@ class TestTransactionManager extends DataSourceTransactionManager {
     }
 
     @Override
-    protected doGetTransaction() {
+    protected Object doGetTransaction() {
         transactionStarted = true
         return super.doGetTransaction()
     }

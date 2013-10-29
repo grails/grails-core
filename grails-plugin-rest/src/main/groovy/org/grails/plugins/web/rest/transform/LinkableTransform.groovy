@@ -15,12 +15,9 @@
  */
 package org.grails.plugins.web.rest.transform
 
-import static java.lang.reflect.Modifier.*
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
 import grails.rest.Link
 import grails.rest.Linkable
 import groovy.transform.CompileStatic
-
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
@@ -40,6 +37,9 @@ import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 
+import static java.lang.reflect.Modifier.*
+import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
+
 /**
  * Implementation of the {@link Linkable} transform
  *
@@ -50,7 +50,7 @@ import org.codehaus.groovy.transform.GroovyASTTransformation
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 class LinkableTransform implements ASTTransformation{
 
-    private static final ClassNode MY_TYPE = new ClassNode(Linkable)
+    private static final ClassNode MY_TYPE = new ClassNode(Linkable);
     public static final String LINK_METHOD = "link"
     public static final String RESOURCE_LINKS_FIELD = '$resourceLinks'
     public static final String LINKS_METHOD = "links"
@@ -69,8 +69,7 @@ class LinkableTransform implements ASTTransformation{
             classNode.addMethod(linkMethod)
 
             def linkParameter = new Parameter(new ClassNode(Link), LINK_METHOD)
-            def linkMethod2 = new MethodNode(LINK_METHOD, PUBLIC, ClassHelper.VOID_TYPE, [linkParameter] as Parameter[], null,
-                new ExpressionStatement(new MethodCallExpression(resourceLinksVariable, "add", new VariableExpression(linkParameter))))
+            def linkMethod2 = new MethodNode(LINK_METHOD, PUBLIC, ClassHelper.VOID_TYPE, [linkParameter] as Parameter[], null, new ExpressionStatement(new MethodCallExpression(resourceLinksVariable, "add", new VariableExpression(linkParameter))));
             classNode.addMethod(linkMethod2)
         }
         if (classNode.getMethods(LINKS_METHOD).isEmpty()) {
@@ -82,13 +81,13 @@ class LinkableTransform implements ASTTransformation{
     @Override
     void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof ClassNode)) {
-            throw new RuntimeException('Internal error: wrong types: $node.getClass() / $parent.getClass()')
+            throw new RuntimeException('Internal error: wrong types: $node.class / $parent.class')
         }
 
-        ClassNode parent = (ClassNode) astNodes[1]
-        AnnotationNode annotationNode = (AnnotationNode) astNodes[0]
+        ClassNode parent = (ClassNode) astNodes[1];
+        AnnotationNode annotationNode = (AnnotationNode) astNodes[0];
         if (!MY_TYPE.equals(annotationNode.getClassNode())) {
-            return
+            return;
         }
 
         addLinkingMethods(parent)

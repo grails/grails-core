@@ -77,7 +77,7 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
     class PluginReadingPhaseOperation  extends CompilationUnit.PrimaryClassNodeOperation {
         private BasicGrailsPluginInfo pluginInfo;
         private MetaClass pluginInfoMetaClass;
-
+        
         public PluginReadingPhaseOperation(BasicGrailsPluginInfo pluginInfo) {
             this.pluginInfo = pluginInfo;
             pluginInfoMetaClass = pluginInfo.getMetaClass();
@@ -87,59 +87,58 @@ public class AstPluginDescriptorReader implements PluginDescriptorReader {
         public void call(final SourceUnit source, GeneratorContext context,
                 ClassNode classNode) throws CompilationFailedException {
             String className = classNode.getNameWithoutPackage();
-
-            if (className.endsWith("GrailsPlugin")) {
+            
+            if(className.endsWith("GrailsPlugin")) {
                 visitContents(className, source, classNode);
             }
         }
 
         protected void visitContents(String className, final SourceUnit source, ClassNode classNode) {
             ClassCodeVisitorSupport visitor = new ClassCodeVisitorSupport() {
-
+   
                 @Override
                 public void visitProperty(PropertyNode node) {
-                    final Expression expr = node.getField().getInitialExpression();
-                    if (expr == null) {
-                        return;
-                    }
-
-                    Object value;
-                    if (expr instanceof ListExpression) {
-                        final List<String> list = new ArrayList<String>();
-                        value = list;
-                        for (Expression i : ((ListExpression)expr).getExpressions()) {
-                            list.add(i.getText());
-                        }
-                    }
-                    else if (expr instanceof MapExpression) {
-                        final Map<String, String> map = new LinkedHashMap<String, String>();
-                        value = map;
-                        for (MapEntryExpression mee : ((MapExpression)expr).getMapEntryExpressions()) {
-                            map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText());
-                        }
-                    }
-                    else {
-                        value = expr.getText();
-                    }
-
                     String name = node.getName();
-                    if (DefaultGroovyMethods.hasProperty(pluginInfo, name) != null) {
-                        pluginInfoMetaClass.setProperty(pluginInfo,name, value);
+                    final Expression expr = node.getField().getInitialExpression();
+   
+                    if (expr != null) {
+                        Object value;
+                        if (expr instanceof ListExpression) {
+                            final List<String> list = new ArrayList<String>();
+                            value = list;
+                            for (Expression i : ((ListExpression)expr).getExpressions()) {
+                                list.add(i.getText());
+                            }
+                        }
+                        else if (expr instanceof MapExpression) {
+                            final Map<String, String> map = new LinkedHashMap<String, String>();
+                            value = map;
+                            for (MapEntryExpression mee : ((MapExpression)expr).getMapEntryExpressions()) {
+                                map.put(mee.getKeyExpression().getText(), mee.getValueExpression().getText());
+                            }
+                        }
+                        else {
+                            value = expr.getText();
+                        }
+   
+                        if (DefaultGroovyMethods.hasProperty(pluginInfo, name) != null) {
+                            pluginInfoMetaClass.setProperty(pluginInfo,name, value);
+                        }
+                        else {
+                            pluginInfo.setProperty(name, value);
+                        }
+                        super.visitProperty(node);
                     }
-                    else {
-                        pluginInfo.setProperty(name, value);
-                    }
-                    super.visitProperty(node);
                 }
-
+   
                 @Override
                 protected SourceUnit getSourceUnit() {
                     return source;
                 }
             };
-
+   
             classNode.visitContents(visitor);
-
+   
             pluginInfoMetaClass.setProperty(pluginInfo, "name", GrailsNameUtils.getPluginName(className + ".groovy"));
         }
     }

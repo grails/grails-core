@@ -82,6 +82,7 @@ class SecondTagLib {
     Closure hello = { attrs ->
         out << g.link(controller:'foo', action:'bar') { "hello" }
     }
+
 }
        ''')
        def tagClass3 = gcl.parseClass('''

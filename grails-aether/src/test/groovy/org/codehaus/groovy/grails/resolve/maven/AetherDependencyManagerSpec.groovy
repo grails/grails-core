@@ -20,7 +20,6 @@ import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
 import org.sonatype.aether.repository.Authentication
 import org.sonatype.aether.repository.RemoteRepository
-
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -47,6 +46,7 @@ class AetherDependencyManagerSpec extends Specification {
                     optional ":jquery:1.10.2"
                 }
             }
+
 
         then:"The scopes are correct"
             dependencyManager.getPluginDependencies('build').size() == 1
@@ -118,6 +118,7 @@ class AetherDependencyManagerSpec extends Specification {
         then:"The result is correct"
             report != null
             report.jarFiles.find { File f -> f.name.contains('springloaded')}
+
     }
 
     void "Test customize repository policy"() {
@@ -440,4 +441,5 @@ class AetherDependencyManagerSpec extends Specification {
             repository.authentication == authentication
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }
+
 }

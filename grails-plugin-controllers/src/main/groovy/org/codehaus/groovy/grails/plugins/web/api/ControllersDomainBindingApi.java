@@ -93,27 +93,21 @@ public class ControllersDomainBindingApi {
 
     private static GrailsDomainClass getDomainClass(Object instance) {
         GrailsDomainClass domainClass = GrailsMetaClassUtils.getPropertyIfExists(instance, GrailsDomainClassProperty.DOMAIN_CLASS, GrailsDomainClass.class);
-        if (domainClass != null) {
-            return domainClass;
+        if (domainClass == null) {
+            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+            if (webRequest != null) {
+                ApplicationContext applicationContext = webRequest.getApplicationContext();
+                if(applicationContext != null) {
+                    GrailsApplication grailsApplication = applicationContext.containsBean(GrailsApplication.APPLICATION_ID) ?
+                        applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) : null;
+                    if (grailsApplication != null) {
+                        domainClass = (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
+                    }
+                }
+            }
         }
 
-        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if (webRequest == null) {
-            return null;
-        }
-
-        ApplicationContext applicationContext = webRequest.getApplicationContext();
-        if (applicationContext == null) {
-            return null;
-        }
-
-        GrailsApplication grailsApplication = applicationContext.containsBean(GrailsApplication.APPLICATION_ID) ?
-                applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class) : null;
-        if (grailsApplication != null) {
-            return (GrailsDomainClass) grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, instance.getClass().getName());
-        }
-
-        return null;
+        return domainClass;
     }
 
     private static void autowire(Object instance) {

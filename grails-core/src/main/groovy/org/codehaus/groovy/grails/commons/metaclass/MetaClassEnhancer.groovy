@@ -19,6 +19,7 @@ import java.lang.reflect.Method
 
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod
 import org.springframework.beans.BeanUtils
+import groovy.transform.CompileStatic
 
 /**
  * Enhances one or many MetaClasses with the given API methods provided by the super class BaseApiProvider.
@@ -45,6 +46,7 @@ class MetaClassEnhancer extends BaseApiProvider {
                     method.invoke(method.getDeclaringClass(), instance, *args)
                     return instance
                 }
+
             }
         }
         for (method in instanceMethods) {

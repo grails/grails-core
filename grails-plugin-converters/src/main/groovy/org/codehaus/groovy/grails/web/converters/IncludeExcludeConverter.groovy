@@ -17,14 +17,15 @@
 package org.codehaus.groovy.grails.web.converters
 
 /**
- * A converter capable of including/excluding properties on the target object.
+ *  A converter capable of including/excluding properties on the target object
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-interface IncludeExcludeConverter<W> extends ConfigurableConverter<W> {
+public interface IncludeExcludeConverter<W> extends ConfigurableConverter<W> {
 
     void setIncludes(List<String> includes)
 
     void setExcludes(List<String> excludes)
+
 }

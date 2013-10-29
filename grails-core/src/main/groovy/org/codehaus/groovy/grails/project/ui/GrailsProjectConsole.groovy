@@ -59,8 +59,9 @@ class GrailsProjectConsole extends BaseSettingsApi {
         Console groovyConsole = createConsole(applicationContext, grailsApplication)
         groovyConsole.run()
 
-        if (GrailsProjectWatcher.isReloadingAgentPresent()) {
-            new GrailsProjectWatcher(projectLoader.projectPackager.projectCompiler, applicationContext.getBean(GrailsPluginManager)).start()
+        if(GrailsProjectWatcher.isReloadingAgentPresent()) {
+            def watcher = new GrailsProjectWatcher(projectLoader.projectPackager.projectCompiler, applicationContext.getBean(GrailsPluginManager))
+            watcher.start()
         }
 
         sleepWhileActive()

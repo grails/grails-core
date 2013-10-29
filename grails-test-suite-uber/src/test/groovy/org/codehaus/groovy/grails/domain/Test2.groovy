@@ -1,4 +1,4 @@
-package org.codehaus.groovy.grails.domain
+package org.codehaus.groovy.grails.domain;
 
 class Test2 {
     Long id

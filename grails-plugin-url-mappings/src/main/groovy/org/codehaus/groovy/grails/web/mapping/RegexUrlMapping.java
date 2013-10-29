@@ -610,7 +610,9 @@ public class RegexUrlMapping extends AbstractUrlMapping {
                     params.put(cp.getPropertyName(), lastGroup);
                 }
             }
+
         }
+
 
         for (Object key : parameterValues.keySet()) {
             params.put(key, parameterValues.get(key));
@@ -632,7 +634,7 @@ public class RegexUrlMapping extends AbstractUrlMapping {
             viewName = createRuntimeConstraintEvaluator(GrailsControllerClass.VIEW, constraints);
         }
 
-        if (redirectInfo == null) {
+        if(redirectInfo == null) {
             redirectInfo = createRuntimeConstraintEvaluator("redirect", constraints);
         }
 
@@ -754,17 +756,18 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
         String thisVersion = getVersion();
         String thatVersion = other.getVersion();
-        if ((thisVersion.equals(thatVersion))) {
+        if((thisVersion.equals(thatVersion))) {
             return 0;
         }
-        if (thisVersion.equals(UrlMapping.ANY_VERSION) && !thatVersion.equals(UrlMapping.ANY_VERSION)) {
+        else if(thisVersion.equals(UrlMapping.ANY_VERSION) && !thatVersion.equals(UrlMapping.ANY_VERSION)) {
             return -1;
         }
-        if (!thisVersion.equals(UrlMapping.ANY_VERSION) && thatVersion.equals(UrlMapping.ANY_VERSION)) {
+        else if(!thisVersion.equals(UrlMapping.ANY_VERSION) && thatVersion.equals(UrlMapping.ANY_VERSION)) {
             return 1;
         }
-
-        return new VersionComparator().compare(thisVersion, thatVersion);
+        else {
+            return new VersionComparator().compare(thisVersion, thatVersion);
+        }
     }
 
     private int getAppliedConstraintsCount(UrlMapping mapping) {

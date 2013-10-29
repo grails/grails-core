@@ -153,6 +153,7 @@ class BeanBuilderTests extends GroovyTestCase {
                     value "one"
                     value "two"
                 }
+
             }
 
             appCtx = bb.createApplicationContext()
@@ -182,6 +183,7 @@ class BeanBuilderTests extends GroovyTestCase {
                     value "one"
                     value "two"
                 }
+
             }
             appCtx = bb.createApplicationContext()
 
@@ -255,6 +257,7 @@ class BeanBuilderTests extends GroovyTestCase {
                 value "one"
                 value "two"
             }
+
         }
 
         ApplicationContext appCtx = bb.createApplicationContext()
@@ -808,7 +811,7 @@ bb.createApplicationContext()
 
         assertEquals "Fred", appCtx.getBean("personA").name
     }
-
+    
     void testSingletonPropertyOnBeanDefinition() {
         def bb = new BeanBuilder()
         bb.beans {
@@ -820,9 +823,9 @@ bb.createApplicationContext()
             }
             unSpecifiedScopeBean(Bean1)
         }
-
+ 
         def ctx = bb.createApplicationContext()
-
+ 
         assertTrue 'singletonBean should have been a singleton', ctx.isSingleton('singletonBean')
         assertFalse 'nonSingletonBean should not have been a singleton', ctx.isSingleton('nonSingletonBean')
         assertTrue 'unSpecifiedScopeBean should not have been a singleton', ctx.isSingleton('unSpecifiedScopeBean')

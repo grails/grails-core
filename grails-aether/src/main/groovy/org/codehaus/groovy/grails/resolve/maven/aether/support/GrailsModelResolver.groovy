@@ -17,7 +17,6 @@
 package org.codehaus.groovy.grails.resolve.maven.aether.support
 
 import groovy.transform.CompileStatic
-
 import org.apache.maven.model.Repository
 import org.apache.maven.model.building.FileModelSource
 import org.apache.maven.model.building.ModelSource
@@ -36,8 +35,8 @@ import org.sonatype.aether.util.artifact.DefaultArtifact
  */
 @CompileStatic
 class GrailsModelResolver implements ModelResolver{
-    private RepositorySystem  system
-    private RepositorySystemSession session
+    private RepositorySystem  system;
+    private RepositorySystemSession session;
     private List<RemoteRepository> repositories = []
 
     GrailsModelResolver(RepositorySystem  system, RepositorySystemSession session, List<RemoteRepository> repositories) {
@@ -52,17 +51,20 @@ class GrailsModelResolver implements ModelResolver{
         try {
             ArtifactRequest request = new ArtifactRequest(pomArtifact, repositories, null)
             pomArtifact = system.resolveArtifact(session, request).getArtifact()
-        }
-        catch (ArtifactResolutionException e) {
-            throw new UnresolvableModelException("Failed to resolve POM for $groupId:$artifactId:$version due to $e.message", groupId, artifactId, version, e)
+
+        } catch (ArtifactResolutionException e) {
+            throw new UnresolvableModelException("Failed to resolve POM for " + groupId + ":" + artifactId + ":" + version
+                + " due to " + e.getMessage(), groupId, artifactId, version, e);
         }
 
-        return new FileModelSource(pomArtifact.file)
+        File pomFile = pomArtifact.file
+
+        return new FileModelSource(pomFile);
     }
 
     @Override
     void addRepository(Repository repository) {
-        repositories << new RemoteRepository(repository.id, "default", repository.url)
+        repositories << new RemoteRepository(repository.id, "default",repository.url)
     }
 
     @Override

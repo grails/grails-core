@@ -150,7 +150,7 @@ class FiltersGrailsPlugin {
 
                     // display this as a cyclical dep
                     LOG.warn("::   Filter ${bean.getClass().name}")
-                    def dependsOn
+                    def dependsOn = null
                     if (bean.metaClass.hasProperty(bean, "dependsOn")) {
                         dependsOn = bean.dependsOn
                         for (dep in dependsOn) {

@@ -120,7 +120,7 @@ public class GrailsASTUtils {
     private static final ClassNode TYPECHECKINGMODE_CLASS_NODE = ClassHelper.make(TypeCheckingMode.class);
     public static final Parameter[] ZERO_PARAMETERS = new Parameter[0];
     public static final ArgumentListExpression ZERO_ARGUMENTS = new ArgumentListExpression();
-
+    
     /**
      * @deprecated Sharing copies of VariableExpression which refer to "this" is unsafe
      */
@@ -314,8 +314,8 @@ public class GrailsASTUtils {
 
         MethodCallExpression methodCallExpression = new MethodCallExpression(delegate, methodName, arguments);
         methodCallExpression.setMethodTarget(declaredMethod);
-
-        if (!noNullCheck) {
+        
+        if(!noNullCheck) {
             ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, declaredMethod);
             VariableExpression apiVar = addApiVariableDeclaration(delegate, declaredMethod, methodBody);
             IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
@@ -323,12 +323,12 @@ public class GrailsASTUtils {
         } else {
             methodBody.addStatement(new ExpressionStatement(methodCallExpression));
         }
-
+        
         MethodNode methodNode = new MethodNode(methodName,
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes, genericsPlaceholders),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
         methodNode.addAnnotations(declaredMethod.getAnnotations());
-        if (shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
+        if(shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
             methodNode.addAnnotation(markerAnnotation);
         }
 
@@ -447,12 +447,12 @@ public class GrailsASTUtils {
 
         BlockStatement methodBody = new BlockStatement();
         ArgumentListExpression arguments = createArgumentListFromParameters(parameterTypes, false, genericsPlaceholders);
-
+        
         MethodCallExpression methodCallExpression = new MethodCallExpression(
                 delegate, delegateMethod.getName(), arguments);
         methodCallExpression.setMethodTarget(delegateMethod);
 
-        if (!noNullCheck && !(delegate instanceof ClassExpression)) {
+        if(!noNullCheck && !(delegate instanceof ClassExpression)) {
             ThrowStatement missingMethodException = createMissingMethodThrowable(classNode, delegateMethod);
             VariableExpression apiVar = addApiVariableDeclaration(delegate, delegateMethod, methodBody);
             IfStatement ifStatement = createIfElseStatementForApiMethodCall(methodCallExpression, apiVar, missingMethodException);
@@ -460,7 +460,7 @@ public class GrailsASTUtils {
         } else {
             methodBody.addStatement(new ExpressionStatement(methodCallExpression));
         }
-
+        
         ClassNode returnType = replaceGenericsPlaceholders(delegateMethod.getReturnType(), genericsPlaceholders);
         MethodNode methodNode = new MethodNode(declaredMethodName, Modifier.PUBLIC | Modifier.STATIC, returnType,
                 copyParameters(parameterTypes, genericsPlaceholders), GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
@@ -608,7 +608,7 @@ public class GrailsASTUtils {
     }
 
     private static final Map<String, ClassNode> emptyGenericsPlaceHoldersMap = Collections.emptyMap();
-
+    
     public static ClassNode nonGeneric(ClassNode type) {
         return replaceGenericsPlaceholders(type, emptyGenericsPlaceHoldersMap);
     }
@@ -617,7 +617,7 @@ public class GrailsASTUtils {
     public static ClassNode nonGeneric(ClassNode type, ClassNode wildcardReplacement) {
         return replaceGenericsPlaceholders(type, DefaultedMap.decorate(emptyGenericsPlaceHoldersMap, wildcardReplacement));
     }
-
+    
     public static ClassNode replaceGenericsPlaceholders(ClassNode type, Map<String, ClassNode> genericsPlaceholders) {
         if (type.isArray()) {
             return replaceGenericsPlaceholders(type.getComponentType(), genericsPlaceholders).makeArray();
@@ -627,22 +627,23 @@ public class GrailsASTUtils {
             return type.getPlainNodeReference();
         }
 
-        if (type.isGenericsPlaceHolder() && genericsPlaceholders != null) {
+        if(type.isGenericsPlaceHolder() && genericsPlaceholders != null) {
             ClassNode placeHolderType = genericsPlaceholders.get(type.getUnresolvedName());
-            if (placeHolderType != null) {
+            if(placeHolderType != null) {
                 return placeHolderType.getPlainNodeReference();
+            } else {
+                return ClassHelper.make(Object.class).getPlainNodeReference();
             }
-            return ClassHelper.make(Object.class).getPlainNodeReference();
         }
 
         final ClassNode nonGen = type.getPlainNodeReference();
-
-        if ("java.lang.Object".equals(type.getName())) {
+        
+        if("java.lang.Object".equals(type.getName())) {
             nonGen.setGenericsPlaceHolder(false);
             nonGen.setGenericsTypes(null);
             nonGen.setUsingGenerics(false);
         } else {
-            if (type.isUsingGenerics()) {
+            if(type.isUsingGenerics()) {
                 GenericsType[] parameterized = type.getGenericsTypes();
                 if (parameterized != null && parameterized.length > 0) {
                     GenericsType[] copiedGenericsTypes = new GenericsType[parameterized.length];
@@ -651,7 +652,7 @@ public class GrailsASTUtils {
                         GenericsType copiedGenericsType = null;
                         if (parameterizedType.isPlaceholder() && genericsPlaceholders != null) {
                             ClassNode placeHolderType = genericsPlaceholders.get(parameterizedType.getName());
-                            if (placeHolderType != null) {
+                            if(placeHolderType != null) {
                                 copiedGenericsType = new GenericsType(placeHolderType.getPlainNodeReference());
                             } else {
                                 copiedGenericsType = new GenericsType(ClassHelper.make(Object.class).getPlainNodeReference());
@@ -665,7 +666,7 @@ public class GrailsASTUtils {
                 }
             }
         }
-
+        
         return nonGen;
     }
 
@@ -756,7 +757,7 @@ public class GrailsASTUtils {
                 }
                 else if (isCandidateInstanceMethod(supportedSuperType, declaredMethod)) {
                     MethodNode methodNode = addDelegateInstanceMethod(classNode, delegateInstance, declaredMethod, null, true, genericsPlaceholders, noNullCheck);
-                    if (addCompileStatic) {
+                    if(addCompileStatic) {
                         addCompileStaticAnnotation(methodNode);
                     }
                 }
@@ -956,7 +957,8 @@ public class GrailsASTUtils {
             Set<ClassNode> interfaces = classNode.getAllInterfaces();
 
             for (ClassNode anInterface : interfaces) {
-                if (anInterface.equals(interfaceNode)) return anInterface;
+                if(anInterface.equals(interfaceNode)) return anInterface;
+
             }
             classNode = classNode.getSuperClass();
         }
@@ -965,9 +967,9 @@ public class GrailsASTUtils {
 
     public static boolean hasZeroArgsConstructor(ClassNode implementationNode) {
         List<ConstructorNode> constructors = implementationNode.getDeclaredConstructors();
-        if (constructors.isEmpty()) return true;
+        if(constructors.isEmpty()) return true;
         for (ConstructorNode constructor : constructors) {
-            if (constructor.getParameters().length == 0 ) return true;
+            if(constructor.getParameters().length == 0 ) return true;
         }
         return false;
     }
@@ -984,55 +986,53 @@ public class GrailsASTUtils {
     @Target(ElementType.CONSTRUCTOR)
     @Retention(RetentionPolicy.SOURCE)
     private static @interface GrailsDelegatingConstructor {}
-
+    
     /**
      * Marks a method to be staticly compiled
-     *
+     * 
      * @param annotatedNode
      * @return
      */
     public static AnnotatedNode addCompileStaticAnnotation(AnnotatedNode annotatedNode) {
         return addCompileStaticAnnotation(annotatedNode, false);
     }
-
+    
     /**
      * Adds @CompileStatic annotation to method
-     *
+     * 
      * @param annotatedNode
      * @param skip
      * @return
      */
     public static AnnotatedNode addCompileStaticAnnotation(AnnotatedNode annotatedNode, boolean skip) {
-        if (annotatedNode == null) {
-            return null;
-        }
-
-        AnnotationNode an = new AnnotationNode(COMPILESTATIC_CLASS_NODE);
-        if (skip) {
-            an.addMember("value", new PropertyExpression(new ClassExpression(TYPECHECKINGMODE_CLASS_NODE), "SKIP"));
-        }
-        annotatedNode.addAnnotation(an);
-        if (!skip) {
-            annotatedNode.getDeclaringClass().addTransform(StaticCompileTransformation.class, an);
+        if(annotatedNode != null) {
+            AnnotationNode an = new AnnotationNode(COMPILESTATIC_CLASS_NODE);
+            if(skip) {
+                an.addMember("value", new PropertyExpression(new ClassExpression(TYPECHECKINGMODE_CLASS_NODE), "SKIP")); 
+            }
+            annotatedNode.addAnnotation(an);
+            if(!skip) {
+                annotatedNode.getDeclaringClass().addTransform(StaticCompileTransformation.class, an);
+            }
         }
         return annotatedNode;
     }
-
+    
     /*
      * Set the method target of a MethodCallExpression to the first matching method with same number of arguments.
      * This doesn't check argument types.
-     *
+     * 
      * @param methodCallExpression
      * @param targetClassNode
      */
     public static MethodCallExpression applyDefaultMethodTarget(final MethodCallExpression methodCallExpression, final ClassNode targetClassNode) {
         return applyMethodTarget(methodCallExpression, targetClassNode, (ClassNode[])null);
     }
-
+    
     /**
      * Set the method target of a MethodCallExpression to the first matching method with same number of arguments.
      * This doesn't check argument types.
-     *
+     * 
      * @param methodCallExpression
      * @param targetClass
      * @return
@@ -1040,12 +1040,12 @@ public class GrailsASTUtils {
     public static MethodCallExpression applyDefaultMethodTarget(final MethodCallExpression methodCallExpression, final Class<?> targetClass) {
         return applyDefaultMethodTarget(methodCallExpression, ClassHelper.make(targetClass).getPlainNodeReference());
     }
-
+    
     /**
      * Set the method target of a MethodCallExpression to the first matching method with same number and type of arguments.
-     *
+     * 
      * A null parameter type will match any type
-     *
+     * 
      * @param methodCallExpression
      * @param targetClassNode
      * @param targetParameterTypes
@@ -1053,16 +1053,17 @@ public class GrailsASTUtils {
      */
     public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final ClassNode targetClassNode, final ClassNode... targetParameterTypes) {
         String methodName = methodCallExpression.getMethodAsString();
-        if (methodName==null) return methodCallExpression;
+        if(methodName==null) return methodCallExpression;
         int argumentCount = methodCallExpression.getArguments() != null ? ((TupleExpression)methodCallExpression.getArguments()).getExpressions().size() : 0;
-
+        
         String methodFoundInClass = null;
-
+        
+        
         for (MethodNode method : targetClassNode.getMethods(methodName)) {
             int methodParameterCount = method.getParameters() != null ? method.getParameters().length : 0;
             if (methodParameterCount == argumentCount && (targetParameterTypes == null || (parameterTypesMatch(method.getParameters(), targetParameterTypes)))) {
                 String methodFromClass = method.getDeclaringClass().getName();
-                if (methodFoundInClass == null) {
+                if(methodFoundInClass == null) {
                     methodCallExpression.setMethodTarget(method);
                     methodFoundInClass = methodFromClass;
                 } else if (methodFromClass.equals(methodFoundInClass)) {
@@ -1072,10 +1073,10 @@ public class GrailsASTUtils {
         }
         return methodCallExpression;
     }
-
+    
     /**
      * Set the method target of a MethodCallExpression to the first matching method with same number and type of arguments.
-     *
+     * 
      * @param methodCallExpression
      * @param targetClass
      * @param targetParameterClassTypes
@@ -1084,10 +1085,10 @@ public class GrailsASTUtils {
     public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final Class<?> targetClass, final Class<?>... targetParameterClassTypes) {
         return applyMethodTarget(methodCallExpression, ClassHelper.make(targetClass).getPlainNodeReference(), convertTargetParameterTypes(targetParameterClassTypes));
     }
-
+    
     /**
      * Set the method target of a MethodCallExpression to the first matching method with same number and type of arguments.
-     *
+     * 
      * @param methodCallExpression
      * @param targetClassNode
      * @param targetParameterClassTypes
@@ -1095,13 +1096,13 @@ public class GrailsASTUtils {
      */
     public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final ClassNode targetClassNode, final Class<?>... targetParameterClassTypes) {
         return applyMethodTarget(methodCallExpression, targetClassNode, convertTargetParameterTypes(targetParameterClassTypes));
-    }
+    }    
 
     private static ClassNode[] convertTargetParameterTypes(final Class<?>[] targetParameterClassTypes) {
         ClassNode[] targetParameterTypes = null;
-        if (targetParameterClassTypes != null) {
+        if(targetParameterClassTypes != null) {
             targetParameterTypes = new ClassNode[targetParameterClassTypes.length];
-            for (int i=0; i < targetParameterClassTypes.length; i++) {
+            for(int i=0;i < targetParameterClassTypes.length;i++) {
                 targetParameterTypes[i] = targetParameterClassTypes[i] != null ? ClassHelper.make(targetParameterClassTypes[i]).getPlainNodeReference() : null;
             }
         }
@@ -1109,18 +1110,18 @@ public class GrailsASTUtils {
     }
 
     private static boolean parameterTypesMatch(Parameter[] parameters, ClassNode[] targetParameterTypes) {
-        if (targetParameterTypes==null || targetParameterTypes.length==0) return true;
-        for (int i=0; i < parameters.length; i++) {
-            if (targetParameterTypes.length > i && targetParameterTypes[i] != null && !parameters[i].getType().getName().equals(targetParameterTypes[i].getName())) {
+        if(targetParameterTypes==null || targetParameterTypes.length==0) return true;
+        for(int i=0;i < parameters.length;i++) {
+            if(targetParameterTypes.length > i && targetParameterTypes[i] != null && !parameters[i].getType().getName().equals(targetParameterTypes[i].getName())) {
                 return false;
             }
         }
         return true;
     }
-
+    
     /**
      * Build static direct call to getter of a property
-     *
+     * 
      * @param objectExpression
      * @param propertyName
      * @param targetClassNode
@@ -1129,10 +1130,10 @@ public class GrailsASTUtils {
     public static MethodCallExpression buildGetPropertyExpression(final Expression objectExpression, final String propertyName, final ClassNode targetClassNode) {
         return buildGetPropertyExpression(objectExpression, propertyName, targetClassNode, false);
     }
-
+    
     /**
      * Build static direct call to getter of a property
-     *
+     * 
      * @param objectExpression
      * @param propertyName
      * @param targetClassNode
@@ -1143,15 +1144,15 @@ public class GrailsASTUtils {
         String methodName = (useBooleanGetter ? "is" : "get") + MetaClassHelper.capitalize(propertyName);
         MethodCallExpression methodCallExpression = new MethodCallExpression(objectExpression, methodName, MethodCallExpression.NO_ARGUMENTS);
         MethodNode getterMethod = targetClassNode.getGetterMethod(methodName);
-        if (getterMethod != null) {
+        if(getterMethod != null) {
             methodCallExpression.setMethodTarget(getterMethod);
         }
         return methodCallExpression;
     }
-
+    
     /**
      * Build static direct call to setter of a property
-     *
+     * 
      * @param objectExpression
      * @param propertyName
      * @param targetClassNode
@@ -1162,15 +1163,15 @@ public class GrailsASTUtils {
         String methodName = "set" + MetaClassHelper.capitalize(propertyName);
         MethodCallExpression methodCallExpression = new MethodCallExpression(objectExpression, methodName, new ArgumentListExpression(valueExpression));
         MethodNode setterMethod = targetClassNode.getSetterMethod(methodName);
-        if (setterMethod != null) {
+        if(setterMethod != null) {
             methodCallExpression.setMethodTarget(setterMethod);
         }
         return methodCallExpression;
     }
-
+    
     /**
      * Build static direct call to put entry in Map
-     *
+     * 
      * @param objectExpression
      * @param keyName
      * @param valueExpression
@@ -1182,7 +1183,7 @@ public class GrailsASTUtils {
 
     /**
      * Build static direct call to get entry from Map
-     *
+     * 
      * @param objectExpression
      * @param keyName
      * @return
@@ -1190,23 +1191,23 @@ public class GrailsASTUtils {
     public static MethodCallExpression buildGetMapExpression(final Expression objectExpression, final String keyName) {
         return applyDefaultMethodTarget(new MethodCallExpression(objectExpression, "get", new ArgumentListExpression(new ConstantExpression(keyName))), Map.class);
     }
-
+    
     public static Expression buildGetThisObjectExpression(boolean inClosureBlock) {
-        if (inClosureBlock) {
+        if (!inClosureBlock) {
+            return buildThisExpression();
+        } else {
             return buildGetPropertyExpression(buildThisExpression(), "thisObject", ClassHelper.make(Closure.class).getPlainNodeReference());
         }
-
-        return buildThisExpression();
     }
 
     public static Expression buildThisExpression() {
         return new VariableExpression("this");
     }
-
+    
     public static MethodCallExpression noImplicitThis(MethodCallExpression methodCallExpression) {
         return applyImplicitThis(methodCallExpression, false);
     }
-
+    
     public static MethodCallExpression applyImplicitThis(MethodCallExpression methodCallExpression, boolean useImplicitThis) {
         methodCallExpression.setImplicitThis(useImplicitThis);
         return methodCallExpression;
@@ -1215,64 +1216,64 @@ public class GrailsASTUtils {
     public static void copyAnnotations(final AnnotatedNode from, final AnnotatedNode to) {
         copyAnnotations(from, to, null, null);
     }
-
+     
     public static void copyAnnotations(final AnnotatedNode from, final AnnotatedNode to, final Set<String> included, final Set<String> excluded) {
         final List<AnnotationNode> annotationsToCopy = from.getAnnotations();
-        for (final AnnotationNode node : annotationsToCopy) {
+        for(final AnnotationNode node : annotationsToCopy) {
             String annotationClassName = node.getClassNode().getName();
-            if ((excluded==null || !excluded.contains(annotationClassName)) &&
+            if((excluded==null || !excluded.contains(annotationClassName)) &&
                (included==null || included.contains(annotationClassName))) {
                 final AnnotationNode copyOfAnnotationNode = new AnnotationNode(node.getClassNode());
                 final Map<String, Expression> members = node.getMembers();
-                for (final Map.Entry<String, Expression> entry : members.entrySet()) {
+                for(final Map.Entry<String, Expression> entry : members.entrySet()) {
                     copyOfAnnotationNode.addMember(entry.getKey(), entry.getValue());
                 }
                 to.addAnnotation(copyOfAnnotationNode);
             }
         }
     }
-
+    
     public static void filterAnnotations(final AnnotatedNode annotatedNode, final Set<String> classNamesToRetain, final Set<String> classNamesToRemove) {
-        for (Iterator<AnnotationNode> iterator = annotatedNode.getAnnotations().iterator(); iterator.hasNext(); ) {
+        for(Iterator<AnnotationNode> iterator = annotatedNode.getAnnotations().iterator(); iterator.hasNext(); ) {
             final AnnotationNode node = iterator.next();
             String annotationClassName = node.getClassNode().getName();
-            if ((classNamesToRemove==null || classNamesToRemove.contains(annotationClassName)) &&
+            if((classNamesToRemove==null || classNamesToRemove.contains(annotationClassName)) &&
                (classNamesToRetain==null || !classNamesToRetain.contains(annotationClassName))) {
                 iterator.remove();
             }
         }
     }
-
+    
     public static void removeCompileStaticAnnotations(final AnnotatedNode annotatedNode) {
         filterAnnotations(annotatedNode, null, new HashSet<String>(Arrays.asList(new String[]{CompileStatic.class.getName(), TypeChecked.class.getName()})));
     }
-
+    
     public static void markApplied(ASTNode astNode, Class<?> transformationClass) {
         resolveRedirect(astNode).setNodeMetaData(appliedTransformationKey(transformationClass), Boolean.TRUE);
     }
 
     private static ASTNode resolveRedirect(ASTNode astNode) {
-        if (astNode instanceof ClassNode) {
+        if(astNode instanceof ClassNode) {
             astNode = ((ClassNode)astNode).redirect();
         }
         return astNode;
     }
-
+    
     private static String appliedTransformationKey(Class<?> transformationClass) {
         return "APPLIED_" + transformationClass.getName();
     }
-
+    
     public static boolean isApplied(ASTNode astNode, Class<?> transformationClass) {
         return resolveRedirect(astNode).getNodeMetaData(appliedTransformationKey(transformationClass)) == Boolean.TRUE;
     }
-
+    
     public static void processVariableScopes(SourceUnit source, ClassNode classNode) {
         processVariableScopes(source, classNode, null);
     }
-
+    
     public static void processVariableScopes(SourceUnit source, ClassNode classNode, MethodNode methodNode) {
         VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(source);
-        if (methodNode == null) {
+        if(methodNode == null) {
             scopeVisitor.visitClass(classNode);
         } else {
             scopeVisitor.prepareVisit(classNode);

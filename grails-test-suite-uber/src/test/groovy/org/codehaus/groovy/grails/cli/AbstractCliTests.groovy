@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.cli
 import gant.Gant
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
-
 import org.codehaus.gant.GantBinding
 import org.codehaus.groovy.grails.cli.support.GrailsRootLoader
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
@@ -12,8 +11,8 @@ import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 abstract class AbstractCliTests extends GroovyTestCase {
     String scriptName
 
-    protected String appBase = "test/cliTestApp"
-    protected AntBuilder ant = new AntBuilder()
+    protected appBase = "test/cliTestApp"
+    protected ant = new AntBuilder()
 
     private GantBinding binding
     private ClassLoader savedContextLoader
@@ -41,8 +40,6 @@ abstract class AbstractCliTests extends GroovyTestCase {
     }
 
     protected void setUp() {
-        super.setUp()
-
         ExpandoMetaClass.enableGlobally()
         ant.delete(dir:appBase, failonerror:false)
         System.setProperty("base.dir", appBase)
@@ -52,8 +49,6 @@ abstract class AbstractCliTests extends GroovyTestCase {
     }
 
     protected void tearDown() {
-        super.tearDown()
-
         Thread.currentThread().contextClassLoader = savedContextLoader
 
         ant.delete(dir:appBase, failonerror:false)

@@ -87,7 +87,7 @@ public class EncodingStateImpl implements EncodingState {
     }
 
     public EncodingState appendEncoder(Encoder encoder) {
-        if (encoder==null) return this;
+        if(encoder==null) return this;
         Set<Encoder> newEncoders;
         if (encoders == null || encoders.size()==0) {
             newEncoders = Collections.singleton(encoder);
@@ -105,11 +105,11 @@ public class EncodingStateImpl implements EncodingState {
     public String toString() {
         StringBuilder sb=new StringBuilder();
         sb.append("EncodingStateImpl");
-        if (encoders != null && encoders.size() > 0) {
+        if(encoders != null && encoders.size() > 0) {
             sb.append(" [encoders=");
             boolean first=true;
-            for (Encoder encoder : encoders) {
-                if (!first) {
+            for(Encoder encoder : encoders) {
+                if(!first) {
                     sb.append(", ");
                 } else {
                     first=false;

@@ -45,12 +45,12 @@ class GrailsConfigUtilsTests extends GroovyTestCase {
         app.initialise()
         def ctx = new MockApplicationContext()
         def servletContext = new MockServletContext()
-        servletContext.addInitParameter("grailsConfiguratorClass", MyGrailsRuntimeConfigurator.getName())
+        servletContext.addInitParameter("grailsConfiguratorClass", MyGrailsRuntimeConfigurator.class.getName())
 
         def configurator = GrailsConfigUtils.determineGrailsRuntimeConfiguratorFromServletContext(app, servletContext, ctx)
 
         assertNotNull configurator
-        assertEquals configurator.getClass().name, MyGrailsRuntimeConfigurator.name
+        assertEquals configurator.class.name, MyGrailsRuntimeConfigurator.class.name
     }
 
     void testNonExistingGrailsConfigurator() {

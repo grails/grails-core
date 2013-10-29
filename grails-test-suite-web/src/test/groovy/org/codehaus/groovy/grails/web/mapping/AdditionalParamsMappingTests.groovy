@@ -19,6 +19,7 @@ mappings {
     "/users/$id?/$action?" {
         controller = "user"
     }
+
 }
 '''
 

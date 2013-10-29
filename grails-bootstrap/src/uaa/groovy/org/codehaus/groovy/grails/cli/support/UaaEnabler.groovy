@@ -67,7 +67,7 @@ Enter Y or N:"""
 
         this.classLoader = new GroovyClassLoader()
         final jarFiles = lc.getClassPathUrls()
-        for (jar in jarFiles) {
+        for(jar in jarFiles) {
             classLoader.addURL(jar)
         }
     }
@@ -132,7 +132,7 @@ Enter Y or N:"""
                                     registerUsage = true
                                 }
                                 else {
-                                    final plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName())
+                                    final Object plugin = UaaIntegrationSupport.findPlugin(pluginList, pluginInfo.getName())
                                     if (plugin != null) {
                                         registerUsage = true
                                     }

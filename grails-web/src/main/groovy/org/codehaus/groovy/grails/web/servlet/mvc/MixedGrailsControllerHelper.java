@@ -36,7 +36,7 @@ import org.springframework.util.ReflectionUtils;
 
 /**
  * Implements action invocation through Closure.
- *
+ * 
  * @author Stephane Maldini
  * @since 2.0
  */

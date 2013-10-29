@@ -134,8 +134,8 @@ public abstract class GroovyPage extends Script {
 
     @SuppressWarnings("rawtypes")
     public static final class ConstantClosure extends Closure {
-        private static final long serialVersionUID = 1;
-        private static final Class[] EMPTY_CLASS_ARR = {};
+        private static final long serialVersionUID = 1L;
+        private static final Class[] EMPTY_CLASS_ARR=new Class[0];
         final Object retval;
 
         public ConstantClosure(Object retval) {
@@ -447,7 +447,7 @@ public abstract class GroovyPage extends Script {
                         staticOut.append('\"').append(value).append('\"');
                     }
                 }
-
+                
                 if (body == null) {
                     staticOut.append("/>");
                 } else {
@@ -456,6 +456,7 @@ public abstract class GroovyPage extends Script {
                     if (bodyOutput != null) staticOut.print(bodyOutput);
                     staticOut.append("</").append(tagNamespace).append(':').append(tagName).append('>');
                 }
+
             }
         } catch (Throwable e) {
             if (LOG.isTraceEnabled()) {
@@ -694,7 +695,7 @@ public abstract class GroovyPage extends Script {
         this.htmlParts = htmlParts;
         this.htmlPartsSet = new HashSet<Integer>();
         if (htmlParts != null) {
-            for (String htmlPart : htmlParts) {
+            for(String htmlPart : htmlParts) {
                 if (htmlPart != null) {
                     htmlPartsSet.add(System.identityHashCode(htmlPart));
                 }

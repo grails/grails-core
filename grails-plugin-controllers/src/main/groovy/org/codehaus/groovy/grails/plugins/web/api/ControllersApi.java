@@ -254,13 +254,15 @@ public class ControllersApi extends CommonWebApi {
      * @return null
      */
     @SuppressWarnings("unchecked")
-    public Object redirect(Object instance, Object object) {
-        if (object != null) {
+    public Object redirect(Object instance,Object object) {
+        if(object != null) {
+
             Class<?> objectClass = object.getClass();
             boolean isDomain = DomainClassArtefactHandler.isDomainClass(objectClass) && object instanceof GroovyObject;
-            if (isDomain) {
+            if(isDomain) {
+
                 Object id = ((GroovyObject)object).getProperty(GrailsDomainClassProperty.IDENTITY);
-                if (id != null) {
+                if(id != null) {
                     Map args = new HashMap();
                     args.put(LinkGenerator.ATTRIBUTE_RESOURCE, object);
                     args.put(LinkGenerator.ATTRIBUTE_METHOD, HttpMethod.GET.toString());
@@ -414,23 +416,23 @@ public class ControllersApi extends CommonWebApi {
         final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSource(type, dataBindingSource);
         final Object commandObjectInstance;
         Object entityIdentifierValue = null;
-        if (DomainClassArtefactHandler.isDomainClass(type)) {
+        if(DomainClassArtefactHandler.isDomainClass(type)) {
             entityIdentifierValue = commandObjectBindingSource.getIdentifierValue();
-            if (entityIdentifierValue == null) {
+            if(entityIdentifierValue == null) {
                 final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
                 entityIdentifierValue = webRequest != null ? webRequest.getParams().getIdentifier() : null;
             }
         }
-        if (entityIdentifierValue != null) {
+        if(entityIdentifierValue != null) {
             commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
         } else {
             commandObjectInstance = type.newInstance();
         }
 
-        if (commandObjectInstance != null) {
+        if(commandObjectInstance != null) {
             final boolean shouldDoDataBinding;
 
-            if (entityIdentifierValue != null) {
+            if(entityIdentifierValue != null) {
                 final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
                 switch(requestMethod) {
                     case PATCH:
@@ -445,7 +447,7 @@ public class ControllersApi extends CommonWebApi {
                 shouldDoDataBinding = true;
             }
 
-            if (shouldDoDataBinding) {
+            if(shouldDoDataBinding) {
                 bindData(controllerInstance, commandObjectInstance, commandObjectBindingSource, Collections.EMPTY_MAP, null);
             }
 
@@ -458,12 +460,12 @@ public class ControllersApi extends CommonWebApi {
 
     @SuppressWarnings("unchecked")
     public Method getExceptionHandlerMethodFor(final Object controllerInstance, final Class<? extends Exception> exceptionType) throws Exception {
-        if (!Exception.class.isAssignableFrom(exceptionType)) {
+        if(!Exception.class.isAssignableFrom(exceptionType)) {
             throw new IllegalArgumentException("exceptionType [" + exceptionType.getName() + "] argument must be Exception or a subclass of Exception");
         }
         Method handlerMethod = null;
         final List<ControllerExceptionHandlerMetaData> exceptionHandlerMetaDataInstances = (List<ControllerExceptionHandlerMetaData>) GrailsClassUtils.getStaticFieldValue(controllerInstance.getClass(), ControllerActionTransformer.EXCEPTION_HANDLER_META_DATA_FIELD_NAME);
-        if (exceptionHandlerMetaDataInstances != null && exceptionHandlerMetaDataInstances.size() > 0) {
+        if(exceptionHandlerMetaDataInstances != null && exceptionHandlerMetaDataInstances.size() > 0) {
 
             // find all of the handler methods which could accept this exception type
             final List<ControllerExceptionHandlerMetaData> matches = (List<ControllerExceptionHandlerMetaData>) org.apache.commons.collections.CollectionUtils.select(exceptionHandlerMetaDataInstances, new Predicate() {
@@ -474,13 +476,13 @@ public class ControllersApi extends CommonWebApi {
                 }
             });
 
-            if (matches.size() > 0) {
+            if(matches.size() > 0) {
                 ControllerExceptionHandlerMetaData theOne = matches.get(0);
 
                 // if there are more than 1, find the one that is farthest down the inheritance hierarchy
-                for (int i = 1; i < matches.size(); i++) {
+                for(int i = 1; i < matches.size(); i++) {
                     final ControllerExceptionHandlerMetaData nextMatch = matches.get(i);
-                    if (theOne.getExceptionType().isAssignableFrom(nextMatch.getExceptionType())) {
+                    if(theOne.getExceptionType().isAssignableFrom(nextMatch.getExceptionType())) {
                         theOne = nextMatch;
                     }
                 }

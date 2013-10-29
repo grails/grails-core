@@ -74,7 +74,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     public void setGroovyPageLocator(GrailsConventionGroovyPageLocator groovyPageLocator) {
         this.groovyPageLocator = groovyPageLocator;
     }
-
+    
     @Override
     public View resolveViewName(String viewName, Locale locale) throws Exception {
         return super.resolveViewName(WebUtils.addViewPrefix(viewName), locale);
@@ -129,7 +129,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     }
 
     private static class WrappedInitializationException extends RuntimeException {
-        private static final long serialVersionUID = 1;
+        private static final long serialVersionUID = 1L;
         public WrappedInitializationException(Throwable cause) {
             super(cause);
         }
@@ -190,7 +190,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     protected View createFallbackView(String viewName) throws Exception {
         return createJstlView(viewName);
     }
-
+    
     protected View createJstlView(String viewName) throws Exception {
         AbstractUrlBasedView view = buildView(viewName);
         view.setApplicationContext(getApplicationContext());

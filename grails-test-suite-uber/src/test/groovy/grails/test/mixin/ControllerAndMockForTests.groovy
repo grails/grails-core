@@ -29,8 +29,8 @@ class ControllerAndMockForTests {
     void testIndexWithoutUsingMockForAgain() {
         controller.index()
     }
-}
 
+}
 class MyController {
 
     def index() {

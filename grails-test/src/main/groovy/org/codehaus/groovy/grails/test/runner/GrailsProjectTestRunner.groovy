@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.event.GrailsTestEventPublisher
+import org.codehaus.groovy.grails.test.junit4.JUnit4GrailsTestType
 import org.codehaus.groovy.grails.test.report.junit.JUnitReportProcessor
 import org.codehaus.groovy.grails.test.runner.phase.TestFeatureDiscoverySupport
 import org.codehaus.groovy.grails.test.runner.phase.TestPhaseConfigurer
@@ -73,7 +74,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
     //
     // The default pattern runs all tests.
     List<String> testNames
-    Collection<GrailsTestTargetPattern> testTargetPatterns // created in allTests()
+    Collection<GrailsTestTargetPattern> testTargetPatterns = null // created in allTests()
 
     // Controls which result formats are generated. By default both XML
     // and plain text files are created. You can override this in your
@@ -297,7 +298,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
                     configurer?.prepare(testExecutionContext, testOptions)
 
                     // Now run all the tests registered for this phase.
-                    for (GrailsTestType type in types) {
+                    for(GrailsTestType type in types) {
                         processTests(type)
                     }
                 }

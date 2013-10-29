@@ -139,7 +139,6 @@ public class GrailsClassUtils {
      * (may be {@code null} when accepting all declared interfaces)
      * @return all interfaces that the given object implements as Set
      */
-    @SuppressWarnings("rawtypes")
     public static Set<Class> getAllInterfacesForClassAsSet(Class clazz, ClassLoader classLoader) {
         Assert.notNull(clazz, "Class must not be null");
         Set<Class> interfaces = new LinkedHashSet<Class>();
@@ -153,6 +152,7 @@ public class GrailsClassUtils {
         }
         return interfaces;
     }
+
 
     /**
      * Check whether the given class is visible in the given ClassLoader.

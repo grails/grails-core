@@ -5,7 +5,6 @@ import grails.rest.render.errors.VndErrorJsonRenderer
 import grails.rest.render.errors.VndErrorXmlRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
-
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -16,15 +15,15 @@ import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.springframework.context.support.StaticMessageSource
-import org.springframework.http.HttpStatus
 import org.springframework.mock.web.MockServletContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder
-
 import spock.lang.Specification
+import org.springframework.http.HttpStatus
 
 /**
+ *
  * @author Graeme Rocher
  */
 class VndErrorRenderingSpec extends Specification{
@@ -36,6 +35,7 @@ class VndErrorRenderingSpec extends Specification{
     void cleanup() {
         RequestContextHolder.resetRequestAttributes()
         ConvertersConfigurationHolder.clear()
+
     }
 
     void "Test VND error rendering in XML" () {
@@ -51,6 +51,7 @@ class VndErrorRenderingSpec extends Specification{
                 "/books"(resources:"book")
             }
             registry.addRenderer(vndRenderer)
+
 
         when:"A renderer is looked up"
             final book = new Book()
@@ -70,6 +71,7 @@ class VndErrorRenderingSpec extends Specification{
             response.status == HttpStatus.UNPROCESSABLE_ENTITY.value()
             response.contentType == GrailsWebUtil.getContentType(VndErrorXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><errors xml:lang="en"><error logref="book.title.invalid.1"><message>Bad Title</message><link rel="resource" href="http://localhost/books/1" /></error></errors>'
+
     }
 
     void "Test VND error rendering in JSON" () {
@@ -98,6 +100,7 @@ class VndErrorRenderingSpec extends Specification{
         then:"It is a VND error renderer"
             renderer instanceof VndErrorJsonRenderer
 
+
         when:"The renderer renders an error"
             renderer.render(error, new ServletRenderContext(request))
 
@@ -105,20 +108,21 @@ class VndErrorRenderingSpec extends Specification{
             response.status == HttpStatus.UNPROCESSABLE_ENTITY.value()
             response.contentType == GrailsWebUtil.getContentType(VndErrorJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '[{"logref":"book.title.invalid.1","message":"Bad Title","_links":{"resource":{"href":"http://localhost/books/1"}}},{"logref":"book.title.bad.1","message":"Title Bad","_links":{"resource":{"href":"http://localhost/books/1"}}}]'
+
     }
 
     LinkGenerator getLinkGenerator(Closure mappings) {
         def generator = new DefaultLinkGenerator("http://localhost", null)
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
         generator.urlMappingsHolder = getUrlMappingsHolder mappings
-        return generator
+        return generator;
     }
-
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         def allMappings = evaluator.evaluateMappings mappings
         return new DefaultUrlMappingsHolder(allMappings)
     }
+
 }
 
 @Entity

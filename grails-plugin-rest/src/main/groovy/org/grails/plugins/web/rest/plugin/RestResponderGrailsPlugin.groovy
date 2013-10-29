@@ -18,7 +18,6 @@ package org.grails.plugins.web.rest.plugin
 import grails.rest.Resource
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
-
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
@@ -54,21 +53,18 @@ class RestResponderGrailsPlugin {
 
     @CompileStatic
     static void registryResourceControllers(GrailsApplication app) {
-        for (GrailsClass grailsClass in app.getArtefacts(DomainClassArtefactHandler.TYPE)) {
+        for(GrailsClass grailsClass in app.getArtefacts(DomainClassArtefactHandler.TYPE)) {
             final clazz = grailsClass.clazz
-            if (!clazz.getAnnotation(Resource)) {
-                continue
-            }
+            if (clazz.getAnnotation(Resource)) {
+                String controllerClassName = "${clazz.name}Controller"
+                if (!app.getArtefact(ControllerArtefactHandler.TYPE,controllerClassName)) {
+                    try {
+                        app.addArtefact(ControllerArtefactHandler.TYPE, app.classLoader.loadClass(controllerClassName))
+                    } catch (ClassNotFoundException cnfe) {
 
-            String controllerClassName = "${clazz.name}Controller"
-            if (app.getArtefact(ControllerArtefactHandler.TYPE,controllerClassName)) {
-                continue
+                    }
+                }
             }
-
-            try {
-                app.addArtefact(ControllerArtefactHandler.TYPE, app.classLoader.loadClass(controllerClassName))
-            }
-            catch (ClassNotFoundException ignored) {}
         }
     }
 }

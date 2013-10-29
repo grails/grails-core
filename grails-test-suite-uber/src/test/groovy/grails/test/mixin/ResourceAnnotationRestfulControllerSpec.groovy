@@ -106,6 +106,7 @@ class Video {
             model.video == video
     }
 
+
     void "Test the update action performs an update on a valid domain instance"() {
         when:"Update is called for a domain instance that doesn't exist"
             controller.update(null)
@@ -134,6 +135,7 @@ class Video {
         then:"A redirect is issues to the show action"
             response.status == 200
             domainClass.get(video.id).title == 'Game of Thrones'
+
     }
 
     void "Test that the delete action deletes an instance if it exists"() {
@@ -156,5 +158,6 @@ class Video {
         then:"The instance is deleted"
             response.status == 204
             domainClass.count() == 0
+
     }
 }

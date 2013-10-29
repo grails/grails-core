@@ -32,7 +32,7 @@ class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBind
 
     @Autowired(required = false)
     void setDataBindingSourceCreators(DataBindingSourceCreator[] dataBindingSourceCreators) {
-        for (dbsc in dataBindingSourceCreators) {
+        for(dbsc in dataBindingSourceCreators) {
             addToRegisteredObjects(dbsc.targetType, dbsc)
         }
     }
@@ -45,9 +45,9 @@ class DefaultDataBindingSourceRegistry extends ClassAndMimeTypeRegistry<DataBind
         registerDefault(MimeType.TEXT_XML, new XmlDataBindingSourceCreator())
     }
 
-    protected DataBindingSourceCreator getDataBindingSourceCreator(MimeType mimeType, Class targetType, bindingSource) {
+    protected DataBindingSourceCreator getDataBindingSourceCreator(MimeType mimeType, Class targetType, Object bindingSource) {
         def bindingSourceCreator = findMatchingObjectForMimeType(mimeType, targetType)
-        if (bindingSourceCreator == null) {
+        if(bindingSourceCreator == null) {
             bindingSourceCreator = new DefaultDataBindingSourceCreator()
         }
         return bindingSourceCreator

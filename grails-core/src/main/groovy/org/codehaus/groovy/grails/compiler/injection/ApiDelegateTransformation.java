@@ -48,27 +48,24 @@ public class ApiDelegateTransformation implements ASTTransformation{
         AnnotatedNode parent = (AnnotatedNode) nodes[1];
         AnnotationNode annotationNode = (AnnotationNode) nodes[0];
 
-        if (!(parent instanceof FieldNode)) {
-            return;
-        }
+        if (parent instanceof FieldNode) {
+            Expression value = annotationNode.getMember("value");
+            FieldNode fieldNode = (FieldNode) parent;
+            final ClassNode type = fieldNode.getType();
+            final ClassNode owner = fieldNode.getOwner();
+            ClassNode supportedType = owner;
+            if (value instanceof ClassExpression) {
+                supportedType = value.getType();
+            }
 
-        Expression value = annotationNode.getMember("value");
-        FieldNode fieldNode = (FieldNode) parent;
-        final ClassNode type = fieldNode.getType();
-        final ClassNode owner = fieldNode.getOwner();
-        ClassNode supportedType = owner;
-        if (value instanceof ClassExpression) {
-            supportedType = value.getType();
+            GrailsASTUtils.addDelegateInstanceMethods(supportedType, owner, type, new VariableExpression(fieldNode.getName()), resolveGenericsPlaceHolders(supportedType), isNoNullCheck(), isUseCompileStatic());
         }
-
-        GrailsASTUtils.addDelegateInstanceMethods(supportedType, owner, type, new VariableExpression(fieldNode.getName()),
-                resolveGenericsPlaceHolders(supportedType), isNoNullCheck(), isUseCompileStatic());
     }
-
+    
     protected boolean isNoNullCheck() {
         return true;
     }
-
+    
     protected boolean isUseCompileStatic() {
         return true;
     }

@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.resolve.maven.aether
 
 import groovy.transform.CompileStatic
-
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
@@ -46,7 +45,7 @@ class AetherArtifactResultReport implements DependencyReport {
     List<ResolvedArtifactReport> getResolvedArtifacts() {
         List<ResolvedArtifactReport> reports = []
 
-        for (ArtifactResult ar in artifactResults) {
+        for(ArtifactResult ar in artifactResults) {
             final artifact = ar.artifact
             if (artifact?.file) {
                 final grailsDependency = new Dependency(artifact.groupId, artifact.artifactId, artifact.version)

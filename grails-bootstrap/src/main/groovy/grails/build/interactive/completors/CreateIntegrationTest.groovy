@@ -18,9 +18,10 @@ package grails.build.interactive.completors
 import org.codehaus.groovy.grails.cli.interactive.completors.ClassNameCompletor
 
  /**
- * A completor for the create-integration-test command.
+ * A completor for the create-integration-test command
  */
-class CreateIntegrationTest extends ClassNameCompletor {
+class CreateIntegrationTest extends ClassNameCompletor{
     @Override
     String getCommandName() { "create-integration-test" }
+
 }

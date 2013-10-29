@@ -128,7 +128,7 @@ public class SimpleGrailsControllerTests extends TestCase {
 
     @SuppressWarnings("rawtypes")
     private ModelAndView execute(String uri,String controllerName, String actionName, Properties parameters, String requestMethod) throws Exception {
-        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest((GrailsWebApplicationContext)appCtx);
+        GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest((GrailsWebApplicationContext)this.appCtx);
         webRequest.setControllerName(controllerName);
         webRequest.setActionName(actionName);
         MockHttpServletRequest request = (MockHttpServletRequest)webRequest.getCurrentRequest();

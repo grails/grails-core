@@ -36,14 +36,14 @@ class JsonCollectionRenderer extends JsonRenderer implements ContainerRenderer {
         this.componentType = componentType
     }
 
-    JsonCollectionRenderer(Class targetType, MimeType... mimeTypes) {
-        super(targetType, mimeTypes)
+    public JsonCollectionRenderer(Class targetType, MimeType... mimeTypes) {
+        super(targetType, mimeTypes);
     }
-
+    
     @Override
     protected void renderJson(JSON converter, RenderContext context) {
-        converter.setExcludes(componentType, excludes == null ? context.excludes : excludes)
-        converter.setIncludes(componentType, includes == null ? context.includes : includes)
+        converter.setExcludes(componentType, excludes != null ? excludes : context.excludes)
+        converter.setIncludes(componentType, includes != null ? includes : context.includes)
         converter.render(context.getWriter())
     }
 }

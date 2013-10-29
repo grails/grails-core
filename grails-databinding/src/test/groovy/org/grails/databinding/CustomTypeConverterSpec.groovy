@@ -68,7 +68,7 @@ class Address {
 class StructuredAddressBindingEditor implements StructuredBindingEditor<Address> {
 
     @Override
-    Address getPropertyValue(obj, String propertyName, DataBindingSource source) {
+    Address getPropertyValue(Object obj, String propertyName, DataBindingSource source) {
         def address = new Address()
 
         address.state = source[propertyName + '_someState']

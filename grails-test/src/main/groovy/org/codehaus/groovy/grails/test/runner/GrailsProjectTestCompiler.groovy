@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.test.runner
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
-
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.test.GrailsTestType
@@ -65,10 +64,10 @@ class GrailsProjectTestCompiler extends GrailsProjectCompiler{
         try {
             def classpathId = "grails.test.classpath"
             def compilerName = 'groovyc'
-            if (type.name == 'unit') {
+            if(type.name == 'unit') {
                 compilerName = 'testc'
             }
-            else if (type.name == 'integration') {
+            else if(type.name == 'integration') {
                 compilerName = 'itestc'
             }
 
@@ -77,6 +76,7 @@ class GrailsProjectTestCompiler extends GrailsProjectCompiler{
                 javac(classpathref: classpathId, debug: "yes")
                 src(path: source)
             }
+
         }
         catch (e) {
             CONSOLE.error "Compilation error compiling [$type.name] tests: ${e.cause ? e.cause.message : e.message}", e.cause ? e.cause : e

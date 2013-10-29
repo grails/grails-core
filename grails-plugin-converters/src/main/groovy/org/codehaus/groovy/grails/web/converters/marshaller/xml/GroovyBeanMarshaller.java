@@ -54,13 +54,13 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<XML> 
             for (PropertyDescriptor property : BeanUtils.getPropertyDescriptors(o.getClass())) {
                 String name = property.getName();
 
-                if (!shouldInclude(includeExcludeSupport,includes,excludes,o, name)) continue;
+                if(!shouldInclude(includeExcludeSupport,includes,excludes,o, name)) continue;
 
-                if (isEntity && (name.equals(GrailsDomainClassProperty.ATTACHED) || name.equals(GrailsDomainClassProperty.ERRORS))) continue;
+                if(isEntity && (name.equals(GrailsDomainClassProperty.ATTACHED) || name.equals(GrailsDomainClassProperty.ERRORS))) continue;
                 Method readMethod = property.getReadMethod();
                 if (readMethod != null && !(name.equals("metaClass"))&& !(name.equals("class"))) {
-                    if (readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
-                    if (readMethod.getAnnotation(ControllerMethod.class) != null) continue;
+                    if(readMethod.getAnnotation(PersistenceMethod.class) != null) continue;
+                    if(readMethod.getAnnotation(ControllerMethod.class) != null) continue;
                     Object value = readMethod.invoke(o, (Object[]) null);
                     xml.startNode(name);
                     xml.convertAnother(value);
@@ -71,8 +71,8 @@ public class GroovyBeanMarshaller extends IncludeExcludePropertyMarshaller<XML> 
                 int modifiers = field.getModifiers();
                 if (Modifier.isPublic(modifiers) && !(Modifier.isStatic(modifiers) || Modifier.isTransient(modifiers))) {
                     String name = field.getName();
-                    if (!shouldInclude(includeExcludeSupport,includes,excludes,o, name)) continue;
-                    if (isEntity && (name.equals(GrailsDomainClassProperty.ATTACHED) || name.equals(GrailsDomainClassProperty.ERRORS))) continue;
+                    if(!shouldInclude(includeExcludeSupport,includes,excludes,o, name)) continue;
+                    if(isEntity && (name.equals(GrailsDomainClassProperty.ATTACHED) || name.equals(GrailsDomainClassProperty.ERRORS))) continue;
                     xml.startNode(name);
                     xml.convertAnother(field.get(o));
                     xml.end();

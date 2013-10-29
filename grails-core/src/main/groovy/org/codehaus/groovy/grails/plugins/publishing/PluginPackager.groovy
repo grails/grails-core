@@ -202,7 +202,7 @@ class PluginPackager {
     }
 
     private boolean matchesExcludes(excludes, path) {
-        for (String exclude : excludes) {
+        for(String exclude : excludes) {
             if (antPathMatcher.match(exclude, path)) {
                 return true
             }

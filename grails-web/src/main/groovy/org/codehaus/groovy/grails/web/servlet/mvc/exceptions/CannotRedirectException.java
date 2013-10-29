@@ -22,7 +22,7 @@ package org.codehaus.groovy.grails.web.servlet.mvc.exceptions;
  * @since 1.2
  */
 public class CannotRedirectException extends ControllerExecutionException {
-    private static final long serialVersionUID = 1;
+    private static final long serialVersionUID = 1L;
 
     public CannotRedirectException() {}
 

@@ -25,9 +25,9 @@ import org.grails.databinding.converters.FormattedValueConverter
 
 class FormattedStringValueConverter implements FormattedValueConverter {
     def convert(value, String format) {
-        if ('UPPERCASE' == format) {
+        if('UPPERCASE' == format) {
             value = value.toUpperCase()
-        } else if ('LOWERCASE' == format) {
+        } else if('LOWERCASE' == format) {
             value = value.toLowerCase()
         }
         value

@@ -60,7 +60,7 @@ public class GrailsLazyProxyPrintWriter extends GrailsPrintWriter {
 
     public void updateDestination(DestinationFactory f) {
         setDestinationActivated(false);
-        factory = f;
+        this.factory = f;
     }
 
     @Override
@@ -70,7 +70,7 @@ public class GrailsLazyProxyPrintWriter extends GrailsPrintWriter {
 
     public void setDestinationActivated(boolean destinationActivated) {
         this.destinationActivated = destinationActivated;
-        if (!destinationActivated) {
+        if (!this.destinationActivated) {
             super.setOut(null);
         }
     }

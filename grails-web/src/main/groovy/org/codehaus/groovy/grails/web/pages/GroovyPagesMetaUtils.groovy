@@ -24,7 +24,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 
 @CompileStatic
 class GroovyPagesMetaUtils {
-    private final static Object[] EMPTY_OBJECT_ARRAY = []
+    private final static Object[] EMPTY_OBJECT_ARRAY = new Object[0]
 
     static void registerMethodMissingForGSP(Class gspClass, TagLibraryLookup gspTagLibraryLookup) {
         registerMethodMissingForGSP(GrailsMetaClassUtils.getExpandoMetaClass(gspClass), gspTagLibraryLookup)
@@ -35,19 +35,19 @@ class GroovyPagesMetaUtils {
 
         GroovyObject mc = (GroovyObject)emc
         synchronized(emc) {
-            mc.setProperty("methodMissing", { String name, args ->
+            mc.setProperty("methodMissing", { String name, Object args ->
                 methodMissingForTagLib(emc, emc.getTheClass(), gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, name, args, addMethodsToMetaClass)
             })
         }
         registerMethodMissingWorkaroundsForDefaultNamespace(emc, gspTagLibraryLookup)
     }
 
-    private static Object[] makeObjectArray(args) {
+    private static Object[] makeObjectArray(Object args) {
         args instanceof Object[] ? (Object[])args : [args] as Object[]
     }
 
     @CompileStatic(TypeCheckingMode.SKIP) // workaround for GROOVY-6147 bug
-    static methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, argsParam, boolean addMethodsToMetaClass) {
+    static Object methodMissingForTagLib(MetaClass mc, Class type, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, Object argsParam, boolean addMethodsToMetaClass) {
         Object[] args = makeObjectArray(argsParam)
         final GroovyObject tagBean = gspTagLibraryLookup.lookupTagLibrary(namespace, name)
         if (tagBean != null) {
@@ -73,7 +73,7 @@ class GroovyPagesMetaUtils {
 
     static addTagLibMethodToMetaClass(final GroovyObject tagBean, final MetaMethod method, final MetaClass mc) {
         Class[] paramTypes = method.nativeParameterTypes
-        Closure methodMissingClosure
+        Closure methodMissingClosure = null
         switch(paramTypes.length) {
             case 0:
                 methodMissingClosure = {->
@@ -90,7 +90,7 @@ class GroovyPagesMetaUtils {
                         method.invoke(tagBean, attrs)
                     }
                 } else {
-                    methodMissingClosure = { attrs->
+                    methodMissingClosure = { Object attrs->
                         method.invoke(tagBean, attrs)
                     }
                 }
@@ -110,7 +110,7 @@ class GroovyPagesMetaUtils {
                             method.invoke(tagBean, attrs, body)
                         }
                     } else {
-                        methodMissingClosure = { Map attrs, body ->
+                        methodMissingClosure = { Map attrs, Object body ->
                             method.invoke(tagBean, attrs, body)
                         }
                     }

@@ -59,7 +59,7 @@ class IvyDependencyReport implements DependencyReport {
 
     List<ResolvedArtifactReport> getResolvedArtifacts() {
         List<ResolvedArtifactReport> reports = []
-        for (ArtifactDownloadReport adr in artifactDownloadReports) {
+        for(ArtifactDownloadReport adr in artifactDownloadReports) {
             final id = adr.artifact.id.moduleRevisionId
             final file = adr.localFile
 

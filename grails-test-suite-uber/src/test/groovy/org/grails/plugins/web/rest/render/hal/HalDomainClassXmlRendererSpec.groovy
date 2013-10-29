@@ -1,9 +1,9 @@
 package org.grails.plugins.web.rest.render.hal
 
+import grails.rest.render.hal.HalJsonRenderer
 import grails.rest.render.hal.HalXmlRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
-
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationHolder
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -19,7 +19,6 @@ import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.util.WebUtils
-
 import spock.lang.Specification
 
 /**
@@ -59,6 +58,8 @@ class HalDomainClassXmlRendererSpec extends Specification {
         then:"The resulting HAL is correct"
             response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/books/1" hreflang="en"><link rel="The Publisher" href="/publisher" hreflang="en" /><link rel="author" href="http://localhost/authors/2" hreflang="en" /><title>The Stand</title><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/2" hreflang="en"><name>Stephen King</name></resource><resource href="http://localhost/authors/3" hreflang="en"><name>King Stephen</name></resource></resource>'
             response.contentType == GrailsWebUtil.getContentType(HalXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+
+
     }
 
     void "Test that the HAL renderer renders regular linkable groovy objects with appropriate links"() {
@@ -78,6 +79,8 @@ class HalDomainClassXmlRendererSpec extends Specification {
         then:"The resulting HAL is correct"
             response.contentType == GrailsWebUtil.getContentType(HalXmlRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
             response.contentAsString == '<?xml version="1.0" encoding="UTF-8"?><resource href="http://localhost/product/Macbook" hreflang="en"><link rel="company" href="http://apple.com" hreflang="en" title="Made by Apple" /><category><name>laptop</name></category><name>MacBook</name></resource>'
+
+
     }
 
     void "Test that the HAL renderer renders a list of domain objects with the appropriate links"() {
@@ -117,20 +120,20 @@ class HalDomainClassXmlRendererSpec extends Specification {
         renderer
     }
 
+
+
     MappingContext getMappingContext() {
         final context = new KeyValueMappingContext("")
         context.addPersistentEntity(Book)
         context.addPersistentEntity(Author)
         return context
     }
-
     LinkGenerator getLinkGenerator(Closure mappings) {
         def generator = new DefaultLinkGenerator("http://localhost", null)
         generator.grailsUrlConverter = new CamelCaseUrlConverter()
         generator.urlMappingsHolder = getUrlMappingsHolder mappings
-        return generator
+        return generator;
     }
-
     UrlMappingsHolder getUrlMappingsHolder(Closure mappings) {
         def evaluator = new DefaultUrlMappingEvaluator(new MockServletContext())
         def allMappings = evaluator.evaluateMappings mappings

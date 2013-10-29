@@ -1,16 +1,14 @@
 package org.codehaus.groovy.grails.web.pages.ext.jsp
 
-import grails.util.GrailsWebUtil
-
-import javax.servlet.jsp.JspException
-import javax.servlet.jsp.JspWriter
-import javax.servlet.jsp.tagext.SimpleTagSupport
-
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.pages.GroovyPagesServlet
 import org.springframework.mock.web.MockServletContext
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import javax.servlet.jsp.tagext.SimpleTagSupport
+import javax.servlet.jsp.JspException
+import grails.util.GrailsWebUtil
 import org.springframework.web.context.request.RequestContextHolder
+import javax.servlet.jsp.JspWriter
 
 /**
  * @author Graeme Rocher
@@ -60,7 +58,7 @@ class SimpleTagTests extends GroovyTestCase {
 class ExtendsSimpleTagSupport extends SimpleTagSupport {
     @Override
     void doTag() throws JspException, IOException {
-        getJspContext().getOut().println("extendsSimpleTagSupport:output")
+        getJspContext().getOut().println("extendsSimpleTagSupport:output");
     }
 }
 
@@ -68,7 +66,7 @@ class BodySimpleTagSupport extends SimpleTagSupport {
     @Override
     void doTag() throws JspException, IOException {
         JspWriter out = getJspContext().getOut()
-        out.print("bodySimpleTagSupport:")
+        out.print("bodySimpleTagSupport:");
         super.getJspBody().invoke(out)
     }
 }

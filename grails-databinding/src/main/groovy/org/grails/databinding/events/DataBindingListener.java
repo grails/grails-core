@@ -33,7 +33,7 @@ public interface DataBindingListener {
 
     /**
      * Called when data binding is about to start.
-     *
+     * 
      * @param target The object data binding is being imposed upon
      * @param errors the Spring Errors instance (a org.springframework.validation.BindingResult)
      * @return true if data binding should continue
@@ -62,7 +62,7 @@ public interface DataBindingListener {
 
     /**
      * Called after data binding has finished.
-     *
+     *  
      * @param target The object data binding is being imposed upon
      * @param errors the Spring Errors instance (a org.springframework.validation.BindingResult)
      */

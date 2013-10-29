@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.resolve.maven.aether.config
 
 import grails.build.logging.GrailsConsole
-import grails.util.Environment
+import groovy.transform.CompileDynamic
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.sonatype.aether.graph.Dependency
 import org.sonatype.aether.util.artifact.DefaultArtifact
 import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
+import grails.util.Environment
 
 /**
  * @author Graeme Rocher
@@ -170,6 +171,8 @@ class DependenciesConfiguration {
             return null
         }
 
+
+
         if (isOnlyStrings(argsList)) {
             invokeForString(name, argsList)
         }
@@ -189,7 +192,7 @@ class DependenciesConfiguration {
      */
     def environments(Closure callable) {
         final environmentCallable = Environment.getEnvironmentSpecificBlock(callable)
-        if (environmentCallable) {
+        if(environmentCallable) {
             environmentCallable.setDelegate(this)
             environmentCallable.call()
         }
@@ -197,13 +200,13 @@ class DependenciesConfiguration {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     void invokeForString(String scope, List<Object> objects, Closure configurer = null) {
-        for (o in objects) {
+        for(o in objects) {
             "$scope"(o.toString(), configurer)
         }
     }
 
     private boolean isOnlyStrings(List<Object> args) {
-        for (arg in args) {
+        for (Object arg in args) {
             if (!(arg instanceof CharSequence)) {
                 return false
             }
@@ -218,16 +221,22 @@ class DependenciesConfiguration {
         return isOnlyStrings(args[0..-2]) && args[-1] instanceof Closure
     }
 
+
     protected Map extractDependencyProperties(String pattern) {
         def matcher = DEPENDENCY_PATTERN.matcher(pattern)
-        if (!matcher.matches()) {
+        if (matcher.matches()) {
+
+            def properties = [:]
+            properties.name = matcher.group(2)
+            properties.group = matcher.group(1) ?: getDefaultGroup()
+            properties.version = matcher.group(3)
+            properties
+        }
+        else {
             throw new IllegalArgumentException( "Bad artifact coordinates " + pattern
                 + ", expected format is <groupId>:<artifactId>[:<extension>[:<classifier>]]:<version>" )
-        }
 
-        [name: matcher.group(2),
-         group: matcher.group(1) ?: getDefaultGroup(),
-         version: matcher.group(3)]
+        }
     }
 
     protected String getDefaultGroup() { "" }

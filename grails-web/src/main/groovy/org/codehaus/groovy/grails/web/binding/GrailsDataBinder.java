@@ -875,7 +875,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
                 target = bean.getPropertyValue(nestedProp);
                 path = StringUtils.substringAfterLast(path, ".");
             }
-            if (target != null) {
+            if(target != null) {
                 type = getReferencedTypeForCollection(path, target);
             }
         }
@@ -929,9 +929,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             }
             else if (GrailsDomainConfigurationUtil.isBasicType(associatedType)) {
                 Object[] values = null;
-                if (isArray) {
+                if(isArray) {
                     values = (Object[])v;
-                } else if (v instanceof String) {
+                } else if(v instanceof String) {
                     values = new String[]{(String)v};
                 }
 

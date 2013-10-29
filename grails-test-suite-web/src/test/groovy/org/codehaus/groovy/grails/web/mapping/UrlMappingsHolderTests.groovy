@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
-import org.springframework.core.io.ByteArrayResource
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import org.springframework.core.io.*
+import org.codehaus.groovy.grails.web.servlet.mvc.*
 
 class UrlMappingsHolderTests extends AbstractGrailsControllerTests {
 

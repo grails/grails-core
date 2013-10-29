@@ -19,9 +19,6 @@ import grails.converters.XML
 import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-
-import javax.annotation.PostConstruct
-
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
@@ -33,8 +30,10 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
 
+import javax.annotation.PostConstruct
+
 /**
- * An XML renderer that allows including / excluding properties.
+ * An XML renderer that allows including / excluding properties
  *
  * @author Graeme Rocher
  * @since 2.3
@@ -75,24 +74,24 @@ class XmlRenderer<T> extends DefaultXmlRenderer<T> {
         if (domain) {
             marshaller = new DeepDomainClassMarshaller(false, proxyHandler, grailsApplication) {
                 @Override
-                protected boolean includesProperty(o, String property) {
+                protected boolean includesProperty(Object o, String property) {
                     return includes == null || includes.contains(property)
                 }
 
                 @Override
-                protected boolean excludesProperty(o, String property) {
+                protected boolean excludesProperty(Object o, String property) {
                     return excludes.contains(property)
                 }
             }
         } else {
             marshaller = new GroovyBeanMarshaller() {
                 @Override
-                protected boolean includesProperty(o, String property) {
+                protected boolean includesProperty(Object o, String property) {
                     return includes == null || includes.contains(property)
                 }
 
                 @Override
-                protected boolean excludesProperty(o, String property) {
+                protected boolean excludesProperty(Object o, String property) {
                     return excludes.contains(property)
                 }
             }

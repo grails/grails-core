@@ -12,8 +12,8 @@ class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
 
     void setUp() {
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
-        parentClass = new DefaultGrailsDomainClass(ParentClass)
-        childClass = new DefaultGrailsDomainClass(ChildClass)
+        parentClass = new DefaultGrailsDomainClass(ParentClass.class)
+        childClass = new DefaultGrailsDomainClass(ChildClass.class)
 
         prop1Parent = parentClass.getPropertyByName("prop1")
         prop1Child = childClass.getPropertyByName("prop1")

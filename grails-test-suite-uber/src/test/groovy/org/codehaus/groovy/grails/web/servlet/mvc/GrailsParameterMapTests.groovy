@@ -245,7 +245,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         theMap = new GrailsParameterMap(mockRequest)
 
         def params = new GrailsParameterMap(mockRequest)
-        for (o in theMap.keySet()) {
+        for (Object o : theMap.keySet()) {
             String name = (String) o
             params.put(name, theMap.get(name))
         }

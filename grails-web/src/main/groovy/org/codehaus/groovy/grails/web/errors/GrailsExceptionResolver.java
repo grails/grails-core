@@ -125,7 +125,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
             else if (info != null && info.getControllerName() != null) {
                 String uri = determineUri(request);
                 if (!response.isCommitted()) {
-                    if (response instanceof GrailsContentBufferingResponse) {
+                    if(response instanceof GrailsContentBufferingResponse) {
                         // clear the output from sitemesh before rendering error page
                         ((GrailsContentBufferingResponse)response).deactivateSitemesh();
                     }

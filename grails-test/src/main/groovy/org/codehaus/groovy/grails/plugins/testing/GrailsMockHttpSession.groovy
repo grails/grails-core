@@ -28,7 +28,7 @@ class GrailsMockHttpSession extends MockHttpSession {
         return mp ? mp.getProperty(this) : getAttribute(name)
     }
 
-    void setProperty(String name, value) {
+    void setProperty(String name, Object value) {
         def mp = getClass().metaClass.getMetaProperty(name)
         if (mp) {
             mp.setProperty(this, value)
@@ -39,10 +39,10 @@ class GrailsMockHttpSession extends MockHttpSession {
     }
 
     Object getAt(String name) {
-        getAttribute(name)
+        return super.getAttribute(name)
     }
 
-    void putAt(String name, value) {
+    void putAt(String name, Object value) {
         super.setAttribute(name, value)
     }
 }

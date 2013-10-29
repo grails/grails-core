@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import java.util.Locale;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -109,11 +110,12 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     @Override
     protected ServletRequestAttributes buildRequestAttributes(HttpServletRequest request, HttpServletResponse response, RequestAttributes previousAttributes) {
-        if (previousAttributes instanceof GrailsWebRequest) {
+        if(previousAttributes instanceof GrailsWebRequest) {
             return null;
         }
-
-        return super.buildRequestAttributes(request, response, previousAttributes);
+        else {
+            return super.buildRequestAttributes(request, response, previousAttributes);
+        }
     }
 
     /**
@@ -290,12 +292,12 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
                 }
                 // Expose current RequestAttributes to current thread.
                 previousRequestAttributes = RequestContextHolder.currentRequestAttributes();
-                if (previousRequestAttributes instanceof GrailsWebRequest) {
+                if(previousRequestAttributes instanceof GrailsWebRequest) {
                     requestAttributes = new GrailsWebRequest(processedRequest, response, ((GrailsWebRequest)previousRequestAttributes).getAttributes());
                 } else {
                     requestAttributes = new GrailsWebRequest(processedRequest, response, getServletContext());
                 }
-                if (previousRequestAttributes != null) {
+                if( previousRequestAttributes != null) {
                     copyParamsFromPreviousRequest(previousRequestAttributes, requestAttributes);
                 }
 
@@ -487,6 +489,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         return r == null ? response : r;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void copyParamsFromPreviousRequest(RequestAttributes previousRequestAttributes, GrailsWebRequest requestAttributes) {
         if (!(previousRequestAttributes instanceof GrailsWebRequest)) {
             return;

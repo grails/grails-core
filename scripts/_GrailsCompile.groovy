@@ -72,12 +72,12 @@ private withCompilationErrorHandling(Closure callable) {
             event("StatusError", ["Compilation error: ${e.cause.message}"])
         }
         else {
-            grailsConsole.error "Fatal error during compilation ${e.getClass().name}: ${e.message}", e
+            grailsConsole.error "Fatal error during compilation ${e.class.name}: ${e.message}", e
         }
         exit 1
     }
     catch(Throwable e) {
-        grailsConsole.error "Fatal error during compilation ${e.getClass().name}: ${e.message}", e
+        grailsConsole.error "Fatal error during compilation ${e.class.name}: ${e.message}", e
         exit 1
     }
 }

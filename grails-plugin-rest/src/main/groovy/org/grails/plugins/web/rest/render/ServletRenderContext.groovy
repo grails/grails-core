@@ -15,12 +15,10 @@
  */
 package org.grails.plugins.web.rest.render
 
-import grails.rest.render.AbstractRenderContext
+import grails.rest.render.RenderContext
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-
 import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
-import org.codehaus.groovy.grails.support.IncludeExcludeSupport
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
@@ -28,6 +26,8 @@ import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.web.servlet.ModelAndView
+import org.codehaus.groovy.grails.support.IncludeExcludeSupport
+import grails.rest.render.AbstractRenderContext
 
 /**
  * RenderContext for the servlet environment
@@ -36,7 +36,7 @@ import org.springframework.web.servlet.ModelAndView
  * @since 2.3
  */
 @CompileStatic
-class ServletRenderContext extends AbstractRenderContext {
+class ServletRenderContext extends AbstractRenderContext{
 
     GrailsWebRequest webRequest
     Map<String, Object> arguments
@@ -49,23 +49,25 @@ class ServletRenderContext extends AbstractRenderContext {
 
     ServletRenderContext(GrailsWebRequest webRequest, Map<String, Object> arguments) {
         this.webRequest = webRequest
-        if (arguments == null) {
+        if(arguments != null) {
+            this.arguments = Collections.unmodifiableMap(arguments)
+            final argsMap = arguments
+            final incObject = argsMap != null ?  argsMap.get(IncludeExcludeSupport.INCLUDES_PROPERTY) : null
+            final excObject = argsMap != null ? argsMap.get(IncludeExcludeSupport.EXCLUDES_PROPERTY) : null
+            List includes = incObject instanceof List ? (List)incObject : null
+            List excludes = excObject instanceof List ? (List)excObject : null
+            if(includes != null) {
+                this.includes = includes
+            }
+            if(excludes != null) {
+                this.excludes = excludes
+            }
+        }
+        else {
             this.arguments = Collections.emptyMap()
         }
-
-        this.arguments = Collections.unmodifiableMap(arguments)
-        final argsMap = arguments
-        final incObject = argsMap != null ?  argsMap.get(IncludeExcludeSupport.INCLUDES_PROPERTY) : null
-        final excObject = argsMap != null ? argsMap.get(IncludeExcludeSupport.EXCLUDES_PROPERTY) : null
-        List includes = incObject instanceof List ? (List)incObject : null
-        List excludes = excObject instanceof List ? (List)excObject : null
-        if (includes != null) {
-            this.includes = includes
-        }
-        if (excludes != null) {
-            this.excludes = excludes
-        }
     }
+
 
     @Override
     String getResourcePath() {
@@ -83,7 +85,9 @@ class ServletRenderContext extends AbstractRenderContext {
     @CompileStatic(TypeCheckingMode.SKIP)
     MimeType getAcceptMimeType() {
         final response = webRequest.response
-        response.hasProperty('mimeType') ? response.mimeType : null
+        if (response.hasProperty('mimeType'))
+            return response.mimeType
+        return null
     }
 
     @Override
@@ -113,14 +117,18 @@ class ServletRenderContext extends AbstractRenderContext {
 
     @Override
     void setViewName(String viewName) {
-        getModelAndView().setViewName(viewName)
+        ModelAndView modelAndView = getModelAndView()
+        modelAndView.setViewName(viewName)
     }
 
     @Override
     String getViewName() {
         final request = webRequest.currentRequest
         ModelAndView modelAndView = (ModelAndView) request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
-        modelAndView ? modelAndView.viewName : null
+        if (modelAndView) {
+            return modelAndView.viewName
+        }
+        return null
     }
 
     protected ModelAndView getModelAndView() {
@@ -152,4 +160,6 @@ class ServletRenderContext extends AbstractRenderContext {
     String getControllerName() {
         webRequest.controllerName
     }
+
+
 }

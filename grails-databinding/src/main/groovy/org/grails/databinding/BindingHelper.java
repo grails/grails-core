@@ -22,7 +22,7 @@ package org.grails.databinding;
  * data binder by applying the {@link BindUsing} annotation to a class.
  *
  * @author Jeff Brown
- * @since 2.3
+ * @since 2.3 
  * @see BindUsing
  */
 public interface BindingHelper<T> {

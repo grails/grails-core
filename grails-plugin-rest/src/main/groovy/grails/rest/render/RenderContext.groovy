@@ -25,7 +25,7 @@ import org.springframework.http.HttpStatus
  * @author Graeme Rocher
  * @since 2.3
  */
-interface RenderContext {
+public interface RenderContext {
 
     /**
      * Which properties should be included in rendering
@@ -39,6 +39,7 @@ interface RenderContext {
      */
     List<String> getExcludes()
 
+
     /**
      * @return Arguments passed by the user
      */
@@ -48,17 +49,14 @@ interface RenderContext {
      * @return The path the the resource
      */
     String getResourcePath()
-
     /**
      * @return Returns the mime type accepted by the client or null if non specified
      */
     MimeType getAcceptMimeType()
-
     /**
      * @return The locale
      */
     Locale getLocale()
-
     /**
      * @return The writer to render to
      */
@@ -67,7 +65,7 @@ interface RenderContext {
     /**
      * @return The HTTP method
      */
-    HttpMethod getHttpMethod()
+    HttpMethod getHttpMethod();
 
     /**
      * @param status The status to set

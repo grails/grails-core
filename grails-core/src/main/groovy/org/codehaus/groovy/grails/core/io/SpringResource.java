@@ -15,21 +15,21 @@
  */
 package org.codehaus.groovy.grails.core.io;
 
+import org.codehaus.groovy.grails.io.support.Resource;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 
-import org.codehaus.groovy.grails.io.support.Resource;
-
 /**
- * Bridges Grails and Spring Resource APIs.
+ * Bridges Grails and Spring Resource APIs
  *
  * @author Graeme Rocher
  * @since 2.2
  */
-public class SpringResource implements Resource {
+public class SpringResource implements Resource{
     org.springframework.core.io.Resource springResource;
 
     public SpringResource(org.springframework.core.io.Resource springResource) {
@@ -83,4 +83,5 @@ public class SpringResource implements Resource {
             return null;
         }
     }
+
 }

@@ -72,10 +72,11 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this.urlData = urlData;
         this.servletContext = servletContext;
         ApplicationContext applicationContext = null;
-        if (servletContext != null) {
+        if(servletContext != null) {
+
             applicationContext = WebUtils.findApplicationContext(servletContext);
         }
-        if (applicationContext != null && applicationContext.containsBean(UrlConverter.BEAN_NAME)) {
+        if(applicationContext != null && applicationContext.containsBean(UrlConverter.BEAN_NAME)) {
             urlConverter = applicationContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
         }
         else {
@@ -129,6 +130,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
         this.httpMethod = httpMethod;
         Assert.notNull(uri, "Argument [uri] cannot be null or blank");
     }
+
 
     @Override
     public String getHttpMethod() {

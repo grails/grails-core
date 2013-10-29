@@ -12,8 +12,8 @@ class GroovyEachParseTests extends ParseTests {
 
         assertEquals(trimAndRemoveCR(makeImports()+"""\n
 class myTest extends GroovyPage {
-String getGroovyPageFileName() { "myTest" }
-Object run() {
+public String getGroovyPageFileName() { "myTest" }
+public Object run() {
 Writer out = getOut()
 Writer expressionOut = getExpressionOut()
 registerSitemeshPreprocessMode()
@@ -34,8 +34,8 @@ printHtmlPart(0)
 
         assertEquals(trimAndRemoveCR(makeImports()+"""\n
 class myTest extends GroovyPage {
-String getGroovyPageFileName() { "myTest" }
-Object run() {
+public String getGroovyPageFileName() { "myTest" }
+public Object run() {
 Writer out = getOut()
 Writer expressionOut = getExpressionOut()
 registerSitemeshPreprocessMode()
@@ -56,8 +56,8 @@ for( t in evaluate('"blah"', 1, it) { return "blah" } ) {
 
         assertEquals(trimAndRemoveCR(makeImports()+"""\n
 class myTest2 extends GroovyPage {
-String getGroovyPageFileName() { "myTest2" }
-Object run() {
+public String getGroovyPageFileName() { "myTest2" }
+public Object run() {
 Writer out = getOut()
 Writer expressionOut = getExpressionOut()
 registerSitemeshPreprocessMode()
@@ -75,4 +75,5 @@ printHtmlPart(0)
 ),trimAndRemoveCR(output.toString()))
         assertEquals("\n", output.htmlParts[0])
     }
+
 }

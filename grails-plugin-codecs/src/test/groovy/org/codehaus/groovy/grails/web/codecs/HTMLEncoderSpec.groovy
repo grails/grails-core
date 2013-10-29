@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.web.codecs
+package org.codehaus.groovy.grails.web.codecs;
 
 import org.codehaus.groovy.grails.plugins.codecs.HTML4Encoder
 import org.codehaus.groovy.grails.plugins.codecs.HTMLEncoder
@@ -27,7 +27,7 @@ import spock.lang.Unroll
 class HTMLEncoderSpec extends Specification {
     def "html encoding should support streaming interface"() {
         given:
-            def encoder = new HTMLEncoder()
+            def encoder=new HTMLEncoder()
         expect:
             encoder instanceof StreamingEncoder
     }

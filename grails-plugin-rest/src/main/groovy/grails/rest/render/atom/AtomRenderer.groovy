@@ -21,9 +21,6 @@ import grails.rest.render.RenderContext
 import grails.rest.render.hal.HalXmlRenderer
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-
-import java.text.SimpleDateFormat
-
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.xml.PrettyPrintXMLStreamWriter
 import org.codehaus.groovy.grails.web.xml.StreamingMarkupWriter
@@ -32,7 +29,10 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.ToOne
 import org.springframework.http.HttpMethod
 
+import java.text.SimpleDateFormat
+
 /**
+ *
  * Renders output in Atom format (http://tools.ietf.org/html/rfc4287)
  *
  * @author Graeme Rocher
@@ -64,7 +64,7 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
         XMLStreamWriter w = prettyPrint ? new PrettyPrintXMLStreamWriter(streamingWriter) : new XMLStreamWriter(streamingWriter)
         XML xml = new XML(w)
 
-        final entity = mappingContext.getPersistentEntity(object.getClass().name)
+        final entity = mappingContext.getPersistentEntity(object.class.name)
         boolean isDomain = entity != null
 
         Set writtenObjects = []
@@ -99,7 +99,7 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
 
 
             for (o in ((Collection) object)) {
-                final currentEntity = mappingContext.getPersistentEntity(o.getClass().name)
+                final currentEntity = mappingContext.getPersistentEntity(o.class.name)
                 if (currentEntity) {
                     writeDomainWithEmbeddedAndLinks(currentEntity, o, context, xml, writtenObjects, false)
                 } else {
@@ -110,9 +110,10 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
         } else {
             throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
         }
+
     }
 
-    String generateIdForURI(String url, Date dateCreated = null, id = null) {
+    String generateIdForURI(String url, Date dateCreated = null, Object id = null) {
         if (url.startsWith('http')) {
             url = url.substring(url.indexOf('//')+2, url.length())
         }
@@ -129,7 +130,7 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
         return "tag:$url"
     }
 
-    protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, object, RenderContext context, XML xml, Set writtenObjects, boolean isFirst = true) {
+    protected void writeDomainWithEmbeddedAndLinks(PersistentEntity entity, Object object, RenderContext context, XML xml, Set writtenObjects, boolean isFirst = true) {
         if (!entity.getPropertyByName('lastUpdated')) {
             throw new IllegalArgumentException("Cannot render object [$object] using Atom. The AtomRenderer can only be used with domain classes that specify 'dateCreated' and 'lastUpdated' properties")
         }
@@ -205,6 +206,7 @@ class AtomRenderer<T> extends HalXmlRenderer<T> {
                         writer.end()
                     }
                 }
+
             }
         }
         writer.end()

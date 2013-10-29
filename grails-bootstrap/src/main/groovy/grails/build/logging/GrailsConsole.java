@@ -117,7 +117,7 @@ public class GrailsConsole {
         @Override
         public String toString() {
             if (size() == 1) return peek() + CATEGORY_SEPARATOR;
-            return DefaultGroovyMethods.join((Iterable<String>)this, CATEGORY_SEPARATOR) + CATEGORY_SEPARATOR;
+            return DefaultGroovyMethods.join(this, CATEGORY_SEPARATOR) + CATEGORY_SEPARATOR;
         }
     };
 
@@ -327,7 +327,7 @@ public class GrailsConsole {
     private void assertAllowInput() {
         assertAllowInput(null);
     }
-
+    
     private void assertAllowInput(String prompt) {
         if (reader == null) {
             String msg = "User input is not enabled, cannot obtain input stream";

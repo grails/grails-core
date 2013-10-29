@@ -32,6 +32,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
@@ -143,7 +144,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
             if (attribute instanceof GrailsControllerClass) {
                 controllerClass = (GrailsControllerClass)attribute;
                 Boolean canUse = (Boolean)grailsWebRequest.getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-                if (canUse == null) {
+                if(canUse == null) {
                     controllerClass = null;
                 } else {
                     grailsWebRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
@@ -439,12 +440,12 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        actionResultTransformers = applicationContext.getBeansOfType(ActionResultTransformer.class).values();
+        this.actionResultTransformers = applicationContext.getBeansOfType(ActionResultTransformer.class).values();
     }
 
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
-        grailsAttributes = new DefaultGrailsApplicationAttributes(servletContext);
+        this.grailsAttributes = new DefaultGrailsApplicationAttributes(servletContext);
     }
 
     public void setGrailsApplication(GrailsApplication application) {

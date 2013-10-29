@@ -18,9 +18,7 @@ package grails.test.mixin
 
 import grails.artefact.Artefact
 import grails.rest.RestfulController
-
 import org.springframework.http.HttpStatus
-
 import spock.lang.Specification
 
 /**
@@ -67,7 +65,10 @@ class RestfulControllerSuperClassSpec extends Specification {
             model.video != null
             response.status == HttpStatus.OK.value()
             response.getHeader('Location') != null
+
     }
+
+
 }
 
 @Artefact("Controller")

@@ -35,6 +35,7 @@ class ServiceAndMockForTests {
     void testIndexWithoutUsingMockForAgain() {
         service.prova()
     }
+
 }
 
 class MyService {

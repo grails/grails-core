@@ -26,7 +26,6 @@ import org.apache.ivy.plugins.repository.TransferEvent
 import org.apache.ivy.plugins.repository.TransferListener
 import org.apache.ivy.util.DefaultMessageLogger
 import org.apache.ivy.util.Message
-import org.codehaus.groovy.grails.plugins.GrailsVersionUtils
 import org.codehaus.groovy.tools.LoaderConfiguration
 
 /**
@@ -64,6 +63,7 @@ class DependencyManagerConfigurer {
 
         return aetherDependencyManager
     }
+
 
 //    @CompileStatic
     static DependencyManager createAetherDependencyManager(BuildSettings buildSettings) {
@@ -140,18 +140,18 @@ class DependencyManagerConfigurer {
 
         setCacheDir(grailsConfig, dependencyManager)
 
-        if (buildSettings.dependenciesExternallyConfigured) {
-            configureDefaultPluginResolver(grailsConfig)
-        }
-        else {
-            def coreDependencies = new GrailsIvyDependencies(grailsVersion, buildSettings.servletVersion,
-                !GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
+        if (!buildSettings.dependenciesExternallyConfigured) {
+            def coreDependencies = new GrailsIvyDependencies(grailsVersion, buildSettings.servletVersion, !org.codehaus.groovy.grails.plugins.GrailsVersionUtils.isVersionGreaterThan("1.5", buildSettings.compilerTargetLevel), buildSettings.isGrailsProject())
             buildSettings.coreDependencies = coreDependencies
             configureGlobalFrameworkDependencies(coreDependencies, grailsConfig)
             configureRepoAuthentication(grailsConfig, dependencyManager)
         }
+        else {
 
-        if (!Environment.isFork()) {
+            configureDefaultPluginResolver(grailsConfig)
+        }
+
+        if(!Environment.isFork()) {
             Closure dependencyConfig = getDependencyConfig(grailsConfig, dependencyManager)
             if (dependencyConfig instanceof Closure) {
                 dependencyManager.parseDependencies dependencyConfig

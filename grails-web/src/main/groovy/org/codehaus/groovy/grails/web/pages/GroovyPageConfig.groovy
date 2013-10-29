@@ -55,7 +55,7 @@ class GroovyPageConfig {
 
         String gspCodecsPrefix = "${pluginInfo ? pluginInfo.name + '.' : ''}${GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS}"
         Map codecSettings = (Map)flatConfig.get(gspCodecsPrefix)
-        String codecInfo
+        String codecInfo = null
         if (!codecSettings) {
             if (codecWriterName==EXPRESSION_CODEC_NAME) {
                 codecInfo = flatConfig.get(GroovyPageParser.CONFIG_PROPERTY_DEFAULT_CODEC)?.toString()

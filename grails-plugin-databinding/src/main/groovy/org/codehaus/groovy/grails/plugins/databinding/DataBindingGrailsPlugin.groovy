@@ -53,13 +53,13 @@ class DataBindingGrailsPlugin {
             convertEmptyStringsToNull = !Boolean.FALSE.equals(databindingConfig?.convertEmptyStringsToNull)
 
             // autoGrowCollectionLimit defaults to 256
-            if (autoGrowCollectionLimitSetting instanceof Integer) {
+            if(autoGrowCollectionLimitSetting instanceof Integer) {
                 autoGrowCollectionLimit = autoGrowCollectionLimitSetting
             }
         }
 
         defaultDateConverter(DateConversionHelper) {
-            if (databindingConfig?.dateFormats instanceof List) {
+            if(databindingConfig?.dateFormats instanceof List) {
                 formatStrings = databindingConfig.dateFormats
             }
         }

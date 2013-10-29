@@ -1,9 +1,8 @@
 package org.codehaus.groovy.grails.plugins.metadata
 
-import grails.util.GrailsUtil
-
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import grails.util.GrailsUtil
 
 /**
  * @author Graeme Rocher

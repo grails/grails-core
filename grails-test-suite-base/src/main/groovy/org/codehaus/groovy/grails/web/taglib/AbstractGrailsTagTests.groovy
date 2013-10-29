@@ -113,7 +113,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
     }
 
     def withTag(String tagName, Writer out, String tagNamespace="g", Closure callable) {
-        def result
+        def result = null
         runTest {
             def webRequest = RequestContextHolder.currentRequestAttributes()
             webRequest.out = out
@@ -149,12 +149,12 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
                         body = new GroovyPage.ConstantClosure(body)
                     }
 
-                    def tagresult
+                    def tagresult = null
 
                     boolean encodeAsPushedToStack=false
                     try {
-                        boolean returnsObject = gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName)
-                        Object codecInfo = gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName)
+                        boolean returnsObject=gspTagLibraryLookup.doesTagReturnObject(tagNamespace, tagName)
+                        Object codecInfo=gspTagLibraryLookup.getEncodeAsForTag(tagNamespace, tagName)
                         if (attrs.containsKey(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME)) {
                             codecInfo = attrs.get(GroovyPage.ENCODE_AS_ATTRIBUTE_NAME)
                         } else if (GroovyPage.DEFAULT_NAMESPACE.equals(tagNamespace) && GroovyPage.APPLY_CODEC_TAG_NAME.equals(tagName)) {
@@ -195,7 +195,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         return result
     }
 
-    private void outputTagResult(Writer taglibWriter, boolean returnsObject, tagresult) {
+    private void outputTagResult(Writer taglibWriter, boolean returnsObject, Object tagresult) {
         if (returnsObject && tagresult != null && !(tagresult instanceof Writer)) {
             taglibWriter.print(tagresult)
         }

@@ -17,7 +17,6 @@ package org.codehaus.groovy.grails.test.support
 
 import grails.util.Holders
 import groovy.transform.CompileStatic
-
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern
 import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.GrailsTestTypeResult
@@ -170,8 +169,8 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
         Collection<File> sourceFiles = []
         def resolveResources = buildBinding['resolveResources']
         def suffixes = testSuffixes + [""] // support the target pattern containing the suffix
-        for (String suffix in suffixes) {
-            for (String extension in testExtensions) {
+        for(String suffix in suffixes) {
+            for(String extension in testExtensions) {
                 def resources = resolveResources("file:${getSourceDir().absolutePath}/${targetPattern.filePattern}${suffix}.${extension}".toString())
 
                 def matches = resources*.file.findAll { file ->
@@ -198,8 +197,8 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      */
 //    @CompileStatic
     protected void eachSourceFile(Closure body) {
-        for (GrailsTestTargetPattern testTargetPattern in testTargetPatterns) {
-            for (File sourceFile in findSourceFiles(testTargetPattern)) {
+        for(GrailsTestTargetPattern testTargetPattern in testTargetPatterns) {
+            for(File sourceFile in findSourceFiles(testTargetPattern)) {
                 body.call(testTargetPattern, sourceFile)
             }
         }
@@ -268,6 +267,8 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
         if (buildBinding.variables.containsKey("appCtx")) {
             return buildBinding.getProperty("appCtx")
         }
-        return Holders.applicationContext
+        else {
+            return Holders.applicationContext
+        }
     }
 }

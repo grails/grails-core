@@ -238,18 +238,21 @@ public class GrailsConventionGroovyPageLocator extends DefaultGroovyPageLocator 
     }
 
     protected String lookupRequestFormat() {
-        if (mimeTypeResolver == null) {
-            GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-            if (webRequest != null) {
-                HttpServletRequest request = webRequest.getCurrentRequest();
-                Object format = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT);
-                return format == null ? null : format.toString();
+        if(mimeTypeResolver != null) {
+            MimeType mimeType = mimeTypeResolver.resolveResponseMimeType();
+
+            if(mimeType != null) {
+                return mimeType.getExtension();
             }
         }
         else {
-            MimeType mimeType = mimeTypeResolver.resolveResponseMimeType();
-            if (mimeType != null) {
-                return mimeType.getExtension();
+            GrailsWebRequest webRequest  =
+                GrailsWebRequest.lookup();
+            if(webRequest != null) {
+
+                HttpServletRequest request = webRequest.getCurrentRequest();
+                Object format = request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMAT);
+                return format == null ? null : format.toString();
             }
         }
         return null;

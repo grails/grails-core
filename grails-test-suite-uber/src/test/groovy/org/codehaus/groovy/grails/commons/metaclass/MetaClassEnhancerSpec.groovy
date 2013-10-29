@@ -1,8 +1,7 @@
 package org.codehaus.groovy.grails.commons.metaclass
 
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-
 import spock.lang.Specification
+import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
 /**
  * Tests for the MetaClassEnhancer API
@@ -61,6 +60,7 @@ class MetaClassEnhancerSpec extends Specification {
         enhancer.addApi(new DogApi())
         enhancer.enhance(Dog.metaClass)
     }
+
 }
 
 class Dog {
@@ -80,11 +80,11 @@ class DogApi {
         target.age = age
     }
 
-    def bark(instance) {
+    def bark(Object instance) {
         "woof"
     }
 
-    def bark(instance, boolean friendly) {
+    def bark(Object instance, boolean friendly) {
         "woof: $friendly"
     }
 

@@ -60,12 +60,12 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector, Annota
               GrailsResourceUtils.GRAILS_APP_DIR + "/controllers/(.+)Controller\\.groovy");
 
     public static final String FIELD_MIME_TYPES_API = "mimeTypesApi";
-    public static final Parameter[] CLOSURE_PARAMETER = { new Parameter(new ClassNode(Closure.class), "callable") };
+    public static final Parameter[] CLOSURE_PARAMETER = new Parameter[]{ new Parameter(new ClassNode(Closure.class), "callable")};
     public static final String WITH_FORMAT_METHOD = "withFormat";
 
     public void performInjection(SourceUnit source, GeneratorContext context, ClassNode classNode) {
         // don't inject if already an @Artefact annotation is applied
-        if (!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
+        if(!classNode.getAnnotations(new ClassNode(Artefact.class)).isEmpty()) return;
 
         performInjectionOnAnnotatedClass(source, context,classNode);
     }
@@ -86,36 +86,32 @@ public class MimeTypesTransformer implements GrailsArtefactClassInjector, Annota
     public String[] getArtefactTypes() {
         return new String[]{ControllerArtefactHandler.TYPE};
     }
-
+    
     protected AnnotationNode getMarkerAnnotation() {
         return new AnnotationNode(new ClassNode(ControllerMethod.class).getPlainNodeReference());
-    }
+    }    
 
     public void performInjectionOnAnnotatedClass(SourceUnit source, GeneratorContext context, ClassNode classNode) {
-        if (classNode instanceof InnerClassNode) return;
-        if (classNode.isEnum()) return;
+        if(classNode instanceof InnerClassNode) return;
+        if(classNode.isEnum()) return;
         FieldNode field = classNode.getField(FIELD_MIME_TYPES_API);
-        if (field != null) {
-            return;
+        if (field == null) {
+            final ClassNode mimeTypesApiClass = new ClassNode(ControllersMimeTypesApi.class);
+            field = new FieldNode(FIELD_MIME_TYPES_API, PRIVATE_STATIC_MODIFIER, mimeTypesApiClass, classNode, new ConstructorCallExpression(mimeTypesApiClass, GrailsArtefactClassInjector.ZERO_ARGS));
+
+            classNode.addField(field);
+
+            final BlockStatement methodBody = new BlockStatement();
+            final ArgumentListExpression args = new ArgumentListExpression();
+            args.addExpression(new VariableExpression("this", classNode))
+                .addExpression(new VariableExpression("callable", new ClassNode(Closure.class)));
+            MethodCallExpression methodCall = new MethodCallExpression(new AttributeExpression(new VariableExpression("this"), new ConstantExpression(FIELD_MIME_TYPES_API)),  WITH_FORMAT_METHOD, args);
+            methodCall.setMethodTarget(mimeTypesApiClass.getMethods(WITH_FORMAT_METHOD).get(0));
+            methodBody.addStatement(new ReturnStatement(methodCall));
+            MethodNode methodNode = new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody);
+            methodNode.addAnnotation(getMarkerAnnotation());
+            classNode.addMethod(methodNode);
+            GrailsASTUtils.addCompileStaticAnnotation(methodNode);
         }
-
-        final ClassNode mimeTypesApiClass = new ClassNode(ControllersMimeTypesApi.class);
-        field = new FieldNode(FIELD_MIME_TYPES_API, PRIVATE_STATIC_MODIFIER, mimeTypesApiClass, classNode,
-                new ConstructorCallExpression(mimeTypesApiClass, GrailsArtefactClassInjector.ZERO_ARGS));
-
-        classNode.addField(field);
-
-        final BlockStatement methodBody = new BlockStatement();
-        final ArgumentListExpression args = new ArgumentListExpression();
-        args.addExpression(new VariableExpression("this", classNode))
-            .addExpression(new VariableExpression("callable", new ClassNode(Closure.class)));
-        MethodCallExpression methodCall = new MethodCallExpression(new AttributeExpression(new VariableExpression("this"),
-                new ConstantExpression(FIELD_MIME_TYPES_API)),  WITH_FORMAT_METHOD, args);
-        methodCall.setMethodTarget(mimeTypesApiClass.getMethods(WITH_FORMAT_METHOD).get(0));
-        methodBody.addStatement(new ReturnStatement(methodCall));
-        MethodNode methodNode = new MethodNode(WITH_FORMAT_METHOD, Modifier.PUBLIC, new ClassNode(Object.class), CLOSURE_PARAMETER, null, methodBody);
-        methodNode.addAnnotation(getMarkerAnnotation());
-        classNode.addMethod(methodNode);
-        GrailsASTUtils.addCompileStaticAnnotation(methodNode);
     }
 }

@@ -12,7 +12,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
 
         def bookMetaClass = new ExpandoMetaClass(bookClass.clazz)
         def authorMetaClass = new ExpandoMetaClass(authorClass.clazz)
-        def errorsProp
+        def errorsProp = null
         def setter = { Object obj -> errorsProp = obj }
 
         bookMetaClass.setErrors = setter
@@ -34,7 +34,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         authorValidator.grailsApplication = ga
         authorClass.validator = authorValidator
 
-        def errors = new BindException(book, book.getClass().name)
+        def errors = new BindException(book, book.class.name)
 
         bookValidator.validate(book, errors, true)
 
@@ -45,7 +45,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         author.metaClass = authorMetaClass
         book.author = author
 
-        errors = new BindException(book, book.getClass().name)
+        errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
 
         // it should validate here because even though the author properties are not set, validation doesn't cascade
@@ -55,14 +55,14 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
 
         book.author.name = "Bar"
         book.author.address = addressClass.newInstance()
-        errors = new BindException(book, book.getClass().name)
+        errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
 
         assert !errors.hasErrors()
 
         book.author.address.location = "UK"
         book.author.address.author = book.author
-        errors = new BindException(book, book.getClass().name)
+        errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
 
         assert !errors.hasErrors()
@@ -72,14 +72,14 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
 
         author.books.add(book2)
 
-        errors = new BindException(author, author.getClass().name)
+        errors = new BindException(author, author.class.name)
         authorValidator.validate(author, errors, true)
         assert errors.hasErrors()
 
         book2.title = "Bar 2"
         book2.author = author
 
-        errors = new BindException(author, author.getClass().name)
+        errors = new BindException(author, author.class.name)
         authorValidator.validate(author, errors, true)
         assert !errors.hasErrors()
 
@@ -102,7 +102,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         publisherValidator.messageSource = createMessageSource()
         publisherValidator.grailsApplication = ga
 
-        errors = new BindException(publisher, publisher.getClass().name)
+        errors = new BindException(publisher, publisher.class.name)
 
         publisherValidator.validate(publisher, errors, true)
         assert !errors.hasErrors()
@@ -111,7 +111,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         publisherAuthor.metaClass = authorMetaClass
         publisher.authors.add(publisherAuthor)
 
-        errors = new BindException(publisher, publisher.getClass().name)
+        errors = new BindException(publisher, publisher.class.name)
 
         publisherValidator.validate(publisher, errors, true)
         assert errors.hasErrors()
@@ -121,7 +121,7 @@ class GrailsDomainClassValidatorTests extends AbstractGrailsMockTests {
         publisherAuthor.address.location = "Portugal"
         publisherAuthor.address.author = publisherAuthor
 
-        errors = new BindException(publisher, publisher.getClass().name)
+        errors = new BindException(publisher, publisher.class.name)
 
         publisherValidator.validate(publisher, errors, true)
         assert !errors.hasErrors()

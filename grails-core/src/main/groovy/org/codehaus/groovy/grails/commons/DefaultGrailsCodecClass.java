@@ -274,7 +274,7 @@ public class DefaultGrailsCodecClass extends AbstractInjectableGrailsClass imple
     }
 
     private static class MethodCallingClosure extends Closure<Object> {
-        private static final long serialVersionUID = 1;
+        private static final long serialVersionUID = 1L;
         private Method method;
 
         public MethodCallingClosure(Object owner, Method method) {

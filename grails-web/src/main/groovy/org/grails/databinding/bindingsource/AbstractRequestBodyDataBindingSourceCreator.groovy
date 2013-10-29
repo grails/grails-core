@@ -34,23 +34,23 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
     }
 
     @Override
-    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, bindingSource) throws DataBindingSourceCreationException {
+    DataBindingSource createDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceCreationException {
         try {
-            if (bindingSource instanceof GrailsParameterMap) {
+            if(bindingSource instanceof GrailsParameterMap) {
                 def req = bindingSource.getRequest()
                 def is = req.getInputStream()
                 return createBindingSource(is)
             }
-            if (bindingSource instanceof HttpServletRequest) {
+            if(bindingSource instanceof HttpServletRequest) {
                 def req = (HttpServletRequest)bindingSource
                 def is = req.getInputStream()
                 return createBindingSource(is)
             }
-            if (bindingSource instanceof InputStream) {
+            if(bindingSource instanceof InputStream) {
                 def is = (InputStream)bindingSource
                 return createBindingSource(is)
             }
-            if (bindingSource instanceof Reader) {
+            if(bindingSource instanceof Reader) {
                 def is = (Reader)bindingSource
                 return createBindingSource(is)
             }
@@ -66,23 +66,23 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
     }
 
     @Override
-    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, bindingSource) throws DataBindingSourceCreationException {
+    CollectionDataBindingSource createCollectionDataBindingSource(MimeType mimeType, Class bindingTargetType, Object bindingSource) throws DataBindingSourceCreationException {
         try {
-            if (bindingSource instanceof GrailsParameterMap) {
+            if(bindingSource instanceof GrailsParameterMap) {
                 def req = bindingSource.getRequest()
                 def is = req.getInputStream()
                 return createCollectionBindingSource(is)
             }
-            if (bindingSource instanceof HttpServletRequest) {
+            if(bindingSource instanceof HttpServletRequest) {
                 def req = (HttpServletRequest)bindingSource
                 def is = req.getInputStream()
                 return createCollectionBindingSource(is)
             }
-            if (bindingSource instanceof InputStream) {
+            if(bindingSource instanceof InputStream) {
                 def is = (InputStream)bindingSource
                 return createCollectionBindingSource(is)
             }
-            if (bindingSource instanceof Reader) {
+            if(bindingSource instanceof Reader) {
                 def is = (Reader)bindingSource
                 return createCollectionBindingSource(is)
             }

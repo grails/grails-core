@@ -16,9 +16,10 @@
 package org.codehaus.groovy.grails.web.mime
 
 import grails.util.Holders
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.springframework.web.context.ContextLoader
 
 /**
  * @author Graeme Rocher
@@ -51,7 +52,7 @@ class MimeType {
     }
 
     MimeType(String name, String extension, Map<String, String> params = [:]) {
-        if (name && name.contains(';')) {
+        if(name && name.contains(';')) {
             List tokenWithArgs = name.split(';').toList()
             name = tokenWithArgs[0]
             final paramsList = tokenWithArgs[1..-1]
@@ -61,6 +62,7 @@ class MimeType {
                     parameters[it[0..i-1].trim()] = it[i+1..-1].trim()
                 }
             }
+
         }
         this.name = name
         this.extension = extension
@@ -87,10 +89,10 @@ class MimeType {
     }
 
     boolean equals(o) {
-        if (is(o)) {
+        if (this.is(o)) {
             return true
         }
-        if (getClass() != o.getClass()) {
+        if (getClass() != o.class) {
             return false
         }
 
@@ -109,7 +111,7 @@ class MimeType {
 
     int hashCode() {
         final result = name.hashCode()
-        result = 31 * result + (version == null ? 0 : version.hashCode())
+        result = 31 * result + (version != null ? version.hashCode() : 0);
         return result
     }
 
@@ -121,7 +123,10 @@ class MimeType {
      * @return An array of MimeTypes
      */
     static MimeType[] getConfiguredMimeTypes() {
-        def ctx = Holders.findApplicationContext() ?: GrailsWebRequest.lookup()?.getApplicationContext()
+        def ctx = Holders.findApplicationContext()
+        if(ctx == null) {
+            ctx = GrailsWebRequest.lookup()?.getApplicationContext()
+        }
         (MimeType[])ctx?.containsBean(MimeType.BEAN_NAME) ? ctx?.getBean(MimeType.BEAN_NAME, MimeType[]) : DEFAULTS
     }
 

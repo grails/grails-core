@@ -46,7 +46,7 @@ class ParamsAwareLocaleChangeInterceptor extends LocaleChangeInterceptor {
     }
 
     @Override
-    boolean preHandle(HttpServletRequest request, HttpServletResponse response, handler) {
+    boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
 
         GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
 

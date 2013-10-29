@@ -16,7 +16,6 @@
 package grails.spring
 
 import groovy.xml.StreamingMarkupBuilder
-
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.commons.spring.BeanConfiguration
 import org.springframework.beans.factory.config.BeanDefinitionHolder
@@ -51,7 +50,7 @@ class DynamicElementReader extends GroovyObjectSupport {
     private String rootNamespace
     ErrorHandler errorHandler = new SimpleSaxErrorHandler(LOG)
     int validationMode = XmlValidationModeDetector.VALIDATION_NONE
-    EntityResolver entityResolver = new DelegatingEntityResolver(DynamicElementReader.getClassLoader())
+    EntityResolver entityResolver = new DelegatingEntityResolver(DynamicElementReader.class.getClassLoader())
     ParserContext parserContext
     NamespaceHandler namespaceHandler
     BeanConfiguration beanConfiguration
@@ -78,7 +77,7 @@ class DynamicElementReader extends GroovyObjectSupport {
     }
 
     @Override
-    Object invokeMethod(String name, args) {
+    Object invokeMethod(String name, Object args) {
         boolean invokeAfterInterceptor = false
         if (firstCall) {
             invokeAfterInterceptor = true

@@ -60,13 +60,13 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
 
     public void setTarget(Writer wrapped) {
         if (wrapped instanceof GrailsPrintWriter) {
-            target = ((GrailsPrintWriter)wrapped);
+            this.target = ((GrailsPrintWriter)wrapped);
         }
         else {
-            target = new GrailsPrintWriter(wrapped);
+            this.target = new GrailsPrintWriter(wrapped);
         }
-        out = target;
-        lock = out == null ? this : out;
+        this.out = this.target;
+        this.lock = this.out != null ? this.out : this;
     }
 
     public boolean isAllowUnwrappingOut() {

@@ -13,7 +13,7 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
 
         def bookMetaClass = new ExpandoMetaClass(bookClass.clazz)
 
-        def errorsProp
+        def errorsProp = null
         def setter = { Object obj -> errorsProp = obj }
 
         bookMetaClass.setErrors = setter
@@ -26,18 +26,18 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
         bookValidator.messageSource = createMessageSource()
         bookClass.validator = bookValidator
 
-        def errors = new BindException(book, book.getClass().name)
+        def errors = new BindException(book, book.class.name)
 
         bookValidator.validate(book, errors, true)
 
         assert !errors.hasErrors()
         book.totalSales = -10
-        errors = new BindException(book, book.getClass().name)
+        errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
         assert errors.hasErrors()
         book.totalSales = 10
 
-        errors = new BindException(book, book.getClass().name)
+        errors = new BindException(book, book.class.name)
         bookValidator.validate(book, errors, true)
 
         assert !errors.hasErrors()
@@ -72,14 +72,14 @@ class ConstraintsBuilderTests extends AbstractGrailsMockTests {
     }
 
     Errors validateInstance(instance, validator) {
-        def errors = new BindException(instance, instance.getClass().name)
+        def errors = new BindException(instance, instance.class.name)
         validator.validate(instance, errors, true)
         return errors
     }
 
     GrailsDomainClassValidator configureValidator(theClass, instance) {
         def metaClass = new ExpandoMetaClass(theClass.clazz)
-        def errorsProp
+        def errorsProp = null
         def setter = { Object obj -> errorsProp = obj }
         metaClass.setErrors = setter
         metaClass.initialize()

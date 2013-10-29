@@ -100,13 +100,14 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
 
         writer.object();
 
-        if (shouldInclude(includeExcludeSupport, includes, excludes, value, "class")) {
+        if(shouldInclude(includeExcludeSupport, includes, excludes, value, "class")) {
             writer.key("class").value(domainClass.getClazz().getName());
         }
 
+
         GrailsDomainClassProperty id = domainClass.getIdentifier();
 
-        if (shouldInclude(includeExcludeSupport, includes, excludes, value, id.getName())) {
+        if(shouldInclude(includeExcludeSupport, includes, excludes, value, id.getName())) {
             Object idValue = extractValue(value, id);
             json.property(GrailsDomainClassProperty.IDENTITY, idValue);
         }
@@ -120,7 +121,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
         GrailsDomainClassProperty[] properties = domainClass.getPersistentProperties();
 
         for (GrailsDomainClassProperty property : properties) {
-            if (!shouldInclude(includeExcludeSupport, includes, excludes, value, property.getName())) continue;
+            if(!shouldInclude(includeExcludeSupport, includes, excludes, value, property.getName())) continue;
 
             writer.key(property.getName());
             if (!property.isAssociation()) {
@@ -224,11 +225,13 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
     }
 
     protected Object extractValue(Object domainObject, GrailsDomainClassProperty property) {
-        if (domainObject instanceof GroovyObject) {
+        if(domainObject instanceof GroovyObject) {
             return ((GroovyObject)domainObject).getProperty(property.getName());
         }
-
-        return ClassPropertyFetcher.forClass(domainObject.getClass()).getPropertyValue(domainObject, property.getName());
+        else {
+            ClassPropertyFetcher propertyFetcher = ClassPropertyFetcher.forClass(domainObject.getClass());
+            return propertyFetcher.getPropertyValue(domainObject, property.getName());
+        }
     }
 
     protected boolean isRenderDomainClassRelations() {

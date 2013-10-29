@@ -17,8 +17,6 @@ package org.codehaus.groovy.grails.plugins.web.api
 
 import groovy.transform.CompileStatic
 
-import java.util.regex.Pattern
-
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -28,6 +26,8 @@ import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+
+import java.util.regex.Pattern
 
 /**
  * Methods added to {@link javax.servlet.http.HttpServletResponse} for response format handling.
@@ -71,6 +71,7 @@ class ResponseMimeTypesApi {
             final userAgents = disableForUserAgentsConfig.join('(?i)|')
             this.disableForUserAgents = Pattern.compile("(${userAgents})")
         }
+
     }
 
     /**
@@ -133,6 +134,7 @@ class ResponseMimeTypesApi {
             } else {
                 result = getMimeTypesInternal(request)[0]
             }
+
         }
         return result
     }
@@ -160,34 +162,33 @@ class ResponseMimeTypesApi {
 
     private MimeType[] getMimeTypesInternal(HttpServletRequest request) {
         MimeType[] result = (MimeType[])request.getAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS)
-        if (result) {
-            return result
-        }
+        if (!result) {
 
-        def userAgent = request.getHeader(HttpHeaders.USER_AGENT)
-        def msie = userAgent && userAgent ==~ /msie(?i)/ ?: false
+            def userAgent = request.getHeader(HttpHeaders.USER_AGENT)
+            def msie = userAgent && userAgent ==~ /msie(?i)/ ?: false
 
-        def parser = new DefaultAcceptHeaderParser(getMimeTypes())
-        String header
+            def parser = new DefaultAcceptHeaderParser(getMimeTypes())
+            String header = null
 
-        boolean disabledForUserAgent = userAgent ? disableForUserAgents.matcher(userAgent).find() : false
-        if (msie) header = "*/*"
-        if (!header && useAcceptHeader && !disabledForUserAgent) header = request.getHeader(HttpHeaders.ACCEPT)
-        result = parser.parse(header)
+            boolean disabledForUserAgent = userAgent ? disableForUserAgents.matcher(userAgent).find() : false
+            if (msie) header = "*/*"
+            if (!header && useAcceptHeader && !disabledForUserAgent) header = request.getHeader(HttpHeaders.ACCEPT)
+            result = parser.parse(header)
 
-        // GRAILS-8341 - If no header the parser would have returned all configured mime types.  Since no format
-        // was specified in the request we look for the 'all' format and return that if found.  If 'all' is
-        // not found the fallback behavior is to return all configured mime types from the parser.
-        if (!header) {
-            for (mime in result) {
-                if (mime.extension == 'all') {
-                    result = [mime] as MimeType[]
-                    break
+            // GRAILS-8341 - If no header the parser would have returned all configured mime types.  Since no format
+            // was specified in the request we look for the 'all' format and return that if found.  If 'all' is
+            // not found the fallback behavior is to return all configured mime types from the parser.
+            if (!header) {
+                for (mime in result) {
+                    if (mime.extension == 'all') {
+                        result = [mime] as MimeType[]
+                        break
+                    }
                 }
             }
-        }
 
-        request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS, result)
+            request.setAttribute(GrailsApplicationAttributes.RESPONSE_FORMATS, result)
+        }
         return result
     }
 }

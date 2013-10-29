@@ -43,8 +43,8 @@ class IntegrationSpec extends Specification {
     @Shared private perSpecTransactionInterceptor
     @Shared private perSpecRequestEnvironmentInterceptor
 
-    private perMethodTransactionInterceptor
-    private perMethodRequestEnvironmentInterceptor
+    private perMethodTransactionInterceptor = null
+    private perMethodRequestEnvironmentInterceptor = null
 
     def setupSpec() {
         if (isStepwiseSpec()) {
@@ -87,7 +87,7 @@ class IntegrationSpec extends Specification {
     private initRequestEnv() {
         def interceptor = new GrailsTestRequestEnvironmentInterceptor(applicationContext)
         def controllerName = ControllerNameExtractor.extractControllerNameFromTestClassName(
-            getClass().name, GrailsSpecTestType.TEST_SUFFIXES as String[])
+            this.class.name, GrailsSpecTestType.TEST_SUFFIXES as String[])
         interceptor.init(controllerName ?: GrailsTestRequestEnvironmentInterceptor.DEFAULT_CONTROLLER_NAME)
         interceptor
     }

@@ -17,24 +17,9 @@ package org.codehaus.groovy.grails.web.converters.marshaller.xml;
 
 import grails.converters.XML;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.support.IncludeExcludeSupport;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
@@ -90,7 +75,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
         BeanWrapper beanWrapper = new BeanWrapperImpl(value);
 
         GrailsDomainClassProperty id = domainClass.getIdentifier();
-        if (shouldInclude(includeExcludeSupport, includes, excludes,value, id.getName())) {
+        if(shouldInclude(includeExcludeSupport, includes, excludes,value, id.getName())) {
             Object idValue = beanWrapper.getPropertyValue(id.getName());
 
             if (idValue != null) xml.attribute("id", String.valueOf(idValue));
@@ -105,7 +90,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
 
         for (GrailsDomainClassProperty property : properties) {
             String propertyName = property.getName();
-            if (!shouldInclude(includeExcludeSupport, includes, excludes, value, property.getName())) continue;
+            if(!shouldInclude(includeExcludeSupport, includes, excludes, value, property.getName())) continue;
 
             xml.startNode(propertyName);
             if (!property.isAssociation()) {
@@ -189,6 +174,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<XML>
     protected boolean shouldInitializeProxies() {
         return true;
     }
+
 
     protected void asShortObject(Object refObj, XML xml, GrailsDomainClassProperty idProperty,
             GrailsDomainClass referencedDomainClass) throws ConverterException {

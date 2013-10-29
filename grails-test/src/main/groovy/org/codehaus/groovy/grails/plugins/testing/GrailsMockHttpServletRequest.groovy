@@ -74,7 +74,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     void setFormat(String format) {
         setAttribute(GrailsApplicationAttributes.CONTENT_FORMAT, format)
     }
-
+    
     @Override
     void setContentType(String newContentType) {
         super.setContentType(newContentType)
@@ -86,7 +86,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      *
      * @param sourceJson The source json
      */
-    void setJson(sourceJson) {
+    void setJson(Object sourceJson) {
         setContentType('application/json')
         setFormat('json')
         if (sourceJson instanceof String) {
@@ -106,7 +106,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      *
      * @param sourceXml
      */
-    void setXml(sourceXml) {
+    void setXml(Object sourceXml) {
         setContentType("text/xml")
         setFormat("xml")
 
@@ -121,11 +121,11 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
     }
 
-    void setXML(sourceXml) {
+    void setXML(Object sourceXml) {
         setXml(sourceXml)
     }
 
-    void setJSON(sourceJson) {
+    void setJSON(Object sourceJson) {
         setJson(sourceJson)
     }
 
@@ -173,7 +173,7 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     /**
      * Map-like setting of request attributes, e.g. request["count"] = 10.
      */
-    void putAt(String key, val) {
+    void putAt(String key, Object val) {
         setAttribute(key, val)
     }
 
@@ -505,6 +505,7 @@ class MockAsyncContext implements AsyncContext {
                 AsyncListener al = listener.listener
                 al.onComplete(listener.event)
             }
+
         } catch (e) {
             for (listener in asyncListeners) {
                 AsyncListener al = listener.listener

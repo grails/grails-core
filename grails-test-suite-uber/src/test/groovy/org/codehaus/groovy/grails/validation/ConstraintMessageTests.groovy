@@ -1,7 +1,8 @@
 package org.codehaus.groovy.grails.validation
 
-import org.springframework.validation.BeanPropertyBindingResult
+import junit.framework.TestCase
 import org.springframework.validation.Errors
+import org.springframework.validation.BeanPropertyBindingResult
 
 class ConstraintMessageTests extends GroovyTestCase {
 
@@ -9,7 +10,7 @@ class ConstraintMessageTests extends GroovyTestCase {
 
     void testMessageCodeOrder() {
         Constraint c = new TestConstraint()
-        c.setOwningClass(getClass())
+        c.setOwningClass(this.class)
         c.setPropertyName("testProperty")
         def errors = new BeanPropertyBindingResult(this, "TestObjectName")
         String[] codes = ['test']
@@ -50,7 +51,7 @@ class ConstraintMessageTests extends GroovyTestCase {
 }
 
 class TestConstraint extends AbstractConstraint {
-    void processValidate(target, propertyValue, Errors errors) {
+    void processValidate(Object target, Object propertyValue, Errors errors) {
         super.rejectValue(target, errors, 'default.message', 'testconstraint', [])
     }
 

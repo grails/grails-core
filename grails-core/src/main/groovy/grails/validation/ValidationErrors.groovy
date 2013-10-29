@@ -25,11 +25,11 @@ import org.springframework.validation.BeanPropertyBindingResult
  */
 class ValidationErrors extends BeanPropertyBindingResult {
 
-    ValidationErrors(target) {
+    ValidationErrors(Object target) {
         super(target, target.getClass().name)
     }
 
-    ValidationErrors(target, String objectName) {
+    ValidationErrors(Object target, String objectName) {
         super(target, objectName)
     }
 

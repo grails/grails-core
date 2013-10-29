@@ -16,8 +16,8 @@
 package org.codehaus.groovy.grails.plugins
 
 import grails.util.PluginBuildSettings
-import groovy.util.slurpersupport.GPathResult
 
+import groovy.util.slurpersupport.GPathResult
 import org.codehaus.groovy.grails.io.support.Resource
 
 /**
@@ -105,12 +105,12 @@ class PluginInfo extends GroovyObjectSupport implements GrailsPluginInfo {
         additionalMetadata[name] = val
     }
 
-    void propertyMissing(String property, newValue) {
+    void propertyMissing(String property, Object newValue) {
         putAt(property, newValue)
     }
 
     def getAt(String name) {
-        return lookupFromMetadata(name)
+        return  lookupFromMetadata(name)
     }
 
     private lookupFromMetadata(String name) {

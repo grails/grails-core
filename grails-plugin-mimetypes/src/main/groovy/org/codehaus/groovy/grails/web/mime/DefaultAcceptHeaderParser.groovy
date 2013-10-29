@@ -16,9 +16,10 @@
 package org.codehaus.groovy.grails.web.mime
 
 import groovy.transform.CompileStatic
-
+import groovy.transform.TypeCheckingMode
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.commons.GrailsApplication
 
 /**
  * Parsed the HTTP accept header into a a list of MimeType instances in the order of priority.
@@ -114,6 +115,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
         }
         return mimes.sort(new QualityComparator()) as MimeType[]
     }
+
 
     protected void createMimeTypeAndAddToList(String name, MimeType[] mimeConfig, List<MimeType> mimes, Map<String,String> params = null) {
         def mime = params ? new MimeType(name, params) : new MimeType(name)

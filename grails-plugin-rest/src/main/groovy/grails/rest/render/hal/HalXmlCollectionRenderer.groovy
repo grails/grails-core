@@ -16,16 +16,16 @@
 package grails.rest.render.hal
 
 import grails.rest.render.ContainerRenderer
-
 import org.codehaus.groovy.grails.web.mime.MimeType
 
 /**
- * A HAL XML renderer for a collection of objects.
+ *
+ * A HAL XML renderer for a collection of objects
  *
  * @author Graeme Rocher
  * @since 2.3
  */
-class HalXmlCollectionRenderer extends HalXmlRenderer implements ContainerRenderer {
+class HalXmlCollectionRenderer extends HalXmlRenderer implements ContainerRenderer{
 
     final Class componentType
 
@@ -38,4 +38,5 @@ class HalXmlCollectionRenderer extends HalXmlRenderer implements ContainerRender
         super(Collection, mimeTypes)
         this.componentType = componentType
     }
+
 }

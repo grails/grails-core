@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.Environment
-import groovy.transform.CompileStatic
+import groovy.transform.CompileStatic;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -57,7 +57,7 @@ class NamespacedTagDispatcher extends GroovyObjectSupport {
         }
     }
 
-    def methodMissing(String name, args) {
+    def methodMissing(String name, Object args) {
         GroovyPagesMetaUtils.methodMissingForTagLib(getMetaClass(), type, lookup, namespace, name, args, !developmentMode)
     }
 }

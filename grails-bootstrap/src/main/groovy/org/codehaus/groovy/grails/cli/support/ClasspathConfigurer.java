@@ -191,6 +191,7 @@ public class ClasspathConfigurer {
                 continue;
             }
 
+
             if (file.getName().contains("xercesImpl")) {
                 // workaround for GRAILS-9708
                 System.setProperty("javax.xml.parsers.DocumentBuilderFactory","com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");

@@ -41,6 +41,7 @@ target ('default': "Creates a new controller") {
 
         createUnitTest(name: name, suffix: type, superClass: "ControllerUnitTestCase")
     }
+
 }
 
 USAGE = """

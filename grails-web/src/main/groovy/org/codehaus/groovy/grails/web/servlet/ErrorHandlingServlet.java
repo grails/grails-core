@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import grails.util.GrailsWebUtil;
-import grails.web.UrlConverter;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -26,6 +25,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import grails.web.UrlConverter;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.errors.GrailsWrappedRuntimeException;
@@ -41,6 +42,13 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collections;
 
 /**
  * A servlet for handling errors.
@@ -140,9 +148,10 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                 GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo( webRequest, urlMappingInfo,
                                                                                             webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
                                                                                             webRequest.getAttributes().getGrailsApplication());
-                if (controller != null) {
+                if(controller != null) {
                     WebUtils.forwardRequestForUrlMappingInfo(request, response, urlMappingInfo, Collections.EMPTY_MAP);
                 }
+
             }
             else {
                 ViewResolver viewResolver = WebUtils.lookupViewResolver(getServletContext());
@@ -151,6 +160,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
                     try {
                         if (!response.isCommitted()) {
                             response.setContentType("text/html;charset="+defaultEncoding);
+
                         }
                         v = WebUtils.resolveView(request, urlMappingInfo, viewName, viewResolver);
                         v.render(Collections.EMPTY_MAP, request, response);
@@ -168,6 +178,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             }
         }
     }
+
 
     private void renderDefaultResponse(HttpServletResponse response, int statusCode) throws IOException {
         if (statusCode == 404) {

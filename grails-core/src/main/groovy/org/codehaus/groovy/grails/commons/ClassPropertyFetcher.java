@@ -231,6 +231,7 @@ public class ClassPropertyFetcher {
         });
     }
 
+
     public Object getPropertyValue(String name, boolean onlyInstanceProperties) {
         PropertyFetcher fetcher = resolveFetcher(name, onlyInstanceProperties);
         return getPropertyValueWithFetcher(name, fetcher);

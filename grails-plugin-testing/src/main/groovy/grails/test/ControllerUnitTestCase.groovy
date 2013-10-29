@@ -15,8 +15,8 @@
  */
 package grails.test
 
-import grails.util.GrailsNameUtils
 import groovy.xml.StreamingMarkupBuilder
+import grails.util.GrailsNameUtils
 
 /**
  * Support class for writing unit tests for controllers. Its main job
@@ -109,7 +109,7 @@ class ControllerUnitTestCase extends MvcUnitTestCase {
         mockRequest.content = out.toByteArray()
     }
 
-    protected newInstance() {
+    protected Object newInstance() {
         def instance = super.newInstance()
         webRequest.controllerName = GrailsNameUtils.getLogicalPropertyName(
                 instance.getClass().name, "Controller")

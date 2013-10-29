@@ -1,6 +1,9 @@
-package org.codehaus.groovy.grails.reload
+package org.codehaus.groovy.grails.reload;
 
-import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
+ import org.codehaus.groovy.grails.web.servlet.mvc.*
+ import org.codehaus.groovy.grails.commons.*
+ import org.apache.commons.logging.*
+ import org.codehaus.groovy.grails.web.taglib.*
 
 /**
  * Tests for auto-reloading of tag libraries

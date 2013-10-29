@@ -77,12 +77,12 @@ class ErrorsViewStackTracePrinter extends DefaultErrorsPrinter {
     }
 
     @Override
-    protected String formatCodeSnippetLine(int currentLineNumber, currentLine) {
+    protected String formatCodeSnippetLine(int currentLineNumber, Object currentLine) {
         """<code class="line"><span class="lineNumber">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
     }
 
     @Override
-    protected String formatCodeSnippetErrorLine(int currentLineNumber, currentLine) {
+    protected String formatCodeSnippetErrorLine(int currentLineNumber, Object currentLine) {
         """<code class="line error"><span class="lineNumber">${currentLineNumber}:</span>${currentLine.encodeAsHTML()}</code>"""
     }
 

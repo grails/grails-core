@@ -31,12 +31,12 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Lari Hotari
  */
 public class CacheEntry<T> {
-    protected AtomicReference<T> valueRef = new AtomicReference<T>(null);
+    protected AtomicReference<T> valueRef=new AtomicReference<T>(null);
     protected long createdMillis;
     protected Lock writeLock=new ReentrantLock();
 
     public CacheEntry(T value) {
-        valueRef.set(value);
+        this.valueRef.set(value);
         resetTimestamp();
     }
 

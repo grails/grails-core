@@ -21,7 +21,6 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
-
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
@@ -89,6 +88,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
             }
             renderXml(object, context)
         }
+
     }
 
     /**
@@ -100,7 +100,7 @@ class DefaultXmlRenderer<T> implements Renderer<T> {
     protected void renderXml(T object, RenderContext context) {
         XML converter
 
-        if (namedConfiguration) {
+        if(namedConfiguration) {
             XML.use(namedConfiguration) {
                 converter = object as XML
             }

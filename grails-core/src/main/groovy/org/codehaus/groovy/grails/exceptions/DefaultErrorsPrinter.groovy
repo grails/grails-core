@@ -85,7 +85,7 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
 
                     lineNumbersShown[res.filename] << lineNumber
                     pw.print formatCodeSnippetStart(res, lineNumber)
-                    def input
+                    def input = null
                     try {
                         input = res.inputStream
                         input.withReader { fileIn ->

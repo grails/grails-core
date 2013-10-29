@@ -52,7 +52,7 @@ public class GrailsTestRunNotifier extends RunNotifier {
     @Override
     public void fireTestStarted(Description description) throws StoppedByUserException {
         int progress = ++this.progress;
-        if (progress>total) {
+        if(progress>total) {
             total = progress;
         }
         console.indicateProgress(progress, total);

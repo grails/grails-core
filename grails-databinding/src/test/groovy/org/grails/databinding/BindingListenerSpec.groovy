@@ -91,7 +91,7 @@ class PersonBindingListener2 extends DataBindingListenerAdapter {
         if (value == 'two') {
             return null
         }
-        if (value == 'three') {
+        if(value == 'three') {
             return false
         }
         false

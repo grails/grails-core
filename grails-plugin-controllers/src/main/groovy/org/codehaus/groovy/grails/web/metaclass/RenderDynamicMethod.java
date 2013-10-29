@@ -139,7 +139,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             boolean hasContentType = argMap.containsKey(ARGUMENT_CONTENT_TYPE);
 
             Writer out = null;
-            if (hasContentType) {
+            if(hasContentType) {
                 out = getWriterForConfiguredContentType(response,argMap, hasContentType);
                 webRequest.setOut(out);
             }
@@ -172,7 +172,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 }
             }
             else if (arguments[arguments.length - 1] instanceof CharSequence) {
-                if (out == null)  {
+                if(out == null)  {
                     out = getWriterForConfiguredContentType(response, argMap, hasContentType);
                     webRequest.setOut(out);
                 }
@@ -181,7 +181,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 renderView = renderText(text, out);
             }
             else if (argMap.containsKey(ARGUMENT_TEXT)) {
-                if (out == null)   {
+                if(out == null)   {
                     out = getWriterForConfiguredContentType(response, argMap, hasContentType);
                     webRequest.setOut(out);
                 }
@@ -194,7 +194,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 renderView(webRequest, argMap, target, controller, hasContentType);
             }
             else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
-                if (out == null) {
+                if(out == null) {
                     out = getWriterForConfiguredContentType(response, argMap, hasContentType);
                     webRequest.setOut(out);
                 }
@@ -343,7 +343,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         boolean renderView;
         boolean hasModel = argMap.containsKey(ARGUMENT_MODEL);
         Object modelObject = null;
-        if (hasModel) {
+        if(hasModel) {
             modelObject = argMap.get(ARGUMENT_MODEL);
         }
         String templateName = argMap.get(ARGUMENT_TEMPLATE).toString();
@@ -528,6 +528,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             if (isPromise) return;
         }
+
 
         getWriterForConfiguredContentType(webRequest.getResponse(),argMap,hasContentType);
 

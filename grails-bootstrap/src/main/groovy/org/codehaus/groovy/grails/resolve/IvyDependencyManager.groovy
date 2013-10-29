@@ -20,10 +20,14 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 import groovy.util.slurpersupport.GPathResult
+import org.apache.ivy.core.cache.ArtifactOrigin
+import org.apache.ivy.plugins.repository.Repository
+import org.apache.ivy.plugins.repository.Resource
+import org.apache.ivy.plugins.resolver.RepositoryResolver
+import org.codehaus.groovy.grails.resolve.ivy.IvyExcludeResolver
 
 import java.util.concurrent.ConcurrentLinkedQueue
 
-import org.apache.ivy.core.cache.ArtifactOrigin
 import org.apache.ivy.core.event.EventManager
 import org.apache.ivy.core.module.descriptor.Artifact
 import org.apache.ivy.core.module.descriptor.Configuration
@@ -36,12 +40,8 @@ import org.apache.ivy.core.resolve.ResolveEngine
 import org.apache.ivy.core.resolve.ResolveOptions
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.core.sort.SortEngine
-import org.apache.ivy.plugins.repository.Repository
-import org.apache.ivy.plugins.repository.Resource
 import org.apache.ivy.plugins.repository.TransferListener
-import org.apache.ivy.plugins.resolver.RepositoryResolver
 import org.codehaus.groovy.grails.plugins.VersionComparator
-import org.codehaus.groovy.grails.resolve.ivy.IvyExcludeResolver
 import org.codehaus.groovy.grails.resolve.ivy.IvyGraphNode
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
 
@@ -290,7 +290,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
 
         // return an empty resolve report
-        initializeModuleDescriptor()
+        initializeModuleDescriptor();
         return new ResolveReport(moduleDescriptor)
     }
 
@@ -339,7 +339,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
         }
 
         // return an empty resolve report
-        initializeModuleDescriptor()
+        initializeModuleDescriptor();
         return new ResolveReport(moduleDescriptor)
     }
 
@@ -511,7 +511,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
 
     @Override
     Collection<Dependency> getApplicationDependencies() {
-        return convertToGrailsDependencies(getApplicationDependencyDescriptors())
+        Set<DependencyDescriptor> descriptors = this.getApplicationDependencyDescriptors()
+        return convertToGrailsDependencies(descriptors)
     }
 
     @CompileStatic
@@ -554,7 +555,8 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
     }
 
     void produceReport(String scope) {
-        if (scope) {
+        if(scope) {
+
             final desc = BuildSettings.SCOPE_TO_DESC[scope]
             if (desc) {
                 reportOnScope(scope, desc)

@@ -3,7 +3,7 @@ package org.codehaus.groovy.grails.web.binding
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockMultipartFile
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 
-/**
+ /**
  * Tests Grails data binding capabilities.
  *
  * @author Graeme Rocher
@@ -76,34 +76,34 @@ class Person {
     }
 
     @Override
-    int hashCode() {
-        final int prime = 31
-        int result = 1
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
         result = prime * result
-                + ((birthDate == null) ? 0 : birthDate.hashCode())
-        result = prime * result + ((name == null) ? 0 : name.hashCode())
-        return result
+                + ((birthDate == null) ? 0 : birthDate.hashCode());
+        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        return result;
     }
     @Override
-    boolean equals(obj) {
+    public boolean equals(Object obj) {
         if (this.is(obj))
-            return true
+            return true;
         if (obj == null)
-            return false
+            return false;
         if (!getClass().is(obj.getClass()))
             return false
-        Person other = (Person) obj
+        Person other = (Person) obj;
         if (birthDate == null) {
             if (other.birthDate != null)
-                return false
+                return false;
         } else if (birthDate != other.birthDate)
-            return false
+            return false;
         if (name == null) {
             if (other.name != null)
-                return false
+                return false;
         } else if (name != other.name)
-            return false
-        return true
+            return false;
+        return true;
     }
 }
 @Entity
@@ -115,7 +115,11 @@ class Pet {
 
 @Entity
 class WithEncoding {
+
     EmbedDate eDate
+
+    static constraints = {
+    }
 
     static embedded = ['eDate']
 }
@@ -123,10 +127,16 @@ class EmbedDate {
 
     Date aDate
     byte[] aFile
+
+    static constraints = {
+    }
 }
 @Entity
 class AuthorCommand {
-    List beans = [new AuthorBean()]
+    List beans = []
+    public AuthorCommand() {
+        beans << new AuthorBean()
+    }
 }
 @Entity
 class AuthorBean {
@@ -440,7 +450,7 @@ class AuthorBean {
         def params = c.params
 
         def myBean = ga.getDomainClass("databindingtests.MyBean").newInstance()
-        addValidationMethods(myBean.getClass())
+        addValidationMethods(myBean.class)
 
         myBean.properties = params
 

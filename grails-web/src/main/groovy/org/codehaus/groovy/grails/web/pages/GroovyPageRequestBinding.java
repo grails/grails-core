@@ -110,7 +110,7 @@ public class GroovyPageRequestBinding extends AbstractGroovyPageBinding {
         if (webRequest != null) {
             GroovyPagesTemplateEngine templateEngine=webRequest.getAttributes().getPagesTemplateEngine();
             if (templateEngine != null) {
-                setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
+                this.setCachedDomainsWithoutPackage(templateEngine.getDomainClassMap());
             }
         }
     }

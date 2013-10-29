@@ -53,7 +53,7 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
     protected Writer previousOut = null;
 
     public GrailsPrintWriter(Writer out) {
-        metaClass = InvokerHelper.getMetaClass(getClass());
+        this.metaClass = InvokerHelper.getMetaClass(this.getClass());
         setOut(out);
     }
 
@@ -77,10 +77,10 @@ public class GrailsPrintWriter extends Writer implements GrailsWrappedWriter, En
     }
 
     public void setOut(Writer newOut) {
-        out = unwrapWriter(newOut);
-        lock = out == null ? this : this.out;
-        streamCharBufferTarget = null;
-        previousOut = null;
+        this.out = unwrapWriter(newOut);
+        this.lock = this.out != null ? this.out : this;
+        this.streamCharBufferTarget = null;
+        this.previousOut = null;
     }
 
     protected Writer unwrapWriter(Writer writer) {

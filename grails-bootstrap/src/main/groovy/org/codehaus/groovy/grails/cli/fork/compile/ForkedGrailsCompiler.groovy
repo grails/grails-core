@@ -65,7 +65,7 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor {
     }
 
     @Override
-    protected createInstance(Class projectComponentClass, BuildSettings buildSettings) {
+    protected Object createInstance(Class projectComponentClass, BuildSettings buildSettings) {
         projectComponentClass.newInstance(GrailsPluginUtils.getPluginBuildSettings())
     }
 

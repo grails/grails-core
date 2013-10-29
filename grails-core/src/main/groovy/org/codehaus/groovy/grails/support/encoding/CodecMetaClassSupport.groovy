@@ -29,8 +29,8 @@ import org.codehaus.groovy.runtime.GStringImpl
  */
 class CodecMetaClassSupport {
     static final Object[] EMPTY_ARGS = []
-    static final String ENCODE_AS_PREFIX = "encodeAs"
-    static final String DECODE_PREFIX = "decode"
+    static final String ENCODE_AS_PREFIX="encodeAs"
+    static final String DECODE_PREFIX="decode"
 
     /**
      * Adds "encodeAs*" and "decode*" metamethods for given codecClass
@@ -92,12 +92,12 @@ class CodecMetaClassSupport {
         }
 
         addMetaMethod(encodeMethodName, encoderClosure)
-        if (codecClass.encoder) {
+        if(codecClass.encoder) {
             addAliasMetaMethods(codecClass.encoder.codecIdentifier.codecAliases, encodeMethodNameClosure, encoderClosure)
         }
 
         addMetaMethod(decodeMethodName, decoderClosure)
-        if (codecClass.decoder) {
+        if(codecClass.decoder) {
             addAliasMetaMethods(codecClass.decoder.codecIdentifier.codecAliases, decodeMethodNameClosure, decoderClosure)
         }
     }
@@ -110,6 +110,12 @@ class CodecMetaClassSupport {
     }
 
     protected void addMetaMethod(String methodName, Closure closure) {
-        [String, GStringImpl, StringBuffer, StringBuilder, Object].each { it.getMetaClass()."${methodName}" << closure }
+        [
+            String,
+            GStringImpl,
+            StringBuffer,
+            StringBuilder,
+            Object
+        ].each { it.getMetaClass()."${methodName}" << closure }
     }
 }

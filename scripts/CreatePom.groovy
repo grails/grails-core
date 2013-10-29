@@ -52,6 +52,7 @@ target(default: "Creates a POM for a Grails project") {
         grailsConsole.error "Error occurred creating POM: ${e.message}", e
         exit 1
     }
+
 }
 
 String msg() {

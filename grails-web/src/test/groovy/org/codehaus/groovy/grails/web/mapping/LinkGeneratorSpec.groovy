@@ -18,7 +18,7 @@ class LinkGeneratorSpec extends Specification {
 
     def baseUrl = "http://myserver.com/foo"
     def context = "/bar"
-    def resource
+    def resource = null
     def linkParams = [:]
     def pluginManager
 
@@ -204,7 +204,8 @@ class LinkGeneratorSpec extends Specification {
         then:
             cachedlink == "http://localhost:8081/blah/$resource.dir/$resource.file"
     }
-
+        
+    
     def "caching should ignore request.baseUrl when base is provided for absolute links"() {
 
         given:
@@ -214,20 +215,21 @@ class LinkGeneratorSpec extends Specification {
             def cachingGenerator = getGenerator(true)
 
         when:
-            def cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [:])
+            def cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [:]);
         then:
             cacheKey == "resource[:][]"
 
         when:
-            cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [absolute:true])
+            cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [absolute:true]);
         then:
             cacheKey == "resourcehttp://localhost[absolute:true]"
         when:
-            cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [absolute:true, base: "http://some.other.host"])
+            cacheKey = cachingGenerator.makeKey(CachingLinkGenerator.RESOURCE_PREFIX, [absolute:true, base: "http://some.other.host"]);
         then:
             cacheKey == "resourcehttp://some.other.host[absolute:true, base:http://some.other.host]"
     }
 
+    
     void cleanup() {
         RequestContextHolder.setRequestAttributes(null)
     }
@@ -250,20 +252,20 @@ class LinkGeneratorSpec extends Specification {
     }
 
     protected getLink() {
-        if (resource == null) {
-            getGenerator().link(linkParams)
+        if (resource != null) {
+            getGenerator().resource(resource)
         }
         else {
-            getGenerator().resource(resource)
+            getGenerator().link(linkParams)
         }
     }
 
     protected getCachedLink() {
-        if (resource == null) {
-            getGenerator(true).link(linkParams)
+        if (resource != null) {
+            getGenerator(true).resource(resource)
         }
         else {
-            getGenerator(true).resource(resource)
+            getGenerator(true).link(linkParams)
         }
     }
 

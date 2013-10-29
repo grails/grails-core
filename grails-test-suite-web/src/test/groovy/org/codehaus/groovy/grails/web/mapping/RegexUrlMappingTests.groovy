@@ -4,7 +4,8 @@ import grails.util.GrailsWebUtil
 
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException
-import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.*
+import org.springframework.mock.web.MockServletContext
 
 class RegexUrlMappingTests extends AbstractGrailsMappingTests {
 
@@ -307,7 +308,7 @@ mappings {
 
     void testMatchUriWithConstraints() {
 
-        def cp = new ConstrainedProperty(RegexUrlMappingTests, "hello", String)
+        def cp = new ConstrainedProperty(RegexUrlMappingTests.class, "hello", String.class)
         cp.nullable = false
 
         // mapping would be "/foo/$hello/bar
@@ -324,7 +325,7 @@ mappings {
 
     void testMatchUriWithMatchesConstraints() {
 
-        def cp = new ConstrainedProperty(RegexUrlMappingTests, "year", String)
+        def cp = new ConstrainedProperty(RegexUrlMappingTests.class, "year", String.class)
         cp.matches = /\d{4}/
 
         // mapping would be "/foo/$hello/bar
@@ -355,16 +356,16 @@ mappings {
         assertEquals 'survey', info.controllerName
         assertEquals 'viewByName', info.actionName
     }
-
+    
     void testParameterContainingADot() {
         def holder = new DefaultUrlMappingsHolder(evaluator.evaluateMappings(new ByteArrayResource(mappingScript.bytes)))
-
+        
         def info = holder.match("/reports/my")
         assertNotNull info
         assertEquals 'reporting', info.controllerName
         assertEquals 'view', info.actionName
         assertEquals 'my', info.params.foo
-
+        
         info = holder.match("/reports/my.id")
         assertNotNull info
         assertEquals 'reporting', info.controllerName

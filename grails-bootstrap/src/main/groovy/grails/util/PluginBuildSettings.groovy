@@ -197,7 +197,7 @@ class PluginBuildSettings {
      * Returns an array of PluginInfo objects
      */
     GrailsPluginInfo[] getPluginInfos() {
-        getPluginInfos(pluginDirPath)
+        getPluginInfos(this.pluginDirPath)
     }
     GrailsPluginInfo[] getPluginInfos(String pluginDirPath) {
         if (pluginInfosMap) {
@@ -811,7 +811,7 @@ class PluginBuildSettings {
      */
 //    @CompileStatic
     Resource getDescriptorForPlugin(Resource pluginDir) {
-        FileSystemResource descriptor
+        FileSystemResource descriptor = null
         File baseFile = pluginDir.file.canonicalFile
         File basePluginFile = (File)baseFile.listFiles().find {  File it -> it.name.endsWith("GrailsPlugin.groovy")}
 

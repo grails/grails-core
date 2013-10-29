@@ -34,16 +34,7 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
-import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MapEntryExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.codehaus.groovy.ast.expr.*;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
@@ -55,11 +46,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
 /**
  * An AST transformation to be applied to tests for adding behavior to a target test class.
@@ -115,7 +102,7 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     private void autoAddTestAnnotation(ClassNode classNode) {
-        if (isSpockTest(classNode)) return;
+        if(isSpockTest(classNode)) return;
         Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
         for (String methodName : declaredMethodsMap.keySet()) {
             MethodNode methodNode = declaredMethodsMap.get(methodName);
@@ -130,6 +117,7 @@ public class TestMixinTransformation implements ASTTransformation{
                 }
             }
         }
+
     }
 
     protected ListExpression getListOfClasses(AnnotationNode node) {
@@ -221,11 +209,12 @@ public class TestMixinTransformation implements ASTTransformation{
         }
     }
 
+
     public static FieldNode addFieldIfNonExistent(ClassNode classNode, ClassNode fieldType, String fieldName) {
         ClassNode targetAwareInterface = GrailsASTUtils.findInterface(fieldType, new ClassNode(TestMixinTargetAware.class).getPlainNodeReference());
         if (classNode != null && classNode.getField(fieldName) == null) {
             Expression constructorArgument = new ArgumentListExpression();
-            if (targetAwareInterface != null) {
+            if(targetAwareInterface != null) {
                 MapExpression namedArguments = new MapExpression();
                 namedArguments.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("target"), new VariableExpression("this")));
                 constructorArgument = namedArguments;

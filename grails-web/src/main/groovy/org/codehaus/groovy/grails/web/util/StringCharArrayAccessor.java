@@ -117,7 +117,7 @@ public class StringCharArrayAccessor {
         int internalOffset=0;
         try {
             value = (char[])valueField.get(str);
-            if (!jdk7_string) {
+            if(!jdk7_string) {
                 internalOffset = offsetField.getInt(str);
             }
         }
@@ -142,7 +142,7 @@ public class StringCharArrayAccessor {
         int internalOffset = 0;
         try {
             value = (char[])valueField.get(str);
-            if (!jdk7_string) {
+            if(!jdk7_string) {
                 internalOffset = offsetField.getInt(str);
             }
         }
@@ -178,7 +178,7 @@ public class StringCharArrayAccessor {
             // it was a bit unclear for me if this could ever happen in a single thread
             synchronized(str) {
                 valueField.set(str, charBuf);
-                if (!jdk7_string) {
+                if(!jdk7_string) {
                     countField.set(str, charBuf.length);
                 }
             }

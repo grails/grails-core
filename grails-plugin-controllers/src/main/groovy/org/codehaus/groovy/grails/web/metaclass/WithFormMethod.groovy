@@ -105,7 +105,7 @@ class InvalidResponseHandler extends AbstractTokenResponseHandler {
         super(false)
     }
 
-    protected invalidTokenInternal(Closure callable) {
+    protected Object invalidTokenInternal(Closure callable) {
         callable?.call()
     }
 }
@@ -119,5 +119,5 @@ class ValidResponseHandler extends AbstractTokenResponseHandler {
         this.model = model
     }
 
-    protected invalidTokenInternal(Closure callable) { model }
+    protected Object invalidTokenInternal(Closure callable) { model }
 }

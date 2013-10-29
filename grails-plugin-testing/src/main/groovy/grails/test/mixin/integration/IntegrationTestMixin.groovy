@@ -16,15 +16,15 @@
 
 package grails.test.mixin.integration
 
-import grails.test.mixin.TestMixinTargetAware
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
-
-import org.codehaus.groovy.grails.test.runner.phase.IntegrationTestPhaseConfigurer
+import org.junit.Before
 import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
+import grails.test.mixin.TestMixinTargetAware
+import grails.util.Holders
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.junit.After
-import org.junit.Before
+import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.grails.test.runner.phase.IntegrationTestPhaseConfigurer
 
 /**
  * A mixin for enhancing integration tests with autowiring and transactional capabitities
@@ -36,11 +36,11 @@ class IntegrationTestMixin implements TestMixinTargetAware {
     GrailsTestInterceptor interceptor
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    void setTarget(target) {
+    void setTarget(Object target) {
         this.target = target
         try {
             final applicationContext = IntegrationTestPhaseConfigurer.currentApplicationContext
-            if (applicationContext && target) {
+            if(applicationContext && target) {
                 interceptor = new GrailsTestInterceptor(target, new GrailsTestMode( autowire: true,
                                                                                     wrapInRequestEnvironment: true,
                                                                                     wrapInTransaction: target.hasProperty('transactional') ? target['transactional'] : true),

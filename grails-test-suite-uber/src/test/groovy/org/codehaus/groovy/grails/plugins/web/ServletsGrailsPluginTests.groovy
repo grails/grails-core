@@ -1,13 +1,17 @@
 package org.codehaus.groovy.grails.plugins.web
 
-import javax.servlet.ServletContext
-import javax.servlet.http.HttpSession
+import groovy.lang.GroovySystem;
 
-import org.springframework.mock.web.MockHttpServletRequest
-import org.springframework.mock.web.MockHttpServletResponse
-import org.springframework.mock.web.MockHttpSession
-import org.springframework.mock.web.MockServletContext
-import org.springframework.web.util.WebUtils
+import org.codehaus.groovy.grails.commons.test.*
+import org.codehaus.groovy.grails.commons.metaclass.*
+import org.codehaus.groovy.grails.commons.spring.*
+import org.springframework.mock.web.*
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpSession;
+
+import org.springframework.web.util.*
 
 class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
@@ -30,6 +34,7 @@ class ServletsGrailsPluginTests extends AbstractGrailsPluginTests {
 
         request.addHeader "X-Requested-With", "XMLHttpRequest"
         assert request.xhr : "This should be an XHR request"
+
     }
 
     void testServletContextObject() {

@@ -46,27 +46,28 @@ class JspTagLibImpl implements JspTagLib {
     /**
      * Overrides invoke method so tags can be invoked as methods
      */
-    Object invokeMethod(String name, args) {
+    Object invokeMethod(String name, Object args) {
         JspTag tag = getTag(name)
-        if (!tag) {
-            return super.invokeMethod(name, args)
+
+        if (tag) {
+            args = args ?: [[:]] // default to an list with an empty map inside
+            def sw = new FastStringPrintWriter()
+
+            Map attrs = args[0] instanceof Map ? args[0] : [:]
+            def body = args[0] instanceof Closure ? args[0] : null
+            if (args.size() > 1) body = args[1] instanceof Closure ? args[1] : null
+            if (body == null && args.size() > 1) {
+                body = { args[1] }
+            }
+            else {
+                body = {}
+            }
+
+            tag.doTag sw,attrs,body
+
+            return sw.toString()
         }
 
-        args = args ?: [[:]] // default to an list with an empty map inside
-        def sw = new FastStringPrintWriter()
-
-        Map attrs = args[0] instanceof Map ? args[0] : [:]
-        def body = args[0] instanceof Closure ? args[0] : null
-        if (args.size() > 1) body = args[1] instanceof Closure ? args[1] : null
-        if (body == null && args.size() > 1) {
-            body = { args[1] }
-        }
-        else {
-            body = {}
-        }
-
-        tag.doTag sw,attrs,body
-
-        return sw.toString()
+        return super.invokeMethod(name, args)
     }
 }

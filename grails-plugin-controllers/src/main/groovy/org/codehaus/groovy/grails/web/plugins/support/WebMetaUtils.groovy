@@ -56,7 +56,7 @@ class WebMetaUtils {
      * @return The new binding action
      */
     static Closure prepareCommandObjectBindingAction(Closure action, Closure originalAction,
-                                                     String actionName, controller, ApplicationContext ctx) {
+                                                     String actionName, Object controller, ApplicationContext ctx) {
         def commandObjectAction = action.curry(originalAction, actionName)
         controller.getClass().metaClass."${GrailsClassUtils.getGetterName(actionName)}" = {->
             def actionDelegate = commandObjectAction.clone()
@@ -87,9 +87,9 @@ class WebMetaUtils {
         def commandParams = params
         if (params != null && commandParamsKey != null) {
             def innerValue = params[commandParamsKey]
-            if (innerValue instanceof DataBindingSource) {
+            if(innerValue instanceof DataBindingSource) {
                 commandParams = innerValue
-            } else if (innerValue instanceof Map) {
+            } else if(innerValue instanceof Map) {
                 commandParams = new SimpleMapDataBindingSource(innerValue)
             }
         }
@@ -111,7 +111,7 @@ class WebMetaUtils {
      */
     static boolean isCommandObjectAction(Closure callable) {
         def paramTypes = callable.parameterTypes
-        paramTypes && paramTypes[0] != Object[] && paramTypes[0] != Object
+        paramTypes && paramTypes[0] != Object[].class && paramTypes[0] != Object
     }
 
     /**
@@ -211,7 +211,7 @@ class WebMetaUtils {
 
     @CompileStatic
     static registerMethodMissingForTags(MetaClass metaClass, TagLibraryLookup gspTagLibraryLookup, String namespace, String name) {
-        GroovyObject mc = (GroovyObject)metaClass
+        GroovyObject mc = (GroovyObject)metaClass;
         mc.setProperty(name) {Map attrs, Closure body ->
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, GrailsWebRequest.lookup())
         }
@@ -259,7 +259,7 @@ class WebMetaUtils {
         }
     }
 
-    static void registerPropertyMissingForTag(MetaClass mc, String name, result) {
+    static void registerPropertyMissingForTag(MetaClass mc, String name, Object result) {
         mc."${GrailsClassUtils.getGetterName(name)}" = {-> result }
     }
 }

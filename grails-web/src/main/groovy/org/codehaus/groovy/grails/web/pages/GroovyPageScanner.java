@@ -53,7 +53,7 @@ class GroovyPageScanner implements Tokens {
 
     public GroovyPageScanner(String gspSource, String uri) {
         this(gspSource);
-        pageName = uri;
+        this.pageName = uri;
     }
 
     // add line starting positions to array

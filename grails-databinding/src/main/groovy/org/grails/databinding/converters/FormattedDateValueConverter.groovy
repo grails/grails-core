@@ -33,4 +33,5 @@ class FormattedDateValueConverter implements FormattedValueConverter {
     Class<?> getTargetType() {
         Date
     }
+
 }

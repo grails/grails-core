@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
 
 /**
@@ -33,6 +34,7 @@ class BookController {
         def template = '<g:form controller="book" name="myForm" method="POST">save</g:form>'
         assertOutputEquals '<form action="/book" method="post" name="myForm" id="myForm" >save</form>', template
     }
+
 
     void testFormTagRenderGETRequest() {
         def template = '<g:form controller="book" name="myForm" method="GET">create</g:form>'

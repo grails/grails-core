@@ -17,7 +17,6 @@
 package org.codehaus.groovy.grails.orm.support
 
 import groovy.transform.CompileStatic
-
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionException
@@ -44,12 +43,12 @@ class GrailsTransactionTemplate {
     }
 
     GrailsTransactionTemplate(PlatformTransactionManager transactionManager, TransactionDefinition transactionDefinition) {
-        transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition)
-        transactionAttribute = new DefaultTransactionAttribute()
+        this.transactionTemplate = new TransactionTemplate(transactionManager, transactionDefinition)
+        this.transactionAttribute = new DefaultTransactionAttribute()
     }
 
     GrailsTransactionTemplate(PlatformTransactionManager transactionManager, TransactionAttribute transactionAttribute) {
-        transactionTemplate = new TransactionTemplate(transactionManager, transactionAttribute)
+        this.transactionTemplate = new TransactionTemplate(transactionManager, transactionAttribute)
         this.transactionAttribute = transactionAttribute
     }
 
@@ -76,9 +75,9 @@ class GrailsTransactionTemplate {
 
             if (result instanceof ThrowableHolder) {
                 throw result.getThrowable()
+            } else {
+                return result
             }
-
-            return result
         }
         catch (ThrowableHolderException e) {
             throw e.getCause()
@@ -91,10 +90,14 @@ class GrailsTransactionTemplate {
      */
     static class ThrowableHolder {
 
-        final Throwable throwable
+        private final Throwable throwable;
 
         ThrowableHolder(Throwable throwable) {
-            this.throwable = throwable
+            this.throwable = throwable;
+        }
+
+        Throwable getThrowable() {
+            return this.throwable;
         }
     }
 
@@ -105,12 +108,12 @@ class GrailsTransactionTemplate {
     static class ThrowableHolderException extends RuntimeException {
 
         ThrowableHolderException(Throwable throwable) {
-            super(throwable)
+            super(throwable);
         }
 
         @Override
-        String toString() {
-            getCause().toString()
+        public String toString() {
+            return getCause().toString();
         }
     }
 }

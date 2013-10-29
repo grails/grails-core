@@ -22,7 +22,7 @@ class GrailsTestMode {
     boolean wrapInRequestEnvironment = false
     boolean wrapInTransaction = false
 
-    GrailsTestInterceptor createInterceptor(test, ApplicationContext appCtx, String[] testClassSuffixes) {
+    GrailsTestInterceptor createInterceptor(Object test, ApplicationContext appCtx, String[] testClassSuffixes) {
         new GrailsTestInterceptor(test, this, appCtx, testClassSuffixes)
     }
 }

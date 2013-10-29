@@ -84,7 +84,7 @@ public class Holders {
      */
     public static ApplicationContext findApplicationContext() {
         ServletContext servletContext = getServletContext();
-        if (servletContext != null) {
+        if(servletContext != null) {
             return WebApplicationContextUtils.getWebApplicationContext(servletContext);
         }
         return null;
