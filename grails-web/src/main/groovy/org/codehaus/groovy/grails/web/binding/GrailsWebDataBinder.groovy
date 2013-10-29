@@ -24,7 +24,6 @@ import groovy.transform.TypeCheckingMode
 import groovy.util.slurpersupport.GPathResult
 
 import java.lang.reflect.Modifier
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap
 
 import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler
@@ -521,38 +520,17 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
     
     protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
-        boolean isSet = false
-        def coll = initializeCollection obj, propName, propertyType
-        if (coll != null) {
-            if (clearCollection) {
-                coll.clear()
-            }
-            def referencedType = getReferencedTypeForCollection propName, obj
-            if (referencedType != null) {
-                if (isDomainClass(referencedType)) {
-                    def persistentInstance = getPersistentInstance referencedType, propertyValue
-                    if (persistentInstance != null) {
-                        coll << persistentInstance
-                        isSet = true
-                    } else {
-                    try {
-                        coll << convert(referencedType, propertyValue)
-                        isSet = true
-                    } catch(Exception e){}
-                    }
-                } else if (referencedType.isAssignableFrom(propertyValue.getClass())){
-                    coll << propertyValue
-                    isSet = true
-                } else {
-                    try {
-                        coll << convert(referencedType, propertyValue)
-                        isSet = true
-                    } catch(Exception e){}
+        def elementToAdd = propertyValue
+        def referencedType = getReferencedTypeForCollection propName, obj
+        if (referencedType != null) {
+            if (isDomainClass(referencedType)) {
+                def persistentInstance = getPersistentInstance referencedType, propertyValue
+                if (persistentInstance != null) {
+                    elementToAdd = persistentInstance
                 }
             }
         }
-        isSet
-
+        super.addElementToCollection obj, propName, propertyType, elementToAdd, clearCollection
     }
 
     protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue, boolean clearCollection) {
