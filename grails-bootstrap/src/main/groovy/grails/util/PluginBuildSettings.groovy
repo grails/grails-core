@@ -133,19 +133,20 @@ class PluginBuildSettings {
          switch(zip) {
              case buildSettings.pluginBuildDependencies:
                  registerPluginZipWithScope(zip, buildScopePluginInfo)
-                 break
+                 // fall through in case defined in compile scope too
              case buildSettings.pluginCompileDependencies:
-                  registerPluginZipWithScope(zip, compileScopePluginInfo)
-                  break
+                 registerPluginZipWithScope(zip, compileScopePluginInfo)
+                 // we break here because if the plugin is in compile scope then it will be in runtime and test
+                 break
              case buildSettings.pluginRuntimeDependencies:
-                  registerPluginZipWithScope(zip, compileScopePluginInfo)
-                  break
+                 registerPluginZipWithScope(zip, compileScopePluginInfo)
+                 // we break here because if the plugin is in runtime scope then it will be in test scope
+                 break
              case buildSettings.pluginTestDependencies:
-                  registerPluginZipWithScope(zip, testScopePluginInfo)
-                  break
+                 registerPluginZipWithScope(zip, testScopePluginInfo)
+                 // fall through to check provided
              case buildSettings.pluginProvidedDependencies:
-                  registerPluginZipWithScope(zip, providedScopePluginInfo)
-                  break
+                 registerPluginZipWithScope(zip, providedScopePluginInfo)
          }
     }
 
