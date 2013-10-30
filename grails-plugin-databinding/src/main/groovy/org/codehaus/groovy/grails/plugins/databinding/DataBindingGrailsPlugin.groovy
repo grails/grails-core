@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.plugins.databinding
 
 import grails.util.GrailsUtil
 
+import org.codehaus.groovy.grails.web.binding.BindEventListenerAdapter
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
@@ -85,5 +86,9 @@ class DataBindingGrailsPlugin {
         jsonDataBindingSourceCreator(JsonDataBindingSourceCreator)
         halJsonDataBindingSourceCreator(HalJsonDataBindingSourceCreator)
         halXmlDataBindingSourceCreator(HalXmlDataBindingSourceCreator)
+        
+        if(Boolean.TRUE.equals(databindingConfig?.enableSpringEventAdapter)) {
+            grailsBindEventListenerAdapter(BindEventListenerAdapter)
+        }
     }
 }
