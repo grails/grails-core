@@ -90,9 +90,12 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         BeanPropertyBindingResult bindingResult = (BeanPropertyBindingResult)errors
         def errorHandlingListener = new GrailsWebDataBindingListener(messageSource)
 
-        List<DataBindingListener> allListeners = [errorHandlingListener, listener]
+        List<DataBindingListener> allListeners = []
+        allListeners << errorHandlingListener
+        if(listener != null && !(listener instanceof DataBindingEventMulticastListener)) {
+            allListeners << listener
+        }
         allListeners.addAll listeners
-        allListeners = (List<DataBindingListener>)allListeners.findAll { it != null }
 
         def listenerWrapper = new DataBindingEventMulticastListener(allListeners)
 
