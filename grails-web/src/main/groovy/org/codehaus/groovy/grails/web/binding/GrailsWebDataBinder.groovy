@@ -21,6 +21,7 @@ import grails.validation.DeferredBindingActions
 import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import groovy.util.logging.Commons
 import groovy.util.slurpersupport.GPathResult
 
 import java.lang.reflect.Modifier
@@ -601,6 +602,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 }
 
 @CompileStatic
+@Commons
 class DataBindingEventMulticastListener implements DataBindingListener {
 
     protected final List<DataBindingListener> listeners
@@ -621,33 +623,64 @@ class DataBindingEventMulticastListener implements DataBindingListener {
     Boolean beforeBinding(target, errors) {
         boolean bind = true
         for (DataBindingListener listener in listeners) {
-            if (!listener.beforeBinding(target, errors)) {
-                bind = false
+            try {
+                if (!listener.beforeBinding(target, errors)) {
+                    bind = false
+                }
+            } catch (Exception e) {
+                log.error "An error occurred invoking beforeBinding on the ${listener.getClass().getName()} listener.", e
             }
         }
-        
         bind
     }
 
     Boolean beforeBinding(obj, String propertyName, value, errors) {
         boolean bind = true
         for (DataBindingListener listener in listeners) {
-            if (!listener.beforeBinding(obj, propertyName, value, errors)) {
-                bind = false
+            try {
+                if (!listener.beforeBinding(obj, propertyName, value, errors)) {
+                    bind = false
+                }
+            } catch (Exception e) {
+                log.error "An error occurred invoking beforeBinding on the ${listener.getClass().getName()} listener.", e
             }
         }
         bind
     }
 
     void afterBinding(obj, String propertyName, errors) {
-        listeners*.afterBinding obj, propertyName, errors
+        if(listeners) {
+            for(DataBindingListener listener : listeners) {
+                try {
+                    listener.afterBinding obj, propertyName, errors
+                } catch (Exception e) {
+                    log.error "An error occurred invoking afterBinding on the ${listener.getClass().getName()} listener.", e
+                }
+            }
+        }
     }
 
     void afterBinding(target, errors) {
-        listeners*.afterBinding target, errors
+        if(listeners) {
+            for(DataBindingListener listener : listeners) {
+                try {
+                    listener.afterBinding target, errors
+                } catch (Exception e) {
+                    log.error "An error occurred invoking afterBinding on the ${listener.getClass().getName()} listener.", e
+                }
+            }
+        }
     }
 
     void bindingError(BindingError error, errors) {
-        listeners*.bindingError error, errors
+        if(listeners) {
+            for(DataBindingListener listener : listeners) {
+                try {
+                    listener.bindingError error, errors
+                } catch (Exception e) {
+                    log.error "An error occurred invoking bindingError on the ${listener.getClass().getName()} listener.", e
+                }
+            }
+        }
     }
 }
