@@ -19,6 +19,8 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.CompileStatic
 import groovy.ui.Console
+import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
+import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 import java.awt.Window
 
@@ -41,18 +43,23 @@ import org.springframework.context.ApplicationContext
 class GrailsProjectConsole extends BaseSettingsApi {
 
     GrailsProjectLoader projectLoader
+    GrailsProjectCompiler projectCompiler
 
     GrailsProjectConsole(BuildSettings buildSettings) {
         super(buildSettings, false)
         projectLoader = new GrailsProjectLoader(buildSettings)
+        this.projectCompiler = new GrailsProjectCompiler(GrailsPluginUtils.getPluginBuildSettings(buildSettings))
     }
 
     GrailsProjectConsole(GrailsProjectLoader projectLoader) {
         super(projectLoader.buildSettings, projectLoader.buildEventListener, false)
         this.projectLoader = projectLoader
+        this.projectCompiler = new GrailsProjectCompiler(GrailsPluginUtils.getPluginBuildSettings(buildSettings))
     }
 
     Console run()  {
+
+        projectCompiler.compileAll()
         ApplicationContext applicationContext = projectLoader.configureApplication()
         GrailsApplication grailsApplication = applicationContext.getBean(GrailsApplication)
 
