@@ -16,9 +16,8 @@
 package org.codehaus.groovy.grails.web.binding
 
 import groovy.transform.CompileStatic
+import groovy.util.logging.Commons
 
-import org.apache.commons.logging.Log
-import org.apache.commons.logging.LogFactory
 import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.beans.factory.InitializingBean
 import org.springframework.beans.factory.annotation.Autowired
@@ -45,10 +44,9 @@ import org.springframework.beans.factory.annotation.Autowired
  *
  */
 @CompileStatic
+@Commons
 class BindEventListenerAdapter extends DataBindingListenerAdapter implements InitializingBean {
 
-    private static Log LOG = LogFactory.getLog(BindEventListenerAdapter)
-    
     @Autowired(required=false)
     List<BindEventListener> listeners
     
@@ -57,11 +55,9 @@ class BindEventListenerAdapter extends DataBindingListenerAdapter implements Ini
         if(listeners) {
             for(BindEventListener listener : listeners) {
                 try {
-                    listener.doBind(obj, null, null)
+                    listener.doBind obj, null, null
                 } catch (Exception e) {
-                    if(LOG.isErrorEnabled()) {
-                        LOG.error "An error occurred notifying the ${listener.getClass().getName()} listener", e
-                    }
+                    log.error "An error occurred notifying the ${listener.getClass().getName()} listener.", e
                 }
             }
         }
@@ -71,13 +67,9 @@ class BindEventListenerAdapter extends DataBindingListenerAdapter implements Ini
     @Override
     public void afterPropertiesSet() throws Exception {
         if(listeners) {
-            if(LOG.isDebugEnabled()) {
-                LOG.debug "${listeners.size()} BindEventListener beans are configured in the BindEventListenerAdapter bean."
-            }
+            log.debug "${listeners.size()} BindEventListener beans are configured in the BindEventListenerAdapter bean."
         } else {
-            if(LOG.isWarnEnabled()) {
-                LOG.warn 'No BindEventListener beans are configured in the application context.  There is no need to have grails.databinding.enableSpringEventAdapter set to true in Config.groovy.'
-            }
+            log.warn 'No BindEventListener beans are configured in the application context.  There is no need to have grails.databinding.enableSpringEventAdapter set to true in Config.groovy.'
         }
     }
 }
