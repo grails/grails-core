@@ -552,7 +552,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     @Autowired(required=false)
-    void setValueConverters(DataBindingListener[] listeners) {
+    void setDataBindingListeners(DataBindingListener[] listeners) {
         this.listeners.addAll Arrays.asList(listeners)
     }
 
