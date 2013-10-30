@@ -67,8 +67,7 @@ public class GrailsCoreDependencies {
         );
 
         docDependencies = Arrays.asList(
-            new Dependency("org.grails", "grails-docs", grailsVersion, true),
-            new Dependency("com.lowagie","itext", "2.0.8", true)
+            new Dependency("org.grails", "grails-docs", grailsVersion, true)
         );
 
         providedDependencies = Arrays.asList(

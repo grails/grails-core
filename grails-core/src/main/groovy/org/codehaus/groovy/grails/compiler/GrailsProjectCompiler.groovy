@@ -86,7 +86,6 @@ class GrailsProjectCompiler extends BaseSettingsApi{
         srcdir = buildSettings.sourceDir.absolutePath
         classLoader = rootLoader
         pluginDescriptor = new File(basedir).listFiles().find { it.name.endsWith("GrailsPlugin.groovy") }
-        this.config = config
         isPluginProject = pluginDescriptor != null
 
         initializeSrcDirectories()
@@ -138,6 +137,7 @@ class GrailsProjectCompiler extends BaseSettingsApi{
      * Configures the Grails classpath, should be called prior to any call to {@link #compile(Object) }
      */
     void configureClasspath() {
+        if(config != null) return
 
         final ant = getAnt()
         ant.path(id: "grails.compile.classpath", compileClasspath)

@@ -18,6 +18,7 @@ package grails.util;
 import groovy.util.ConfigObject;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -61,6 +62,7 @@ public class Holders {
         pluginManagers.set(null);
         pluginManagersInCreation.set(null);
         configs.set(null);
+        flatConfigs.set(null);
         if (servletContexts != null) {
             servletContexts.set(null);
         }
@@ -110,7 +112,7 @@ public class Holders {
         configs.set(config);
 
         // reset flat config
-        flatConfigs.set(config == null ? null : config.flatten());
+        flatConfigs.set(config == null ? null : config.flatten(new LinkedHashMap()));
     }
 
     public static ConfigObject getConfig() {

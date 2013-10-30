@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -305,7 +306,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         if (config == null) {
             flatConfig = Collections.emptyMap();
         } else {
-            flatConfig = config.flatten();
+            flatConfig = config.flatten(new LinkedHashMap());
         }
     }
 
@@ -781,7 +782,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
     public void configChanged() {
         ConfigObject co = getConfig();
         // not thread safe
-        flatConfig = co.flatten();
+        flatConfig = co.flatten(new LinkedHashMap());
         final ArtefactHandler[] handlers = getArtefactHandlers();
         for (ArtefactHandler handler : handlers) {
             if (handler instanceof GrailsConfigurationAware) {

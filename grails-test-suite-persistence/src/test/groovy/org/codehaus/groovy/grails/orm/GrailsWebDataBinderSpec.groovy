@@ -28,10 +28,10 @@ import org.grails.databinding.BindingFormat
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.errors.BindingError
-import org.grails.databinding.events.DataBindingListener
 import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.context.support.StaticMessageSource
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 import com.google.gson.internal.LazilyParsedNumber
@@ -377,6 +377,27 @@ class GrailsWebDataBinderSpec extends Specification {
         publisher.publications[1].publisher == publisher
     }
 
+    void 'Test binding an array of ids to a collection of persistent instances'() {
+        given:
+        def book = new AssociationBindingBook()
+        
+        when:
+        def p1 = new AssociationBindingPage(number: 42).save()
+        def p2 = new AssociationBindingPage(number: 2112).save()
+        
+        then:
+        p1.id != null
+        p2.id != null
+        
+        when:
+        binder.bind book, [pages: [p1.id, p2.id] as String[]] as SimpleMapDataBindingSource
+        
+        then:
+        book.pages?.size() == 2
+        book.pages.find { it.number == 42 && it.id == p1.id }
+        book.pages.find { it.number == 2112 && it.id == p2.id }
+    }
+    
     void 'Test bindable'() {
         given:
         def widget = new Widget()
@@ -1020,6 +1041,58 @@ class GrailsWebDataBinderSpec extends Specification {
             "typeMismatch"
         ]
     }
+    
+    @Issue('GRAILS-10696')
+    void 'Test binding a simple String to a List<Long> on a non domain class'() {
+        given:
+        def obj = new SomeNonDomainClass()
+        
+        when:
+        binder.bind obj, [listOfLong: '42'] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong[0] == 42
+    }
+    
+    @Issue('GRAILS-10689')
+    void 'Test binding a String[] to a List<Long> on a non domain class'() {
+        given:
+        def obj = new SomeNonDomainClass()
+        
+        when:
+        binder.bind obj, [listOfLong: ['42', '2112'] as String[]] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong.size() == 2
+        obj.listOfLong[0] == 42
+        obj.listOfLong[1] == 2112
+    }
+
+    @Issue('GRAILS-10696')
+    void 'Test binding a simple String to a List<Long> on a domain class'() {
+        given:
+        def obj = new CollectionContainer()
+        
+        when:
+        binder.bind obj, [listOfLong: '42'] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong[0] == 42
+    }
+
+    @Issue('GRAILS-10689')
+    void 'Test binding  String[] to a List<Long> on a domain class'() {
+        given:
+        def obj = new CollectionContainer()
+        
+        when:
+        binder.bind obj, [listOfLong: ['42', '2112'] as String[]] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong.size() == 2
+        obj.listOfLong[0] == 42
+        obj.listOfLong[1] == 2112
+    }
 }
 
 @Entity
@@ -1038,6 +1111,7 @@ class Publisher {
 
 class SomeNonDomainClass {
     Publication publication
+    List<Long> listOfLong
 }
 
 @Entity
@@ -1123,6 +1197,7 @@ class CollectionContainer {
     SortedSet sortedSetOfWidgets
     Collection collectionOfWidgets
     List<String> listOfStrings
+    List<Long> listOfLong
 }
 
 class PrimitiveContainer {

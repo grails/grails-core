@@ -72,8 +72,9 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         mockManager.registerProvidedArtefacts(ga)
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
+        ga.mainContext = springConfig.getUnrefreshedApplicationContext()
         appCtx = springConfig.getApplicationContext()
-        ga.mainContext = appCtx
+        
         mockManager.applicationContext = appCtx
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         dependentPlugins*.doWithDynamicMethods(appCtx)
@@ -81,6 +82,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
     }
 
     protected final void tearDown() {
+        ga.mainContext.close()
         pluginsToLoad = []
         ExpandoMetaClass.disableGlobally()
         PluginManagerHolder.setPluginManager null

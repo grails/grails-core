@@ -31,10 +31,15 @@ public class GroovyPageOutputStackAttributes {
     private final boolean pushTop;
     private final boolean autoSync;
     private final boolean inheritPreviousEncoders;
+    private final boolean replaceOnly;
     private final GrailsWebRequest webRequest;
 
     public boolean isInheritPreviousEncoders() {
         return inheritPreviousEncoders;
+    }
+    
+    public boolean isReplaceOnly() {
+        return replaceOnly;
     }
 
     public Writer getTopWriter() {
@@ -89,6 +94,7 @@ public class GroovyPageOutputStackAttributes {
         private boolean autoSync=true;
         private GrailsWebRequest webRequest;
         private boolean inheritPreviousEncoders=false;
+        private boolean replaceOnly=false;
 
         public Builder() {
         }
@@ -105,6 +111,7 @@ public class GroovyPageOutputStackAttributes {
             this.autoSync = attributes.autoSync;
             this.webRequest = attributes.webRequest;
             this.inheritPreviousEncoders = attributes.inheritPreviousEncoders;
+            this.replaceOnly = attributes.replaceOnly;
         }
 
         public Builder topWriter(Writer topWriter) {
@@ -156,6 +163,11 @@ public class GroovyPageOutputStackAttributes {
             this.inheritPreviousEncoders = inheritPreviousEncoders;
             return this;
         }
+        
+        public Builder replaceOnly(boolean replaceOnly) {
+            this.replaceOnly = replaceOnly;
+            return this;
+        }
 
         public Builder webRequest(GrailsWebRequest webRequest) {
             this.webRequest = webRequest;
@@ -179,5 +191,6 @@ public class GroovyPageOutputStackAttributes {
         this.autoSync = builder.autoSync;
         this.webRequest = builder.webRequest;
         this.inheritPreviousEncoders = builder.inheritPreviousEncoders;
+        this.replaceOnly = builder.replaceOnly;
     }
 }

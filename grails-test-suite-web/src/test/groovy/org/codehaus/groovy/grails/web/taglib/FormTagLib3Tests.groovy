@@ -82,6 +82,54 @@ class FormTagLib3Tests extends AbstractGrailsTagTests {
                 + lineSep + "<p><g:message code=\"radio.3\" /> <input type=\"radio\" name=\"testRadio\" value=\"3\" /></p>"
                 + lineSep , sw.toString())
     }
+    
+    void testRadioGroupTagWithHtmlCodec() {
+        withConfig('''
+grails {
+    views {
+        gsp {
+            codecs {
+                expression = 'html'
+                scriptlet = 'html'
+                taglib = 'none'
+                staticparts = 'none'
+            }
+        }
+    }
+}
+''') {
+            testRadioGroupTag()
+        }
+    }
+
+    void testRadioGroupTagWithNoneCodec() {
+        withConfig('''
+grails {
+    views {
+        gsp {
+            codecs {
+                expression = 'none'
+                scriptlet = 'none'
+                taglib = 'none'
+                staticparts = 'none'
+            }
+        }
+    }
+}
+''') {
+            testRadioGroupTag()
+        }
+    }
+
+    void testRadioGroupTag() {
+        def template='''<g:radioGroup name="myGroup" values="[1,2,3]" value="1" >${it.label} ${it.radio}</g:radioGroup>'''
+        def expected='''Radio 1 <input type="radio" name="myGroup" checked="checked" value="1" />
+Radio 2 <input type="radio" name="myGroup" value="2" />
+Radio 3 <input type="radio" name="myGroup" value="3" />
+'''
+        assertOutputEquals(expected, template, [:], { it.replaceAll('\r\n','\n') })
+    }
+    
 
     void testRadioGroupTagWithoutLabelsAndInvalidValue() {
         StringWriter sw = new StringWriter()

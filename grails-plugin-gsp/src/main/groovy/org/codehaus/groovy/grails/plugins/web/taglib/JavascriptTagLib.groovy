@@ -47,7 +47,7 @@ class JavascriptTagLib implements ApplicationContextAware {
     Class<JavascriptProvider> defaultProvider
     boolean hasResourceProcessor = false
 
-    static encodeAsForTags = [escapeJavascript: 'JavaScript']
+    static encodeAsForTags = [escapeJavascript: 'JavaScript', javascript: [expressionCodec:"JavaScript", scriptletCodec:"JavaScript", replaceOnly:true]]
 
     JavascriptTagLib() {
         def cl = Thread.currentThread().contextClassLoader
@@ -123,15 +123,13 @@ class JavascriptTagLib implements ApplicationContextAware {
             }
         }
         else {
-            withCodec(expressionCodec:"JavaScript") {
-                if (hasResourceProcessor) {
-                    out << r.script(Collections.EMPTY_MAP, body)
-                } else {
-                    out.println '<script type="text/javascript">'
-                    out << body()
-                    out.println()
-                    out.println '</script>'
-                }
+            if (hasResourceProcessor) {
+                out << r.script(Collections.EMPTY_MAP, body)
+            } else {
+                out.println '<script type="text/javascript">'
+                out << body()
+                out.println()
+                out.println '</script>'
             }
         }
     }

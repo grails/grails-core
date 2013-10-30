@@ -33,6 +33,8 @@ class GroovyPageConfig {
     public static final String TAGLIB_DEFAULT_CODEC_NAME="taglibdefault"
     /** allow inheriting codecs from parent levels */
     public static final String INHERIT_SETTING_NAME="inherit"
+    /** only use for safe codecs for replacement */
+    public static final String REPLACE_ONLY_SETTING_NAME="replaceonly"
 
     public static final Set<String> VALID_CODEC_SETTING_NAMES =
         ([OUT_CODEC_NAME, EXPRESSION_CODEC_NAME, STATIC_CODEC_NAME, TAGLIB_CODEC_NAME, TAGLIB_DEFAULT_CODEC_NAME] as Set).asImmutable()
@@ -53,8 +55,10 @@ class GroovyPageConfig {
     String getCodecSettings(GrailsPluginInfo pluginInfo, String codecWriterName) {
         if (!codecWriterName) return null
 
-        String gspCodecsPrefix = "${pluginInfo ? pluginInfo.name + '.' : ''}${GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS}"
-        Map codecSettings = (Map)flatConfig.get(gspCodecsPrefix)
+        Map codecSettings = getConfigForPrefix(GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS + ".")
+        if(pluginInfo) {
+            codecSettings = mergePluginCodecSettings(pluginInfo, codecSettings)
+        }
         String codecInfo = null
         if (!codecSettings) {
             if (codecWriterName==EXPRESSION_CODEC_NAME) {
@@ -75,5 +79,29 @@ class GroovyPageConfig {
         }
 
         codecInfo
+    }
+
+    private Map mergePluginCodecSettings(GrailsPluginInfo pluginInfo, Map codecSettings) {
+        Map codecSettingsForPlugin = getConfigForPrefix("${pluginInfo.name}.${GroovyPageParser.CONFIG_PROPERTY_GSP_CODECS}.".toString())
+        if(codecSettingsForPlugin) {
+            if(!codecSettings) {
+                codecSettings = [:]
+            }
+            codecSettings.putAll(codecSettingsForPlugin)
+        }
+        return codecSettings
+    }
+
+    private Map getConfigForPrefix(String gspCodecsPrefix) {
+        Map codecSettings = (Map)flatConfig.inject([:]){ Map map, key, value ->
+            if(key instanceof CharSequence) {
+                String mapKey = key.toString()
+                if(mapKey.startsWith(gspCodecsPrefix)) {
+                    map.put(mapKey.substring(gspCodecsPrefix.length()), value)
+                }
+            }
+            map
+        }
+        return codecSettings
     }
 }

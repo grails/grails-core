@@ -14,6 +14,7 @@ dependencies {
         exclude group: 'bouncycastle', module:'bcprov-jdk14'
     }
 
+    runtime('com.lowagie:itext:2.0.8')
     testCompile "junit:junit:$junitVersion"
     testCompile("org.spockframework:spock-core:${spockVersion}") {
         transitive = false

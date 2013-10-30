@@ -19,8 +19,8 @@ import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
-import org.sonatype.aether.graph.Dependency
-import org.sonatype.aether.graph.Exclusion
+import org.eclipse.aether.graph.Dependency
+import org.eclipse.aether.graph.Exclusion
 
 /**
  * Used to configure an individual dependency

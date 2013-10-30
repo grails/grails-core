@@ -32,9 +32,4 @@ public class GroovyPageTagWriter extends FastStringWriter {
         super(DEFAULT_CHUNK_SIZE);
     }
 
-    @Override
-    public String getValue() {
-        return super.toString();
-    }
-
 }

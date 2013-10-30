@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.codecs
 
+import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.plugins.codecs.MD5BytesCodec
 
 class MD5BytesCodecTests extends GroovyTestCase{
@@ -25,5 +26,13 @@ class MD5BytesCodecTests extends GroovyTestCase{
         shouldFail {
             codec.decode [1,2,3,4,5]
         }
+    }
+    
+    void testEncodeAsMD5Bytes() {
+        DefaultGrailsCodecClass codecClass = new DefaultGrailsCodecClass(MD5BytesCodec)
+        codecClass.configureCodecMethods()
+        def expectedResult = [-19, 7, 98, -121, 83, 46, -122, 54, 94, -124, 30, -110, -65, -59, 13, -116]
+        def toStringResult = 'Hello World!'.encodeAsMD5Bytes()
+        assertEquals(expectedResult,toStringResult.toList())
     }
 }

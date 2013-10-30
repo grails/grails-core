@@ -32,10 +32,12 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Stack;
 
-import jline.ConsoleReader;
-import jline.History;
 import jline.Terminal;
 
+import jline.TerminalFactory;
+import jline.console.ConsoleReader;
+import jline.console.history.FileHistory;
+import jline.console.history.History;
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
@@ -189,7 +191,9 @@ public class GrailsConsole {
     }
 
     protected ConsoleReader createConsoleReader() throws IOException {
-        return new ConsoleReader(System.in, new OutputStreamWriter(out));
+        ConsoleReader consoleReader = new ConsoleReader(System.in, out);
+        consoleReader.setExpandEvents(false);
+        return consoleReader;
     }
 
     /**
@@ -198,18 +202,7 @@ public class GrailsConsole {
      * is controlled by the jline.terminal system property.
      */
     protected Terminal createTerminal() {
-        if (isWindows()) {
-            try {
-                return PatchedJLineWindowsTerminal.setupTerminal(reader);
-            }
-            catch (Exception ex) {
-                error(ex);
-            }
-        }
-        else {
-            terminal = Terminal.setupTerminal();
-        }
-        return terminal;
+        return terminal = TerminalFactory.create();
     }
 
     /**
@@ -226,7 +219,7 @@ public class GrailsConsole {
                 // can't create the file, so no history for you
             }
         }
-        return file.canWrite() ? new History(file) : null;
+        return file.canWrite() ? new FileHistory(file) : null;
     }
 
     /**
@@ -545,7 +538,7 @@ public class GrailsConsole {
     }
 
     public boolean isAnsiEnabled() {
-        return Ansi.isEnabled() && (terminal != null && terminal.isANSISupported()) && ansiEnabled;
+        return Ansi.isEnabled() && (terminal != null && terminal.isAnsiSupported()) && ansiEnabled;
     }
 
     /**

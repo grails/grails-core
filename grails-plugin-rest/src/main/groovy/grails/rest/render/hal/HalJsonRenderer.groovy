@@ -87,13 +87,6 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         this.dateToStringConverter = converter
     }
 
-    Boolean elideDuplicates = true
-
-    @Autowired(required = false)
-    void setElideDuplicates(Boolean isElided) {
-        this.elideDuplicates = isElided
-    }
-
     @PostConstruct
     void initialize() {
         if (dataBindingSourceRegistry != null) {
@@ -231,21 +224,10 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             for (entry in associationMap.entrySet()) {
                 final property = entry.key
                 final isSingleEnded = property instanceof ToOne
-                final Object value = entry.value
-
-                if (isSingleEnded && elideDuplicates && writtenObjects.contains(value)) {
-                    // Don't write the same object out twice.
-                    continue
-                }
-
-                if (!hasWrittenObject) {
-                    writer.name(EMBEDDED_ATTRIBUTE)
-                    writer.beginObject()
-                    writer.name(property.name)
-                    hasWrittenObject = true
-                }
+                writer.name(property.name)
 
                 if (isSingleEnded) {
+                    Object value = entry.value
                     if (value != null) {
                         final associatedEntity = property.associatedEntity
                         if (associatedEntity) {

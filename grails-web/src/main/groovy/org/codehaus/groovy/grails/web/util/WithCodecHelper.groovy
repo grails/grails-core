@@ -26,6 +26,8 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStackAttributes
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.NoSuchBeanDefinitionException
+import org.springframework.context.ApplicationContext
 
 /**
  * Helper methods for {@link #withCodec} feature.
@@ -64,7 +66,8 @@ class WithCodecHelper {
      * </ul>
      * In addition there is
      * <ul>
-     * <li>inherit (boolean) - defaults to true. Control whether codecs should be inherited to deeper level (taglib calls)</li>
+     * <li>inherit (boolean) - defaults to true. Controls whether codecs should be inherited to deeper level (taglib calls)</li>
+     * <li>replaceonly (boolean) - defaults to false. Codecs will be only replaced if the previous inherited codec is safe.</li> 
      * </ul>
      *
      * @param grailsApplication the grailsApplication instance
@@ -107,6 +110,9 @@ class WithCodecHelper {
             if (codecInfoMap.containsKey(GroovyPageConfig.INHERIT_SETTING_NAME)) {
                 builder.inheritPreviousEncoders(codecInfoMap.get(GroovyPageConfig.INHERIT_SETTING_NAME) as boolean)
             }
+            if (codecInfoMap.containsKey(GroovyPageConfig.REPLACE_ONLY_SETTING_NAME)) {
+                builder.replaceOnly(codecInfoMap.get(GroovyPageConfig.REPLACE_ONLY_SETTING_NAME) as boolean)
+            }
         }
         return builder
     }
@@ -124,12 +130,8 @@ class WithCodecHelper {
             String nameFallback = null
             (Map<String,String>)((Map)codecInfo).each { k, v ->
                 String codecWriterName = k.toString().toLowerCase() - 'codec'
-                if (codecWriterName == GroovyPageConfig.INHERIT_SETTING_NAME) {
-                    Boolean inheritPrevious = v as Boolean
-                    if (inheritPrevious && v instanceof CharSequence && (v.toString()=="false" || v.toString()=="no")) {
-                        inheritPrevious = false
-                    }
-                    codecInfoMap.put(GroovyPageConfig.INHERIT_SETTING_NAME, inheritPrevious)
+                if (codecWriterName == GroovyPageConfig.INHERIT_SETTING_NAME || codecWriterName == GroovyPageConfig.REPLACE_ONLY_SETTING_NAME) {
+                    codecInfoMap.put(codecWriterName, convertToBoolean(v))
                 } else {
                     String codecName=v?.toString() ?: 'none'
                     if (GroovyPageConfig.VALID_CODEC_SETTING_NAMES.contains(codecWriterName)) {
@@ -167,6 +169,14 @@ class WithCodecHelper {
         codecInfoMap
     }
 
+    private static boolean convertToBoolean(v) {
+        Boolean booleanValue = v as Boolean
+        if (booleanValue && v instanceof CharSequence && (v.toString()=="false" || v.toString()=="no")) {
+            booleanValue = false
+        }
+        return booleanValue
+    }
+
     private static Encoder lookupEncoderFromMap(Map<String, Encoder> encoders, String codecName) {
         codecName == null ? null : encoders[codecName]
     }
@@ -179,13 +189,17 @@ class WithCodecHelper {
      * @return the encoder instance
      */
     static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
-        try {
-            CodecLookup codecLookup = grailsApplication.getMainContext().getBean("codecLookup", CodecLookup.class)
-            return codecLookup.lookupEncoder(codecName)
-        } catch (NullPointerException e) {
-            // ignore NPE for encoder lookups
-            log.debug("NPE in lookupEncoder, grailsApplication.mainContext is null or codecLookup bean is missing from test context.", e)
+        ApplicationContext ctx = grailsApplication != null ? grailsApplication.getMainContext() : null
+        if(ctx != null) {
+            try {
+                CodecLookup codecLookup = ctx.getBean("codecLookup", CodecLookup.class)
+                return codecLookup.lookupEncoder(codecName)
+            } catch (NoSuchBeanDefinitionException e) {
+                // ignore missing codecLookup bean in tests
+                log.debug("codecLookup bean is missing from test context.", e)
+            }
         }
+        return null
     }
 
     static Map<String, Object> mergeSettingsAndMakeCanonical(Object currentSettings,

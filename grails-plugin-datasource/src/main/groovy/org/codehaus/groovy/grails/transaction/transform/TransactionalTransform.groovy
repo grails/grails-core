@@ -93,7 +93,7 @@ class TransactionalTransform implements ASTTransformation{
         List<MethodNode> methods = new ArrayList<MethodNode>(classNode.getMethods());
         
         for (MethodNode md in methods) {
-            if (Modifier.isPublic(md.modifiers) && !Modifier.isAbstract(md.modifiers)) {
+            if (Modifier.isPublic(md.modifiers) && !Modifier.isAbstract(md.modifiers) && !Modifier.isStatic(md.modifiers)) {
                 if (md.getAnnotations(MY_TYPE)) continue
 
                 if (controllerMethodAnn && md.getAnnotations(controllerMethodAnn)) continue

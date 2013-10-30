@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.context.annotation;
 
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
+import grails.util.Environment;
 import grails.util.Metadata;
 
 import java.io.IOException;
@@ -107,14 +108,19 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
 
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
-            if (rootLoader != null) {
-                // search all parents up to rootLoader
-                Collection<URL> urls = new LinkedHashSet<URL>();
-                findResourcesRecursive(getParent(), name, urls);
-                return Collections.enumeration(urls);
+            if(Environment.isFork()) {
+                return super.getResources(name);
             }
+            else {
+                if (rootLoader != null) {
+                    // search all parents up to rootLoader
+                    Collection<URL> urls = new LinkedHashSet<URL>();
+                    findResourcesRecursive(getParent(), name, urls);
+                    return Collections.enumeration(urls);
+                }
 
-            return invokeFindResources(getParent(), name);
+                return invokeFindResources(getParent(), name);
+            }
         }
 
         private void findResourcesRecursive(ClassLoader parent, String name, Collection<URL> urls) {
@@ -134,11 +140,16 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
 
         @Override
         public URL getResource(String name) {
-            if (rootLoader != null) {
-                return findResourceRecursive(getParent(), name);
+            if(Environment.isFork()) {
+                return super.getResource(name);
             }
+            else {
+                if (rootLoader != null) {
+                    return findResourceRecursive(getParent(), name);
+                }
 
-            return invokeFindResource(getParent(), name);
+                return invokeFindResource(getParent(), name);
+            }
         }
 
         private URL findResourceRecursive(ClassLoader parent, String name) {

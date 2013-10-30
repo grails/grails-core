@@ -267,8 +267,8 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         dependentPlugins*.doWithRuntimeConfiguration(springConfig)
 
+        grailsApplication.mainContext = springConfig.getUnrefreshedApplicationContext()
         appCtx = springConfig.getApplicationContext()
-        grailsApplication.mainContext = appCtx
 
         ctx.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
 
@@ -304,6 +304,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler)
 
         onDestroy()
+        ga.mainContext.close()
 
         ServletContextHolder.servletContext = null
         GroovyPageMetaInfo.DEFAULT_PLUGIN_PATH = ""
@@ -416,7 +417,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         w.writeTo(writer)
 
         writer.flush()
-        assert expected == transform(mockResponse.contentAsString)
+        assertEquals(expected, transform(mockResponse.contentAsString))
     }
 
     def applyTemplate(template, params = [:], target = null, String filename = null) {

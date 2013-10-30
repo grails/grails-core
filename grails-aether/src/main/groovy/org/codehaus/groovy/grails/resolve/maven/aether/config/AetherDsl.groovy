@@ -18,16 +18,17 @@ package org.codehaus.groovy.grails.resolve.maven.aether.config
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
 
-import org.apache.maven.repository.internal.MavenRepositorySystemSession
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.plexus.logging.Logger
-import org.sonatype.aether.graph.Dependency
-import org.sonatype.aether.graph.Exclusion
-import org.sonatype.aether.repository.Authentication
-import org.sonatype.aether.repository.RepositoryPolicy
-import org.sonatype.aether.util.artifact.DefaultArtifact
-import org.sonatype.aether.util.graph.selector.ExclusionDependencySelector
-import org.sonatype.aether.util.repository.DefaultAuthenticationSelector
+import org.eclipse.aether.DefaultRepositorySystemSession
+import org.eclipse.aether.graph.Dependency
+import org.eclipse.aether.graph.Exclusion
+import org.eclipse.aether.repository.Authentication
+import org.eclipse.aether.repository.RepositoryPolicy
+import org.eclipse.aether.artifact.DefaultArtifact
+import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector
+import org.eclipse.aether.util.repository.AuthenticationBuilder
+import org.eclipse.aether.util.repository.DefaultAuthenticationSelector
 import grails.util.Environment
 
 /**
@@ -38,13 +39,13 @@ import grails.util.Environment
  */
 @CompileStatic
 class AetherDsl {
-    AetherDependencyManager dependencyManager
-    @Delegate MavenRepositorySystemSession session
+    AetherDependencyManager aetherDependencyManager
+    @Delegate DefaultRepositorySystemSession session
 
     ExclusionDependencySelector exclusionDependencySelector
 
     AetherDsl(AetherDependencyManager dependencyManager) {
-        this.dependencyManager = dependencyManager
+        this.aetherDependencyManager = dependencyManager
     }
 
     /**
@@ -76,15 +77,14 @@ class AetherDsl {
 
         def id = map.id ?: map.host
         if (map.username && map.password && id) {
-            def a = new Authentication(map.username.toString(), map.password.toString())
+            final builder = new AuthenticationBuilder()
+            builder.addUsername(map.username.toString()).addPassword( map.password.toString())
 
-            if (map.privateKeyFile) {
-                a = a.setPrivateKeyFile(map.privateKeyFile.toString())
-            }
-            if (map.passphrase) {
-                a = a.setPassphrase(map.passphrase.toString())
+            if (map.privateKeyFile && map.passphrase) {
+                builder.addPrivateKey(map.privateKeyFile.toString(), map.passphrase.toString())
             }
 
+            Authentication a = builder.build()
             final selector = session.authenticationSelector
             if (selector instanceof DefaultAuthenticationSelector) {
                 selector.add(id.toString(), a)
@@ -98,14 +98,14 @@ class AetherDsl {
     void legacyResolve(boolean b) {}
 
     void pom(boolean b) {
-        dependencyManager.readPom = b
+        aetherDependencyManager.readPom = b
     }
     void cacheDir(File f) {
-        dependencyManager.cacheDir = f.canonicalPath
+        aetherDependencyManager.cacheDir = f.canonicalPath
     }
 
     void cacheDir(String f) {
-        dependencyManager.cacheDir = f
+        aetherDependencyManager.cacheDir = f
     }
 
     void useOrigin(boolean b) {
@@ -113,33 +113,33 @@ class AetherDsl {
     }
     void checksums(boolean enable) {
         if (enable) {
-            dependencyManager.checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_FAIL
+            aetherDependencyManager.checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_FAIL
         }
         else {
-            dependencyManager.checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE
+            aetherDependencyManager.checksumPolicy = RepositoryPolicy.CHECKSUM_POLICY_IGNORE
         }
     }
     void checksums(String checksumConfig) {
-        dependencyManager.checksumPolicy = checksumConfig
+        aetherDependencyManager.checksumPolicy = checksumConfig
     }
 
     void log(String level) {
         switch(level) {
             case "warn":
-                dependencyManager.loggerManager.threshold = Logger.LEVEL_WARN; break
+                aetherDependencyManager.loggerManager.threshold = Logger.LEVEL_WARN; break
             case "error":
-                dependencyManager.loggerManager.threshold = Logger.LEVEL_ERROR; break
+                aetherDependencyManager.loggerManager.threshold = Logger.LEVEL_ERROR; break
             case "info":
-                dependencyManager.loggerManager.threshold = Logger.LEVEL_INFO; break
+                aetherDependencyManager.loggerManager.threshold = Logger.LEVEL_INFO; break
             case "debug":
-                dependencyManager.loggerManager.threshold = Logger.LEVEL_DEBUG; break
+                aetherDependencyManager.loggerManager.threshold = Logger.LEVEL_DEBUG; break
             case "verbose":
-                dependencyManager.loggerManager.threshold = Logger.LEVEL_DEBUG; break
+                aetherDependencyManager.loggerManager.threshold = Logger.LEVEL_DEBUG; break
         }
     }
 
     void inherits(String name, Closure customizer = null) {
-        final callable = dependencyManager.inheritedDependencies[name]
+        final callable = aetherDependencyManager.inheritedDependencies[name]
 
         if (callable) {
 
@@ -164,22 +164,22 @@ class AetherDsl {
     }
 
     void repositories(Closure callable) {
-        def rc = new RepositoriesConfiguration(dependencyManager, session)
+        def rc = new RepositoriesConfiguration(aetherDependencyManager, session)
         callable.delegate = rc
         callable.call()
 
-        this.dependencyManager.repositories.addAll(rc.repositories)
+        this.aetherDependencyManager.repositories.addAll(rc.repositories)
     }
 
     void dependencies(Closure callable) {
-        def dc = new DependenciesConfiguration(dependencyManager)
+        def dc = new DependenciesConfiguration(aetherDependencyManager)
         dc.exclusionDependencySelector = exclusionDependencySelector
         callable.delegate = dc
         callable.call()
     }
 
     void plugins(Closure callable) {
-        def dc = new PluginConfiguration(dependencyManager)
+        def dc = new PluginConfiguration(aetherDependencyManager)
         callable.delegate = dc
         callable.call()
     }

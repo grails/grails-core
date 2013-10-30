@@ -15,8 +15,9 @@
  */
 package grails.build.interactive.completors
 
-import jline.Completor
-import jline.SimpleCompletor
+import jline.console.completer.Completer
+import jline.console.completer.StringsCompleter
+
 
 /**
  * JLine Completor that mixes a fixed set of options with file path matches.
@@ -25,7 +26,7 @@ import jline.SimpleCompletor
  * @author Peter Ledbrook
  * @since 2.0
  */
-class SimpleOrFileNameCompletor implements Completor {
+class SimpleOrFileNameCompletor implements Completer {
     private simpleCompletor
     private fileNameCompletor
 
@@ -34,7 +35,7 @@ class SimpleOrFileNameCompletor implements Completor {
     }
 
     SimpleOrFileNameCompletor(String[] fixedOptions) {
-        simpleCompletor = new SimpleCompletor(fixedOptions)
+        simpleCompletor = new StringsCompleter(fixedOptions)
         fileNameCompletor = new EscapingFileNameCompletor()
     }
 
