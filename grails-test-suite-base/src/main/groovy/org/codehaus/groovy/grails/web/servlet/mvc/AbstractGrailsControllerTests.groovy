@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.web.servlet.mvc
 
-import grails.test.MockUtils
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
 import grails.util.Metadata
@@ -12,7 +11,6 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
@@ -133,9 +131,9 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
 
         ctx.registerMockBean("grailsDomainClassMappingContext", new GrailsDomainClassMappingContext(ga))
+        ga.mainContext = springConfig.getUnrefreshedApplicationContext()
         appCtx = springConfig.getApplicationContext()
-        ga.mainContext = appCtx
-
+        
         dependentPlugins*.doWithApplicationContext(appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
@@ -155,6 +153,7 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
     }
     
     protected void tearDown() {
+        ga.mainContext.close()
         RequestContextHolder.setRequestAttributes(null)
         ExpandoMetaClass.disableGlobally()
 

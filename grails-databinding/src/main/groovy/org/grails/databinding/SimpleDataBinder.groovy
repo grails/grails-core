@@ -541,6 +541,8 @@ class SimpleDataBinder implements DataBinder {
                 }
             } else if(Collection.isAssignableFrom(propertyType) && propertyValue instanceof String) {
                 addElementToCollection obj, propName, propertyType, propertyValue, true
+            } else if(Collection.isAssignableFrom(propertyType) && propertyValue.getClass().isArray()) {
+                addElementsToCollection obj, propName, propertyValue as Collection, true
             } else {
                 obj[propName] = convert(propertyType, propertyValue)
             }

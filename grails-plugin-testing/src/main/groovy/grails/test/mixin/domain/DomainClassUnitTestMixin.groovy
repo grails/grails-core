@@ -18,9 +18,11 @@ package grails.test.mixin.domain
 import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
 import groovy.transform.CompileStatic
+
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
@@ -92,11 +94,13 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
             "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
                 defaultConstraints = DomainClassGrailsPlugin.getDefaultConstraints(grailsApplication.config)
             }
+            grailsDomainClassCleaner(GrailsDomainClassCleaner, grailsApplication)
         }
 
         simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         simpleDatastore.mappingContext.setCanInitializeEntities(false)
         transactionManager = applicationContext.getBean(PlatformTransactionManager)
+        applicationContext.addApplicationListener applicationContext.getBean(GrailsDomainClassCleaner)
         applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
         applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
         ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))

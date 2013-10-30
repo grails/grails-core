@@ -481,7 +481,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         } else if (propertyValue instanceof String[]){
                             if (isDomainClass(property.referencedPropertyType)) {
                                 propertyValue.each { val ->
-                                    isSet = isSet || addElementToCollection(obj, propName, property, val, false)
+                                    isSet = addElementToCollection(obj, propName, property, val, false) || isSet
                                 }
                             }
                         }

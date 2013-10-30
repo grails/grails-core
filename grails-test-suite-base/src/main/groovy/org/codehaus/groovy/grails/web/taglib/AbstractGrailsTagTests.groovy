@@ -304,6 +304,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         GroovySystem.metaClassRegistry.setMetaClassCreationHandle(originalHandler)
 
         onDestroy()
+        ga.mainContext.close()
 
         ServletContextHolder.servletContext = null
         GroovyPageMetaInfo.DEFAULT_PLUGIN_PATH = ""
