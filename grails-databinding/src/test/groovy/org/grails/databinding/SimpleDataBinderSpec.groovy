@@ -479,6 +479,18 @@ class SimpleDataBinderSpec extends Specification {
         widget.names[1] == null
         widget.names[2] == 'two'
     }
+    
+    void 'Test @BindUsing on a List<Integer>'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+        
+        when:
+        binder.bind widget, [listOfIntegers: '4'] as SimpleMapDataBindingSource
+        
+        then:
+        widget.listOfIntegers == [0, 1, 2, 3]
+    }
 }
 
 class Factory {
@@ -499,6 +511,14 @@ class Widget {
     byte[] byteArray
     Integer[] integers
     List<String> names
+    @BindUsing({ obj, source -> 
+        def cnt = source['listOfIntegers'] as int
+        def result = []
+        cnt.times { result << it }
+        println "Result: $result"
+        result
+    })
+    List<Integer> listOfIntegers = []
 }
 
 class Gadget extends Widget {

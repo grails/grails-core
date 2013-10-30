@@ -222,7 +222,16 @@ class SimpleDataBinder implements DataBinder {
                 if (metaProperty) { // normal property
                     if (isOkToBind(metaProperty.name, whiteList, blackList)) {
                         def val = source[key]
-                        processProperty obj, metaProperty, val, source, listener, errors
+                        try {
+                            def converter = getValueConverterForField(obj, metaProperty.name)
+                            if(converter) {
+                                setPropertyValue(obj, source, metaProperty, converter.convert(source), listener, false)
+                            } else {
+                                processProperty obj, metaProperty, val, source, listener, errors
+                            }
+                        } catch (Exception e) {
+                            addBindingError(obj, propName, val, e, listener, errors)
+                        }
                     }
                 } else {
                     def descriptor = getIndexedPropertyReferenceDescriptor propName
@@ -488,7 +497,7 @@ class SimpleDataBinder implements DataBinder {
         } catch (IllegalArgumentException iae) {}
     }
 
-    protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
+    protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener, boolean convertCollectionElements = true) {
         def propName = metaProperty.name
         def propertyType
         def propertyGetter
@@ -501,7 +510,7 @@ class SimpleDataBinder implements DataBinder {
             propertyType = metaProperty.type
         }
         if (propertyValue == null || propertyType == Object || propertyType.isAssignableFrom(propertyValue.getClass())) {
-            if (!(propertyValue instanceof Range) && propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType) && propertyGetter) {
+            if (convertCollectionElements && ((!(propertyValue instanceof Range) && propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType) && propertyGetter))) {
                 addElementsToCollection(obj, propName, propertyValue, true)
             } else {
                 obj[propName] = propertyValue
@@ -604,7 +613,7 @@ class SimpleDataBinder implements DataBinder {
             coll.clear()
         }
         for(element in collection) {
-            if (element == null || referencedType.isAssignableFrom(element.getClass())) {
+            if (element == null || referencedType == null || referencedType.isAssignableFrom(element.getClass())) {
                 coll << element
             } else {
                 coll << convert(referencedType, element)

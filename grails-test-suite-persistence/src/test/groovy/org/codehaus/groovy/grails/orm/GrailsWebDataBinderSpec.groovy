@@ -14,6 +14,8 @@
  */
 package org.codehaus.groovy.grails.orm
 
+import java.util.List;
+
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
@@ -1093,6 +1095,32 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.listOfLong[0] == 42
         obj.listOfLong[1] == 2112
     }
+    
+    void 'Test @BindUsing on a List of domain objects'() {
+        given:
+        def pub = new Publisher()
+        
+        when:
+        binder.bind pub, [widgets: '4'] as SimpleMapDataBindingSource
+        
+        then:
+        pub.widgets.size() == 4
+        pub.widgets[0] instanceof Widget
+        pub.widgets[1] instanceof Widget
+        pub.widgets[2] instanceof Widget
+        pub.widgets[3] instanceof Widget
+    }
+    
+    void 'Test @BindUsing on a List<Integer>'() {
+        given:
+        def widget = new Widget()
+        
+        when:
+        binder.bind widget, [listOfIntegers: '4'] as SimpleMapDataBindingSource
+        
+        then:
+        widget.listOfIntegers == [0, 1, 2, 3]
+    }
 }
 
 @Entity
@@ -1105,8 +1133,16 @@ class Team {
 @Entity
 class Publisher {
     String name
-    static hasMany = [publications: Publication, authors: Author]
+    static hasMany = [publications: Publication, authors: Author, widgets: Widget]
     List publications
+    
+    @BindUsing({ obj, source ->
+        def cnt = source['widgets'] as int
+        def result = []
+        cnt.times { result << new Widget() }
+        result
+    })
+    List widgets = []
 }
 
 class SomeNonDomainClass {
@@ -1152,6 +1188,16 @@ class Author {
 class Widget implements Comparable {
     String isBindable
     String isNotBindable
+    @BindUsing({ obj, source ->
+        def cnt = source['listOfIntegers'] as int
+        def result = []
+        cnt.times { c -> 
+            result << c 
+        }
+        println "Result: $result"
+        result
+    })
+    List listOfIntegers = []
 
     static constraints = {
         isNotBindable bindable: false
