@@ -57,7 +57,8 @@ class GrailsSwingConsole extends ForkedGrailsProjectClassExecutor{
     protected String getProjectClassType() { "org.codehaus.groovy.grails.project.ui.GrailsProjectConsole" }
 
     @Override
-    void runInstance(instance) {
+    int runInstance(instance) {
         ((GroovyObject)instance).invokeMethod("run", null)
+        return 0
     }
 }

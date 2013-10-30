@@ -72,8 +72,7 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
     static void main(String[] args) {
         try {
-            new ForkedGrailsTestRunner().run()
-            System.exit(0)
+            System.exit( new ForkedGrailsTestRunner().run() )
         } catch (Throwable e) {
             GrailsConsole.getInstance().error("Error running forked test-app: " + e.getMessage(), e)
             System.exit(1)
@@ -122,11 +121,22 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
     @Override
     @CompileStatic(TypeCheckingMode.SKIP)
-    void runInstance(instance) {
+    int runInstance(instance) {
 
         instance.projectPackager.projectCompiler.configureClasspath()
         instance.projectPackager.packageApplication()
-        instance.runAllTests(executionContext.argsMap)
+        boolean testsPassed = instance.runAllTests(executionContext.argsMap)
+        if(!isDaemonProcess()) {
+            if (testsPassed) {
+                return 0
+            }
+            else {
+                return 1
+            }
+        }
+        else {
+            return 0
+        }
     }
 }
 

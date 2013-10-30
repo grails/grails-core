@@ -211,8 +211,10 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
      * Run all tests in a Grails application
      *
      * @param triggerEvents Whether to trigger events on start and finish of the test run (optional)
+     * @return Whether the tests passed or faile
+     *
      **/
-    void runAllTests(boolean triggerEvents = true) {
+    boolean runAllTests(boolean triggerEvents = true) {
         if (triggerEvents) {
             buildEventListener.triggerEvent("AllTestsStart")
         }
@@ -335,10 +337,12 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
             buildEventListener.triggerEvent("AllTestsEnd")
         }
 
-        testsFailed ? 1 : 0
+
         if (triggerEvents) {
             buildEventListener.triggerEvent("AllTestsEnd", testsFailed)
         }
+
+        return testsFailed
     }
 
     def getFailedTests() {

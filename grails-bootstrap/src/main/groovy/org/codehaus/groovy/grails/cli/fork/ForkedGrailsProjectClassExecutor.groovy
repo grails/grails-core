@@ -50,7 +50,7 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
         }
     }
 
-    protected final void run() {
+    protected final int run() {
         ExpandoMetaClass.enableGlobally()
 
         if (isDaemonProcess()) {
@@ -58,6 +58,7 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
                 def projectClassInstance = initializeProjectInstance()
                 runInstance(projectClassInstance)
             }
+            return 0
         }
         else if (isReserveProcess()) {
             // don't wait if the resume directory already exists, another process exists
@@ -65,12 +66,12 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
                 executionContext = readExecutionContext()
                 Object projectClassInstance = initializeProjectInstance()
                 waitForResume()
-                runInstance(projectClassInstance)
+                return runInstance(projectClassInstance)
             }
         }
         else {
             Object projectClassInstance = initializeProjectInstance()
-            runInstance(projectClassInstance)
+            return runInstance(projectClassInstance)
         }
     }
 
@@ -126,7 +127,7 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
 
     protected abstract String getProjectClassType()
 
-    abstract void runInstance(instance)
+    abstract int runInstance(instance)
 }
 
 @CompileStatic
