@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil
 import org.codehaus.groovy.grails.domain.GormApiSupport
+import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.codehaus.groovy.grails.domain.GrailsDomainClassMappingContext
 import org.codehaus.groovy.grails.support.SoftThreadLocalMap
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
@@ -39,7 +40,7 @@ import org.springframework.beans.BeanUtils
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 import org.springframework.validation.Validator
@@ -69,6 +70,8 @@ class DomainClassGrailsPlugin {
         }
 
         grailsDomainClassMappingContext(GrailsDomainClassMappingContext, application)
+        
+        grailsDomainClassCleaner(GrailsDomainClassCleaner, application)
 
         for (dc in application.domainClasses) {
             // Note the use of Groovy's ability to use dynamic strings in method names!
