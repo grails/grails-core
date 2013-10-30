@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.validation.Errors;
@@ -300,7 +301,6 @@ public class GrailsDomainConfigurationUtil {
      * @return true if it is configurational
      */
     public static boolean isNotConfigurational(PropertyDescriptor descriptor) {
-
         final String name = descriptor.getName();
         Method readMethod = descriptor.getReadMethod();
         Method writeMethod = descriptor.getWriteMethod();
@@ -330,7 +330,12 @@ public class GrailsDomainConfigurationUtil {
                 GrailsDomainClassProperty.MAPPING_STRATEGY,
                 GrailsDomainClassProperty.MAPPED_BY, 
                 GrailsDomainClassProperty.BELONGS_TO,
-                GrailsDomainClassProperty.ERRORS, 
+                GrailsDomainClassProperty.ERRORS,
+                GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN,
+                GrailsRuntimeConfigurator.DATA_SOURCE_BEAN,
+                GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN,
+                GrailsRuntimeConfigurator.MESSAGE_SOURCE_BEAN,
+                "applicationContext",
                 PROPERTIES_PROPERTY);
         CONFIGURATIONAL_PROPERTIES = Collections.unmodifiableSet(configurational);
     }
