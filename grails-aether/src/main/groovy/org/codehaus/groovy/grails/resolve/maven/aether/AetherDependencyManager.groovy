@@ -44,12 +44,12 @@ import org.eclipse.aether.RepositorySystemSession
 import org.eclipse.aether.artifact.Artifact
 import org.eclipse.aether.collection.CollectRequest
 import org.eclipse.aether.collection.DependencyCollectionException
-import org.eclipse.aether.connector.async.AsyncRepositoryConnectorFactory
-import org.eclipse.aether.connector.wagon.WagonRepositoryConnectorFactory
+import org.eclipse.aether.connector.basic.BasicRepositoryConnectorFactory
 import org.eclipse.aether.graph.Dependency
 import org.eclipse.aether.graph.DependencyNode
 import org.eclipse.aether.graph.Exclusion
 import org.eclipse.aether.impl.DefaultServiceLocator
+import org.eclipse.aether.internal.impl.DefaultTransporterProvider
 import org.eclipse.aether.repository.LocalRepository
 import org.eclipse.aether.repository.Proxy
 import org.eclipse.aether.repository.RemoteRepository
@@ -61,11 +61,16 @@ import org.eclipse.aether.resolution.DependencyRequest
 import org.eclipse.aether.resolution.DependencyResolutionException
 import org.eclipse.aether.resolution.DependencyResult
 import org.eclipse.aether.spi.connector.RepositoryConnectorFactory
+import org.eclipse.aether.spi.connector.transport.TransporterFactory
+import org.eclipse.aether.spi.connector.transport.TransporterProvider
+import org.eclipse.aether.spi.log.LoggerFactory
 import org.eclipse.aether.transfer.AbstractTransferListener
 import org.eclipse.aether.transfer.ArtifactTransferException
 import org.eclipse.aether.transfer.TransferCancelledException
 import org.eclipse.aether.transfer.TransferEvent
 import org.eclipse.aether.artifact.DefaultArtifact
+import org.eclipse.aether.transport.file.FileTransporterFactory
+import org.eclipse.aether.transport.http.HttpTransporterFactory
 import org.eclipse.aether.util.filter.ScopeDependencyFilter
 import org.eclipse.aether.graph.DefaultDependencyNode
 import org.eclipse.aether.util.graph.selector.ExclusionDependencySelector
@@ -143,13 +148,14 @@ class AetherDependencyManager implements DependencyManager {
             loggerManager = new GrailsConsoleLoggerManager()
             container.setLoggerManager(loggerManager)
 
-            settingsBuilder = container.lookup(SettingsBuilder.class)
-            modelBuilder = container.lookup(ModelBuilder.class)
-
+            settingsBuilder = container.lookup(SettingsBuilder)
+            modelBuilder = container.lookup(ModelBuilder)
             DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
-            locator.addService( RepositoryConnectorFactory.class, WagonRepositoryConnectorFactory.class );
+            locator.addService( RepositoryConnectorFactory, BasicRepositoryConnectorFactory )
+            locator.addService( TransporterFactory, FileTransporterFactory )
+            locator.addService( TransporterFactory, HttpTransporterFactory )
 
-            repositorySystem = locator.getService( RepositorySystem.class );
+            repositorySystem = locator.getService( RepositorySystem )
 
             session.setAuthenticationSelector(new DefaultAuthenticationSelector())
             session.setProxySelector(new DefaultProxySelector())
