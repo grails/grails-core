@@ -991,7 +991,7 @@ public class GrailsASTUtils {
      * Marks a method to be staticly compiled
      * 
      * @param annotatedNode
-     * @return
+     * @return The annotated method
      */
     public static AnnotatedNode addCompileStaticAnnotation(AnnotatedNode annotatedNode) {
         return addCompileStaticAnnotation(annotatedNode, false);
@@ -1002,7 +1002,7 @@ public class GrailsASTUtils {
      * 
      * @param annotatedNode
      * @param skip
-     * @return
+     * @return The annotated method
      */
     public static AnnotatedNode addCompileStaticAnnotation(AnnotatedNode annotatedNode, boolean skip) {
         if(annotatedNode != null) {
@@ -1018,7 +1018,7 @@ public class GrailsASTUtils {
         return annotatedNode;
     }
     
-    /*
+    /**
      * Set the method target of a MethodCallExpression to the first matching method with same number of arguments.
      * This doesn't check argument types.
      * 
@@ -1035,7 +1035,7 @@ public class GrailsASTUtils {
      * 
      * @param methodCallExpression
      * @param targetClass
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression applyDefaultMethodTarget(final MethodCallExpression methodCallExpression, final Class<?> targetClass) {
         return applyDefaultMethodTarget(methodCallExpression, ClassHelper.make(targetClass).getPlainNodeReference());
@@ -1049,7 +1049,7 @@ public class GrailsASTUtils {
      * @param methodCallExpression
      * @param targetClassNode
      * @param targetParameterTypes
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final ClassNode targetClassNode, final ClassNode... targetParameterTypes) {
         String methodName = methodCallExpression.getMethodAsString();
@@ -1080,7 +1080,7 @@ public class GrailsASTUtils {
      * @param methodCallExpression
      * @param targetClass
      * @param targetParameterClassTypes
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final Class<?> targetClass, final Class<?>... targetParameterClassTypes) {
         return applyMethodTarget(methodCallExpression, ClassHelper.make(targetClass).getPlainNodeReference(), convertTargetParameterTypes(targetParameterClassTypes));
@@ -1092,7 +1092,7 @@ public class GrailsASTUtils {
      * @param methodCallExpression
      * @param targetClassNode
      * @param targetParameterClassTypes
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression applyMethodTarget(final MethodCallExpression methodCallExpression, final ClassNode targetClassNode, final Class<?>... targetParameterClassTypes) {
         return applyMethodTarget(methodCallExpression, targetClassNode, convertTargetParameterTypes(targetParameterClassTypes));
@@ -1125,7 +1125,7 @@ public class GrailsASTUtils {
      * @param objectExpression
      * @param propertyName
      * @param targetClassNode
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression buildGetPropertyExpression(final Expression objectExpression, final String propertyName, final ClassNode targetClassNode) {
         return buildGetPropertyExpression(objectExpression, propertyName, targetClassNode, false);
@@ -1138,7 +1138,7 @@ public class GrailsASTUtils {
      * @param propertyName
      * @param targetClassNode
      * @param useBooleanGetter
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression buildGetPropertyExpression(final Expression objectExpression, final String propertyName, final ClassNode targetClassNode, final boolean useBooleanGetter) {
         String methodName = (useBooleanGetter ? "is" : "get") + MetaClassHelper.capitalize(propertyName);
@@ -1157,7 +1157,7 @@ public class GrailsASTUtils {
      * @param propertyName
      * @param targetClassNode
      * @param valueExpression
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression buildSetPropertyExpression(final Expression objectExpression, final String propertyName, final ClassNode targetClassNode, final Expression valueExpression) {
         String methodName = "set" + MetaClassHelper.capitalize(propertyName);
@@ -1175,7 +1175,7 @@ public class GrailsASTUtils {
      * @param objectExpression
      * @param keyName
      * @param valueExpression
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression buildPutMapExpression(final Expression objectExpression, final String keyName, final Expression valueExpression) {
         return applyDefaultMethodTarget(new MethodCallExpression(objectExpression, "put", new ArgumentListExpression(new ConstantExpression(keyName), valueExpression)), Map.class);
@@ -1186,7 +1186,7 @@ public class GrailsASTUtils {
      * 
      * @param objectExpression
      * @param keyName
-     * @return
+     * @return The method call expression
      */
     public static MethodCallExpression buildGetMapExpression(final Expression objectExpression, final String keyName) {
         return applyDefaultMethodTarget(new MethodCallExpression(objectExpression, "get", new ArgumentListExpression(new ConstantExpression(keyName))), Map.class);

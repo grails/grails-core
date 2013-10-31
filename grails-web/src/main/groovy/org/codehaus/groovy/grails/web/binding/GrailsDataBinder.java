@@ -484,7 +484,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      *
      * @param metaProperty
      * @param delegate
-     * @return
+     * @return The meta property value
      */
     private Object getMetaPropertyValue(MetaProperty metaProperty, Object delegate) {
         if (metaProperty instanceof ThreadManagedMetaBeanProperty) {
