@@ -89,7 +89,8 @@ target(allTests: "Runs the project's tests.") {
         if(grailsSettings.forkSettings.test instanceof Map) {
             forkedTestRunner.configure(grailsSettings.forkSettings.test)
         }
-        forkedTestRunner.fork(argsMap)
+        int exitCode = forkedTestRunner.fork(argsMap).waitFor()
+        exit( exitCode )
     }
     else {
         projectTestRunner.runAllTests(argsMap, false)
