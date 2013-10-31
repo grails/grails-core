@@ -150,8 +150,15 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         buildSettings.config.grails.testing.patterns ?: ['**.*']
     }
 
+    /**
+     * Run all tests in a Grails application
+     *
+     * @param argsMap test run parameters
+     * @param triggerEvents Whether to trigger events on start and finish of the test run (optional)
+     * @return true if the tests passed
+     */
     @CompileStatic
-    void runAllTests(Map<String, String> argsMap, boolean triggerEvents = true) {
+    boolean runAllTests(Map<String, String> argsMap, boolean triggerEvents = true) {
         testExecutionContext.setVariable("serverContextPath", projectPackager.configureServerContextPath())
 
         // The test targeting patterns
@@ -204,14 +211,14 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
 
         reRunTests = argsMap["rerun"]
 
-        runAllTests(triggerEvents)
+        return runAllTests(triggerEvents)
     }
 
     /**
      * Run all tests in a Grails application
      *
      * @param triggerEvents Whether to trigger events on start and finish of the test run (optional)
-     * @return Whether the tests passed or faile
+     * @return true if the tests passed
      *
      **/
     boolean runAllTests(boolean triggerEvents = true) {
@@ -342,7 +349,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
             buildEventListener.triggerEvent("AllTestsEnd", testsFailed)
         }
 
-        return testsFailed
+        return !testsFailed
     }
 
     def getFailedTests() {
