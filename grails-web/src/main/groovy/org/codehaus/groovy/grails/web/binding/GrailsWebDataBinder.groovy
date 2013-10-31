@@ -511,15 +511,18 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         }
     }
 
-    protected preprocessCharSequenceValue(CharSequence propertyValue) {
-        String stringValue = propertyValue.toString()
-        if (trimStrings) {
-            stringValue = stringValue.trim()
+    protected preprocessValue(propertyValue) {
+        if(propertyValue instanceof CharSequence) {
+            String stringValue = propertyValue.toString()
+            if (trimStrings) {
+                stringValue = stringValue.trim()
+            }
+            if (convertEmptyStringsToNull && "".equals(stringValue)) {
+                stringValue = null
+            }
+            return stringValue
         }
-        if (convertEmptyStringsToNull && "".equals(stringValue)) {
-            stringValue = null
-        }
-        return stringValue
+        propertyValue
     }
     
     protected addElementToCollection(obj, String propName, Class propertyType, propertyValue, boolean clearCollection) {
@@ -564,18 +567,6 @@ class GrailsWebDataBinder extends SimpleDataBinder {
             return null
         }
         super.convert typeToConvertTo, value
-    }
-
-    @Override
-    protected ValueConverter getValueConverter(obj, String propName, propValue) {
-        def converter = super.getValueConverter obj, propName, propValue
-        if (!converter && propValue instanceof CharSequence) {
-            Closure closure = { source ->
-                preprocessCharSequenceValue propValue
-            }
-            converter = new ClosureValueConverter(converterClosure: closure, targetType: String)
-        }
-        converter
     }
 
     @Autowired
