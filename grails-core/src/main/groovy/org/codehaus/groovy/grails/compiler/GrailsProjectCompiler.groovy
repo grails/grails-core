@@ -47,7 +47,7 @@ class GrailsProjectCompiler extends BaseSettingsApi{
 
     private AntBuilder ant
     private File pluginDescriptor
-    private CompilerConfiguration config
+    CompilerConfiguration config
 
     ClassLoader classLoader
     boolean verbose = false
@@ -133,6 +133,10 @@ class GrailsProjectCompiler extends BaseSettingsApi{
         this.ant = ant
     }
 
+    void reconfigureClasspath() {
+        config = null
+        configureClasspath()
+    }
     /**
      * Configures the Grails classpath, should be called prior to any call to {@link #compile(Object) }
      */

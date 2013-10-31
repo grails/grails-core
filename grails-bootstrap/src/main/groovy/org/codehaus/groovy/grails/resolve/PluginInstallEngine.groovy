@@ -65,9 +65,9 @@ class PluginInstallEngine {
     protected applicationPluginsLocation
     protected ant
     protected PluginResolveEngine resolveEngine
-    protected ClassLoader classLoader
+    
 
-    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs = GrailsPluginUtils.getPluginBuildSettings(settings), Metadata md = Metadata.getCurrent(), AntBuilder ant = new AntBuilder(), ClassLoader classLoader = Thread.currentThread().getContextClassLoader()) {
+    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs = GrailsPluginUtils.getPluginBuildSettings(settings), Metadata md = Metadata.getCurrent(), AntBuilder ant = new AntBuilder()) {
         if (settings == null) throw new IllegalArgumentException("Argument [settings] cannot be null")
         if (pbs == null) throw new IllegalArgumentException("Argument [pbs] cannot be null")
         if (md == null) throw new IllegalArgumentException("Argument [md] cannot be null")
@@ -79,28 +79,33 @@ class PluginInstallEngine {
         this.ant = ant
         metadata = md
         resolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
-        this.classLoader = classLoader
     }
 
     @CompileStatic
-    void resolveAndInstallDepdendencies() {
+    boolean resolveAndInstallDepdendencies() {
         // we get the 'build' and 'test' dependencies because that is the scope that
         // includes all possible plugins in all scopes
         def pluginZips = (settings.pluginTestDependencies + settings.pluginBuildDependencies)
-        installResolvePlugins(pluginZips)
+        boolean hasNewPluginInstalls = installResolvePlugins(pluginZips)
         checkPluginsToUninstall(pluginZips.toList())
+        return hasNewPluginInstalls
     }
     @CompileStatic
-    void installedResolvedPlugins() {
+    boolean installedResolvedPlugins() {
         def pluginZips = (settings.pluginTestDependencies + settings.pluginBuildDependencies)
         installResolvePlugins(pluginZips)
     }
     @CompileStatic
-    protected void installResolvePlugins(Collection<File> pluginZips) {
+    protected boolean installResolvePlugins(Collection<File> pluginZips) {
         try {
+            boolean newInstalls = false
             for (zip in pluginZips) {
-                installResolvedPlugin(zip)
+                if ( installResolvedPlugin(zip) ) {
+                    newInstalls = true
+                }
             }
+
+            return newInstalls
         } finally {
             final im = InteractiveMode.current
             if(im) {
@@ -323,14 +328,6 @@ class PluginInstallEngine {
 
         pluginSettings.clearCache()
         pluginSettings.registerNewPluginInstall(pluginZip)
-
-        final jarFiles = new File(pluginInstallPath, "lib").listFiles()?.findAll { File f -> f.name.endsWith('.jar')}
-        if(jarFiles && classLoader instanceof URLClassLoader) {
-            for(File jar in jarFiles) {
-                classLoader.addURL(jar.toURI().toURL())
-            }
-        }
-
         postInstall(pluginInstallPath)
         eventHandler("PluginInstalled", fullPluginName)
 
