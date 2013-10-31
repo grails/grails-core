@@ -223,11 +223,11 @@ class SimpleDataBinder implements DataBinder {
                     if (isOkToBind(metaProperty.name, whiteList, blackList)) {
                         def val = source[key]
                         try {
-                            def converter = getValueConverterForField(obj, metaProperty.name)
+                            def converter = getValueConverter(obj, metaProperty.name)
                             if(converter) {
                                 setPropertyValue(obj, source, metaProperty, converter.convert(source), listener, false)
                             } else {
-                                processProperty obj, metaProperty, val, source, listener, errors
+                                processProperty obj, metaProperty, preprocessValue(val), source, listener, errors
                             }
                         } catch (Exception e) {
                             addBindingError(obj, propName, val, e, listener, errors)
@@ -482,7 +482,7 @@ class SimpleDataBinder implements DataBinder {
         converter
     }
 
-    protected ValueConverter getValueConverter(obj, String propName, propValue) {
+    protected ValueConverter getValueConverter(obj, String propName) {
         def converter = getValueConverterForField obj, propName
         if (!converter) {
             converter = getValueConverterForClass obj, propName
@@ -495,6 +495,10 @@ class SimpleDataBinder implements DataBinder {
         try {
             enumClass.valueOf(value)
         } catch (IllegalArgumentException iae) {}
+    }
+    
+    protected preprocessValue(propertyValue) {
+        propertyValue
     }
 
     protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener, boolean convertCollectionElements = true) {
@@ -584,10 +588,6 @@ class SimpleDataBinder implements DataBinder {
         def propName = metaProperty.name
         if (listener == null || listener.beforeBinding(obj, propName, propertyValue, errors) != false) {
             try {
-                def converter = getValueConverter obj, propName, propertyValue
-                if (converter) {
-                    propertyValue = converter.convert source
-                }
                 setPropertyValue obj, source, metaProperty, propertyValue, listener
             } catch (Exception e) {
                 addBindingError(obj, propName, propertyValue, e, listener, errors)
