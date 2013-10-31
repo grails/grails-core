@@ -94,7 +94,7 @@ target(allTests: "Runs the project's tests.") {
 
     }
     else {
-        exitCode = projectTestRunner.runAllTests(argsMap, false) ? 1 : 0
+        exitCode = projectTestRunner.runAllTests(argsMap, false) ? 0 : 1
     }
     exit(exitCode)
 }
