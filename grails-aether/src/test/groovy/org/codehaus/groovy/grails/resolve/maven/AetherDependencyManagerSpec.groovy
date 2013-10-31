@@ -35,6 +35,9 @@ class AetherDependencyManagerSpec extends Specification {
         given:"A dependency manager with a dependency that contains exclusions"
             def dependencyManager = new AetherDependencyManager()
             dependencyManager.parseDependencies {
+                repositories {
+                    mavenCentral()
+                }
                 dependencies {
                     compile 'mysql:mysql-connector-java:5.1.24'
                     test 'mysql:mysql-connector-java:5.1.24'
@@ -45,8 +48,8 @@ class AetherDependencyManagerSpec extends Specification {
             def testFiles = dependencyManager.resolve('test').allArtifacts
 
         then:"The exclusions are present"
-            testFiles.size() == 1
             compileFiles.size() == 1
+            testFiles.size() == 1
 
     }
 
