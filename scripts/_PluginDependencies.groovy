@@ -37,7 +37,7 @@ pluginsList = null
 // Targets
 target(resolveDependencies: "Resolve plugin dependencies") {
     depends(parseArguments, classpath)
-    def installEngine = createPluginInstallEngine()
+    def installEngine = createPluginInstallEngine(classLoader)
     installEngine.resolveAndInstallDepdendencies()
 }
 
@@ -67,8 +67,8 @@ runPluginScript = { File scriptFile, fullPluginName, msg ->
     }
 }
 
-private PluginInstallEngine createPluginInstallEngine() {
-    def pluginInstallEngine = new PluginInstallEngine(grailsSettings, pluginSettings, metadata, ant)
+private PluginInstallEngine createPluginInstallEngine(URLClassLoader classLoader) {
+    def pluginInstallEngine = new PluginInstallEngine(grailsSettings, pluginSettings, metadata, ant, classLoader)
     pluginInstallEngine.eventHandler = { eventName, msg -> event(eventName, [msg]) }
     pluginInstallEngine.errorHandler = { msg ->
         event("StatusError", [msg])

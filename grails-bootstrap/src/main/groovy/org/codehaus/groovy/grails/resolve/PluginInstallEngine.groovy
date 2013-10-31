@@ -21,9 +21,7 @@ import grails.util.GrailsNameUtils
 import grails.util.Metadata
 import grails.util.PluginBuildSettings
 import groovy.transform.CompileStatic
-import groovy.util.slurpersupport.GPathResult
 
-import org.apache.ivy.core.module.descriptor.Configuration
 import org.apache.ivy.plugins.latest.LatestTimeStrategy
 import org.apache.ivy.plugins.resolver.ChainResolver
 import org.apache.ivy.plugins.resolver.FileSystemResolver
@@ -67,20 +65,9 @@ class PluginInstallEngine {
     protected applicationPluginsLocation
     protected ant
     protected PluginResolveEngine resolveEngine
+    protected ClassLoader classLoader
 
-    PluginInstallEngine(BuildSettings settings) {
-        this(settings, GrailsPluginUtils.getPluginBuildSettings(settings), Metadata.current, new AntBuilder())
-    }
-
-    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs) {
-        this(settings, pbs, Metadata.current, new AntBuilder())
-    }
-
-    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs, Metadata md) {
-        this(settings, pbs, md, new AntBuilder())
-    }
-
-    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs, Metadata md, AntBuilder ant) {
+    PluginInstallEngine(BuildSettings settings, PluginBuildSettings pbs = GrailsPluginUtils.getPluginBuildSettings(settings), Metadata md = Metadata.getCurrent(), AntBuilder ant = new AntBuilder(), ClassLoader classLoader = Thread.currentThread().getContextClassLoader()) {
         if (settings == null) throw new IllegalArgumentException("Argument [settings] cannot be null")
         if (pbs == null) throw new IllegalArgumentException("Argument [pbs] cannot be null")
         if (md == null) throw new IllegalArgumentException("Argument [md] cannot be null")
@@ -92,6 +79,7 @@ class PluginInstallEngine {
         this.ant = ant
         metadata = md
         resolveEngine = new PluginResolveEngine(settings.dependencyManager, settings)
+        this.classLoader = classLoader
     }
 
     @CompileStatic
@@ -329,14 +317,19 @@ class PluginInstallEngine {
         // hasn't been installed by that point.
         pluginDirVariableStore["${GrailsNameUtils.getPropertyNameForLowerCaseHyphenSeparatedName(pluginName)}PluginDir"] = new File(pluginInstallPath).absoluteFile
 
-        def runtimeDependencies = processPluginDependencies(pluginName,pluginXml)
-
         // proceed _Install.groovy plugin script if exists
         def installScript = new File(pluginInstallPath, "scripts/_Install.groovy")
         runPluginScript(installScript, fullPluginName, "post-install script")
 
         pluginSettings.clearCache()
         pluginSettings.registerNewPluginInstall(pluginZip)
+
+        final jarFiles = new File(pluginInstallPath, "lib").listFiles()?.findAll { File f -> f.name.endsWith('.jar')}
+        if(jarFiles && classLoader instanceof URLClassLoader) {
+            for(File jar in jarFiles) {
+                classLoader.addURL(jar.toURI().toURL())
+            }
+        }
 
         postInstall(pluginInstallPath)
         eventHandler("PluginInstalled", fullPluginName)
@@ -449,51 +442,6 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         }
     }
 
-    protected addJarsToRootLoader(Configuration dependencyConfiguration, Collection pluginJars) {
-        def loader = getClass().classLoader.rootLoader
-        for (File jar in pluginJars) {
-            loader.addURL(jar.toURI().toURL())
-        }
-
-        switch(dependencyConfiguration) {
-            case IvyDependencyManager.RUNTIME_CONFIGURATION:
-                settings.runtimeDependencies.addAll(pluginJars)
-                break
-            case IvyDependencyManager.BUILD_CONFIGURATION:
-                settings.buildDependencies.addAll(pluginJars)
-                break
-            case IvyDependencyManager.PROVIDED_CONFIGURATION:
-                settings.providedDependencies.addAll(pluginJars)
-                break
-            case IvyDependencyManager.TEST_CONFIGURATION:
-                settings.testDependencies.addAll(pluginJars)
-                break
-        }
-    }
-
-    protected Map processPluginDependencies(String pluginName, GPathResult pluginXml) {
-        Map dependencies = [:]
-        for (dep in pluginXml.dependencies.plugin) {
-            def depName = dep.@name.toString()
-            String depVersion = dep.@version.toString()
-            if (isCorePlugin(depName)) {
-                def grailsVersion = settings.getGrailsVersion()
-                if (!GrailsPluginUtils.isValidVersion(grailsVersion, depVersion)) {
-                    errorHandler("Plugin requires version [$depVersion] of Grails core, but installed version is [${grailsVersion}]. Please upgrade your Grails installation and try again.")
-                }
-            }
-            else {
-                def depDirName = GrailsNameUtils.getScriptName(depName)
-                dependencies[depDirName] = depVersion
-            }
-        }
-        return dependencies
-    }
-
-    protected readPluginXmlMetadata(String pluginDirName) {
-        def pluginDir = pluginSettings.getPluginDirForName(pluginDirName)?.file
-        new XmlSlurper().parse(new File(pluginDir, "plugin.xml"))
-    }
 
     private assertGrailsVersionValid(String pluginName, String grailsVersion) {
         if (!grailsVersion || GrailsPluginUtils.isValidVersion(settings.grailsVersion, grailsVersion)) {
@@ -576,64 +524,8 @@ You cannot upgrade a plugin that is configured via BuildConfig.groovy, remove th
         postInstallEvent?.call(pluginInstallPath)
     }
 
-    private boolean isCorePlugin(name) {
-        CORE_PLUGINS.contains(name)
-    }
-
     private boolean confirmInput(String msg) {
         GrailsConsole.getInstance().userInput(msg, ['y','n'] as String[]) == 'y'
     }
 
-    protected Collection<EnhancedDefaultDependencyDescriptor> findMissingOrUpgradePlugins(Collection<EnhancedDefaultDependencyDescriptor> descriptors) {
-        def pluginsToInstall = []
-        for (descriptor in descriptors) {
-            def p = descriptor.dependencyRevisionId
-            def name = p.name
-            def version = p.revision
-
-            def fullName = "$name-$version"
-            def pluginInfo = pluginSettings.getPluginInfoForName(name)
-            def pluginLoc = pluginInfo?.pluginDir
-
-            if (!pluginLoc?.exists()) {
-                eventHandler "StatusUpdate", "Plugin [${fullName}] not installed."
-                pluginsToInstall << descriptor
-            }
-            else if (pluginLoc) {
-
-                if (version.startsWith("latest.")) {
-                    pluginsToInstall << descriptor
-                }
-                else {
-                    def dirName = pluginLoc.file.canonicalFile.name
-                    PluginBuildSettings settings = pluginSettings
-                    if (pluginInfo.version != version &&
-                        !settings.isInlinePluginLocation(pluginLoc) &&
-                        !pluginsToInstall.contains(p)) {
-                        // only print message if the version doesn't start with "latest." since we have
-                        // to do a check for a new version when there version is specified as "latest.integration" etc.
-                        if (!version.startsWith("latest.")) {
-                            def upgrading = GrailsPluginUtils.isVersionGreaterThan(pluginInfo.version, version)
-                            def action = upgrading ? "Upgrading" : "Downgrading"
-                            eventHandler "StatusUpdate", "$action plugin [$dirName] to [${fullName}]."
-                        }
-
-                        pluginsToInstall << descriptor
-                    }
-                }
-            }
-        }
-        return pluginsToInstall
-    }
-
-    /**
-     * Checks whether plugin is inline.
-     * @todo most probably it is required to search for plugin not just by name but also using its goupdId
-     * @param name The plugin name
-     * @return true iff plugin is inline one
-     */
-    private boolean isInlinePlugin(String name) {
-        GrailsPluginInfo info = pluginSettings.getPluginInfoForName(name)
-        return (info != null) && pluginSettings.getInlinePluginDirectories().find {it == info.getPluginDir()}
-    }
 }
