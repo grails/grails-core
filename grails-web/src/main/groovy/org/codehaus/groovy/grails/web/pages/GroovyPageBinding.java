@@ -116,7 +116,7 @@ public class GroovyPageBinding extends AbstractGroovyPageBinding {
      * ModifyOurScopeWithBodyTagTests breaks if variable isn't changed in the binding it exists in.
      *
      * @param name
-     * @return
+     * @return The binding
      */
     private Binding findBindingForVariable(String name) {
         if (cachedParentVariableNames.contains(name)) {

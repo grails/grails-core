@@ -70,8 +70,14 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor {
     }
 
     @Override
-    void runInstance(instance) {
-        ((GroovyObject)instance).invokeMethod("configureClasspath", null)
-        ((GroovyObject)instance).invokeMethod("compileAll", null)
+    int runInstance(instance) {
+        try {
+            ((GroovyObject)instance).invokeMethod("configureClasspath", null)
+            ((GroovyObject)instance).invokeMethod("compileAll", null)
+            return 0
+        } catch (Throwable e) {
+            GrailsConsole.getInstance().error("Error running forked compiler: ${e.message}", e)
+            return 1
+        }
     }
 }

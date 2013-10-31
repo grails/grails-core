@@ -209,7 +209,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
      * the file name is the classname + POSTFIX
      *
      * @param postfix
-     * @return
+     * @return The data resource name
      */
     private String resolveDataResourceName(String postfix) {
         String dataResourceName = pageClass.getName();

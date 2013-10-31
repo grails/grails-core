@@ -41,7 +41,7 @@ public interface DataBinder {
      * will be ignored
      * @param blackList A list of properties names to be excluded during
      * this data binding.  
-     * @param listener A listener which will be notifed of data binding events triggered
+     * @param listener A listener which will be notified of data binding events triggered
      * by this binding
      * @see DataBindingSource
      * @see DataBindingListener
@@ -105,7 +105,7 @@ public interface DataBinder {
      * 
      * @param obj The object being bound to
      * @param source The data binding source
-     * @param listener A listener which will be notifed of data binding events triggered
+     * @param listener A listener which will be notified of data binding events triggered
      * by this binding
      * @see DataBindingSource
      * @see DataBindingListener
