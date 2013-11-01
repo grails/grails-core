@@ -63,6 +63,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.rules.ExternalResource;
 
 /**
  * An AST transformation to be applied to tests for adding behavior to a target test class.
@@ -244,22 +245,38 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected void weaveMixinBeforeAfterRule(ClassNode classNode) {
-        // Only add the rule once
-        if( classNode.getField(TEST_RULE_FIELD) == null ) {
-            ConstructorCallExpression mixinRule = new ConstructorCallExpression(
-                    new ClassNode(MixinTestRule.class),
+        // Spock doesn't seem to properly handle test rules, for spock tests just translate
+        // the @MixinBefore to @Before for normal JUnit handling. Ordering problems are less
+        // of a problem for spock tests anyway.
+        if( isSpockTest(classNode) ) {
+            List<MethodNode> methods = classNode.getAllDeclaredMethods();
+            for (final MethodNode methodNode : methods) {
+                if( hasAnnotation(methodNode, MixinBefore.class) ) {
+                    methodNode.addAnnotation(new AnnotationNode(new ClassNode(Before.class)));
+                }
+                else if( hasAnnotation(methodNode, MixinAfter.class) ) {
+                    methodNode.addAnnotation(new AnnotationNode(new ClassNode(After.class)));
+                }
+            }
+        }
+        else {
+            // Only add the rule once
+            if( classNode.getField(TEST_RULE_FIELD) == null ) {
+                ConstructorCallExpression mixinRule = new ConstructorCallExpression(
+                        new ClassNode(MixinTestRule.class),
                     GrailsASTUtils.buildThisExpression()
-            );
+                );
 
-            // Add the field to the class
-            FieldNode newField = classNode.addField(
-                    TEST_RULE_FIELD,
-                    Modifier.PUBLIC,
-                    new ClassNode(org.junit.rules.TestRule.class),
-                    mixinRule
-            );
-            // Add the JUnit rule annotation so that our rule runs
-            newField.addAnnotation(new AnnotationNode(new ClassNode(org.junit.Rule.class)));
+                // Add the field to the class
+                FieldNode newField = classNode.addField(
+                        TEST_RULE_FIELD,
+                        Modifier.PUBLIC,
+                        new ClassNode(ExternalResource.class),
+                        mixinRule
+                );
+                // Add the JUnit rule annotation so that our rule runs
+                newField.addAnnotation(new AnnotationNode(new ClassNode(org.junit.Rule.class)));
+            }
         }
     }
 

@@ -236,8 +236,7 @@ public class TestForTransformation extends TestMixinTransformation {
         autoAnnotateSetupTeardown(classNode);
         boolean isJunit3Test = isJunit3Test(classNode);
 
-        // For JUnit 4 and Spock tests, use @Rule to ensure ordering. JUnit 3 will build up it's own
-        // setUp and tearDown with statements to run.
+        // JUnit3 creates setUp and tearDown methods via AST and ignores ordering (for now)
         if( !isJunit3Test ) {
             weaveMixinBeforeAfterRule(classNode);
         }
