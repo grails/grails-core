@@ -106,11 +106,13 @@ class I18nGrailsPlugin {
                     final separatorChar = File.separatorChar
                     parentDir = new File(resource.file.getParent().minus("${separatorChar}grails-app${separatorChar}i18n".toString()))
                     final pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings()
-                    if (pluginBuildSettings.isInlinePluginLocation(new org.codehaus.groovy.grails.io.support.FileSystemResource(parentDir))) {
-                        isInlinePluginResource = true
-                    }
-                    else if (!parentDir.equals(buildSettings.baseDir) && pluginBuildSettings.getPluginInfo(parentDir.absolutePath)) {
-                        isPluginResource = true
+                    if (buildSettings && pluginBuildSettings) {
+                        if (pluginBuildSettings.isInlinePluginLocation(new org.codehaus.groovy.grails.io.support.FileSystemResource(parentDir))) {
+                            isInlinePluginResource = true
+                        }
+                        else if (!parentDir.equals(buildSettings.baseDir) && pluginBuildSettings.getPluginInfo(parentDir.absolutePath)) {
+                            isPluginResource = true
+                        }
                     }
                 }
                 String path = null
