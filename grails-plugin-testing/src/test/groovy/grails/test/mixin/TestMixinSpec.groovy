@@ -1,9 +1,9 @@
 package grails.test.mixin
 
 import grails.test.mixin.support.GrailsUnitTestMixin
+import grails.test.mixin.support.MixinAfter
+import grails.test.mixin.support.MixinBefore
 
-import org.junit.After
-import org.junit.Before
 import org.junit.runner.Result
 import org.junit.runner.notification.RunNotifier
 import org.junit.runners.BlockJUnit4ClassRunner
@@ -127,7 +127,8 @@ class MyJunitSpockTest extends spock.lang.Specification {
 class MyMixin extends GrailsUnitTestMixin{
     static doFirstCalled = false
     static doLastCalled = false
-    @Before
+
+    @MixinBefore(priority = 1)
     void doFirst() {
          assert grailsApplication != null
          doFirstCalled = true
@@ -137,7 +138,7 @@ class MyMixin extends GrailsUnitTestMixin{
         // do nothing
     }
 
-    @After
+    @MixinAfter(priority = 1)
     void doLast() {
         doLastCalled = true
     }

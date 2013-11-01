@@ -17,7 +17,10 @@ package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.TestMixin;
 import grails.test.mixin.TestMixinTargetAware;
+import grails.test.mixin.support.MixinAfter;
+import grails.test.mixin.support.MixinBefore;
 import grails.test.mixin.support.MixinMethod;
+import grails.test.mixin.support.MixinTestRule;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
 
@@ -34,7 +37,16 @@ import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.ast.stmt.ReturnStatement;
@@ -46,7 +58,11 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * An AST transformation to be applied to tests for adding behavior to a target test class.
@@ -67,6 +83,7 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final String VOID_TYPE = "void";
+    public static final String TEST_RULE_FIELD = "$mixinTestRule";
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -99,6 +116,7 @@ public class TestMixinTransformation implements ASTTransformation{
         autoAddTestAnnotation(classNode);
 
         weaveMixinsIntoClass(classNode, values);
+        weaveMixinBeforeAfterRule(classNode);
     }
 
     private void autoAddTestAnnotation(ClassNode classNode) {
@@ -164,7 +182,6 @@ public class TestMixinTransformation implements ASTTransformation{
                     final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
 
                     int beforeClassMethodCount = 0;
-                    int afterClassMethodCount = 0;
                     for (MethodNode mixinMethod : mixinMethods) {
                         if (!isCandidateMethod(mixinMethod) || hasDeclaredMethod(classNode, mixinMethod)) {
                             continue;
@@ -183,17 +200,18 @@ public class TestMixinTransformation implements ASTTransformation{
                         }
 
                         if (isJunit3) {
-                            if (hasAnnotation(mixinMethod, Before.class)) {
-                                beforeMethods.add(mixinMethod);
+                            if (hasAnnotation(mixinMethod, Before.class) || hasAnnotation(mixinMethod, MixinBefore.class)) {
+                               beforeMethods.add(mixinMethod);
                             }
                             if (hasAnnotation(mixinMethod, BeforeClass.class)) {
                                 beforeMethods.add(beforeClassMethodCount++, mixinMethod);
                             }
-                            if (hasAnnotation(mixinMethod, After.class)) {
-                                afterMethods.add(mixinMethod);
+                            // @After methods should always run before @AfterClass methods
+                            if (hasAnnotation(mixinMethod, After.class) || hasAnnotation(mixinMethod, MixinAfter.class)) {
+                                afterMethods.add(0, mixinMethod);
                             }
                             if (hasAnnotation(mixinMethod, AfterClass.class)) {
-                                afterMethods.add(afterClassMethodCount++, mixinMethod);
+                                afterMethods.add(mixinMethod);
                             }
                         }
                     }
@@ -223,6 +241,26 @@ public class TestMixinTransformation implements ASTTransformation{
                 new ConstructorCallExpression(fieldType, constructorArgument));
         }
         return null;
+    }
+
+    protected void weaveMixinBeforeAfterRule(ClassNode classNode) {
+        // Only add the rule once
+        if( classNode.getField(TEST_RULE_FIELD) == null ) {
+            ConstructorCallExpression mixinRule = new ConstructorCallExpression(
+                    new ClassNode(MixinTestRule.class),
+                    GrailsASTUtils.buildThisExpression()
+            );
+
+            // Add the field to the class
+            FieldNode newField = classNode.addField(
+                    TEST_RULE_FIELD,
+                    Modifier.PUBLIC,
+                    new ClassNode(org.junit.rules.TestRule.class),
+                    mixinRule
+            );
+            // Add the JUnit rule annotation so that our rule runs
+            newField.addAnnotation(new AnnotationNode(new ClassNode(org.junit.Rule.class)));
+        }
     }
 
     protected boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {

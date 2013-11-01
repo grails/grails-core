@@ -19,6 +19,8 @@ import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.mixin.support.GroovyPageUnitTestResourceLoader
 import grails.test.mixin.support.LazyTagLibraryLookup
+import grails.test.mixin.support.MixinAfter
+import grails.test.mixin.support.MixinBefore
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import grails.web.HyphenatedUrlConverter
@@ -61,18 +63,16 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
-import org.junit.After
 import org.junit.AfterClass
-import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
-import org.springframework.context.ApplicationContext
 
 /**
  * Applied to a unit test to test controllers.
@@ -238,7 +238,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         ServletContextHolder.setServletContext(null)
     }
 
-    @Before
+    @MixinBefore(priority = 1)
     @CompileStatic
     void bindGrailsWebRequest() {
         new CodecsGrailsPlugin().providedArtefacts.each { Class codecClass ->
@@ -347,7 +347,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         return instance
     }
 
-    @After
+    @MixinAfter(priority = 1)
     void clearGrailsWebRequest() {
         webRequest = null
         request = null

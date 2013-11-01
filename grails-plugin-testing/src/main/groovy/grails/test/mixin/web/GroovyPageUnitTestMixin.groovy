@@ -16,6 +16,8 @@
 package grails.test.mixin.web
 
 import grails.artefact.Enhanced
+import grails.test.mixin.support.MixinAfter
+import grails.test.mixin.support.MixinBefore
 import groovy.text.Template
 
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
@@ -31,7 +33,6 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
 import org.junit.After
 import org.junit.Assert
-import org.junit.Before
 
 /**
  * <p>A unit testing mixing that add behavior to support the testing of tag libraries
@@ -57,15 +58,14 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
     GroovyPageBinding pageScope
 
     @Override
-    @Before
+    @MixinBefore(priority = 2)
     void bindGrailsWebRequest() {
         super.bindGrailsWebRequest()
         pageScope = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest))
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
-
     }
 
-    @After
+    @MixinAfter(priority = 2)
     void clearPageScope() {
         pageScope = null
     }

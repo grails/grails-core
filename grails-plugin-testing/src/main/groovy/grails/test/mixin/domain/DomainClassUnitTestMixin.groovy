@@ -17,6 +17,8 @@ package grails.test.mixin.domain
 
 import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
+import grails.test.mixin.support.MixinAfter
+import grails.test.mixin.support.MixinBefore
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
@@ -39,9 +41,7 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
-import org.junit.After
 import org.junit.AfterClass
-import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.validation.Validator
@@ -113,12 +113,12 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         ConstrainedProperty.removeConstraint("unique")
     }
 
-    @Before
+    @MixinBefore(priority = 1)
     void connectDatastore() {
         currentSession = DatastoreUtils.bindSession(simpleDatastore.connect())
     }
 
-    @After
+    @MixinAfter(priority = 1)
     void shutdownDatastoreImplementation() {
         currentSession?.disconnect()
         if (currentSession != null) {

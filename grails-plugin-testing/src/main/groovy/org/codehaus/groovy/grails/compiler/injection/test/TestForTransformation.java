@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.compiler.injection.test;
 import grails.test.mixin.TestFor;
 import grails.test.mixin.domain.DomainClassUnitTestMixin;
 import grails.test.mixin.services.ServiceUnitTestMixin;
+import grails.test.mixin.support.MixinBefore;
 import grails.test.mixin.support.MixinMethod;
 import grails.test.mixin.web.ControllerUnitTestMixin;
 import grails.test.mixin.web.FiltersUnitTestMixin;
@@ -103,12 +104,22 @@ public class TestForTransformation extends TestMixinTransformation {
     }
 
     public static final String DOMAIN_TYPE = "Domain";
-    public static final ClassNode BEFORE_CLASS_NODE = new ClassNode(Before.class);
-    public static final AnnotationNode BEFORE_ANNOTATION = new AnnotationNode(BEFORE_CLASS_NODE);
 
+    // These are the standard JUnit annotations. If we are marking up setUp and tearDown on behalf
+    // of the client code, we will use these to ensure they run after the Grails methods.
+    public static final ClassNode BEFORE_CLASS_NODE = new ClassNode(Before.class);
     public static final ClassNode AFTER_CLASS_NODE = new ClassNode(After.class);
+    public static final AnnotationNode BEFORE_ANNOTATION = new AnnotationNode(BEFORE_CLASS_NODE);
     public static final AnnotationNode AFTER_ANNOTATION = new AnnotationNode(AFTER_CLASS_NODE);
 
+    // These are markers for Grails mixin support to ensure that they run before any @Before/@After methods
+    // either added by this transformation or specified by the user. The ones added by this class should
+    // run after the base ones, thus the priority number of 10 (which is very low).
+    public static final AnnotationNode MIXIN_BEFORE_ANNOTATION;
+    static {
+        MIXIN_BEFORE_ANNOTATION = new AnnotationNode(new ClassNode(MixinBefore.class));
+        MIXIN_BEFORE_ANNOTATION.setMember("priority", new ConstantExpression(10));
+    }
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final ClassNode GROOVY_TEST_CASE_CLASS = new ClassNode(GroovyTestCase.class);
     public static final String VOID_TYPE = "void";
@@ -225,6 +236,12 @@ public class TestForTransformation extends TestMixinTransformation {
         autoAnnotateSetupTeardown(classNode);
         boolean isJunit3Test = isJunit3Test(classNode);
 
+        // For JUnit 4 and Spock tests, use @Rule to ensure ordering. JUnit 3 will build up it's own
+        // setUp and tearDown with statements to run.
+        if( !isJunit3Test ) {
+            weaveMixinBeforeAfterRule(classNode);
+        }
+
         // make sure the 'log' property is not the one from GroovyTestCase
         FieldNode log = classNode.getField("log");
         if (log == null || log.getDeclaringClass().equals(GROOVY_TEST_CASE_CLASS)) {
@@ -234,6 +251,7 @@ public class TestForTransformation extends TestMixinTransformation {
 
         boolean isJunit4 = !isSpockTest && !isJunit3Test;
         if (isJunit4) {
+
             // assume JUnit 4
             Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
             boolean hasTestMethods = false;
@@ -259,7 +277,7 @@ public class TestForTransformation extends TestMixinTransformation {
         if (isJunit4 || isJunit3Test || isSpockTest) {
             final MethodNode methodToAdd = weaveMock(classNode, ce, true);
             if (methodToAdd != null && isJunit3Test) {
-                addMethodCallsToMethod(classNode,SET_UP_METHOD, Arrays.asList(methodToAdd));
+                addMethodCallsToMethod(classNode, SET_UP_METHOD, Arrays.asList(methodToAdd));
             }
         }
     }
@@ -428,7 +446,7 @@ public class TestForTransformation extends TestMixinTransformation {
             addMockCollaborator(type, targetClass, setupMethodBody);
 
             methodNode = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, setupMethodBody);
-            methodNode.addAnnotation(BEFORE_ANNOTATION);
+            methodNode.addAnnotation(MIXIN_BEFORE_ANNOTATION);
             methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
             classNode.addMethod(methodNode);
         }

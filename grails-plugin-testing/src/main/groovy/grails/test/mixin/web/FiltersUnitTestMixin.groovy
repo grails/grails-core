@@ -15,11 +15,11 @@
  */
 package grails.test.mixin.web
 
+import grails.test.mixin.support.MixinAfter
 import org.codehaus.groovy.grails.plugins.web.filters.CompositeInterceptor
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandler
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.junit.After
 import org.junit.BeforeClass
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.web.servlet.ModelAndView
@@ -58,7 +58,7 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
         }
     }
 
-    @After
+    @MixinAfter(priority = 2)
     void clearFilters() {
         getCompositeInterceptor().handlers?.clear()
     }

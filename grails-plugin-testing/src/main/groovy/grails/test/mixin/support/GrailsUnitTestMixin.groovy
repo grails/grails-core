@@ -136,7 +136,7 @@ class GrailsUnitTestMixin {
         }
     }
 
-    @After
+    @MixinAfter(priority = 0)
     void resetGrailsApplication() {
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()

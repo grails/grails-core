@@ -16,6 +16,7 @@
 package grails.test.mixin.services
 
 import grails.test.mixin.domain.DomainClassUnitTestMixin
+
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler
 
 /**
