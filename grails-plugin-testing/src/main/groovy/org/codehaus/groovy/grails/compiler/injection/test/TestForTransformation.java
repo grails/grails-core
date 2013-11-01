@@ -44,6 +44,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -258,7 +259,9 @@ public class TestForTransformation extends TestMixinTransformation {
                 MethodNode methodNode = declaredMethodsMap.get(methodName);
                 ClassNode testAnnotationClassNode = TEST_ANNOTATION.getClassNode();
                 List<AnnotationNode> existingTestAnnotations = methodNode.getAnnotations(testAnnotationClassNode);
-                if (isCandidateMethod(methodNode) && (methodNode.getName().startsWith("test") || existingTestAnnotations.size()>0)) {
+
+                // Must be a candidate, not have any arguments (like testFor()), start with test* or have @Test annotation
+                if (isCandidateMethod(methodNode) && !hasArguments(methodNode) && (methodNode.getName().startsWith("test") || existingTestAnnotations.size() > 0)) {
                     if (existingTestAnnotations.size()==0) {
                         ClassNode returnType = methodNode.getReturnType();
                         if (returnType.getName().equals(VOID_TYPE)) {
@@ -279,6 +282,11 @@ public class TestForTransformation extends TestMixinTransformation {
                 addMethodCallsToMethod(classNode, SET_UP_METHOD, Arrays.asList(methodToAdd));
             }
         }
+    }
+
+    private boolean hasArguments(MethodNode methodNode) {
+        Parameter[] params = methodNode.getParameters() == null ? Parameter.EMPTY_ARRAY : methodNode.getParameters();
+        return params.length > 0;
     }
 
     private Map<ClassNode, List<Class>> wovenMixins = new HashMap<ClassNode, List<Class>>();
