@@ -261,7 +261,7 @@ public class TestMixinTransformation implements ASTTransformation{
         }
         else {
             // Only add the rule once
-            if( classNode.getField(TEST_RULE_FIELD) == null ) {
+            if( classNode.getDeclaredField(TEST_RULE_FIELD) == null ) {
                 ConstructorCallExpression mixinRule = new ConstructorCallExpression(
                         new ClassNode(MixinTestRule.class),
                     GrailsASTUtils.buildThisExpression()
