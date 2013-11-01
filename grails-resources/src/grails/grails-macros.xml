@@ -39,6 +39,7 @@
     <attribute name="debug" default="false" />
     <attribute name="jvmargs" default=""/>
     <attribute name="args" default=""/>
+    <attribute name="failonerror" default="false"/>
     <element name="sysprops" optional="true"/>
     <element name="extend-classpath" optional="true"/>
     <sequential>
@@ -53,7 +54,7 @@
       <property name="debug.line" value=""/>
 
       <!-- Execute Grails -->
-      <java fork="true" classname="@{grailsStarter}" dir="@{cwd}">
+      <java fork="true" classname="@{grailsStarter}" dir="@{cwd}" failonerror="@{failonerror}">
         <env key="GRAILS_HOME" value="${grails.home}"/>
         <jvmarg value="-server"/>
         <jvmarg value="-Djava.awt.headless=true"/>
