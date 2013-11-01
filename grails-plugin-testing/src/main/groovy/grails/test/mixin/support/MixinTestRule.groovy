@@ -46,12 +46,12 @@ class MixinTestRule extends ExternalResource {
     }
 
     @Override
-    protected void before() throws Throwable {
+    void before() throws Throwable {
         beforeMethods*.invoke(instance)
     }
 
     @Override
-    protected void after() {
+    void after() {
         afterMethods.reverse()*.invoke(instance)
     }
 }

@@ -31,9 +31,11 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -42,6 +44,7 @@ import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.FieldExpression;
 import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
@@ -63,7 +66,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.rules.ExternalResource;
 
 /**
  * An AST transformation to be applied to tests for adding behavior to a target test class.
@@ -245,39 +247,38 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected void weaveMixinBeforeAfterRule(ClassNode classNode) {
-        // Spock doesn't seem to properly handle test rules, for spock tests just translate
-        // the @MixinBefore to @Before for normal JUnit handling. Ordering problems are less
-        // of a problem for spock tests anyway.
-        if( isSpockTest(classNode) ) {
-            List<MethodNode> methods = classNode.getAllDeclaredMethods();
-            for (final MethodNode methodNode : methods) {
-                if( hasAnnotation(methodNode, MixinBefore.class) ) {
-                    methodNode.addAnnotation(new AnnotationNode(new ClassNode(Before.class)));
-                }
-                else if( hasAnnotation(methodNode, MixinAfter.class) ) {
-                    methodNode.addAnnotation(new AnnotationNode(new ClassNode(After.class)));
-                }
-            }
-        }
-        else {
-            // Only add the rule once
-            if( classNode.getDeclaredField(TEST_RULE_FIELD) == null ) {
-                ConstructorCallExpression mixinRule = new ConstructorCallExpression(
-                        new ClassNode(MixinTestRule.class),
-                    GrailsASTUtils.buildThisExpression()
-                );
+        // Only add the rule once
+        if (classNode.getDeclaredField(TEST_RULE_FIELD) == null) {
+            ConstructorCallExpression mixinRule = new ConstructorCallExpression(ClassHelper.make(MixinTestRule.class),
+                    GrailsASTUtils.buildThisExpression());
 
-                // Add the field to the class
-                FieldNode newField = classNode.addField(
-                        TEST_RULE_FIELD,
-                        Modifier.PUBLIC,
-                        new ClassNode(ExternalResource.class),
-                        mixinRule
-                );
+            // Add the field to the class
+            FieldNode newField = classNode.addField(TEST_RULE_FIELD, Modifier.PUBLIC,
+                    ClassHelper.make(MixinTestRule.class), mixinRule);
+
+            if (isSpockTest(classNode)) {
+                // Spock doesn't seem to properly handle test rules, for spock tests
+                // add methods for calling the rule that hasn't been annotated
+                addBeforeAfterMethodCall(classNode, newField, true);
+                addBeforeAfterMethodCall(classNode, newField, false);
+            }
+            else {
                 // Add the JUnit rule annotation so that our rule runs
                 newField.addAnnotation(new AnnotationNode(new ClassNode(org.junit.Rule.class)));
             }
         }
+    }
+    
+    private void addBeforeAfterMethodCall(ClassNode classNode, FieldNode newField, boolean isBefore) {
+        String beforeOrAfter = (isBefore ? "before" : "after");
+        final String methodName = "$mixinTestRule" + StringUtils.capitalize(beforeOrAfter) + classNode.getName();
+        BlockStatement methodBody = new BlockStatement();
+        MethodCallExpression methodCallExpression = new MethodCallExpression(new FieldExpression(newField), beforeOrAfter, MethodCallExpression.NO_ARGUMENTS);
+        GrailsASTUtils.applyDefaultMethodTarget(methodCallExpression, ClassHelper.make(MixinTestRule.class));
+        methodBody.addStatement(new ExpressionStatement(methodCallExpression));
+        MethodNode method = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS, null, methodBody);
+        method.addAnnotation(new AnnotationNode(ClassHelper.make(isBefore ? Before.class : After.class)));
+        classNode.addMethod(method);
     }
 
     protected boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
