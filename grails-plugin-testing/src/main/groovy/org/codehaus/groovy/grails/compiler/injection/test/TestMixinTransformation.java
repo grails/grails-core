@@ -248,7 +248,7 @@ public class TestMixinTransformation implements ASTTransformation{
 
     protected void weaveMixinBeforeAfterRule(ClassNode classNode) {
         // Only add the rule once
-        if (classNode.getDeclaredField(TEST_RULE_FIELD) == null) {
+        if (classNode.getField(TEST_RULE_FIELD) == null) {
             ConstructorCallExpression mixinRule = new ConstructorCallExpression(ClassHelper.make(MixinTestRule.class),
                     GrailsASTUtils.buildThisExpression());
 
@@ -271,7 +271,7 @@ public class TestMixinTransformation implements ASTTransformation{
     
     private void addBeforeAfterMethodCall(ClassNode classNode, FieldNode newField, boolean isBefore) {
         String beforeOrAfter = (isBefore ? "before" : "after");
-        final String methodName = "$mixinTestRule" + StringUtils.capitalize(beforeOrAfter) + classNode.getName();
+        final String methodName = "$mixinTestRule" + StringUtils.capitalize(beforeOrAfter);
         BlockStatement methodBody = new BlockStatement();
         MethodCallExpression methodCallExpression = new MethodCallExpression(new FieldExpression(newField), beforeOrAfter, MethodCallExpression.NO_ARGUMENTS);
         GrailsASTUtils.applyDefaultMethodTarget(methodCallExpression, ClassHelper.make(MixinTestRule.class));

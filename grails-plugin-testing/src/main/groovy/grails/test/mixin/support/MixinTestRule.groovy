@@ -1,8 +1,9 @@
 package grails.test.mixin.support
 
-import org.junit.rules.ExternalResource
-
 import java.lang.reflect.Method
+import java.lang.reflect.Modifier
+
+import org.junit.rules.ExternalResource
 
 /**
  * Test rule which looks at each @MixinBefore and @MixinAfter method and builds a
@@ -14,7 +15,8 @@ class MixinTestRule extends ExternalResource {
 
     private List<Method> beforeMethods = []
     private List<Method> afterMethods = []
-
+    int counter=0
+    
     MixinTestRule(instance) {
         this.instance = instance
 
@@ -22,6 +24,18 @@ class MixinTestRule extends ExternalResource {
         afterMethods = methodsForAnnotation(MixinAfter.class)
     }
 
+    private boolean isPotentialMethod(Method method) {
+        boolean isPotential =  method.getReturnType().equals(void.class) &&
+        method.getParameterTypes().length == 0 && Modifier.isPublic(method.getModifiers());
+        return isPotential;
+    }
+
+    private static class MethodEntry {
+        Method method 
+        int order
+        int priority 
+    }
+    
     /**
      * Returns the annotated methods in priority order, lowest to highest. If two
      * have the same priority, their order is not guaranteed.
@@ -30,19 +44,23 @@ class MixinTestRule extends ExternalResource {
      * @return
      */
     private List<Method> methodsForAnnotation(Class annotationClass) {
-        List<Method> methods = [].withDefault { [] }
-        instance.getClass().getDeclaredMethods().each { method ->
-            def annotation = method.getAnnotation(annotationClass)
-            if( annotation ) {
-                methods[annotation.priority()] << method
+        List<MethodEntry> methods = []
+        addMethods(instance.getClass(), annotationClass, methods)
+        methods.sort { a, b -> a.priority <=> b.priority ?: a.order <=> b.order }.collect { it.method }
+    }
+
+    private addMethods(Class currentClass, Class annotationClass, List<MethodEntry> methods) {
+        currentClass.getDeclaredMethods().each { Method method ->
+            if(isPotentialMethod(method)) {
+                def annotation = method.getAnnotation(annotationClass)
+                if( annotation ) {
+                    methods << new MethodEntry(method: method, order: counter++, priority:annotation.priority())
+                }
             }
         }
-
-        // Flatten out the list and remove any nulls
-        // (if a priority is missing, like 0 and a 2, 1 will be null)
-        List<Method> flattened = methods.flatten() as List<Method>
-        flattened.retainAll { it != null }
-        flattened
+        if(currentClass.getSuperclass() != Object) {
+            addMethods(currentClass.getSuperclass(), annotationClass, methods)
+        }
     }
 
     @Override
