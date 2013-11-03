@@ -12,5 +12,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 public @interface MixinBefore {
-    int priority();
+    int priority() default 10;
+    int lineNumber() default 0;
 }

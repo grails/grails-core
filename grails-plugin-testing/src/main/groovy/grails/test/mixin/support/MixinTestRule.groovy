@@ -15,7 +15,6 @@ class MixinTestRule extends ExternalResource {
 
     private List<Method> beforeMethods = []
     private List<Method> afterMethods = []
-    int counter=0
     
     MixinTestRule(instance) {
         this.instance = instance
@@ -26,13 +25,14 @@ class MixinTestRule extends ExternalResource {
 
     private boolean isPotentialMethod(Method method) {
         boolean isPotential =  method.getReturnType().equals(void.class) &&
-        method.getParameterTypes().length == 0 && Modifier.isPublic(method.getModifiers());
+        method.getParameterTypes().length == 0 && Modifier.isPublic(method.getModifiers()) && !Modifier.isAbstract(method.getModifiers())
         return isPotential;
     }
 
     private static class MethodEntry {
         Method method 
-        int order
+        int level
+        int lineNumber
         int priority 
     }
     
@@ -45,21 +45,22 @@ class MixinTestRule extends ExternalResource {
      */
     private List<Method> methodsForAnnotation(Class annotationClass) {
         List<MethodEntry> methods = []
-        addMethods(instance.getClass(), annotationClass, methods)
-        methods.sort { a, b -> a.priority <=> b.priority ?: a.order <=> b.order }.collect { it.method }
+        addMethods(instance.getClass(), annotationClass, methods, [] as Set, 1)
+        methods.sort { a, b -> a.priority <=> b.priority ?: b.level <=> a.level ?: a.lineNumber <=> b.lineNumber }.collect { it.method }
     }
 
-    private addMethods(Class currentClass, Class annotationClass, List<MethodEntry> methods) {
+    private addMethods(Class currentClass, Class annotationClass, List<MethodEntry> methods, Set<String> addedMethods, int level) {
         currentClass.getDeclaredMethods().each { Method method ->
-            if(isPotentialMethod(method)) {
+            if(isPotentialMethod(method) && !addedMethods.contains(method.name)) {
                 def annotation = method.getAnnotation(annotationClass)
                 if( annotation ) {
-                    methods << new MethodEntry(method: method, order: counter++, priority:annotation.priority())
+                    methods << new MethodEntry(method: method, lineNumber: annotation.lineNumber(), priority: annotation.priority(), level: level)
+                    addedMethods << method.name
                 }
             }
         }
         if(currentClass.getSuperclass() != Object) {
-            addMethods(currentClass.getSuperclass(), annotationClass, methods)
+            addMethods(currentClass.getSuperclass(), annotationClass, methods, addedMethods, level+1)
         }
     }
 

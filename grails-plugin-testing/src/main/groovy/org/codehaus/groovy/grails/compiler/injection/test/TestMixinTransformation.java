@@ -26,6 +26,7 @@ import groovy.lang.GroovyObjectSupport;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -265,6 +266,34 @@ public class TestMixinTransformation implements ASTTransformation{
             else {
                 // Add the JUnit rule annotation so that our rule runs
                 newField.addAnnotation(new AnnotationNode(new ClassNode(org.junit.Rule.class)));
+            }
+        }
+        
+        addLineNumbersToBeforeAfterAnnotations(classNode);
+    }
+    
+    /**
+     * Adds lineNumbers to MixinAfter & MixinBefore annotations
+     * @param classNode
+     */
+    protected void addLineNumbersToBeforeAfterAnnotations(ClassNode classNode) {
+        ClassNode mixinAfter = ClassHelper.make(MixinAfter.class);
+        ClassNode mixinBefore = ClassHelper.make(MixinBefore.class);
+        
+        for(Map.Entry<String, MethodNode> entry : classNode.getDeclaredMethodsMap().entrySet()) {
+            MethodNode method = entry.getValue();
+            List<AnnotationNode> annotations = new ArrayList<AnnotationNode>();
+            for(Iterator<AnnotationNode> iterator=method.getAnnotations().iterator();iterator.hasNext();) {
+                AnnotationNode annotation = iterator.next();
+                ClassNode annotationClassNode = annotation.getClassNode();
+                if(annotationClassNode.equals(mixinAfter) || annotationClassNode.equals(mixinBefore)) {
+                    iterator.remove();
+                    AnnotationNode cloned = GrailsASTUtils.cloneAnnotation(annotation);
+                    cloned.setMember("lineNumber", new ConstantExpression(method.getLineNumber(), true));
+                }
+            }
+            if(annotations.size() > 0) {
+                method.addAnnotations(annotations);
             }
         }
     }
