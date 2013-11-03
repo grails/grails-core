@@ -327,7 +327,7 @@ public class GrailsASTUtils {
         MethodNode methodNode = new MethodNode(methodName,
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes, genericsPlaceholders),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
-        methodNode.addAnnotations(declaredMethod.getAnnotations());
+        copyAnnotations(declaredMethod, methodNode);
         if(shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
             methodNode.addAnnotation(markerAnnotation);
         }
@@ -465,7 +465,7 @@ public class GrailsASTUtils {
         MethodNode methodNode = new MethodNode(declaredMethodName, Modifier.PUBLIC | Modifier.STATIC, returnType,
                 copyParameters(parameterTypes, genericsPlaceholders), GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
                 methodBody);
-        methodNode.addAnnotations(delegateMethod.getAnnotations());
+        copyAnnotations(delegateMethod, methodNode);
         if (shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
             methodNode.addAnnotation(markerAnnotation);
         }
