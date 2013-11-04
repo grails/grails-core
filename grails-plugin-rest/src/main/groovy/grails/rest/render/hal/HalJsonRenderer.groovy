@@ -220,7 +220,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         writeDomain(context, metaClass, entity, object, writer)
 
         if (associationMap) {
-            boolean hasWrittenObject = false
+            writer.name(EMBEDDED_ATTRIBUTE)
+            writer.beginObject()
             for (entry in associationMap.entrySet()) {
                 final property = entry.key
                 final isSingleEnded = property instanceof ToOne
@@ -248,9 +249,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                 }
 
             }
-            if (hasWrittenObject) {
-                writer.endObject()
-            }
+            writer.endObject()
         }
         writer.endObject()
     }
