@@ -24,25 +24,25 @@ package org.codehaus.groovy.grails.test.runner.phase
 class TestFeatureDiscoverySupport {
 
     // The four test phases that we can run.
-    List<String> unitTests = [ "unit" ]
-    List<String> integrationTests = [ "integration" ]
-    List<String> functionalTests = []
-    List<String> otherTests = [ "cli" ]
+    Set<String> unitTests = [ "unit" ] as Set
+    Set<String> integrationTests = [ "integration" ] as Set
+    Set<String> functionalTests = [] as Set
+    Set<String> otherTests = [ "cli" ] as Set
 
     Map<String, TestPhaseConfigurer> configurers = [unit:new DefaultTestPhaseConfigurer(), other:new DefaultTestPhaseConfigurer()]
     Binding testExecutionContext
 
 
-    List<String> findTestType(String phase) {
+    Set<String> findTestType(String phase) {
         final phaseKey = "${phase}Tests"
         if (hasProperty(phaseKey)) {
             return this."$phaseKey"
         }
         else if (testExecutionContext?.hasVariable(phaseKey)) {
-            return (List<String>)testExecutionContext.getVariable(phaseKey)
+            return testExecutionContext.getVariable(phaseKey) as Set
         }
         else {
-            return []
+            return [] as Set
         }
     }
 
