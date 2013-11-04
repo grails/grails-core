@@ -36,9 +36,12 @@ target(console: "Load the Grails interactive Swing console") {
 
     def forkSettings = grailsSettings.forkSettings
     def forkConfig = forkSettings?.console
+
+
+    projectCompiler.compileAll()
     if (forkConfig == false || forkConfig == 'false') {
         try {
-            compile()
+            
             projectConsole.run()
         } catch (Exception e) {
             grailsConsole.error "Error starting console: ${e.message}", e

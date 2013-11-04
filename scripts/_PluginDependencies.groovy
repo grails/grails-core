@@ -37,8 +37,10 @@ pluginsList = null
 // Targets
 target(resolveDependencies: "Resolve plugin dependencies") {
     depends(parseArguments, classpath)
-    def installEngine = createPluginInstallEngine()
-    installEngine.resolveAndInstallDepdendencies()
+    def installEngine = createPluginInstallEngine(classLoader)
+    if( installEngine.resolveAndInstallDepdendencies() )  {
+        projectCompiler?.reconfigureClasspath()
+    }
 }
 
 target(loadPlugins: "Loads Grails' plugins") {
@@ -67,7 +69,7 @@ runPluginScript = { File scriptFile, fullPluginName, msg ->
     }
 }
 
-private PluginInstallEngine createPluginInstallEngine() {
+private PluginInstallEngine createPluginInstallEngine(URLClassLoader classLoader) {
     def pluginInstallEngine = new PluginInstallEngine(grailsSettings, pluginSettings, metadata, ant)
     pluginInstallEngine.eventHandler = { eventName, msg -> event(eventName, [msg]) }
     pluginInstallEngine.errorHandler = { msg ->

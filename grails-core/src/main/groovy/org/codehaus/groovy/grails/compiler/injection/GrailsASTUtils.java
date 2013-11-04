@@ -327,7 +327,7 @@ public class GrailsASTUtils {
         MethodNode methodNode = new MethodNode(methodName,
                 Modifier.PUBLIC, returnType, copyParameters(parameterTypes, genericsPlaceholders),
                 GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY, methodBody);
-        methodNode.addAnnotations(declaredMethod.getAnnotations());
+        copyAnnotations(declaredMethod, methodNode);
         if(shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
             methodNode.addAnnotation(markerAnnotation);
         }
@@ -465,7 +465,7 @@ public class GrailsASTUtils {
         MethodNode methodNode = new MethodNode(declaredMethodName, Modifier.PUBLIC | Modifier.STATIC, returnType,
                 copyParameters(parameterTypes, genericsPlaceholders), GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY,
                 methodBody);
-        methodNode.addAnnotations(delegateMethod.getAnnotations());
+        copyAnnotations(delegateMethod, methodNode);
         if (shouldAddMarkerAnnotation(markerAnnotation, methodNode)) {
             methodNode.addAnnotation(markerAnnotation);
         }
@@ -1223,14 +1223,19 @@ public class GrailsASTUtils {
             String annotationClassName = node.getClassNode().getName();
             if((excluded==null || !excluded.contains(annotationClassName)) &&
                (included==null || included.contains(annotationClassName))) {
-                final AnnotationNode copyOfAnnotationNode = new AnnotationNode(node.getClassNode());
-                final Map<String, Expression> members = node.getMembers();
-                for(final Map.Entry<String, Expression> entry : members.entrySet()) {
-                    copyOfAnnotationNode.addMember(entry.getKey(), entry.getValue());
-                }
+                final AnnotationNode copyOfAnnotationNode = cloneAnnotation(node);
                 to.addAnnotation(copyOfAnnotationNode);
             }
         }
+    }
+
+    public static AnnotationNode cloneAnnotation(final AnnotationNode node) {
+        final AnnotationNode copyOfAnnotationNode = new AnnotationNode(node.getClassNode());
+        final Map<String, Expression> members = node.getMembers();
+        for(final Map.Entry<String, Expression> entry : members.entrySet()) {
+            copyOfAnnotationNode.addMember(entry.getKey(), entry.getValue());
+        }
+        return copyOfAnnotationNode;
     }
     
     public static void filterAnnotations(final AnnotatedNode annotatedNode, final Set<String> classNamesToRetain, final Set<String> classNamesToRemove) {
