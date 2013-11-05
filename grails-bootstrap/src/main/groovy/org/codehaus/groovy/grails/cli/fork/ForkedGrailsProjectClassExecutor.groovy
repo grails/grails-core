@@ -78,9 +78,10 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
     protected Object initializeProjectInstance() {
         ExecutionContext ec = executionContext
         BuildSettings buildSettings = initializeBuildSettings(ec)
+        initializeLogging(ec.grailsHome, Thread.currentThread().getContextClassLoader())
         URLClassLoader classLoader = initializeClassLoader(buildSettings)
-        initializeLogging(ec.grailsHome, classLoader)
         Thread.currentThread().setContextClassLoader(classLoader)
+        initializeLogging(ec.grailsHome, Thread.currentThread().getContextClassLoader())
 
         final projectComponentClass = classLoader.loadClass(getProjectClassType())
         final projectClassInstance = createInstance(projectComponentClass, buildSettings)

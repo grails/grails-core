@@ -640,7 +640,7 @@ abstract class ForkedGrailsProcess {
 
     @CompileStatic
     protected GroovyClassLoader createClassLoader(BuildSettings buildSettings) {
-        def classLoader = new GroovyClassLoader()
+        GroovyClassLoader classLoader = createURLClassLoaderInstance()
 
         if(Environment.current == Environment.TEST) {
             for (File f in buildSettings.testDependencies) {
@@ -675,6 +675,11 @@ abstract class ForkedGrailsProcess {
         }
 
         return classLoader
+    }
+
+    @CompileStatic
+    protected GroovyClassLoader createURLClassLoaderInstance() {
+        return new ChildFirstURLClassLoader()
     }
 
     /**

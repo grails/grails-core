@@ -57,7 +57,7 @@ class ForkedGrailsTestRunner extends ForkedGrailsProjectClassExecutor {
 
     @Override
     protected GroovyClassLoader createClassLoader(BuildSettings buildSettings) {
-        final classLoader = super.createClassLoader(buildSettings)
+        GroovyClassLoader classLoader = super.createClassLoader(buildSettings)
         final urls = classLoader.URLs.toList()
 
         for(File f in buildSettings.testDependencies) {
