@@ -23,6 +23,10 @@ import spock.config.RunnerConfiguration
 
 import java.lang.reflect.Modifier
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
+import org.junit.runner.Request
+import org.junit.internal.requests.FilterRequest
+import org.junit.runner.manipulation.Filter
+import org.junit.runner.Description
 
 @CompileStatic
 class GrailsSpecTestType extends GrailsTestTypeSupport {
@@ -93,7 +97,34 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
 
 
         optimizeSpecRunOrderIfEnabled()
-        junit.run(specClasses as Class[])
+        def runRequest = Request.classes(specClasses as Class[])
+        GrailsTestTargetPattern[] testTargetPatterns = this.testTargetPatterns
+        if(testTargetPatterns) {
+            runRequest = runRequest.filterWith(new Filter() {
+
+                @Override
+                @CompileStatic
+                boolean shouldRun(Description description) {
+                    testTargetPatterns.any { GrailsTestTargetPattern pattern ->
+                        final clsName = description.className
+                        final mName = description.methodName
+                        if(clsName && mName) {
+                            pattern.matches(clsName, mName, TEST_SUFFIXES as String[])
+                        }
+                        else {
+                            pattern.matchesClass(clsName, TEST_SUFFIXES as String[])
+                        }
+                    }
+                }
+
+                @Override
+                @CompileStatic
+                String describe() {
+                    return "grails test target pattern filter"
+                }
+            })
+        }
+        junit.run(runRequest)
         result
     }
 
