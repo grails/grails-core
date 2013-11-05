@@ -33,7 +33,7 @@ ext {
     gdocEngineVersion = "1.0.1"
     groovyVersion = "2.2.0-rc-1"
     ivyVersion = "2.3.0"
-    jansiVersion = "1.2.1"
+    jansiVersion = "1.11"
     jlineVersion = "2.11"
     jnaVersion = "4.0.0"
     slf4jVersion = "1.7.5"
@@ -142,9 +142,7 @@ subprojects { project ->
     configure([compileGroovy, compileTestGroovy]) {
         groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
         groovyOptions.encoding = "UTF-8"
-        groovyOptions.useAnt = true
         groovyOptions.stacktrace = true
-        options.useAnt = true
         options.encoding = "UTF-8"
     }
 
