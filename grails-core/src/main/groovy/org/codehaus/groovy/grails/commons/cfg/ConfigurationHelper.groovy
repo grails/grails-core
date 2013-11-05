@@ -57,6 +57,11 @@ class ConfigurationHelper {
     static void clearCachedConfigs() {
         getCachedConfigs().clear()
     }
+    
+    @CompileStatic
+    static void clearCachedConfig(DefaultGrailsApplication application) {
+        getCachedConfigs().remove(getCacheKey(application))
+    }
 
     @CompileStatic
     static ConfigObject loadConfigFromClasspath(DefaultGrailsApplication application = null,
@@ -64,20 +69,13 @@ class ConfigurationHelper {
 
         ConfigObject co
         ClassLoader classLoader
-        Integer cacheKey = DEV_CACHE_KEY
+        Integer cacheKey = getCacheKey(application)
 
         if (application == null) {
             classLoader = Thread.currentThread().contextClassLoader
         }
         else {
             classLoader = application.getClassLoader()
-            if (Environment.isWarDeployed() || !Environment.isWithinShell()) {
-                // use unique cache keys for each config based on the application instance
-                // to ensure each application gets a unique config and avoid the scenario
-                // where applications deployed in a shared library mode (shared jars) share the
-                // same config
-                cacheKey = System.identityHashCode(application)
-            }
         }
 
         co = getCachedConfigs().get(cacheKey)
@@ -117,6 +115,19 @@ class ConfigurationHelper {
         }
 
         return co
+    }
+
+    @CompileStatic
+    private static int getCacheKey(DefaultGrailsApplication application) {
+        Integer cacheKey = DEV_CACHE_KEY
+        if (application != null && (Environment.isWarDeployed() || !Environment.isWithinShell())) {
+            // use unique cache keys for each config based on the application instance
+            // to ensure each application gets a unique config and avoid the scenario
+            // where applications deployed in a shared library mode (shared jars) share the
+            // same config
+            cacheKey = System.identityHashCode(application)
+        }
+        return cacheKey
     }
 
     @CompileStatic
