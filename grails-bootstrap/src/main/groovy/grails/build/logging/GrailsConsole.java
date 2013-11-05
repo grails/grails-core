@@ -32,12 +32,15 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Stack;
 
+import grails.util.Environment;
 import jline.Terminal;
 
 import jline.TerminalFactory;
+import jline.TerminalSupport;
 import jline.console.ConsoleReader;
 import jline.console.history.FileHistory;
 import jline.console.history.History;
+import jline.internal.ShutdownHooks;
 import org.apache.tools.ant.BuildException;
 import org.codehaus.groovy.grails.cli.ScriptExitException;
 import org.codehaus.groovy.grails.cli.interactive.CandidateListCompletionHandler;
@@ -143,6 +146,7 @@ public class GrailsConsole {
         System.setOut(new GrailsConsolePrintStream(out));
         System.setErr(new GrailsConsoleErrorPrintStream(err));
 
+        System.setProperty(ShutdownHooks.JLINE_SHUTDOWNHOOK, "false");
         if (isInteractiveEnabled()) {
             reader = createConsoleReader();
             reader.setBellEnabled(false);
@@ -239,7 +243,20 @@ public class GrailsConsole {
     public static synchronized GrailsConsole getInstance() {
         if (instance == null) {
             try {
-                setInstance(createInstance());
+                final GrailsConsole console = createInstance();
+                setInstance(console);
+                if( !Environment.isFork() ) {
+                    Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                console.terminal.restore();
+                            } catch (Exception e) {
+                                // ignore
+                            }
+                        }
+                    }));
+                }
             } catch (IOException e) {
                 throw new RuntimeException("Cannot create grails console: " + e.getMessage(), e);
             }
