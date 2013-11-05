@@ -341,7 +341,6 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
                 CONSOLE.addStatus("$label$msg")
             }
             buildEventListener.triggerEvent("TestPhasesEnd", testExecutionContext)
-            buildEventListener.triggerEvent("AllTestsEnd")
         }
 
 

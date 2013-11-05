@@ -100,6 +100,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * Creates a new empty Grails application.
      */
     public DefaultGrailsApplication() {
+        ConfigurationHelper.clearCachedConfig(this);
         cl = new GroovyClassLoader();
     }
 
@@ -110,6 +111,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @param classLoader The GroovyClassLoader to use
      */
     public DefaultGrailsApplication(final Class<?>[] classes, ClassLoader classLoader) {
+        ConfigurationHelper.clearCachedConfig(this);
         Assert.notNull(classes, "Constructor argument 'classes' cannot be null");
 
         loadedClasses.addAll(Arrays.asList(classes));

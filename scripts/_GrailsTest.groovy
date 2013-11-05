@@ -84,19 +84,21 @@ projectWatcher = null
 
 target(allTests: "Runs the project's tests.") {
     depends(compile, startLogging, packagePlugins, configureServerContextPath)
-    int exitCode
+    Integer exitCode
     if(grailsSettings.forkSettings.test) {
         def forkedTestRunner = new ForkedGrailsTestRunner(grailsSettings)
         if(grailsSettings.forkSettings.test instanceof Map) {
             forkedTestRunner.configure(grailsSettings.forkSettings.test)
         }
-        exitCode = forkedTestRunner.fork(argsMap).waitFor()
+        exitCode = forkedTestRunner.fork(argsMap)?.waitFor()
 
     }
     else {
-        exitCode = projectTestRunner.runAllTests(argsMap, false) ? 0 : 1
+        exitCode = projectTestRunner.runAllTests(argsMap) ? 0 : 1
     }
-    exit(exitCode)
+    if(exitCode != null) {
+        exit(exitCode)    
+    }    
 }
 
 /**
