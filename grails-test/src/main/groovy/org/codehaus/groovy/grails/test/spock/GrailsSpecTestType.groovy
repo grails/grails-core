@@ -108,7 +108,7 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
                     testTargetPatterns.any { GrailsTestTargetPattern pattern ->
                         final clsName = description.className
                         final mName = description.methodName
-                        if(clsName && mName) {
+                        if(clsName && mName && pattern.isMethodTargeting()) {
                             pattern.matches(clsName, mName, TEST_SUFFIXES as String[])
                         }
                         else {
