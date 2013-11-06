@@ -99,13 +99,21 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     }
 
     protected void onInit() {
-        if (name == 'testPaginateMappingAndAction') {
+        if (name in ['testPaginateMappingAndAction', 'testPaginateNamespace']) {
             def mappingClass = gcl.parseClass('''
     class TestUrlMappings {
         static mappings = {
             name claimTab: "/claim/$id/$action" {
                 controller = 'Claim'
                 constraints { id(matches: /\\d+/) }
+            }
+            "/userAdmin/$id?" {
+                controller = 'admin'
+                namespace = 'users'
+            }
+            "/reportAdmin/$id?" {
+                controller = 'admin'
+                namespace = 'reports'
             }
         }
     }
@@ -118,6 +126,14 @@ class RenderTagLibTests extends AbstractGrailsTagTests {
     void testPaginateMappingAndAction() {
         def template = '<g:paginate next="Forward" prev="Back" maxsteps="8" max="10" id="1" mapping="claimTab" total="12" action="documents"/>'
         assertOutputEquals '<span class="currentStep">1</span><a href="/claim/1/documents?offset=10&amp;max=10" class="step">2</a><a href="/claim/1/documents?offset=10&amp;max=10" class="nextLink">Forward</a>', template
+    }
+
+    void testPaginateNamespace() {
+        def template = '<g:paginate next="Forward" prev="Back" maxsteps="8" max="10" id="1" total="12" namespace="users" controller="admin" action="index"/>'
+        assertOutputEquals '<span class="currentStep">1</span><a href="/userAdmin/1?offset=10&amp;max=10" class="step">2</a><a href="/userAdmin/1?offset=10&amp;max=10" class="nextLink">Forward</a>', template
+        
+        template = '<g:paginate next="Forward" prev="Back" maxsteps="8" max="10" id="1" total="12" namespace="reports" controller="admin" action="index"/>'
+        assertOutputEquals '<span class="currentStep">1</span><a href="/reportAdmin/1?offset=10&amp;max=10" class="step">2</a><a href="/reportAdmin/1?offset=10&amp;max=10" class="nextLink">Forward</a>', template
     }
 
     void testPageProperty() {

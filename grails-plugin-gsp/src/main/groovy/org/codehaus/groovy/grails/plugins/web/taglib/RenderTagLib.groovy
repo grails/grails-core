@@ -21,6 +21,7 @@ import org.apache.commons.lang.WordUtils
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
+import org.codehaus.groovy.grails.web.mapping.UrlMapping
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
@@ -373,8 +374,14 @@ class RenderTagLib implements RequestConstants {
         if (action) {
             linkTagAttrs.action = action
         }
-            if (attrs.controller) {
-                linkTagAttrs.controller = attrs.controller
+        if (attrs.controller) {
+            linkTagAttrs.controller = attrs.controller
+        }
+        if (attrs.containsKey(UrlMapping.PLUGIN)) {
+            linkTagAttrs.put(UrlMapping.PLUGIN, attrs.get(UrlMapping.PLUGIN))
+        }
+        if (attrs.containsKey(UrlMapping.NAMESPACE)) {
+            linkTagAttrs.put(UrlMapping.NAMESPACE, attrs.get(UrlMapping.NAMESPACE))
         }
         if (attrs.id != null) {
             linkTagAttrs.id = attrs.id
