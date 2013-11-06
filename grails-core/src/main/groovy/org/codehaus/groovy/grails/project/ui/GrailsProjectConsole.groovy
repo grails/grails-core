@@ -59,7 +59,9 @@ class GrailsProjectConsole extends BaseSettingsApi {
 
     Console run()  {
 
-        projectCompiler.compileAll()
+        projectCompiler.withCompilationErrorHandling {
+            projectCompiler.compileAll()
+        }
         ApplicationContext applicationContext = projectLoader.configureApplication()
         GrailsApplication grailsApplication = applicationContext.getBean(GrailsApplication)
 

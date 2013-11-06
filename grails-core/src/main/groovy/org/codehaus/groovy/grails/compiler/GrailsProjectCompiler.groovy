@@ -32,6 +32,9 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
+import org.codehaus.groovy.control.MultipleCompilationErrorsException
+import org.apache.tools.ant.BuildException
+import grails.build.logging.GrailsConsole
 
 /**
  * Encapsulates the compilation logic required for a Grails application.
@@ -330,6 +333,27 @@ class GrailsProjectCompiler extends BaseSettingsApi{
         compilePluginSources(pluginSettings.providedScopePluginInfo, pluginProvidedClassesDir)
         compilePluginSources(pluginSettings.compileScopePluginInfo, classesDirPath)
         compilePluginSources(pluginSettings.testScopePluginInfo, buildSettings.testClassesDir)
+    }
+
+
+    public void withCompilationErrorHandling(Closure callable) {
+        GrailsConsole grailsConsole = GrailsConsole.getInstance()
+        try {
+            callable.call()
+        }
+        catch (BuildException e) {
+            if (e.cause instanceof MultipleCompilationErrorsException) {
+                grailsConsole.error("Compilation error: ${e.cause.message}")
+            }
+            else {
+                grailsConsole.error "Fatal error during compilation ${e.class.name}: ${e.message}", e
+            }
+            exit 1
+        }
+        catch(Throwable e) {
+            grailsConsole.error "Fatal error during compilation ${e.class.name}: ${e.message}", e
+            exit 1
+        }
     }
 
     private  compilePluginSources(PluginScopeInfo pluginCompileInfo, classesDirPath) {

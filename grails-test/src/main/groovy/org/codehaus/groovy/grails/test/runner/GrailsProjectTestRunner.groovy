@@ -123,8 +123,11 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         testNames = lookupTestPatterns()
 
         // initialize the default binding
-        projectPackager.projectCompiler.configureClasspath()
-        projectPackager.projectCompiler.compileAll()
+        final compiler = projectPackager.projectCompiler
+        compiler.withCompilationErrorHandling {
+            compiler.configureClasspath()
+            compiler.compileAll()
+        }
         initialiseContext(testExecutionContext)
     }
 
