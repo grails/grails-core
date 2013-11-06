@@ -213,7 +213,7 @@ class ResourceTransform implements ASTTransformation{
             newControllerClassNode.addProperty("scope", publicStaticFinal, ClassHelper.STRING_TYPE, new ConstantExpression("singleton"), null, null)
             newControllerClassNode.addProperty("responseFormats", publicStaticFinal, new ClassNode(List).getPlainNodeReference(), responseFormatsExpression, null, null)
 
-            boolean isReadOnly = readOnlyAttr != null && readOnlyAttr.equals(ConstantExpression.TRUE)
+            boolean isReadOnly = readOnlyAttr != null && ((ConstantExpression)readOnlyAttr).trueExpression
 
             List<MethodNode> weavedMethods = []
             weaveReadActions(parent, domainPropertyName,newControllerClassNode, annotationNode.lineNumber, weavedMethods)
