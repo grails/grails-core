@@ -408,17 +408,28 @@ class SimpleDataBinder implements DataBinder {
         return (Map)obj[propertyName]
     }
 
-    protected Collection initializeCollection(obj, String propertyName, Class type) {
-        if (obj[propertyName] == null) {
-            if (List.isAssignableFrom(type)) {
-                obj[propertyName] = []
-            } else if (SortedSet.isAssignableFrom(type)) {
-                obj[propertyName] = new TreeSet()
-            } else if (Set.isAssignableFrom(type)) {
-                obj[propertyName] = new HashSet()
-            }
+    protected Collection initializeCollection(obj, String propertyName, Class type, boolean reuseExistingCollectionIfExists = true) {
+        def val = null
+        if(reuseExistingCollectionIfExists) {
+            val = obj[propertyName]
         }
-        return (Collection)obj[propertyName]
+        if (val == null) {
+            val = getDefaultCollectionInstanceForType(type)
+            obj[propertyName] = val
+        }
+        return (Collection)val
+    }
+    
+    protected getDefaultCollectionInstanceForType(Class type) {
+        def val
+        if (List.isAssignableFrom(type)) {
+            val = []
+        } else if (SortedSet.isAssignableFrom(type)) {
+            val = new TreeSet()
+        } else if (Set.isAssignableFrom(type)) {
+            val = new HashSet()
+        }
+        val
     }
 
     /**
@@ -608,7 +619,7 @@ class SimpleDataBinder implements DataBinder {
     private void addElementsToCollection(obj, String collectionPropertyName, Collection collection, boolean removeExistingElements = false) {
         Class propertyType = obj.metaClass.getMetaProperty(collectionPropertyName).type
         def referencedType = getReferencedTypeForCollection(collectionPropertyName, obj)
-        def coll = initializeCollection(obj, collectionPropertyName, propertyType)
+        def coll = initializeCollection(obj, collectionPropertyName, propertyType, !removeExistingElements)
         if (removeExistingElements == true) {
             coll.clear()
         }
