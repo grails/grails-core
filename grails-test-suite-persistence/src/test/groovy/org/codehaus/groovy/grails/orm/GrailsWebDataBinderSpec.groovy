@@ -1123,6 +1123,15 @@ class GrailsWebDataBinderSpec extends Specification {
     }
     
     @Issue('GRAILS-10728')
+    void 'Test binding to a Set property that has a getter which returns an unmodifiable Set'() {
+        when:
+        def f = new Foo(names: ['Lemmy', 'Phil', 'Mikkey'] as Set)
+        
+        then:
+        f.names == ['Lemmy', 'Phil', 'Mikkey'] as Set
+    }
+    
+    @Issue('GRAILS-10728')
     void 'Test binding to a collection property that has a setter and no getter'() {
         when:
         def f = new Foo(workdays: [Calendar.MONDAY, Calendar.TUESDAY])
@@ -1130,7 +1139,7 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         f.getTheValueOfWorkdays() == [Calendar.MONDAY, Calendar.TUESDAY] as Set
     }
-    
+
     @Issue('GRAILS-10717')
     void 'Test binding to a property that does not correspond to a field'() {
         when:
@@ -1329,5 +1338,15 @@ class Foo {
     
     def getTheValueOfWorkdays() {
         _workdays
+    }
+    
+    private Set<String> _names
+    
+    void setNames(Set<String> names) {
+        _names = names
+    }
+    
+    Set<String> getNames() {
+        Collections.unmodifiableSet(_names ?: [] as Set)
     }
 }
