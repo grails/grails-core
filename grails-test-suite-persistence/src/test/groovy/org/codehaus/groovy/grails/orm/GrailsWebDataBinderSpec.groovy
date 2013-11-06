@@ -1122,6 +1122,15 @@ class GrailsWebDataBinderSpec extends Specification {
         widget.listOfIntegers == [0, 1, 2, 3]
     }
     
+    @Issue('GRAILS-10728')
+    void 'Test binding to a collection property that has a setter and no getter'() {
+        when:
+        def f = new Foo(workdays: [Calendar.MONDAY, Calendar.TUESDAY])
+        
+        then:
+        f.getTheValueOfWorkdays() == [Calendar.MONDAY, Calendar.TUESDAY] as Set
+    }
+    
     @Issue('GRAILS-10717')
     void 'Test binding to a property that does not correspond to a field'() {
         when:
@@ -1310,5 +1319,15 @@ class Foo {
     void setActiveDays(List activeDays) {
         if( activeDays.contains("mon") )
             activeMonday = true
+    }
+    
+    private transient Set<Integer> _workdays
+  
+    void setWorkdays(Collection<Integer> workdays) {
+        _workdays = new HashSet<Integer>(workdays)
+    }
+    
+    def getTheValueOfWorkdays() {
+        _workdays
     }
 }
