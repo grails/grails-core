@@ -66,7 +66,7 @@ public class GroovyPagesJspApplicationContext implements JspApplicationContext {
     private static ExpressionFactory tryExpressionFactoryImplementation(String packagePrefix) {
         String className = packagePrefix + ".el.ExpressionFactoryImpl";
         try {
-            Class<?> cl = ClassUtils.forName(className);
+            Class<?> cl = ClassUtils.forName(className, null);
             if (ExpressionFactory.class.isAssignableFrom(cl)) {
                 LOG.info("Using " + className + " as implementation of " +
                         ExpressionFactory.class.getName());

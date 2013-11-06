@@ -40,7 +40,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import groovy.lang.Binding;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -312,7 +311,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
             HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
-        exposeForwardRequestAttributes(request);
         exposeRequestAttributes(request, model);
 
         String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
@@ -331,7 +329,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         dispatcher.forward(request, response);
         return forwardUrl;
     }
-
+    
     /**
      * Include whatever the given UrlMappingInfo maps to within the current response
      *
