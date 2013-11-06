@@ -7,6 +7,7 @@ import grails.persistence.Entity
 import org.codehaus.groovy.grails.web.servlet.mvc.AbstractGrailsControllerTests
 import org.codehaus.groovy.grails.web.servlet.mvc.HibernateProxy
 import org.codehaus.groovy.grails.web.servlet.mvc.LazyInitializer
+import org.springframework.core.JdkVersion
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -77,31 +78,35 @@ class JSONConverterTests extends AbstractGrailsControllerTests {
     }
 
     void testJSONEnumConverting() {
-        def enumClass = ga.classLoader.loadClass("Role")
-        enumClass.metaClass.asType = {java.lang.Class clazz ->
-            if (ConverterUtil.isConverterClass(clazz)) {
-                return ConverterUtil.createConverter(clazz, delegate)
+        if (JdkVersion.isAtLeastJava15()) {
+            def enumClass = ga.classLoader.loadClass("Role")
+            enumClass.metaClass.asType = {java.lang.Class clazz ->
+                if (ConverterUtil.isConverterClass(clazz)) {
+                    return ConverterUtil.createConverter(clazz, delegate)
+                }
+                return ConverterUtil.invokeOriginalAsTypeMethod(delegate, clazz)
             }
-            return ConverterUtil.invokeOriginalAsTypeMethod(delegate, clazz)
+
+            def enumInstance = enumClass.HEAD
+            def c = new JSONConverterController()
+            c.params.e = enumInstance
+            c.testEnum()
+
+            // @todo this test is fragile and depends on runtime environment because
+            // of hash key ordering variations
+            assertEquals('{"enumType":"Role","name":"HEAD"}', response.contentAsString)
         }
-
-        def enumInstance = enumClass.HEAD
-        def c = new JSONConverterController()
-        c.params.e = enumInstance
-        c.testEnum()
-
-        // @todo this test is fragile and depends on runtime environment because
-        // of hash key ordering variations
-        assertEquals('{"enumType":"Role","name":"HEAD"}', response.contentAsString)
     }
 
     void onSetUp() {
         GroovySystem.metaClassRegistry.removeMetaClass Errors
         GroovySystem.metaClassRegistry.removeMetaClass BeanPropertyBindingResult
 
-        gcl.parseClass '''
+        if (JdkVersion.isAtLeastJava15()) {
+            gcl.parseClass '''
 enum Role { HEAD, DISPATCHER, ADMIN }
 '''
+        }
     }
 }
 

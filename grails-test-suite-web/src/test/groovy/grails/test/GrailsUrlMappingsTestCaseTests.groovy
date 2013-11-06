@@ -61,7 +61,6 @@ class GrailsUrlMappingsTestCaseTests extends GrailsUnitTestCase {
         ctx = new GrailsWebApplicationContext(ctx)
         ctx.servletContext = servletContext
 
-        ctx.refresh()
         GrailsWebUtil.bindMockWebRequest(ctx)
     }
 
