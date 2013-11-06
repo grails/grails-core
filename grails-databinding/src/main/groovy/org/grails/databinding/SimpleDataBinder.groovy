@@ -619,6 +619,7 @@ class SimpleDataBinder implements DataBinder {
                 coll << convert(referencedType, element)
             }
         }
+        obj[collectionPropertyName] = coll
     }
 
     protected initializeProperty(obj, String propName, Class propertyType, DataBindingSource source) {
