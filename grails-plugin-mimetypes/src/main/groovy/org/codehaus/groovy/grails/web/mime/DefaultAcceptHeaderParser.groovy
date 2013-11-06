@@ -61,7 +61,7 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
             if (t.indexOf(';') > -1) {
                 List tokenWithArgs = t.split(';').toList()
                 Map<String, String> params = [:]
-                final paramsList = tokenWithArgs[1..-1]
+                final paramsList = tokenWithArgs.size() > 1 ? tokenWithArgs[1..-1] : []
                 paramsList.each{ String it ->
                     def i = it.indexOf('=')
                     if (i > -1) {

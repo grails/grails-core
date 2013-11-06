@@ -67,6 +67,14 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
         assertEquals('1.1', mimes[0].version)
     }
 
+    void testGRAILS10678() {
+        def mimes = getAcceptHeaderParser().parse("application/json;")
+
+        assertEquals 1, mimes.size()
+        assertEquals "application/json", mimes[0].name
+        assertEquals "json", mimes[0].extension
+    }
+    
     void testFirefox2AcceptHeaderOrdering() {
 
         def mimes = getAcceptHeaderParser().parse("text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5")
