@@ -2,12 +2,14 @@ package grails.test.mixin
 
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.test.mixin.web.ControllerUnitTestMixin
+import spock.lang.Ignore
 import spock.lang.Specification
 
 /**
  * @author Graeme Rocher
  */
 @TestMixin([ControllerUnitTestMixin, DomainClassUnitTestMixin])
+@Ignore
 class ResourceAnnotationRestfulControllerSpec extends Specification{
 
     Class domainClass
