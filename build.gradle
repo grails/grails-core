@@ -142,7 +142,9 @@ subprojects { project ->
     configure([compileGroovy, compileTestGroovy]) {
         groovyOptions.fork(memoryInitialSize: '128M', memoryMaximumSize: '1G')
         groovyOptions.encoding = "UTF-8"
+        groovyOptions.useAnt = true
         groovyOptions.stacktrace = true
+        options.useAnt = true
         options.encoding = "UTF-8"
     }
 
