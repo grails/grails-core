@@ -24,8 +24,7 @@
 
 import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor
-import org.codehaus.groovy.tools.shell.Groovysh
-import org.codehaus.groovy.tools.shell.IO
+import org.codehaus.groovy.grails.cli.support.*
 
 includeTargets << grailsScript("_GrailsBootstrap")
 
@@ -36,11 +35,28 @@ target ('default': "Load the Grails interactive shell") {
 target(shell:"The shell implementation target") {
     depends(loadApp, configureApp)
 
-    def b = new Binding(ctx: appCtx, grailsApplication: grailsApp)
+    
 
     def listeners = appCtx.getBeansOfType(PersistenceContextInterceptor)
     listeners?.each { key, listener -> listener.init() }
-    def shell = new Groovysh(classLoader,b, new IO(grailsConsole.input, System.out, System.err))
+
+    def newDependencyManager = grailsSettings.dependencyManager.createCopy(grailsSettings)
+    newDependencyManager.parseDependencies {
+        dependencies {
+            compile 'org.codehaus.groovy:groovy-groovysh:2.2.0-rc-2'
+        }
+    }
+    def report = newDependencyManager.resolve()
+    def urls = report.jarFiles.collect { it.toURI().toURL() } 
+    def classLoader = new ChildFirstURLClassLoader(classLoader)
+    for(url in urls) {
+        classLoader.addURL(url)
+    }
+    def binding = classLoader.loadClass('groovy.lang.Binding').newInstance([ctx: appCtx, grailsApplication: grailsApp])
+    def shellIO = classLoader.loadClass('org.codehaus.groovy.tools.shell.IO').newInstance(grailsConsole.input, System.out, System.err)
+    def shell = classLoader.loadClass('org.codehaus.groovy.tools.shell.Groovysh').newInstance(classLoader, binding, shellIO)
+
+    // def shell = new Groovysh(classLoader,b, new IO(grailsConsole.input, System.out, System.err))
 
     new GrailsProjectWatcher(projectCompiler, pluginManager).start()
 

@@ -154,7 +154,12 @@ class TestExecutionContext extends ExecutionContext {
     @Override
     protected List<File> buildMinimalIsolatedClasspath(BuildSettings buildSettings) {
         final classpath = super.buildMinimalIsolatedClasspath(buildSettings)
-        classpath.addAll buildSettings.testDependencies.findAll { File f -> f.name.startsWith('junit') || f.name.contains('spock-core') || f.name.startsWith('hamcrest') || f.name.startsWith('cglib') || f.name.startsWith('asm') }
+        classpath.addAll buildSettings.testDependencies.findAll { File f -> f.name.startsWith('junit') ||
+                                                                            f.name.contains('spock-core') ||
+                                                                            f.name.contains('objenesis') ||
+                                                                            f.name.startsWith('hamcrest') ||
+                                                                            f.name.startsWith('cglib') ||
+                                                                            f.name.startsWith('asm') }
         classpath.addAll process.findSystemClasspathJars(buildSettings)
         return classpath
     }
