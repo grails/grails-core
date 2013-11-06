@@ -39,7 +39,7 @@ import spock.lang.Specification
 import com.google.gson.internal.LazilyParsedNumber
 
 @TestMixin(DomainClassUnitTestMixin)
-@Mock([AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
+@Mock([Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
 class GrailsWebDataBinderSpec extends Specification {
 
     GrailsWebDataBinder binder
@@ -1121,6 +1121,15 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         widget.listOfIntegers == [0, 1, 2, 3]
     }
+    
+    @Issue('GRAILS-10717')
+    void 'Test binding to a property that does not correspond to a field'() {
+        when:
+        def f = new Foo(activeDays:['mon'])
+        
+        then:
+        f.activeDays == ['mon']
+    }
 }
 
 @Entity
@@ -1279,4 +1288,27 @@ class AssociationBindingBook {
 class AssociationBindingAuthor {
     String name
     static hasMany = [books: AssociationBindingBook]
+}
+
+@Entity
+class Foo {
+    Boolean activeMonday
+
+    static constraints = {
+        activeDays bindable:true
+    }
+
+    static transients = ['activeDays']
+
+    List getActiveDays() {
+        def activeDays = []
+        if( activeMonday )
+            activeDays << 'mon'
+        activeDays
+    }
+
+    void setActiveDays(List activeDays) {
+        if( activeDays.contains("mon") )
+            activeMonday = true
+    }
 }
