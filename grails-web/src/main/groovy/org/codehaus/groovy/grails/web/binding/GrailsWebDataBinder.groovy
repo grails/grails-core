@@ -99,7 +99,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         if(listener != null && !(listener instanceof DataBindingEventMulticastListener)) {
             allListeners << listener
         }
-        allListeners.addAll listeners
+        allListeners.addAll listeners.findAll { DataBindingListener l -> l.supports(object.getClass()) }
 
         def listenerWrapper = new DataBindingEventMulticastListener(allListeners)
 
@@ -613,11 +613,6 @@ class DataBindingEventMulticastListener implements DataBindingListener {
     }
 
     boolean supports(Class<?> clazz) {
-        for (DataBindingListener listener in listeners) {
-            if (!listener.supports(clazz)) {
-                return false
-            }
-        }
         true
     }
 
