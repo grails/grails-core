@@ -14,8 +14,6 @@
  */
 package org.codehaus.groovy.grails.orm
 
-import java.util.List;
-
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
