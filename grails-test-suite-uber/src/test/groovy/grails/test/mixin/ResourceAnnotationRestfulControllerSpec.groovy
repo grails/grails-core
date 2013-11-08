@@ -1,20 +1,22 @@
 package grails.test.mixin
 
+import grails.persistence.*
+import grails.rest.*
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.test.mixin.web.ControllerUnitTestMixin
+import spock.lang.Shared
 import spock.lang.Specification
-
 /**
  * @author Graeme Rocher
  */
 @TestMixin([ControllerUnitTestMixin, DomainClassUnitTestMixin])
 class ResourceAnnotationRestfulControllerSpec extends Specification{
 
-    Class domainClass
-    Class controllerClass
+    @Shared Class domainClass
+    @Shared Class controllerClass
     def controller
 
-    void setup() {
+    void setupSpec() {
         def gcl  = new GroovyClassLoader()
         gcl.parseClass('''
 import grails.persistence.*
@@ -31,10 +33,13 @@ class Video {
 ''')
         domainClass = gcl.loadClass('Video')
         controllerClass = gcl.loadClass('VideoController')
-        controller = testFor(controllerClass)
         mockDomain(domainClass)
     }
 
+    def setup() {
+        controller = testFor(controllerClass)
+    }
+    
     void "Test the index action returns the correct model"() {
 
         when:"The index action is executed"

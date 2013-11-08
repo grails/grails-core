@@ -272,7 +272,7 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected boolean isStaticCandidateMethod(ClassNode classNode, MethodNode declaredMethod) {
-        return GrailsASTUtils.isCandidateMethod(declaredMethod) && !isCandidateInstanceMethod(classNode, declaredMethod);
+        return GrailsASTUtils.isCandidateMethod(declaredMethod);
     }
 
     private MethodNode createStaticLookupMethod(ClassNode classNode, ClassNode implementationNode, String apiProperty, String lookupMethodName) {
