@@ -14,9 +14,6 @@
  */
 package org.codehaus.groovy.grails.orm
 
-import grails.test.mixin.TestMixin
-import grails.test.mixin.domain.DomainClassUnitTestMixin
-
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.events.DataBindingListener
@@ -24,7 +21,6 @@ import org.grails.databinding.events.DataBindingListenerAdapter
 
 import spock.lang.Specification
 
-@TestMixin(DomainClassUnitTestMixin)
 class GrailsWebDataBinderListenerSpec extends Specification {
 
     void 'Test supports() method is respected'() {
