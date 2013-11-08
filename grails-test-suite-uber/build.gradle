@@ -53,7 +53,6 @@ test {
          "**/rest/render/**/*Spec.class",
          "**/*TestCase.class",
          "**/DataSourceGrailsPluginTests",
-         "**/DefaultGrailsControllerClassTests.class",
          "**/MockUtilsTests.class",
          "**/GrailsUnitTestCaseTests.class",
          "**/SetupTeardownInvokeTests.class",
@@ -89,9 +88,5 @@ task isolatedRestRendererTests(type:Test) {
     includes = ['**/rest/render/**/*Spec.class']
 }
 
-task isolatedDefaultGrailsControllerClassTests(type: Test) {
-    includes = ['**/DefaultGrailsControllerClassTests.class']
-}
-
-test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests, isolatedDefaultGrailsControllerClassTests
+test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests
 
