@@ -5,6 +5,7 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 import spock.lang.Specification
 
 @TestMixin(GrailsUnitTestMixin)
+@spock.lang.Ignore
 class ValidateableSpec extends Specification {
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
