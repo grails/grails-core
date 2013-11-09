@@ -83,6 +83,56 @@ class UrlMappingsGrailsPlugin {
         }
     }
 
+    // These regex match the string and regex literals inside groovy to save before remove comments
+    static final GROOVY_STRING_SINGLE_QUOTE_REGEX = /'([^\n']|\\')*[^\\]'/
+    static final GROOVY_STRING_DOUBLE_QUOTE_REGEX = /"([^\n"]|\\")*[^\\]"/
+    static final GROOVY_STRING_TRIPLE_QUOTE_REGEX = /'''([^']|[^']'[^']|[^']''[^'])*'''/
+    static final GROOVY_REGEX_LITERALS_REGEX = /\/([^\n\/]|\\\/)*[^\\]\//
+
+    // These regex match the multiline and single line comments
+    static final GROOVY_MULTILINE_COMMENTS = /\/\*([^*]|(\*+[^*\/]))*\*\//
+    static final GROOVY_SINGLE_LINE_COMMENTS = /\/\/.*/
+
+    /**
+     * Method to remove the comments from the URL Mappings config file
+     */
+    def removeCommentsFromGroovy(content) {
+        if (!content) {
+            return content
+        }
+        def result = content
+
+        // Save the string to restore them afterwards, to avoid the edge case of comment characters
+        // inside strings. ie: "Test /* */"
+        def savedString = [:]
+        def uuidReplacerString = { regexMatch->
+            def key = "%%${UUID.randomUUID() as String}%%"
+            def matchedString = regexMatch[0]
+            if (matchedString) {
+                // Escape $ characters because they break the replace afterwards
+                matchedString = matchedString.replaceAll(/\$/, '\\\\\\$')
+            }
+            savedString[key] = matchedString
+            return key
+        }
+
+        // These regexp match groovy strings
+        result = result.replaceAll(GROOVY_STRING_SINGLE_QUOTE_REGEX, uuidReplacerString)
+        result = result.replaceAll(GROOVY_STRING_DOUBLE_QUOTE_REGEX, uuidReplacerString)
+        result = result.replaceAll(GROOVY_STRING_TRIPLE_QUOTE_REGEX, uuidReplacerString)
+        result = result.replaceAll(GROOVY_REGEX_LITERALS_REGEX, uuidReplacerString)
+
+        // Remove all comments from the file
+        result = result.replaceAll(GROOVY_MULTILINE_COMMENTS,"")
+        result = result.replaceAll(GROOVY_SINGLE_LINE_COMMENTS, "")
+
+        // Restore the saved strings
+        savedString.each {key, val->
+            result = result.replaceAll(key, val)
+        }
+        return result
+    }
+
     def doWithWebDescriptor = { webXml ->
         def filters = webXml.filter
         def lastFilter = filters[filters.size()-1]
@@ -117,7 +167,8 @@ class UrlMappingsGrailsPlugin {
         def appliedErrorCodes = []
         def errorPages = {
             for (Resource r in watchedResources) {
-                r.file.eachLine { line ->
+                def contents = removeCommentsFromGroovy(r.file.text)
+                contents.eachLine { line ->
                     def matcher = line =~ /\s*["'](\d+?)["']\s*\(.+?\)/
                     if (matcher) {
                         def errorCode = matcher[0][1]
