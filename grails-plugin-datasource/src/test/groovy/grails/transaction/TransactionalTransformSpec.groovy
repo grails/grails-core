@@ -16,19 +16,28 @@
 
 package grails.transaction
 
+import grails.spring.BeanBuilder
+
+import javax.annotation.PostConstruct
+import javax.sql.DataSource
+
+import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import org.springframework.beans.factory.InitializingBean
+import org.springframework.beans.factory.config.MethodInvokingFactoryBean
+import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
+import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.support.DefaultTransactionStatus
+import org.springframework.transaction.support.TransactionSynchronizationManager
+
 import spock.lang.Issue
 import spock.lang.Specification
-import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
-
-import javax.sql.DataSource
 
 /**
  */
 class TransactionalTransformSpec extends Specification {
-
     @Issue('GRAILS-10402')
     void "Test @Transactional annotation with inheritance"() {
         when:"A new instance of a class with a @Transactional method is created that subclasses another transactional class"
@@ -369,7 +378,75 @@ new BookService()
 
         return new TestTransactionManager(dataSource) {}
     }
+
+    @Issue("GRAILS-10748")
+    void "transactional shouldn't be applied to bean initialization methods"() {
+        when:
+            def application = new DefaultGrailsApplication()
+            def bb = new BeanBuilder()
+            bb.beans {
+                commonAnnotationBeanPostProcessor(CommonAnnotationBeanPostProcessor)
+                testService(TransactionalTransformSpecService) { bean ->
+                    bean.autowire = true
+                    bean.lazyInit = false
+                }
+                transactionManager(MethodInvokingFactoryBean) {
+                    targetObject = this
+                    targetMethod = 'getPlatformTransactionManager'
+                }
+            }
+            def applicationContext = bb.createApplicationContext()
+            def bean = applicationContext.getBean('testService')
+            bean.name = 'Grails'
+        then:
+            applicationContext.transactionManager != null
+            bean.transactionManager != null
+            bean.process() != null
+            bean.isActualTransactionActive() == false
+            bean.name == 'Grails'
+            bean.isActive() == false
+    }
 }
+
+@Transactional
+class TransactionalTransformSpecService implements InitializingBean {
+    String name   
+    
+    public TransactionStatus process() {
+        return transactionStatus
+    }
+    
+    @NotTransactional
+    public boolean isActualTransactionActive() {
+        return TransactionSynchronizationManager.isActualTransactionActive()
+    }
+    
+    @PostConstruct
+    public void init() {
+
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        assert !TransactionSynchronizationManager.isActualTransactionActive()
+    }
+    
+    public void setName(String name) {
+        assert !TransactionSynchronizationManager.isActualTransactionActive()
+        this.name = name
+    }
+    
+    public String getName() {
+        assert !TransactionSynchronizationManager.isActualTransactionActive()
+        name
+    }
+    
+    public boolean isActive() {
+        TransactionSynchronizationManager.isActualTransactionActive()
+    }
+}
+
+
 class TestTransactionManager extends DataSourceTransactionManager {
     boolean transactionStarted = false
     boolean transactionRolledBack = false
