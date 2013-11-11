@@ -27,6 +27,8 @@ import spock.lang.Specification
 import spock.lang.Shared
 import spock.lang.Stepwise
 import org.codehaus.groovy.grails.test.spock.GrailsSpecTestType
+import groovy.transform.CompileStatic
+import org.springframework.context.ApplicationContext
 
 /**
  * Super class for integration tests to extend
@@ -36,15 +38,16 @@ import org.codehaus.groovy.grails.test.spock.GrailsSpecTestType
  *
  * @since 2.3
  */
+@CompileStatic
 class IntegrationSpec extends Specification {
-    @Shared private applicationContext = ApplicationHolder.application.mainContext
-    @Shared private autowirer = new GrailsTestAutowirer(applicationContext)
+    @Shared private ApplicationContext applicationContext = ApplicationHolder.application.mainContext
+    @Shared private GrailsTestAutowirer autowirer = new GrailsTestAutowirer(applicationContext)
 
-    @Shared private perSpecTransactionInterceptor
-    @Shared private perSpecRequestEnvironmentInterceptor
+    @Shared private GrailsTestTransactionInterceptor perSpecTransactionInterceptor
+    @Shared private GrailsTestRequestEnvironmentInterceptor perSpecRequestEnvironmentInterceptor
 
-    private perMethodTransactionInterceptor = null
-    private perMethodRequestEnvironmentInterceptor = null
+    private GrailsTestTransactionInterceptor perMethodTransactionInterceptor = null
+    private GrailsTestRequestEnvironmentInterceptor perMethodRequestEnvironmentInterceptor = null
 
     def setupSpec() {
         if (isStepwiseSpec()) {
@@ -78,13 +81,13 @@ class IntegrationSpec extends Specification {
         getClass().isAnnotationPresent(Stepwise)
     }
 
-    private initTransaction() {
+    private GrailsTestTransactionInterceptor initTransaction() {
         def interceptor = new GrailsTestTransactionInterceptor(applicationContext)
         if (interceptor.isTransactional(this)) interceptor.init()
         interceptor
     }
 
-    private initRequestEnv() {
+    private GrailsTestRequestEnvironmentInterceptor initRequestEnv() {
         def interceptor = new GrailsTestRequestEnvironmentInterceptor(applicationContext)
         def controllerName = ControllerNameExtractor.extractControllerNameFromTestClassName(
             this.class.name, GrailsSpecTestType.TEST_SUFFIXES as String[])
