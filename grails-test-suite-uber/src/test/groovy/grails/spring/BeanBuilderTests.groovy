@@ -811,6 +811,25 @@ bb.createApplicationContext()
 
         assertEquals "Fred", appCtx.getBean("personA").name
     }
+    
+    void testSingletonPropertyOnBeanDefinition() {
+        def bb = new BeanBuilder()
+        bb.beans {
+            singletonBean(Bean1) { bean ->
+                bean.singleton = true
+            }
+            nonSingletonBean(Bean1) { bean ->
+                bean.singleton = false
+            }
+            unSpecifiedScopeBean(Bean1)
+        }
+ 
+        def ctx = bb.createApplicationContext()
+ 
+        assertTrue 'singletonBean should have been a singleton', ctx.isSingleton('singletonBean')
+        assertFalse 'nonSingletonBean should not have been a singleton', ctx.isSingleton('nonSingletonBean')
+        assertTrue 'unSpecifiedScopeBean should not have been a singleton', ctx.isSingleton('unSpecifiedScopeBean')
+    }
 }
 
 class HolyGrailQuest {

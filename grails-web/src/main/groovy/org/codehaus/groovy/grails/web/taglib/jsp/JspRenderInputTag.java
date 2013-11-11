@@ -15,19 +15,19 @@
  */
 package org.codehaus.groovy.grails.web.taglib.jsp;
 
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
-import org.codehaus.groovy.grails.web.taglib.RenderInputTag;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.springframework.beans.InvalidPropertyException;
-import org.springframework.web.servlet.tags.RequestContextAwareTag;
-import org.springframework.web.util.ExpressionEvaluationUtils;
+import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;
-import java.io.Writer;
-import java.util.Map;
-import java.util.HashMap;
+
+import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
+import org.codehaus.groovy.grails.web.taglib.RenderInputTag;
+import org.springframework.beans.InvalidPropertyException;
+import org.springframework.web.servlet.tags.RequestContextAwareTag;
 
 /**
  * A JSP facade that delegates to the Grails RenderInputTag (@see
@@ -52,18 +52,10 @@ public class JspRenderInputTag extends RequestContextAwareTag {
         if (StringUtils.isBlank(bean)) {
             throw new JspTagException("Tag [renderInput] missing required attribute [bean]");
         }
-        if (!ExpressionEvaluationUtils.isExpressionLanguage(bean)) {
-            throw new JspTagException("Attribute [bean] of tag [renderInput] must be a JSTL expression");
-        }
 
         @SuppressWarnings("unused")
         Writer out = pageContext.getOut();
         try {
-            Object beanInstance = ExpressionEvaluationUtils.evaluate("bean", bean, Object.class, pageContext);
-            if (beanInstance == null) {
-                throw new JspTagException("Bean [" + bean + "] referenced by tag [renderInput] cannot be null");
-            }
-
             GrailsTagRegistry tagRegistry = GrailsTagRegistry.getInstance();
             Map<String, Object> tagContext = new HashMap<String, Object>();
             tagContext.put(GroovyPage.REQUEST, pageContext.getRequest());
@@ -71,7 +63,7 @@ public class JspRenderInputTag extends RequestContextAwareTag {
             tagContext.put(GroovyPage.SERVLET_CONTEXT, pageContext.getServletContext());
             RenderInputTag tag = (RenderInputTag)tagRegistry.newTag(RenderInputTag.TAG_NAME);
             tag.init(tagContext);
-            tag.setBean(beanInstance);
+            tag.setBean(bean);
             tag.setProperty(property);
             tag.doStartTag();
         }
