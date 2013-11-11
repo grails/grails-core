@@ -111,8 +111,8 @@ class GrailsUnitTestMixin {
 
             mainContext = new GrailsWebApplicationContext(applicationContext)
             mainContext.registerSingleton UrlConverter.BEAN_NAME, CamelCaseUrlConverter
-            mainContext.refresh()
             grailsApplication.mainContext = mainContext
+            mainContext.refresh()
             grailsApplication.initialise()
             def servletContext = new MockServletContext()
             servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mainContext
