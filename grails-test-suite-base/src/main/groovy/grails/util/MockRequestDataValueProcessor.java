@@ -15,7 +15,7 @@ public class MockRequestDataValueProcessor implements RequestDataValueProcessor 
         return extraHiddenFields;
     }
 
-    public String processAction(HttpServletRequest request, String action, String httpMethod) {
+    public String processAction(HttpServletRequest request, String action) {
         if (action.indexOf("requestDataValueProcessorParamName=paramValue") > -1) {
             action = action.replace("?requestDataValueProcessorParamName=paramValue&", "?");
             action = action.replace("?requestDataValueProcessorParamName=paramValue", "");
