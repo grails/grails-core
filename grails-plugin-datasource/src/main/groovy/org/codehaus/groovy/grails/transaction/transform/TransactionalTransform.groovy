@@ -17,6 +17,7 @@
 package org.codehaus.groovy.grails.transaction.transform
 
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
+import grails.transaction.NotTransactional;
 import grails.transaction.Transactional
 import groovy.transform.CompileStatic
 
@@ -61,7 +62,7 @@ class TransactionalTransform implements ASTTransformation{
     private static final String PROPERTY_TRANSACTION_MANAGER = "transactionManager"
     private static final String METHOD_EXECUTE = "execute"
     private static final Set<String> METHOD_NAME_EXCLUDES = new HashSet<String>(Arrays.asList("afterPropertiesSet", "destroy"));
-    private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), "grails.web.controllers.ControllerMethod"));
+    private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), "grails.web.controllers.ControllerMethod", NotTransactional.class.getName()));
 
     @Override
     void visit(ASTNode[] astNodes, SourceUnit source) {

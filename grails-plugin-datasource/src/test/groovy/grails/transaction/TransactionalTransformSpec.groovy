@@ -401,6 +401,7 @@ new BookService()
             applicationContext.transactionManager != null
             bean.transactionManager != null
             bean.process() != null
+            bean.isActualTransactionActive() == false
     }
 }
 
@@ -411,6 +412,11 @@ class TransactionalTransformSpecService implements InitializingBean {
     public TransactionStatus process() {
         return transactionStatus
     }    
+    
+    @NotTransactional
+    public boolean isActualTransactionActive() {
+        return TransactionSynchronizationManager.isActualTransactionActive()
+    }
     
     @PostConstruct
     public void init() {
