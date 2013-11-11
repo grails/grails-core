@@ -1285,4 +1285,18 @@ public class GrailsASTUtils {
             scopeVisitor.visitMethod(methodNode);
         }
     }
+    
+    public static boolean isSetterOrGetterMethod(MethodNode md) {
+        String methodName = md.getName();
+        
+        if((methodName.startsWith("set") && methodName.length() > 3) && md.getParameters() != null && md.getParameters().length == 1) {
+            return true;
+        }
+        
+        if(((methodName.startsWith("get") && methodName.length() > 3) || (methodName.startsWith("is") && methodName.length() > 2)) && (md.getParameters()==null || md.getParameters().length == 0)) {
+            return true;
+        }
+        
+        return false;
+    }
 }
