@@ -250,7 +250,6 @@ class TransactionalTransform implements ASTTransformation{
                 methodNode.code
                 );
         methodNode.setCode(null)
-        copyAnnotations(methodNode, renamedMethodNode, null, ["grails.transaction.Transactional"] as Set)
         classNode.addMethod(renamedMethodNode)
         
         processVariableScopes(source, classNode, renamedMethodNode)
