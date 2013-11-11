@@ -80,6 +80,16 @@ import org.eclipse.aether.util.repository.DefaultAuthenticationSelector
 import org.eclipse.aether.util.repository.DefaultMirrorSelector
 import org.eclipse.aether.util.repository.DefaultProxySelector
 import org.codehaus.groovy.grails.resolve.maven.aether.support.GrailsModelResolver
+import org.eclipse.aether.collection.DependencyGraphTransformer
+import org.eclipse.aether.util.graph.transformer.ConflictResolver
+import org.eclipse.aether.util.graph.transformer.NearestVersionSelector
+import org.eclipse.aether.util.graph.transformer.JavaScopeSelector
+import org.eclipse.aether.util.graph.transformer.SimpleOptionalitySelector
+import org.eclipse.aether.util.graph.transformer.JavaScopeDeriver
+import org.eclipse.aether.util.graph.transformer.ChainedDependencyGraphTransformer
+import org.eclipse.aether.util.graph.transformer.JavaDependencyContextRefiner
+import org.codehaus.groovy.grails.resolve.maven.aether.support.ScopeAwareNearestVersionSelector
+import org.codehaus.groovy.grails.resolve.maven.aether.support.MultipleTopLevelJavaScopeSelector
 
 /**
  * An implementation of the {@link DependencyManager} interface that uses Aether, the dependency resolution
@@ -158,6 +168,12 @@ class AetherDependencyManager implements DependencyManager {
             repositorySystem = locator.getService( RepositorySystem )
 
             session.setAuthenticationSelector(new DefaultAuthenticationSelector())
+            DependencyGraphTransformer transformer =
+                new ConflictResolver( new ScopeAwareNearestVersionSelector(), new MultipleTopLevelJavaScopeSelector(),
+                    new SimpleOptionalitySelector(), new JavaScopeDeriver() );
+
+            session.setDependencyGraphTransformer( new ChainedDependencyGraphTransformer( transformer, new JavaDependencyContextRefiner() ) )
+
             session.setProxySelector(new DefaultProxySelector())
             session.setMirrorSelector(new DefaultMirrorSelector())
         }

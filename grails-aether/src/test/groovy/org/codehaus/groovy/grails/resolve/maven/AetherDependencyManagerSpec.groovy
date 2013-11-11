@@ -53,6 +53,32 @@ class AetherDependencyManagerSpec extends Specification {
 
     }
 
+
+    @Issue('GRAILS-10638')
+    void "Test that a transitive dependency included in both compile and test scopes ends up in both scopes 2"() {
+        given:"A dependency manager with a dependency that contains exclusions"
+        def dependencyManager = new AetherDependencyManager()
+        dependencyManager.parseDependencies {
+            repositories {
+                mavenCentral()
+            }
+            dependencies {
+                test 'org.grails:grails-test:2.3.2'
+                test 'org.grails:grails-plugin-testing:2.3.2'
+
+                compile 'org.grails:grails-test:2.3.2'
+            }
+        }
+        when:"The grails dependencies are obtained"
+            def compileFiles = dependencyManager.resolve('compile').allArtifacts
+            def testFiles = dependencyManager.resolve('test').allArtifacts
+
+        then:"The grails-test jar is in both scopes"
+            compileFiles.find { File f -> f.name.contains('grails-test')}
+            testFiles.find { File f -> f.name.contains('grails-test')}
+
+    }
+
     @Issue('GRAILS-10513')
     void "Test that plugin scopes are correct"() {
         given:"A dependency manager instance"

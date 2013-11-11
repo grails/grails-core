@@ -326,7 +326,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
      */
     @CompileStatic
     ConfigObject createConfig() {
-
+        config = Holders.config
         if (config == null) {
             config = new ConfigObject()
             if (configFile.exists()) {
@@ -360,9 +360,10 @@ class GrailsProjectPackager extends BaseSettingsApi {
                 }
             }
             ConfigurationHelper.initConfig(config, null, classLoader)
+            Holders.config = config
         }
         buildEventListener?.binding?.setVariable('config', config)
-        Holders.config = config
+
         return config
     }
 

@@ -17,10 +17,14 @@
 package org.codehaus.groovy.grails.transaction.transform
 
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
+import grails.transaction.NotTransactional;
 import grails.transaction.Transactional
 import groovy.transform.CompileStatic
 
 import java.lang.reflect.Modifier
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
@@ -57,6 +61,8 @@ class TransactionalTransform implements ASTTransformation{
     public static final ClassNode MY_TYPE = new ClassNode(Transactional)
     private static final String PROPERTY_TRANSACTION_MANAGER = "transactionManager"
     private static final String METHOD_EXECUTE = "execute"
+    private static final Set<String> METHOD_NAME_EXCLUDES = new HashSet<String>(Arrays.asList("afterPropertiesSet", "destroy"));
+    private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), "grails.web.controllers.ControllerMethod", NotTransactional.class.getName()));
 
     @Override
     void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -87,19 +93,34 @@ class TransactionalTransform implements ASTTransformation{
 
     public void weaveTransactionalBehavior(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode) {
         weaveTransactionManagerAware(source, classNode)
-
-        ClassNode controllerMethodAnn = getAnnotationClassNode("grails.web.controllers.ControllerMethod")
-
         List<MethodNode> methods = new ArrayList<MethodNode>(classNode.getMethods());
         
         for (MethodNode md in methods) {
-            if (Modifier.isPublic(md.modifiers) && !Modifier.isAbstract(md.modifiers) && !Modifier.isStatic(md.modifiers)) {
-                if (md.getAnnotations(MY_TYPE)) continue
+            String methodName = md.getName()
+            int modifiers = md.modifiers
+            if (!md.isSynthetic() && !methodName.contains('$') && Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers)) {
+                if(hasExcludedAnnotation(md)) continue
 
-                if (controllerMethodAnn && md.getAnnotations(controllerMethodAnn)) continue
+                if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
+                
+                if(methodName.startsWith("set") && md.getParameters() && md.getParameters().length == 1) continue
+                
+                if((methodName.startsWith("get") || methodName.startsWith("is")) && !md.getParameters()) continue
+                
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }
         }
+    }
+
+    private boolean hasExcludedAnnotation(MethodNode md) {
+        boolean excludedAnnotation = false;
+        for (AnnotationNode annotation : md.getAnnotations()) {
+            if(ANNOTATION_NAME_EXCLUDES.contains(annotation.getClassNode().getName())) {
+                excludedAnnotation = true;
+                break;
+            }
+        }
+        excludedAnnotation
     }
 
     ClassNode getAnnotationClassNode(String annotationName) {
@@ -236,7 +257,6 @@ class TransactionalTransform implements ASTTransformation{
                 methodNode.code
                 );
         methodNode.setCode(null)
-        copyAnnotations(methodNode, renamedMethodNode, null, ["grails.transaction.Transactional"] as Set)
         classNode.addMethod(renamedMethodNode)
         
         processVariableScopes(source, classNode, renamedMethodNode)

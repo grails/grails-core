@@ -516,6 +516,7 @@ abstract class ForkedGrailsProcess {
         if (console.isStacktrace()) {
             cmd.add("-Dgrails.show.stacktrace=true")
         }
+        cmd.add("-Dgrails.home=${executionContext.grailsHome.canonicalPath}".toString())
         if (reloadingAgent != null) {
             cmd.addAll(["-javaagent:" + reloadingAgent.getCanonicalPath(), "-noverify", "-Dspringloaded.synchronize=true", "-Djdk.reflect.allowGetCallerClass=true"])
             def cacheDir=System.getenv("GRAILS_AGENT_CACHE_DIR") ?: BuildSettingsHolder.settings.grailsWorkDir.canonicalPath
