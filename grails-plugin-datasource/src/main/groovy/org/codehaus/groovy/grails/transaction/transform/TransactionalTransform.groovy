@@ -96,10 +96,16 @@ class TransactionalTransform implements ASTTransformation{
         List<MethodNode> methods = new ArrayList<MethodNode>(classNode.getMethods());
         
         for (MethodNode md in methods) {
-            if (Modifier.isPublic(md.modifiers) && !Modifier.isAbstract(md.modifiers) && !Modifier.isStatic(md.modifiers)) {
+            String methodName = md.getName()
+            int modifiers = md.modifiers
+            if (!md.isSynthetic() && !methodName.contains('$') && Modifier.isPublic(modifiers) && !Modifier.isAbstract(modifiers) && !Modifier.isStatic(modifiers)) {
                 if(hasExcludedAnnotation(md)) continue
 
-                if(METHOD_NAME_EXCLUDES.contains(md.getName())) continue
+                if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
+                
+                if(methodName.startsWith("set") && md.getParameters() && md.getParameters().length == 1) continue
+                
+                if((methodName.startsWith("get") || methodName.startsWith("is")) && !md.getParameters()) continue
                 
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }

@@ -397,21 +397,24 @@ new BookService()
             }
             def applicationContext = bb.createApplicationContext()
             def bean = applicationContext.getBean('testService')
+            bean.name = 'Grails'
         then:
             applicationContext.transactionManager != null
             bean.transactionManager != null
             bean.process() != null
             bean.isActualTransactionActive() == false
+            bean.name == 'Grails'
+            bean.isActive() == false
     }
 }
 
 @Transactional
 class TransactionalTransformSpecService implements InitializingBean {
-       
+    String name   
     
     public TransactionStatus process() {
         return transactionStatus
-    }    
+    }
     
     @NotTransactional
     public boolean isActualTransactionActive() {
@@ -426,6 +429,20 @@ class TransactionalTransformSpecService implements InitializingBean {
     @Override
     public void afterPropertiesSet() throws Exception {
         assert !TransactionSynchronizationManager.isActualTransactionActive()
+    }
+    
+    public void setName(String name) {
+        assert !TransactionSynchronizationManager.isActualTransactionActive()
+        this.name = name
+    }
+    
+    public String getName() {
+        assert !TransactionSynchronizationManager.isActualTransactionActive()
+        name
+    }
+    
+    public boolean isActive() {
+        TransactionSynchronizationManager.isActualTransactionActive()
     }
 }
 
