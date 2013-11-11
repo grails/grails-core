@@ -767,7 +767,11 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
                 addChunk(chunk);
             }
         }
-        return chunk.buffer;
+        if(chunk != null) {
+            return chunk.buffer;
+        } else {
+            return new char[0];
+        }
     }
 
     public static final class EncodedPart {

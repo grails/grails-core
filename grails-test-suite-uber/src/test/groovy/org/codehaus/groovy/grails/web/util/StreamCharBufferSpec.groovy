@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.codecs.RawCodec
 import org.codehaus.groovy.grails.support.encoding.EncoderAware
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 class StreamCharBufferSpec extends Specification {
@@ -227,5 +228,13 @@ class StreamCharBufferSpec extends Specification {
         StreamCharBuffer bufferClonedHtml = bufferCloned.encodeAsHTML()
         then:
         bufferClonedHtml.toString() == "Hello world & hi&lt;script&gt;"
+    }
+    
+    @Issue("GRAILS-10765")
+    def "empty SCB shouldn't throw NPE when toCharArray() is called"() {
+        given:
+            StreamCharBuffer buffer=new StreamCharBuffer()
+        expect:
+            buffer.toCharArray() == [] as char[]
     }
 }
