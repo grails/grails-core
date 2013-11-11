@@ -22,6 +22,9 @@ import groovy.transform.CompileStatic
 
 import java.lang.reflect.Modifier
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.ast.stmt.BlockStatement
@@ -57,6 +60,8 @@ class TransactionalTransform implements ASTTransformation{
     public static final ClassNode MY_TYPE = new ClassNode(Transactional)
     private static final String PROPERTY_TRANSACTION_MANAGER = "transactionManager"
     private static final String METHOD_EXECUTE = "execute"
+    private static final Set<String> METHOD_NAME_EXCLUDES = new HashSet<String>(Arrays.asList("afterPropertiesSet", "destroy"));
+    private static final Set<String> ANNOTATION_NAME_EXCLUDES = new HashSet<String>(Arrays.asList(PostConstruct.class.getName(), PreDestroy.class.getName(), Transactional.class.getName(), "grails.web.controllers.ControllerMethod"));
 
     @Override
     void visit(ASTNode[] astNodes, SourceUnit source) {
@@ -87,19 +92,28 @@ class TransactionalTransform implements ASTTransformation{
 
     public void weaveTransactionalBehavior(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode) {
         weaveTransactionManagerAware(source, classNode)
-
-        ClassNode controllerMethodAnn = getAnnotationClassNode("grails.web.controllers.ControllerMethod")
-
         List<MethodNode> methods = new ArrayList<MethodNode>(classNode.getMethods());
         
         for (MethodNode md in methods) {
             if (Modifier.isPublic(md.modifiers) && !Modifier.isAbstract(md.modifiers) && !Modifier.isStatic(md.modifiers)) {
-                if (md.getAnnotations(MY_TYPE)) continue
+                if(hasExcludedAnnotation(md)) continue
 
-                if (controllerMethodAnn && md.getAnnotations(controllerMethodAnn)) continue
+                if(METHOD_NAME_EXCLUDES.contains(md.getName())) continue
+                
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }
         }
+    }
+
+    private boolean hasExcludedAnnotation(MethodNode md) {
+        boolean excludedAnnotation = false;
+        for (AnnotationNode annotation : md.getAnnotations()) {
+            if(ANNOTATION_NAME_EXCLUDES.contains(annotation.getClassNode().getName())) {
+                excludedAnnotation = true;
+                break;
+            }
+        }
+        excludedAnnotation
     }
 
     ClassNode getAnnotationClassNode(String annotationName) {
