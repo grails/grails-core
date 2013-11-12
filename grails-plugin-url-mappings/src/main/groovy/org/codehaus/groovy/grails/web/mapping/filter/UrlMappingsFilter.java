@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.mapping.filter;
 
 import grails.util.CollectionUtils;
+import grails.util.Environment;
 import grails.util.Metadata;
 import grails.web.UrlConverter;
 
@@ -97,7 +98,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private MimeTypeResolver mimeTypeResolver;
     private UrlConverter urlConverter;
     private Boolean allowHeaderForWrongHttpMethod;
+    private UrlMappingsHolder holder;
     final DynamicMethodInvocation redirectDynamicMethod = new RedirectDynamicMethod();
+    private Boolean cachedGrailsAppWithoutControllersAndRegexMappings = null;
 
 
     @Override
@@ -111,6 +114,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         viewResolver = WebUtils.lookupViewResolver(servletContext);
         ApplicationContext mainContext = application.getMainContext();
         urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
+        holder = WebUtils.lookupUrlMappings(servletContext);        
         if (application != null) {
             grailsConfig = new GrailsConfig(application);
         }
@@ -126,10 +130,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        UrlMappingsHolder holder = WebUtils.lookupUrlMappings(getServletContext());
-
         String uri = urlHelper.getPathWithinApplication(request);
-        if (!"/".equals(uri) && noControllers() && noRegexMappings(holder)) {
+        if (!"/".equals(uri) && isGrailsAppWithoutControllersAndRegexMappings()) {
             // not index request, no controllers, and no URL mappings for views, so it's not a Grails request
             processFilterChain(request, response, filterChain);
             return;
@@ -241,6 +243,19 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
     }
 
+    private boolean isGrailsAppWithoutControllersAndRegexMappings() {
+        boolean appWithoutControllersAndRegexMappings;
+        if(cachedGrailsAppWithoutControllersAndRegexMappings != null) {
+            appWithoutControllersAndRegexMappings = cachedGrailsAppWithoutControllersAndRegexMappings;
+        } else {
+            appWithoutControllersAndRegexMappings = noControllers() && noRegexMappings();
+            if(!Environment.isDevelopmentMode()) {
+                cachedGrailsAppWithoutControllersAndRegexMappings = appWithoutControllersAndRegexMappings;
+            }
+        }
+        return appWithoutControllersAndRegexMappings;
+    }
+
     protected Set<HttpMethod> allowedMethods(UrlMappingsHolder holder, String uri) {
         UrlMappingInfo[] urlMappingInfos = holder.matchAll(uri, UrlMapping.ANY_HTTP_METHOD);
         Set<HttpMethod> methods = new HashSet<HttpMethod>();
@@ -296,7 +311,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     }
 
 
-    private boolean noRegexMappings(UrlMappingsHolder holder) {
+    private boolean noRegexMappings() {
         for (UrlMapping mapping : holder.getUrlMappings()) {
             if (mapping instanceof RegexUrlMapping) {
                 return false;
