@@ -279,7 +279,10 @@ public class GrailsASTUtils {
     public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation, boolean thisAsFirstArgument) {
         return addDelegateInstanceMethod(classNode,delegate,declaredMethod, markerAnnotation, thisAsFirstArgument, null, false);
     }
-
+    public static MethodNode addDelegateInstanceMethod(ClassNode classNode, Expression delegate, MethodNode declaredMethod, AnnotationNode markerAnnotation, boolean thisAsFirstArgument, Map<String, ClassNode> genericsPlaceholders) {
+        return addDelegateInstanceMethod(classNode, delegate, declaredMethod, markerAnnotation, thisAsFirstArgument, genericsPlaceholders, false); 
+    }
+    
     /**
      * Adds a delegate method to the target class node where the first argument
      * is to the delegate method is 'this'. In other words a method such as
@@ -1284,5 +1287,19 @@ public class GrailsASTUtils {
             scopeVisitor.prepareVisit(classNode);
             scopeVisitor.visitMethod(methodNode);
         }
+    }
+    
+    public static boolean isSetterOrGetterMethod(MethodNode md) {
+        String methodName = md.getName();
+        
+        if((methodName.startsWith("set") && methodName.length() > 3) && md.getParameters() != null && md.getParameters().length == 1) {
+            return true;
+        }
+        
+        if(((methodName.startsWith("get") && methodName.length() > 3) || (methodName.startsWith("is") && methodName.length() > 2)) && (md.getParameters()==null || md.getParameters().length == 0)) {
+            return true;
+        }
+        
+        return false;
     }
 }

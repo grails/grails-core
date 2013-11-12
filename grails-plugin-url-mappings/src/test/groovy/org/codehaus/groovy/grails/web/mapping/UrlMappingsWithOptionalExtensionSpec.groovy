@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.mapping
 
 /**
  */
-class UrlMappingRsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
+class UrlMappingsWithOptionalExtensionSpec extends AbstractUrlMappingsSpec {
 
     void "Test that URL mappings can be specified with an optional extension"() {
         given:"A URL mapping with an optional extension"

@@ -276,24 +276,9 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected boolean isStaticMethodExcluded(ClassNode classNode, MethodNode declaredMethod) {
-        return isSetterOrGetter(declaredMethod);
+        return GrailsASTUtils.isSetterOrGetterMethod(declaredMethod);
     }
     
-    protected boolean isSetterOrGetter(MethodNode md) {
-        String methodName = md.getName();
-        
-        if(methodName.startsWith("set") && md.getParameters() != null && md.getParameters().length == 1) {
-            return true;
-        }
-        
-        if((methodName.startsWith("get") || methodName.startsWith("is")) && (md.getParameters()==null || md.getParameters().length == 0)) {
-            return true;
-        }
-        
-        return false;
-    }
-    
-
     protected boolean isStaticMethodIncluded(ClassNode classNode, MethodNode declaredMethod) {
         return false;
     }
