@@ -478,15 +478,15 @@ public class DefaultUrlMappingsHolder implements UrlMappings {
     }
 
     public UrlMappingInfo[] matchAll(String uri, String httpMethod, String version) {
-        boolean anyHttpMethod = httpMethod != null && httpMethod.equals(UrlMapping.ANY_HTTP_METHOD);
-        boolean anyVersion = version != null && version.equals(UrlMapping.ANY_VERSION);
-
-        List<UrlMappingInfo> matchingUrls = new ArrayList<UrlMappingInfo>();
+        List<UrlMappingInfo> matchingUrls;
         UriToUrlMappingKey cacheKey = new UriToUrlMappingKey(uri, httpMethod, version);
         if (cachedListMatches.containsKey(cacheKey)) {
             matchingUrls = cachedListMatches.get(cacheKey);
         }
         else {
+            matchingUrls = new ArrayList<UrlMappingInfo>();
+            boolean anyHttpMethod = httpMethod != null && httpMethod.equals(UrlMapping.ANY_HTTP_METHOD);
+            boolean anyVersion = version != null && version.equals(UrlMapping.ANY_VERSION);
             for (UrlMapping mapping : mappings) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Attempting to match URI [" + uri + "] with pattern [" + mapping.getUrlData().getUrlPattern() + "]");
