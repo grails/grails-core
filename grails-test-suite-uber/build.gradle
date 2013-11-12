@@ -50,6 +50,7 @@ test {
      forkEvery = 100
      maxHeapSize = '1024m'
      excludes = [
+         "**/grails/test/PersonTests.class",
          "**/rest/render/**/*Spec.class",
          "**/*TestCase.class",
          "**/DataSourceGrailsPluginTests",
@@ -93,5 +94,10 @@ task isolatedDefaultGrailsControllerClassTests(type: Test) {
     includes = ['**/DefaultGrailsControllerClassTests.class']
 }
 
-test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests, isolatedDefaultGrailsControllerClassTests
+task isolatedPersonTests(type: Test) {
+    includes = ['**/grails/test/PersonTests.class']
+}
+
+
+test.dependsOn isolatedPersonTests, isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests, isolatedDefaultGrailsControllerClassTests
 
