@@ -103,9 +103,7 @@ class TransactionalTransform implements ASTTransformation{
 
                 if(METHOD_NAME_EXCLUDES.contains(methodName)) continue
                 
-                if(methodName.startsWith("set") && md.getParameters() && md.getParameters().length == 1) continue
-                
-                if((methodName.startsWith("get") || methodName.startsWith("is")) && !md.getParameters()) continue
+                if(GrailsASTUtils.isSetterOrGetterMethod(md)) continue
                 
                 weaveTransactionalMethod(source, classNode, annotationNode, md);
             }
