@@ -27,6 +27,8 @@ import org.junit.runner.Request
 import org.junit.internal.requests.FilterRequest
 import org.junit.runner.manipulation.Filter
 import org.junit.runner.Description
+import org.objenesis.ObjenesisHelper
+import org.objenesis.ObjenesisBase
 
 @CompileStatic
 class GrailsSpecTestType extends GrailsTestTypeSupport {
@@ -35,6 +37,20 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
     private final List<Class> specClasses = []
     private int featureCount = 0
     protected GrailsTestMode mode
+
+    static {
+        try {
+            final objStdField = ObjenesisHelper.getDeclaredField("OBJENESIS_STD")
+            objStdField.accessible = true
+            final objStd = objStdField.get(ObjenesisHelper)
+            final cacheField = ObjenesisBase.getDeclaredField("cache")
+            cacheField.accessible = true
+            cacheField.set(objStd, null)
+        } catch (Throwable e) {
+            // ignore, failed to patch
+        }
+
+    }
 
     GrailsSpecTestType(String name, String relativeSourcePath) {
         super(name, relativeSourcePath)
