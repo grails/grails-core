@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
@@ -77,6 +78,9 @@ import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.util.UrlPathHelper;
 
+import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
+import com.googlecode.concurrentlinkedhashmap.EntryWeigher;
+
 /**
  * Uses the Grails UrlMappings to match and forward requests to a relevant controller and action.
  *
@@ -98,10 +102,11 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private MimeTypeResolver mimeTypeResolver;
     private UrlConverter urlConverter;
     private Boolean allowHeaderForWrongHttpMethod;
-    private UrlMappingsHolder holder;
+    private UrlMappingsHolder urlMappingsHolder;
     final DynamicMethodInvocation redirectDynamicMethod = new RedirectDynamicMethod();
     private Boolean cachedGrailsAppWithoutControllersAndRegexMappings = null;
-
+    private UriExclusionCache uriExclusionCache;
+    
 
     @Override
     protected void initFilterBean() throws ServletException {
@@ -114,7 +119,8 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         viewResolver = WebUtils.lookupViewResolver(servletContext);
         ApplicationContext mainContext = application.getMainContext();
         urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
-        holder = WebUtils.lookupUrlMappings(servletContext);        
+        urlMappingsHolder = WebUtils.lookupUrlMappings(servletContext);  
+        uriExclusionCache = new UriExclusionCache(urlMappingsHolder);
         if (application != null) {
             grailsConfig = new GrailsConfig(application);
         }
@@ -137,21 +143,20 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (isUriExcluded(holder, uri)) {
+        if (uriExclusionCache.isUriExcluded(uri)) {
             processFilterChain(request, response, filterChain);
             return;
         }
 
         if (LOG.isDebugEnabled()) {
             LOG.debug("Executing URL mapping filter...");
-            LOG.debug(holder);
         }
 
         GrailsWebRequest webRequest = (GrailsWebRequest)request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST);
         HttpServletRequest currentRequest = webRequest.getCurrentRequest();
         String version = findRequestedVersion(webRequest);
 
-        UrlMappingInfo[] urlInfos = holder.matchAll(uri, currentRequest.getMethod(), version != null ? version : UrlMapping.ANY_VERSION);
+        UrlMappingInfo[] urlInfos = urlMappingsHolder.matchAll(uri, currentRequest.getMethod(), version != null ? version : UrlMapping.ANY_VERSION);
         WrappedResponseHolder.setWrappedResponse(response);
         boolean dispatched = false;
         try {
@@ -228,7 +233,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         }
 
         if (!dispatched) {
-            Set<HttpMethod> allowedHttpMethods = allowHeaderForWrongHttpMethod ? allowedMethods(holder, uri) : Collections.EMPTY_SET;
+            Set<HttpMethod> allowedHttpMethods = allowHeaderForWrongHttpMethod ? allowedMethods(urlMappingsHolder, uri) : Collections.EMPTY_SET;
 
             if(allowedHttpMethods.isEmpty()) {
                 if (LOG.isDebugEnabled()) {
@@ -286,6 +291,33 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         return version;
     }
 
+    static class UriExclusionCache {
+        int maxWeightedCacheCapacity = 50000;
+        Map<String, Boolean> exclusionCache =  new ConcurrentLinkedHashMap.Builder<String, Boolean>().maximumWeightedCapacity(maxWeightedCacheCapacity).weigher(new EntryWeigher<String, Boolean>() {
+            @Override
+            public int weightOf(String key, Boolean value) {
+                return key.length();
+            }
+        }).build();
+        
+        private UrlMappingsHolder holder;
+        
+        UriExclusionCache(UrlMappingsHolder holder) {
+            this.holder = holder;
+        }
+        
+        boolean isUriExcluded(String uri) {
+            Boolean isExcluded = exclusionCache.get(uri);
+            if(isExcluded == null) {
+                isExcluded = UrlMappingsFilter.isUriExcluded(holder, uri);
+                if(!Environment.isDevelopmentMode()) {
+                    exclusionCache.put(uri, isExcluded);
+                }
+            }
+            return isExcluded;
+        }
+    }
+    
     public static boolean isUriExcluded(UrlMappingsHolder holder, String uri) {
         boolean isExcluded = false;
         @SuppressWarnings("unchecked")
@@ -312,7 +344,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
 
 
     private boolean noRegexMappings() {
-        for (UrlMapping mapping : holder.getUrlMappings()) {
+        for (UrlMapping mapping : urlMappingsHolder.getUrlMappings()) {
             if (mapping instanceof RegexUrlMapping) {
                 return false;
             }
