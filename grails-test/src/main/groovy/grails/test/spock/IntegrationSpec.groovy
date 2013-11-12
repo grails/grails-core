@@ -29,6 +29,7 @@ import spock.lang.Stepwise
 import org.codehaus.groovy.grails.test.spock.GrailsSpecTestType
 import groovy.transform.CompileStatic
 import org.springframework.context.ApplicationContext
+import grails.util.Holders
 
 /**
  * Super class for integration tests to extend
@@ -38,9 +39,8 @@ import org.springframework.context.ApplicationContext
  *
  * @since 2.3
  */
-@CompileStatic
 class IntegrationSpec extends Specification {
-    @Shared private ApplicationContext applicationContext = ApplicationHolder.application.mainContext
+    @Shared private ApplicationContext applicationContext = Holders.getApplicationContext()
     @Shared private GrailsTestAutowirer autowirer = new GrailsTestAutowirer(applicationContext)
 
     @Shared private GrailsTestTransactionInterceptor perSpecTransactionInterceptor
