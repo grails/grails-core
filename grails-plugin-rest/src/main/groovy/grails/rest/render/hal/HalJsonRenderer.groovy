@@ -174,7 +174,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                     if (value instanceof Number) {
                         writer.name(propertyName).value((Number) value)
                     }
-                    else if (value instanceof CharSequence) {
+                    else if (value instanceof CharSequence || value instanceof Enum) {
                         writer.name(propertyName).value(value.toString())
                     }
                     else {

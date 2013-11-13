@@ -109,13 +109,15 @@ class RenderTagLib implements RequestConstants {
         def oldPage = getPage()
         def contentType = attrs.contentType ? attrs.contentType : "text/html"
 
+        def pageParams = attrs.params instanceof Map ? attrs.params : [:]
+        def viewModel = attrs.model instanceof Map ? attrs.model : [:]
         def content = ""
         GSPSitemeshPage gspSiteMeshPage = null
         if (attrs.url) {
             content = new URL(attrs.url).text
         }
         else if (attrs.action && attrs.controller) {
-            content = g.include(action:attrs.action,controller:attrs.controller,params:attrs.params)
+            content = g.include(action: attrs.action, controller: attrs.controller, params: pageParams, model: viewModel)
         }
         else {
             def oldGspSiteMeshPage = request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
@@ -154,18 +156,17 @@ class RenderTagLib implements RequestConstants {
             page = parser.parse(content.toCharArray())
         }
 
-        attrs.params.each { k, v ->
-            page.addProperty(k, v?.toString())
-        }
         def decoratorMapper = getFactory().getDecoratorMapper()
-
         if (decoratorMapper) {
             def d = decoratorMapper.getNamedDecorator(request, attrs.name)
             if (d && d.page) {
+                pageParams.each { k, v ->
+                    page.addProperty(k, v?.toString())
+                }
                 try {
                     request[PAGE] = page
                     def t = groovyPagesTemplateEngine.createTemplate(d.getPage())
-                    def w = t.make()
+                    def w = t.make(viewModel)
                     w.writeTo(out)
                 }
                 finally {
