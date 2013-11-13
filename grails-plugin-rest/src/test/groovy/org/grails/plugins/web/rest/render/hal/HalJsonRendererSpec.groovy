@@ -543,25 +543,25 @@ class HalJsonRendererSpec extends Specification{
 }'''
 
     }
-	
-	@Issue('GRAILS-10781')
-	void 'Test that the HAL renderer renders enums successfully for non domain classes'() {
-		given: 'A HAL render'
-		Renderer render = new HalJsonRenderer(Moment)
-		
-		when: 'A non domain is rendered'
+
+    @Issue('GRAILS-10781')
+    void 'Test that the HAL renderer renders enums successfully for non domain classes'() {
+        given: 'A HAL render'
+        Renderer render = new HalJsonRenderer(Moment)
+
+        when: 'A non domain is rendered'
         def webRequest = GrailsWebUtil.bindMockWebRequest()
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/moment/theFuture")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
-		def moment = new Moment(type: Moment.Category.FUTURE)
-		renderer.render moment, renderContext
-		
-		then: 'The resulting HAL is correct'
-		response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
-		response.contentAsString == '''{"_links":{"self":{"href":"http://localhost/moment/theFuture","hreflang":"en","type":"application/hal+json"}},"type":"FUTURE"}'''
-		
-	}
+        def moment = new Moment(type: Moment.Category.FUTURE)
+        renderer.render moment, renderContext
+
+        then: 'The resulting HAL is correct'
+        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+        response.contentAsString == '''{"_links":{"self":{"href":"http://localhost/moment/theFuture","hreflang":"en","type":"application/hal+json"}},"type":"FUTURE"}'''
+
+    }
 
     @Issue('GRAILS-10372 GRAILS-10781')
     void "Test that the HAL renderer renders mixed fields (dates, enums) successfully for domains"() {
