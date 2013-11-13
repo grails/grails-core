@@ -574,7 +574,18 @@ class HalJsonRendererSpec extends Specification{
         webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/event/Lollapalooza")
         def response = webRequest.response
         def renderContext = new ServletRenderContext(webRequest)
-        def event = new Event(name: "Lollapalooza", date: new Date(113, 10, 8, 13, 12, 30), state: Event.State.OPEN)
+        def cal = Calendar.instance
+        cal.with {
+            clear()
+            set MONTH, NOVEMBER
+            set YEAR, 2013
+            set DATE, 8
+            set HOUR_OF_DAY, 16
+            set MINUTE, 12
+            set SECOND, 30
+            setTimeZone java.util.TimeZone.getTimeZone('GMT-5:00')
+        }
+        def event = new Event(name: "Lollapalooza", date: cal.time, state: Event.State.OPEN)
 
         renderer.render(event, renderContext)
 
