@@ -322,9 +322,9 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     }
 
     /**
-     * Helper method for obtaining float value from parameter
+     * Helper method for obtaining boolean value from parameter
      * @param name The name of the parameter
-     * @return The double value or null if there isn't one
+     * @return The boolean value or null if there isn't one
      */
     public Boolean getBoolean(String name) {
         Object o = get(name);
