@@ -49,26 +49,9 @@ target (generateWrapper: "Generates the Grails wrapper") {
     grailsDistUrl =  argsMap.distributionUrl ?: "http://dist.springframework.org.s3.amazonaws.com/${releaseType}/GRAILS/"
     grailsWrapperDir = argsMap.wrapperDir ?: 'wrapper'
 
-    targetDir = "${basedir}/${grailsWrapperDir}"
+    def targetDir = "${basedir}/${grailsWrapperDir}"
 
-    supportFiles = []
-    new File(grailsHome, "dist").eachFileMatch( FileType.FILES, { it ==~ /grails-wrapper-support.*\.jar/ && !it.contains('-sources.jar') && !it.contains('-javadoc.jar')}) {
-        supportFiles << it
-    }
-    if (supportFiles.size() != 1) {
-        if (supportFiles.size() == 0) {
-            event("StatusError", ["An error occurred locating the grails-wrapper-support jar file"])
-        } else {
-            event("StatusError", ["Multiple grails-wrapper-support jar files were found ${supportFiles.absolutePath}"])
-        }
-        exit 1
-    }
-    supportFile = supportFiles[0]
-    ant.unjar(dest: targetDir, src: supportFile.absolutePath, overwrite: true) {
-        patternset {
-            exclude(name: "META-INF/**")
-        }
-    }
+    grailsUnpack(dest: targetDir, src: "grails-wrapper-support.jar")
     ant.move(todir: basedir) {
         fileset(dir: targetDir) {
             include(name: 'grailsw*')
@@ -77,25 +60,6 @@ target (generateWrapper: "Generates the Grails wrapper") {
     ant.replace(dir: targetDir, includes: '*.properties', token: '@distributationUrl@', value: grailsDistUrl)
     ant.replace(dir: basedir, includes: 'grailsw*', token: '@wrapperDir@', value: grailsWrapperDir)
     ant.chmod(file: "${basedir}/grailsw", perm: 'u+x')
-
-    springloadedFiles = []
-    new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars/").eachFileMatch( FileType.FILES, { it ==~ /springloaded-core-.*/ }) {
-        springloadedFiles << it
-    }
-    springloadedFiles = springloadedFiles.findAll { !it.name.contains('sources') &&  !it.name.contains('javadoc')}
-
-    if (springloadedFiles.size() != 1) {
-        if (springloadedFiles.size() == 0) {
-            event("StatusError", ["An error occurred locating the springloaded-core jar file"])
-        } else {
-            event("StatusError", ["Multiple springloaded-core jar files were found ${springloadedFiles.absolutePath}"])
-        }
-        exit 1
-    }
-
-    springloadedFile = springloadedFiles[0]
-
-    ant.copy(todir: targetDir, file: springloadedFile.absolutePath, overwrite: true)
 
     event("StatusUpdate", [ "Wrapper installed successfully"])
     event 'InstallWrapperEnd', [ 'Finished Installing Wrapper.' ]
