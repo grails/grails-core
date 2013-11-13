@@ -16,29 +16,32 @@
 
 package org.grails.plugins.web.rest.render.hal
 
-import grails.rest.render.hal.HalJsonCollectionRenderer
-import groovy.transform.NotYetImplemented
-import org.springframework.core.convert.converter.Converter
-import spock.lang.Ignore
-import spock.lang.Specification
-import grails.rest.render.hal.HalJsonRenderer
-import org.springframework.context.support.StaticMessageSource
-import org.grails.datastore.mapping.model.MappingContext
-import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
-import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
-import grails.web.CamelCaseUrlConverter
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.springframework.mock.web.MockServletContext
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
 import grails.persistence.Entity
+import grails.rest.render.Renderer
+import grails.rest.render.hal.HalJsonCollectionRenderer
+import grails.rest.render.hal.HalJsonRenderer
 import grails.util.GrailsWebUtil
-import org.springframework.web.util.WebUtils
-import org.grails.plugins.web.rest.render.ServletRenderContext
-import spock.lang.Issue
+import grails.web.CamelCaseUrlConverter
+import groovy.transform.NotYetImplemented
 
 import javax.xml.bind.DatatypeConverter
+
+import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
+import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
+import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
+import org.codehaus.groovy.grails.web.mapping.LinkGenerator
+import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.plugins.web.rest.render.ServletRenderContext
+import org.springframework.context.support.StaticMessageSource
+import org.springframework.core.convert.converter.Converter
+import org.springframework.mock.web.MockServletContext
+import org.springframework.web.util.WebUtils
+
+import spock.lang.Ignore
+import spock.lang.Issue
+import spock.lang.Specification
 
 /**
  */
@@ -540,9 +543,27 @@ class HalJsonRendererSpec extends Specification{
 }'''
 
     }
+	
+	@Issue('GRAILS-10781')
+	void 'Test that the HAL renderer renders enums successfully for non domain classes'() {
+		given: 'A HAL render'
+		Renderer render = new HalJsonRenderer(Moment)
+		
+		when: 'A non domain is rendered'
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/moment/theFuture")
+        def response = webRequest.response
+        def renderContext = new ServletRenderContext(webRequest)
+		def moment = new Moment(type: Moment.Category.FUTURE)
+		renderer.render moment, renderContext
+		
+		then: 'The resulting HAL is correct'
+		response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+		response.contentAsString == '''{"_links":{"self":{"href":"http://localhost/moment/theFuture","hreflang":"en","type":"application/hal+json"}},"type":"FUTURE"}'''
+		
+	}
 
-    @Issue('GRAILS-10372')
-    @Ignore
+    @Issue('GRAILS-10372 GRAILS-10781')
     void "Test that the HAL renderer renders mixed fields (dates, enums) successfully for domains"() {
         given:"A HAL renderer"
         HalJsonRenderer renderer = getEventRenderer()
@@ -567,7 +588,7 @@ class HalJsonRendererSpec extends Specification{
       "type": "application/hal+json"
     }
   },
-  "date": "2013-11-08T21:12:30Z",
+  "date": "2013-11-08T19:12:30Z",
   "name": "Lollapalooza",
   "state": "OPEN"
 }'''
@@ -718,6 +739,13 @@ class Event {
         OPEN, CLOSED
     }
     State state
+}
+
+class Moment {
+	enum Category {
+		PAST, PRESENT, FUTURE
+	}
+	Category type
 }
 
 class SimpleProduct {
