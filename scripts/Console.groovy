@@ -38,7 +38,7 @@ target(console: "Load the Grails interactive Swing console") {
     def forkConfig = forkSettings?.console
 
 
-    projectCompiler.compileAll()
+    packageApp()
     if (forkConfig == false || forkConfig == 'false') {
         try {
             

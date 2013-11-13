@@ -237,6 +237,10 @@ class GrailsProjectCompiler extends BaseSettingsApi{
      * Compiles plugin and normal sources
      */
     void compileAll() {
+        if(config == null) {
+            configureClasspath()
+        }
+
         if (buildSettings.forkSettings.compile && !Environment.isFork()) {
             def forkedCompiler = new ForkedGrailsCompiler(buildSettings)
             def forkConfig = buildSettings.forkSettings.compile
@@ -265,6 +269,9 @@ class GrailsProjectCompiler extends BaseSettingsApi{
      * @param targetDir The target directory to compile to
      */
     void compile(targetDir) {
+        if(config == null) {
+            configureClasspath()
+        }
 
         def compilerPaths = { String classpathId ->
             for (srcPath in srcDirectories) {
@@ -309,6 +316,9 @@ class GrailsProjectCompiler extends BaseSettingsApi{
      * @param targetDir The target directory to compile to
      */
     void compilePlugins(targetDir) {
+        if(config == null) {
+            configureClasspath()
+        }
         def classesDirPath = targetDir
         getAnt().mkdir(dir:classesDirPath)
 
