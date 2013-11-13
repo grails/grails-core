@@ -588,7 +588,7 @@ class HalJsonRendererSpec extends Specification{
       "type": "application/hal+json"
     }
   },
-  "date": "2013-11-08T19:12:30Z",
+  "date": "2013-11-08T21:12:30Z",
   "name": "Lollapalooza",
   "state": "OPEN"
 }'''
