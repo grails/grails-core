@@ -52,6 +52,7 @@ ext.allJarFileTasks = tasks.matching { it.hasProperty("appFileJar") }
 task resourceJarFiles(dependsOn: allJarFileTasks)
 
 jar {
+    from project(":grails-wrapper").jar
     from allJarFileTasks
     from("src/war") {
         into "src/war"
@@ -61,4 +62,5 @@ jar {
     from("src/grails/templates") {
         into "src/grails/templates"
     }
+    rename "grails-wrapper-support-${version}.jar", "grails-wrapper-support.jar"
 }
