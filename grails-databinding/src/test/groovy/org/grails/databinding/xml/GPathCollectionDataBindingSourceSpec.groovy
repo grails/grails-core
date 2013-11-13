@@ -20,7 +20,7 @@ class GPathCollectionDataBindingSourceSpec extends Specification {
     </person>
     <person>
         <firstName>Steve</firstName>
-        <lastName>Hacket</lastName>
+        <lastName>Hackett</lastName>
     </person>
 </list>
 ''')
@@ -38,6 +38,6 @@ class GPathCollectionDataBindingSourceSpec extends Specification {
         dataBindingSources[1]['lastName'] == 'Banks'
         dataBindingSources[2] instanceof DataBindingSource
         dataBindingSources[2]['firstName'] == 'Steve'
-        dataBindingSources[2]['lastName'] == 'Hacket'
+        dataBindingSources[2]['lastName'] == 'Hackett'
     }
 }

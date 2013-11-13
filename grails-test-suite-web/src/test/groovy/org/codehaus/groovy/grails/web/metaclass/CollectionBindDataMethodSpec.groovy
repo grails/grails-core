@@ -21,7 +21,7 @@ class CollectionBindDataMethodSpec extends Specification {
     </person>
     <person>
         <firstName>Steve</firstName>
-        <lastName>Hacket</lastName>
+        <lastName>Hackett</lastName>
     </person>
 </people>
 '''
@@ -39,7 +39,7 @@ class CollectionBindDataMethodSpec extends Specification {
         people[1].lastName == 'Banks'
         people[2] instanceof Person
         people[2].firstName == 'Steve'
-        people[2].lastName == 'Hacket'
+        people[2].lastName == 'Hackett'
     }
 
     void 'Test bindData with a CollectionDataBindingSource argument using JSON'() {
