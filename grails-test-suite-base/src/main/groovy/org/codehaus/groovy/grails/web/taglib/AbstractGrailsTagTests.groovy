@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
+import org.codehaus.groovy.grails.web.sitemesh.GrailsHTMLPageParser
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.WithCodecHelper
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
@@ -97,9 +98,9 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         Holders.config = config
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, appCtx)
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, appCtx)
-        GrailsWebRequest request = GrailsWebUtil.bindMockWebRequest(appCtx)
-        initThemeSource(request.getCurrentRequest(), messageSource)
-        return request
+        webRequest = GrailsWebUtil.bindMockWebRequest(appCtx)
+        initRequestAndResponse()
+        return webRequest
     }
 
     def profile(String name, Closure callable) {
@@ -279,15 +280,19 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         //GroovySystem.metaClassRegistry.removeMetaClass(Object)
 
         mockManager.doDynamicMethods()
-        request = webRequest.currentRequest
-        initThemeSource(request, messageSource)
-        request.characterEncoding = "utf-8"
-        response = webRequest.currentResponse
+        initRequestAndResponse()
 
         ga.domainClasses.each { dc ->
             MockUtils.mockDomain dc, dc.clazz, []
             dc.validator.messageSource = messageSource
         }
+    }
+
+    private initRequestAndResponse() {
+        request = webRequest.currentRequest
+        initThemeSource(request, messageSource)
+        request.characterEncoding = "utf-8"
+        response = webRequest.currentResponse
     }
 
     private void initThemeSource(request, MessageSource messageSource) {
@@ -449,13 +454,21 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         def preprocessor=new SitemeshPreprocessor()
         preprocessor.addGspSitemeshCapturing(template)
     }
-
+    
     String applyLayout(String layout, String template, Map params=[:]) {
-        def page = new GSPSitemeshPage()
-        request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, page)
-        applyTemplate(template, params)
+        def gspSiteMeshPage = new GSPSitemeshPage()
+        request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
+        def content = applyTemplate(template, params)
         request.removeAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
 
+        def page = null
+        if (!params.parse && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
+            page = gspSiteMeshPage
+        }
+        else {
+            def parser = new GrailsHTMLPageParser()
+            page = parser.parse(content.toCharArray())
+        }
         try {
             request.setAttribute(RequestConstants.PAGE, page)
             request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage())

@@ -1,5 +1,13 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
+configurations {
+    archive
+}
+
+dependencies {
+    archive "org.springsource.springloaded:springloaded-core:$springLoadedVersion"
+}
+
 task copyScript(type: Copy) {
     into "$buildDir/"
 
@@ -29,6 +37,7 @@ task runtimeJar(type: Jar) {
 }
 
 jar {
+  from configurations.archive
   from runtimeJar
   from "${buildDir}/scripts", {
     filter org.apache.tools.ant.filters.ReplaceTokens, tokens: [springLoadedVersion: springLoadedVersion, grailsVersion: grailsVersion, springLoadedCommonOptions: springLoadedCommonOptions]

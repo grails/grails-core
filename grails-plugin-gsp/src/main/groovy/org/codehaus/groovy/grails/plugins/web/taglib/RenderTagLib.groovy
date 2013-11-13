@@ -16,14 +16,17 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
+import grails.util.Holders
 
 import org.apache.commons.lang.WordUtils
+import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.mapping.UrlMapping
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.GroovyPage
+import org.codehaus.groovy.grails.web.pages.GroovyPageParser
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -52,6 +55,11 @@ class RenderTagLib implements RequestConstants {
 
     protected getPage() {
         return getRequest().getAttribute(PAGE)
+    }
+    
+    protected boolean isSitemeshPreprocessMode() {
+        def preprocessConfig = grailsApplication?.getFlatConfig()?.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS)
+        preprocessConfig == null || preprocessConfig
     }
 
     /**
@@ -109,13 +117,15 @@ class RenderTagLib implements RequestConstants {
         def oldPage = getPage()
         def contentType = attrs.contentType ? attrs.contentType : "text/html"
 
+        def pageParams = attrs.params instanceof Map ? attrs.params : [:]
+        def viewModel = attrs.model instanceof Map ? attrs.model : [:]
         def content = ""
         GSPSitemeshPage gspSiteMeshPage = null
         if (attrs.url) {
             content = new URL(attrs.url).text
         }
         else if (attrs.action && attrs.controller) {
-            content = g.include(action:attrs.action,controller:attrs.controller,params:attrs.params)
+            content = g.include(action: attrs.action, controller: attrs.controller, params: pageParams, model: viewModel)
         }
         else {
             def oldGspSiteMeshPage = request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
@@ -131,13 +141,13 @@ class RenderTagLib implements RequestConstants {
                 }
                 if (content instanceof StreamCharBuffer) {
                     gspSiteMeshPage.setPageBuffer(content)
-                    gspSiteMeshPage.setUsed(true)
+                    gspSiteMeshPage.setUsed(isSitemeshPreprocessMode())
                 }
                 else if (content != null) {
                     def buf = new StreamCharBuffer()
                     buf.writer.write(content)
                     gspSiteMeshPage.setPageBuffer(buf)
-                    gspSiteMeshPage.setUsed(true)
+                    gspSiteMeshPage.setUsed(isSitemeshPreprocessMode())
                 }
             }
             finally {
@@ -154,18 +164,17 @@ class RenderTagLib implements RequestConstants {
             page = parser.parse(content.toCharArray())
         }
 
-        attrs.params.each { k, v ->
-            page.addProperty(k, v?.toString())
-        }
         def decoratorMapper = getFactory().getDecoratorMapper()
-
         if (decoratorMapper) {
             def d = decoratorMapper.getNamedDecorator(request, attrs.name)
             if (d && d.page) {
+                pageParams.each { k, v ->
+                    page.addProperty(k, v?.toString())
+                }
                 try {
                     request[PAGE] = page
                     def t = groovyPagesTemplateEngine.createTemplate(d.getPage())
-                    def w = t.make()
+                    def w = t.make(viewModel)
                     w.writeTo(out)
                 }
                 finally {
