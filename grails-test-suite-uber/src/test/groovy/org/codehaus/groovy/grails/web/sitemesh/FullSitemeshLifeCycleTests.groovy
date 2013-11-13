@@ -7,6 +7,8 @@ import org.springframework.mock.web.MockServletConfig
 import com.opensymphony.module.sitemesh.Config
 import com.opensymphony.module.sitemesh.Decorator
 import com.opensymphony.module.sitemesh.DecoratorMapper
+import com.opensymphony.module.sitemesh.PageParser
+import com.opensymphony.module.sitemesh.RequestConstants
 import com.opensymphony.module.sitemesh.factory.BaseFactory
 
 /**
@@ -91,6 +93,11 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
         @Override
         void refresh() {
         }
+        
+        @Override
+        public PageParser getPageParser(String contentType) {
+            new GrailsHTMLPageParser()   
+        }
     }
 
     def configureSitemesh() {
@@ -124,6 +131,7 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
 </html>
 </g:applyLayout></g:applyLayout>
 '''
+        request.setAttribute(RequestConstants.PAGE, new GSPSitemeshPage())
         request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, new GSPSitemeshPage())
         assertOutputEquals '''
 <html>
@@ -180,7 +188,7 @@ class FullSitemeshLifeCycleTests extends AbstractGrailsTagTests {
 '''
         def layout = '''<g:if test="${pageProperty(name:'page.sideBarSetting') == 'vendor'}">good</g:if>'''
 
-        def result = applyLayout(layout, template)
+        def result = applyLayout(layout, template, [:])
 
         assertEquals 'good', result
     }
