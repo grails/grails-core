@@ -210,6 +210,21 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals false, map.boolean('nonexistent', Boolean.FALSE)
         assertEquals true, map.boolean('bool')
         assertNull map.boolean("nonexistant")
+        assertNull map.boolean('my_checkbox')
+        map.my_checkbox = false
+        assertEquals false, map.boolean('my_checkbox')
+        map.my_checkbox = true
+        assertEquals true, map.boolean('my_checkbox')
+        map.my_checkbox = 'false'
+        assertEquals false, map.boolean('my_checkbox')
+        map.my_checkbox = 'true'
+        assertEquals true, map.boolean('my_checkbox')
+        map.my_checkbox = 'some bogus value'
+        assertEquals false, map.boolean('my_checkbox')
+        map.my_checkbox = 'off'
+        assertEquals false, map.boolean('my_checkbox')
+        map.my_checkbox = 'on'
+        assertEquals true, map.boolean('my_checkbox')
     }
 
     void testAutoEvaluateBlankDates() {
