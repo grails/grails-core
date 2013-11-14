@@ -41,18 +41,29 @@ class ForwardMethod {
 
     String forward(HttpServletRequest request, HttpServletResponse response, Map params) {
         def urlInfo = new ForwardUrlMappingInfo()
-
+        BeanUtils.populate(urlInfo, params)
+        
         GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
 
-        if (params.controller) {
-            webRequest?.controllerName = params.controller
+        if (webRequest) {
+            def controllerName
+            if(params.controller) {
+                controllerName = params.controller
+            } else {
+                controllerName = webRequest.controllerName
+            }
+            
+            if(controllerName) {
+                def convertedControllerName = convert(webRequest, controllerName)
+                webRequest.controllerName = convertedControllerName
+            }
+            urlInfo.controllerName = webRequest.controllerName
+            
+            if(params.action) {
+                urlInfo.actionName = convert(webRequest, params.action)
+            }
         }
-        else {
-            urlInfo.controllerName = webRequest?.controllerName
-        }
-
-        BeanUtils.populate(urlInfo, params)
-
+         
         def model = params.model instanceof Map ? params.model : Collections.EMPTY_MAP
         request.setAttribute(IN_PROGRESS, true)
         String uri = WebUtils.forwardRequestForUrlMappingInfo(request, response, urlInfo, model, true)
