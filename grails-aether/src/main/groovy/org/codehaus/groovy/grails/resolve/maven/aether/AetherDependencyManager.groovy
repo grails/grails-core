@@ -468,7 +468,13 @@ class AetherDependencyManager implements DependencyManager {
             ModelBuildingResult modelBuildingResult = modelBuilder.build(modelRequest)
             final mavenDependencies = modelBuildingResult.getEffectiveModel().getDependencies()
             for (org.apache.maven.model.Dependency md in mavenDependencies) {
-                final dependency = new Dependency(new DefaultArtifact(md.groupId, md.artifactId, md.classifier, md.type, md.version), md.scope)
+                final artifact = new DefaultArtifact(md.groupId, md.artifactId, md.classifier, md.type, md.version)
+                final mavenExclusions = md.getExclusions()
+                Set<Exclusion> exclusions = []
+                for(me in mavenExclusions) {
+                    exclusions << new Exclusion(me.groupId,me.artifactId, DependencyConfiguration.WILD_CARD, DependencyConfiguration.WILD_CARD)
+                }
+                final dependency = new Dependency(artifact, md.scope, md.isOptional(), exclusions)
                 addDependency(dependency)
             }
         }
