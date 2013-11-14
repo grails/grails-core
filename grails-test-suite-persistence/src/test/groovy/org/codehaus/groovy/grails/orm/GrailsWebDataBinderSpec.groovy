@@ -1146,6 +1146,25 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         f.activeDays == ['mon']
     }
+    
+    @Issue('GRAILS-10790')
+    void 'Test binding to a Map on a non domain class'() {
+        given:
+        def obj = new NonDomainClassWithMapProperty()
+        
+        when:
+        binder.bind obj, [name: 'Alpha Omega', 
+                         'albums[uno]': [title: 'Album Number One'],
+                         'albums[dos]': [title: 'Album Number Two']] as SimpleMapDataBindingSource
+                     
+        then:
+        obj.name == 'Alpha Omega'
+        obj.albums.size() == 2
+        obj.albums['uno'] instanceof Album
+        obj.albums['uno'].title == 'Album Number One'
+        obj.albums['dos'] instanceof Album
+        obj.albums['dos'].title == 'Album Number Two'
+    }
 }
 
 @Entity
@@ -1348,3 +1367,13 @@ class Foo {
         Collections.unmodifiableSet(_names ?: [] as Set)
     }
 }
+
+class NonDomainClassWithMapProperty {
+    String name
+    Map<String, Album> albums
+}
+
+class Album {
+    String title
+}
+
