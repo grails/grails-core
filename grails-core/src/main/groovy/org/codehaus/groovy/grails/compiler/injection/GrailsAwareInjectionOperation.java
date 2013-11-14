@@ -87,13 +87,23 @@ public class GrailsAwareInjectionOperation extends CompilationUnit.PrimaryClassN
         }
 
         BeanDefinitionRegistry registry = new SimpleBeanDefinitionRegistry();
-        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry);
-        scanner.setResourceLoader(new DefaultResourceLoader(Thread.currentThread().getContextClassLoader()));
+        ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(registry, false);
+        scanner.setIncludeAnnotationConfig(false);
         scanner.addIncludeFilter(new AnnotationTypeFilter(AstTransformer.class));
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
         scanner.scan(INJECTOR_SCAN_PACKAGE);
 
+        // fallback to current classloader for special cases (e.g. gradle classloader isolation with useAnt=false)
+        if (registry.getBeanDefinitionCount() == 0) {
+            classLoader = GrailsAwareInjectionOperation.class.getClassLoader();
+            scanner.setResourceLoader(new DefaultResourceLoader(classLoader));
+            scanner.scan(INJECTOR_SCAN_PACKAGE);
+        }
+
         List<ClassInjector> injectors = new ArrayList<ClassInjector>();
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
         for (String beanName : registry.getBeanDefinitionNames()) {
             try {
                 Class<?> injectorClass = classLoader.loadClass(registry.getBeanDefinition(beanName).getBeanClassName());
