@@ -366,7 +366,13 @@ class SimpleDataBinder implements DataBinder {
             def field = clazz.getDeclaredField(propertyName)
             def genericType = field.genericType
             if (genericType instanceof ParameterizedType) {
-                referencedType = ((ParameterizedType)genericType).getActualTypeArguments()[0]
+                ParameterizedType pt = (ParameterizedType)genericType
+                Class rawType = pt.getRawType()
+                if(Map.isAssignableFrom(rawType)) {
+                    referencedType = pt.getActualTypeArguments()[1]
+                } else {
+                    referencedType = pt.getActualTypeArguments()[0]
+                }
             }
         } catch (NoSuchFieldException e) {
         }
