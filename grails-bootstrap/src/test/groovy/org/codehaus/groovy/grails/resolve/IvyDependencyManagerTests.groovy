@@ -953,7 +953,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
             test "junit:junit:4.8.1"
 
             runtime "apache-taglibs:standard:1.1.2",
-                    "org.apache.tomcat:tomcat-jdbc:7.0.37",
+                    "org.apache.tomcat:tomcat-jdbc:7.0.47",
                     "org.aspectj:aspectjweaver:1.6.2",
                     "org.aspectj:aspectjrt:1.6.2",
                     "cglib:cglib-nodep:2.1_3",
