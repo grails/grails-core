@@ -1165,6 +1165,36 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.albums['dos'] instanceof Album
         obj.albums['dos'].title == 'Album Number Two'
     }
+    
+    @Issue('GRAILS-10796')
+    void 'Test replacing existing collection of persistent entities'() {
+        given: 
+        def container = new CollectionContainer().save()
+        
+        when:
+        ['one', 'two', 'three'].each { name ->
+            def widget = new Widget(isBindable: name)
+            widget.isNotBindable = ''
+            container.addToSetOfWidgets(widget)
+        }
+        
+        then:
+        container.save()
+        container.setOfWidgets.size() == 3
+        
+        when: 'A List of ids is bound to the collection container'
+        def newWidgets = ['four', 'five'].collect { name ->
+            def widget = new Widget(isBindable: name)
+            widget.isNotBindable = ''
+            widget.save().id
+        } 
+        binder.bind container, [setOfWidgets: newWidgets] as SimpleMapDataBindingSource
+        
+        then: 'the set of widgets should have been replaced, not appended to'
+        container.setOfWidgets.find { it.isBindable == 'four' }
+        container.setOfWidgets.find { it.isBindable == 'five' }
+        container.setOfWidgets.size() == 2
+    }
 }
 
 @Entity
