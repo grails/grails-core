@@ -281,21 +281,21 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 def referencedType = getReferencedTypeForCollection(propName, obj)
                 if(referencedType && isDomainClass(referencedType) && val instanceof List) {
                     needsBinding = false
+                    initializeCollection obj, metaProperty.name, metaProperty.type, false
                     def itemsWhichNeedBinding = []
                     val.each { item ->
+                        def persistentInstance
                         if(item instanceof Map || item instanceof DataBindingSource) {
                             def idValue = getIdentifierValueFrom(item)
-                            def persistentInstance
                             if(idValue != null) {
                                 persistentInstance = getPersistentInstance(referencedType, idValue)
                                 if(persistentInstance != null) {
                                     bind persistentInstance, new SimpleMapDataBindingSource(item), listener
+                                    itemsWhichNeedBinding << persistentInstance
                                 }
                             }
-                            if(persistentInstance == null) {
-                                itemsWhichNeedBinding << item
-                            }
-                        } else {
+                        }
+                        if(persistentInstance == null) {
                             itemsWhichNeedBinding << item
                         }
                     }
