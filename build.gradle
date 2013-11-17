@@ -369,6 +369,6 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.5-rc-1'
+    gradleVersion = '1.9-rc-3'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
