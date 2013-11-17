@@ -42,6 +42,19 @@ dependencies {
         exclude group: 'javassist', module: 'javassist'
     }
 }
+
+// javaee-web-api has a bad versions of classes we need to compile against
+// Just remove it fromt the compile classpath here
+configurations {
+    testCompile {
+        exclude module: "javaee-web-api"
+    }
+}
+
+compileTestGroovy {
+    groovyOptions.listFiles = true
+}
+
 test {
     maxParallelForks = 4
     forkEvery = 100
