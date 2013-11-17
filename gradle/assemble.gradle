@@ -48,9 +48,8 @@ task configurePopulateDependencies << {
 
     ext {
         baseCachesDir = "$gradle.gradleUserHomeDir/caches"
-        cacheDir = "$baseCachesDir/artifacts-14"
-        metadata = "$cacheDir/module-metadata"
-        filestore = "$cacheDir/filestore"
+        cacheDir = "$baseCachesDir/modules-2"
+        metadata = "$cacheDir/metadata-2.1/descriptors"
     }
 
     def seen = []
@@ -75,9 +74,8 @@ task configurePopulateDependencies << {
                 }
 
                 populateDependencies.from ("${metadata}/${dependency.group}/${dependency.name}/${dependency.version}") {
-                    include "*.ivy.xml"
-                    eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }
-
+                    include "**/*ivy.xml"
+                    eachFile { it.path = "$dependency.group/$dependency.name/ivy-${dependency.version}.xml" }   
                 }
             }
         }
