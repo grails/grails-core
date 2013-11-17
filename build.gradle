@@ -172,7 +172,7 @@ subprojects { project ->
     }
 
     dependencies {
-        groovy groovyDependency
+        compile groovyDependency
 
         if (project.name != "grails-docs") {
             // Logging
@@ -217,15 +217,6 @@ subprojects { project ->
     }
 
     if(!isTestSuite) {
-
-        // Map the groovy gradle configuration to the “compile” scope in our published POMs.
-        // For some reason, this has to go here. If it's put later in the build, the groovy-all
-        // JAR doesn't get added to the artifact POMs.
-        def groovyConfiguration = project.configurations.findByName("groovy")
-        if (groovyConfiguration) {
-            conf2ScopeMappings.addMapping(1, groovyConfiguration, "compile")
-        }
-
         artifacts {
             archives jar
             archives sourcesJar
