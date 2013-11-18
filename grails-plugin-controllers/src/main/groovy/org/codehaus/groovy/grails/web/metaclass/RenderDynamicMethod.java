@@ -51,6 +51,7 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocat
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeUtility;
@@ -127,7 +128,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         boolean renderView = true;
         GroovyObject controller = (GroovyObject) target;
         final Object renderArgument = arguments[0];
-        if (renderArgument instanceof Writable) {
+        if (renderArgument instanceof Converter<?>) {
+            renderView = renderConverter((Converter<?>)renderArgument, response);
+        } else if (renderArgument instanceof Writable) {
             applyContentType(response, null, renderArgument);
             Writable writable = (Writable)renderArgument;
             renderView = renderWritable(writable, response);
@@ -282,6 +285,11 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         webRequest.setRenderView(renderView);
         return null;
+    }
+
+    private boolean renderConverter(Converter<?> converter, HttpServletResponse response) {
+        converter.render(response);
+        return false;
     }
 
     private String resolveContentTypeBySourceType(final Object renderArgument, String defaultEncoding) {
