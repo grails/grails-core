@@ -315,7 +315,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
     private boolean renderJSON(JSONElement object, HttpServletResponse response) {
         response.setContentType(GrailsWebUtil.getContentType("application/json", DEFAULT_ENCODING));
-        return renderText(object.toString(), response);
+        return renderWritable(object, response);
     }
 
     private boolean detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName) {
