@@ -173,7 +173,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
         o = config.getProxyHandler().unwrapIfProxy(o);
         try {
             if (o == null || o.equals(JSONObject.NULL)) {
-                writer.value(null);
+                writer.valueNull();
             }
             else if (o instanceof CharSequence) {
                 writer.value(o);
@@ -181,8 +181,11 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
             else if (o instanceof Class<?>) {
                 writer.value(((Class<?>)o).getName());
             }
-            else if ((o.getClass().isPrimitive() && !o.getClass().equals(byte[].class)) ||
-                    o instanceof Number || o instanceof Boolean) {
+            else if (o instanceof Number) {
+                writer.value((Number)o);
+            } else if (o instanceof Boolean) {
+                writer.value((Boolean)o);
+            } else if (o.getClass().isPrimitive() && !o.getClass().equals(byte[].class)) {
                 writer.value(o);
             }
             else {

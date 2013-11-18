@@ -92,6 +92,12 @@ class RenderDynamicMethodTests extends AbstractGrailsControllerTests {
         assertEquals '', response.contentAsString
         assertEquals 404, response.status
     }
+    
+    void testRenderFile() {
+        testCtrl.renderFile()
+        assertEquals 'foo', response.contentAsString
+        assertEquals 'text/plain;charset=utf-8', response.contentType
+    }
 }
 
 class RenderDynamicMethodTestController {
@@ -156,5 +162,8 @@ class RenderDynamicMethodTestController {
     }
     def renderStatusOnly = {
         render(status: 404)
+    }
+    def renderFile = {
+        render file:'foo'.bytes, contentType: 'text/plain'
     }
 }

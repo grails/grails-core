@@ -16,12 +16,15 @@
 package org.codehaus.groovy.grails.plugins.codecs;
 
 import java.io.IOException;
+import java.io.Writer;
 
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppender;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingState;
 import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingStatelessEncoder;
+import org.codehaus.groovy.grails.support.encoding.WriterEncodedAppender;
 
 /**
  * Abstract base class for implementing encoders that do character replacements
@@ -31,7 +34,7 @@ import org.codehaus.groovy.grails.support.encoding.StreamingEncoder;
  * @author Lari Hotari
  * @since 2.3
  */
-public abstract class AbstractCharReplacementEncoder implements Encoder, StreamingEncoder {
+public abstract class AbstractCharReplacementEncoder implements Encoder, StreamingEncoder, StreamingStatelessEncoder {
     protected CodecIdentifier codecIdentifier;
 
     public AbstractCharReplacementEncoder(CodecIdentifier codecIdentifier) {
@@ -109,6 +112,10 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
         else {
             return str;
         }
+    }
+    
+    public void encodeToWriter(CharSequence str, Writer writer) throws IOException {
+        encodeToStream(this, str, 0, str.length(), new WriterEncodedAppender(writer), null);
     }
 
     /* (non-Javadoc)

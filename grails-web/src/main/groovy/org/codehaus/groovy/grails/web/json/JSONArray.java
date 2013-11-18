@@ -952,4 +952,9 @@ public class JSONArray implements JSONElement, List {
     public Object[] toArray(Object[] objects) {
         return myArrayList.toArray(objects);
     }
+
+    @Override
+    public Writer writeTo(Writer out) throws IOException {
+        return write(out);
+    }
 }

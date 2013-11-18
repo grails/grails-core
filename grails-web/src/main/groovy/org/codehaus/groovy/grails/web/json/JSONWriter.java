@@ -2,6 +2,8 @@ package org.codehaus.groovy.grails.web.json;
 
 import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.*;
 
+import groovy.lang.Writable;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Stack;
@@ -90,7 +92,25 @@ public class JSONWriter {
         this.mode = INIT;
         this.writer = w;
     }
-
+    
+    private static class WritableString implements Writable {
+        private String string;
+        
+        WritableString(String string) {
+            this.string = string;
+        }
+        
+        @Override
+        public Writer writeTo(Writer out) throws IOException {
+            out.write(string);
+            return out;
+        }
+        
+        public String toString() {
+            return string;
+        }
+    }
+    
     /**
      * Append a value.
      * @param s A string value.
@@ -100,12 +120,16 @@ public class JSONWriter {
         if (s == null) {
             throw new JSONException("Null pointer");
         }
+        return append(new WritableString(s));
+    }
+
+    protected JSONWriter append(Writable writableValue) {
         if (this.mode == OBJECT || this.mode == ARRAY) {
             try {
                 if (this.comma && this.mode == ARRAY) {
                     this.comma();
                 }
-                this.writer.write(s);
+                writableValue.writeTo(writer);
             } catch (IOException e) {
                 throw new JSONException(e);
             }
@@ -115,7 +139,7 @@ public class JSONWriter {
             this.comma = true;
             return this;
         }
-        throw new JSONException("Value out of sequence: expected mode to be OBJECT or ARRAY when writing '" + s + "' but was " + this.mode);
+        throw new JSONException("Value out of sequence: expected mode to be OBJECT or ARRAY when writing '" + writableValue + "' but was " + this.mode);
     }
 
     protected void comma() {
@@ -294,6 +318,29 @@ public class JSONWriter {
         return append(Long.toString(l));
     }
 
+    /**
+     * Append a number value
+     * 
+     * @param number
+     * @return
+     */
+    public JSONWriter value(Number number) {
+        return append(number.toString());
+    }
+    
+    public JSONWriter valueNull() {
+        return append(nullWritable);
+    }
+    
+    static Writable nullWritable = new NullWritable();
+    
+    private static class NullWritable implements Writable {
+        @Override
+        public Writer writeTo(Writer out) throws IOException {
+            out.write("null");
+            return out;
+        }
+    }
 
     /**
      * Append an object value.
@@ -303,7 +350,25 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter value(Object o) {
-        return append(JSONObject.valueToString(o));
+        return append(new QuotedWritable(o));
+    }
+    
+    private static class QuotedWritable implements Writable {
+        Object o;
+        
+        QuotedWritable(Object o) {
+            this.o = o;
+        }
+
+        @Override
+        public Writer writeTo(Writer out) throws IOException {
+            JSONObject.writeValue(out, o);
+            return out;
+        }
+        
+        public String toString() {
+            return String.valueOf(o);
+        }
     }
 
     /**

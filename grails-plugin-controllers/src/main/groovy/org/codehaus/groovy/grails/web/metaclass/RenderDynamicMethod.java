@@ -25,6 +25,7 @@ import groovy.lang.GroovyRuntimeException;
 import groovy.lang.MissingMethodException;
 import groovy.lang.Writable;
 import groovy.text.Template;
+import groovy.util.slurpersupport.GPathResult;
 import groovy.xml.StreamingMarkupBuilder;
 
 import java.io.ByteArrayInputStream;
@@ -50,6 +51,7 @@ import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocat
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeUtility;
@@ -96,6 +98,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private static final String BUILDER_TYPE_JSON = "json";
 
     private static final String TEXT_HTML = "text/html";
+    private static final String APPLICATION_XML = "application/xml";
     public static final String DISPOSITION_HEADER_PREFIX = "attachment;filename=";
     private String gspEncoding = DEFAULT_ENCODING;
     private static final String DEFAULT_ENCODING = "utf-8";
@@ -124,207 +127,218 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
         boolean renderView = true;
         GroovyObject controller = (GroovyObject) target;
-        if (arguments[0] instanceof CharSequence) {
-            setContentType(response, TEXT_HTML, DEFAULT_ENCODING,true);
-            CharSequence text = (CharSequence)arguments[0];
+        final Object renderArgument = arguments[0];
+        if (renderArgument instanceof Converter<?>) {
+            renderView = renderConverter((Converter<?>)renderArgument, response);
+        } else if (renderArgument instanceof Writable) {
+            applyContentType(response, null, renderArgument);
+            Writable writable = (Writable)renderArgument;
+            renderView = renderWritable(writable, response);
+        } else if (renderArgument instanceof CharSequence) {
+            applyContentType(response, null, renderArgument);
+            CharSequence text = (CharSequence)renderArgument;
             renderView = renderText(text, response);
         }
-        else if (arguments[0] instanceof Closure) {
-            setContentType(response, TEXT_HTML, gspEncoding, true);
-            Closure closure = (Closure) arguments[arguments.length - 1];
-            renderView = renderMarkup(closure, response);
-        }
-        else if (arguments[0] instanceof Map) {
-            Map argMap = (Map) arguments[0];
-            boolean hasContentType = argMap.containsKey(ARGUMENT_CONTENT_TYPE);
-
-            Writer out = null;
-            if(hasContentType) {
-                out = getWriterForConfiguredContentType(response,argMap, hasContentType);
-                webRequest.setOut(out);
+        else {
+            final Object renderObject = arguments[arguments.length - 1];
+            if (renderArgument instanceof Closure) {
+                setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
+                Closure closure = (Closure) renderObject;
+                renderView = renderMarkup(closure, response);
             }
-            if (argMap.containsKey(ARGUMENT_LAYOUT)) {
-                webRequest.getCurrentRequest().setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, argMap.get(ARGUMENT_LAYOUT));
-            }
-
-            boolean statusSet = false;
-            if (argMap.containsKey(ARGUMENT_STATUS)) {
-                Object statusObj = argMap.get(ARGUMENT_STATUS);
-                if (statusObj != null) {
-                    try {
-                        response.setStatus(Integer.parseInt(statusObj.toString()));
-                        statusSet = true;
-                    }
-                    catch (NumberFormatException e) {
-                        throw new ControllerExecutionException(
-                                "Argument [status] of method [render] must be a valid integer.");
-                    }
-                }
-            }
-
-            if (arguments[arguments.length - 1] instanceof Closure) {
-                Closure callable = (Closure) arguments[arguments.length - 1];
-                if (BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)) {
-                    renderView = renderJSON(callable, response);
-                }
-                else {
-                    renderView = renderMarkup(callable, response);
-                }
-            }
-            else if (arguments[arguments.length - 1] instanceof CharSequence) {
-                if(out == null)  {
-                    out = getWriterForConfiguredContentType(response, argMap, hasContentType);
-                    webRequest.setOut(out);
+            else if (renderArgument instanceof Map) {
+                Map argMap = (Map) renderArgument;
+                
+                if (argMap.containsKey(ARGUMENT_LAYOUT)) {
+                    webRequest.getCurrentRequest().setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, argMap.get(ARGUMENT_LAYOUT));
                 }
 
-                CharSequence text = (CharSequence) arguments[arguments.length - 1];
-                renderView = renderText(text, out);
-            }
-            else if (argMap.containsKey(ARGUMENT_TEXT)) {
-                if(out == null)   {
-                    out = getWriterForConfiguredContentType(response, argMap, hasContentType);
-                    webRequest.setOut(out);
-                }
-
-                Object textArg = argMap.get(ARGUMENT_TEXT);
-                CharSequence text = (textArg instanceof CharSequence) ? ((CharSequence)textArg) : textArg.toString();
-                renderView = renderText(text, out);
-            }
-            else if (argMap.containsKey(ARGUMENT_VIEW)) {
-                renderView(webRequest, argMap, target, controller, hasContentType);
-            }
-            else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
-                if(out == null) {
-                    out = getWriterForConfiguredContentType(response, argMap, hasContentType);
-                    webRequest.setOut(out);
-                }
-
-                renderView = renderTemplate(target, controller, webRequest, argMap, out);
-            }
-            else if (argMap.containsKey(ARGUMENT_FILE)) {
-                renderView = false;
-
-                Object o = argMap.get(ARGUMENT_FILE);
-                Object fnO = argMap.get(ARGUMENT_FILE_NAME);
-                String fileName = fnO != null ? fnO.toString() : ((o instanceof File) ? ((File)o).getName(): null );
-                if (o != null) {
-                    if (fileName != null) {
-                        detectContentTypeFromFileName(webRequest, response, argMap, fileName, hasContentType);
-                        if (fnO != null) {
-                            response.setHeader(HttpHeaders.CONTENT_DISPOSITION, DISPOSITION_HEADER_PREFIX + fileName);
+                boolean statusSet = false;
+                if (argMap.containsKey(ARGUMENT_STATUS)) {
+                    Object statusObj = argMap.get(ARGUMENT_STATUS);
+                    if (statusObj != null) {
+                        try {
+                            final int statusCode = statusObj instanceof Number ? ((Number)statusObj).intValue() : Integer.parseInt(statusObj.toString());
+                            response.setStatus(statusCode);
+                            statusSet = true;
+                        }
+                        catch (NumberFormatException e) {
+                            throw new ControllerExecutionException(
+                                    "Argument [status] of method [render] must be a valid integer.");
                         }
                     }
-                    else if (!hasContentType) {
-                        throw new ControllerExecutionException(
-                                "Argument [file] of render method specified without valid [contentType] argument");
+                }
+                
+                if (renderObject instanceof Writable) {
+                    Writable writable = (Writable) renderObject;
+                    applyContentType(response, argMap, renderObject);
+                    renderView = renderWritable(writable, response);
+                } 
+                else if (renderObject instanceof Closure) {
+                    Closure callable = (Closure) renderObject;
+                    applyContentType(response, argMap, renderObject);
+                    if (BUILDER_TYPE_JSON.equals(argMap.get(ARGUMENT_BUILDER)) || isJSONResponse(response)) {
+                        renderView = renderJSON(callable, response);
                     }
-
-                    InputStream input = null;
-                    try {
-                        if (o instanceof File) {
-                            File f = (File) o;
-                            input = FileUtils.openInputStream(f);
-                        }
-                        else if (o instanceof InputStream) {
-                            input = (InputStream) o;
-                        }
-                        else if (o instanceof byte[]) {
-                            input = new ByteArrayInputStream((byte[])o);
-                        }
-                        else {
-                            input = FileUtils.openInputStream(new File(o.toString()));
-                        }
-                        IOUtils.copy(input, response.getOutputStream());
-                    } catch (IOException e) {
-                        throw new ControllerExecutionException(
-                                "I/O error copying file to response: " + e.getMessage(), e);
-
+                    else {
+                        renderView = renderMarkup(callable, response);
                     }
-                    finally {
-                        if (input != null) {
-                            try {
-                                input.close();
-                            } catch (IOException e) {
-                                // ignore
+                }
+                else if (renderObject instanceof CharSequence) {
+                    applyContentType(response, argMap, renderObject);
+                    CharSequence text = (CharSequence) renderObject;
+                    renderView = renderText(text, response);
+                }
+                else if (argMap.containsKey(ARGUMENT_TEXT)) {
+                    Object textArg = argMap.get(ARGUMENT_TEXT);
+                    applyContentType(response, argMap, textArg);
+                    if (textArg instanceof Writable) {
+                        Writable writable = (Writable) textArg;
+                        renderView = renderWritable(writable, response);
+                    } else {                    
+                        CharSequence text = (textArg instanceof CharSequence) ? ((CharSequence)textArg) : textArg.toString();
+                        renderView = renderText(text, response);
+                    }
+                }
+                else if (argMap.containsKey(ARGUMENT_VIEW)) {
+                    renderView(webRequest, argMap, target, controller);
+                }
+                else if (argMap.containsKey(ARGUMENT_TEMPLATE)) {
+                    applyContentType(response, argMap, null, false);
+                    renderView = renderTemplate(target, controller, webRequest, argMap);
+                }
+                else if (argMap.containsKey(ARGUMENT_FILE)) {
+                    renderView = false;
+
+                    Object o = argMap.get(ARGUMENT_FILE);
+                    Object fnO = argMap.get(ARGUMENT_FILE_NAME);
+                    String fileName = fnO != null ? fnO.toString() : ((o instanceof File) ? ((File)o).getName(): null );
+                    if (o != null) {
+                        boolean hasContentType = applyContentType(response, argMap, null, false);
+                        if (fileName != null) {
+                            if(!hasContentType) {
+                                hasContentType = detectContentTypeFromFileName(webRequest, response, argMap, fileName);
+                            }
+                            if (fnO != null) {
+                                response.setHeader(HttpHeaders.CONTENT_DISPOSITION, DISPOSITION_HEADER_PREFIX + fileName);
+                            }
+                        }
+                        if (!hasContentType) {
+                            throw new ControllerExecutionException(
+                                    "Argument [file] of render method specified without valid [contentType] argument");
+                        }
+
+                        InputStream input = null;
+                        try {
+                            if (o instanceof File) {
+                                File f = (File) o;
+                                input = FileUtils.openInputStream(f);
+                            }
+                            else if (o instanceof InputStream) {
+                                input = (InputStream) o;
+                            }
+                            else if (o instanceof byte[]) {
+                                input = new ByteArrayInputStream((byte[])o);
+                            }
+                            else {
+                                input = FileUtils.openInputStream(new File(o.toString()));
+                            }
+                            IOUtils.copy(input, response.getOutputStream());
+                        } catch (IOException e) {
+                            throw new ControllerExecutionException(
+                                    "I/O error copying file to response: " + e.getMessage(), e);
+
+                        }
+                        finally {
+                            if (input != null) {
+                                try {
+                                    input.close();
+                                } catch (IOException e) {
+                                    // ignore
+                                }
                             }
                         }
                     }
                 }
-            }
-            else if (statusSet) {
-                // GRAILS-6711 nothing to render, just setting status code, so don't render the map
-                renderView = false;
-            }
-            else {
-                Object object = arguments[0];
-                if (object instanceof JSONElement) {
-                    renderView = renderJSON((JSONElement)object, response);
+                else if (statusSet) {
+                    // GRAILS-6711 nothing to render, just setting status code, so don't render the map
+                    renderView = false;
                 }
-                else{
-                    out = getWriterForConfiguredContentType(response, argMap, hasContentType);
-                    webRequest.setOut(out);
-
-                    renderView = renderObject(object, out);
-                }
-            }
-            try {
-                if (!renderView) {
-                    if (out != null) {
-                        out.flush();
+                else {
+                    Object object = renderArgument;
+                    if (object instanceof JSONElement) {
+                        renderView = renderJSON((JSONElement)object, response);
+                    }
+                    else{
+                        try {
+                            renderView = renderObject(object, response.getWriter());
+                        }
+                        catch (IOException e) {
+                            // ignore
+                        }
                     }
                 }
             }
-            catch (IOException e) {
-                throw new ControllerExecutionException("I/O error executing render method for arguments [" +
-                        argMap + "]: " + e.getMessage(), e);
+            else {
+                throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments);
             }
-        }
-        else {
-            throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments);
         }
         webRequest.setRenderView(renderView);
         return null;
     }
 
-    private Writer getWriterForConfiguredContentType(HttpServletResponse response, Map argMap, boolean hasContentType) {
-        Writer out;
-        String contentType = hasContentType ? argMap.get(ARGUMENT_CONTENT_TYPE).toString() : null;
-        if (hasContentType && argMap.containsKey(ARGUMENT_ENCODING)) {
-            String encoding = argMap.get(ARGUMENT_ENCODING).toString();
-            setContentType(response, contentType, encoding);
-            out = GSPResponseWriter.getInstance(response);
+    private boolean renderConverter(Converter<?> converter, HttpServletResponse response) {
+        converter.render(response);
+        return false;
+    }
+
+    private String resolveContentTypeBySourceType(final Object renderArgument, String defaultEncoding) {
+        return renderArgument instanceof GPathResult ? APPLICATION_XML : defaultEncoding;
+    }
+    
+    private boolean applyContentType(HttpServletResponse response, Map argMap, Object renderArgument) {
+        return applyContentType(response, argMap, renderArgument, true);
+    }
+
+    private boolean applyContentType(HttpServletResponse response, Map argMap, Object renderArgument, boolean useDefault) {
+        boolean contentTypeIsDefault = true;
+        String contentType = resolveContentTypeBySourceType(renderArgument, useDefault ? TEXT_HTML : null);
+        String encoding = DEFAULT_ENCODING;
+        if (argMap != null) {
+            if(argMap.containsKey(ARGUMENT_CONTENT_TYPE)) {
+                contentType = argMap.get(ARGUMENT_CONTENT_TYPE).toString();
+                contentTypeIsDefault = false;
+            }
+            if(argMap.containsKey(ARGUMENT_ENCODING)) {
+                encoding = argMap.get(ARGUMENT_ENCODING).toString();
+                contentTypeIsDefault = false;
+            }
         }
-        else if (hasContentType) {
-            setContentType(response, contentType, DEFAULT_ENCODING);
-            out = GSPResponseWriter.getInstance(response);
+        if(contentType != null) {
+            setContentType(response, contentType, encoding, contentTypeIsDefault);
+            return true;
         }
-        else {
-            setContentType(response, TEXT_HTML, DEFAULT_ENCODING, true);
-            out = GSPResponseWriter.getInstance(response);
-        }
-        return out;
+        return false;
     }
 
     private boolean renderJSON(JSONElement object, HttpServletResponse response) {
-        response.setContentType(GrailsWebUtil.getContentType("application/json", gspEncoding));
-        return renderText(object.toString(), response);
+        response.setContentType(GrailsWebUtil.getContentType("application/json", DEFAULT_ENCODING));
+        return renderWritable(object, response);
     }
 
-    private void detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName, boolean hasContentType) {
-        if (hasContentType) return;
-        String contentType;
+    private boolean detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName) {
         MimeUtility mimeUtility = lookupMimeUtility(webRequest);
         if (mimeUtility != null) {
             MimeType mimeType = mimeUtility.getMimeTypeForExtension(FilenameUtils.getExtension(fileName));
             if (mimeType != null) {
-                contentType = mimeType.getName();
+                String contentType = mimeType.getName();
                 Object encodingObj = argMap.get(ARGUMENT_ENCODING);
                 String encoding = encodingObj != null ? encodingObj.toString() : DEFAULT_ENCODING;
                 setContentType(response, contentType, encoding);
-            } else {
-                throw new ControllerExecutionException("Content type could not be determined for file: " + fileName);
+                return true;
             }
         }
+        return false;
     }
 
     private MimeUtility lookupMimeUtility(GrailsWebRequest webRequest) {
@@ -336,10 +350,16 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         }
         return mimeUtility;
     }
+    
+    private GSPResponseWriter createResponseWriter(GrailsWebRequest webRequest) {
+        GSPResponseWriter out = GSPResponseWriter.getInstance(webRequest.getResponse());
+        webRequest.setOut(out);
+        return out;
+    }
 
     private boolean renderTemplate(Object target, GroovyObject controller, GrailsWebRequest webRequest,
-            Map argMap, Writer out) {
-
+            Map argMap) {
+        GSPResponseWriter out = createResponseWriter(webRequest);
         boolean renderView;
         boolean hasModel = argMap.containsKey(ARGUMENT_MODEL);
         Object modelObject = null;
@@ -403,6 +423,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 Writable w = t.make(new BeanMap(target));
                 w.writeTo(out);
             }
+            out.flush();
             renderView = false;
         }
         catch (GroovyRuntimeException gre) {
@@ -454,8 +475,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private void setContentType(HttpServletResponse response, String contentType, String encoding, boolean contentTypeIsDefault) {
-        if (response.getContentType()==null || !contentTypeIsDefault) {
-            response.setContentType(GrailsWebUtil.getContentType(contentType,encoding));
+        if (!contentTypeIsDefault || response.getContentType()==null) {
+            response.setContentType(GrailsWebUtil.getContentType(contentType, encoding));
         }
     }
 
@@ -515,7 +536,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         template.make(binding).writeTo(out);
     }
 
-    private void renderView(GrailsWebRequest webRequest, Map argMap, Object target, GroovyObject controller, boolean hasContentType) {
+    private void renderView(GrailsWebRequest webRequest, Map argMap, Object target, GroovyObject controller) {
         String viewName = argMap.get(ARGUMENT_VIEW).toString();
         String viewUri = webRequest.getAttributes().getNoSuffixViewURI((GroovyObject) target, viewName);
         Object modelObject = argMap.get(ARGUMENT_MODEL);
@@ -528,9 +549,8 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
             if (isPromise) return;
         }
-
-
-        getWriterForConfiguredContentType(webRequest.getResponse(),argMap,hasContentType);
+        
+        applyContentType(webRequest.getResponse(), argMap, null);
 
         Map model;
         if (modelObject instanceof Map) {
@@ -556,18 +576,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private boolean renderMarkup(Closure closure, HttpServletResponse response) {
-        boolean renderView;
         StreamingMarkupBuilder b = new StreamingMarkupBuilder();
         b.setEncoding(response.getCharacterEncoding());
         Writable markup = (Writable) b.bind(closure);
-        try {
-            markup.writeTo(response.getWriter());
-        }
-        catch (IOException e) {
-            throw new ControllerExecutionException("I/O error executing render method for arguments [" + closure + "]: " + e.getMessage(), e);
-        }
-        renderView = false;
-        return renderView;
+        return renderWritable(markup, response);
     }
 
     private boolean renderText(CharSequence text, HttpServletResponse response) {
@@ -578,6 +590,17 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         catch (IOException e) {
             throw new ControllerExecutionException(e.getMessage(), e);
         }
+    }
+    
+    private boolean renderWritable(Writable writable, HttpServletResponse response) {
+        try {
+            PrintWriter writer = response.getWriter();
+            writable.writeTo(writer);
+        }
+        catch (IOException e) {
+            throw new ControllerExecutionException(e.getMessage(), e);
+        }
+        return false;
     }
 
     private boolean renderText(CharSequence text, Writer writer) {

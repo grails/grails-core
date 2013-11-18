@@ -26,7 +26,17 @@ SOFTWARE.
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingStatelessEncoder;
+import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
+import org.springframework.util.ClassUtils;
 
 /**
  * A JSONObject is an unordered collection of name/value pairs. Its
@@ -83,8 +93,21 @@ import java.util.*;
  * @version 2
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class JSONObject implements JSONElement,Map {
-
+public class JSONObject implements JSONElement, Map {
+    private static StreamingStatelessEncoder javascriptEncoderStateless;
+    private static Encoder javascriptEncoder;
+    private static boolean useStreamingJavascriptEncoder=false;
+    static {
+        try {
+            javascriptEncoder = (Encoder)ClassUtils.forName("org.codehaus.groovy.grails.plugins.codecs.JavaScriptEncoder", JSONObject.class.getClassLoader()).newInstance();
+            javascriptEncoderStateless = (StreamingStatelessEncoder)javascriptEncoder;
+            useStreamingJavascriptEncoder = true;
+        }
+        catch (Exception e) {
+            // ignore
+        }
+    }
+    
     /**
      * JSONObject.NULL is equivalent to the value that JavaScript calls null,
      * whilst Java's null is equivalent to the value that JavaScript calls
@@ -1082,7 +1105,50 @@ public class JSONObject implements JSONElement,Map {
         }
         return quote(value.toString());
     }
+    
+    static void writeValue(Writer writer, Object value) throws IOException {
+        if (value == null || value.equals(null)) {
+            writer.write("null");
+        } else if (value instanceof Number) {
+            writeNumber(writer, (Number) value);
+        } else if (value instanceof Date) {
+            writeDate(writer, (Date) value);
+        } else if (value instanceof Boolean) {
+            writer.write(value.toString());
+        } else if (value instanceof JSONElement) {
+            ((JSONElement)value).writeTo(writer);
+        } else {
+            writeQuoted(writer, value);
+        }
+    }
 
+    static void writeQuoted(Writer writer, Object value) throws IOException {
+        if (useStreamingJavascriptEncoder) {
+            writer.write("\"");
+            if (value instanceof String || value instanceof StringBuilder || value instanceof StringBuffer) {
+                javascriptEncoderStateless.encodeToWriter((CharSequence)value, writer);
+            }
+            else {
+                CodecPrintWriter codecWriter = new CodecPrintWriter(writer, javascriptEncoder, null);
+                codecWriter.print(value);
+                codecWriter.flush();
+            }
+            writer.write("\"");
+        }
+        else {
+            writer.write(valueToString(value));
+        }
+    }
+
+    static void writeDate(Writer writer, Date d) throws IOException {
+        writer.write("new Date(");
+        writer.write(String.valueOf(d.getTime()));
+        writer.write(")");
+    }
+
+    static void writeNumber(Writer writer, Number value) throws IOException {
+        writer.write(String.valueOf(value));
+    }
 
     /**
      * Make a prettyprinted JSON text of an object value.
@@ -1134,26 +1200,17 @@ public class JSONObject implements JSONElement,Map {
      */
     public Writer write(Writer writer) throws JSONException {
         try {
-            boolean b = false;
-            Iterator keys = keys();
+            boolean notFirst = false;
             writer.write('{');
-
-            while (keys.hasNext()) {
-                if (b) {
+            for(Iterator it = myHashMap.entrySet().iterator(); it.hasNext();) {
+                Map.Entry entry = (Entry)it.next();
+                if (notFirst) {
                     writer.write(',');
                 }
-                Object k = keys.next();
-                writer.write(quote(k.toString()));
+                writeQuoted(writer, entry.getKey());
                 writer.write(':');
-                Object v = this.myHashMap.get(k);
-                if (v instanceof JSONObject) {
-                    ((JSONObject) v).write(writer);
-                } else if (v instanceof JSONArray) {
-                    ((JSONArray) v).write(writer);
-                } else {
-                    writer.write(valueToString(v));
-                }
-                b = true;
+                writeValue(writer, entry.getValue());
+                notFirst = true;
             }
             writer.write('}');
             return writer;
@@ -1225,5 +1282,11 @@ public class JSONObject implements JSONElement,Map {
     @Override
     public int hashCode() {
         return (myHashMap != null ? myHashMap.hashCode() : 0);
+    }
+
+
+    @Override
+    public Writer writeTo(Writer out) throws IOException {
+        return write(out);
     }
 }
