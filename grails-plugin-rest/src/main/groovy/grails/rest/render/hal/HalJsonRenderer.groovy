@@ -121,7 +121,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             final clazz = object.class
 
             if (isDomainResource(clazz)) {
-                writeDomainWithEmbeddedAndLinks(context, clazz, object, writer, context.locale, mimeType, [] as Set)
+                writeDomainWithEmbeddedAndLinks(context, clazz, object, writer, context.locale, mimeType, [] as Set,
+                        new Stack())
             } else if (object instanceof Collection) {
                 beginLinks(writer)
                 writeLinkForCurrentPath(context, mimeType, writer)
@@ -145,7 +146,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         for(o in ((Collection)object)) {
             if (o) {
                 if(isDomainResource(o.getClass())) {
-                    writeDomainWithEmbeddedAndLinks(context, o.class, o, writer, context.locale, mimeType, writtenObjects)
+                    writeDomainWithEmbeddedAndLinks(context, o.class, o, writer, context.locale, mimeType, writtenObjects
+                            , new Stack())
                 } else {
                     writeSimpleObjectAndLink(o, context, writer, mimeType)
                 }
@@ -210,14 +212,24 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             .beginObject()
     }
 
-
-    protected void writeDomainWithEmbeddedAndLinks( RenderContext context, Class clazz, Object object, JsonWriter writer, Locale locale, MimeType contentType, Set writtenObjects) {
+    protected void writeDomainWithEmbeddedAndLinks( RenderContext context, Class clazz, Object object, JsonWriter writer, Locale locale, MimeType contentType, Set writtenObjects,
+                                                    Stack referenceStack) {
 
         PersistentEntity entity = mappingContext.getPersistentEntity(clazz.name)
         final metaClass = GroovySystem.metaClassRegistry.getMetaClass(entity.javaClass)
-        Map<Association, Object> associationMap = writeLinks(context,metaClass, object, entity, locale, contentType, writer)
+        //If the object was already serialized , simply write its link for it and return.
+        if (referenceStack.contains(object)) {
+            writeLinks(context,metaClass, object, entity, locale, contentType, writer, false)
+            writer.endObject()
+            return
+        }
+        //Push the current object to referenceStack for  handling circular references. Once all its fields are handled,
+        //the object is removed from the stack.
+        referenceStack.push object
+        Map<Association, Object> associationMap = writeLinks(context,metaClass, object, entity, locale, contentType, writer, true)
 
         writeDomain(context, metaClass, entity, object, writer)
+
 
         if (associationMap) {
             writer.name(EMBEDDED_ATTRIBUTE)
@@ -233,7 +245,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                         final associatedEntity = property.associatedEntity
                         if (associatedEntity) {
                             writtenObjects << value
-                            writeDomainWithEmbeddedAndLinks(context, associatedEntity.javaClass, value, writer, locale, null, writtenObjects)
+                            writeDomainWithEmbeddedAndLinks(context, associatedEntity.javaClass, value, writer, locale, null, writtenObjects,
+                                    referenceStack)
                         }
                     }
                 } else {
@@ -242,7 +255,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                         writer.beginArray()
                         for (obj in entry.value) {
                             writtenObjects << obj
-                            writeDomainWithEmbeddedAndLinks(context, associatedEntity.javaClass, obj, writer, locale,null, writtenObjects)
+                            writeDomainWithEmbeddedAndLinks(context, associatedEntity.javaClass, obj, writer, locale,null, writtenObjects,
+                                    referenceStack)
                         }
                         writer.endArray()
                     }
@@ -251,10 +265,12 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             }
             writer.endObject()
         }
+        referenceStack.pop()
         writer.endObject()
     }
 
-    protected Map<Association, Object> writeLinks( RenderContext context, MetaClass metaClass, object, PersistentEntity entity, Locale locale, MimeType contentType, JsonWriter writer) {
+    protected Map<Association, Object> writeLinks( RenderContext context, MetaClass metaClass, object, PersistentEntity entity, Locale locale, MimeType contentType, JsonWriter writer,
+                                                   boolean associationLinks = true) {
         writer.beginObject()
         writer.name(LINKS_ATTRIBUTE)
         writer.beginObject()
@@ -267,7 +283,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
         link.title = title
         link.hreflang = locale
         writeLink(link, locale, writer)
-        Map<Association, Object> associationMap = writeAssociationLinks(context,object, locale, writer, entity, metaClass)
+        Map<Association, Object> associationMap = associationLinks ?
+            writeAssociationLinks(context,object, locale, writer, entity, metaClass) : [:] as Map<Association,Object>
         writer.endObject()
         associationMap
     }
