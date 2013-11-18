@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.groovy.grails.support.encoding.Encoder;
+import org.codehaus.groovy.grails.support.encoding.StreamingStatelessEncoder;
 import org.codehaus.groovy.grails.web.util.CodecPrintWriter;
 import org.springframework.util.ClassUtils;
 
@@ -93,10 +94,14 @@ import org.springframework.util.ClassUtils;
  */
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class JSONObject implements JSONElement, Map {
+    private static StreamingStatelessEncoder javascriptEncoderStateless;
     private static Encoder javascriptEncoder;
+    private static boolean useStreamingJavascriptEncoder=false;
     static {
         try {
             javascriptEncoder = (Encoder)ClassUtils.forName("org.codehaus.groovy.grails.plugins.codecs.JavaScriptEncoder", JSONObject.class.getClassLoader()).newInstance();
+            javascriptEncoderStateless = (StreamingStatelessEncoder)javascriptEncoder;
+            useStreamingJavascriptEncoder = true;
         }
         catch (Exception e) {
             // ignore
@@ -1118,11 +1123,21 @@ public class JSONObject implements JSONElement, Map {
     }
 
     static void writeQuoted(Writer writer, Object value) throws IOException {
-        writer.write("\"");
-        CodecPrintWriter codecWriter = new CodecPrintWriter(writer, javascriptEncoder, null);
-        codecWriter.print(value);
-        codecWriter.flush();
-        writer.write("\"");
+        if (useStreamingJavascriptEncoder) {
+            writer.write("\"");
+            if (value instanceof String || value instanceof StringBuilder || value instanceof StringBuffer) {
+                javascriptEncoderStateless.encodeToWriter((CharSequence)value, writer);
+            }
+            else {
+                CodecPrintWriter codecWriter = new CodecPrintWriter(writer, javascriptEncoder, null);
+                codecWriter.print(value);
+                codecWriter.flush();
+            }
+            writer.write("\"");
+        }
+        else {
+            writer.write(valueToString(value));
+        }
     }
 
     static void writeDate(Writer writer, Date d) throws IOException {
