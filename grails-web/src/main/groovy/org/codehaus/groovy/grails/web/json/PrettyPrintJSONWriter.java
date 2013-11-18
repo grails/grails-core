@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.web.json;
 import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.ARRAY;
 import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.KEY;
 import static org.codehaus.groovy.grails.web.json.JSONWriter.Mode.OBJECT;
+import groovy.lang.Writable;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -71,11 +72,7 @@ public class PrettyPrintJSONWriter extends JSONWriter {
     }
 
     @Override
-    protected JSONWriter append(String s) {
-        if (s == null) {
-            throw new JSONException("Null pointer");
-        }
-
+    protected JSONWriter append(Writable writableValue) {
         if (mode == OBJECT || mode == ARRAY) {
             try {
                 if (comma && mode == ARRAY) {
@@ -85,7 +82,7 @@ public class PrettyPrintJSONWriter extends JSONWriter {
                     newline();
                     indent();
                 }
-                writer.write(s);
+                writableValue.writeTo(writer);
             }
             catch (IOException e) {
                 throw new JSONException(e);
@@ -97,7 +94,7 @@ public class PrettyPrintJSONWriter extends JSONWriter {
             return this;
         }
 
-        throw new JSONException("Value out of sequence: expected mode to be OBJECT or ARRAY when writing '" + s + "' but was " + this.mode);
+        throw new JSONException("Value out of sequence: expected mode to be OBJECT or ARRAY when writing '" + writableValue + "' but was " + this.mode);
     }
 
     @Override

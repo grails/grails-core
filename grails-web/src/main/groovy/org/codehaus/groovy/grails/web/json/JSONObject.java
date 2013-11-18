@@ -1101,7 +1101,7 @@ public class JSONObject implements JSONElement, Map {
         return quote(value.toString());
     }
     
-    void writeValue(Writer writer, Object value) throws IOException {
+    static void writeValue(Writer writer, Object value) throws IOException {
         if (value == null || value.equals(null)) {
             writer.write("null");
         } else if (value instanceof Number) {
@@ -1117,7 +1117,7 @@ public class JSONObject implements JSONElement, Map {
         }
     }
 
-    void writeQuoted(Writer writer, Object value) throws IOException {
+    static void writeQuoted(Writer writer, Object value) throws IOException {
         writer.write("\"");
         CodecPrintWriter codecWriter = new CodecPrintWriter(writer, javascriptEncoder, null);
         codecWriter.print(value);
@@ -1125,13 +1125,13 @@ public class JSONObject implements JSONElement, Map {
         writer.write("\"");
     }
 
-    void writeDate(Writer writer, Date d) throws IOException {
+    static void writeDate(Writer writer, Date d) throws IOException {
         writer.write("new Date(");
         writer.write(String.valueOf(d.getTime()));
         writer.write(")");
     }
 
-    void writeNumber(Writer writer, Number value) throws IOException {
+    static void writeNumber(Writer writer, Number value) throws IOException {
         writer.write(String.valueOf(value));
     }
 
