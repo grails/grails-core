@@ -241,9 +241,10 @@ abstract class GrailsTestTypeSupport implements GrailsTestType {
      * Creates swapper with echo parameters based on testOptions.echoOut and testOptions.echoErr in the build binding.
      */
     protected SystemOutAndErrSwapper createSystemOutAndErrSwapper() {
-        buildBinding.with {
+        SystemOutAndErrSwapper outAndErrSwapper = (SystemOutAndErrSwapper)buildBinding.with {
             new SystemOutAndErrSwapper(testOptions.echoOut == true, testOptions.echoErr == true)
         }
+        return outAndErrSwapper
     }
 
     /**

@@ -15,6 +15,9 @@
  */
 package org.codehaus.groovy.grails.test.io
 
+import groovy.transform.CompileStatic
+
+@CompileStatic
 class MultiplexingOutputStream extends OutputStream {
 
     List<OutputStream> streams
@@ -24,6 +27,8 @@ class MultiplexingOutputStream extends OutputStream {
     }
 
     void write(int b) {
-        streams*.write(b)
+        for(OutputStream out in streams) {
+            out.write(b)
+        }
     }
 }

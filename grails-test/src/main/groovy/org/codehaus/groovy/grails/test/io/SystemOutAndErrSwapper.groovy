@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.test.io
 
 import grails.build.logging.GrailsConsole
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.cli.logging.GrailsConsolePrintStream
 
 /**
  * Convenience class to temporarily swap in an output stream
@@ -72,8 +73,8 @@ class SystemOutAndErrSwapper {
         swappedInOutStream = echoOut ? new MultiplexingOutputStream(swappedOutOut, outStream) : outStream
         swappedInErrStream = echoErr ? new MultiplexingOutputStream(swappedOutErr, errStream) : errStream
 
-        swappedInOut = new PrintStream(swappedInOutStream)
-        swappedInErr = new PrintStream(swappedInErrStream)
+        swappedInOut = new TestOutputCapturingPrintStream(swappedInOutStream)
+        swappedInErr = new TestOutputCapturingPrintStream(swappedInErrStream)
 
         System.out = swappedInOut
         System.err = swappedInErr
@@ -111,5 +112,58 @@ class SystemOutAndErrSwapper {
         swapped = false
 
         streams
+    }
+
+    @CompileStatic
+    static class TestOutputCapturingPrintStream extends GrailsConsolePrintStream {
+        BufferedWriter textOut
+
+        TestOutputCapturingPrintStream(OutputStream out) {
+            super(out)
+            textOut = new BufferedWriter(new OutputStreamWriter(out))
+        }
+
+
+        @Override
+        void print(Object o) {
+            try {
+                textOut.write String.valueOf(o)
+            } catch (IOException e) {
+                setError()
+            }
+        }
+
+        @Override
+        void print(String s) {
+            try {
+                textOut.write s
+                textOut.flush()
+            } catch (IOException e) {
+                setError()
+            }
+        }
+
+        @Override
+        void println(String s) {
+            try {
+                print s
+                textOut.newLine()
+                textOut.flush()
+            } catch (IOException e) {
+                setError()
+            }
+
+        }
+
+        @Override
+        void println(Object o) {
+            try {
+                print o
+                textOut.newLine()
+                textOut.flush()
+            } catch (IOException e) {
+                setError()
+            }
+        }
     }
 }
