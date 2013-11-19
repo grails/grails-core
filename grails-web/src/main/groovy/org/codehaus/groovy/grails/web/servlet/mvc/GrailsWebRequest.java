@@ -74,6 +74,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     private final UrlPathHelper urlHelper = new UrlPathHelper();
     private ApplicationContext applicationContext;
     private String baseUrl;
+    private HttpServletResponse wrappedResponse;
 
     private EncodingStateRegistry encodingStateRegistry;
 
@@ -178,7 +179,19 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     }
 
     public HttpServletResponse getCurrentResponse() {
-        return getResponse();
+        if(wrappedResponse != null) {
+            return wrappedResponse;
+        } else {
+            return getResponse();
+        }
+    }
+
+    public HttpServletResponse getWrappedResponse() {
+        return wrappedResponse;
+    }
+
+    public void setWrappedResponse(HttpServletResponse wrappedResponse) {
+        this.wrappedResponse = wrappedResponse;
     }
 
     /**
