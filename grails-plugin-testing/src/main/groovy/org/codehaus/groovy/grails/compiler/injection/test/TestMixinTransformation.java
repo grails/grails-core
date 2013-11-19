@@ -204,7 +204,7 @@ public class TestMixinTransformation implements ASTTransformation{
         }
 
         if (isJunit3) {
-            addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
+            addMethodCallsToSetupMethod(classNode, SET_UP_METHOD, beforeMethods);
             addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
         }
     }
@@ -238,6 +238,14 @@ public class TestMixinTransformation implements ASTTransformation{
             BlockStatement setupMethodBody = getOrCreateNoArgsMethodBody(classNode, name);
             for (MethodNode beforeMethod : methods) {
                 setupMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"), beforeMethod.getName(), GrailsArtefactClassInjector.ZERO_ARGS)));
+            }
+        }
+    }
+    protected void addMethodCallsToSetupMethod(ClassNode classNode, String name, List<MethodNode> methods) {
+        if (methods != null && !methods.isEmpty()) {
+            BlockStatement setupMethodBody = getOrCreateNoArgsMethodBody(classNode, name);
+            for (MethodNode beforeMethod : methods) {
+                setupMethodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"), beforeMethod.getName(), GrailsArtefactClassInjector.ZERO_ARGS)));
             }
         }
     }
