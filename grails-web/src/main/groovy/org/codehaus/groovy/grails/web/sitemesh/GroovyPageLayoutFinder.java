@@ -48,8 +48,8 @@ import com.opensymphony.sitemesh.Content;
  * @since 2.0
  */
 public class GroovyPageLayoutFinder {
-
     public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
+    public static final String NONE_LAYOUT = "_none_";
     public static final String RENDERING_VIEW_ATTRIBUTE = "org.grails.rendering.view";
     private static final Log LOG = LogFactory.getLog(GrailsLayoutDecoratorMapper.class);
     private static final long LAYOUT_CACHE_EXPIRATION_MILLIS = Long.getLong("grails.gsp.reload.interval", 5000);
@@ -159,7 +159,7 @@ public class GroovyPageLayoutFinder {
     }
 
     public Decorator getNamedDecorator(HttpServletRequest request, String name, boolean viewMustExist) {
-        if (StringUtils.isBlank(name)) {
+        if (StringUtils.isBlank(name) || NONE_LAYOUT.equals(name)) {
             return null;
         }
 

@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.beanutils.BeanMap;
@@ -127,6 +128,9 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
 
         boolean renderView = true;
         GroovyObject controller = (GroovyObject) target;
+        
+        String explicitSiteMeshLayout = null;
+        
         final Object renderArgument = arguments[0];
         if (renderArgument instanceof Converter<?>) {
             renderView = renderConverter((Converter<?>)renderArgument, response);
@@ -150,7 +154,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 Map argMap = (Map) renderArgument;
                 
                 if (argMap.containsKey(ARGUMENT_LAYOUT)) {
-                    webRequest.getCurrentRequest().setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, argMap.get(ARGUMENT_LAYOUT));
+                    explicitSiteMeshLayout = String.valueOf(argMap.get(ARGUMENT_LAYOUT));
                 }
 
                 boolean statusSet = false;
@@ -283,8 +287,20 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 throw new MissingMethodException(METHOD_SIGNATURE, target.getClass(), arguments);
             }
         }
+        applySiteMeshLayout(webRequest.getCurrentRequest(), renderView, explicitSiteMeshLayout);
         webRequest.setRenderView(renderView);
         return null;
+    }
+
+    private void applySiteMeshLayout(HttpServletRequest request, boolean renderView, String explicitSiteMeshLayout) {
+        if(explicitSiteMeshLayout == null && request.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE) != null) {
+            // layout has been set already
+            return;
+        }
+        String siteMeshLayout = explicitSiteMeshLayout != null ? explicitSiteMeshLayout : (renderView ? null : GrailsLayoutDecoratorMapper.NONE_LAYOUT);
+        if(siteMeshLayout != null) {
+            request.setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, siteMeshLayout);
+        }
     }
 
     private boolean renderConverter(Converter<?> converter, HttpServletResponse response) {
