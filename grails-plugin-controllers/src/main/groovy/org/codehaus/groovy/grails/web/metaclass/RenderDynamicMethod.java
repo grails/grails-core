@@ -352,7 +352,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
     
     private GSPResponseWriter createResponseWriter(GrailsWebRequest webRequest) {
-        GSPResponseWriter out = GSPResponseWriter.getInstance(webRequest.getResponse());
+        GSPResponseWriter out = GSPResponseWriter.getInstance(webRequest.getCurrentResponse());
         webRequest.setOut(out);
         return out;
     }
@@ -550,7 +550,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             if (isPromise) return;
         }
         
-        applyContentType(webRequest.getResponse(), argMap, null);
+        applyContentType(webRequest.getCurrentResponse(), argMap, null);
 
         Map model;
         if (modelObject instanceof Map) {
@@ -596,6 +596,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         try {
             PrintWriter writer = response.getWriter();
             writable.writeTo(writer);
+            writer.flush();
         }
         catch (IOException e) {
             throw new ControllerExecutionException(e.getMessage(), e);
@@ -611,6 +612,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             else {
                 writer.write(text.toString());
             }
+            writer.flush();
             return false;
         }
         catch (IOException e) {

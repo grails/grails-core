@@ -340,8 +340,16 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
             chunkSize = firstChunkSize;
             totalChunkSize = 0;
         }
-        allocBuffer = new AllocatedBuffer(chunkSize);
-        dynamicChunkMap = new HashMap<StreamCharBufferKey, StreamCharBufferSubChunk>();
+        if (allocBuffer == null) {
+            allocBuffer = new AllocatedBuffer(chunkSize);
+        } else {
+            allocBuffer.clear();
+        }
+        if (dynamicChunkMap == null) {
+            dynamicChunkMap = new HashMap<StreamCharBufferKey, StreamCharBufferSubChunk>();
+        } else {
+            dynamicChunkMap.clear();
+        }
     }
 
     /**
@@ -590,6 +598,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
                 }
 
                 encodeTo(appender, encoder);
+                appender.flush();
                 if (emptyAfter) {
                     emptyAfterReading();
                 }
@@ -624,7 +633,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         totalCharsInDynamicChunks = -1;
         sizeAtLeast = -1;
         dynamicChunkMap.clear();
-        allocBuffer.reuseBuffer(null);
+        allocBuffer.clear();
     }
 
     /**
@@ -977,7 +986,7 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         if (notConnectedToEncodeAwareWriters==null) {
             notConnectedToEncodeAwareWriters = !connectedWritersWriter.isEncoderAware();
         }
-        writeTo(connectedWritersWriter, true, true);
+        writeTo(connectedWritersWriter, forceFlush, true);
         if (forceFlush) {
             connectedWritersWriter.forceFlush();
         }
@@ -1538,6 +1547,10 @@ public class StreamCharBuffer extends GroovyObjectSupport implements Writable, C
         public AllocatedBuffer(int size) {
             this.size = size;
             buffer = new char[size];
+        }
+
+        public void clear() {
+            reuseBuffer(null);
         }
 
         public int charsUsed() {

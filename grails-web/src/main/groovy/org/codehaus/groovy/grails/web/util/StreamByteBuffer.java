@@ -425,4 +425,13 @@ public class StreamByteBuffer {
             return StreamByteBuffer.this;
         }
     }
+
+    public void clear() {
+        chunks.clear();
+        currentReadChunk = null;
+        totalBytesUnreadInList = 0;
+        totalBytesUnreadInIterator = 0;
+        currentWriteChunk = new StreamByteBufferChunk(chunkSize);
+        readIterator = null;
+    }
 }

@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.NullPersistentContextInterceptor;
 import org.codehaus.groovy.grails.support.ParticipatingInterceptor;
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -203,7 +204,10 @@ public class GrailsPageFilter extends SiteMeshFilter {
                     response, contentProcessor, webAppContext);
 
             setDefaultConfiguredEncoding(request, contentBufferingResponse);
-            chain.doFilter(request, contentBufferingResponse);
+            
+            executeFilterChainWithWrappedResponse(chain, request, contentBufferingResponse);
+            
+            
             // TODO: check if another servlet or filter put a page object in the request
             //            Content result = request.getAttribute(PAGE);
             //            if (result == null) {
@@ -217,6 +221,18 @@ public class GrailsPageFilter extends SiteMeshFilter {
             if (oldGspSiteMeshPage != null) {
                 request.setAttribute(GSP_SITEMESH_PAGE, oldGspSiteMeshPage);
             }
+        }
+    }
+
+    protected void executeFilterChainWithWrappedResponse(FilterChain chain, HttpServletRequest request,
+            GrailsContentBufferingResponse contentBufferingResponse) throws IOException, ServletException {
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
+        HttpServletResponse previousResponse = webRequest.getWrappedResponse();
+        try {
+            webRequest.setWrappedResponse(contentBufferingResponse);
+            chain.doFilter(request, contentBufferingResponse);
+        } finally {
+            webRequest.setWrappedResponse(previousResponse);
         }
     }
 
