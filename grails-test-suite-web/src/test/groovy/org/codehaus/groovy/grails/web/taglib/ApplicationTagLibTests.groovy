@@ -7,10 +7,12 @@ import javax.servlet.http.Cookie
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
+import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.mock.web.MockHttpServletResponse
 
 class ApplicationTagLibTests extends AbstractGrailsTagTests {
@@ -774,5 +776,24 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
         template = '<g:withTag name="div">body</g:withTag>'
         assertOutputEquals '<div>body</div>', template
+    }
+
+    void testCreateLinkWithRelativeUri() {
+        request.setAttribute WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, 'http://localhost:8080/test/foo/bar.html'
+
+        def template = '<g:createLink relativeUri="wahoo.html" />'
+        assertOutputEquals 'http://localhost:8080/test/foo/wahoo.html?requestDataValueProcessorParamName=paramValue', template
+
+        template = '<g:createLink relativeUri="../wahoo.html" />'
+        assertOutputEquals 'http://localhost:8080/test/foo/../wahoo.html?requestDataValueProcessorParamName=paramValue', template
+
+        appCtx.getBean(FormTagLib.name).requestDataValueProcessor = new MockRequestDataValueProcessor()
+        try {
+            template = '<g:form relativeUri="../bar"></g:form>'
+            assertOutputEquals('<form action="http://localhost:8080/test/foo/../bar" method="post" ><input type="hidden" name="requestDataValueProcessorHiddenName" value="hiddenValue" />\n</form>', template)
+        }
+        finally {
+            appCtx.getBean(FormTagLib.name).requestDataValueProcessor = null
+        }
     }
 }

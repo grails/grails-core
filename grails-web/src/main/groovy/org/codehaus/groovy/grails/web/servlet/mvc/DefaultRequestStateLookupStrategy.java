@@ -123,7 +123,7 @@ public class DefaultRequestStateLookupStrategy implements GrailsRequestStateLook
         return null;
     }
 
-    private GrailsWebRequest getWebRequest() {
+    public GrailsWebRequest getWebRequest() {
         return webRequest != null ? webRequest : GrailsWebRequest.lookup();
     }
 }
