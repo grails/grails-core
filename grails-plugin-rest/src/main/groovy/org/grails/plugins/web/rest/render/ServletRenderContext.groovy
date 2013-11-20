@@ -107,7 +107,7 @@ class ServletRenderContext extends AbstractRenderContext{
 
     @Override
     void setStatus(HttpStatus status) {
-        webRequest.response.setStatus(status.value())
+        webRequest.currentResponse.setStatus(status.value())
     }
 
     @Override

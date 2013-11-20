@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrat
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
+import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpMethod
@@ -99,6 +100,15 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 }
             }
             writer << attrs.get(ATTRIBUTE_URI).toString()
+        }
+        else if (attrs.get(ATTRIBUTE_RELATIVE_URI) != null) {
+            String relativeUri = attrs.get(ATTRIBUTE_RELATIVE_URI)
+            String forwardUri = WebUtils.getForwardURI(requestStateLookupStrategy.webRequest.request)
+            int index = forwardUri.lastIndexOf('/')
+            if (index != -1) {
+                writer << forwardUri.substring(0, index + 1)
+            }
+            writer << attrs.get(ATTRIBUTE_RELATIVE_URI)
         }
         else {
             // prefer a URL attribute
