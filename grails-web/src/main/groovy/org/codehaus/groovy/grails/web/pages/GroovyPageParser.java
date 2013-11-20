@@ -404,7 +404,7 @@ public class GroovyPageParser implements Tokens {
         currentlyBufferingWhitespace = false;
         page();
 
-        out.flush();
+        out.close();
         scan = null;
     }
 

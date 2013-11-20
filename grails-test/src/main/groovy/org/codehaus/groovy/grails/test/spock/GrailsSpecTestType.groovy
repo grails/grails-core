@@ -107,9 +107,15 @@ class GrailsSpecTestType extends GrailsTestTypeSupport {
         def junit = new JUnitCore()
         def result = new GrailsSpecTestTypeResult()
 
-        junit.addListener(new OverallRunListener(eventPublisher,
-            createJUnitReportsFactory(), createSystemOutAndErrSwapper(), result,
-            createGrails2TerminalListenerIfCan()))
+        final reportsFactory = createJUnitReportsFactory()
+        final outAndErrSwapper = createSystemOutAndErrSwapper()
+        final terminalListener = createGrails2TerminalListenerIfCan()
+
+        junit.addListener(new OverallRunListener(   eventPublisher,
+                                                    reportsFactory,
+                                                    outAndErrSwapper,
+                                                    result,
+                                                    terminalListener)   )
 
 
         optimizeSpecRunOrderIfEnabled()

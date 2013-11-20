@@ -61,4 +61,9 @@ public interface GrailsRequestStateLookupStrategy {
      * @return The HTTP method
      */
     public String getHttpMethod();
+
+    /**
+     * @return the current request
+     */
+    GrailsWebRequest getWebRequest();
 }
