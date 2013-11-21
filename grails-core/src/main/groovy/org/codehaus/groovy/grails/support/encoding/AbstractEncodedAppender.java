@@ -217,11 +217,15 @@ public abstract class AbstractEncodedAppender implements EncodedAppender {
 
     }
 
-    private static final class CharArrayCharSequence implements CharSequence, CharArrayAccessible {
+    static final class CharArrayCharSequence implements CharSequence, CharArrayAccessible {
         private final char[] chars;
         private final int count;
         private final int start;
 
+        public CharArrayCharSequence(char[] chars) {
+            this(chars, 0, chars.length);
+        }
+        
         public CharArrayCharSequence(char[] chars, int start, int count) {
             if (start + count > chars.length)
                 throw new StringIndexOutOfBoundsException(start);

@@ -34,7 +34,7 @@ class JavaScriptCodec implements CodecFactory {
 
     static Encoder ENCODER = new JavaScriptEncoder()
 
-    private static Decoder DECODER = new Decoder() {
+    static Decoder DECODER = new Decoder() {
         def decode(Object obj) {
             obj != null ? StringEscapeUtils.unescapeJavaScript(obj.toString()) : null
         }

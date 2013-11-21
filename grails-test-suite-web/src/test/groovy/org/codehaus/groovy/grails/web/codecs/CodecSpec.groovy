@@ -29,6 +29,11 @@ class CodecSpec extends Specification {
             '"<script>"'.encodeAsJavaScript() == '\\u0022\\u003cscript\\u003e\\u0022'
             '"<script>"'.encodeAsJavaScript().encodeAsHTML() == '"<script>"'.encodeAsJavaScript()
     }
+    
+    void "js codec should escape a safe codec"() {
+        expect:
+        '"<script>"'.encodeAsHTML().encodeAsJavaScript() == '\u0026quot\u003b\u0026lt\u003bscript\u0026gt\u003b\u0026quot\u003b'
+    }
 
     void "Test that the raw method works in GSP"() {
         when:"The raw method is called for a GSP expression"

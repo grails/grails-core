@@ -33,14 +33,14 @@ public final class HTMLCodec implements CodecFactory, GrailsApplicationAware {
     public static final String CONFIG_PROPERTY_GSP_HTMLCODEC = "grails.views.gsp.htmlcodec";
     static final String CODEC_NAME = "HTML";
     private Encoder encoder;
-    private static final Encoder xml_encoder = new HTMLEncoder();
-    private static final Encoder html4_encoder = new HTML4Encoder() {
+    static final Encoder xml_encoder = new HTMLEncoder();
+    static final Encoder html4_encoder = new HTML4Encoder() {
         @Override
         public CodecIdentifier getCodecIdentifier() {
             return HTMLEncoder.HTML_CODEC_IDENTIFIER;
         }
     };
-    private static final Decoder decoder = new HTML4Decoder() {
+    static final Decoder decoder = new HTML4Decoder() {
         @Override
         public CodecIdentifier getCodecIdentifier() {
             return HTMLEncoder.HTML_CODEC_IDENTIFIER;
