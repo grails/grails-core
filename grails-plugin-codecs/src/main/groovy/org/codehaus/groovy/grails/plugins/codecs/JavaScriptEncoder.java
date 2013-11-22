@@ -44,6 +44,8 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
                 return "\\u0022";
             case '\'':
                 return "\\u0027";
+            case '`': // backtick
+                return "\\u0060";                
             case '\\':
                 return "\\u005c";
             case '/':
@@ -58,6 +60,10 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
                 return "\\n";
             case '\f':
                 return "\\f";
+            case '\b':
+                return "\\b";
+            case '\u000B': // vertical tab: http://bclary.com/2004/11/07/#a-7.8.4
+                return "\\v";
             case '&':
                 return "\\u0026";
             case '<':
@@ -82,6 +88,14 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
                 return "\\u003b";
             case '@':
                 return "\\u0040";
+            case '\u2028':
+                return "\\u2028"; // Line separator
+            case '\u2029':
+                return "\\u2029"; // Paragraph separator
+        }
+        if(ch < ' ') {
+            // remove all other control characters
+            return "";
         }
         return null;
     }
