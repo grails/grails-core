@@ -145,7 +145,7 @@ public class PrettyPrintJSONWriter extends JSONWriter {
                 }
                 newline();
                 indent();
-                writer.write(JSONObject.quote(s));
+                JSONObject.writeQuoted(writer, s);
                 writer.write(": ");
                 comma = false;
                 mode = OBJECT;

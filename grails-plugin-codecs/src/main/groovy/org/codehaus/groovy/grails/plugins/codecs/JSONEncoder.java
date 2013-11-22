@@ -15,27 +15,26 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
 
 /**
- * Used for making strings safe to be included in a SCRIPT tag besides normal
- * Javascript escaping, possibly "unsafe" characters are escaped too so that
- * it's safe to include an escaped string in a HTML SCRIPT tag.
+ * Escapes characters in JSON output
  *
  * @author Lari Hotari
- * @since 2.3
+ * @since 2.3.4
  */
-public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
-    public static final CodecIdentifier JAVASCRIPT_CODEC_IDENTIFIER = new DefaultCodecIdentifier(
-            "JavaScript", "Js") {
+public class JSONEncoder extends AbstractCharReplacementEncoder {
+    public static final CodecIdentifier JSON_CODEC_IDENTIFIER = new DefaultCodecIdentifier(
+            "JSON", "Json") {
         public boolean isEquivalent(CodecIdentifier other) {
-            return super.isEquivalent(other) || JSONEncoder.JSON_CODEC_IDENTIFIER.getCodecName().equals(other.getCodecName());
+            return super.isEquivalent(other) || JavaScriptEncoder.JAVASCRIPT_CODEC_IDENTIFIER.getCodecName().equals(other.getCodecName());
         };
     };
 
-    public JavaScriptEncoder() {
-        super(JAVASCRIPT_CODEC_IDENTIFIER);
+    public JSONEncoder() {
+        super(JSON_CODEC_IDENTIFIER);
     }
 
     /* (non-Javadoc)
@@ -45,61 +44,36 @@ public class JavaScriptEncoder extends AbstractCharReplacementEncoder {
     protected String escapeCharacter(char ch, char previousChar) {
         switch (ch) {
             case '"':
-                return "\\u0022";
-            case '\'':
-                return "\\u0027";
-            case '`': // backtick
-                return "\\u0060";                
+                return "\\\"";
             case '\\':
-                return "\\u005c";
-            case '/':
-                return "\\u002f";
+                return "\\\\";
             case '\t':
                 return "\\t";
             case '\n':
-                if (previousChar != '\r') {
-                    return "\\n";
-                }
-            case '\r':
                 return "\\n";
+            case '\r':
+                return "\\r";
             case '\f':
                 return "\\f";
             case '\b':
                 return "\\b";
             case '\u000B': // vertical tab: http://bclary.com/2004/11/07/#a-7.8.4
                 return "\\v";
-            case '&':
-                return "\\u0026";
-            case '<':
-                return "\\u003c";
-            case '>':
-                return "\\u003e";
-            case '(':
-                return "\\u0028";
-            case ')':
-                return "\\u0029";
-            case '[':
-                return "\\u005b";
-            case ']':
-                return "\\u005d";
-            case '{':
-                return "\\u007b";
-            case '}':
-                return "\\u007d";
-            case ',':
-                return "\\u002c";
-            case ';':
-                return "\\u003b";
-            case '@':
-                return "\\u0040";
             case '\u2028':
                 return "\\u2028"; // Line separator
             case '\u2029':
                 return "\\u2029"; // Paragraph separator
+            case '/':
+                // preserve special handling that exists in JSONObject.quote to improve security if JSON is embedded in HTML document
+                // prevents outputting "</" gets outputted with unicode escaping for the slash
+                if (previousChar == '<') {
+                    return "\\u002f"; 
+                }
+                break;
         }
         if(ch < ' ') {
-            // remove all other control characters
-            return "";
+            // escape all other control characters
+            return "\\u" + StringUtils.leftPad(Integer.toHexString(ch), 4, '0');
         }
         return null;
     }
