@@ -28,17 +28,26 @@ import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
  * @since 2.3
  */
 public class XMLEncoder extends AbstractCharReplacementEncoder {
-    private static final String ESCAPED_APOS = "&#" + ((int) '\'')  + ";"; // html doesn't have apos, so use numeric entity
+    private static final String ESCAPED_APOS = xmlEscapeCharacter('\''); // html doesn't have apos, so use numeric entity
     private static final String ESCAPED_QUOTE = "&quot;";
     private static final String ESCAPED_GT = "&gt;";
     private static final String ESCAPED_LT = "&lt;";
     private static final String ESCAPED_AMP = "&amp;";
     // some extras
-    private static final String ESCAPED_BACKSLASH = "&#" + ((int) '\\')  + ";";
+    private static final String ESCAPED_BACKSLASH = xmlEscapeCharacter('\\');
     private static final char NBSP=(char)160;
-    private static final String ESCAPED_NON_BREAKING_SPACE = "&#" + ((int) NBSP)  + ";";
-    private static final String ESCAPED_BACKTICK = "&#" + ((int) '`')  + ";";
-    private static final String ESCAPED_AT = "&#" + ((int) '@')  + ";"; // IE Javascript conditional compilation rules
+    private static final String ESCAPED_NON_BREAKING_SPACE = xmlEscapeCharacter(NBSP);
+    private static final String ESCAPED_BACKTICK = xmlEscapeCharacter('`');
+    private static final String ESCAPED_AT = xmlEscapeCharacter('@'); // IE Javascript conditional compilation rules
+    private static final char LINE_SEPARATOR = '\u2028';
+    private static final String ESCAPED_LINE_SEPARATOR = xmlEscapeCharacter(LINE_SEPARATOR);
+    private static final char PARAGRAPH_SEPARATOR = '\u2029';
+    private static final String ESCAPED_PARAGRAPH_SEPARATOR = xmlEscapeCharacter(PARAGRAPH_SEPARATOR);
+    
+    protected static final String xmlEscapeCharacter(char ch) {
+        return "&#" + ((int) ch)  + ";";
+    }
+    
     public static final CodecIdentifier XML_CODEC_IDENTIFIER=new DefaultCodecIdentifier("XML");
 
     public XMLEncoder() {
@@ -67,6 +76,8 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
           case '@': return ESCAPED_AT;
           case '`': return ESCAPED_BACKTICK;
           case NBSP: return ESCAPED_NON_BREAKING_SPACE;
+          case LINE_SEPARATOR: return ESCAPED_LINE_SEPARATOR;
+          case PARAGRAPH_SEPARATOR: return ESCAPED_PARAGRAPH_SEPARATOR;
       }
       return null;
     }
