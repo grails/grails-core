@@ -7,7 +7,6 @@ import spock.lang.Specification
 class JSONWriterSpec extends Specification {
     
     @Issue('GRAILS-10823')
-    @Ignore
     void 'Test rendering a forward slash'() {
         given:
         def writer = new StringWriter()

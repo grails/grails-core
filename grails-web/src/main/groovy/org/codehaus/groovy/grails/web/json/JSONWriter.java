@@ -225,7 +225,7 @@ public class JSONWriter {
                 if (this.comma) {
                     this.comma();
                 }
-                this.writer.write(JSONObject.quote(s));
+                JSONObject.writeQuoted(this.writer, s);
                 this.writer.write(':');
                 this.comma = false;
                 this.mode = OBJECT;
