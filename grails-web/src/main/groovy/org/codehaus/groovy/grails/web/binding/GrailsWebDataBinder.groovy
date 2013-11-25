@@ -46,6 +46,7 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.SimpleDataBinder
 import org.grails.databinding.SimpleMapDataBindingSource
+import org.grails.databinding.converters.AbstractStructuredBindingEditor
 import org.grails.databinding.converters.FormattedValueConverter
 import org.grails.databinding.converters.ValueConverter
 import org.grails.databinding.errors.BindingError
@@ -554,6 +555,13 @@ class GrailsWebDataBinder extends SimpleDataBinder {
         addElementToCollection obj, propName, property.type, propertyValue, clearCollection
     }
 
+    @Autowired(required=false) 
+    void setStructuredBindingEditors(AbstractStructuredBindingEditor[] editors) {
+        editors.each { AbstractStructuredBindingEditor editor ->
+            registerStructuredEditor editor.targetType, editor
+        }    
+    }
+    
     @Autowired(required=false)
     void setValueConverters(ValueConverter[] converters) {
         converters.each { ValueConverter converter ->
