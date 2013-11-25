@@ -281,7 +281,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 def referencedType = getReferencedTypeForCollection(propName, obj)
                 if(referencedType && isDomainClass(referencedType) && val instanceof List) {
                     needsBinding = false
-                    initializeCollection obj, metaProperty.name, metaProperty.type, false
+                    initializeCollection obj, metaProperty.name, metaProperty.type
                     def itemsWhichNeedBinding = []
                     val.each { item ->
                         def persistentInstance
@@ -300,6 +300,10 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         }
                     }
                     if(itemsWhichNeedBinding) {
+                        def coll = obj[metaProperty.name]
+                        if(coll instanceof Collection) {
+                            coll.clear()
+                        }
                         for(item in itemsWhichNeedBinding) {
                             addElementToCollection obj, metaProperty.name, metaProperty.type, item, false
                         }

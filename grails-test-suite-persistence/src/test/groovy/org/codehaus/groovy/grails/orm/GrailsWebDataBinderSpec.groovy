@@ -1166,7 +1166,7 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.albums['dos'].title == 'Album Number Two'
     }
     
-    @Issue('GRAILS-10796')
+    @Issue(['GRAILS-10796','GRAILS-10829'])
     void 'Test replacing existing collection of persistent entities'() {
         given: 
         def container = new CollectionContainer().save()
@@ -1181,6 +1181,7 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         container.save()
         container.setOfWidgets.size() == 3
+        def originalSetOfWidgets = container.setOfWidgets
         
         when: 'A List of ids is bound to the collection container'
         def newWidgets = ['four', 'five'].collect { name ->
@@ -1194,6 +1195,9 @@ class GrailsWebDataBinderSpec extends Specification {
         container.setOfWidgets.find { it.isBindable == 'four' }
         container.setOfWidgets.find { it.isBindable == 'five' }
         container.setOfWidgets.size() == 2
+        
+        and: 'The containing Set is the same set that we started with'
+        originalSetOfWidgets.is container.setOfWidgets
     }
 }
 
