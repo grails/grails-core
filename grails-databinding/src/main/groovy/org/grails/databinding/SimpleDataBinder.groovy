@@ -540,8 +540,6 @@ class SimpleDataBinder implements DataBinder {
                   Set.isAssignableFrom(propertyType) &&
                   !SortedSet.isAssignableFrom(propertyType)) {
             addElementsToCollection(obj, propName, propertyValue, true)
-        } else if (Enum.isAssignableFrom(propertyType) && propertyValue instanceof String) {
-            obj[propName] = convertStringToEnum(propertyType, propertyValue)
         } else {
             if (propertyValue instanceof Map) {
                 if (Collection.isAssignableFrom(propertyType) &&
@@ -669,6 +667,8 @@ class SimpleDataBinder implements DataBinder {
             def obj = typeToConvertTo.newInstance()
             bind obj, new SimpleMapDataBindingSource(value)
             return obj
+        } else if (Enum.isAssignableFrom(typeToConvertTo) && value instanceof String) {
+            return convertStringToEnum(typeToConvertTo, value)
         }
         typeToConvertTo.newInstance value
     }
