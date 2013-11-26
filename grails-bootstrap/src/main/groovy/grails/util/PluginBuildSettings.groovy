@@ -753,7 +753,7 @@ class PluginBuildSettings {
             def zipFile = new ZipFile(zipLocation)
             ZipEntry entry = zipFile.entries().find {ZipEntry entry -> entry.name == 'plugin.xml'}
             if (entry) {
-                def pluginXml = grails.util.GrailsUtil.createXmlSlurper().parse(zipFile.getInputStream(entry))
+                def pluginXml = IOUtils.createXmlSlurper().parse(zipFile.getInputStream(entry))
                 def name = pluginXml.'@name'.text()
                 def release = pluginXml.'@version'.text()
                 return [name, release, pluginXml]
