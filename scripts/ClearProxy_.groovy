@@ -24,7 +24,7 @@ target(default: "Clears a proxy configuration") {
     config = grailsSettings.proxySettings
     config.remove('currentProxy')
 
-    settingsFile.withWriter { w -> config.writeTo(w) }
+    settingsFile.withWriter('UTF-8') { w -> config.writeTo(w) }
 
     grailsConsole.updateStatus "Cleared proxy settings."
 }

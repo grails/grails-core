@@ -34,7 +34,7 @@ class Base64Codec {
             return new String(Base64.encodeBase64(theTarget))
         }
 
-        return new String(Base64.encodeBase64(theTarget.toString().bytes))
+        return new String(Base64.encodeBase64(theTarget.toString().getBytes("UTF-8")))
     }
 
     static decode = { theTarget ->
@@ -46,6 +46,6 @@ class Base64Codec {
             return Base64.decodeBase64(theTarget)
         }
 
-        return Base64.decodeBase64(theTarget.toString().getBytes())
+        return Base64.decodeBase64(theTarget.toString().getBytes("UTF-8"))
     }
 }

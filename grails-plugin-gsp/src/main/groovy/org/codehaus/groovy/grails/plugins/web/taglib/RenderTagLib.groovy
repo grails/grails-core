@@ -122,7 +122,7 @@ class RenderTagLib implements RequestConstants {
         def content = ""
         GSPSitemeshPage gspSiteMeshPage = null
         if (attrs.url) {
-            content = new URL(attrs.url).text
+            content = new URL(attrs.url).getText("UTF-8")
         }
         else if (attrs.action && attrs.controller) {
             content = g.include(action: attrs.action, controller: attrs.controller, params: pageParams, model: viewModel)

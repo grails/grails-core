@@ -61,7 +61,7 @@ Plugins must be declared in the grails-app/conf/BuildConfig.groovy file.
                 url += "/$version"
             }
             try {
-                final String text = new URL("$url?format=xml").getText(connectTimeout: 500, readTimeout: 3000)
+                final String text = new URL("$url?format=xml").getText(connectTimeout: 500, readTimeout: 3000, "UTF-8")
                 pluginXml = new XmlSlurper().parseText(text)
                 if (!version) {
                     version = pluginXml.version.text()
@@ -134,7 +134,7 @@ Additionally, add these custom repositories to the "repositories" block:
      * @param output The target writer
      */
     GPathResult renderPluginInfo(String pluginName, String pluginVersion, OutputStream outputStream) {
-        renderPluginInfo(pluginName, pluginVersion, new OutputStreamWriter(outputStream))
+        renderPluginInfo(pluginName, pluginVersion, new OutputStreamWriter(outputStream, "UTF-8"))
     }
 
     /**

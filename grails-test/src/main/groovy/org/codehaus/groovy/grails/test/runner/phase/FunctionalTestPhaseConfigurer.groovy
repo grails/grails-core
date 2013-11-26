@@ -126,7 +126,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                     while(true) {
                         if (timeout>maxWait) break
                         try {
-                            new URL(functionalBaseUrl).getText(connectTimeout:1000, readTimeout:1000)
+                            new URL(functionalBaseUrl).getText(connectTimeout:1000, readTimeout:1000, "UTF-8")
                             break
                         } catch (Throwable e) {
                             console.indicateProgress()

@@ -168,7 +168,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
             profile("generating web.xml from $webXml") {
                 buildEventListener.triggerEvent("WebXmlStart", webXml.filename)
                 pluginManager.doWebDescriptor(webXml, sw)
-                webXmlFile.withWriter { it << sw.toString() }
+                webXmlFile.withWriter('UTF-8') { it << sw.toString() }
                 webXmlGenerated = true
                 buildEventListener.triggerEvent("WebXmlEnd", webXml.filename)
             }
@@ -229,7 +229,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         pluginXml.delete()
 
         // Use MarkupBuilder with indenting to generate the file.
-        pluginXml.withWriter { Writer writer ->
+        pluginXml.withWriter('UTF-8') { Writer writer ->
             def generator = new PluginDescriptorGenerator(buildSettings, pluginName, resourceList.toList())
 
             pluginProps["type"] = descriptor.name - '.groovy'

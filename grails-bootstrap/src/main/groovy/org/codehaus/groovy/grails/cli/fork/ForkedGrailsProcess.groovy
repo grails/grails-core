@@ -770,7 +770,7 @@ abstract class ForkedGrailsProcess {
 
         void run() {
             try {
-                def isr = new InputStreamReader(input)
+                def isr = new InputStreamReader(input, "UTF-8")
                 new BufferedReader(isr).eachLine { String next ->
                     if (next) {
                         GrailsConsole.getInstance().log(next)

@@ -225,7 +225,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
 
             def webXML = new File(stagingDir, "WEB-INF/web.xml")
             def xmlInput = new XmlParser().parse(webXML)
-            webXML.withWriter { xmlOutput ->
+            webXML.withWriter('UTF-8') { xmlOutput ->
                 def printer = new XmlNodePrinter(new PrintWriter(xmlOutput), '\t')
                 printer.preserveWhitespace = true
                 printer.print(xmlInput)

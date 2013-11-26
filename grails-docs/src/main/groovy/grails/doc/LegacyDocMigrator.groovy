@@ -48,18 +48,18 @@ class LegacyDocMigrator {
         def guide = new LegacyTocStrategy().generateToc(files)
 
         def legacyLinkMap = new File(outDir, "links.yml")
-        legacyLinkMap.withWriter { w ->
+        legacyLinkMap.withWriter('UTF-8') { w ->
             guide.children.each(this.&migrateSection.rcurry([], w))
         }
 
         def tocFile = new File(outDir, "toc.yml")
-        tocFile.withWriter { w ->
+        tocFile.withWriter('UTF-8') { w ->
             guide.children.each(this.&writeSectionToToc.rcurry(w, 0))
         }
 
         // A mapping that can be utilised by Apache HTTPD URL rewriting.
         def rewriteRulesFile = new File(outDir, "rewriteRules.txt")
-        rewriteRulesFile.withPrintWriter { w ->
+        rewriteRulesFile.withPrintWriter('UTF-8') { w ->
             for (section in guide.children) {
                 w.println "${StringEscapeCategory.encodeAsUrlPath(section.name)}.html -> ${StringEscapeCategory.encodeAsUrlPath(alias(section))}.html"
             }

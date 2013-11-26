@@ -320,7 +320,7 @@ class InteractiveMode {
         try {
             def args = scriptName[1..-1].split(ARG_SPLIT_PATTERN).collect { unescape(it) }
             def process = new ProcessBuilder(args).redirectErrorStream(true).start()
-            log process.inputStream.text
+            log process.inputStream.getText('UTF-8')
         } catch (e) {
             error "Error occurred executing process: $e.message"
         }

@@ -35,7 +35,7 @@ target(refreshDependencies:"Refreshes application dependencies, installing any n
         // write data to file
         def f = new File(argsMap.params[0])
 
-        f.withWriter { writer ->
+        f.withWriter('UTF-8') { writer ->
             def xml = new MarkupBuilder(writer)
             xml.dependencies {
                 xml.build {

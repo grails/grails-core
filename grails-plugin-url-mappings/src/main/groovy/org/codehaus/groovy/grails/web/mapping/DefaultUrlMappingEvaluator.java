@@ -125,7 +125,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         InputStream inputStream = null;
         try {
             inputStream = resource.getInputStream();
-            return evaluateMappings(classLoader.parseClass(IOGroovyMethods.getText(inputStream)));
+            return evaluateMappings(classLoader.parseClass(IOGroovyMethods.getText(inputStream, "UTF-8")));
         }
         catch (IOException e) {
             throw new UrlMappingException("Unable to read mapping file [" + resource.getFilename() + "]: " + e.getMessage(), e);

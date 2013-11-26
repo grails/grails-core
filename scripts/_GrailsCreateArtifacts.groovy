@@ -121,8 +121,8 @@ createArtifact = { Map args = [:] ->
 
     String lineSeparator = System.getProperty('line.separator')
     StringBuilder fixed = new StringBuilder()
-    destination.text.eachLine { fixed << it << lineSeparator }
-    destination.withWriter { it.write fixed.toString() }
+    destination.getText('UTF-8').eachLine { fixed << it << lineSeparator }
+    destination.withWriter('UTF-8') { it.write fixed.toString() }
 
     event("CreatedFile", [artifactFile])
     event("CreatedArtefact", [ artifactFile, className])

@@ -473,7 +473,7 @@ public class BeanBuilder extends GroovyObjectSupport {
         for (Resource resource : resources) {
             try {
                 GroovyShell shell = classLoader == null ? new GroovyShell(b) : new GroovyShell(classLoader, b);
-                shell.evaluate(new InputStreamReader(resource.getInputStream()));
+                shell.evaluate(new InputStreamReader(resource.getInputStream(), "UTF-8"));
             }
             catch (Throwable e) {
                 throw new BeanDefinitionParsingException(

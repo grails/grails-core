@@ -125,7 +125,7 @@ showHelp = { String cmd, scripts ->
                     if (!helpFile.exists()) {
                         helpFile.createNewFile()
                     }
-                    helpFile.write(helpText)
+                    helpFile.write(helpText, 'UTF-8')
                 }
                 catch(Throwable t) {
                     println "Warning: Error caching created help for ${file}: ${t.message}"
@@ -133,7 +133,7 @@ showHelp = { String cmd, scripts ->
                 }
             }
             else {
-                helpText = getHelpFile(file).text
+                helpText = getHelpFile(file).getText("UTF-8")
             }
             println helpText
         }

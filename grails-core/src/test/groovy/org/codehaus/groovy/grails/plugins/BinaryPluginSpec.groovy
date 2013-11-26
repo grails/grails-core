@@ -22,7 +22,7 @@ class BinaryPluginSpec extends Specification {
             def xml = new XmlSlurper().parseText(str)
 
         when:
-            def descriptor = new BinaryGrailsPluginDescriptor(new ByteArrayResource(str.bytes), xml)
+            def descriptor = new BinaryGrailsPluginDescriptor(new ByteArrayResource(str.getBytes('UTF-8')), xml)
             def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
 
         then:
@@ -46,15 +46,15 @@ class BinaryPluginSpec extends Specification {
             def xml = new XmlSlurper().parseText(str)
 
         when:
-            def resource = new MockBinaryPluginResource(str.bytes)
+            def resource = new MockBinaryPluginResource(str.getBytes('UTF-8'))
             def descriptor = new BinaryGrailsPluginDescriptor(resource, xml)
             resource.relativesResources['views.properties'] = new ByteArrayResource('''
 /WEB-INF/grails-app/views/bar/list.gsp=org.codehaus.groovy.grails.plugins.MyView
-'''.bytes)
+'''.getBytes('UTF-8'))
             resource.relativesResources['grails-app/i18n'] = new ByteArrayResource(''.bytes)
             resource.relativesResources['grails-app/i18n/testBinary-messages.properties'] = new ByteArrayResource('''
 foo.bar=one
-'''.bytes)
+'''.getBytes('UTF-8'))
             def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())
             def properties = binaryPlugin.getProperties(Locale.getDefault())
 
@@ -84,7 +84,7 @@ foo.bar=one
             def xml = new XmlSlurper().parseText(str)
 
         when:
-            def resource = new MockBinaryPluginResource(str.bytes)
+            def resource = new MockBinaryPluginResource(str.getBytes('UTF-8'))
             def descriptor = new BinaryGrailsPluginDescriptor(resource, xml)
             resource.relativesResources['static/css/main.css'] = new ByteArrayResource(''.bytes)
             def binaryPlugin = new BinaryGrailsPlugin(TestBinaryGrailsPlugin, descriptor, new DefaultGrailsApplication())

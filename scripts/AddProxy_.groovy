@@ -35,7 +35,7 @@ target(default:"Adds a proxy configuration") {
                                      "http.proxyPassword": argsMap.password?: '',
                                      'http.nonProxyHosts': argsMap.noproxy?: '']
 
-        settingsFile.withWriter { w -> config.writeTo(w) }
+        settingsFile.withWriter('UTF-8') { w -> config.writeTo(w) }
 
         grailsConsole.updateStatus "Added proxy ${argsMap.params[0]} to ${settingsFile}"
     }

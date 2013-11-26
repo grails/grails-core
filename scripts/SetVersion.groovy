@@ -35,7 +35,7 @@ target ('default': "Sets the current application version") {
         }
 
         File file = new File(pluginSettings.basePluginDescriptor.filename)
-        String descriptorContent = file.text
+        String descriptorContent = file.getText("UTF-8")
 
         def pattern = ~/def\s*version\s*=\s*"(.*)"/
         def matcher = (descriptorContent =~ pattern)
@@ -65,7 +65,7 @@ target ('default': "Sets the current application version") {
             descriptorContent = descriptorContent.replaceFirst(/\{/,"{\n\t$newVersionString // added by set-version")
         }
 
-        file.withWriter { it.write descriptorContent }
+        file.withWriter("UTF-8") { it.write descriptorContent }
         event("StatusFinal", [ "Plugin version updated to $newVersion"])
     }
     else {
