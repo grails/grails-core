@@ -41,16 +41,16 @@ class StucturedEmployeeEditor extends AbstractStructuredBindingEditor<Employee> 
 
     @Override
     public Employee getPropertyValue(Object obj, String propertyName, DataBindingSource bindingSource) {
+        def propertyMap = getPropertyValuesMap(propertyName, bindingSource)
         def employee = new Employee()
-        employee.firstName = bindingSource.getPropertyValue(propertyName + '_firstName')
-        employee.lastName = bindingSource.getPropertyValue(propertyName + '_lastName')
+        employee.firstName = propertyMap.firstName
+        employee.lastName = propertyMap.lastName
         employee
     }
+    
 
     @Override
     Class<? extends Employee> getTargetType() {
         Employee
     }
-    
-    
 }

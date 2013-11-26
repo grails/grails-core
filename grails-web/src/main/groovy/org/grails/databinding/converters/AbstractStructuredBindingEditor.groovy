@@ -15,8 +15,10 @@
  */
 package org.grails.databinding.converters
 
+
 import groovy.transform.CompileStatic
 
+import org.grails.databinding.DataBindingSource
 import org.grails.databinding.StructuredBindingEditor
 
 /**
@@ -30,4 +32,30 @@ import org.grails.databinding.StructuredBindingEditor
 @CompileStatic
 abstract class AbstractStructuredBindingEditor<T> implements StructuredBindingEditor<T> {
     abstract Class<? extends T> getTargetType()
+
+    /**
+     * A convenience method for extracting structured values from a DataBindingSource.
+     * The method will look for all properties in bindingSource which have a key which
+     * begins with propertyPrefix followed by an underscore and put each of those values
+     * in the resulting Map with a key that matches the original key with the propertyName
+     * plus prefix removed.  For example, if propertyPrefix is &quot;address&quot; and
+     * bindingSource contains the key &quot;address_city&quot; with a value of &quot;St. Louis&quot;
+     * then the resulting Map will contain an entry such that the key is &quot;city&quot; 
+     * with a value of &quot;St. Louis&quot;
+     *     
+     * @param propertyPrefix The property name to extract structured values for
+     * @param bindingSource the DataBindingSource to extract structured values from
+     * @return A Map containing keys and values as described above.
+     */
+    Map<String, Object> getPropertyValuesMap(String propertyPrefix, DataBindingSource bindingSource) {
+        def valuesMap = [:]
+        def prefix = propertyPrefix + '_'
+        for(String key : bindingSource.propertyNames) {
+            if(key.startsWith(prefix) && key.size() > prefix.size()) {
+                def propName = key[prefix.size()..-1]
+                valuesMap[propName] = bindingSource.getPropertyValue(key)
+            }
+        }
+        valuesMap
+    }
 }
