@@ -18,6 +18,8 @@ package org.grails.databinding.converters
 
 import groovy.transform.CompileStatic
 
+import java.lang.reflect.ParameterizedType
+
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.StructuredBindingEditor
 
@@ -31,7 +33,15 @@ import org.grails.databinding.StructuredBindingEditor
  */
 @CompileStatic
 abstract class AbstractStructuredBindingEditor<T> implements StructuredBindingEditor<T> {
-    abstract Class<? extends T> getTargetType()
+
+    final Class<T> targetType   
+     
+    AbstractStructuredBindingEditor() {
+        def superClass = getClass().genericSuperclass
+        def type = (ParameterizedType) superClass
+        def types = type.actualTypeArguments
+        targetType = types[0]
+    }
     
     @Override
     public T getPropertyValue(Object obj, String propertyName, DataBindingSource bindingSource) {
