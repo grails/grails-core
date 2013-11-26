@@ -50,11 +50,5 @@ class StucturedEmployeeEditor extends AbstractStructuredBindingEditor<Employee> 
         employee.lastName = values.lastName
         employee
     }
-    
-
-    @Override
-    Class<? extends Employee> getTargetType() {
-        Employee
-    }
 }
 
