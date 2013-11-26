@@ -58,6 +58,7 @@ abstract class ForkedGrailsProcess {
     List<String> jvmArgs
     URLClassLoader forkedClassLoader
     ExecutionContext executionContext
+    String encoding = "UTF-8"
 
     private String resumeIndicatorName
 
@@ -490,6 +491,9 @@ abstract class ForkedGrailsProcess {
 
         List<String> cmd = [javaCommand]
 
+        if(encoding) {
+            cmd.add("-Dfile.encoding=${encoding}".toString())
+        }
         if (jvmArgs) {
             cmd.addAll(jvmArgs)
         }
