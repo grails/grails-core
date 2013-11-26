@@ -41,7 +41,6 @@ import org.codehaus.groovy.runtime.InvokerHelper
 import org.codehaus.groovy.runtime.MetaClassHelper
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty
 import org.grails.databinding.BindingFormat
-import org.grails.databinding.ClosureValueConverter
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.SimpleDataBinder
