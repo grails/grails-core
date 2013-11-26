@@ -57,8 +57,8 @@ target (generateWrapper: "Generates the Grails wrapper") {
             include(name: 'grailsw*')
         }
     }
-    ant.replace(dir: targetDir, includes: '*.properties', token: '@distributationUrl@', value: grailsDistUrl)
-    ant.replace(dir: basedir, includes: 'grailsw*', token: '@wrapperDir@', value: grailsWrapperDir)
+    ant.replace(dir: targetDir, encoding:'UTF-8', includes: '*.properties', token: '@distributationUrl@', value: grailsDistUrl)
+    ant.replace(dir: basedir, encoding:'UTF-8', includes: 'grailsw*', token: '@wrapperDir@', value: grailsWrapperDir)
     ant.chmod(file: "${basedir}/grailsw", perm: 'u+x')
 
     event("StatusUpdate", [ "Wrapper installed successfully"])

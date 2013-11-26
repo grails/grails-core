@@ -97,7 +97,7 @@ target(createPlugin: "The implementation target") {
     def pluginGrailsVersion = m[0][1]
 
     // Insert the name of the plugin into whatever files need it.
-    ant.replace(dir:"${basedir}") {
+    ant.replace(dir:"${basedir}", encoding:'UTF-8') {
         include(name: "*GrailsPlugin.groovy")
         include(name: "scripts/*")
         replacefilter(token: "@plugin.name@", value: pluginName)

@@ -101,22 +101,22 @@ createArtifact = { Map args = [:] ->
     }
 
     copyGrailsResource(artifactFile, templateFile)
-    ant.replace(file: artifactFile, token: "@artifact.name@", value: "${className}${suffix}")
+    ant.replace(file: artifactFile, encoding:'UTF-8', token: "@artifact.name@", value: "${className}${suffix}")
     if (pkg) {
-        ant.replace(file: artifactFile, token: "@artifact.package@", value: "package ${pkg}\n\n")
+        ant.replace(file: artifactFile, encoding:'UTF-8', token: "@artifact.package@", value: "package ${pkg}\n\n")
     }
     else {
-        ant.replace(file: artifactFile, token: "@artifact.package@", value: "")
+        ant.replace(file: artifactFile, encoding:'UTF-8', token: "@artifact.package@", value: "")
     }
 
     if (args["superClass"]) {
-        ant.replace(file: artifactFile, token: "@artifact.superclass@", value: args["superClass"])
+        ant.replace(file: artifactFile, encoding:'UTF-8', token: "@artifact.superclass@", value: args["superClass"])
     }
-    ant.replace(file: artifactFile, token: "@artifact.testclass@", value: "${className}${type}")
+    ant.replace(file: artifactFile, encoding:'UTF-8', token: "@artifact.testclass@", value: "${className}${type}")
 
     // optional extra ant.replace name/value pairs
     args.replacements.each { token, value ->
-        ant.replace(file: artifactFile, token: token, value: value)
+        ant.replace(file: artifactFile, encoding:'UTF-8', token: token, value: value)
     }
 
     String lineSeparator = System.getProperty('line.separator')

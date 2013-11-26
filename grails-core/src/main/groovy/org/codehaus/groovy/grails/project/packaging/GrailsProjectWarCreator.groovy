@@ -310,7 +310,7 @@ class GrailsProjectWarCreator extends BaseSettingsApi {
                 entry(key:Metadata.SERVLET_VERSION, value:grailsSettings.servletVersion)
             }
 
-            ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml", token:"classpath*:", value:"")
+            ant.replace(file:"${stagingDir}/WEB-INF/applicationContext.xml", encoding:'UTF-8', token:"classpath*:", value:"")
 
             if (buildConfig.grails.war.resources instanceof Closure) {
                 Closure callable = buildConfig.grails.war.resources

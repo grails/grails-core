@@ -160,7 +160,7 @@ intellijClasspathLibs = {
 
 private replaceTokens(Collection filePatterns) {
     def appKey = grailsAppName.replaceAll(/\s/, '.').toLowerCase()
-    ant.replace(dir: basedir, includes: filePatterns.join(",")) {
+    ant.replace(dir: basedir, encoding:'UTF-8', includes: filePatterns.join(",")) {
         replacefilter(token: "@grails.intellij.libs@", value: intellijClasspathLibs())
         replacefilter(token: "@grails.version@",       value: grailsVersion)
         replacefilter(token: "@grails.project.name@",  value: grailsAppName)

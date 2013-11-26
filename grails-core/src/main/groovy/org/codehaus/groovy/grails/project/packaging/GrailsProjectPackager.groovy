@@ -159,7 +159,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
             }
         }
         webXml = new FileSystemResource(tmpWebXml)
-        ant.replace(file:tmpWebXml, token:"@grails.project.key@",
+        ant.replace(file:tmpWebXml, encoding:'UTF-8', token:"@grails.project.key@",
                     value:"${grailsAppName}-${buildSettings.grailsEnv}-${grailsAppVersion}")
 
         def sw = new StringWriter()
