@@ -27,8 +27,9 @@ import javax.xml.transform.stream.StreamSource
 
 import org.springframework.core.io.Resource
 import org.springframework.util.Assert
+import org.codehaus.groovy.grails.io.support.IOUtils
 
- /**
+/**
  * Utility methods for manipulating the plugin-list.xml file used
  * when publishing plugins to a Grails plugin repository.
  *
@@ -141,12 +142,12 @@ class DefaultPluginPublisher {
 
     protected GPathResult parsePluginList(Resource pluginsListFile) {
         if (!pluginsListFile.exists()) {
-            return new XmlSlurper().parseText('<?xml version="1.0" encoding="UTF-8"?><plugins revision="0" />')
+            return IOUtils.createXmlSlurper().parseText('<?xml version="1.0" encoding="UTF-8"?><plugins revision="0" />')
         }
 
         InputStream stream = pluginsListFile.getInputStream()
         try {
-            return new XmlSlurper().parse(stream)
+            return IOUtils.createXmlSlurper().parse(stream)
         }
         finally {
             stream?.close()
@@ -158,6 +159,6 @@ class DefaultPluginPublisher {
     }
 
     protected GPathResult getPluginMetadata(String pluginName) {
-        return new XmlSlurper().parse(new File(baseDir.absolutePath, 'plugin.xml'))
+        return IOUtils.createXmlSlurper().parse(new File(baseDir.absolutePath, 'plugin.xml'))
     }
 }

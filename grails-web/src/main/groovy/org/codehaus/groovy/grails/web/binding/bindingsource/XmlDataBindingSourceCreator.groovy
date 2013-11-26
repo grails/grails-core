@@ -28,6 +28,7 @@ import org.grails.databinding.bindingsource.InvalidRequestBodyException
 import org.grails.databinding.xml.GPathResultCollectionDataBindingSource
 import org.grails.databinding.xml.GPathResultMap
 import org.xml.sax.SAXParseException
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Creates DataBindingSource objects from XML in the request body
@@ -55,7 +56,7 @@ class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
 
     @Override
     protected DataBindingSource createBindingSource(Reader reader) {
-        def gpath = new XmlSlurper().parse(reader)
+        def gpath = IOUtils.createXmlSlurper().parse(reader)
         def gpathMap = new GPathResultMap(gpath)
         return new SimpleMapDataBindingSource(gpathMap)
     }
@@ -72,7 +73,7 @@ class XmlDataBindingSourceCreator extends AbstractRequestBodyDataBindingSourceCr
 
     @Override
     protected CollectionDataBindingSource createCollectionBindingSource(Reader reader) {
-        def gpath = new XmlSlurper().parse(reader)
+        def gpath = IOUtils.createXmlSlurper().parse(reader)
         return new GPathResultCollectionDataBindingSource(gpath)
     }
     

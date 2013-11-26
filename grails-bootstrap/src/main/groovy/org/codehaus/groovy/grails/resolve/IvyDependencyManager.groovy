@@ -44,6 +44,7 @@ import org.apache.ivy.plugins.repository.TransferListener
 import org.codehaus.groovy.grails.plugins.VersionComparator
 import org.codehaus.groovy.grails.resolve.ivy.IvyGraphNode
 import org.codehaus.groovy.grails.resolve.reporting.SimpleGraphRenderer
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Implementation that uses Apache Ivy under the hood.
@@ -121,7 +122,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                         def input
                         try {
                             input = res.openStream()
-                            return new XmlSlurper().parse(input)
+                            return IOUtils.createXmlSlurper().parse(input)
                         }
                         finally {
                             input.close()
@@ -151,7 +152,7 @@ class IvyDependencyManager extends AbstractIvyDependencyManager implements Depen
                 return null
             }
 
-            return new XmlSlurper().parse(report.getArtifactsReports(null, false).localFile.first())
+            return IOUtils.createXmlSlurper().parse(report.getArtifactsReports(null, false).localFile.first())
         }
         return null
     }

@@ -90,6 +90,7 @@ import org.eclipse.aether.util.graph.transformer.ChainedDependencyGraphTransform
 import org.eclipse.aether.util.graph.transformer.JavaDependencyContextRefiner
 import org.codehaus.groovy.grails.resolve.maven.aether.support.ScopeAwareNearestVersionSelector
 import org.codehaus.groovy.grails.resolve.maven.aether.support.MultipleTopLevelJavaScopeSelector
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * An implementation of the {@link DependencyManager} interface that uses Aether, the dependency resolution
@@ -227,7 +228,7 @@ class AetherDependencyManager implements DependencyManager {
         if(report.allArtifacts) {
             File pluginXml = report.allArtifacts.find { File f -> f.name.endsWith('-plugin.xml')}
 
-            return new XmlSlurper().parse(pluginXml)
+            return IOUtils.createXmlSlurper().parse(pluginXml)
         }
 
         return null

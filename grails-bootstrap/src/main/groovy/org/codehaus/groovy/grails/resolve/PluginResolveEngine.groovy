@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.resolve
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import groovy.util.slurpersupport.GPathResult
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Utility methods for resolving plugin zips and information
@@ -62,7 +63,7 @@ Plugins must be declared in the grails-app/conf/BuildConfig.groovy file.
             }
             try {
                 final String text = new URL("$url?format=xml").getText(connectTimeout: 500, readTimeout: 3000)
-                pluginXml = new XmlSlurper().parseText(text)
+                pluginXml = IOUtils.createXmlSlurper().parseText(text)
                 if (!version) {
                     version = pluginXml.version.text()
                 }

@@ -32,6 +32,10 @@ import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
+import javax.xml.parsers.SAXParserFactory
+import groovy.xml.FactorySupport
+import javax.xml.parsers.ParserConfigurationException
+import javax.xml.XMLConstants
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -344,7 +348,7 @@ class PluginBuildSettings {
      */
     GPathResult getMetadataForPlugin(Resource pluginDir) {
         try {
-            return new XmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
+            return IOUtils.createXmlSlurper().parse(new File("$pluginDir.file.absolutePath/plugin.xml"))
         }
         catch (e) {
             return null
@@ -749,7 +753,7 @@ class PluginBuildSettings {
             def zipFile = new ZipFile(zipLocation)
             ZipEntry entry = zipFile.entries().find {ZipEntry entry -> entry.name == 'plugin.xml'}
             if (entry) {
-                def pluginXml = new XmlSlurper().parse(zipFile.getInputStream(entry))
+                def pluginXml = grails.util.GrailsUtil.createXmlSlurper().parse(zipFile.getInputStream(entry))
                 def name = pluginXml.'@name'.text()
                 def release = pluginXml.'@version'.text()
                 return [name, release, pluginXml]
@@ -760,6 +764,7 @@ class PluginBuildSettings {
         }
         return null
     }
+
 
     /**
      * Reads plugin info from the zip file location

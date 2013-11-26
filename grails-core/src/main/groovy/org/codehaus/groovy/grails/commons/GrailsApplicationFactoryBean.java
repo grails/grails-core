@@ -16,7 +16,6 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
-import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.io.InputStream;
@@ -27,6 +26,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
+import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -61,7 +61,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
 
                 // Get all the resource nodes in the descriptor.
                 // Xpath: /grails/resources/resource, where root is /grails
-                GPathResult root = new XmlSlurper().parse(inputStream);
+                GPathResult root = IOUtils.createXmlSlurper().parse(inputStream);
                 GPathResult resources = (GPathResult) root.getProperty("resources");
                 GPathResult grailsClasses = (GPathResult) resources.getProperty("resource");
 
