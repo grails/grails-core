@@ -75,6 +75,18 @@ class JsonBindingSpec extends Specification {
         'invalidRequestBody' in person.errors.allErrors[0].codes
         'org.codehaus.groovy.grails.web.binding.json.Person.invalidRequestBody' in person.errors.allErrors[0].codes
     }
+    
+    void 'Test parsing JSON with other than UTF-8 content type'() {
+        given:
+            String jsonString = '{"name":"Hello öäåÖÄÅ"}'
+            request.contentType = 'application/json; charset=UTF-16'
+            request.content = jsonString.getBytes("UTF-16")
+        when:
+            def model = controller.createPersonCommandObject()
+        then:
+            model.person instanceof Person
+            model.person.name == 'Hello öäåÖÄÅ'
+    }
 }
 
 @Artefact('Controller')
