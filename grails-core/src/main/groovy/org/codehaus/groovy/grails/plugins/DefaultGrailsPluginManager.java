@@ -574,7 +574,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
                 if (LOG.isInfoEnabled()) {
                     LOG.info("Parsing & compiling " + r.getFilename());
                 }
-                pluginClass = ((GroovyClassLoader)cl).parseClass(IOGroovyMethods.getText(r.getInputStream()));
+                pluginClass = ((GroovyClassLoader)cl).parseClass(IOGroovyMethods.getText(r.getInputStream(), "UTF-8"));
             }
             catch (CompilationFailedException e) {
                 throw new PluginException("Error compiling plugin [" + r.getFilename() + "] " + e.getMessage(), e);
@@ -716,7 +716,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
     private void doWebDescriptor(InputStream inputStream, Writer target) {
         checkInitialised();
         try {
-            Document document = DOMBuilder.parse(new InputStreamReader(inputStream));
+            Document document = DOMBuilder.parse(new InputStreamReader(inputStream, "UTF-8"));
             Element documentElement = document.getDocumentElement();
 
             for (GrailsPlugin plugin : pluginList) {

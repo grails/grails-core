@@ -52,7 +52,7 @@ class PdfBuilder {
     }
 
     static String createXml(File htmlFile, String base) {
-        String xml = htmlFile.text
+        String xml = htmlFile.getText("UTF-8")
 
         // fix inner anchors
         xml = xml.replaceAll('<a href="\\.\\./guide/single\\.html', '<a href="')
@@ -70,7 +70,7 @@ class PdfBuilder {
         dbf.setFeature "http://apache.org/xml/features/nonvalidating/load-external-dtd", false
 
         DocumentBuilder builder = dbf.newDocumentBuilder()
-        Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes()))
+        Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes("UTF-8")))
 
         ITextRenderer renderer = new ITextRenderer()
         renderer.setDocument(doc, urlBase.toURI().toString())

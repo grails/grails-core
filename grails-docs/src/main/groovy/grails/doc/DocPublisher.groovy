@@ -311,7 +311,7 @@ class DocPublisher {
                 def textiles = f.listFiles().findAll { it.name.endsWith(".gdoc")}.sort()
                 def usageFile = new File("${src}/ref/${section}.gdoc")
                 if (usageFile.exists()) {
-                    def data = usageFile.text
+                    def data = usageFile.getText("UTF-8")
                     context.set(DocEngine.SOURCE_FILE, usageFile)
                     context.set(DocEngine.CONTEXT_PATH, pathToRoot)
                     context.set(DocEngine.API_CONTEXT_PATH, vars.resourcesPath)
@@ -323,7 +323,7 @@ class DocPublisher {
                 }
                 for (txt in textiles) {
                     def name = txt.name[0..-6]
-                    def data = txt.text
+                    def data = txt.getText("UTF-8")
                     context.set(DocEngine.SOURCE_FILE, txt.name)
                     context.set(DocEngine.CONTEXT_PATH, pathToRoot)
                     context.set(DocEngine.API_CONTEXT_PATH, vars.resourcesPath)
@@ -401,7 +401,7 @@ class DocPublisher {
         varsCopy.path = path
         varsCopy.level = level
         varsCopy.sectionToc = section.children
-        varsCopy.content = engine.render(sourceFile.text, context)
+        varsCopy.content = engine.render(sourceFile.getText("UTF-8"), context)
 
         // First create the section content, which usually consists of a header
         // and the translated gdoc content.

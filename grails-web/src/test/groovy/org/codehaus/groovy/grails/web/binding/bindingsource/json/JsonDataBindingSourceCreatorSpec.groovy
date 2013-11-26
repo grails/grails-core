@@ -14,8 +14,8 @@ class JsonDataBindingSourceCreatorSpec extends Specification {
   "languages" : [ {"name": "Groovy", "company": "GoPivotal"}, {"name": "Java", "company": "Oracle"}]
 }'''
 
-        def inputStream = new ByteArrayInputStream(json.bytes)
-        def bindingSource = new JsonDataBindingSourceCreator().createBindingSource(inputStream)
+        def inputStream = new ByteArrayInputStream(json.getBytes("UTF-8"))
+        def bindingSource = new JsonDataBindingSourceCreator().createBindingSource(inputStream, "UTF-8")
 
         when:
         def propertyNames = bindingSource.propertyNames

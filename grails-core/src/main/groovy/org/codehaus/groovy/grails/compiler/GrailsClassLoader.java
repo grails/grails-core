@@ -91,7 +91,7 @@ public class GrailsClassLoader extends GroovyClassLoader {
             try {
                 inputStream = resourceURL.getInputStream();
                 Class<?> reloadedClass = innerLoader.parseClass(
-                        IOGroovyMethods.getText(inputStream), path);
+                        IOGroovyMethods.getText(inputStream, "UTF-8"), path);
                 compilationErrors.remove(name);
                 innerClassLoaderMap.put(name, innerLoader);
                 return reloadedClass;

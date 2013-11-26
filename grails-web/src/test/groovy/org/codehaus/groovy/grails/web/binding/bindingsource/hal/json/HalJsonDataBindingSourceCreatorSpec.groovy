@@ -18,8 +18,8 @@ class HalJsonDataBindingSourceCreatorSpec extends Specification {
     }
 }
 '''
-        def inputStream = new ByteArrayInputStream(json.bytes)
-        def bindingSource = new HalJsonDataBindingSourceCreator().createBindingSource(inputStream)
+        def inputStream = new ByteArrayInputStream(json.getBytes("UTF-8"))
+        def bindingSource = new HalJsonDataBindingSourceCreator().createBindingSource(inputStream, "UTF-8")
 
         when:
         def propertyNames = bindingSource.propertyNames

@@ -39,16 +39,16 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
             if(bindingSource instanceof GrailsParameterMap) {
                 def req = bindingSource.getRequest()
                 def is = req.getInputStream()
-                return createBindingSource(is)
+                return createBindingSource(is, req.getCharacterEncoding())
             }
             if(bindingSource instanceof HttpServletRequest) {
                 def req = (HttpServletRequest)bindingSource
                 def is = req.getInputStream()
-                return createBindingSource(is)
+                return createBindingSource(is, req.getCharacterEncoding())
             }
             if(bindingSource instanceof InputStream) {
                 def is = (InputStream)bindingSource
-                return createBindingSource(is)
+                return createBindingSource(is, "UTF-8")
             }
             if(bindingSource instanceof Reader) {
                 def is = (Reader)bindingSource
@@ -71,16 +71,16 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
             if(bindingSource instanceof GrailsParameterMap) {
                 def req = bindingSource.getRequest()
                 def is = req.getInputStream()
-                return createCollectionBindingSource(is)
+                return createCollectionBindingSource(is, req.getCharacterEncoding())
             }
             if(bindingSource instanceof HttpServletRequest) {
                 def req = (HttpServletRequest)bindingSource
                 def is = req.getInputStream()
-                return createCollectionBindingSource(is)
+                return createCollectionBindingSource(is, req.getCharacterEncoding())
             }
             if(bindingSource instanceof InputStream) {
                 def is = (InputStream)bindingSource
-                return createCollectionBindingSource(is)
+                return createCollectionBindingSource(is, "UTF-8")
             }
             if(bindingSource instanceof Reader) {
                 def is = (Reader)bindingSource
@@ -93,14 +93,14 @@ abstract class AbstractRequestBodyDataBindingSourceCreator extends DefaultDataBi
         }
     }
 
-    protected DataBindingSource createBindingSource(InputStream inputStream){
-        return createBindingSource(new InputStreamReader(inputStream))
+    protected DataBindingSource createBindingSource(InputStream inputStream, String charsetName){
+        return createBindingSource(new InputStreamReader(inputStream, charsetName?:'UTF-8'))
     }
 
     protected abstract DataBindingSource createBindingSource(Reader reader)
 
-    protected CollectionDataBindingSource createCollectionBindingSource(InputStream inputStream){
-        return createCollectionBindingSource(new InputStreamReader(inputStream))
+    protected CollectionDataBindingSource createCollectionBindingSource(InputStream inputStream, String charsetName){
+        return createCollectionBindingSource(new InputStreamReader(inputStream, charsetName?:'UTF-8'))
     }
 
     protected abstract CollectionDataBindingSource createCollectionBindingSource(Reader reader)

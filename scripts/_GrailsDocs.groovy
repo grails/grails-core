@@ -315,7 +315,7 @@ target(createIndex: "Produces an index.html page in the root directory") {
          return
     }
 
-    new File("${grailsSettings.docsOutputDir}/all-docs.html").withWriter { writer ->
+    new File("${grailsSettings.docsOutputDir}/all-docs.html").withWriter("UTF-8") { writer ->
         writer.write """\
 <html>
 

@@ -217,7 +217,7 @@ class ConfigurationHelper {
                     try {
                         stream = resource.getInputStream()
                         if (resource.filename.endsWith('.groovy')) {
-                            def newConfig = configSlurper.parse(stream.getText())
+                            def newConfig = configSlurper.parse(stream.getText("UTF-8"))
                             config.merge(newConfig)
                         }
                         else if (resource.filename.endsWith('.properties')) {

@@ -162,8 +162,8 @@ move it to the new location of '${basedir}/test/integration'. Please move the di
         // add reasonable defaults for them
         def configFile = new File(baseFile, '/grails-app/conf/Config.groovy')
         if (configFile.exists()) {
-            def configText = configFile.text
-            configFile.withWriterAppend {
+            def configText = configFile.getText("UTF-8")
+            configFile.withWriterAppend("UTF-8") {
                 if (!configText.find(/grails\s*\{\s*views\s*\{\s*gsp\s*\{/)) {
                     it << """
 // Uncomment and edit the following lines to start using Grails encoding & escaping improvements
@@ -224,7 +224,7 @@ remove this line */
         if (upgradeScript.exists()) {
             event("StatusUpdate", ["Executing ${pluginDir.getFilename()} plugin upgrade script"])
             // instrumenting plugin scripts adding 'pluginBasedir' variable
-            def instrumentedUpgradeScript = "def pluginDir = '${pluginDir}'\n" + upgradeScript.text
+            def instrumentedUpgradeScript = "def pluginDir = '${pluginDir}'\n" + upgradeScript.getText('UTF-8')
             // we are using text form of script here to prevent Gant caching
             includeTargets << instrumentedUpgradeScript
         }

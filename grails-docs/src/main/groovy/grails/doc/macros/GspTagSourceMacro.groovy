@@ -41,7 +41,7 @@ class GspTagSourceMacro extends BaseMacro {
                     return tagLibFile
                 }
 
-                def text = tagLibFile?.text ?: ""
+                def text = tagLibFile?.getText("UTF-8") ?: ""
                 def matcher = regex.matcher(text)
                 if (matcher.find()) {
                     out << '<p><a href="#' + tagName +

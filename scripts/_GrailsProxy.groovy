@@ -28,7 +28,7 @@ target(configureProxy: "The implementation target") {
         return
     }
 
-    includeTargets << scriptFile.text
+    includeTargets << scriptFile.getText("UTF-8")
 
     if (!proxyConfig.proxyHost) {
         return
