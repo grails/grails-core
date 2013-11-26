@@ -17,6 +17,7 @@ package grails.util
 
 import org.codehaus.groovy.grails.cli.support.GrailsStarter
 
+System.setProperty("file.encoding", "UTF-8")
 // First check for a system property called "grails.home". If that
 // exists, we use its value as the location of Grails. Otherwise, we
 // use the environment variable GRAILS_HOME.
