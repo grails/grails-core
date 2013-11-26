@@ -32,6 +32,14 @@ import org.grails.databinding.StructuredBindingEditor
 @CompileStatic
 abstract class AbstractStructuredBindingEditor<T> implements StructuredBindingEditor<T> {
     abstract Class<? extends T> getTargetType()
+    
+    @Override
+    public T getPropertyValue(Object obj, String propertyName, DataBindingSource bindingSource) {
+        def propertyMap = getPropertyValuesMap(propertyName, bindingSource)
+        getPropertyValue propertyMap
+    }
+
+    abstract T getPropertyValue(Map values)
 
     /**
      * A convenience method for extracting structured values from a DataBindingSource.

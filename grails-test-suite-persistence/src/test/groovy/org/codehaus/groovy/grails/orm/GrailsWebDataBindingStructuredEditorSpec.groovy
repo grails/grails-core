@@ -44,11 +44,10 @@ class Employee {
 class StucturedEmployeeEditor extends AbstractStructuredBindingEditor<Employee> {
 
     @Override
-    public Employee getPropertyValue(Object obj, String propertyName, DataBindingSource bindingSource) {
-        def propertyMap = getPropertyValuesMap(propertyName, bindingSource)
+    public Employee getPropertyValue(Map values) {
         def employee = new Employee()
-        employee.firstName = propertyMap.firstName
-        employee.lastName = propertyMap.lastName
+        employee.firstName = values.firstName
+        employee.lastName = values.lastName
         employee
     }
     
