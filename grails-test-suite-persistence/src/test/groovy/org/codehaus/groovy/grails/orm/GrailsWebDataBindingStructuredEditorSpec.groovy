@@ -12,7 +12,11 @@ class GrailsWebDataBindingStructuredEditorSpec extends Specification {
     void 'Test structured editor'() {
         given: 'A binder with a structured editor registered'
         def binder = new GrailsWebDataBinder()
+
+        // in a Grails app you wouldn't do this... if the editor is a bean
+        // in the Spring application context it will be auto-discovered
         binder.setStructuredBindingEditors(new StucturedEmployeeEditor())
+
         def company = new Company()
         
         when: 'binding happens'
@@ -54,3 +58,4 @@ class StucturedEmployeeEditor extends AbstractStructuredBindingEditor<Employee> 
         Employee
     }
 }
+
