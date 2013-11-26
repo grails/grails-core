@@ -123,6 +123,9 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         testNames = lookupTestPatterns()
 
         // initialize the default binding
+        if(buildEventListener?.binding) {
+            this.testExecutionContext = buildEventListener.binding
+        }
         initialiseContext(testExecutionContext)
     }
 
@@ -135,7 +138,9 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         context.setVariable("testReportsDir", testReportsDir)
         context.setVariable("junitReportStyleDir", junitReportStyleDir)
         context.setVariable("reportFormats", reportFormats)
-        context.setVariable("ant", ant)
+        if(! context.hasVariable("ant") ) {
+            context.setVariable("ant", ant)
+        }
         context.setVariable("unitTests", testFeatureDiscovery.unitTests)
         context.setVariable("integrationTests", testFeatureDiscovery.integrationTests)
         context.setVariable("functionalTests", testFeatureDiscovery.functionalTests)
