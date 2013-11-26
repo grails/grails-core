@@ -547,7 +547,26 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 }
             }
         }
-        super.addElementToCollection obj, propName, propertyType, elementToAdd, clearCollection
+        boolean isSet = false
+        
+        def domainClass = (GrailsDomainClass)grailsApplication.getArtefact(DomainClassArtefactHandler.TYPE, obj.getClass().name)
+        if (domainClass != null) {
+            def property = domainClass.getPersistentProperty propName
+            if (property != null) {
+                if (property.isOneToMany() || property.isManyToMany()) {
+                    def methodName = 'addTo' + GrailsNameUtils.getClassName(property.name)
+                    if(GrailsMetaClassUtils.invokeMethodIfExists(obj, methodName, [elementToAdd] as Object[])) {
+                        isSet = true
+                    }
+                }
+            }
+        }
+
+        
+        if(!isSet) {
+            isSet = super.addElementToCollection obj, propName, propertyType, elementToAdd, clearCollection
+        }
+        isSet
     }
 
     protected addElementToCollection(obj, String propName, GrailsDomainClassProperty property, propertyValue, boolean clearCollection) {
