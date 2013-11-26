@@ -59,7 +59,7 @@ public class GrailsEclipseConsole extends GrailsConsole {
     protected OutputStream ansiWrap(OutputStream out) {
         if (DEBUG) {
             try {
-                out.write(("<<<"+ECLIPSE_SUPPORTS_ANSI_PROP+":"+eclipseSupportsAnsi()+">>>\n").getBytes());
+                out.write(("<<<"+ECLIPSE_SUPPORTS_ANSI_PROP+":"+eclipseSupportsAnsi()+">>>\n").getBytes("UTF-8"));
             } catch (IOException e) {
             }
         }

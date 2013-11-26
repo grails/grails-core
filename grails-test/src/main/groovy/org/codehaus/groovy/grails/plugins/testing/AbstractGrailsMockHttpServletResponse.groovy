@@ -28,6 +28,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockHttpServletResponse
 import org.springframework.util.ReflectionUtils
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Simple sub-class of Spring's MockHttpServletResponse that adds the
@@ -84,7 +85,7 @@ abstract class AbstractGrailsMockHttpServletResponse extends MockHttpServletResp
      * @return The response XML
      */
     GPathResult getXml() {
-        new XmlSlurper().parseText(contentAsString)
+        IOUtils.createXmlSlurper().parseText(contentAsString)
     }
 
     /**

@@ -27,7 +27,7 @@ class HexCodec {
 
         def result = new StringBuilder()
         if (theTarget instanceof String) {
-            theTarget = theTarget.bytes
+            theTarget = theTarget.getBytes("UTF-8")
         }
         theTarget.each() {
             result << HexCodec.HEXDIGITS[(it & 0xF0) >> 4]

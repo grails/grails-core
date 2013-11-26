@@ -44,9 +44,22 @@ class UrlMappingsGrailsPluginTests extends GroovyTestCase {
  </web-app>
  '''
 
+private static class MockGetTextMethod {
+    String content
+    
+    MockGetTextMethod(String content) {
+        this.content = content
+    }
+    
+    public String getText(String encoding) {
+        return content
+    }
+ }
+
+ 
     void testNoDuplicateErrorCodes() {
         FileSystemResource.metaClass.getFile = {->
-            [ text: '"404"(controller:"foo")' ]
+            new MockGetTextMethod('"404"(controller:"foo")')
         }
 
         UrlMappingsGrailsPlugin.metaClass.getWatchedResources ={->
@@ -67,7 +80,7 @@ class UrlMappingsGrailsPluginTests extends GroovyTestCase {
 
     void testErrorPageWebXmlPositioning() {
         FileSystemResource.metaClass.getFile = {->
-            [ text: '"404"(controller:"foo")' ]
+            new MockGetTextMethod('"404"(controller:"foo")')
         }
 
         UrlMappingsGrailsPlugin.metaClass.getWatchedResources = { ->
@@ -86,7 +99,7 @@ class UrlMappingsGrailsPluginTests extends GroovyTestCase {
 
     void testCommentsOnUrlMappingsBeginningOfLine() {
         FileSystemResource.metaClass.getFile = {->
-            [ text: '// "404"(controller:"foo")' ]
+            new MockGetTextMethod('// "404"(controller:"foo")')
         }
 
         UrlMappingsGrailsPlugin.metaClass.getWatchedResources = { ->
@@ -111,12 +124,7 @@ class UrlMappingsGrailsPluginTests extends GroovyTestCase {
 
     void testCommentsOnUrlMappingsMultiLineComment() {
         FileSystemResource.metaClass.getFile = {->
-            [ text: '''\
-                /*
-                "404"(controller: "foo")
-                */
-              ''']
-            [ text: '/* \n "404"(controller:"foo") \n */' ]
+            new MockGetTextMethod('/* \n "404"(controller:"foo") \n */')
         }
 
         UrlMappingsGrailsPlugin.metaClass.getWatchedResources = { ->
@@ -141,7 +149,7 @@ class UrlMappingsGrailsPluginTests extends GroovyTestCase {
 
     void testCommentsOnUrlMappingsMultiLineCommentBeforeGoodMapping() {
         FileSystemResource.metaClass.getFile = {->
-            [ text: '/* "404"(controller:"foo") */ "400"(controller:"foo")' ]
+            new MockGetTextMethod('/* "404"(controller:"foo") */ "400"(controller:"foo")')
         }
 
         UrlMappingsGrailsPlugin.metaClass.getWatchedResources = { ->
@@ -172,14 +180,14 @@ class UrlMappingsGrailsPluginTests extends GroovyTestCase {
 
     void testCommentCharactersInsideStrings() {
         FileSystemResource.metaClass.getFile = {->
-            [ text: '''\
+            new MockGetTextMethod('''\
                 "/*" (controller: "foo")
                 "\\\\"bar" (controller: "bar")
                 "400" (controller: "error")
                 '\\\\'bar' (controller: "bar")
                 "404" (controller: "error")
                 "*/" (controller: "foo")
-            ''']
+            ''')
         }
 
         UrlMappingsGrailsPlugin.metaClass.getWatchedResources = { ->
@@ -210,14 +218,14 @@ class UrlMappingsGrailsPluginTests extends GroovyTestCase {
 
     void testCommentCharactersInsideMultilineStrings() {
         FileSystemResource.metaClass.getFile = {->
-            [ text:
+            new MockGetTextMethod(
                 "'''\\\n" +
                 "Test /*\n" +
                 "'''\n"+
                 "\"400\" (controller: \"error\")\n" +
                 "/*Test*/\n"+
                 "\"404\" (controller: \"error\")\n"
-            ]
+            )
         }
 
         UrlMappingsGrailsPlugin.metaClass.getWatchedResources = { ->
@@ -248,12 +256,12 @@ class UrlMappingsGrailsPluginTests extends GroovyTestCase {
 
     void testCommentCharactersInsideRegularExpressions() {
         FileSystemResource.metaClass.getFile = {->
-            [ text: '''\
+            new MockGetTextMethod('''\
                 /\\/*/ (controller: "foo")
                 "404" (controller: "error")
                 /* Comment */
                 "foo" (controller: "foo")
-            ''']
+            ''')
         }
 
         UrlMappingsGrailsPlugin.metaClass.getWatchedResources = { ->

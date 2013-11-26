@@ -31,7 +31,7 @@ target(default: "Removes a proxy configuration") {
     def name = argsMap.params[0]
     config.remove(name)
 
-    settingsFile.withWriter { w -> config.writeTo(w) }
+    settingsFile.withWriter('UTF-8') { w -> config.writeTo(w) }
 
     println "Removed proxy configuration [${name}]."
 }

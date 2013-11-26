@@ -15,6 +15,13 @@
  */
 package org.codehaus.groovy.grails.io.support;
 
+import groovy.util.XmlSlurper;
+import groovy.xml.FactorySupport;
+import org.xml.sax.SAXException;
+
+import javax.xml.XMLConstants;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -341,5 +348,18 @@ public class IOUtils {
         StringWriter out = new StringWriter();
         copy(in, out);
         return out.toString();
+    }
+
+    public static XmlSlurper createXmlSlurper() throws ParserConfigurationException, SAXException {
+        SAXParserFactory factory = FactorySupport.createSaxParserFactory();
+        factory.setNamespaceAware(true);
+        factory.setValidating(false);
+
+        try {
+            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
+            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        } catch (ParserConfigurationException pce) {
+        }
+        return new XmlSlurper(factory.newSAXParser());
     }
 }

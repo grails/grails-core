@@ -197,7 +197,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                 }
 
                 if (in != null) {
-                    reader = new LineNumberReader(new InputStreamReader(in));
+                    reader = new LineNumberReader(new InputStreamReader(in, "UTF-8"));
                     String currentLine = reader.readLine();
                     StringBuilder buf = new StringBuilder();
                     while (currentLine != null) {

@@ -59,7 +59,7 @@ runPluginScript = { File scriptFile, fullPluginName, msg ->
 
     // instrumenting plugin scripts adding 'pluginBasedir' variable
     try {
-        def instrumentedInstallScript = "def pluginBasedir = '${pluginsHome}/${fullPluginName}'\n".toString().replaceAll('\\\\','/') + scriptFile.text
+        def instrumentedInstallScript = "def pluginBasedir = '${pluginsHome}/${fullPluginName}'\n".toString().replaceAll('\\\\','/') + scriptFile.getText("UTF-8")
         // we are using text form of script here to prevent Gant caching
         includeTargets << instrumentedInstallScript
     }

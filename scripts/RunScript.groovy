@@ -54,7 +54,7 @@ def executeScript(scriptFile, classLoader) {
     }
 
     def shell = new GroovyShell(classLoader, new Binding(ctx: appCtx, grailsApplication: grailsApp))
-    shell.evaluate script.text
+    shell.evaluate script.getText('UTF-8')
 }
 
 setDefaultTarget main

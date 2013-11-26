@@ -70,7 +70,7 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware 
                     ZipEntry entry = zipInput.getNextEntry()
                     while (entry) {
                         if (entry.name == pathWithinZip) {
-                            jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(zipInput))
+                            jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(zipInput, "UTF-8"))
                             break
                         }
                         entry = zipInput.getNextEntry()
@@ -78,7 +78,7 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware 
                 }
             }
             else {
-                jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc)))
+                jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc), "UTF-8"))
             }
         }
         else {
@@ -92,7 +92,7 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware 
             if (tagLibLocations[uri]) {
                 // in this case the tag lib was discovered in the web.xml so we use the servlet context
                 loc = tagLibLocations[uri]
-                jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc)))
+                jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc), "UTF-8"))
             }
             else {
                 def jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : resolveRootLoader().getURLs()
@@ -158,7 +158,7 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware 
 
                 if (name.startsWith("META-INF/") && name.endsWith(".tld")) {
                     def tagLibLocation = "jar:${jarURL.toExternalForm()}!$name"
-                    def inputStreamReader = new BufferedReader(new InputStreamReader(new UncloseableInputStream(zipInput)))
+                    def inputStreamReader = new BufferedReader(new InputStreamReader(new UncloseableInputStream(zipInput), "UTF-8"))
                     inputStreamReader.mark 1024
                     XmlPullParser pullParser = new MXParser()
                     pullParser.setInput(inputStreamReader)

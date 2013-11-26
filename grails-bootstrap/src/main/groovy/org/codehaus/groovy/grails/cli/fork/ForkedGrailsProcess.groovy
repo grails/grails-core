@@ -58,6 +58,7 @@ abstract class ForkedGrailsProcess {
     List<String> jvmArgs
     URLClassLoader forkedClassLoader
     ExecutionContext executionContext
+    String encoding = "UTF-8"
 
     private String resumeIndicatorName
 
@@ -490,6 +491,9 @@ abstract class ForkedGrailsProcess {
 
         List<String> cmd = [javaCommand]
 
+        if(encoding) {
+            cmd.add("-Dfile.encoding=${encoding}".toString())
+        }
         if (jvmArgs) {
             cmd.addAll(jvmArgs)
         }
@@ -770,7 +774,7 @@ abstract class ForkedGrailsProcess {
 
         void run() {
             try {
-                def isr = new InputStreamReader(input)
+                def isr = new InputStreamReader(input, "UTF-8")
                 new BufferedReader(isr).eachLine { String next ->
                     if (next) {
                         GrailsConsole.getInstance().log(next)

@@ -32,7 +32,7 @@ target ("default" : "Sets HTTP proxy configuration for Grails") {
         ConfigObject proxySettings = settings.proxySettings
         if (proxySettings[name]) {
             proxySettings.currentProxy = name
-            settings.proxySettingsFile.withWriter { w ->
+            settings.proxySettingsFile.withWriter('UTF-8') { w ->
                 proxySettings.writeTo(w)
             }
             grailsConsole.updateStatus "Proxy set to [$name]"

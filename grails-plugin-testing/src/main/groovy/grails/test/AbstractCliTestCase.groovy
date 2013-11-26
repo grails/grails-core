@@ -95,7 +95,7 @@ abstract class AbstractCliTestCase extends GroovyTestCase {
         // and when a command requires user input at some stage.
         final currProcess = process
         Thread.startDaemon {
-            output = currProcess.in.text
+            output = currProcess.in.getText("UTF-8")
 
             // Once we've finished reading the process output, signal
             // the main thread.

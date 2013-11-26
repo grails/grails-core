@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.plugins.GrailsVersionUtils
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Manages the installation and uninstallation of plugins from a Grails project.
@@ -310,7 +311,7 @@ class PluginInstallEngine {
             errorHandler("Plugin $fullPluginName is not a valid Grails plugin. No plugin.xml descriptor found!")
         }
 
-        def pluginXml = new XmlSlurper().parse(pluginXmlFile)
+        def pluginXml = IOUtils.createXmlSlurper().parse(pluginXmlFile)
         def pluginName = pluginXml.@name.toString()
         def pluginVersion = pluginXml.@version.toString()
         def pluginGrailsVersion = pluginXml.@grailsVersion.toString()

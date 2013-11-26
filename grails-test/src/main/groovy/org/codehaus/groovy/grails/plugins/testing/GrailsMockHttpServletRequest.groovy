@@ -87,16 +87,16 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      * @param sourceJson The source json
      */
     void setJson(Object sourceJson) {
-        setContentType('application/json')
+        setContentType('application/json; charset=UTF-8')
         setFormat('json')
         if (sourceJson instanceof String) {
-            setContent(sourceJson.bytes)
+            setContent(sourceJson.getBytes("UTF-8"))
         }
         else if (sourceJson instanceof JSON) {
-            setContent(sourceJson.toString().bytes)
+            setContent(sourceJson.toString().getBytes("UTF-8"))
         }
         else {
-            setContent(new JSON(sourceJson).toString().bytes)
+            setContent(new JSON(sourceJson).toString().getBytes("UTF-8"))
         }
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()
     }
@@ -107,15 +107,15 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
      * @param sourceXml
      */
     void setXml(Object sourceXml) {
-        setContentType("text/xml")
+        setContentType("text/xml; charset=UTF-8")
         setFormat("xml")
 
         if (sourceXml instanceof String) {
-            setContent(sourceXml.bytes)
+            setContent(sourceXml.getBytes("UTF-8"))
         }
         else {
             XML xml = new XML(sourceXml)
-            setContent(xml.toString().bytes)
+            setContent(xml.toString().getBytes("UTF-8"))
         }
 
         getAttribute("org.codehaus.groovy.grails.WEB_REQUEST")?.informParameterCreationListeners()

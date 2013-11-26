@@ -25,6 +25,7 @@ import javax.xml.parsers.ParserConfigurationException
 import org.xml.sax.ErrorHandler
 import org.xml.sax.SAXException
 import org.xml.sax.SAXParseException
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Abstract implementation of DependencyManager interface
@@ -51,7 +52,7 @@ abstract class DependencyManagerUtils {
                     }
                 }
 
-                def xmlSlurper = new XmlSlurper()
+                def xmlSlurper = IOUtils.createXmlSlurper()
                 xmlSlurper.setErrorHandler(new ErrorHandler() {
                     void warning(SAXParseException e) { /*noop*/ }
                     void error(SAXParseException e) { /*noop*/ }

@@ -19,9 +19,9 @@ import grails.util.GrailsNameUtils;
 import grails.util.GrailsWebUtil;
 import groovy.lang.Closure;
 import groovy.util.BuilderSupport;
-import groovy.util.XmlSlurper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler;
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
@@ -312,7 +312,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
      */
     public static Object parse(String source) throws ConverterException {
         try {
-            return new XmlSlurper().parseText(source);
+            return IOUtils.createXmlSlurper().parseText(source);
         }
         catch (Exception e) {
             throw new ConverterException("Error parsing XML", e);
@@ -330,7 +330,7 @@ public class XML extends AbstractConverter<XMLStreamWriter> implements IncludeEx
     public static Object parse(InputStream is, String encoding) throws ConverterException {
         try {
             InputStreamReader reader = new InputStreamReader(is, encoding);
-            return new XmlSlurper().parse(reader);
+            return IOUtils.createXmlSlurper().parse(reader);
         }
         catch (Exception e) {
             throw new ConverterException("Error parsing XML", e);

@@ -28,6 +28,7 @@ import org.apache.ivy.util.Message
 import org.codehaus.groovy.grails.resolve.GrailsPluginsDirectoryResolver
 import org.codehaus.groovy.grails.resolve.GrailsRepoResolver
 import org.codehaus.groovy.grails.resolve.SnapshotAwareM2Resolver
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
@@ -250,7 +251,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
 
                 File mavenSettingsFile = new File("${m2UserDir}/settings.xml")
                 if (mavenSettingsFile.exists()) {
-                    def settingsXml = new XmlSlurper().parse(mavenSettingsFile)
+                    def settingsXml = IOUtils.createXmlSlurper().parse(mavenSettingsFile)
                     String localRepository = getLocalRespository(settingsXml)
 
                     if (localRepository.trim()) {

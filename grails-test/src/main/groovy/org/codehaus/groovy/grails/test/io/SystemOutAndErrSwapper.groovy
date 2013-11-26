@@ -120,7 +120,7 @@ class SystemOutAndErrSwapper {
 
         TestOutputCapturingPrintStream(OutputStream out) {
             super(out)
-            textOut = new BufferedWriter(new OutputStreamWriter(out))
+            textOut = new BufferedWriter(new OutputStreamWriter(out, "UTF-8"))
         }
 
 

@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyManager
+import org.codehaus.groovy.grails.io.support.IOUtils
 
 /**
  * Generates a POM for a Grails application.
@@ -203,7 +204,7 @@ class MavenPomGenerator extends BaseSettingsApi {
     }
 
     protected Map getParentModel(File pomFile) {
-        def xml = new XmlSlurper().parse(pomFile)
+        def xml = IOUtils.createXmlSlurper().parse(pomFile)
         return [parent: [group: xml.groupId.text(), name: xml.artifactId.text(), version: xml.version.text()]]
     }
 

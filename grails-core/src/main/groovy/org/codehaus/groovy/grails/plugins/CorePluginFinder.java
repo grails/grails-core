@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
@@ -118,7 +119,7 @@ public class CorePluginFinder implements ParentApplicationContextAware {
 
         LOG.debug("Attempting to load [" + resources.length + "] core plugins");
         try {
-            XmlSlurper slurper = new XmlSlurper();
+            XmlSlurper slurper = IOUtils.createXmlSlurper();
             for (Resource resource : resources) {
                 InputStream input = null;
 

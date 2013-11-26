@@ -167,7 +167,7 @@ class UrlMappingsGrailsPlugin {
         def appliedErrorCodes = []
         def errorPages = {
             for (Resource r in watchedResources) {
-                def contents = removeCommentsFromGroovy(r.file.text)
+                def contents = removeCommentsFromGroovy(r.file.getText("UTF-8"))
                 contents.eachLine { line ->
                     def matcher = line =~ /\s*["'](\d+?)["']\s*\(.+?\)/
                     if (matcher) {

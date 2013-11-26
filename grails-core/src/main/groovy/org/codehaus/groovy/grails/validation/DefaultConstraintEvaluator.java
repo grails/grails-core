@@ -199,7 +199,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         if (stream != null) {
             GroovyClassLoader gcl = new GroovyClassLoader();
             try {
-                Class<?> scriptClass = gcl.parseClass(IOGroovyMethods.getText(stream));
+                Class<?> scriptClass = gcl.parseClass(IOGroovyMethods.getText(stream, "UTF-8"));
                 Script script = (Script)scriptClass.newInstance();
                 script.run();
                 Binding binding = script.getBinding();

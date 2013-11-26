@@ -424,7 +424,7 @@ class ValidationTagLib {
                     def scriptName = "org/apache/commons/validator/javascript/validate" + vt.substring(0,1).toUpperCase() + vt.substring(1) + ".js"
                     def inStream = getClass().classLoader.getResourceAsStream(scriptName)
                     if (inStream) {
-                        out << inStream.text
+                        out << inStream.getText('UTF-8')
                     }
 
                     out << "function ${form}_${vt}() {"
