@@ -123,6 +123,7 @@ public class GrailsAwareGroovyTestSuite extends GroovyTestSuite {
     }
 
     public static void main(String args[]) {
+        System.setProperty("file.encoding", "UTF-8");
         if (args.length > 0) {
             file = args[0];
         }

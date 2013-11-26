@@ -41,6 +41,7 @@ import java.util.zip.ZipFile;
 public class GrailsWrapper {
 
     public static void main(final String[] args) throws Exception{
+        System.setProperty("file.encoding", "UTF-8");
         final ResourceBundle applicationBundle = ResourceBundle.getBundle("application");
         final ResourceBundle wrapperBundle = ResourceBundle.getBundle("grails-wrapper");
         final String grailsVersion = applicationBundle.getString("app.grails.version");
