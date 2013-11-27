@@ -16,7 +16,7 @@ class RestfulResourceMappingSpec extends Specification{
 
     @Issue('GRAILS-10835')
     void 'Test multiple nested mappings have correct constrained properties'() {
-        given: 'A resource mapping with 2 immediate child mappings'
+        given: 'A resource mapping child mappings'
         def urlMappingsHolder = getUrlMappingsHolder {
             "/books"(resources: "book") {
                 '/sellers'(resources:'seller') {
@@ -35,7 +35,7 @@ class RestfulResourceMappingSpec extends Specification{
         def sellersMappings = urlMappings.findAll { it.controllerName == 'seller' }
         def locationsMappings = urlMappings.findAll { it.controllerName == 'location' }
         
-        then: 'There are 21 mappings'
+        then: 'There are the correct number of mappings'
         urlMappings.size() == 35
         
         and: 'Each controller has 7 mappings'
