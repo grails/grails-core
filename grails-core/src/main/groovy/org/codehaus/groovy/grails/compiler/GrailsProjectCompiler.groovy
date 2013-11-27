@@ -483,7 +483,9 @@ class GrailsProjectCompiler extends BaseSettingsApi{
 
         commonClasspath = {
             for (File file in new File(basedir, "grails-app").listFiles()) {
-                pathelement(location: file.absolutePath)
+                if(file.isDirectory()) {
+                    pathelement(location: file.absolutePath)
+                }
             }
 
             def pluginLibDirs = pluginSettings.pluginLibDirectories.findAll { it.exists() }
