@@ -1,96 +1,16 @@
 package org.codehaus.groovy.grails.web.mapping
 
-import static org.springframework.http.HttpMethod.*
 import grails.web.CamelCaseUrlConverter
-
 import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
-
-import spock.lang.Issue
 import spock.lang.Specification
+import static org.springframework.http.HttpMethod.*
 
 /**
  * @author Graeme Rocher
  */
 class RestfulResourceMappingSpec extends Specification{
 
-    @Issue('GRAILS-10835')
-    void 'Test multiple nested mappings have correct constrained properties'() {
-        given: 'A resource mapping child mappings'
-        def urlMappingsHolder = getUrlMappingsHolder {
-            "/books"(resources: "book") {
-                '/sellers'(resources:'seller') {
-                    '/locations'(resources: 'location')
-                }
-                '/authors'(resources:'author')
-                '/titles'(resources:'title')
-            }
-        }
-        
-        when: 'The URL mappings are obtained'
-        def urlMappings = urlMappingsHolder.urlMappings
-        def bookMappings = urlMappings.findAll { it.controllerName == 'book' }
-        def authorMappings = urlMappings.findAll { it.controllerName == 'author' }
-        def titleMappings = urlMappings.findAll { it.controllerName == 'title' }
-        def sellersMappings = urlMappings.findAll { it.controllerName == 'seller' }
-        def locationsMappings = urlMappings.findAll { it.controllerName == 'location' }
-        
-        then: 'There are the correct number of mappings'
-        urlMappings.size() == 35
-        
-        and: 'Each controller has 7 mappings'
-        bookMappings.size() == 7
-        authorMappings.size() == 7
-        titleMappings.size() == 7
-        sellersMappings.size() == 7
-        locationsMappings.size() == 7
-        
-        and: 'the book mappings have the expected constrained properties'
-        bookMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['format']
-        bookMappings.find { it.actionName == 'create' }.constraints*.propertyName == []
-        bookMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['format']
-        bookMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['id', 'format']
-        bookMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['id']
-        bookMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['id', 'format']
-        bookMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['id', 'format']
-        
-        and: 'the author mappings have the expected constrained properties'
-        authorMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['bookId', 'format']
-        authorMappings.find { it.actionName == 'create' }.constraints*.propertyName == ['bookId']
-        authorMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['bookId', 'format']
-        authorMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
-        authorMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
-        authorMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
-        authorMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
-        
-        and: 'the title mappings have the expected constrained properties'
-        titleMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['bookId', 'format']
-        titleMappings.find { it.actionName == 'create' }.constraints*.propertyName == ['bookId']
-        titleMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['bookId', 'format']
-        titleMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
-        titleMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
-        titleMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
-        titleMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
-        
-        and: 'the seller mappings have the expected constrained properties'
-        sellersMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['bookId', 'format']
-        sellersMappings.find { it.actionName == 'create' }.constraints*.propertyName == ['bookId']
-        sellersMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['bookId', 'format']
-        sellersMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
-        sellersMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
-        sellersMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
-        sellersMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
-
-        and: 'the location mappings have the expected constrained properties'
-        locationsMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['bookId', 'sellerId', 'format']
-        locationsMappings.find { it.actionName == 'create' }.constraints*.propertyName == ['bookId', 'sellerId']
-        locationsMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['bookId', 'sellerId', 'format']
-        locationsMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
-        locationsMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'sellerId', 'id']
-        locationsMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
-        locationsMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
-    }
-    
     void "Test that URL mappings with resources 3 levels deep works"() {
         given:"A resources definition with nested URL mappings"
         def urlMappingsHolder = getUrlMappingsHolder {
