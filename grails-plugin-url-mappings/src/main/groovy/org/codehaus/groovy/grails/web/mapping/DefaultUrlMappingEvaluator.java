@@ -259,6 +259,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         private Object uri;
         private Object redirectInfo;
         private Deque<ParentResource> parentResources = new ArrayDeque<ParentResource>();
+        private List<ConstrainedProperty> currentConstraints = null;
 
         public UrlMappingBuilder(Binding binding, ServletContext servletContext) {
             this.binding = binding;
@@ -502,6 +503,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
                                 createSingleResourceRestfulMappings(controllerName, pluginName, namespace, version, urlData, getCurrentConstraints(), calculateIncludes(namedArguments, DEFAULT_RESOURCE_INCLUDES));
                             }
+                            currentConstraints = null;
                         } else if (namedArguments.containsKey(RESOURCES)) {
                             Object controller = namedArguments.get(RESOURCES);
                             String controllerName = controller.toString();
@@ -514,11 +516,13 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                             if (controller != null) {
                                 createResourceRestfulMappings(controllerName, pluginName, namespace,version,urlData, getCurrentConstraints(), calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
                             }
+                            currentConstraints = null;
                         } else {
 
                             invokeLastArgumentIfClosure(args);
                             UrlMapping urlMapping = getURLMappingForNamedArgs(namedArguments, urlData, mappedURI, isResponseCode);
                             configureUrlMapping(urlMapping);
+                            currentConstraints = null;
                             return urlMapping;
                         }
                     }
@@ -997,8 +1001,16 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
         }
 
         public List<ConstrainedProperty> getCurrentConstraints() {
-            ParentResource parentResource = parentResources.peek();
-            return parentResource == null ? previousConstraints : parentResource.constraints;
+            if(currentConstraints == null) {
+                currentConstraints = new ArrayList<ConstrainedProperty>();
+                ParentResource parentResource = parentResources.peek();
+                List<ConstrainedProperty> c = parentResource == null ? previousConstraints : parentResource.constraints;
+                for(ConstrainedProperty p : c) {
+                    currentConstraints.add(p);
+                }
+                
+            }
+            return currentConstraints;
         }
 
         class ParentResource {

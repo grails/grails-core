@@ -1,16 +1,71 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import static org.springframework.http.HttpMethod.*
 import grails.web.CamelCaseUrlConverter
+
 import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
+
+import spock.lang.Issue
 import spock.lang.Specification
-import static org.springframework.http.HttpMethod.*
 
 /**
  * @author Graeme Rocher
  */
 class RestfulResourceMappingSpec extends Specification{
 
+    @Issue('GRAILS-10835')
+    void 'Test multiple nested mappings have correct constrained properties'() {
+        given: 'A resource mapping with 2 immediate child mappings'
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/books"(resources: "book") {
+                '/authors'(resources:'author')
+                '/titles'(resources:'title')
+            }
+        }
+        
+        when: 'The URL mappings are obtained'
+        def urlMappings = urlMappingsHolder.urlMappings
+        def bookMappings = urlMappings.findAll { it.controllerName == 'book' }
+        def authorMappings = urlMappings.findAll { it.controllerName == 'author' }
+        def titleMappings = urlMappings.findAll { it.controllerName == 'title' }
+        
+        then: 'There are 21 mappings'
+        urlMappings.size() == 21
+        
+        and: 'Each controller has 7 mappings'
+        bookMappings.size() == 7
+        authorMappings.size() == 7
+        titleMappings.size() == 7
+        
+        and: 'the book mappings have the expected constrained properties'
+        bookMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['format']
+        bookMappings.find { it.actionName == 'create' }.constraints*.propertyName == []
+        bookMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['format']
+        bookMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['id', 'format']
+        bookMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['id']
+        bookMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['id', 'format']
+        bookMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['id', 'format']
+        
+        and: 'the author mappings have the expected constrained properties'
+        authorMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['bookId', 'format']
+        authorMappings.find { it.actionName == 'create' }.constraints*.propertyName == ['bookId']
+        authorMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['bookId', 'format']
+        authorMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        authorMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
+        authorMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        authorMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        
+        and: 'the title mappings have the expected constrained properties'
+        titleMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['bookId', 'format']
+        titleMappings.find { it.actionName == 'create' }.constraints*.propertyName == ['bookId']
+        titleMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['bookId', 'format']
+        titleMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        titleMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
+        titleMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        titleMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
+    }
+    
     void "Test that URL mappings with resources 3 levels deep works"() {
         given:"A resources definition with nested URL mappings"
         def urlMappingsHolder = getUrlMappingsHolder {
