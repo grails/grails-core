@@ -19,6 +19,9 @@ class RestfulResourceMappingSpec extends Specification{
         given: 'A resource mapping with 2 immediate child mappings'
         def urlMappingsHolder = getUrlMappingsHolder {
             "/books"(resources: "book") {
+                '/sellers'(resources:'seller') {
+                    '/locations'(resources: 'location')
+                }
                 '/authors'(resources:'author')
                 '/titles'(resources:'title')
             }
@@ -29,14 +32,18 @@ class RestfulResourceMappingSpec extends Specification{
         def bookMappings = urlMappings.findAll { it.controllerName == 'book' }
         def authorMappings = urlMappings.findAll { it.controllerName == 'author' }
         def titleMappings = urlMappings.findAll { it.controllerName == 'title' }
+        def sellersMappings = urlMappings.findAll { it.controllerName == 'seller' }
+        def locationsMappings = urlMappings.findAll { it.controllerName == 'location' }
         
         then: 'There are 21 mappings'
-        urlMappings.size() == 21
+        urlMappings.size() == 35
         
         and: 'Each controller has 7 mappings'
         bookMappings.size() == 7
         authorMappings.size() == 7
         titleMappings.size() == 7
+        sellersMappings.size() == 7
+        locationsMappings.size() == 7
         
         and: 'the book mappings have the expected constrained properties'
         bookMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['format']
@@ -64,6 +71,24 @@ class RestfulResourceMappingSpec extends Specification{
         titleMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
         titleMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
         titleMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        
+        and: 'the seller mappings have the expected constrained properties'
+        sellersMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['bookId', 'format']
+        sellersMappings.find { it.actionName == 'create' }.constraints*.propertyName == ['bookId']
+        sellersMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['bookId', 'format']
+        sellersMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        sellersMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'id']
+        sellersMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'id', 'format']
+        sellersMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'id', 'format']
+
+        and: 'the location mappings have the expected constrained properties'
+        locationsMappings.find { it.actionName == 'index' }.constraints*.propertyName == ['bookId', 'sellerId', 'format']
+        locationsMappings.find { it.actionName == 'create' }.constraints*.propertyName == ['bookId', 'sellerId']
+        locationsMappings.find { it.actionName == 'save' }.constraints*.propertyName == ['bookId', 'sellerId', 'format']
+        locationsMappings.find { it.actionName == 'show' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
+        locationsMappings.find { it.actionName == 'edit' }.constraints*.propertyName == ['bookId', 'sellerId', 'id']
+        locationsMappings.find { it.actionName == 'update' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
+        locationsMappings.find { it.actionName == 'delete' }.constraints*.propertyName == ['bookId', 'sellerId', 'id', 'format']
     }
     
     void "Test that URL mappings with resources 3 levels deep works"() {
