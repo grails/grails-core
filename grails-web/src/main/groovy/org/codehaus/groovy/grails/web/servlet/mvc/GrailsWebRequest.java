@@ -81,16 +81,25 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, GrailsApplicationAttributes attributes) {
         super(request, response);
         this.attributes = attributes;
+        inheritEncodingStateRegistry();
     }
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
         attributes = new DefaultGrailsApplicationAttributes(servletContext);
+        inheritEncodingStateRegistry();
     }
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext, ApplicationContext applicationContext) {
         this(request, response, servletContext);
         this.applicationContext = applicationContext;
+    }
+
+    private void inheritEncodingStateRegistry() {
+        GrailsWebRequest parentRequest = GrailsWebRequest.lookup(getRequest());
+        if(parentRequest != null) {
+            this.encodingStateRegistry = parentRequest.getEncodingStateRegistry();
+        }
     }
 
     /**
