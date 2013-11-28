@@ -19,6 +19,7 @@ import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
 
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 class SimpleDataBinderSpec extends Specification {
@@ -491,6 +492,22 @@ class SimpleDataBinderSpec extends Specification {
         then:
         widget.listOfIntegers == [0, 1, 2, 3]
     }
+    
+    @Issue('GRAILS-10853')
+    void 'Test adding new elements to a Set using indexed properties'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+        
+        when:
+        binder.bind widget, ['factories[2]': [name: 'Tres'], 'factories[0]': [name: 'Uno'], 'factories[1]': [name: 'Dos']] as SimpleMapDataBindingSource
+        
+        then:
+        widget.factories.size() == 3
+        widget.factories.find { it.name == 'Uno' }
+        widget.factories.find { it.name == 'Dos' }
+        widget.factories.find { it.name == 'Tres' }
+    }
 }
 
 class Factory {
@@ -519,6 +536,7 @@ class Widget {
         result
     })
     List<Integer> listOfIntegers = []
+    Set<Factory> factories
 }
 
 class Gadget extends Widget {
