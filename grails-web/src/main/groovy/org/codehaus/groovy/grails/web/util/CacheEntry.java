@@ -16,9 +16,8 @@
 package org.codehaus.groovy.grails.web.util;
 
 import java.security.PrivilegedAction;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.Callable;
+
 
 /**
  * Wrapper for a value inside a cache that adds timestamp information
@@ -29,66 +28,21 @@ import java.util.concurrent.locks.ReentrantLock;
  * Objects in cache are assumed to not change after publication.
  *
  * @author Lari Hotari
+ * @deprecated Use grails.util.CacheEntry
  */
-public class CacheEntry<T> {
-    protected AtomicReference<T> valueRef=new AtomicReference<T>(null);
-    protected long createdMillis;
-    protected Lock writeLock=new ReentrantLock();
-
+public class CacheEntry<T> extends grails.util.CacheEntry<T> {
     public CacheEntry(T value) {
-        this.valueRef.set(value);
-        resetTimestamp();
+        super(value);
     }
 
-    /**
-     * gets the current value from the entry and updates it if it's older than timeout
-     *
-     * updater is a callback for creating an updated value.
-     *
-     * @param timeout
-     * @param updater
-     * @return The atomic reference
-     */
-    public T getValue(long timeout, PrivilegedAction<T> updater) {
-        if (timeout < 0 || updater==null) return valueRef.get();
-
-        if (hasExpired(timeout)) {
-            try {
-                long beforeLockingCreatedMillis = createdMillis;
-                writeLock.lock();
-                if (shouldUpdate(beforeLockingCreatedMillis)) {
-                    valueRef.set(updater.run());
-                    resetTimestamp();
-                }
-            } finally {
-                writeLock.unlock();
+    @Deprecated
+    public T getValue(long timeout, final PrivilegedAction<T> updater) {
+        return super.getValue(timeout, new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                return updater.run();
             }
-        }
-
-        return valueRef.get();
-    }
-
-    public T getValue() {
-        return valueRef.get();
-    }
-
-    protected boolean hasExpired(long timeout) {
-        return System.currentTimeMillis() - timeout > createdMillis;
-    }
-
-    protected boolean shouldUpdate(long beforeLockingCreatedMillis) {
-        return beforeLockingCreatedMillis == createdMillis || createdMillis == 0L;
-    }
-
-    protected void resetTimestamp() {
-        createdMillis = System.currentTimeMillis();
-    }
-
-    public long getCreatedMillis() {
-        return createdMillis;
-    }
-
-    public void expire() {
-        createdMillis = 0L;
+            
+        });
     }
 }
