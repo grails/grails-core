@@ -91,6 +91,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
        return lookupCache(GroovyPageLocatorCacheKey.build(uri, null, null), updater);
     }
 
+    @SuppressWarnings("rawtypes")
     protected GroovyPageScriptSource lookupCache(final GroovyPageLocatorCacheKey cacheKey, Callable<GroovyPageScriptSource> updater) {
         GroovyPageScriptSource scriptSource = null;
         if (cacheTimeout == 0) {
@@ -101,7 +102,12 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
                 throw new CacheEntry.UpdateException(e);
             }
         } else {
-            scriptSource = CacheEntry.getValue(uriResolveCache, cacheKey, cacheTimeout, updater, CustomCacheEntry.class);
+            scriptSource = CacheEntry.getValue(uriResolveCache, cacheKey, cacheTimeout, updater, new Callable<CacheEntry>() {
+                @Override
+                public CacheEntry call() throws Exception {
+                    return new CustomCacheEntry();
+                }
+            });
         }
         return scriptSource == NULL_SCRIPT ? null : scriptSource;
     }

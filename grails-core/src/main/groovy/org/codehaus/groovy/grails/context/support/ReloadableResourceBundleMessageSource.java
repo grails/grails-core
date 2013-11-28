@@ -489,13 +489,19 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
      *            the bundle filename (basename + Locale)
      * @return the current PropertiesHolder for the bundle
      */
+    @SuppressWarnings("rawtypes")
     protected PropertiesHolder getProperties(final String filename, final Resource resource) {
         return CacheEntry.getValue(cachedProperties, filename, fileCacheMillis, new Callable<PropertiesHolder>() {
             @Override
             public PropertiesHolder call() throws Exception {
                 return new PropertiesHolder(filename, resource);
             }
-        }, PropertiesHolderCacheEntry.class);
+        }, new Callable<CacheEntry>() {
+            @Override
+            public CacheEntry call() throws Exception {
+                return new PropertiesHolderCacheEntry();
+            }
+        });
     }
 
     protected static class PropertiesHolderCacheEntry extends CacheEntry<PropertiesHolder> {
