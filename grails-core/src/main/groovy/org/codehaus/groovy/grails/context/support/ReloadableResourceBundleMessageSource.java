@@ -115,14 +115,14 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 
 	private boolean fallbackToSystemLocale = true;
 
-	private long cacheMillis = -1;
+	protected long cacheMillis = -1;
 
+    protected long fileCacheMillis = Long.MIN_VALUE;
+    
 	private PropertiesPersister propertiesPersister = new DefaultPropertiesPersister();
 
 	private ResourceLoader resourceLoader = new DefaultResourceLoader();
 	
-	private boolean reloadUpdatesOnly = true; 
-
 	/** Cache to hold filename lists per Locale */
 	private final ConcurrentMap<Pair<String, Locale>, CacheEntry<List<Pair<String, Resource>>>> cachedFilenames =
 			new ConcurrentHashMap<Pair<String, Locale>, CacheEntry<List<Pair<String, Resource>>>>();
@@ -132,6 +132,8 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 
 	/** Cache to hold merged loaded properties per locale */
 	private final ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
+	
+	private final ConcurrentMap<String, CacheEntry<Resource>> cachedResources = new ConcurrentHashMap<String, CacheEntry<Resource>>();
 
 
 	/**
@@ -223,21 +225,38 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 	}
 
 	/**
-	 * Set the number of seconds to cache loaded properties files.
+	 * Set the number of seconds to cache the list of matching properties files.
 	 * <ul>
 	 * <li>Default is "-1", indicating to cache forever (just like
 	 * {@code java.util.ResourceBundle}).
-	 * <li>A positive number will cache loaded properties files for the given
+	 * <li>A positive number will cache the list of matching properties files for the given
 	 * number of seconds. This is essentially the interval between refresh checks.
-	 * Note that a refresh attempt will first check the last-modified timestamp
-	 * of the file before actually reloading it; so if files don't change, this
-	 * interval can be set rather low, as refresh attempts will not actually reload.
-	 * <li>A value of "0" will check the last-modified timestamp of the file on
+	 * <li>A value of "0" will attemp to list the matching properties files on
 	 * every message access. <b>Do not use this in a production environment!</b>
 	 * </ul>
 	 */
 	public void setCacheSeconds(int cacheSeconds) {
 		this.cacheMillis = (cacheSeconds * 1000);
+		if(fileCacheMillis==Long.MIN_VALUE) {
+		    this.fileCacheMillis = this.cacheMillis;
+		}
+	}
+	
+	/**
+     * Set the number of seconds to cache loaded properties files.
+     * <ul>
+     * <li>Default value is the same value as cacheSeconds
+     * <li>A positive number will cache loaded properties files for the given
+     * number of seconds. This is essentially the interval between refresh checks.
+     * Note that a refresh attempt will first check the last-modified timestamp
+     * of the file before actually reloading it; so if files don't change, this
+     * interval can be set rather low, as refresh attempts will not actually reload.
+     * <li>A value of "0" will check the last-modified timestamp of the file on
+     * every message access. <b>Do not use this in a production environment!</b>
+     * </ul>
+	 */
+	public void setFileCacheSeconds(int fileCacheSeconds) {
+	    this.fileCacheMillis = (fileCacheSeconds * 1000);
 	}
 
 	/**
@@ -435,7 +454,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 	 * @return the current PropertiesHolder for the bundle
 	 */
 	protected PropertiesHolder getProperties(final String filename, final Resource resource) {
-	    return CacheEntry.getValue(cachedProperties, filename, cacheMillis, new Callable<PropertiesHolder>() {
+	    return CacheEntry.getValue(cachedProperties, filename, fileCacheMillis, new Callable<PropertiesHolder>() {
 	        @Override
 	        public PropertiesHolder call() throws Exception {
 	            return new PropertiesHolder(filename, resource);
@@ -512,12 +531,10 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 	 */
 	public void clearCache() {
 		logger.debug("Clearing entire resource bundle cache");
-		synchronized (this.cachedProperties) {
-			this.cachedProperties.clear();
-		}
-		synchronized (this.cachedMergedProperties) {
-			this.cachedMergedProperties.clear();
-		}
+		this.cachedProperties.clear();
+		this.cachedMergedProperties.clear();
+		this.cachedFilenames.clear();
+		this.cachedResources.clear();
 	}
 
 	/**
@@ -528,16 +545,26 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 		clearCache();
 		if (getParentMessageSource() instanceof ReloadableResourceBundleMessageSource) {
 			((ReloadableResourceBundleMessageSource) getParentMessageSource()).clearCacheIncludingAncestors();
-		}
+		} else if (getParentMessageSource() instanceof org.springframework.context.support.ReloadableResourceBundleMessageSource) {
+            ((org.springframework.context.support.ReloadableResourceBundleMessageSource) getParentMessageSource()).clearCacheIncludingAncestors();
+        }
 	}
-
 
 	@Override
 	public String toString() {
 		return getClass().getName() + ": basenames=[" + StringUtils.arrayToCommaDelimitedString(this.basenames) + "]";
 	}
 
-    protected Resource locateResource(String filename) {
+	protected Resource locateResource(final String filename) {
+	    return CacheEntry.getValue(cachedResources, filename, cacheMillis, new Callable<Resource>() {
+	        @Override
+	        public Resource call() throws Exception {
+	            return locateResourceWithoutCache(filename);
+	        }
+	    });
+	}
+	
+    protected Resource locateResourceWithoutCache(String filename) {
         Resource resource = resourceLoader.getResource(filename + PROPERTIES_SUFFIX);
         if (!resource.exists()) {
             resource = resourceLoader.getResource(filename + XML_SUFFIX);
@@ -547,7 +574,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
         } else {
             return null;
         }
-    }	
+    }
 
 	/**
 	 * PropertiesHolder for caching.
@@ -585,7 +612,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
             if(filename == null) {
                 return false;
             }
-            if(!initialization && !reloadUpdatesOnly) {
+            if(!initialization && cacheMillis >= 0) {
                 resource = locateResource(filename);
             }
             if(resource != null) {
@@ -599,7 +626,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
                     }
                     newFileTimestamp = -1;
                 }
-	            if (cacheMillis >= 0 && newFileTimestamp == fileTimestamp && this.properties != null) {
+	            if (fileCacheMillis >= 0 && newFileTimestamp == fileTimestamp && this.properties != null) {
 	                return false;
 	            }
 	            try {
@@ -650,7 +677,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
 				return null;
 			}
 	        Pair<String, Locale> cacheKey = new Pair<String, Locale>(code, locale);
-	        return CacheEntry.getValue(cachedMessageFormats, cacheKey, cacheMillis, new Callable<MessageFormat>() {
+	        return CacheEntry.getValue(cachedMessageFormats, cacheKey, -1, new Callable<MessageFormat>() {
 	            @Override
 	            public MessageFormat call() throws Exception {
 	                String msg = properties.getProperty(code);
