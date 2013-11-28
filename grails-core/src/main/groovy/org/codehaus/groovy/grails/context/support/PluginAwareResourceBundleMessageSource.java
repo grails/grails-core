@@ -70,6 +70,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private ResourceLoader localResourceLoader;
     private PathMatchingResourcePatternResolver resourceResolver;
     private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
+    private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedBinaryPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
     private long pluginCacheMillis = Long.MIN_VALUE;
     private final PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
 
@@ -206,6 +207,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
             public PropertiesHolder call() throws Exception {
                 Properties mergedProps = new Properties();
                 PropertiesHolder mergedHolder = new PropertiesHolder(mergedProps);
+                mergeBinaryPluginProperties(locale, mergedProps);
                 for (String basename : pluginBaseNames) {
                     List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename, locale);
                     for (int j = filenamesAndResources.size() - 1; j >= 0; j--) {
@@ -246,20 +248,35 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         }
         return null;
     }
+    
+    protected PropertiesHolder getMergedBinaryPluginProperties(final Locale locale) {
+        return CacheEntry.getValue(cachedMergedBinaryPluginProperties, locale, cacheMillis, new Callable<PropertiesHolder>() {
+            @Override
+            public PropertiesHolder call() throws Exception {
+                Properties mergedProps = new Properties();
+                PropertiesHolder mergedHolder = new PropertiesHolder(mergedProps);
+                mergeBinaryPluginProperties(locale, mergedProps);
+                return mergedHolder;
+            }
 
-    private String findCodeInBinaryPlugins(String code, Locale locale) {
+        });
+    }
+
+    protected void mergeBinaryPluginProperties(final Locale locale, Properties mergedProps) {
         final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
         for (GrailsPlugin plugin : allPlugins) {
             if (plugin instanceof BinaryGrailsPlugin) {
                 BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
                 final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
                 if (binaryPluginProperties != null) {
-                    String result = binaryPluginProperties.getProperty(code);
-                    if (result != null) return result;
+                    mergedProps.putAll(binaryPluginProperties);
                 }
             }
         }
-        return null;
+    }
+
+    private String findCodeInBinaryPlugins(String code, Locale locale) {
+        return getMergedBinaryPluginProperties(locale).getProperty(code);
     }
 
     private String findMessageInSourcePlugins(String code, Locale locale) {
@@ -275,23 +292,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     }
 
     private MessageFormat findMessageFormatInBinaryPlugins(String code, Locale locale) {
-        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
-        for (GrailsPlugin plugin : allPlugins) {
-            if (!(plugin instanceof BinaryGrailsPlugin)) {
-                continue;
-            }
-
-            BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
-            final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
-            if (binaryPluginProperties != null) {
-                String foundCode = binaryPluginProperties.getProperty(code);
-                if (foundCode != null) {
-                    MessageFormat result = new MessageFormat(foundCode, locale);
-                    if (result != null) return result;
-                }
-            }
-        }
-        return null;
+        return getMergedBinaryPluginProperties(locale).getMessageFormat(code, locale);
     }
 
     private MessageFormat findMessageFormatInSourcePlugins(String code, Locale locale) {
