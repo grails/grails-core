@@ -14,6 +14,39 @@ import spock.lang.Specification
  */
 class RestfulResourceMappingSpec extends Specification{
 
+    @Issue('GRAILS-10820')
+    void 'Test that grouped params with dynamic variables product the correct mappings'() {
+        given: 'A resource mapping with child mappings'
+            def urlMappingsHolder = getUrlMappingsHolder {
+                "/report"(controller: 'blah', action: 'report')
+                group "/foo", {
+                    "/blah/$foo/$action?"(controller: 'blah')
+                    "/$foo/$action?"(controller: 'blah')
+                }
+                "/$foo?"(controller: 'blah', action: 'index')
+            }
+
+        when:"The URL mappings are obtained"
+            def urlMappings = urlMappingsHolder.urlMappings
+
+        then:"There are eight of them in total"
+            urlMappings.size() == 4
+
+        expect:
+            urlMappingsHolder.matchAll('/report', 'GET')[0].controllerName == 'blah'
+            urlMappingsHolder.matchAll('/report', 'GET')[0].actionName == 'report'
+            urlMappingsHolder.matchAll('/foo/blah/stuff/go', 'GET')[0].controllerName == 'blah'
+            urlMappingsHolder.matchAll('/foo/blah/stuff/go', 'GET')[0].parameters.action == 'go'
+            urlMappingsHolder.matchAll('/foo/blah/stuff/go', 'GET')[0].parameters.foo == 'stuff'
+
+            urlMappingsHolder.matchAll('/foo/stuff/go', 'GET')[0].controllerName == 'blah'
+            urlMappingsHolder.matchAll('/foo/stuff/go', 'GET')[0].parameters.action == 'go'
+            urlMappingsHolder.matchAll('/foo/stuff/go', 'GET')[0].parameters.foo == 'stuff'
+
+            urlMappingsHolder.matchAll('/home', 'GET')[0].controllerName == 'blah'
+            urlMappingsHolder.matchAll('/home', 'GET')[0].actionName == 'index'
+
+    }
     @Issue('GRAILS-10835')
     void 'Test multiple nested mappings have correct constrained properties'() {
         given: 'A resource mapping with child mappings'
