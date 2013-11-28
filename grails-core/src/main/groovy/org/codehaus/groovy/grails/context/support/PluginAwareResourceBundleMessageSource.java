@@ -17,8 +17,10 @@ package org.codehaus.groovy.grails.context.support;
 
 import grails.util.BuildSettings;
 import grails.util.BuildSettingsHolder;
+import grails.util.CacheEntry;
 import grails.util.Environment;
 import grails.util.Metadata;
+import grails.util.Pair;
 import grails.util.PluginBuildSettings;
 
 import java.io.File;
@@ -27,9 +29,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang.StringUtils;
@@ -55,8 +58,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
  * @author Graeme Rocher
  * @since 1.1
  */
-public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBundleMessageSource implements GrailsApplicationAware, PluginManagerAware, InitializingBean{
-
+public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBundleMessageSource implements GrailsApplicationAware, PluginManagerAware, InitializingBean {
     private static final Log LOG = LogFactory.getLog(PluginAwareResourceBundleMessageSource.class);
 
     private static final Resource[] NO_RESOURCES = {};
@@ -67,8 +69,8 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     protected List<String> pluginBaseNames = new ArrayList<String>();
     private ResourceLoader localResourceLoader;
     private PathMatchingResourcePatternResolver resourceResolver;
-    private Map<Locale, PropertiesHolder> cachedMergedPluginProperties = new ConcurrentHashMap<Locale, PropertiesHolder>();
-    private int pluginCacheMillis = -1;
+    private ConcurrentMap<Locale, CacheEntry<PropertiesHolder>> cachedMergedPluginProperties = new ConcurrentHashMap<Locale, CacheEntry<PropertiesHolder>>();
+    private long pluginCacheMillis = Long.MIN_VALUE;
     private final PluginBuildSettings pluginBuildSettings = GrailsPluginUtils.getPluginBuildSettings();
 
     public List<String> getPluginBaseNames() {
@@ -92,6 +94,10 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     }
 
     public void afterPropertiesSet() throws Exception {
+        if (pluginCacheMillis == Long.MIN_VALUE) {
+            pluginCacheMillis = cacheMillis;
+        }
+        
         if (pluginManager == null || localResourceLoader == null) {
             return;
         }
@@ -194,42 +200,25 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      * with cacheSeconds < 0. Therefore, merged properties are always
      * cached forever.
      */
-    protected PropertiesHolder getMergedPluginProperties(Locale locale) {
-        PropertiesHolder mergedHolder = cachedMergedPluginProperties.get(locale);
-        if (mergedHolder != null) {
-            return mergedHolder;
-        }
-
-        Properties mergedProps = new Properties();
-        mergedHolder = new PropertiesHolder(mergedProps, -1);
-        for (String basename : pluginBaseNames) {
-            List<String> filenames = calculateAllFilenames(basename, locale);
-            for (int j = filenames.size() - 1; j >= 0; j--) {
-                String filename = filenames.get(j);
-                PropertiesHolder propHolder = getProperties(filename);
-                if (propHolder.getProperties() != null) {
-                    mergedProps.putAll(propHolder.getProperties());
+    protected PropertiesHolder getMergedPluginProperties(final Locale locale) {
+        return CacheEntry.getValue(cachedMergedPluginProperties, locale, cacheMillis, new Callable<PropertiesHolder>() {
+            @Override
+            public PropertiesHolder call() throws Exception {
+                Properties mergedProps = new Properties();
+                PropertiesHolder mergedHolder = new PropertiesHolder(mergedProps);
+                for (String basename : pluginBaseNames) {
+                    List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(basename, locale);
+                    for (int j = filenamesAndResources.size() - 1; j >= 0; j--) {
+                        Pair<String, Resource> filenameAndResource = filenamesAndResources.get(j);
+                        if(filenameAndResource.getbValue() != null) {
+                            PropertiesHolder propHolder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
+                            mergedProps.putAll(propHolder.getProperties());
+                        }
+                    }
                 }
+                return mergedHolder;
             }
-        }
-        final GrailsPlugin[] allPlugins = pluginManager.getAllPlugins();
-        for (GrailsPlugin plugin : allPlugins) {
-            if (plugin instanceof BinaryGrailsPlugin) {
-                BinaryGrailsPlugin binaryPlugin = (BinaryGrailsPlugin) plugin;
-                final Properties binaryPluginProperties = binaryPlugin.getProperties(locale);
-                if (binaryPluginProperties != null) {
-                    mergedProps.putAll(binaryPluginProperties);
-                }
-            }
-        }
-        cachedMergedPluginProperties.put(locale, mergedHolder);
-        return mergedHolder;
-    }
-
-    @Override
-    public void setCacheSeconds(int cacheSeconds) {
-        pluginCacheMillis = (cacheSeconds * 1000);
-        super.setCacheSeconds(cacheSeconds);
+        });
     }
 
     /**
@@ -275,9 +264,9 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
     private String findMessageInSourcePlugins(String code, Locale locale) {
         for (String pluginBaseName : pluginBaseNames) {
-            List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
-            for (String filename : filenames) {
-                PropertiesHolder holder = getProperties(filename);
+            List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(pluginBaseName, locale);
+            for (Pair<String, Resource> filenameAndResource : filenamesAndResources) {
+                PropertiesHolder holder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
                 String result = holder.getProperty(code);
                 if (result != null) return result;
             }
@@ -307,9 +296,9 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
 
     private MessageFormat findMessageFormatInSourcePlugins(String code, Locale locale) {
         for (String pluginBaseName : pluginBaseNames) {
-            List<String> filenames = calculateAllFilenames(pluginBaseName, locale);
-            for (String filename : filenames) {
-                PropertiesHolder holder = getProperties(filename);
+            List<Pair<String, Resource>> filenamesAndResources = calculateAllFilenames(pluginBaseName, locale);
+            for (Pair<String, Resource> filenameAndResource : filenamesAndResources) {
+                PropertiesHolder holder = getProperties(filenameAndResource.getaValue(), filenameAndResource.getbValue());
                 MessageFormat result = holder.getMessageFormat(code, locale);
                 if (result != null) return result;
             }
@@ -371,5 +360,13 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         if (resourceResolver == null) {
             resourceResolver = new PathMatchingResourcePatternResolver(localResourceLoader);
         }
+    }
+
+    public long getPluginCacheMillis() {
+        return pluginCacheMillis;
+    }
+
+    public void setPluginCacheMillis(long pluginCacheMillis) {
+        this.pluginCacheMillis = pluginCacheMillis;
     }
 }
