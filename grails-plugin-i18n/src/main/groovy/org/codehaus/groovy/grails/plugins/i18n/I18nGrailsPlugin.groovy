@@ -77,6 +77,8 @@ class I18nGrailsPlugin {
             if (Environment.current.isReloadEnabled() || GrailsConfigUtils.isConfigTrue(application, GroovyPagesTemplateEngine.CONFIG_PROPERTY_GSP_ENABLE_RELOAD)) {
                 def cacheSecondsSetting = application?.flatConfig?.get('grails.i18n.cache.seconds')
                 cacheSeconds = cacheSecondsSetting == null ? 5 : cacheSecondsSetting as Integer
+                def fileCacheSecondsSetting = application?.flatConfig?.get('grails.i18n.filecache.seconds')
+                fileCacheSeconds = fileCacheSecondsSetting == null ? 5 : fileCacheSecondsSetting as Integer
             }
             if (Environment.isWarDeployed()) {
                 resourceResolver = ref('servletContextResourceResolver')
