@@ -47,7 +47,7 @@ public class CacheEntry<V> {
     public CacheEntry(V value) {
         this.valueRef.set(value);
         initialized=true;
-        resetTimestamp();
+        resetTimestamp(true);
     }
     
     /**
@@ -103,7 +103,9 @@ public class CacheEntry<V> {
                     catch (Exception e) {
                         throw new UpdateException(e);
                     }
-                    resetTimestamp();
+                    resetTimestamp(true);
+                } else {
+                    resetTimestamp(false);
                 }
             } finally {
                 writeLock.unlock();
@@ -129,8 +131,10 @@ public class CacheEntry<V> {
         return beforeLockingCreatedMillis == createdMillis || createdMillis == 0L;
     }
 
-    protected void resetTimestamp() {
-        createdMillis = System.currentTimeMillis();
+    protected void resetTimestamp(boolean updated) {
+        if(updated) {
+            createdMillis = System.currentTimeMillis();
+        }
     }
 
     public long getCreatedMillis() {

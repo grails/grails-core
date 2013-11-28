@@ -171,7 +171,7 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
         protected boolean shouldUpdate(long beforeLockingCreatedMillis) {
             // Never expire GroovyPageCompiledScriptSource entry in cache
             if (getValue() instanceof GroovyPageCompiledScriptSource) {
-                resetTimestamp();
+                resetTimestamp(true);
                 return false;
             } else {
                 return super.shouldUpdate(beforeLockingCreatedMillis);
