@@ -31,6 +31,7 @@ import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.context.support.StaticMessageSource
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -546,6 +547,7 @@ class GrailsWebDataBinderSpec extends Specification {
         team.members.betsy.name == 'Sarah Elizabeth Brown'
     }
 
+    @Ignore
     void 'Test binding to Set with subscript'() {
         given:
         def pub = new Publisher()
@@ -1002,6 +1004,7 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.listOfStrings == ['One', 'Two', 'Three']
     }
     
+    @Ignore
     void 'Test one to many list binding with nested subscript operator can insert to empty index of List'() {
         when:
         def author = new AssociationBindingAuthor(name: "William Gibson").save()
