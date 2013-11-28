@@ -299,7 +299,10 @@ class SimpleDataBinder implements DataBinder {
         } else if (Collection.isAssignableFrom(propertyType)) {
             def index = Integer.parseInt(indexedPropertyReferenceDescriptor.index)
             Collection collectionInstance = initializeCollection obj, propName, propertyType
-            def indexedInstance = collectionInstance[index]
+            def indexedInstance = null
+            if(!(Set.isAssignableFrom(propertyType))) {
+                indexedInstance = collectionInstance[index]
+            }
             if (indexedInstance == null) {
                 Class genericType = getReferencedTypeForCollection(propName, obj)
                 if (genericType) {
