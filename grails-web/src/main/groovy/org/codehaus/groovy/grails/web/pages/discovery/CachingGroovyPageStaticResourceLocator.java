@@ -15,11 +15,12 @@
  */
 package org.codehaus.groovy.grails.web.pages.discovery;
 
-import java.security.PrivilegedAction;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import grails.util.CacheEntry;
 
-import org.codehaus.groovy.grails.web.util.CacheEntry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.springframework.core.io.Resource;
 
 /**
@@ -30,13 +31,13 @@ import org.springframework.core.io.Resource;
  * @since 2.0
  */
 public class CachingGroovyPageStaticResourceLocator extends GroovyPageStaticResourceLocator{
-    private Map<String, CacheEntry<Resource>> uriResolveCache = new ConcurrentHashMap<String, CacheEntry<Resource>>();
+    private ConcurrentMap<String, CacheEntry<Resource>> uriResolveCache = new ConcurrentHashMap<String, CacheEntry<Resource>>();
     private long cacheTimeout = -1;
 
     @Override
     public Resource findResourceForURI(final String uri) {
-        PrivilegedAction<Resource> updater = new PrivilegedAction<Resource>() {
-            public Resource run() {
+        Callable<Resource> updater = new Callable<Resource>() {
+            public Resource call() {
                 Resource resource = CachingGroovyPageStaticResourceLocator.super.findResourceForURI(uri);
                 if (resource == null) {
                     resource = NULL_RESOURCE;
@@ -45,15 +46,7 @@ public class CachingGroovyPageStaticResourceLocator extends GroovyPageStaticReso
             }
         };
 
-        Resource resource = null;
-        CacheEntry<Resource> entry = uriResolveCache.get(uri);
-        if (entry == null) {
-            resource = updater.run();
-            uriResolveCache.put(uri, new CacheEntry<Resource>(resource));
-        } else {
-            resource = entry.getValue(cacheTimeout, updater);
-        }
-
+        Resource resource = CacheEntry.getValue(uriResolveCache, uri, cacheTimeout, updater);
         return resource == NULL_RESOURCE ? null : resource;
     }
 

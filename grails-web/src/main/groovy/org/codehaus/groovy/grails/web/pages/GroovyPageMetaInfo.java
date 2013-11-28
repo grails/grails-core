@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import grails.util.CacheEntry;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,6 +27,7 @@ import java.net.URLConnection;
 import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
@@ -36,7 +39,6 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver;
-import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.FileSystemResource;
@@ -86,11 +88,11 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     private GrailsPlugin pagePlugin;
     private boolean initialized = false;
 
-    private CacheEntry<Resource> shouldReloadCacheEntry = new CacheEntry<Resource>(null);
+    private CacheEntry<Resource> shouldReloadCacheEntry = new CacheEntry<Resource>();
     public static String DEFAULT_PLUGIN_PATH = "";
 
     public GroovyPageMetaInfo() {
-        shouldReloadCacheEntry.expire();
+
     }
 
     @SuppressWarnings("rawtypes")
@@ -394,8 +396,8 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
     }
 
     public Resource checkIfReloadableResourceHasChanged(final PrivilegedAction<Resource> resourceCallable) {
-        PrivilegedAction<Resource> checkerCallable = new PrivilegedAction<Resource>() {
-            public Resource run() {
+        Callable<Resource> checkerCallable = new Callable<Resource>() {
+            public Resource call() {
                 Resource resource=resourceCallable.run();
                 if (resource != null && resource.exists()) {
                     long currentLastmodified=establishLastModified(resource);

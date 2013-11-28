@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
  *
  * @author Lari Hotari
  * @deprecated Use grails.util.CacheEntry
+ * @see grails.util.CacheEntry
  */
 public class CacheEntry<T> extends grails.util.CacheEntry<T> {
     public CacheEntry(T value) {
@@ -42,7 +43,6 @@ public class CacheEntry<T> extends grails.util.CacheEntry<T> {
             public T call() throws Exception {
                 return updater.run();
             }
-            
         });
     }
 }

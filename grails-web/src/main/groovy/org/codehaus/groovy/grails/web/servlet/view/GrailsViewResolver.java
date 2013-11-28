@@ -15,13 +15,14 @@
  */
 package org.codehaus.groovy.grails.web.servlet.view;
 
+import grails.util.CacheEntry;
 import grails.util.GrailsUtil;
 import groovy.lang.GroovyObject;
 
-import java.security.PrivilegedAction;
 import java.util.Locale;
-import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -35,7 +36,6 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.scripting.ScriptSource;
 import org.springframework.util.Assert;
@@ -59,7 +59,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
     protected GrailsConventionGroovyPageLocator groovyPageLocator;
 
     // no need for static cache since GrailsViewResolver is in app context
-    private Map<String, CacheEntry<View>> VIEW_CACHE = new ConcurrentHashMap<String, CacheEntry<View>>();
+    private ConcurrentMap<String, CacheEntry<View>> viewCache = new ConcurrentHashMap<String, CacheEntry<View>>();
     private GrailsApplication grailsApplication;
     private boolean developmentMode = GrailsUtil.isDevelopmentEnv();
     private long cacheTimeout=-1;
@@ -93,53 +93,18 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
         String viewCacheKey = groovyPageLocator.resolveViewFormat(viewName);
 
-        CacheEntry<View> entry = VIEW_CACHE.get(viewCacheKey);
-
         final String lookupViewName = viewName;
-        PrivilegedAction<View> updater=new PrivilegedAction<View>() {
-            public View run() {
-                try {
-                    return createGrailsView(lookupViewName);
-                }
-                catch (Exception e) {
-                    throw new WrappedInitializationException(e);
-                }
+        Callable<View> updater=new Callable<View>() {
+            public View call() throws Exception {
+                return createGrailsView(lookupViewName);
             }
         };
-
-        View view = null;
-        if (entry == null) {
-            try {
-                view = updater.run();
-            } catch (WrappedInitializationException e) {
-                e.rethrow();
-            }
-            entry = new CacheEntry<View>(view);
-            VIEW_CACHE.put(viewCacheKey, entry);
-            return view;
-        }
-
         try {
-            view = entry.getValue(cacheTimeout, updater);
-        } catch (WrappedInitializationException e) {
+            return CacheEntry.getValue(viewCache, viewCacheKey, cacheTimeout, updater);
+        } catch (CacheEntry.UpdateException e) {
             e.rethrow();
-        }
-
-        return view;
-    }
-
-    private static class WrappedInitializationException extends RuntimeException {
-        private static final long serialVersionUID = 1L;
-        public WrappedInitializationException(Throwable cause) {
-            super(cause);
-        }
-
-        public void rethrow() throws Exception {
-            if (getCause() instanceof Exception) {
-                throw (Exception)getCause();
-            }
-
-            throw this;
+            // make compiler happy
+            return null;            
         }
     }
 
