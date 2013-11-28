@@ -65,10 +65,15 @@ public class CacheEntry<V> {
      * @return
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater, Class<? extends CacheEntry> cacheEntryClass) {
+    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater, Callable<? extends CacheEntry> cacheEntryFactory) {
         CacheEntry<V> cacheEntry = map.get(key);
         if(cacheEntry==null) {
-            cacheEntry = BeanUtils.instantiate(cacheEntryClass);
+            try {
+                cacheEntry = cacheEntryFactory.call();
+            }
+            catch (Exception e) {
+                throw new UpdateException(e);
+            }
             CacheEntry<V> previousEntry = map.putIfAbsent(key, cacheEntry);
             if(previousEntry != null) {
                 cacheEntry = previousEntry;
@@ -77,8 +82,16 @@ public class CacheEntry<V> {
         return cacheEntry.getValue(timeoutMillis, updater);
     }
     
+    @SuppressWarnings("rawtypes")
+    private static final Callable<CacheEntry> DEFAULT_CACHE_ENTRY_FACTORY = new Callable<CacheEntry>() {
+        @Override
+        public CacheEntry call() throws Exception {
+            return new CacheEntry();
+        }
+    };
+    
     public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater) {
-        return getValue(map, key, timeoutMillis, updater, CacheEntry.class);
+        return getValue(map, key, timeoutMillis, updater, DEFAULT_CACHE_ENTRY_FACTORY);
     }
     
     /**
