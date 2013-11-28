@@ -498,7 +498,7 @@ public class ReloadableResourceBundleMessageSource extends AbstractMessageSource
         }, PropertiesHolderCacheEntry.class);
     }
 
-    class PropertiesHolderCacheEntry extends CacheEntry<PropertiesHolder> {
+    protected static class PropertiesHolderCacheEntry extends CacheEntry<PropertiesHolder> {
         public PropertiesHolderCacheEntry() {
             super();
         }
