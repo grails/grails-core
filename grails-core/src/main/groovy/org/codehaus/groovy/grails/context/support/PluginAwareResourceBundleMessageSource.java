@@ -362,11 +362,14 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
         }
     }
 
-    public long getPluginCacheMillis() {
-        return pluginCacheMillis;
-    }
-
-    public void setPluginCacheMillis(long pluginCacheMillis) {
-        this.pluginCacheMillis = pluginCacheMillis;
-    }
+    
+    /**
+     * Set the number of seconds to cache the list of matching properties files loaded from plugin.
+     * <ul>
+     * <li>Default value is the same value as cacheSeconds
+     * </ul>
+     */
+    public void setPluginCacheSeconds(int pluginCacheSeconds) {
+        this.pluginCacheMillis = (pluginCacheSeconds * 1000);
+    }    
 }
