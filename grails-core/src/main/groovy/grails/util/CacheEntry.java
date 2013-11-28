@@ -16,6 +16,7 @@
 package grails.util;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -31,14 +32,43 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author Lari Hotari
  * @since 2.3.4
  */
-public class CacheEntry<T> {
-    protected AtomicReference<T> valueRef=new AtomicReference<T>(null);
+public class CacheEntry<V> {
+    protected AtomicReference<V> valueRef=new AtomicReference<V>(null);
     protected long createdMillis;
     protected Lock writeLock=new ReentrantLock();
 
-    public CacheEntry(T value) {
+    public CacheEntry() {
+        expire();
+    }
+    
+    public CacheEntry(V value) {
         this.valueRef.set(value);
         resetTimestamp();
+    }
+    
+    /**
+     * Gets a value from cache. If the key doesn't exist, it will create the value using the updater callback
+     * Prevents cache storms with a lock 
+     * 
+     * The key is always added to the cache. Null return values will also be cached.
+     * You can use this together with ConcurrentLinkedHashMap to create a bounded LRU cache
+     * 
+     * @param map
+     * @param key
+     * @param timeoutMillis
+     * @param updater
+     * @return
+     */
+    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater) {
+        CacheEntry<V> cacheEntry = map.get(key);
+        if(cacheEntry==null) {
+            cacheEntry = new CacheEntry<V>();
+            CacheEntry<V> previousEntry = map.putIfAbsent(key, cacheEntry);
+            if(previousEntry != null) {
+                cacheEntry = previousEntry;
+            }
+        }
+        return cacheEntry.getValue(timeoutMillis, updater);
     }
     
     /**
@@ -50,7 +80,7 @@ public class CacheEntry<T> {
      * @param updater
      * @return The atomic reference
      */
-    public T getValue(long timeout, Callable<T> updater) {
+    public V getValue(long timeout, Callable<V> updater) {
         if (timeout < 0 || updater==null) return valueRef.get();
 
         if (hasExpired(timeout)) {
@@ -74,7 +104,7 @@ public class CacheEntry<T> {
         return valueRef.get();
     }
 
-    public T getValue() {
+    public V getValue() {
         return valueRef.get();
     }
 
