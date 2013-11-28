@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.springframework.beans.BeanUtils;
+
 /**
  * Wrapper for a value inside a cache that adds timestamp information
  * for expiration and prevents "cache storms" with a Lock.
@@ -52,23 +54,29 @@ public class CacheEntry<V> {
      * 
      * The key is always added to the cache. Null return values will also be cached.
      * You can use this together with ConcurrentLinkedHashMap to create a bounded LRU cache
-     * 
-     * @param map
-     * @param key
-     * @param timeoutMillis
-     * @param updater
+     *
+     * @param map the cache map
+     * @param key the key to look up
+     * @param timeoutMillis cache entry timeout
+     * @param updater callback to create/update value
+     * @param cacheEntryClass CacheEntry implementation class to use
      * @return
      */
-    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater) {
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater, Class<? extends CacheEntry> cacheEntryClass) {
         CacheEntry<V> cacheEntry = map.get(key);
         if(cacheEntry==null) {
-            cacheEntry = new CacheEntry<V>();
+            cacheEntry = BeanUtils.instantiate(cacheEntryClass);
             CacheEntry<V> previousEntry = map.putIfAbsent(key, cacheEntry);
             if(previousEntry != null) {
                 cacheEntry = previousEntry;
             }
         }
         return cacheEntry.getValue(timeoutMillis, updater);
+    }
+    
+    public static <K, V> V getValue(ConcurrentMap<K, CacheEntry<V>> map, K key, long timeoutMillis, Callable<V> updater) {
+        return getValue(map, key, timeoutMillis, updater, CacheEntry.class);
     }
     
     /**
@@ -137,6 +145,14 @@ public class CacheEntry<V> {
 
         public UpdateException(Throwable cause) {
             super(cause);
+        }
+
+        public void rethrow() throws Exception {
+            if (getCause() instanceof Exception) {
+                throw (Exception)getCause();
+            }
+
+            throw this;
         }
     }
 }
