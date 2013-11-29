@@ -133,7 +133,7 @@ public class DomainClassMarshaller extends IncludeExcludePropertyMarshaller<JSON
                 Object referenceObject = beanWrapper.getPropertyValue(property.getName());
                 if (isRenderDomainClassRelations()) {
                     if (referenceObject == null) {
-                        writer.value(null);
+                        writer.valueNull();
                     }
                     else {
                         referenceObject = proxyHandler.unwrapIfProxy(referenceObject);
