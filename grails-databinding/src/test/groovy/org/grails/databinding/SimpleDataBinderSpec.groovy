@@ -532,7 +532,6 @@ class Widget {
         def cnt = source['listOfIntegers'] as int
         def result = []
         cnt.times { result << it }
-        println "Result: $result"
         result
     })
     List<Integer> listOfIntegers = []
