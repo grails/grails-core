@@ -335,8 +335,12 @@ class SimpleDataBinder implements DataBinder {
             Map mapInstance = initializeMap obj, propName
             if (mapInstance.size() < autoGrowCollectionLimit || mapInstance.containsKey(indexedPropertyReferenceDescriptor.index)) {
                 def referencedType = getReferencedTypeForCollection propName, obj
-                if (referencedType != null && val instanceof Map) {
-                    mapInstance[indexedPropertyReferenceDescriptor.index] = referencedType.newInstance(val)
+                if (referencedType != null) {
+                    if(val instanceof Map) {
+                        mapInstance[indexedPropertyReferenceDescriptor.index] = referencedType.newInstance(val)
+                    } else {
+                        mapInstance[indexedPropertyReferenceDescriptor.index] = convert(referencedType, val)
+                    }
                 } else {
                     mapInstance[indexedPropertyReferenceDescriptor.index] = val
                 }
@@ -361,10 +365,10 @@ class SimpleDataBinder implements DataBinder {
     protected boolean isBasicType(Class c) {
         BASIC_TYPES.contains(c) || c.isPrimitive()
     }
-
-    protected Class<?> getReferencedTypeForCollection(String propertyName, Object obj) {
+    
+    
+    protected Class<?> getReferencedTypeForCollectionInClass(String propertyName, Class clazz) {
         Class referencedType
-        def clazz = obj.getClass()
         try {
             def field = clazz.getDeclaredField(propertyName)
             def genericType = field.genericType
@@ -378,8 +382,16 @@ class SimpleDataBinder implements DataBinder {
                 }
             }
         } catch (NoSuchFieldException e) {
+            final superClass = clazz.superclass
+            if(superClass != Object) {
+                referencedType = getReferencedTypeForCollectionInClass propertyName, superClass
+            }
         }
         referencedType
+    }
+
+    protected Class<?> getReferencedTypeForCollection(String propertyName, Object obj) {
+        getReferencedTypeForCollectionInClass propertyName, obj.getClass()
     }
 
     protected boolean isOkToAddElementAt(Collection collection, int index) {

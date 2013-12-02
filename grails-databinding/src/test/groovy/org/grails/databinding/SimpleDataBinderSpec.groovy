@@ -508,6 +508,21 @@ class SimpleDataBinderSpec extends Specification {
         widget.factories.find { it.name == 'Dos' }
         widget.factories.find { it.name == 'Tres' }
     }
+    
+    @Issue('GRAILS-10865')
+    void 'Test binding to an inherited typed collection'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new ClassWithInheritedTypedCollection()
+        
+        when:
+        binder.bind obj, [list: ['1', '2', '3'], 'map[one]': '1', 'map[two]': '2' ] as SimpleMapDataBindingSource
+        
+        then:
+        obj.list == [1, 2, 3]
+        obj.map.one == 1
+        obj.map.two == 2
+    }
 }
 
 class Factory {
@@ -563,3 +578,11 @@ enum Role {
 class SystemUser {
     Role role
 }
+
+abstract class AbstractClassWithTypedCollection {
+    List<Integer> list
+    Map<String, Integer> map
+}
+
+class ClassWithInheritedTypedCollection extends AbstractClassWithTypedCollection {}
+
