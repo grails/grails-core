@@ -173,6 +173,11 @@ public class GrailsASTUtils {
         final MethodNode method = classNode.getMethod(GrailsNameUtils.getGetterName(propertyName), Parameter.EMPTY_ARRAY);
         if (method != null) return true;
 
+        // check read-only field with setter
+        if( classNode.getField(propertyName) != null && !classNode.getMethods(GrailsNameUtils.getSetterName(propertyName)).isEmpty()) {
+            return true;
+        }
+
         for (PropertyNode pn : classNode.getProperties()) {
             if (pn.getName().equals(propertyName) && !pn.isPrivate()) {
                 return true;

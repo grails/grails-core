@@ -107,6 +107,73 @@ class TransactionalTransformSpec extends Specification {
 
     }
 
+    void "Test that overriding the transaction manager with a custom setter works"() {
+        when:"A new instance of a class with a @Transactional method is created"
+        def bookService = new GroovyShell().evaluate('''
+import grails.transaction.*
+import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.TransactionStatus
+import org.springframework.transaction.annotation.Isolation
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.beans.factory.annotation.*
+
+@Transactional
+class BookService {
+
+    private PlatformTransactionManager transactionManager
+
+    @Autowired
+    @Qualifier("transactionManager_configurationData")
+    void setTransactionManager(PlatformTransactionManager transactionManager) {
+        this.transactionManager = transactionManager
+    }
+    @Transactional(readOnly = true, timeout = 1000, isolation = Isolation.READ_COMMITTED, propagation = Propagation.REQUIRES_NEW)
+    TransactionStatus readBook() {
+         return transactionStatus
+    }
+
+    void updateBook() {
+
+    }
+    int add(int a, int b) {
+        a + b
+    }
+}
+
+new BookService()
+''')
+
+        then:"It implements TransactionManagerAware"
+            bookService instanceof TransactionManagerAware
+
+
+        when:"A transactionManager is set"
+            final transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+
+        then:"It is not null"
+            bookService.transactionManager != null
+
+        when:"A transactional method is called"
+            bookService.updateBook()
+
+        then:"The transaction was started"
+            transactionManager.transactionStarted == true
+
+
+        when:"A transactional method that takes arguments is called"
+            def result = bookService.add(1, 2)
+
+        then:"THe variables can be referenced"
+            result == 3
+
+        when:"When a read-only transaction is created"
+            DefaultTransactionStatus status = (DefaultTransactionStatus )bookService.readBook()
+
+        then:"The transaction definition is read-only"
+            status.isReadOnly()
+    }
 
     void "Test that a @Transactional annotation on a class results in a call to TransactionTemplate"() {
         when:"A new instance of a class with a @Transactional method is created"
