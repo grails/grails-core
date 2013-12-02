@@ -414,7 +414,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                 parameterValues = new HashMap<String, Object>();
                 Map variables = binding != null ? binding.getVariables() : null;
                 try {
-                    urlDefiningMode = false;
+                    if( parentResources.isEmpty() ) {
+                        urlDefiningMode = false;
+                    }
                     args = args != null && args.length > 0 ? args : new Object[]{Collections.EMPTY_MAP};
                     if (args[0] instanceof Closure) {
                         UrlMappingData urlData = createUrlMappingData(mappedURI, isResponseCode);

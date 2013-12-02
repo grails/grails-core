@@ -325,7 +325,7 @@ public class JSONWriter {
      * @return
      */
     public JSONWriter value(Number number) {
-        return append(number.toString());
+        return number != null ? append(number.toString()) : valueNull();
     }
     
     public JSONWriter valueNull() {
@@ -350,7 +350,7 @@ public class JSONWriter {
      * @return this
      */
     public JSONWriter value(Object o) {
-        return append(new QuotedWritable(o));
+        return  o != null ? append(new QuotedWritable(o)) : valueNull();
     }
     
     private static class QuotedWritable implements Writable {
