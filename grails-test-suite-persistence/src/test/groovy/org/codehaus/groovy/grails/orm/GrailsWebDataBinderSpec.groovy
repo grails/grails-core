@@ -555,8 +555,8 @@ class GrailsWebDataBinderSpec extends Specification {
 
         then:
         pub.authors.size() == 2
-        pub.authors[0].name == 'Author Uno'
-        pub.authors[1].name == 'Author Dos'
+        pub.authors.find {it.name == 'Author Uno'}
+        pub.authors.find {it.name == 'Author Dos'}
     }
 
     void 'Test binding existing entities to a new Set'() {
