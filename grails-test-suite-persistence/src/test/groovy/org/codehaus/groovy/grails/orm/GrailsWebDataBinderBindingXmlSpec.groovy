@@ -7,7 +7,6 @@ import grails.test.mixin.domain.DomainClassUnitTestMixin
 
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
