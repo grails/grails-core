@@ -21,7 +21,7 @@ import groovy.transform.CompileStatic
 import java.lang.reflect.ParameterizedType
 
 import org.grails.databinding.DataBindingSource
-import org.grails.databinding.StructuredBindingEditor
+import org.grails.databinding.TypedStructuredBindingEditor
 
 /**
  * An abstract base class for StructuredBindingEditor instances which can be auto-discovered
@@ -32,7 +32,7 @@ import org.grails.databinding.StructuredBindingEditor
  * @since 2.3.4
  */
 @CompileStatic
-abstract class AbstractStructuredBindingEditor<T> implements StructuredBindingEditor<T> {
+abstract class AbstractStructuredBindingEditor<T> implements TypedStructuredBindingEditor<T> {
 
     final Class<T> targetType   
      
