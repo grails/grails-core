@@ -7,6 +7,7 @@ import grails.test.mixin.domain.DomainClassUnitTestMixin
 
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -14,6 +15,30 @@ import spock.lang.Specification
 @Mock([Writer, Book])
 class GrailsWebDataBinderBindingXmlSpec extends Specification {
 
+    @Issue('GRAILS-10868')
+    void 'Test binding a single XML child element to a List'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def writer = new Writer(name: 'Writer One')
+        
+        when:
+        def xml = new XmlSlurper().parseText("""
+  <writer>
+    <name>Writer One</name>
+    <books>
+        <book><title>Book One</title><publisher>Publisher One</publisher></book>
+    </books>
+  </writer>
+""")
+        binder.bind writer, xml
+        
+        then:
+        writer.name == 'Writer One'
+        writer.books.size() == 1
+        writer.books[0].title == 'Book One'
+        writer.books[0].publisher == 'Publisher One'
+    }
+    
     @Issue('GRAILS-10868')
     void 'Test adding an existing element to a List by id'() {
         given:
