@@ -19,6 +19,7 @@ import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
 
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 class SimpleDataBinderSpec extends Specification {
@@ -491,6 +492,37 @@ class SimpleDataBinderSpec extends Specification {
         then:
         widget.listOfIntegers == [0, 1, 2, 3]
     }
+    
+    @Issue('GRAILS-10853')
+    void 'Test adding new elements to a Set using indexed properties'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def widget = new Widget()
+        
+        when:
+        binder.bind widget, ['factories[2]': [name: 'Tres'], 'factories[0]': [name: 'Uno'], 'factories[1]': [name: 'Dos']] as SimpleMapDataBindingSource
+        
+        then:
+        widget.factories.size() == 3
+        widget.factories.find { it.name == 'Uno' }
+        widget.factories.find { it.name == 'Dos' }
+        widget.factories.find { it.name == 'Tres' }
+    }
+    
+    @Issue('GRAILS-10865')
+    void 'Test binding to an inherited typed collection'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new ClassWithInheritedTypedCollection()
+        
+        when:
+        binder.bind obj, [list: ['1', '2', '3'], 'map[one]': '1', 'map[two]': '2' ] as SimpleMapDataBindingSource
+        
+        then:
+        obj.list == [1, 2, 3]
+        obj.map.one == 1
+        obj.map.two == 2
+    }
 }
 
 class Factory {
@@ -515,10 +547,10 @@ class Widget {
         def cnt = source['listOfIntegers'] as int
         def result = []
         cnt.times { result << it }
-        println "Result: $result"
         result
     })
     List<Integer> listOfIntegers = []
+    Set<Factory> factories
 }
 
 class Gadget extends Widget {
@@ -546,3 +578,11 @@ enum Role {
 class SystemUser {
     Role role
 }
+
+abstract class AbstractClassWithTypedCollection {
+    List<Integer> list
+    Map<String, Integer> map
+}
+
+class ClassWithInheritedTypedCollection extends AbstractClassWithTypedCollection {}
+

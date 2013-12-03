@@ -248,11 +248,13 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         if(exceptionHandlerMetaDataField == null || !exceptionHandlerMetaDataField.getDeclaringClass().equals(classNode)) {
             final ListExpression listOfExceptionHandlerMetaData = new ListExpression();
             for(final MethodNode exceptionHandlerMethod : exceptionHandlerMethods) {
-                final Class<?> exceptionHandlerExceptionType = exceptionHandlerMethod.getParameters()[0].getType().getPlainNodeReference().getTypeClass();
+                final Parameter[] parameters = exceptionHandlerMethod.getParameters();
+                final Parameter firstParameter = parameters[0];
+                final ClassNode firstParameterTypeClassNode = firstParameter.getType();
                 final String exceptionHandlerMethodName = exceptionHandlerMethod.getName();
                 final ArgumentListExpression defaultControllerExceptionHandlerMetaDataCtorArgs = new ArgumentListExpression();
                 defaultControllerExceptionHandlerMetaDataCtorArgs.addExpression(new ConstantExpression(exceptionHandlerMethodName));
-                defaultControllerExceptionHandlerMetaDataCtorArgs.addExpression(new ClassExpression(new ClassNode(exceptionHandlerExceptionType)));
+                defaultControllerExceptionHandlerMetaDataCtorArgs.addExpression(new ClassExpression(firstParameterTypeClassNode.getPlainNodeReference()));
                 listOfExceptionHandlerMetaData.addExpression(new ConstructorCallExpression(new ClassNode(DefaultControllerExceptionHandlerMetaData.class), defaultControllerExceptionHandlerMetaDataCtorArgs));
             }
             classNode.addField(EXCEPTION_HANDLER_META_DATA_FIELD_NAME,
