@@ -505,6 +505,7 @@ class ResourceTransform implements ASTTransformation{
         def listCall = applyDefaultMethodTarget(new MethodCallExpression(domainExpr, new ConstantExpression("list"), listArgs), domainClass)
         def countCall = applyDefaultMethodTarget(new MethodCallExpression(domainExpr, new ConstantExpression("count"), MethodCallExpression.NO_ARGUMENTS), domainClass)
         def respondArgs = new ArgumentListExpression()
+        respondArgs.addExpression(domainExpr)
         respondArgs.addExpression(listCall)
         final args = new MapExpression()
         final model = new MapExpression()

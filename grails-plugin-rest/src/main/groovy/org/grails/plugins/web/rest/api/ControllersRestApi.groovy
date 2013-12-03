@@ -80,6 +80,25 @@ class ControllersRestApi {
      * @return
      */
     Object respond(Object controller, Object value, Map args = [:]) {
+        respond controller, null, value, args
+    }
+    
+    /**
+     * The respond method will attempt to delivery an appropriate response for the
+     * requested response format and value.
+     *
+     * If the value is null then a 404 will be returned. Otherwise the {@link RendererRegistry}
+     * will be consulted for an appropriate response renderer for the requested response format.
+     *
+     * @param controller The controller
+     * @param componentType The type of component being rendered. If null the type will be the 
+     * type of value unless value is a Collection in which case the type will be the type of 
+     * the first element in the collection.  This value is used to locate an appropriate Renderer.
+     * @param value The value
+     * @param args The arguments
+     * @return
+     */
+    Object respond(Object controller, Class componentType, Object value, Map args = [:]) {
         Integer statusCode
         if (args.status) {
             final Object statusValue = args.status
@@ -94,7 +113,7 @@ class ControllersRestApi {
         }
 
         final webRequest = getWebRequest(controller)
-        List<String> formats = calculateFormats(controller, webRequest.actionName, value, args)
+        List<String> formats = calculateFormats(controller, webRequest.actionName, componentType ?: value, args)
         final response = webRequest.getCurrentResponse()
         MimeType mimeType = getResponseFormat(response)
         def registry = rendererRegistry
@@ -134,12 +153,12 @@ class ControllersRestApi {
 
             final valueType = value.getClass()
             if (registry.isContainerType(valueType)) {
-                renderer = registry.findContainerRenderer(mimeType,valueType, value)
+                renderer = registry.findContainerRenderer(mimeType,valueType, componentType ?: value)
                 if (renderer == null) {
-                    renderer = registry.findRenderer(mimeType, value)
+                    renderer = registry.findRenderer(mimeType, componentType ?: value)
                 }
             } else {
-                renderer = registry.findRenderer(mimeType, value)
+                renderer = registry.findRenderer(mimeType, componentType ?: value)
             }
 
             if (renderer) {
@@ -181,7 +200,12 @@ class ControllersRestApi {
     }
 
     protected List<String> getDefaultResponseFormats(value) {
-        Resource resAnn = value != null ? value.getClass().getAnnotation(Resource) : null
+        Resource resAnn 
+        if(value instanceof Class) {
+            resAnn = value.getAnnotation(Resource)
+        } else {
+            resAnn = value != null ? value.getClass().getAnnotation(Resource) : null
+        }
         if (resAnn) {
             return resAnn.formats().toList()
         }

@@ -182,9 +182,9 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         defineBeans(new ConvertersGrailsPlugin().doWithSpring)
         defineBeans {
             instanceControllersApi(ControllersApi)
-            final rendererRegistry = new DefaultRendererRegistry()
-            rendererRegistry.modelSuffix = config.flatten().get('grails.scaffolding.templates.domainSuffix') ?: ''
-            rendererRegistry.initialize()
+            rendererRegistry(DefaultRendererRegistry) {
+               modelSuffix = config.flatten().get('grails.scaffolding.templates.domainSuffix') ?: ''
+            }
             instanceControllersRestApi(ControllersRestApi, rendererRegistry, ref("instanceControllersApi"), new ControllersMimeTypesApi())
             instanceControllerTagLibraryApi(ControllerTagLibraryApi)
 

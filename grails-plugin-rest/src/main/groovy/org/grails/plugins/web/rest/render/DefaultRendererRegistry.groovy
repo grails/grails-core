@@ -184,6 +184,8 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         Class targetClass = containerClass
         if (containerClass.isArray()) {
             targetClass = containerClass.getComponentType()
+        } else if(object instanceof Class) {
+            targetClass = object
         } else if (object instanceof Iterable) {
             if (object) {
                 final iterator = object.iterator()
