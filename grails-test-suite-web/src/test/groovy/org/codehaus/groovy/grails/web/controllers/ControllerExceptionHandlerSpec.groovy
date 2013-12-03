@@ -6,6 +6,7 @@ import grails.test.mixin.TestFor
 import java.sql.BatchUpdateException
 import java.sql.SQLException
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 @TestFor(ErrorHandlersController)
@@ -118,6 +119,16 @@ class ControllerExceptionHandlerSpec extends Specification {
         then:
         thrown UnsupportedOperationException
     }
+
+    @Issue('GRAILS-10866')    
+    void 'Test exception handler for an Exception class written in Groovy'() {
+        when:
+        params.exceptionToThrow = MyException.name
+        controller.testActionWithNonCommandObjectParameter()
+
+        then:
+        response.contentAsString == 'MyException was thrown'
+    }
 }
 
 @Artefact('Controller')
@@ -150,8 +161,16 @@ class ErrorHandlersController {
     def handleNumberFormatException(NumberFormatException nfe) {
         [problemDescription: 'A Number Was Invalid']
     }
+    
+    def handleSomeGroovyException(MyException e) {
+        render 'MyException was thrown'
+    }
 }
 
 class MyCommand {
     String exceptionToThrow
+}
+
+class MyException extends Exception {
+    
 }

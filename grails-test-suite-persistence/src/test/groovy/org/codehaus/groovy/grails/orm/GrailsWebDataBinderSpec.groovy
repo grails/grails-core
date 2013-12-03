@@ -549,15 +549,14 @@ class GrailsWebDataBinderSpec extends Specification {
     void 'Test binding to Set with subscript'() {
         given:
         def pub = new Publisher()
-        pub.addToAuthors(name: 'Author One')
 
         when:
         binder.bind pub, new SimpleMapDataBindingSource(['authors[0]': [name: 'Author Uno'], 'authors[1]': [name: 'Author Dos']])
 
         then:
         pub.authors.size() == 2
-        pub.authors[0].name == 'Author Uno'
-        pub.authors[1].name == 'Author Dos'
+        pub.authors.find {it.name == 'Author Uno'}
+        pub.authors.find {it.name == 'Author Dos'}
     }
 
     void 'Test binding existing entities to a new Set'() {
@@ -1357,6 +1356,7 @@ class AssociationBindingBook {
 class AssociationBindingAuthor {
     String name
     static hasMany = [books: AssociationBindingBook]
+    List books
 }
 
 @Entity
