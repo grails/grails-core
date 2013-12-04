@@ -56,8 +56,11 @@ class ValidationSupport {
             }
             for (prop in constraints.values()) {
                 if (fieldsToValidate == null || fieldsToValidate.contains(prop.propertyName)) {
-                    prop.messageSource = messageSource
-                    prop.validate(object, object.getProperty(prop.propertyName), localErrors)
+                    def fieldError = originalErrors.getFieldError(prop.propertyName)
+                    if(fieldError == null || !fieldError.bindingFailure) {
+                        prop.messageSource = messageSource
+                        prop.validate(object, object.getProperty(prop.propertyName), localErrors)
+                    }
                 }
             }
             object.errors = localErrors
