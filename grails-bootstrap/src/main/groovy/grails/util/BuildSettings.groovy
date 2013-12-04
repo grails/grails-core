@@ -1164,7 +1164,7 @@ class BuildSettings extends AbstractBuildSettings {
                         if (compileDeps) {
                             compileDeps = findAndRemovePluginDependencies("compile", compileDeps, internalPluginCompileDependencies)
                             if (compileDeps.any({ File f -> !f.exists() })) modified = true
-                            internalCompileDependencies = compileDeps
+                            internalCompileDependencies = compileDeps + applicationJars
                         } else {
                             modified = true
                         }
