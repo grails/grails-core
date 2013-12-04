@@ -273,8 +273,7 @@ class TransactionalTransform implements ASTTransformation{
             declaringClassNode.addInterface(transactionManagerAwareInterface)
 
             //add the transactionManager property
-            final transactionManagerProperty = declaringClassNode.getProperty(PROPERTY_TRANSACTION_MANAGER)
-            if (!transactionManagerProperty) {
+            if (!GrailsASTUtils.hasProperty(declaringClassNode, PROPERTY_TRANSACTION_MANAGER)) {
                 declaringClassNode.addProperty(PROPERTY_TRANSACTION_MANAGER, Modifier.PUBLIC, ClassHelper.make(PlatformTransactionManager), null, null, null);
             }
 

@@ -45,7 +45,7 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.IndexedPropertyReferenceDescriptor
 import org.grails.databinding.SimpleDataBinder
 import org.grails.databinding.SimpleMapDataBindingSource
-import org.grails.databinding.converters.AbstractStructuredBindingEditor
+import org.grails.databinding.TypedStructuredBindingEditor
 import org.grails.databinding.converters.FormattedValueConverter
 import org.grails.databinding.converters.ValueConverter
 import org.grails.databinding.errors.BindingError
@@ -279,33 +279,47 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 }
             } else if(Collection.isAssignableFrom(metaProperty.type)) {
                 def referencedType = getReferencedTypeForCollection(propName, obj)
-                if(referencedType && isDomainClass(referencedType) && val instanceof List) {
-                    needsBinding = false
-                    initializeCollection obj, metaProperty.name, metaProperty.type
-                    def itemsWhichNeedBinding = []
-                    val.each { item ->
-                        def persistentInstance
-                        if(item instanceof Map || item instanceof DataBindingSource) {
-                            def idValue = getIdentifierValueFrom(item)
-                            if(idValue != null) {
-                                persistentInstance = getPersistentInstance(referencedType, idValue)
-                                if(persistentInstance != null) {
-                                    bind persistentInstance, new SimpleMapDataBindingSource(item), listener
-                                    itemsWhichNeedBinding << persistentInstance
-                                }
-                            }
-                        }
-                        if(persistentInstance == null) {
-                            itemsWhichNeedBinding << item
+                if(referencedType && isDomainClass(referencedType)) {
+                    def listValue
+                    if(val instanceof List) {
+                        listValue = (List)val
+                    } else if(val instanceof GPathResultMap && val.size() == 1) {
+                        def mapValue = (GPathResultMap)val
+                        def valueInMap = mapValue[mapValue.keySet()[0]]
+                        if(valueInMap instanceof List) {
+                            listValue = (List)valueInMap
+                        } else if(valueInMap instanceof GPathResultMap) {
+                            listValue = [valueInMap]
                         }
                     }
-                    if(itemsWhichNeedBinding) {
-                        def coll = obj[metaProperty.name]
-                        if(coll instanceof Collection) {
-                            coll.clear()
+                    if(listValue != null) {
+                        needsBinding = false
+                        initializeCollection obj, metaProperty.name, metaProperty.type
+                        def itemsWhichNeedBinding = []
+                        listValue.each { item ->
+                            def persistentInstance
+                            if(item instanceof Map || item instanceof DataBindingSource) {
+                                def idValue = getIdentifierValueFrom(item)
+                                if(idValue != null) {
+                                    persistentInstance = getPersistentInstance(referencedType, idValue)
+                                    if(persistentInstance != null) {
+                                        bind persistentInstance, new SimpleMapDataBindingSource(item), listener
+                                        itemsWhichNeedBinding << persistentInstance
+                                    }
+                                }
+                            }
+                            if(persistentInstance == null) {
+                                itemsWhichNeedBinding << item
+                            }
                         }
-                        for(item in itemsWhichNeedBinding) {
-                            addElementToCollection obj, metaProperty.name, metaProperty.type, item, false
+                        if(itemsWhichNeedBinding) {
+                            def coll = obj[metaProperty.name]
+                            if(coll instanceof Collection) {
+                                coll.clear()
+                            }
+                            for(item in itemsWhichNeedBinding) {
+                                addElementToCollection obj, metaProperty.name, metaProperty.type, item, false
+                            }
                         }
                     }
                 }
@@ -555,8 +569,8 @@ class GrailsWebDataBinder extends SimpleDataBinder {
     }
 
     @Autowired(required=false) 
-    void setStructuredBindingEditors(AbstractStructuredBindingEditor[] editors) {
-        editors.each { AbstractStructuredBindingEditor editor ->
+    void setStructuredBindingEditors(TypedStructuredBindingEditor[] editors) {
+        editors.each { TypedStructuredBindingEditor editor ->
             registerStructuredEditor editor.targetType, editor
         }    
     }

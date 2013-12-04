@@ -2,6 +2,10 @@ package grails.validation
 
 import grails.test.mixin.TestMixin
 import grails.test.mixin.support.GrailsUnitTestMixin
+
+import org.springframework.validation.FieldError
+
+import spock.lang.Issue
 import spock.lang.Specification
 
 @TestMixin(GrailsUnitTestMixin)
@@ -77,6 +81,31 @@ class ValidateableSpec extends Specification {
         validateable.validate()
         !validateable.hasErrors()
         validateable.errors.errorCount == 0
+    }
+    
+    @Issue('GRAILS-10871')
+    void 'Test that binding failures are retained during validation and that the corresponding property is not validated'() {
+        given:
+        def validateable = new MyValidateable()
+        
+        when:
+        def fieldError = new FieldError(MyValidateable.name, 'age', 'forty two', true, null, null, null)
+        validateable.errors.addError fieldError
+       
+        then:
+        validateable.hasErrors()
+        validateable.errors.errorCount == 1
+        validateable.errors.getFieldError('age').rejectedValue == 'forty two'
+        
+        when:
+        validateable.name = 'lower case'
+        
+        then:
+        !validateable.validate()
+        validateable.hasErrors()
+        validateable.errors.errorCount == 2
+        validateable.errors.getFieldError('age').rejectedValue == 'forty two'
+        validateable.errors.getFieldError('name').rejectedValue == 'lower case'
     }
 }
 
