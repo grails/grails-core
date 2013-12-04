@@ -6,6 +6,8 @@ import grails.test.mixin.TestFor
 import java.sql.BatchUpdateException
 import java.sql.SQLException
 
+import javax.xml.soap.SOAPException
+
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -93,6 +95,24 @@ class ControllerExceptionHandlerSpec extends Specification {
         model.problemDescription == 'A Number Was Invalid'
     }
 
+    void 'Test throwing an exception that does not have a handler'() {
+        when:
+        params.exceptionToThrow = 'javax.xml.soap.SOAPException'
+        def model = controller.testActionWithNonCommandObjectParameter()
+
+        then:
+        thrown SOAPException
+    }
+
+    void 'Test throwing an exception that does not have a handler and does match a private method in the parent controller'() {
+        when: 'a controller action throws an exception which matches an inherited private method which should not be treated as an exception handler'
+        params.exceptionToThrow = 'java.io.IOException'
+        def model = controller.testActionWithNonCommandObjectParameter()
+
+        then: 'the method is ignored and the exception is thrown'
+        thrown IOException
+    }
+
     void 'Test action throws an exception that does not have a corresponding error handler'() {
         when:
         params.exceptionToThrow = 'java.lang.UnsupportedOperationException'
@@ -132,7 +152,14 @@ class ControllerExceptionHandlerSpec extends Specification {
 }
 
 @Artefact('Controller')
-class ErrorHandlersController {
+abstract class SomeAbstractController {
+    
+    private somePrivateMethodWhichIsNotAnExceptionHandler(IOException e) {
+    }
+}
+
+@Artefact('Controller')
+class ErrorHandlersController extends SomeAbstractController {
 
     def testAction() {
         def exceptionClass = Class.forName(params.exceptionToThrow)

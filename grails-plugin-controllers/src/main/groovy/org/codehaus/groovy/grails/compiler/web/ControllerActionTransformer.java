@@ -206,10 +206,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
     private boolean isExceptionHandlingMethod(MethodNode methodNode) {
         boolean isExceptionHandler = false;
-        Parameter[] parameters = methodNode.getParameters();
-        if(parameters.length == 1) {
-            ClassNode parameterTypeClassNode = parameters[0].getType();
-            isExceptionHandler = parameterTypeClassNode.isDerivedFrom(new ClassNode(Exception.class));
+        if(!methodNode.isPrivate()) {
+            Parameter[] parameters = methodNode.getParameters();
+            if(parameters.length == 1) {
+                ClassNode parameterTypeClassNode = parameters[0].getType();
+                isExceptionHandler = parameterTypeClassNode.isDerivedFrom(new ClassNode(Exception.class));
+            }
         }
         return isExceptionHandler;
     }
