@@ -188,7 +188,14 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         value = processFormFieldValueIfNecessary(name, value,"checkbox")
         hiddenValue = processFormFieldValueIfNecessary("_${name}", hiddenValue, "hidden")
 
-        out << "<input type=\"hidden\" name=\"_${name}\""
+        def hiddenFieldName 
+        if(name.indexOf('.') == -1) {
+            hiddenFieldName = "_${name}"
+        } else {
+            def lastDot = name.lastIndexOf('.')
+            hiddenFieldName = name[0..lastDot] + '_' + name[(lastDot+1)..-1]
+        }
+        out << "<input type=\"hidden\" name=\"${hiddenFieldName}\""
         if (hiddenValue != "") {
             out << " value=\"${hiddenValue}\""
         }
