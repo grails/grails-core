@@ -196,10 +196,13 @@ Radio 3 <input type="radio" name="myGroup" value="3" />
         assertOutputEquals('<input type="hidden" name="_foo" /><input type="checkbox" name="foo" checked="checked" value="hello" id="foo"  />', template, [test:"hello"])
 
         template = '<g:checkBox name="foo.bar" value="${test}" checked="${true}"/>'
-        assertOutputEquals('<input type="hidden" name="_foo.bar" /><input type="checkbox" name="foo.bar" checked="checked" value="hello" id="foo.bar"  />', template, [test:"hello"])
+        assertOutputEquals('<input type="hidden" name="foo._bar" /><input type="checkbox" name="foo.bar" checked="checked" value="hello" id="foo.bar"  />', template, [test:"hello"])
 
         template = '<g:checkBox name="foo.bar" value="${test}" checked="${null}"/>'
-        assertOutputEquals('<input type="hidden" name="_foo.bar" /><input type="checkbox" name="foo.bar" value="hello" id="foo.bar"  />', template, [test:"hello"])
+        assertOutputEquals('<input type="hidden" name="foo._bar" /><input type="checkbox" name="foo.bar" value="hello" id="foo.bar"  />', template, [test:"hello"])
+
+        template = '<g:checkBox name="foo.bar.bing.bang" value="${test}" checked="${null}"/>'
+        assertOutputEquals('<input type="hidden" name="foo.bar.bing._bang" /><input type="checkbox" name="foo.bar.bing.bang" value="hello" id="foo.bar.bing.bang"  />', template, [test:"hello"])
     }
 
     void testCheckBoxUsesExpressionForDisable() {
