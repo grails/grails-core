@@ -18,6 +18,7 @@ package grails.build.logging
 
 import jline.console.ConsoleReader
 import org.fusesource.jansi.Ansi
+import spock.lang.Issue
 import spock.lang.Specification
 
 import java.util.regex.Pattern
@@ -57,6 +58,7 @@ class GrailsConsoleSpec extends Specification {
         output = ""
     }
 
+    @Issue('GRAILS-10753')
     def "outputMessage - verify the reset marker at the end of the output"() {
         when:
         console.outputMessage("MSG", 1)
@@ -66,6 +68,7 @@ class GrailsConsoleSpec extends Specification {
         assert assertResetMarkAtTheEndOfOutput(output)
     }
 
+    @Issue('GRAILS-10753')
     def "error - verify the reset marker at the end of the output"() {
         when:
         console.error("LABEL", "MSG")
@@ -75,6 +78,7 @@ class GrailsConsoleSpec extends Specification {
         assert assertResetMarkAtTheEndOfOutput(output)
     }
 
+    @Issue('GRAILS-10753')
     def "userInput - verify the reset marker at the end of the output"() {
         when:
         console.userInput("QUESTION")
