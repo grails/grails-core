@@ -230,6 +230,7 @@ class InteractiveMode {
 
     protected void goodbye() {
         updateStatus "Goodbye"
+        GrailsConsole.instance.cleanup()
         System.exit(0)
     }
 

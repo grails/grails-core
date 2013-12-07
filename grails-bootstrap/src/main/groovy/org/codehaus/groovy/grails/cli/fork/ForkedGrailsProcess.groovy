@@ -116,7 +116,7 @@ abstract class ForkedGrailsProcess {
                                 final contextFile = readLine(sockIn)
                                 if (contextFile) {
                                     if ("exit" == contextFile) {
-                                        System.exit(0)
+                                        exitWithStatus(0)
                                     }
                                     else {
                                         def loadedContext = readExecutionContext(contextFile)
@@ -148,7 +148,11 @@ abstract class ForkedGrailsProcess {
                 // ignore
             }
         }
+    }
 
+    private static exitWithStatus(int status) {
+        GrailsConsole.instance.cleanup()
+        System.exit(status)
     }
 
     boolean isDaemonRunning() {
@@ -242,7 +246,7 @@ abstract class ForkedGrailsProcess {
 
         def lockDir = new File(executionContext.projectWorkDir, "process-lock")
         if (lockDir.mkdir()) {
-            System.exit 0
+            exitWithStatus(0)
         } else {
             // someone is already connected; let the process finish
         }
@@ -440,7 +444,7 @@ abstract class ForkedGrailsProcess {
 
                 GrailsConsole.instance.error("Forked Grails VM exited with error")
                 if(!InteractiveMode.active) {
-                    System.exit(1)
+                    exitWithStatus(1)
                 }
             }
         }
