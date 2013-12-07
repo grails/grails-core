@@ -337,7 +337,7 @@ public class GrailsConsole {
     private void assertAllowInput() {
         assertAllowInput(null);
     }
-    
+
     private void assertAllowInput(String prompt) {
         if (reader == null) {
             String msg = "User input is not enabled, cannot obtain input stream";
@@ -867,7 +867,7 @@ public class GrailsConsole {
         cursorMove = 0;
         try {
             if (isAnsiEnabled()) {
-                Ansi ansi = outputErrorLabel(userInputActive ? moveDownToSkipPrompt()  : ansi(), label).a(message);
+                Ansi ansi = outputErrorLabel(userInputActive ? moveDownToSkipPrompt() : ansi(), label).a(message);
 
                 if (message.endsWith(LINE_SEPARATOR)) {
                     out.print(ansi);
@@ -894,6 +894,16 @@ public class GrailsConsole {
         if (!(System.err instanceof GrailsConsoleErrorPrintStream)) {
             System.setErr(new GrailsConsoleErrorPrintStream(originalSystemErr));
         }
+    }
+
+    /**
+     * Makes sure that the console has been reset to the default state and that the out stream has been flushed.
+     */
+    public void cleanup() {
+        if (isAnsiEnabled()) {
+            out.print(ansi().reset().toString());
+        }
+        flush();
     }
 
     public void flush() {
