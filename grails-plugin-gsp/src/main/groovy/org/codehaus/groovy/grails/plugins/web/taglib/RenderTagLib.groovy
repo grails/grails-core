@@ -527,12 +527,14 @@ class RenderTagLib implements RequestConstants {
         def linkParams = [:]
         if (params.id) linkParams.put("id", params.id)
         def paramsAttr = attrs.remove("params")
-        if (paramsAttr) linkParams.putAll(paramsAttr)
         linkParams.sort = property
 
         // propagate "max" and "offset" standard params
         if (params.max) linkParams.max = params.max
         if (params.offset) linkParams.offset = params.offset
+        
+        // copy all defined params in tag attribute and explicitly override existing ones
+        if (paramsAttr) linkParams.putAll(paramsAttr)
 
         // determine and add sorting order for this column to link params
         attrs.class = (attrs.class ? "${attrs.class} sortable" : "sortable")
