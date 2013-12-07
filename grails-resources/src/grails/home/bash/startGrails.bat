@@ -80,7 +80,7 @@ set INTERACTIVE=true
 if "x%~1" == "x" goto execute
 set CURR_ARG=%~1
 if "%CURR_ARG:~0,2%" == "-D" (
-	set GRAILS_OPTS=%GRAILS_OPTS% %~1=%~2
+	set CMD_LINE_ARGS=%CMD_LINE_ARGS% %~1=%~2
 	shift
 	shift
 	goto win9xME_args_slurp
