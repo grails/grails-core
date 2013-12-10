@@ -69,12 +69,12 @@ class IntegrationSpec extends Specification {
 
     def cleanup() {
         perMethodRequestEnvironmentInterceptor?.destroy()
-        perMethodTransactionInterceptor?.destroy()
+        destroyTransaction(perMethodTransactionInterceptor)
     }
 
     def cleanupSpec() {
         perSpecRequestEnvironmentInterceptor?.destroy()
-        perSpecTransactionInterceptor?.destroy()
+        destroyTransaction(perSpecTransactionInterceptor)
     }
 
     private boolean isStepwiseSpec() {
@@ -85,6 +85,10 @@ class IntegrationSpec extends Specification {
         def interceptor = new GrailsTestTransactionInterceptor(applicationContext)
         if (interceptor.isTransactional(this)) interceptor.init()
         interceptor
+    }
+
+    private void destroyTransaction(GrailsTestTransactionInterceptor interceptor){
+        if (interceptor?.isTransactional(this)) interceptor.destroy()
     }
 
     private GrailsTestRequestEnvironmentInterceptor initRequestEnv() {
