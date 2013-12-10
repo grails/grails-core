@@ -45,6 +45,8 @@ ext {
     ehcacheVersion = "2.4.6"
     junitVersion = "4.11"
     concurrentlinkedhashmapVersion = "1.3.1"
+    cglibVersion = "2.2.2"
+    objenesisVersion = "1.2"
 }
 
 version = grailsVersion
@@ -186,6 +188,9 @@ subprojects { project ->
                 exclude group:'junit', module: 'junit-dep'
                 exclude group:'org.codehaus.groovy', module: 'groovy-all'
             }
+            // Required by Spock's Mocking
+            testCompile "cglib:cglib:${cglibVersion}"
+            testCompile "org.objenesis:objenesis:${objenesisVersion}"
         }
     }
 
