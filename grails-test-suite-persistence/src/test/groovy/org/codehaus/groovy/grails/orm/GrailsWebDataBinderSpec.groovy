@@ -31,6 +31,7 @@ import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.context.support.StaticMessageSource
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -1119,6 +1120,16 @@ class GrailsWebDataBinderSpec extends Specification {
         widget.listOfIntegers == [0, 1, 2, 3]
     }
     
+    @Issue('GRAILS-10899')
+    @Ignore
+    void 'Test binding to a property that has a getter and setter with declared type java.util.Collection'() {
+        when:
+        def f = new Foo(airports: ['STL', 'LHR', 'MIA'])
+        
+        then:
+        f.airports == ['STL', 'LHR', 'MIA']
+    }
+    
     @Issue('GRAILS-10728')
     void 'Test binding to a Set property that has a getter which returns an unmodifiable Set'() {
         when:
@@ -1399,6 +1410,16 @@ class Foo {
     
     Set<String> getNames() {
         Collections.unmodifiableSet(_names ?: [] as Set)
+    }
+    
+    private transient Collection<String> _airports
+    
+    void setAirports(Collection<String> airports) {
+        _airports = airports
+    }
+    
+    Collection<String> getAirports() {
+        _airports
     }
 }
 
