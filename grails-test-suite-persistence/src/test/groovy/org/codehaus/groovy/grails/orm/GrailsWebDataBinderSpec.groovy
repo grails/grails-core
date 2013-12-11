@@ -1282,7 +1282,6 @@ class Widget implements Comparable {
         cnt.times { c -> 
             result << c 
         }
-        println "Result: $result"
         result
     })
     List listOfIntegers = []
