@@ -29,6 +29,7 @@ import org.codehaus.groovy.grails.web.mapping.LinkGenerator
 import org.codehaus.groovy.grails.web.mapping.UrlMappings
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolderFactoryBean
+import org.codehaus.groovy.grails.web.mapping.ResponseCodeUrlMappingVisitor
 import org.codehaus.groovy.grails.web.mapping.filter.UrlMappingsFilter
 import org.codehaus.groovy.grails.web.servlet.ErrorHandlingServlet
 import org.springframework.aop.framework.ProxyFactoryBean
@@ -36,6 +37,10 @@ import org.springframework.aop.target.HotSwappableTargetSource
 import org.springframework.context.ApplicationContext
 import org.springframework.core.io.Resource
 import org.springframework.web.context.WebApplicationContext
+
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.builder.AstBuilder
+import org.codehaus.groovy.control.CompilePhase
 
 /**
  * Handles the configuration of URL mappings.
@@ -117,16 +122,24 @@ class UrlMappingsGrailsPlugin {
         def appliedErrorCodes = []
         def errorPages = {
             for (Resource r in watchedResources) {
-                r.file.eachLine { line ->
-                    def matcher = line =~ /\s*["'](\d+?)["']\s*\(.+?\)/
-                    if (matcher) {
-                        def errorCode = matcher[0][1]
-                        if (!appliedErrorCodes.contains(errorCode)) {
-                            appliedErrorCodes << errorCode
-                            'error-page' {
-                                'error-code'(errorCode)
-                                'location'("/grails-errorhandler")
-                            }
+                def contents = r.file.getText("UTF-8")
+
+                // Process the UrlMappings to create the syntax tree
+                def ast = new AstBuilder()
+                    .buildFromString(CompilePhase.CONVERSION, false, contents)
+                    .find { it.class == ClassNode.class }
+
+                // Visit the contents in search of the response codes
+                def visitor = new ResponseCodeUrlMappingVisitor()
+                ast.visitContents(visitor)
+
+                def responseCodes = visitor.responseCodes
+                responseCodes.each { errorCode ->
+                    if (!appliedErrorCodes.contains(errorCode)) {
+                        appliedErrorCodes << errorCode
+                        'error-page' {
+                            'error-code'(errorCode)
+                            'location'("/grails-errorhandler")
                         }
                     }
                 }

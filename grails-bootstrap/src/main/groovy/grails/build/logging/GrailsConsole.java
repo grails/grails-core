@@ -34,9 +34,7 @@ import java.util.Stack;
 
 import grails.util.Environment;
 import jline.Terminal;
-
 import jline.TerminalFactory;
-import jline.TerminalSupport;
 import jline.console.ConsoleReader;
 import jline.console.history.FileHistory;
 import jline.console.history.History;
@@ -726,7 +724,7 @@ public class GrailsConsole {
         }
 
         lastMessage = "";
-        msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).toString() : msg;
+        msg = isAnsiEnabled() ? outputCategory(ansi(), ">").fg(DEFAULT).a(msg).reset().toString() : msg;
         try {
             return readLine(msg, secure);
         } finally {
@@ -867,7 +865,7 @@ public class GrailsConsole {
         cursorMove = 0;
         try {
             if (isAnsiEnabled()) {
-                Ansi ansi = outputErrorLabel(userInputActive ? moveDownToSkipPrompt()  : ansi(), label).a(message);
+                Ansi ansi = outputErrorLabel(userInputActive ? moveDownToSkipPrompt()  : ansi(), label).a(message).reset();
 
                 if (message.endsWith(LINE_SEPARATOR)) {
                     out.print(ansi);
