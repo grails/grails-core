@@ -6,6 +6,7 @@ import grails.web.CamelCaseUrlConverter
 import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -13,6 +14,35 @@ import spock.lang.Specification
  * @author Graeme Rocher
  */
 class RestfulResourceMappingSpec extends Specification{
+
+    @Issue('GRAILS-10908')
+    @Ignore
+    void 'Test groups with variables'()  {
+        given: 'A resource mapping with child mappings'
+        def urlMappingsHolder = getUrlMappingsHolder {
+            group "/home", {
+                "/browse/town/$town"(controller: 'browser', action:[GET:"index"]) {
+                }
+
+                "/browse/street/$street"(controller: 'browser', action:[GET:"index"]) {
+                }
+            }
+        }
+
+        when: 'The URL mappings are obtained'
+        def urlMappings = urlMappingsHolder.urlMappings
+        def browserMappings = urlMappings.findAll { it.controllerName == 'browser' }
+
+        then: 'There are the correct number of mappings'
+        urlMappings.size() == 2
+
+        and: 'The browser controller has 2 mappings'
+        browserMappings.size() == 2
+
+        and: 'The mappings have the correct properties'
+        browserMappings.find { it.constraints*.propertyName  == ['town']}
+        browserMappings.find { it.constraints*.propertyName  == ['street']}
+    }
 
     @Issue('GRAILS-10820')
     void 'Test that grouped params with dynamic variables product the correct mappings'() {
