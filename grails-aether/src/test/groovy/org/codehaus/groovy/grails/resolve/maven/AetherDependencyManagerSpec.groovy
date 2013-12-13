@@ -509,4 +509,21 @@ class AetherDependencyManagerSpec extends Specification {
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }
 
+    void "Test jCenter repository"() {
+        given:
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.inheritedDependencies.global = new GrailsAetherCoreDependencies("2.2.0").createDeclaration()
+
+        when:
+            dependencyManager.parseDependencies {
+                repositories {
+                    jCenter()
+                }
+            }
+
+        then:
+            dependencyManager.repositories.size() == 1
+
+    }
+
 }
