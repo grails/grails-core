@@ -1209,6 +1209,25 @@ class GrailsWebDataBinderSpec extends Specification {
         and: 'The containing Set is the same set that we started with'
         originalSetOfWidgets.is container.setOfWidgets
     }
+    
+    @Issue('GRAILS-10910')
+    void 'Test binding an empty List to a List property which has elements in it'() {
+        given:
+        def publisher = new Publisher()
+        
+        when:
+        publisher.addToPublications(name: 'Pub 1')
+        publisher.addToPublications(name: 'Pub 2')
+        
+        then:
+        publisher.publications.size() == 2
+        
+        when:
+        binder.bind publisher, [publications: []] as SimpleMapDataBindingSource
+        
+        then:
+        publisher.publications.size() == 0
+    }
 }
 
 @Entity
