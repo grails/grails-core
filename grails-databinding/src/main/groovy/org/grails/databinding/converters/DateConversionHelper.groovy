@@ -33,15 +33,13 @@ class DateConversionHelper implements ValueConverter {
      */
     List<String> formatStrings = ['yyyy-MM-dd HH:mm:ss.S',"yyyy-MM-dd'T'hh:mm:ss'Z'","yyyy-MM-dd HH:mm:ss.S z"]
 
-    protected final Map<String, SimpleDateFormat> formatters = [:].withDefault { String formatString -> new SimpleDateFormat(formatString) }
-
     Object convert(value) {
         Date dateValue
         if (value instanceof String) {
             def firstException
             formatStrings.each { String format ->
                 if (dateValue == null) {
-                    def formatter = formatters.get(format)
+                    def formatter = new SimpleDateFormat(format)
                     try {
                         dateValue = formatter.parse(value)
                     } catch (Exception e) {

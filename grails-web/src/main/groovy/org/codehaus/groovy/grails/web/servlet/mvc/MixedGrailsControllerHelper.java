@@ -68,8 +68,12 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
 
         Method mAction = controllerToActionMethodCache.get(key);
 
-        if (mAction != null && mAction != NULL_METHOD_HOLDER) {
-            return mAction;
+        if (mAction != null) {
+            if (mAction != NULL_METHOD_HOLDER) {    
+                return mAction;
+            } else {
+                return sendNotFoundError(response);                                
+            }
         }
 
         MetaProperty metaProperty = controllerToMetaPropertyCache.get(key);
@@ -106,7 +110,10 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
 
         Object closureAction = null;
 
-        if (metaProperty != null && metaProperty != NULL_META_PROPERTY_HOLDER) {
+        if (metaProperty != null) {
+            if (metaProperty == NULL_META_PROPERTY_HOLDER) {
+                return sendNotFoundError(response);    
+            }
             if (metaProperty.getType() == Object.class || Closure.class.isAssignableFrom(metaProperty.getType())) {
                 closureAction = metaProperty.getProperty(controller);
             }
@@ -120,16 +127,20 @@ public class MixedGrailsControllerHelper extends AbstractGrailsControllerHelper 
         }
 
         if (!(closureAction instanceof Closure)) {
-            try {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                return null;
-            }
-            catch (IOException e) {
-                throw new ControllerExecutionException("I/O error sending 404 error", e);
-            }
+            return sendNotFoundError(response);
         }
 
         return closureAction;
+    }
+
+    protected Object sendNotFoundError(HttpServletResponse response) {
+        try {
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+            return null;
+        }
+        catch (IOException e) {
+            throw new ControllerExecutionException("I/O error sending 404 error", e);
+        }
     }
 
     @Override
