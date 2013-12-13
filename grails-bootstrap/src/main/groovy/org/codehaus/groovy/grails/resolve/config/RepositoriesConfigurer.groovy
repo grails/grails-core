@@ -222,6 +222,21 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
 
     @CompileStatic
+    void jCenter() {
+        if (!context.offline && isResolverNotAlreadyDefined('jCenter')) {
+            dependencyManager.repositoryData << [type: 'jCenter']
+            IBiblioResolver mavenResolver = createSnapshotResolver(
+                name:"jCenter",
+                root: "http://jcenter.bintray.com",
+                m2compatible: true,
+                settings: dependencyManager.ivySettings,
+                changingPattern: ".*SNAPSHOT"
+            )
+            addToChainResolver(mavenResolver)
+        }
+    }
+
+    @CompileStatic
     void mavenCentral() {
         if (!context.offline && isResolverNotAlreadyDefined('mavenCentral')) {
             dependencyManager.repositoryData << [type: 'mavenCentral']
