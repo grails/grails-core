@@ -6,7 +6,6 @@ import grails.web.CamelCaseUrlConverter
 import org.springframework.http.HttpMethod
 import org.springframework.mock.web.MockServletContext
 
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -16,7 +15,6 @@ import spock.lang.Specification
 class RestfulResourceMappingSpec extends Specification{
 
     @Issue('GRAILS-10908')
-    @Ignore
     void 'Test groups with variables'()  {
         given: 'A resource mapping with child mappings'
         def urlMappingsHolder = getUrlMappingsHolder {
