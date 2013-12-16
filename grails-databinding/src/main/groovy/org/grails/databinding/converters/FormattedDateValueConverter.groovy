@@ -27,6 +27,9 @@ import java.text.SimpleDateFormat
 class FormattedDateValueConverter implements FormattedValueConverter {
 
     def convert(value, String format) {
+        if(value instanceof Date) {
+            return value
+        }
         new SimpleDateFormat(format).parse((String)value)
     }
 

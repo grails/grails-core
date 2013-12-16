@@ -138,6 +138,19 @@ class SimpleDataBinderSpec extends Specification {
         obj.sqlDate == nowSqlDate
         obj.calendar == nowCalendar
     }
+    
+    void 'Test binding a Date to a Date property marked with @BindingFormat'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new DateContainer()
+        def nowDate = new Date()
+        
+        when:
+        binder.bind obj, [formattedUtilDate: nowDate] as SimpleMapDataBindingSource
+        
+        then:
+        obj.formattedUtilDate == nowDate
+    }
 
     void 'Test listener is notified for properties in nested maps'() {
         given:
