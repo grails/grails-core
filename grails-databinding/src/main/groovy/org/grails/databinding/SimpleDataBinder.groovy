@@ -447,7 +447,7 @@ class SimpleDataBinder implements DataBinder {
             val = []
         } else if (SortedSet.isAssignableFrom(type)) {
             val = new TreeSet()
-        } else if (Collection.isAssignableFrom(type)) {
+        } else if (Set.isAssignableFrom(type)) {
             val = new HashSet()
         }
         val
