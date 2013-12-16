@@ -447,7 +447,7 @@ class SimpleDataBinder implements DataBinder {
             val = []
         } else if (SortedSet.isAssignableFrom(type)) {
             val = new TreeSet()
-        } else if (Set.isAssignableFrom(type)) {
+        } else if (Collection.isAssignableFrom(type)) {
             val = new HashSet()
         }
         val
@@ -533,7 +533,22 @@ class SimpleDataBinder implements DataBinder {
         propertyValue
     }
 
-    protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener, boolean convertCollectionElements = true) {
+    protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener) {
+        def convertCollectionElements = false
+        if(propertyValue instanceof Collection) {
+            def referencedType = getReferencedTypeForCollection(metaProperty.name, obj)
+            if(referencedType) {
+                def nonAssignableValue = propertyValue.find { it != null && !(referencedType.isAssignableFrom(it.getClass()))}
+                if(nonAssignableValue != null) {
+                    convertCollectionElements = true
+                }
+            }
+        }
+        
+        setPropertyValue obj, source, metaProperty, propertyValue, listener, convertCollectionElements
+    }
+    
+    protected setPropertyValue(obj, DataBindingSource source, MetaProperty metaProperty, propertyValue, DataBindingListener listener, boolean convertCollectionElements) {
         def propName = metaProperty.name
         def propertyType
         def propertyGetter

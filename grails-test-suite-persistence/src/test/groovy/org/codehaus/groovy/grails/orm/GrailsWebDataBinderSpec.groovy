@@ -31,7 +31,6 @@ import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
 import org.springframework.context.support.StaticMessageSource
 
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -1121,13 +1120,21 @@ class GrailsWebDataBinderSpec extends Specification {
     }
     
     @Issue('GRAILS-10899')
-    @Ignore
     void 'Test binding to a property that has a getter and setter with declared type java.util.Collection'() {
         when:
         def f = new Foo(airports: ['STL', 'LHR', 'MIA'])
         
         then:
         f.airports == ['STL', 'LHR', 'MIA']
+    }
+    
+    @Issue('GRAILS-10899')
+    void 'Test binding to a collection of values which need to be converted to a collection property that has a getter and setter with declared type java.util.Collection'() {
+        when:
+        def f = new Foo(numbers: ['2112', '42', '0'])
+        
+        then:
+        f.numbers == [0, 42, 2112] as Set
     }
     
     @Issue('GRAILS-10728')
@@ -1397,6 +1404,8 @@ class Foo {
     }
 
     static transients = ['activeDays']
+    
+    Collection<Integer> numbers
 
     List getActiveDays() {
         def activeDays = []
