@@ -1121,13 +1121,12 @@ class GrailsWebDataBinderSpec extends Specification {
     }
     
     @Issue('GRAILS-10899')
-    @Ignore
     void 'Test binding to a property that has a getter and setter with declared type java.util.Collection'() {
         when:
         def f = new Foo(airports: ['STL', 'LHR', 'MIA'])
         
         then:
-        f.airports == ['STL', 'LHR', 'MIA']
+        f.airports == ['STL', 'LHR', 'MIA'] as Set
     }
     
     @Issue('GRAILS-10728')
