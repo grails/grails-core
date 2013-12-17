@@ -139,6 +139,7 @@ class SimpleDataBinderSpec extends Specification {
         obj.calendar == nowCalendar
     }
     
+    @Issue('GRAILS-10925')
     void 'Test binding a Date to a Date property marked with @BindingFormat'() {
         given:
         def binder = new SimpleDataBinder()
