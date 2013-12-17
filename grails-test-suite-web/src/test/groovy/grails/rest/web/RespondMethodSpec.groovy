@@ -30,7 +30,6 @@ import spock.lang.Specification
 
 @TestFor(BookController)
 @Mock(Book)
-@Ignore
 class RespondMethodSpec extends Specification{
 
     void setup() {
@@ -57,6 +56,7 @@ class RespondMethodSpec extends Specification{
         }
     }
 
+    @Ignore
     void "Test that the respond method produces the correct model for a domain instance and no specific content type"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -73,6 +73,7 @@ class RespondMethodSpec extends Specification{
             modelAndView.viewName == 'show'
     }
 
+    @Ignore
     void "Test that the respond method produces XML for a domain instance and a content type of XML"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -88,6 +89,7 @@ class RespondMethodSpec extends Specification{
             response.xml.title.text() == 'The Stand'
     }
 
+    @Ignore
     void "Test that the respond method produces XML for a list of domains and a content type of XML"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -101,6 +103,7 @@ class RespondMethodSpec extends Specification{
             response.contentType == 'text/xml'
     }
 
+    @Ignore
     void "Test that the respond method produces errors XML for a domain instance that has errors and a content type of XML"() {
         given:"A book instance"
             def book = new Book(title: "")
@@ -117,6 +120,7 @@ class RespondMethodSpec extends Specification{
             response.xml.error.message.text() == 'Property [title] of class [class grails.rest.web.Book] cannot be null'
     }
 
+    @Ignore
     void "Test that the respond method produces JSON for a domain instance and a content type of JSON"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -132,6 +136,7 @@ class RespondMethodSpec extends Specification{
             response.json.title == 'The Stand'
     }
 
+    @Ignore
     void "Test that the respond method produces a 404 for a format not supported"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -145,6 +150,7 @@ class RespondMethodSpec extends Specification{
             response.status == 404
     }
 
+    @Ignore
     void "Test that the respond method produces JSON for an action that specifies explicit formats"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -159,12 +165,49 @@ class RespondMethodSpec extends Specification{
             response.contentType == 'application/json'
             response.json.title == 'The Stand'
     }
+
+    void "Test that the respond method produces the correct model for a domain instance and content type is HTML"() {
+        given:"A book instance"
+        def book = new Book(title: "The Stand").save(flush:true)
+
+        when:"The respond method is used to render a response"
+        webRequest.actionName = 'showWithModel'
+        controller.showWithModel(book)
+        def modelAndView = webRequest.request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+
+        then:"A modelAndView and view is produced"
+        modelAndView != null
+        modelAndView instanceof ModelAndView
+        modelAndView.model == [book: book, extra: true]
+        modelAndView.viewName == 'showWithModel'
+    }
+
+    void "Test that the respond method produces errors HTML for a domain instance that has errors and a content type of HTML"() {
+        given:"A book instance"
+        def book = new Book(title: "")
+        book.validate()
+
+        when:"The respond method is used to render a response"
+        webRequest.actionName = 'showWithModel'
+        controller.showWithModel(book)
+        def modelAndView = webRequest.request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+
+        then:"A modelAndView and view is produced"
+        modelAndView != null
+        modelAndView instanceof ModelAndView
+        modelAndView.model == [book: book, extra: true]
+        modelAndView.viewName == 'showWithModel'
+    }
 }
 
 @Artefact("Controller")
 class BookController {
     def show(Book b) {
         respond b
+    }
+
+    def showWithModel(Book b) {
+        respond b, model: [extra: true]
     }
 
     def index() {
