@@ -82,7 +82,7 @@ class IntegrationTestPhaseConfigurer extends DefaultTestPhaseConfigurer{
     @Override
     void cleanup(Binding testExecutionContext, Map<String, Object> testOptions) {
         currentApplicationContext = null
-        PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
+        PersistenceContextInterceptorExecutor.destroyPersistenceContext(appCtx)
         appCtx?.close()
         registryCleaner.clean()
         GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
