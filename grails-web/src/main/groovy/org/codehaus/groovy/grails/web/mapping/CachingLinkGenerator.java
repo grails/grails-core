@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.mapping;
 
 import java.util.Map;
 
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
@@ -111,9 +112,24 @@ public class CachingLinkGenerator extends DefaultLinkGenerator {
                 appendKeyValue(buffer, map, UrlMapping.CONTROLLER, getRequestStateLookupStrategy().getControllerName());
                 appendCommaIfNotFirst(buffer, false);
             }
+            if(RESOURCE_PREFIX.equals(key)) {
+                value = getCacheKeyValueForResource(value);
+            }
             appendKeyValue(buffer, map, key, value);
         }
         buffer.append(CLOSING_BRACKET);
+    }
+    
+    protected String getCacheKeyValueForResource(Object o) {
+        StringBuilder builder = new StringBuilder(o.getClass().getName());
+        builder.append("->");
+        Object idValue = GrailsMetaClassUtils.invokeMethodIfExists(o, "ident", new Object[0]);
+        if(idValue != null) {
+            builder.append(idValue.toString());
+        } else {
+            builder.append(o);
+        }
+        return builder.toString();
     }
 
     private boolean appendCommaIfNotFirst(StringBuilder buffer, boolean first) {
