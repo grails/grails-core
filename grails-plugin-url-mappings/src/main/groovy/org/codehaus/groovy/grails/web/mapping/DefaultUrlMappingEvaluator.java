@@ -518,6 +518,9 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
                                     parentResources.pop();
                                 }
                                 if (controller != null) {
+                                    if (namedArguments.containsKey(UrlMapping.NAMESPACE)) {
+                                        namespace = namedArguments.get(UrlMapping.NAMESPACE).toString();
+                                    }
                                     createResourceRestfulMappings(controllerName, pluginName, namespace,version,urlData, currentConstraints, calculateIncludes(namedArguments, DEFAULT_RESOURCES_INCLUDES));
                                 }
                             } else {

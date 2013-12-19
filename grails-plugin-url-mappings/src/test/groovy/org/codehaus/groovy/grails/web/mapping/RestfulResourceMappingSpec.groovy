@@ -14,6 +14,41 @@ import spock.lang.Specification
  */
 class RestfulResourceMappingSpec extends Specification{
 
+    @Issue('GRAILS-10869')
+    void 'Test resources and namespaced controller'() {
+        given: 'A set of mappings'
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/a/parent"(resources: 'ParentA') {
+                "/child"(resources: 'ChildA')
+            }
+            "/b/parent"(resources: 'ParentB', namespace: 'same') {
+                "/child"(resources: 'ChildB', namespace: 'same')
+            }
+            "/c/parent"(resources: 'ParentC', namespace: 'uniqueParent') {
+                "/child"(resources: 'ChildC', namespace: 'uniqueChild')
+            }
+        }
+
+        when: 'The URL mappings are obtained'
+        def urlMappings = urlMappingsHolder.urlMappings
+
+        then:
+        urlMappingsHolder.matchAll('/a/parent', 'GET')[0].controllerName == 'parentA'
+        urlMappingsHolder.matchAll('/a/parent', 'GET')[0].namespace == null
+        urlMappingsHolder.matchAll('/a/parent/1/child', 'GET')[0].controllerName == 'childA'
+        urlMappingsHolder.matchAll('/a/parent/1/child', 'GET')[0].namespace == null
+        
+        urlMappingsHolder.matchAll('/b/parent', 'GET')[0].controllerName == 'parentB'
+        urlMappingsHolder.matchAll('/b/parent', 'GET')[0].namespace == 'same'
+        urlMappingsHolder.matchAll('/b/parent/1/child', 'GET')[0].controllerName == 'childB'
+        urlMappingsHolder.matchAll('/b/parent/1/child', 'GET')[0].namespace == 'same'
+        
+        urlMappingsHolder.matchAll('/c/parent', 'GET')[0].controllerName == 'parentC'
+        urlMappingsHolder.matchAll('/c/parent', 'GET')[0].namespace == 'uniqueParent'
+        urlMappingsHolder.matchAll('/c/parent/1/child', 'GET')[0].controllerName == 'childC'
+        urlMappingsHolder.matchAll('/c/parent/1/child', 'GET')[0].namespace == 'uniqueChild'
+    }
+    
     @Issue('GRAILS-10908')
     void 'Test groups with variables'()  {
         given: 'A resource mapping with child mappings'
