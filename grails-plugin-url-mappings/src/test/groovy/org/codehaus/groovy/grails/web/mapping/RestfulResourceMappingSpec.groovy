@@ -49,6 +49,41 @@ class RestfulResourceMappingSpec extends Specification{
         urlMappingsHolder.matchAll('/c/parent/1/child', 'GET')[0].namespace == 'uniqueChild'
     }
     
+    @Issue('GRAILS-10869')
+    void 'Test resources and plugin controllers'() {
+        given: 'A set of mappings'
+        def urlMappingsHolder = getUrlMappingsHolder {
+            "/a/parent"(resources: 'ParentA') {
+                "/child"(resources: 'ChildA')
+            }
+            "/b/parent"(resources: 'ParentB', plugin: 'samePlugin') {
+                "/child"(resources: 'ChildB', plugin: 'samePlugin')
+            }
+            "/c/parent"(resources: 'ParentC', plugin: 'uniqueParentPlugin') {
+                "/child"(resources: 'ChildC', plugin: 'uniqueChildPlugin')
+            }
+        }
+
+        when: 'The URL mappings are obtained'
+        def urlMappings = urlMappingsHolder.urlMappings
+
+        then:
+        urlMappingsHolder.matchAll('/a/parent', 'GET')[0].controllerName == 'parentA'
+        urlMappingsHolder.matchAll('/a/parent', 'GET')[0].pluginName == null
+        urlMappingsHolder.matchAll('/a/parent/1/child', 'GET')[0].controllerName == 'childA'
+        urlMappingsHolder.matchAll('/a/parent/1/child', 'GET')[0].pluginName == null
+        
+        urlMappingsHolder.matchAll('/b/parent', 'GET')[0].controllerName == 'parentB'
+        urlMappingsHolder.matchAll('/b/parent', 'GET')[0].pluginName == 'samePlugin'
+        urlMappingsHolder.matchAll('/b/parent/1/child', 'GET')[0].controllerName == 'childB'
+        urlMappingsHolder.matchAll('/b/parent/1/child', 'GET')[0].pluginName == 'samePlugin'
+        
+        urlMappingsHolder.matchAll('/c/parent', 'GET')[0].controllerName == 'parentC'
+        urlMappingsHolder.matchAll('/c/parent', 'GET')[0].pluginName == 'uniqueParentPlugin'
+        urlMappingsHolder.matchAll('/c/parent/1/child', 'GET')[0].controllerName == 'childC'
+        urlMappingsHolder.matchAll('/c/parent/1/child', 'GET')[0].pluginName == 'uniqueChildPlugin'
+    }
+    
     @Issue('GRAILS-10908')
     void 'Test groups with variables'()  {
         given: 'A resource mapping with child mappings'
