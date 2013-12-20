@@ -222,7 +222,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
     }
 
     @CompileStatic
-    void jCenter() {
+    void jcenter() {
         if (!context.offline && isResolverNotAlreadyDefined('jCenter')) {
             dependencyManager.repositoryData << [type: 'jCenter']
             IBiblioResolver mavenResolver = createSnapshotResolver(
