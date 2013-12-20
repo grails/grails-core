@@ -43,7 +43,6 @@ class ForkedGrailsCompiler extends ForkedGrailsProjectClassExecutor {
     }
 
     static void main(String[] args) {
-        System.setProperty("file.encoding", "UTF-8")
         try {
             new ForkedGrailsCompiler().run()
             System.exit(0)

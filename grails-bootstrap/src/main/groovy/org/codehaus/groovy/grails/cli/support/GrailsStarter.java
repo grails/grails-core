@@ -42,7 +42,6 @@ public class GrailsStarter {
     }
 
     public static void rootLoader(String args[]) {
-        System.setProperty("file.encoding", "UTF-8");
         final String separator = System.getProperty("file.separator");
 
         // Set some default values for various system properties if
