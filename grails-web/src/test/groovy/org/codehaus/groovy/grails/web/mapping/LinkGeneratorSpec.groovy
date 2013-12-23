@@ -9,6 +9,7 @@ import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.web.context.request.RequestContextHolder
 
+import spock.lang.Issue
 import spock.lang.Specification
 
  /**
@@ -228,7 +229,27 @@ class LinkGeneratorSpec extends Specification {
         then:
             cacheKey == "resourcehttp://some.other.host[absolute:true, base:http://some.other.host]"
     }
+    
+    @Issue('GRAILS-10883')
+    def 'cache key should use identity of resource value'() {
+        given:
+            final webRequest = GrailsWebUtil.bindMockWebRequest()
+            MockHttpServletRequest request = webRequest.currentRequest
+            baseUrl = null
+            def cachingGenerator = getGenerator(true)
+            def w1 = new Widget(id: 1, name: 'Some Widget')
+            def w2 = new Widget(id: 2, name: 'Some Widget')
 
+        when:
+            def cacheKey = cachingGenerator.makeKey('somePrefix', [resource:w1]);
+        then:
+            cacheKey == "somePrefix[resource:org.codehaus.groovy.grails.web.mapping.Widget->1]"
+        when:
+            cacheKey = cachingGenerator.makeKey('somePrefix', [resource:w2]);
+        then:
+            cacheKey == "somePrefix[resource:org.codehaus.groovy.grails.web.mapping.Widget->2]"
+    }
+    
     
     void cleanup() {
         RequestContextHolder.setRequestAttributes(null)
@@ -272,5 +293,18 @@ class LinkGeneratorSpec extends Specification {
     protected setPlugins(List<Class> pluginClasses) {
         pluginManager = new DefaultGrailsPluginManager(pluginClasses as Class[], new DefaultGrailsApplication())
         pluginManager.loadPlugins()
+    }
+}
+
+class Widget {
+    Long id
+    String name
+    
+    Long ident() {
+        id
+    }
+    
+    String toString() {
+        name
     }
 }

@@ -36,7 +36,6 @@ class GrailsSwingConsole extends ForkedGrailsProjectClassExecutor{
     }
 
     static void main(String[] args) {
-        System.setProperty("file.encoding", "UTF-8");
         new GrailsSwingConsole().run()
     }
 

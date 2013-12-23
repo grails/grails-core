@@ -141,8 +141,9 @@ public class ControllersApi extends CommonWebApi {
         if (Environment.getCurrent() == Environment.TEST) {
             GrailsWebRequest webRequest = GrailsWebRequest.lookup();
             if (webRequest != null) {
-                webRequest.setControllerName(GrailsNameUtils.getLogicalPropertyName(
-                        instance.getClass().getName(), ControllerArtefactHandler.TYPE));
+                // GRAILS-10929 - If the class name ends with $$..., then it's a proxy and we want to remove that from the name
+				String className = instance.getClass().getName().replaceAll("\\$\\$.*$", "");
+                webRequest.setControllerName(GrailsNameUtils.getLogicalPropertyName(className, ControllerArtefactHandler.TYPE));
             }
         }
     }

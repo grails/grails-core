@@ -41,7 +41,6 @@ public class Console extends groovy.ui.Console {
 
     @SuppressWarnings("rawtypes")
     public static void main(String... args) {
-        System.setProperty("file.encoding", "UTF-8");
         final ApplicationContext ctx = GrailsUtil.bootstrapGrailsFromClassPath();
         GrailsApplication app = (GrailsApplication)ctx.getBean(GrailsApplication.APPLICATION_ID);
 
