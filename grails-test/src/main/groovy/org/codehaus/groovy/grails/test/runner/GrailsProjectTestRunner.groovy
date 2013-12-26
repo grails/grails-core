@@ -181,7 +181,7 @@ class GrailsProjectTestRunner extends BaseSettingsApi {
         // treat pre 1.2 phase targeting args as '[phase]:' for backwards compatibility
         for (type in ["unit", "integration", "functional", "other"]) {
             if (argsMap[type]) {
-                phaseAndTypeTargeters << "${type}${TEST_PHASE_AND_TYPE_SEPARATOR}"
+                phaseAndTypeTargeters << "${type}${TEST_PHASE_AND_TYPE_SEPARATOR}".toString()
                 argsMap.remove(type) // these are not test "options"
             }
         }
