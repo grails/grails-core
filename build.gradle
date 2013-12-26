@@ -174,7 +174,15 @@ subprojects { project ->
     }
 
     dependencies {
-        groovy groovyDependency
+        // this check is really here only to support the
+        // joint build.  as soon as the 2.1 Groovy branch
+        // is update to Gradle 1.10 we can remove this and
+        // remove the call to "groovy groovyDependency"
+        if('1.10' == project.gradle.gradleVersion) {
+            compile groovyDependency
+        } else {
+            groovy groovyDependency
+        }
 
         if (project.name != "grails-docs") {
             // Logging
@@ -222,15 +230,6 @@ subprojects { project ->
     }
 
     if(!isTestSuite) {
-
-        // Map the groovy gradle configuration to the “compile” scope in our published POMs.
-        // For some reason, this has to go here. If it's put later in the build, the groovy-all
-        // JAR doesn't get added to the artifact POMs.
-        def groovyConfiguration = project.configurations.findByName("groovy")
-        if (groovyConfiguration) {
-            conf2ScopeMappings.addMapping(1, groovyConfiguration, "compile")
-        }
-
         artifacts {
             archives jar
             archives sourcesJar
@@ -374,6 +373,6 @@ apply {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.5-rc-1'
+    gradleVersion = '1.10'
     jarFile = 'gradle/wrapper/gradle-wrapper.jar'
 }
