@@ -295,7 +295,7 @@ class IvyDependencyManagerTests extends GroovyTestCase {
 
         manager.parseDependencies {
             repositories {
-                jCenter()
+                jcenter()
             }
         }
 

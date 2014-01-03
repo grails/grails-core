@@ -95,10 +95,10 @@ class RepositoriesConfiguration {
         }
     }
 
-    RemoteRepository jCenter(Closure configurer = null) {
-        final existing = repositories.find { ArtifactRepository ar -> ar.id == "jCenter" }
+    RemoteRepository jcenter(Closure configurer = null) {
+        final existing = repositories.find { ArtifactRepository ar -> ar.id == "jcenter" }
         if (!existing) {
-            final repositoryBuilder = new RemoteRepository.Builder("jCenter", null, "http://jcenter.bintray.com")
+            final repositoryBuilder = new RemoteRepository.Builder("jcenter", null, "http://jcenter.bintray.com")
 
             configureRepository(repositoryBuilder, configurer)
             final repository = repositoryBuilder.build()
