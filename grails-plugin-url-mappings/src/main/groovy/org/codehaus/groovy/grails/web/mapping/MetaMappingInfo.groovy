@@ -13,28 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.grails.databinding.converters
+package org.codehaus.groovy.grails.web.mapping
 
-import groovy.transform.CompileStatic
-
-import java.text.SimpleDateFormat
+import org.codehaus.groovy.grails.validation.ConstrainedProperty
 
 /**
- * @author Jeff Brown
- * @since 2.3
+ * Meta data describing a url mapping
+ * 
+ * @since 2.3.5
+ *
  */
-@CompileStatic
-class FormattedDateValueConverter implements FormattedValueConverter {
-
-    def convert(value, String format) {
-        if(value instanceof Date) {
-            return value
-        }
-        new SimpleDateFormat(format).parse((String)value)
-    }
-
-    Class<?> getTargetType() {
-        Date
-    }
-
+class MetaMappingInfo {
+    def namespace
+    def controller
+    def action
+    def plugin
+    def view
+    def uri
+    def redirectInfo
+    String httpMethod
+    List<ConstrainedProperty> constraints = []
 }

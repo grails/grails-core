@@ -120,7 +120,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                 }
                 else {
                     final console = GrailsConsole.getInstance()
-                    console.updateStatus("Waiting for server availablility")
+                    console.updateStatus("Waiting for server availability")
                     int maxWait = 10000
                     int timeout = 0
                     while(true) {

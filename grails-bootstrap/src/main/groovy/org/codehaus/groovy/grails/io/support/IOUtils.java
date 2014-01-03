@@ -18,6 +18,8 @@ package org.codehaus.groovy.grails.io.support;
 import groovy.util.XmlSlurper;
 import groovy.xml.FactorySupport;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
@@ -351,15 +353,28 @@ public class IOUtils {
     }
 
     public static XmlSlurper createXmlSlurper() throws ParserConfigurationException, SAXException {
-        SAXParserFactory factory = FactorySupport.createSaxParserFactory();
-        factory.setNamespaceAware(true);
-        factory.setValidating(false);
-
-        try {
-            factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        } catch (ParserConfigurationException pce) {
-        }
+        SAXParserFactory factory = createParserFactory();
         return new XmlSlurper(factory.newSAXParser());
+    }
+
+    private static SAXParserFactory saxParserFactory = null;
+    private static SAXParserFactory createParserFactory() throws ParserConfigurationException {
+        if(saxParserFactory == null) {
+            saxParserFactory = FactorySupport.createSaxParserFactory();
+            saxParserFactory.setNamespaceAware(true);
+            saxParserFactory.setValidating(false);
+
+            try {
+                saxParserFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", false);
+            } catch (Exception pce) {
+                // ignore, parser doesn't support
+            }
+            try {
+                saxParserFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            } catch (Exception e) {
+                // ignore, parser doesn't support
+            }
+        }
+        return saxParserFactory;
     }
 }

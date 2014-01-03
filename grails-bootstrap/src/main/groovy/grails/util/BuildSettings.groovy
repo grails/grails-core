@@ -1518,7 +1518,7 @@ class BuildSettings extends AbstractBuildSettings {
         }
         syspropDebugArgs = System.getProperty("grails.project.fork.test.debugArgs")
         if (syspropDebugArgs || debugFork) {
-            if (result.run instanceof Boolean) {
+            if (result.test instanceof Boolean) {
                 result.test = [:]
             }
             result.test.debug = true

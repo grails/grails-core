@@ -119,7 +119,6 @@ public class GrailsScriptRunner {
      * @param args Command line arguments
      */
     public static void main(String[] args) {
-        System.setProperty("file.encoding", "UTF-8");
         System.setProperty("net.sf.ehcache.skipUpdateCheck", "true");
         ExpandoMetaClass.enableGlobally();
         originalIn = System.in;

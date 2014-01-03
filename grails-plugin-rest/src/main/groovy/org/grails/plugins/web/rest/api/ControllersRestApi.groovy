@@ -119,7 +119,7 @@ class ControllersRestApi {
                 def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
                 Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
                 if (errorsRenderer) {
-                    final context = new ServletRenderContext(webRequest, (Map)args.model)
+                    final context = new ServletRenderContext(webRequest, [model: args.model])
                     if (args.view) {
                         context.viewName = args.view
                     }

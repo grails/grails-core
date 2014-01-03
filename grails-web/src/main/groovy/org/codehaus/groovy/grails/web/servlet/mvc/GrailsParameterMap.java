@@ -215,8 +215,8 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
                 remainderOfKey = '_' + remainderOfKey;
             }
             nestedMap.put(remainderOfKey,getParameterValue(requestMap, key));
-            if (remainderOfKey.indexOf('.') >-1) {
-                processNestedKeys(requestMap, key, remainderOfKey, nestedMap);
+            if (!(nestedMap instanceof GrailsParameterMap) && remainderOfKey.indexOf('.') >-1) {
+                processNestedKeys(requestMap, remainderOfKey, remainderOfKey, nestedMap);
             }
         }
     }

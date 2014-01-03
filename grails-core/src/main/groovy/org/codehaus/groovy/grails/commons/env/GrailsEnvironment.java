@@ -19,6 +19,7 @@ import grails.util.Environment;
 
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.PropertySource;
@@ -53,7 +54,7 @@ public class GrailsEnvironment extends StandardServletEnvironment {
     private class GrailsConfigPropertySource extends PropertySource<GrailsApplication> {
 
         public GrailsConfigPropertySource() {
-            super(grailsApplication.getMetadata().getApplicationName(), grailsApplication);
+            super(StringUtils.defaultIfBlank(grailsApplication.getMetadata().getApplicationName(), "grailsApplication"), grailsApplication);
         }
 
         @Override
