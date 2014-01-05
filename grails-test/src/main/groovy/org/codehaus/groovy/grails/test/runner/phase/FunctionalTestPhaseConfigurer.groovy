@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 SpringSource
+ * Copyright 2013-2014 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,13 +76,6 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         registryCleaner = MetaClassRegistryCleaner.createAndRegister()
         GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
 
-        if (baseUrl) {
-            functionalBaseUrl = baseUrl
-        } else {
-            functionalBaseUrl = (httpsBaseUrl ? 'https' : 'http') +
-                "://${projectRunner.serverHost}:$projectRunner.serverPort$projectRunner.serverContextPath/"
-        }
-
         if (!isServerRunning) {
 
             packager.createConfig()
@@ -140,6 +133,13 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         }
         else {
             existingServer = true
+        }
+
+        if (baseUrl) {
+            functionalBaseUrl = baseUrl
+        } else {
+            functionalBaseUrl = httpsBaseUrl ? projectRunner.urlHttps : projectRunner.url
+            functionalBaseUrl += '/'
         }
 
         System.setProperty(buildSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
