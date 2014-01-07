@@ -38,6 +38,7 @@ import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
 import org.codehaus.groovy.ast.VariableScope
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
+import org.codehaus.groovy.ast.expr.AttributeExpression
 import org.codehaus.groovy.ast.expr.BinaryExpression
 import org.codehaus.groovy.ast.expr.BooleanExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
@@ -461,13 +462,13 @@ class ResourceTransform implements ASTTransformation{
         final listArgs = new ArgumentListExpression()
 
         final paginationArgs = new ArgumentListExpression()
-        paginationArgs.addExpression(new ElvisOperatorExpression(new VariableExpression(maxParam), new ConstantExpression(10)))
-        paginationArgs.addExpression(new ConstantExpression(100))
+        paginationArgs.addExpression(new ElvisOperatorExpression(new VariableExpression(maxParam), new ConstantExpression(Integer.valueOf(10))))
+        paginationArgs.addExpression(new ConstantExpression(Integer.valueOf(100)))
         methodBody.addStatement(
             new ExpressionStatement(
-                new BinaryExpression(new PropertyExpression(new VariableExpression("params"), "max"),
+                new BinaryExpression(new PropertyExpression(new PropertyExpression(buildThisExpression(), "params"), "max"),
                     Token.newSymbol(Types.EQUAL, 0, 0),
-                    new MethodCallExpression(new ClassExpression(new ClassNode(Math)), "max", paginationArgs))
+                    applyMethodTarget(new MethodCallExpression(new ClassExpression(new ClassNode(Math)), "max", paginationArgs), Math.class, int.class, int.class))
             )
         )
 
