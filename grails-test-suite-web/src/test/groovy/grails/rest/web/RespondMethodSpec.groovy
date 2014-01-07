@@ -56,7 +56,6 @@ class RespondMethodSpec extends Specification{
         }
     }
 
-    @Ignore
     void "Test that the respond method produces the correct model for a domain instance and no specific content type"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -73,7 +72,6 @@ class RespondMethodSpec extends Specification{
             modelAndView.viewName == 'show'
     }
 
-    @Ignore
     void "Test that the respond method produces XML for a domain instance and a content type of XML"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -85,11 +83,10 @@ class RespondMethodSpec extends Specification{
 
         then:"A modelAndView and view is produced"
             result == null
-            response.contentType == 'text/xml'
+            response.contentType == 'text/xml;charset=UTF-8'
             response.xml.title.text() == 'The Stand'
     }
 
-    @Ignore
     void "Test that the respond method produces XML for a list of domains and a content type of XML"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -100,10 +97,9 @@ class RespondMethodSpec extends Specification{
 
         then:"A modelAndView and view is produced"
             result == null
-            response.contentType == 'text/xml'
+            response.contentType == 'text/xml;charset=UTF-8'
     }
 
-    @Ignore
     void "Test that the respond method produces errors XML for a domain instance that has errors and a content type of XML"() {
         given:"A book instance"
             def book = new Book(title: "")
@@ -116,11 +112,10 @@ class RespondMethodSpec extends Specification{
 
         then:"A modelAndView and view is produced"
             result == null
-            response.contentType == 'text/xml'
+            response.contentType == 'text/xml;charset=UTF-8'
             response.xml.error.message.text() == 'Property [title] of class [class grails.rest.web.Book] cannot be null'
     }
 
-    @Ignore
     void "Test that the respond method produces JSON for a domain instance and a content type of JSON"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -132,12 +127,11 @@ class RespondMethodSpec extends Specification{
 
         then:"A modelAndView and view is produced"
             result == null
-            response.contentType == 'application/json'
+            response.contentType == 'application/json;charset=UTF-8'
             response.json.title == 'The Stand'
     }
 
-    @Ignore
-    void "Test that the respond method produces a 404 for a format not supported"() {
+    void "Test that the respond method produces a 415 for a format not supported"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
 
@@ -147,10 +141,9 @@ class RespondMethodSpec extends Specification{
             def result = controller.showWithFormats(book.id)
 
         then:"A modelAndView and view is produced"
-            response.status == 404
+            response.status == 415
     }
 
-    @Ignore
     void "Test that the respond method produces JSON for an action that specifies explicit formats"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)
@@ -162,7 +155,7 @@ class RespondMethodSpec extends Specification{
 
         then:"A modelAndView and view is produced"
             result == null
-            response.contentType == 'application/json'
+            response.contentType == 'application/json;charset=UTF-8'
             response.json.title == 'The Stand'
     }
 
