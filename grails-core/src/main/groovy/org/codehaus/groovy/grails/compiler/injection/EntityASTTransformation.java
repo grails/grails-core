@@ -71,7 +71,11 @@ public class EntityASTTransformation implements ASTTransformation {
             try {
                 injector.performInjection(sourceUnit, cNode);
             } catch (RuntimeException e) {
-                GrailsConsole.getInstance().error("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage(), e);
+                try {
+                    GrailsConsole.getInstance().error("Error occurred calling AST injector ["+injector.getClass().getName()+"]: " + e.getMessage(), e);
+                } catch (Throwable t) {
+                    // ignore
+                }
                 throw e;
             }
         }
