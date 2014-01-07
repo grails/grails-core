@@ -32,12 +32,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.compiler.web.AllowedMethodsHandledAtCompileTime;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
@@ -172,14 +172,16 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         }
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
-
-        if (!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
-            try {
-                response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-                return null;
-            }
-            catch (IOException e) {
-                throw new ControllerExecutionException("I/O error sending 403 error",e);
+        
+        if(controller.getClass().getAnnotation(AllowedMethodsHandledAtCompileTime.class) == null) { 
+            if (!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
+                try {
+                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                    return null;
+                }
+                catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error sending 403 error",e);
+                }
             }
         }
 
