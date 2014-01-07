@@ -4,6 +4,9 @@ import grails.persistence.*
 import grails.rest.*
 import grails.test.mixin.domain.DomainClassUnitTestMixin
 import grails.test.mixin.web.ControllerUnitTestMixin
+
+import org.codehaus.groovy.control.CompilerConfiguration
+
 import spock.lang.Shared
 import spock.lang.Specification
 /**
@@ -17,7 +20,7 @@ class ResourceAnnotationRestfulControllerSpec extends Specification{
     def controller
 
     void setupSpec() {
-        def gcl  = new GroovyClassLoader()
+        def gcl  = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), createCompilerConfiguration())
         gcl.parseClass('''
 import grails.persistence.*
 import grails.rest.*
@@ -34,6 +37,18 @@ class Video {
         domainClass = gcl.loadClass('Video')
         controllerClass = gcl.loadClass('VideoController')
         mockDomain(domainClass)
+    }
+
+    protected CompilerConfiguration createCompilerConfiguration() {
+        CompilerConfiguration compilerConfig = new CompilerConfiguration()
+        File targetDir = new File(System.getProperty("java.io.tmpdir"), "classes_" + this.getClass().getSimpleName())
+        if(targetDir.exists()) {
+            targetDir.deleteDir()
+        }
+        targetDir.mkdirs()
+        // keep compiled bytecode in targetDirectory for debugging purposes 
+        compilerConfig.targetDirectory = targetDir
+        return compilerConfig
     }
 
     def setup() {

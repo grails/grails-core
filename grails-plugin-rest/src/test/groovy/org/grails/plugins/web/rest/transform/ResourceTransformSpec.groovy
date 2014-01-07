@@ -6,14 +6,31 @@ import spock.lang.Specification
 
 import java.lang.reflect.Method
 
+import org.codehaus.groovy.control.CompilerConfiguration;
+
 /**
  * @author Graeme Rocher
  */
 class ResourceTransformSpec extends Specification {
+    protected GroovyClassLoader createGroovyClassLoader() {
+        new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), createCompilerConfiguration())
+    }
+
+    protected CompilerConfiguration createCompilerConfiguration() {
+        CompilerConfiguration compilerConfig = new CompilerConfiguration()
+        File targetDir = new File(System.getProperty("java.io.tmpdir"), "classes_" + this.getClass().getSimpleName())
+        if(targetDir.exists()) {
+            targetDir.deleteDir()
+        }
+        targetDir.mkdirs()
+        // keep compiled bytecode in targetDirectory for debugging purposes
+        compilerConfig.targetDirectory = targetDir
+        return compilerConfig
+    }
 
     void "Test that the resource transform creates a controller class"() {
          given:"A parsed class with a @Resource annotation"
-            def gcl = new GroovyClassLoader()
+            def gcl = createGroovyClassLoader()
             gcl.parseClass('''
 import grails.rest.*
 import grails.persistence.*
@@ -59,7 +76,7 @@ class Book {
     @Issue("GRAILS-10741")
     void "Test that the resource transform creates a read only controller class"() {
         given:"A parsed class with a @Resource annotation"
-        def gcl = new GroovyClassLoader()
+        def gcl = createGroovyClassLoader()
         gcl.parseClass('''
 import grails.rest.*
 import grails.persistence.*
