@@ -32,11 +32,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections.map.CompositeMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
@@ -77,6 +78,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
     private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
     private Collection<ActionResultTransformer> actionResultTransformers = Collections.emptyList();
     protected boolean developmentMode = Environment.isDevelopmentMode();
+    protected Map<Class<?>, Boolean> allowedMethodsSupport = new HashMap<Class<?>, Boolean>();
+    
+    protected final boolean developerMode = Environment.isDevelopmentMode();
+
 
     public ServletContext getServletContext() {
         return servletContext;
@@ -172,14 +177,17 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         }
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
-
-        if (!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
-            try {
-                response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-                return null;
-            }
-            catch (IOException e) {
-                throw new ControllerExecutionException("I/O error sending 403 error",e);
+        
+        boolean allowedMethodsHandledAtCompileTime = hasCompileTimeSupportForAllowedMethods(controller);
+        if(!allowedMethodsHandledAtCompileTime) { 
+            if (!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
+                try {
+                    response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                    return null;
+                }
+                catch (IOException e) {
+                    throw new ControllerExecutionException("I/O error sending 403 error",e);
+                }
             }
         }
 
@@ -201,6 +209,19 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
         boolean returnModelAndView = invokeAfterInterceptor(controllerClass, controller, actionName, mv) && !response.isCommitted();
         return returnModelAndView ? mv : null;
+    }
+
+    protected boolean hasCompileTimeSupportForAllowedMethods(GroovyObject controller) {
+        final Class<?> controllerClass = controller.getClass();
+        Boolean allowedMethodsHandledAtCompileTime = allowedMethodsSupport.get(controllerClass);
+        if (allowedMethodsHandledAtCompileTime == null) {
+            allowedMethodsHandledAtCompileTime = GrailsClassUtils.hasBeenEnhancedForFeature(controllerClass, DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
+            if (!developerMode) {
+                allowedMethodsSupport.put(controllerClass, allowedMethodsHandledAtCompileTime);
+            }
+        }
+        
+        return allowedMethodsHandledAtCompileTime;
     }
 
     protected abstract Object retrieveAction(GroovyObject controller, String actionName,

@@ -43,6 +43,7 @@ class RestfulControllerSuperClassSpec extends Specification {
 
     void "Test the save action returns the correct model, status and location"() {
         when:"The save action is executed"
+            request.method = 'POST'
             controller.params['title'] = 'TestVideo'
             controller.save()
 
@@ -57,6 +58,7 @@ class RestfulControllerSuperClassSpec extends Specification {
         given: "An existing domain object and Restful controller"
             def video = new Video(title:'Existing').save()
         when:"The update action is executed on controller"
+            request.method = 'PUT'
             controller.params['id']=video.id
             controller.params['title'] = 'Updated'
             controller.update()

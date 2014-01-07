@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.commons;
 
+import grails.artefact.Enhanced;
 import grails.util.GrailsNameUtils;
 import groovy.lang.AdaptingMetaClass;
 import groovy.lang.ExpandoMetaClass;
@@ -29,8 +30,20 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
@@ -1229,5 +1242,27 @@ public class GrailsClassUtils {
             className = configName.toString();
         }
         return ClassUtils.forName(className, ClassUtils.getDefaultClassLoader()).newInstance();
+    }
+    
+    /**
+     * Checks to see if a class is marked with @grails.artefact.Enhanced and if the enhancedFor
+     * attribute of the annotation contains a specific feature name
+     * 
+     * @param controllerClass The class to inspect
+     * @param featureName The name of a feature to check for
+     * @return true if controllerClass is marked with Enhanced and the enhancedFor attribute includes featureName, otherwise returns false
+     * @see Enhanced
+     * @see Enhanced#enhancedFor()
+     */
+    public static Boolean hasBeenEnhancedForFeature(final Class<?> controllerClass, final String featureName) {
+        boolean hasBeenEnhanced = false;
+        final Enhanced enhancedAnnotation = controllerClass.getAnnotation(Enhanced.class);
+        if(enhancedAnnotation != null) {
+            final String[] enhancedFor = enhancedAnnotation.enhancedFor();
+            if(enhancedFor != null) {
+                hasBeenEnhanced = ArrayUtils.contains(enhancedFor, featureName);
+            }
+        }
+        return hasBeenEnhanced;
     }
 }
