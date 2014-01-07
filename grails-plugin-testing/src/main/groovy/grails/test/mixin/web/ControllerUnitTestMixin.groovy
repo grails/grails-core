@@ -195,6 +195,9 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
                 xml:           ['text/xml', 'application/xml']
             ]
         }
+        if(!config?.grails?.mime?.use?.accept) {
+            config.grails.mime.use.accept.header = true
+        }
         
         defineBeans(new MimeTypesGrailsPlugin().doWithSpring)
         defineBeans(new ConvertersGrailsPlugin().doWithSpring)
