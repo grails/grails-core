@@ -20,15 +20,16 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 
 import javax.servlet.http.HttpServletResponse
 
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.beans.factory.annotation.Autowired
@@ -50,6 +51,8 @@ class ControllersRestApi {
     protected @Delegate ControllersApi controllersApi
     protected @Delegate ControllersMimeTypesApi mimeTypesApi
     protected RendererRegistry rendererRegistry
+    @Autowired(required = false)
+    ProxyHandler proxyHandler
 
     @Autowired
     GroovyPageLocator groovyPageLocator
@@ -93,6 +96,10 @@ class ControllersRestApi {
             return render(controller,[status:statusCode ?: 404 ])
         }
 
+        if (proxyHandler != null) {
+            value = proxyHandler.unwrapIfProxy(value)
+        }
+        
         final webRequest = getWebRequest(controller)
         List<String> formats = calculateFormats(controller, webRequest.actionName, value, args)
         final response = webRequest.getCurrentResponse()
@@ -117,6 +124,9 @@ class ControllersRestApi {
             Renderer renderer
             if (errors && errors.hasErrors()) {
                 def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
+                if (proxyHandler != null && target != null) {
+                    target = proxyHandler.unwrapIfProxy(target)
+                }
                 Renderer<Errors> errorsRenderer = registry.findContainerRenderer(mimeType, Errors.class, target)
                 if (errorsRenderer) {
                     final context = new ServletRenderContext(webRequest, [model: args.model])

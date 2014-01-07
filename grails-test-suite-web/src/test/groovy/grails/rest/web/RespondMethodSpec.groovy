@@ -22,10 +22,11 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
+import org.codehaus.groovy.grails.web.mime.MimeType
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
 
-import spock.lang.Ignore
 import spock.lang.Specification
 
 @TestFor(BookController)
@@ -191,6 +192,46 @@ class RespondMethodSpec extends Specification{
         modelAndView.model == [book: book, extra: true]
         modelAndView.viewName == 'showWithModel'
     }
+    
+    void "Test that proxyHandler is used for unwrapping wrapped model"() {
+        given:"A book instance"
+        def book = new Book(title: "")
+        book.validate()
+        applicationContext.getBean("instanceControllersRestApi").proxyHandler = new TestProxyHandler()
+        when:"The respond method is used to render a response"
+        webRequest.actionName = 'showWithModel'
+        controller.respond(new BookProxy(book: book), model: [extra: true])
+        def modelAndView = webRequest.request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+
+        then:"A modelAndView and view is produced"
+        modelAndView != null
+        modelAndView instanceof ModelAndView
+        modelAndView.model == [book: book, extra: true]
+        modelAndView.viewName == 'showWithModel'
+    }
+    
+    void "Test that proxyHandler is used for unwrapping proxy collections"() {
+        given:"A book instance"
+        def book = new Book(title: "")
+        book.validate()
+        ['instanceControllersRestApi','rendererRegistry'].each { beanName ->
+            applicationContext.getBean(beanName).proxyHandler = new TestProxyHandler()
+        }
+        def renderer=applicationContext.getBean('rendererRegistry').findRenderer(MimeType.HTML, [])
+        renderer.proxyHandler = new TestProxyHandler()
+        
+        when:"The respond method is used to render a response"
+        webRequest.actionName = 'showWithModel'
+        controller.respond([new BookProxy(book: book)], model: [extra: true])
+        def modelAndView = webRequest.request.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW)
+
+        then:"A modelAndView and view is produced"
+        modelAndView != null
+        modelAndView instanceof ModelAndView
+        modelAndView.model.containsKey('bookList')
+        modelAndView.model.extra == true
+        modelAndView.viewName == 'showWithModel'
+    }
 }
 
 @Artefact("Controller")
@@ -217,5 +258,38 @@ class Book {
 
     static constraints = {
         title blank:false
+    }
+}
+
+class BookProxy {
+    Book book
+}
+
+class TestProxyHandler implements ProxyHandler {
+    @Override
+    public boolean isProxy(Object o) {
+        false
+    }
+
+    @Override
+    public Object unwrapIfProxy(Object instance) {
+        if(instance instanceof BookProxy)
+            return instance.book
+        instance
+    }
+
+    @Override
+    public boolean isInitialized(Object o) {
+        true
+    }
+
+    @Override
+    public void initialize(Object o) {
+        
+    }
+
+    @Override
+    public boolean isInitialized(Object obj, String associationName) {
+        true
     }
 }
