@@ -19,7 +19,10 @@ import grails.rest.render.RenderContext
 import grails.rest.render.Renderer
 import grails.util.GrailsNameUtils
 import groovy.transform.CompileStatic
+
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -33,6 +36,8 @@ import org.springframework.validation.Errors
 class DefaultHtmlRenderer<T> implements Renderer<T> {
     protected Class<T> targetType
     protected MimeType[] mimeTypes = [MimeType.XHTML, MimeType.HTML] as MimeType[]
+    @Autowired(required = false)
+    ProxyHandler proxyHandler
 
     String suffix = ""
 
@@ -68,13 +73,67 @@ class DefaultHtmlRenderer<T> implements Renderer<T> {
             Errors errors = (Errors)object
             def target = errors instanceof BeanPropertyBindingResult ? errors.getTarget() : null
             if (target) {
-                String modelVariableName = GrailsNameUtils.getPropertyNameConvention(target, suffix)
-                context.setModel([(modelVariableName): target])
+                applyModel(context, target)
             }
         } else {
-            String modelVariableName = GrailsNameUtils.getPropertyNameConvention(object, suffix)
-            context.setModel([(modelVariableName): object])
+            applyModel(context, object)
         }
+    }
+
+    protected void applyModel(RenderContext context, Object object) {
+        context.setModel([(resolveModelVariableName(object)): object])
+    }
+
+    protected String resolveModelVariableName(Object object) {
+        if(object != null) {
+            if (proxyHandler != null) {
+                object = proxyHandler.unwrapIfProxy(object)
+            }
+
+            Class<?> type = object.getClass()
+            if (type.isArray()) {
+                return GrailsNameUtils.getPropertyName(type.getComponentType()) + suffix + "Array"
+            }
+
+            if (object instanceof Collection) {
+                Collection coll = (Collection) object
+                if (coll.isEmpty()) {
+                    return "emptyCollection"
+                }
+
+                Object first = coll.iterator().next()
+                if (proxyHandler != null) {
+                    first = proxyHandler.unwrapIfProxy(first)
+                }
+                if(coll instanceof List) {
+                    return GrailsNameUtils.getPropertyName(first.getClass()) + suffix + "List"
+                }
+                if(coll instanceof Set) {
+                    return GrailsNameUtils.getPropertyName(first.getClass()) + suffix + "Set"
+                }
+                return GrailsNameUtils.getPropertyName(first.getClass()) + suffix + "Collection"
+            }
+
+            if (object instanceof Map) {
+                Map map = (Map)object
+
+                if (map.isEmpty()) {
+                    return "emptyMap"
+                }
+
+                Object entry = map.values().iterator().next()
+                if (entry != null) {
+                    if (proxyHandler != null) {
+                        entry = proxyHandler.unwrapIfProxy(entry)
+                    }
+                    return GrailsNameUtils.getPropertyName(entry.getClass()) + suffix + "Map"
+                }
+            }
+            else {
+                return GrailsNameUtils.getPropertyName(object.getClass()) + suffix
+            }
+        }
+        return null
     }
 
     MimeType[] getMimeTypes() {

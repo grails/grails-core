@@ -20,12 +20,13 @@ import grails.rest.render.Renderer
 import grails.rest.render.RendererRegistry
 import groovy.transform.Canonical
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
 
 import java.util.concurrent.ConcurrentHashMap
 
 import javax.annotation.PostConstruct
 
+import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.codehaus.groovy.grails.support.proxy.ProxyHandler
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.util.ClassAndMimeTypeRegistry
@@ -33,7 +34,6 @@ import org.grails.plugins.web.rest.render.html.DefaultHtmlRenderer
 import org.grails.plugins.web.rest.render.json.DefaultJsonRenderer
 import org.grails.plugins.web.rest.render.xml.DefaultXmlRenderer
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.util.ClassUtils
 import org.springframework.validation.BeanPropertyBindingResult
 import org.springframework.validation.Errors
 
@@ -55,6 +55,8 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         .build()
     @Autowired(required = false)
     GrailsConventionGroovyPageLocator groovyPageLocator
+    @Autowired(required = false)
+    ProxyHandler proxyHandler
 
     String modelSuffix = ''
 
@@ -66,9 +68,11 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         addDefaultRenderer(new DefaultJsonRenderer<Object>(Object, groovyPageLocator, this))
         final defaultHtmlRenderer = new DefaultHtmlRenderer<Object>(Object)
         defaultHtmlRenderer.suffix = modelSuffix
+        defaultHtmlRenderer.proxyHandler = proxyHandler
         addDefaultRenderer(defaultHtmlRenderer)
         final allHtmlRenderer = new DefaultHtmlRenderer<Object>(Object, MimeType.ALL)
         allHtmlRenderer.suffix = modelSuffix
+        allHtmlRenderer.proxyHandler = proxyHandler
         addDefaultRenderer(allHtmlRenderer)
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.XML), new DefaultXmlRenderer(Errors))
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_XML), new DefaultXmlRenderer(Errors))
@@ -76,6 +80,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.TEXT_JSON), new DefaultJsonRenderer(Errors))
         final defaultContainerHtmlRenderer = new DefaultHtmlRenderer(Errors)
         defaultContainerHtmlRenderer.suffix = modelSuffix
+        defaultContainerHtmlRenderer.proxyHandler = proxyHandler
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.HTML), defaultContainerHtmlRenderer)
         containerRenderers.put(new ContainerRendererCacheKey(Errors, Object, MimeType.ALL), defaultContainerHtmlRenderer)
     }
@@ -124,6 +129,9 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
     @Override
     def <C, T> Renderer<C> findContainerRenderer(MimeType mimeType, Class<C> containerType, T object) {
         if (object == null) return null
+        if (proxyHandler != null) {
+            object = proxyHandler.unwrapIfProxy(object)
+        }
         def targetClass = object instanceof Class ? (Class) object : object.getClass()
         targetClass = getTargetClassForContainer(targetClass, object)
         def originalKey = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
@@ -189,6 +197,9 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
                 final iterator = object.iterator()
                 final first = iterator.next()
                 if (first) {
+                    if (proxyHandler != null) {
+                        first = proxyHandler.unwrapIfProxy(first)
+                    }
                     targetClass = first.getClass()
                 }
             }
@@ -196,12 +207,18 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
             if (object) {
                 final first = object.values().iterator().next()
                 if (first) {
+                    if (proxyHandler != null) {
+                        first = proxyHandler.unwrapIfProxy(first)
+                    }
                     targetClass = first.getClass()
                 }
             }
         } else if (object instanceof BeanPropertyBindingResult) {
             final target = ((BeanPropertyBindingResult) object).target
             if (target) {
+                if (proxyHandler != null) {
+                    target = proxyHandler.unwrapIfProxy(target)
+                }
                 targetClass = target.getClass()
             }
         }
