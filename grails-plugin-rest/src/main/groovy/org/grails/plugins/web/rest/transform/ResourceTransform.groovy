@@ -224,7 +224,9 @@ class ResourceTransform implements ASTTransformation{
                 if(!mn.getAnnotations(ControllerActionTransformer.ACTION_ANNOTATION_NODE.classNode)) {
                     mn.addAnnotation(ControllerActionTransformer.ACTION_ANNOTATION_NODE)
                 }
+                processVariableScopes(source, newControllerClassNode, mn)
             }
+            
             new TransactionalTransform().weaveTransactionalBehavior(source, newControllerClassNode, transactionalAnn)
             newControllerClassNode.setModule(ast)
 
@@ -252,7 +254,6 @@ class ResourceTransform implements ASTTransformation{
     void weaveUpdateAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml,int annotationLineNumber,List<MethodNode> weavedMethods) {
         def domainParameter = new Parameter(domainClass.getPlainNodeReference(),domainPropertyName)
         def domainVar = new VariableExpression(domainParameter)
-        final variableScope = new VariableScope()
         final args = new MapExpression()
         args.addMapEntryExpression(new ConstantExpression(ARGUMENT_STATUS), new ConstantExpression(HttpStatus.NOT_FOUND.value()))
         final ifBlock = new ExpressionStatement(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, args))
@@ -277,11 +278,8 @@ class ResourceTransform implements ASTTransformation{
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(domainVar, ACTION_SAVE, updateArgs)))
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
-        withFormatClosure.variableScope = variableScope
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
-        domainParameter.setClosureSharedVariable(true)
-        variableScope.putReferencedLocalVariable(domainParameter)
         if (hasHtml) {
             // add html specific method call
             final messageKey = "default.updated.message"
@@ -291,7 +289,6 @@ class ResourceTransform implements ASTTransformation{
             closureBody.addStatement(message)
             closureBody.addStatement(redirect)
             final htmlFormatClosure = new ClosureExpression(null, closureBody)
-            htmlFormatClosure.variableScope = variableScope
             withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), 'form', htmlFormatClosure)))
 
         }
@@ -301,7 +298,6 @@ class ResourceTransform implements ASTTransformation{
         renderArgs.addExpression(domainVar)
         renderArgs.addExpression(renderNamedArgs)
         final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, renderArgs)))
-        allFormatsClosure.variableScope = variableScope
         withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
 
         final updateMethod = new MethodNode(ACTION_UPDATE, PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
@@ -331,7 +327,6 @@ class ResourceTransform implements ASTTransformation{
     void weaveDeleteAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml,int annotationLineNumber,List<MethodNode> weavedMethods) {
         def domainParameter = new Parameter(domainClass.getPlainNodeReference(),domainPropertyName)
         def domainVar = new VariableExpression(domainParameter)
-        final variableScope = new VariableScope()
         final args = new MapExpression()
         args.addMapEntryExpression(new ConstantExpression(ARGUMENT_STATUS), new ConstantExpression(HttpStatus.NOT_FOUND.value()))
         final ifBlock = new ExpressionStatement(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, args))
@@ -346,11 +341,8 @@ class ResourceTransform implements ASTTransformation{
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(domainVar,ACTION_DELETE, deleteArgs)))
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
-        withFormatClosure.variableScope = variableScope
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
-        domainParameter.setClosureSharedVariable(true)
-        variableScope.putReferencedLocalVariable(domainParameter)
         if (hasHtml) {
             // add html specific method call
             final message = getFlashMessage('default.deleted.message', domainPropertyName, domainClass, domainVar)
@@ -362,7 +354,6 @@ class ResourceTransform implements ASTTransformation{
             closureBody.addStatement(message)
             closureBody.addStatement(redirect)
             final htmlFormatClosure = new ClosureExpression(null, closureBody)
-            htmlFormatClosure.variableScope = variableScope
             withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), 'form', htmlFormatClosure)))
 
         }
@@ -371,7 +362,6 @@ class ResourceTransform implements ASTTransformation{
         renderNamedArgs.addMapEntryExpression(CONSTANT_STATUS, new ConstantExpression(HttpStatus.NO_CONTENT.value()))
         renderArgs.addExpression(renderNamedArgs)
         final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, renderArgs)))
-        allFormatsClosure.variableScope = variableScope
         withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
 
         final deleteMethod = new MethodNode(ACTION_DELETE, PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
@@ -385,7 +375,6 @@ class ResourceTransform implements ASTTransformation{
         def domainParameter = new Parameter(domainClass.getPlainNodeReference(),domainPropertyName)
         def domainVar = new VariableExpression(domainParameter)
         def respondArgs = new ArgumentListExpression()
-        final variableScope = new VariableScope()
         respondArgs.addExpression(new PropertyExpression(domainVar,"errors"))
         final args = new MapExpression()
         args.addMapEntryExpression(new ConstantExpression("view"), new ConstantExpression(ACTION_CREATE))
@@ -403,12 +392,9 @@ class ResourceTransform implements ASTTransformation{
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(domainVar,"save", saveArgs)))
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
-        withFormatClosure.variableScope = variableScope
         elseBlock.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("request"), "withFormat", withFormatClosure)))
 
 
-        domainParameter.setClosureSharedVariable(true)
-        variableScope.putReferencedLocalVariable(domainParameter)
         if (hasHtml) {
             // add html specific method call
             final message = getFlashMessage('default.created.message', domainPropertyName, domainClass, domainVar)
@@ -417,7 +403,6 @@ class ResourceTransform implements ASTTransformation{
             closureBody.addStatement(message)
             closureBody.addStatement(redirect)
             final htmlFormatClosure = new ClosureExpression(null, closureBody)
-            htmlFormatClosure.variableScope = variableScope
             withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), 'form', htmlFormatClosure)))
 
         }
@@ -427,7 +412,6 @@ class ResourceTransform implements ASTTransformation{
         renderArgs.addExpression(domainVar)
         renderArgs.addExpression(renderNamedArgs)
         final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, renderArgs)))
-        allFormatsClosure.variableScope = variableScope
         withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
 
         final saveMethod = new MethodNode("save", PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
