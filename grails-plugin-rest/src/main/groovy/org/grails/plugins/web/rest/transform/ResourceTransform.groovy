@@ -36,7 +36,6 @@ import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.FieldNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
-import org.codehaus.groovy.ast.VariableScope
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.BinaryExpression
 import org.codehaus.groovy.ast.expr.BooleanExpression
@@ -51,6 +50,7 @@ import org.codehaus.groovy.ast.expr.MapEntryExpression
 import org.codehaus.groovy.ast.expr.MapExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.NotExpression
+import org.codehaus.groovy.ast.expr.PropertyExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.EmptyStatement
@@ -297,7 +297,7 @@ class ResourceTransform implements ASTTransformation{
         if (hasHtml) {
             // add html specific method call
             final messageKey = "default.updated.message"
-            final message = getFlashMessage(messageKey, domainPropertyName, domainClass, domainVar, controllerClass, true)
+            final message = getFlashMessage(messageKey, domainPropertyName, domainClass, domainVar)
             final redirect = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), REDIRECT_METHOD, domainVar), controllerClass, [Object] as Class[]))
             final closureBody = new BlockStatement()
             closureBody.addStatement(message)
@@ -321,20 +321,20 @@ class ResourceTransform implements ASTTransformation{
         controllerClass.addMethod(updateMethod)
     }
 
-    protected ExpressionStatement getFlashMessage(String messageKey, String domainPropertyName, ClassNode domainClass, VariableExpression domainVar, ClassNode controllerClass, boolean inClosure) {
+    protected ExpressionStatement getFlashMessage(String messageKey, String domainPropertyName, ClassNode domainClass, VariableExpression domainVar) {
         final flashArgs = new MapExpression()
         flashArgs.addMapEntryExpression(new ConstantExpression("code"), new ConstantExpression(messageKey))
         final messageArgs = new MapExpression()
         messageArgs.addMapEntryExpression(new ConstantExpression("code"), new ConstantExpression("${domainPropertyName}.label".toString()))
         messageArgs.addMapEntryExpression(new ConstantExpression("default"), new ConstantExpression(domainClass.getNameWithoutPackage()))
         final defaultMessageList = new ListExpression()
-        // TODO: make these calls direct too, requires adding message method to controller
-        defaultMessageList.addExpression( applyImplicitThis(new MethodCallExpression(buildThisExpression(), "message", messageArgs), !inClosure) )
-        defaultMessageList.addExpression( buildGetPropertyExpression(domainVar, "id", domainClass) )
+        defaultMessageList.addExpression( new MethodCallExpression(buildThisExpression(), "message", messageArgs) )
+        defaultMessageList.addExpression( new PropertyExpression(domainVar, "id") )
         flashArgs.addMapEntryExpression(new ConstantExpression("args"), defaultMessageList)
         new ExpressionStatement(
-            buildPutMapExpression(applyImplicitThis(buildGetPropertyExpression(buildThisExpression(), "flash", controllerClass), !inClosure), "message",
-                applyImplicitThis(new MethodCallExpression(buildThisExpression(), "message", flashArgs), !inClosure))
+            new BinaryExpression(new PropertyExpression(new VariableExpression("flash"), "message"),
+                Token.newSymbol(Types.EQUAL, 0, 0),
+                new MethodCallExpression(buildThisExpression(), "message", flashArgs))
         )
     }
 
@@ -359,7 +359,7 @@ class ResourceTransform implements ASTTransformation{
 
         if (hasHtml) {
             // add html specific method call
-            final message = getFlashMessage('default.deleted.message', domainPropertyName, domainClass, domainVar, controllerClass, true)
+            final message = getFlashMessage('default.deleted.message', domainPropertyName, domainClass, domainVar)
             final redirectArgs = new MapExpression()
             redirectArgs.addMapEntryExpression(new ConstantExpression("action"), new ConstantExpression("index"))
             redirectArgs.addMapEntryExpression(new ConstantExpression("method"), new ConstantExpression(GET.toString()))
@@ -411,7 +411,7 @@ class ResourceTransform implements ASTTransformation{
 
         if (hasHtml) {
             // add html specific method call
-            final message = getFlashMessage('default.created.message', domainPropertyName, domainClass, domainVar, controllerClass, true)
+            final message = getFlashMessage('default.created.message', domainPropertyName, domainClass, domainVar)
             final redirect = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), REDIRECT_METHOD, domainVar), controllerClass, [Object] as Class[]))
             final closureBody = new BlockStatement()
             closureBody.addStatement(message)
