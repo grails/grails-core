@@ -18,23 +18,26 @@ package org.codehaus.groovy.grails.test.support
 import grails.util.GrailsNameUtils
 
 class ControllerNameExtractor {
-
+    /**
+     * Derive the controller name from the given class name using the list of given suffixes,
+     * typically ['Test', 'Tests', 'Spec', 'Specification']. Given something like
+     *
+     * 'com.triu.TheControllerSpec' -> 'the'
+     * 'TheControllerTests' -> 'the'
+     * 'TheControllerIntegrationTests' -> 'the'
+     * 'TheTests' -> null
+     *
+     * @param testClassName
+     * @param testClassSuffixes
+     * @return the controller name or null if nothing could be derived
+     */
     static String extractControllerNameFromTestClassName(String testClassName, String[] testClassSuffixes) {
-        if (!testClassSuffixes) testClassSuffixes = [''] as String[]
+        def patternSuffix = testClassSuffixes ? "(${testClassSuffixes.join('$|')})" : ""
+        def pattern = ~"(\\w*)Controller\\w*${patternSuffix}"
 
-        def matchingTail
-        testClassSuffixes.find {
-            def tail = "Controller$it"
-            if (testClassName.endsWith(tail)) {
-                matchingTail = tail
-            }
-        }
+        def matches = testClassName =~ pattern
 
-        if (matchingTail) {
-            GrailsNameUtils.getPropertyName(testClassName[0..(testClassName.size() - matchingTail.size() - 1)])
-        } else {
-            null
-        }
+        //noinspection GroovyAssignabilityCheck
+        matches && matches[0] && matches[0][1] ? GrailsNameUtils.getPropertyName(matches[0][1]) : null
     }
-
 }
