@@ -69,7 +69,8 @@ test {
                 "**/GroovyPageAttributesTests.class",
                 "**/BindingExcludeTests.class",
                 "**/NestedXmlBindingTests.class",
-		"**/GSPResponseWriterSpec.class"]
+		"**/GSPResponseWriterSpec.class",
+		"**/RespondMethodSpec.class"]
 }
 
 task isolatedTestsOne(type:Test) {
@@ -96,8 +97,11 @@ task isolatedTestsSeven(type:Test) {
     maxParallelForks = 1
     includes = ["**/GSPResponseWriterSpec.class"]
 }
-
-test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix, isolatedTestsSeven
+task isolatedRespondMethodTests(type:Test) {
+    maxParallelForks = 1
+    includes = ["**/RespondMethodSpec.class"]
+}
+test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix, isolatedTestsSeven, isolatedRespondMethodTests
 
 
 /*
