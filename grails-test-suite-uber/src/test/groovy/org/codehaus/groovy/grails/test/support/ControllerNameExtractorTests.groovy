@@ -17,5 +17,14 @@ class ControllerNameExtractorTests extends GroovyTestCase {
 
         assertEquals 'the', ControllerNameExtractor.extractControllerNameFromTestClassName(
                 'com.foo.TheControllerTests', testClassSuffixes)
+
+        assertEquals 'the', ControllerNameExtractor.extractControllerNameFromTestClassName(
+                'com.foo.TheControllerIntegrationTests', testClassSuffixes)
+
+        assertEquals 'the', ControllerNameExtractor.extractControllerNameFromTestClassName(
+            'com.foo.TheController', null)
+
+        assertEquals null, ControllerNameExtractor.extractControllerNameFromTestClassName(
+            'com.foo.TheTests', testClassSuffixes)
     }
 }
