@@ -194,7 +194,7 @@ class ResourceTransform implements ASTTransformation{
                     final methodBody = new BlockStatement()
 
                     final urlMappingsVar = new VariableExpression(urlMappingsField.name)
-                    final resourcesUrlMapping = new MethodCallExpression(new VariableExpression('this'), uri, new MapExpression([ new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName))]))
+                    final resourcesUrlMapping = new MethodCallExpression(buildThisExpression(), uri, new MapExpression([ new MapEntryExpression(new ConstantExpression("resources"), new ConstantExpression(domainPropertyName))]))
                     final urlMappingsClosure = new ClosureExpression(null, new ExpressionStatement(resourcesUrlMapping))
                     urlMappingsClosure.setVariableScope(new VariableScope())
 
@@ -257,8 +257,8 @@ class ResourceTransform implements ASTTransformation{
         weaveUpdateAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
     }
     
-    private ExpressionStatement createWithFormatStatement(Expression thisExpression, Expression withFormatClosure, ClassNode controllerClass) {
-        new ExpressionStatement(applyDefaultMethodTarget(new MethodCallExpression(thisExpression, "withFormat", withFormatClosure), controllerClass))
+    private ExpressionStatement createWithFormatStatement(Expression expression, Expression withFormatClosure, ClassNode controllerClass) {
+        new ExpressionStatement(applyDefaultMethodTarget(new MethodCallExpression(expression, "withFormat", withFormatClosure), controllerClass))
     }
 
     void weaveUpdateAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml,int annotationLineNumber,List<MethodNode> weavedMethods) {
@@ -267,8 +267,7 @@ class ResourceTransform implements ASTTransformation{
         final variableScope = new VariableScope()
         final args = new MapExpression()
         args.addMapEntryExpression(new ConstantExpression(ARGUMENT_STATUS), new ConstantExpression(HttpStatus.NOT_FOUND.value()))
-        final thisExpression = new VariableExpression('this')
-        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(thisExpression, RENDER_METHOD, args), controllerClass, [Map] as Class[]))
+        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, args), controllerClass, [Map] as Class[]))
 
         def elseBlock = new BlockStatement()
         def ifElseBlock = new BlockStatement()
@@ -278,7 +277,7 @@ class ResourceTransform implements ASTTransformation{
         viewArgs.addMapEntryExpression(new ConstantExpression("view"), new ConstantExpression("edit"))
         respondArgs.addExpression(viewArgs)
 
-        final respondStatement = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(thisExpression, RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[]))
+        final respondStatement = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[]))
         ifElseBlock.addStatement(new IfStatement(new BooleanExpression(applyDefaultMethodTarget(new MethodCallExpression(domainVar, "hasErrors", ZERO_ARGUMENTS), domainClass)), respondStatement,elseBlock))
 
         def ifStatement = new IfStatement(new BooleanExpression(new NotExpression(domainVar)),ifBlock,ifElseBlock)
@@ -291,7 +290,7 @@ class ResourceTransform implements ASTTransformation{
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
         withFormatClosure.variableScope = variableScope
-        elseBlock.addStatement(createWithFormatStatement(thisExpression, withFormatClosure, controllerClass))
+        elseBlock.addStatement(createWithFormatStatement(buildThisExpression(), withFormatClosure, controllerClass))
 
         domainParameter.setClosureSharedVariable(true)
         variableScope.putReferencedLocalVariable(domainParameter)
@@ -315,7 +314,7 @@ class ResourceTransform implements ASTTransformation{
         renderArgs.addExpression(renderNamedArgs)
         final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, renderArgs), controllerClass, [Object, Map] as Class[])))
         allFormatsClosure.variableScope = variableScope
-        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(thisExpression, '*', allFormatsClosure)))
+        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
 
         final updateMethod = new MethodNode(ACTION_UPDATE, PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
         updateMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
@@ -347,8 +346,7 @@ class ResourceTransform implements ASTTransformation{
         final variableScope = new VariableScope()
         final args = new MapExpression()
         args.addMapEntryExpression(new ConstantExpression(ARGUMENT_STATUS), new ConstantExpression(HttpStatus.NOT_FOUND.value()))
-        final thisExpression = new VariableExpression('this')
-        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(thisExpression, RENDER_METHOD, args), controllerClass, [Map] as Class[]))
+        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, args), controllerClass, [Map] as Class[]))
         def elseBlock = new BlockStatement()
 
         def ifStatement = new IfStatement(new BooleanExpression(new NotExpression(domainVar)),ifBlock,elseBlock)
@@ -361,7 +359,7 @@ class ResourceTransform implements ASTTransformation{
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
         withFormatClosure.variableScope = variableScope
-        elseBlock.addStatement(createWithFormatStatement(thisExpression, withFormatClosure, controllerClass))
+        elseBlock.addStatement(createWithFormatStatement(buildThisExpression(), withFormatClosure, controllerClass))
 
         domainParameter.setClosureSharedVariable(true)
         variableScope.putReferencedLocalVariable(domainParameter)
@@ -386,7 +384,7 @@ class ResourceTransform implements ASTTransformation{
         renderArgs.addExpression(renderNamedArgs)
         final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, renderArgs), controllerClass, [Map] as Class[])))
         allFormatsClosure.variableScope = variableScope
-        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(thisExpression, '*', allFormatsClosure)))
+        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
 
         final deleteMethod = new MethodNode(ACTION_DELETE, PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
         deleteMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
@@ -405,8 +403,7 @@ class ResourceTransform implements ASTTransformation{
         args.addMapEntryExpression(new ConstantExpression("view"), new ConstantExpression(ACTION_CREATE))
         respondArgs.addExpression(args)
 
-        final thisExpression = new VariableExpression('this')
-        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(thisExpression, RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[]))
+        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[]))
         def elseBlock = new BlockStatement()
 
         def ifStatement = new IfStatement(new BooleanExpression(applyDefaultMethodTarget(new MethodCallExpression(domainVar, "hasErrors", ZERO_ARGUMENTS), domainClass)),ifBlock,elseBlock)
@@ -419,7 +416,7 @@ class ResourceTransform implements ASTTransformation{
         final withFormatBody = new BlockStatement()
         final withFormatClosure = new ClosureExpression(null, withFormatBody)
         withFormatClosure.variableScope = variableScope
-        elseBlock.addStatement(createWithFormatStatement(thisExpression, withFormatClosure, controllerClass))
+        elseBlock.addStatement(createWithFormatStatement(buildThisExpression(), withFormatClosure, controllerClass))
 
 
         domainParameter.setClosureSharedVariable(true)
@@ -443,7 +440,7 @@ class ResourceTransform implements ASTTransformation{
         renderArgs.addExpression(renderNamedArgs)
         final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, renderArgs), controllerClass, [Object, Map] as Class[])))
         allFormatsClosure.variableScope = variableScope
-        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(thisExpression, '*', allFormatsClosure)))
+        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
 
         final saveMethod = new MethodNode("save", PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
         saveMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
@@ -457,7 +454,7 @@ class ResourceTransform implements ASTTransformation{
         final args = new ArgumentListExpression()
         args.addExpression(new VariableExpression(PARAMS_VARIABLE))
         final constructorCall = new ConstructorCallExpression(domainClass.getPlainNodeReference(), args)
-        methodBody.addStatement(new ReturnStatement(applyMethodTarget(new MethodCallExpression(new VariableExpression('this'), RESPOND_METHOD, constructorCall), controllerClass, [Object, Map] as Class[])))
+        methodBody.addStatement(new ReturnStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, constructorCall), controllerClass, [Object, Map] as Class[])))
         final method = new MethodNode(ACTION_CREATE, PUBLIC, OBJECT_CLASS_NODE, ZERO_PARAMETERS, null, methodBody)
         weavedMethods << method
         controllerClass.addMethod(method)
@@ -476,7 +473,7 @@ class ResourceTransform implements ASTTransformation{
         Parameter[] params = [new Parameter(domainClass.getPlainNodeReference(), domainPropertyName)] as Parameter[]
 
         BlockStatement methodBody = new BlockStatement()
-        methodBody.addStatement(new ExpressionStatement(applyMethodTarget(new MethodCallExpression(new VariableExpression('this'), RESPOND_METHOD, new VariableExpression(domainPropertyName)), controllerClass, [Object, Map] as Class[])))
+        methodBody.addStatement(new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, new VariableExpression(domainPropertyName)), controllerClass, [Object, Map] as Class[])))
         final method = new MethodNode(actionName, PUBLIC, OBJECT_CLASS_NODE, params, null, methodBody)
         weavedMethods << method
         method.lineNumber = annotationLineNumber
@@ -494,7 +491,7 @@ class ResourceTransform implements ASTTransformation{
         final paginationArgs = new ArgumentListExpression()
         paginationArgs.addExpression(new ElvisOperatorExpression(new VariableExpression(maxParam), new ConstantExpression(10)))
         paginationArgs.addExpression(new ConstantExpression(100))
-        Expression getParamsExpression = buildGetPropertyExpression(new VariableExpression("this"), "params", controllerClass);
+        Expression getParamsExpression = buildGetPropertyExpression(buildThisExpression(), "params", controllerClass);
         methodBody.addStatement(
                 new ExpressionStatement(
                 buildPutMapExpression(getParamsExpression, "max",
@@ -512,7 +509,7 @@ class ResourceTransform implements ASTTransformation{
         args.addMapEntryExpression(new ConstantExpression("model"), model)
         respondArgs.addExpression(args)
 
-        methodBody.addStatement(new ReturnStatement(applyMethodTarget(new MethodCallExpression(new VariableExpression('this'), RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[])))
+        methodBody.addStatement(new ReturnStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[])))
         final method = new MethodNode(ACTION_INDEX, PUBLIC, OBJECT_CLASS_NODE, params, null, methodBody)
 //        method.addAnnotation(ControllerActionTransformer.ACTION_ANNOTATION_NODE)
         weavedMethods << method
