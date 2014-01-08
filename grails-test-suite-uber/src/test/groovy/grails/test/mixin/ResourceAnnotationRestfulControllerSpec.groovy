@@ -90,7 +90,8 @@ class Video {
             controller.save(video)
 
         then:"A redirect is issued to the show action"
-            response.status == 201
+            response.status == 302
+            response.redirectedUrl == "/video/show/$video.id"
             domainClass.count() == 1
     }
 
@@ -176,7 +177,8 @@ class Video {
             controller.delete(video)
 
         then:"The instance is deleted"
-            response.status == 204
+            response.status == 302
+            response.redirectedUrl == '/video/index'
             domainClass.count() == 0
 
     }
