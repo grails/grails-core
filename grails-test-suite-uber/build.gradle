@@ -58,7 +58,9 @@ test {
          "**/SetupTeardownInvokeTests.class",
          "**/TestMixinSetupTeardownInvokeTests.class",
          "**/UrlMappingsTestMixinTests.class",
-         "**/WebUtilsTests.class"
+         "**/WebUtilsTests.class",
+         "**/RestfulControllerSpec.class",
+         "**/ResourceAnnotationRestfulControllerSpec.class"
      ]
 }
 
@@ -88,5 +90,10 @@ task isolatedRestRendererTests(type:Test) {
     includes = ['**/rest/render/**/*Spec.class']
 }
 
-test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests
+task isolatedRestfulControllerTests(type:Test) {
+    includes = ["**/RestfulControllerSpec.class",
+        "**/ResourceAnnotationRestfulControllerSpec.class"]
+}
+
+test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests, isolatedRestfulControllerTests
 
