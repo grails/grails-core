@@ -128,7 +128,7 @@ class GrailsUnitTestMixin {
             // see org.springframework.context.annotation.AnnotationConfigUtils.registerAnnotationConfigProcessors method
             context.'annotation-config'()
 
-            grailsProxyHandler(DefaultProxyHandler)
+            proxyHandler(DefaultProxyHandler)
             grailsApplication(DefaultGrailsApplication)
             pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
             messageSource(StaticMessageSource)
