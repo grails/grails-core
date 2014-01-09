@@ -48,7 +48,6 @@ import org.junit.After
 import org.junit.AfterClass
 import org.junit.BeforeClass
 import org.springframework.beans.CachedIntrospectionResults
-import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor
 import org.springframework.context.MessageSource
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
@@ -98,9 +97,6 @@ class GrailsUnitTestMixin {
         if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
             applicationContext = new GrailsWebApplicationContext()
-            final autowiringPostProcessor = new AutowiredAnnotationBeanPostProcessor()
-            autowiringPostProcessor.setBeanFactory( applicationContext.autowireCapableBeanFactory )
-            applicationContext.beanFactory.addBeanPostProcessor(autowiringPostProcessor)
 
             registerBeans()
             applicationContext.refresh()
@@ -127,7 +123,12 @@ class GrailsUnitTestMixin {
         defineBeans(new DataBindingGrailsPlugin().doWithSpring)
 
         defineBeans {
-            grailsProxyHandler(DefaultProxyHandler)
+            xmlns context:"http://www.springframework.org/schema/context"
+            // adds AutowiredAnnotationBeanPostProcessor, CommonAnnotationBeanPostProcessor and others
+            // see org.springframework.context.annotation.AnnotationConfigUtils.registerAnnotationConfigProcessors method
+            context.'annotation-config'()
+
+            proxyHandler(DefaultProxyHandler)
             grailsApplication(DefaultGrailsApplication)
             pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
             messageSource(StaticMessageSource)

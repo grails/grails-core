@@ -60,7 +60,9 @@ test {
          "**/SetupTeardownInvokeTests.class",
          "**/TestMixinSetupTeardownInvokeTests.class",
          "**/UrlMappingsTestMixinTests.class",
-         "**/WebUtilsTests.class"
+         "**/WebUtilsTests.class",
+         "**/RestfulControllerSpec.class",
+         "**/ResourceAnnotationRestfulControllerSpec.class"
      ]
 }
 
@@ -98,6 +100,10 @@ task isolatedPersonTests(type: Test) {
     includes = ['**/grails/test/PersonTests.class']
 }
 
+task isolatedRestfulControllerTests(type:Test) {
+    includes = ["**/RestfulControllerSpec.class",
+        "**/ResourceAnnotationRestfulControllerSpec.class"]
+}
 
-test.dependsOn isolatedPersonTests, isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests, isolatedDefaultGrailsControllerClassTests
+test.dependsOn isolatedPersonTests, isolatedTestsOne, isolatedTestsTwo, isolatedRestRendererTests, isolatedDefaultGrailsControllerClassTests, isolatedRestfulControllerTests
 
