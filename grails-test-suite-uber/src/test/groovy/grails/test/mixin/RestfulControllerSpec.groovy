@@ -96,10 +96,8 @@ class RestfulControllerSpec extends Specification {
         when:"Update is called for a domain instance that doesn't exist"
             controller.update(null)
 
-        then:"A 302 error is returned"
-            status == 302
-            response.redirectedUrl == "/video/index"
-            flash.message == 'default.not.found.message'
+        then:"A 404 error is returned"
+            status == 404
 
         when:"An invalid domain instance is passed to the update action"
             response.reset()
@@ -128,9 +126,7 @@ class RestfulControllerSpec extends Specification {
             controller.delete(null)
 
         then:"A 404 is returned"
-            status == 302
-            response.redirectedUrl == "/video/index"
-            flash.message == 'default.not.found.message'
+            status == 404
 
         when:"A domain instance is created"
             response.reset()

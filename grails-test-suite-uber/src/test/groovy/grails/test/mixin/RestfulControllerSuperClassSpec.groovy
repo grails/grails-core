@@ -47,8 +47,9 @@ class RestfulControllerSuperClassSpec extends Specification {
             controller.save()
 
         then:"The model is created successfully"
-            response.status == HttpStatus.FOUND.value()
-            response.getHeader('Location') == "http://localhost:8080/video/show/1"
+            model.video != null
+            response.status == HttpStatus.CREATED.value()
+            response.getHeader('Location') != null
 
     }
 
@@ -61,8 +62,10 @@ class RestfulControllerSuperClassSpec extends Specification {
             controller.update()
 
         then:"The model is created successfully"
-            response.status == HttpStatus.FOUND.value()
-            response.getHeader('Location') == "http://localhost:8080/video/show/$video.id"
+            model.video != null
+            response.status == HttpStatus.OK.value()
+            response.getHeader('Location') != null
+
     }
 
 
