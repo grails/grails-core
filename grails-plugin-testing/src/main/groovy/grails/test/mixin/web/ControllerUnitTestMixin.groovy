@@ -66,13 +66,13 @@ import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
+import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockHttpSession
 import org.springframework.mock.web.MockServletContext
 import org.springframework.util.ClassUtils
 import org.springframework.web.context.WebApplicationContext
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
-import org.springframework.context.ApplicationContext
 
 /**
  * Applied to a unit test to test controllers.
@@ -182,10 +182,10 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         defineBeans(new ConvertersGrailsPlugin().doWithSpring)
         defineBeans {
             instanceControllersApi(ControllersApi)
-            final rendererRegistry = new DefaultRendererRegistry()
-            rendererRegistry.modelSuffix = config.flatten().get('grails.scaffolding.templates.domainSuffix') ?: ''
-            rendererRegistry.initialize()
-            instanceControllersRestApi(ControllersRestApi, rendererRegistry, ref("instanceControllersApi"), new ControllersMimeTypesApi())
+            rendererRegistry(DefaultRendererRegistry) {
+                modelSuffix = config.flatten().get('grails.scaffolding.templates.domainSuffix') ?: ''
+            }
+            instanceControllersRestApi(ControllersRestApi, ref("rendererRegistry"), ref("instanceControllersApi"), new ControllersMimeTypesApi())
             instanceControllerTagLibraryApi(ControllerTagLibraryApi)
 
             def urlConverterType = config?.grails?.web?.url?.converter
