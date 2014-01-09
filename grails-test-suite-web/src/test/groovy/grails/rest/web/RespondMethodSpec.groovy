@@ -31,6 +31,31 @@ import spock.lang.Specification
 @TestFor(BookController)
 @Mock(Book)
 class RespondMethodSpec extends Specification{
+
+    void setup() {
+        def ga = grailsApplication
+        ga.config.grails.mime.types =
+            [ html: ['text/html','application/xhtml+xml'],
+            xml: ['text/xml', 'application/xml'],
+            text: 'text/plain',
+            js: 'text/javascript',
+            rss: 'application/rss+xml',
+            atom: 'application/atom+xml',
+            css: 'text/css',
+            csv: 'text/csv',
+            all: '*/*',
+            json: ['application/json','text/json'],
+            form: 'application/x-www-form-urlencoded',
+            multipartForm: 'multipart/form-data'
+        ]
+
+        defineBeans {
+            mimeTypes(MimeTypesFactoryBean) {
+                grailsApplication = ga
+            }
+        }
+    }
+
     void "Test that the respond method produces the correct model for a domain instance and no specific content type"() {
         given:"A book instance"
             def book = new Book(title: "The Stand").save(flush:true)

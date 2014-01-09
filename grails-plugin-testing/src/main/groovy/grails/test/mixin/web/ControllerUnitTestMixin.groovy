@@ -178,27 +178,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         applicationContext.setServletContext(servletContext)
         ServletContextHolder.servletContext = servletContext
 
-        if(!config?.grails?.mime?.types && !config?.containsKey('grails.mime.types')) {
-            config.grails.mime.types = [
-                all:           '*/*',
-                atom:          'application/atom+xml',
-                css:           'text/css',
-                csv:           'text/csv',
-                form:          'application/x-www-form-urlencoded',
-                html:          ['text/html','application/xhtml+xml'],
-                js:            'text/javascript',
-                json:          ['application/json', 'text/json'],
-                multipartForm: 'multipart/form-data',
-                rss:           'application/rss+xml',
-                text:          'text/plain',
-                hal:           ['application/hal+json','application/hal+xml'],
-                xml:           ['text/xml', 'application/xml']
-            ]
-        }
-        if(!config?.grails?.mime?.use?.accept && !config?.containsKey('grails.mime.use.accept.header')) {
-            config.grails.mime.use.accept.header = true
-        }
-        
         defineBeans(new MimeTypesGrailsPlugin().doWithSpring)
         defineBeans(new ConvertersGrailsPlugin().doWithSpring)
         defineBeans {
