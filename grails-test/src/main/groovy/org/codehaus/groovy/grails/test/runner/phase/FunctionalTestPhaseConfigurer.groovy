@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.test.runner.phase
 
 import grails.util.BuildSettings
+import grails.util.Environment
 import grails.util.Holders
 import groovy.transform.CompileStatic
 
@@ -90,7 +91,9 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
 
                 // need to swap out the args map so any test phase/targetting patterns
                 // aren't intepreted as the war name.
-                projectRunner.warCreator.packageWar()
+                if( !Environment.isFork() ) {
+                    projectRunner.warCreator.packageWar()
+                }
 
                 if (https) {
                     projectRunner.runWarHttps()
