@@ -61,6 +61,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -69,6 +70,7 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -798,18 +800,47 @@ public class GrailsASTUtils {
         }
     }
     
-    public static AnnotationNode addEnhancedAnnotation(ClassNode classNode) {
-        final AnnotationNode annotationNode;
+    /**
+     * Add the grails.artefact.Enhanced annotation to classNode if it does not already exist and ensure that
+     * all of the features in the enhancedFor array are represented in the enhancedFor attribute of the
+     * Enhanced annnotation
+     * @param classNode the class to add the Enhanced annotation to
+     * @param enhancedFor an array of feature names to include in the enhancedFor attribute of the annotation
+     * @return the AnnotationNode associated with the Enhanced annotation for classNode
+     * @see Enhanced
+     */
+    public static AnnotationNode addEnhancedAnnotation(final ClassNode classNode, final String... enhancedFor) {
+        final AnnotationNode enhancedAnnotationNode;
         final List<AnnotationNode> annotations = classNode.getAnnotations(ENHANCED_CLASS_NODE);
         if (annotations.isEmpty()) {
-            annotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
-            annotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
-            classNode.addAnnotation(annotationNode);
+            enhancedAnnotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
+            enhancedAnnotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
+            classNode.addAnnotation(enhancedAnnotationNode);
         } else {
-            annotationNode = annotations.get(0);
+            enhancedAnnotationNode = annotations.get(0);
+        }
+        
+        if(enhancedFor != null && enhancedFor.length > 0) {
+            ListExpression enhancedForArray = (ListExpression) enhancedAnnotationNode.getMember("enhancedFor");
+            if(enhancedForArray == null) {
+                enhancedForArray = new ListExpression();
+                enhancedAnnotationNode.setMember("enhancedFor", enhancedForArray);
+            }
+            final List<Expression> featureNameExpressions = enhancedForArray.getExpressions();
+            for(final String feature : enhancedFor) {
+                final boolean exists =  CollectionUtils.exists(featureNameExpressions, new Predicate() {
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                    public boolean evaluate(Object object) {
+                        return object instanceof ConstantExpression && feature.equals(((ConstantExpression)object).getValue());  
+                    }
+                });
+                if(!exists) {
+                    featureNameExpressions.add(new ConstantExpression(feature));
+                }
+            }
         }
 
-        return annotationNode;
+        return enhancedAnnotationNode;
     }
 
     public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations) {

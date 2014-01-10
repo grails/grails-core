@@ -36,8 +36,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
-import org.codehaus.groovy.grails.compiler.web.AllowedMethodsHandledAtCompileTime;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
@@ -77,6 +77,10 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
     private static final String FORWARD_CALLED = "org.codehaus.groovy.grails.FORWARD_CALLED";
     private Collection<ActionResultTransformer> actionResultTransformers = Collections.emptyList();
     protected boolean developmentMode = Environment.isDevelopmentMode();
+    protected Map<Class<?>, Boolean> allowedMethodsSupport = new HashMap<Class<?>, Boolean>();
+    
+    protected final boolean developerMode = Environment.isDevelopmentMode();
+
 
     public ServletContext getServletContext() {
         return servletContext;
@@ -173,7 +177,8 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
         // Step 3: load controller from application context.
         GroovyObject controller = getControllerInstance(controllerClass);
         
-        if(controller.getClass().getAnnotation(AllowedMethodsHandledAtCompileTime.class) == null) { 
+        boolean allowedMethodsHandledAtCompileTime = hasCompileTimeSupportForAllowedMethods(controller);
+        if(!allowedMethodsHandledAtCompileTime) { 
             if (!controllerClass.isHttpMethodAllowedForAction(controller, request.getMethod(), actionName)) {
                 try {
                     response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -203,6 +208,20 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
         boolean returnModelAndView = invokeAfterInterceptor(controllerClass, controller, actionName, mv) && !response.isCommitted();
         return returnModelAndView ? mv : null;
+    }
+
+    protected boolean hasCompileTimeSupportForAllowedMethods(GroovyObject controller) {
+        final Class<?> controllerClass = controller.getClass();
+        final String featureName = "allowedMethods";
+        Boolean allowedMethodsHandledAtCompileTime = allowedMethodsSupport.get(controllerClass);
+        if (allowedMethodsHandledAtCompileTime == null) {
+            allowedMethodsHandledAtCompileTime = GrailsClassUtils.hasBeenEnhancedForFeature(controllerClass, featureName);
+            if (!developerMode) {
+                allowedMethodsSupport.put(controllerClass, allowedMethodsHandledAtCompileTime);
+            }
+        }
+        
+        return allowedMethodsHandledAtCompileTime;
     }
 
     protected abstract Object retrieveAction(GroovyObject controller, String actionName,

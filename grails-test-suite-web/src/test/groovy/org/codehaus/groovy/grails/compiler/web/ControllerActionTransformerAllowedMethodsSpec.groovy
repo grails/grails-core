@@ -1,6 +1,7 @@
 package org.codehaus.groovy.grails.compiler.web
 
 import grails.artefact.Artefact
+import grails.artefact.Enhanced
 import grails.test.mixin.TestFor
 
 import javax.servlet.http.HttpServletResponse
@@ -15,10 +16,13 @@ class ControllerActionTransformerAllowedMethodsSpec extends Specification {
     @Issue('GRAILS-8426')
     void 'Test @AllowedMethodsHandledAtCompileTime is added'() {
         when:
-        def annotation = SomeAllowedMethodsController.getAnnotation(AllowedMethodsHandledAtCompileTime)
+        def annotation = SomeAllowedMethodsController.getAnnotation(Enhanced)
 
         then:
         annotation
+        
+        and:
+        'allowedMethods' in annotation.enhancedFor()
     }
     
     @Issue('GRAILS-8426')

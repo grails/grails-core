@@ -201,9 +201,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         if (className.endsWith(ControllerArtefactHandler.TYPE)) {
             processMethods(classNode, source, context);
             processClosures(classNode, source, context);
-            if(!GrailsASTUtils.hasAnnotation(classNode, AllowedMethodsHandledAtCompileTime.class)) {
-                classNode.addAnnotation(new AnnotationNode(new ClassNode(AllowedMethodsHandledAtCompileTime.class)));
-            }
         }
     }
 
@@ -470,6 +467,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     }
 
     protected BlockStatement getCodeToHandleAllowedMethods(ClassNode controllerClass, MethodNode methodNode) {
+        GrailsASTUtils.addEnhancedAnnotation(controllerClass, "allowedMethods");
         final BlockStatement checkAllowedMethodsBlock = new BlockStatement();
         final FieldNode allowedMethodsField = controllerClass.getField("allowedMethods");
         if(allowedMethodsField != null) {
