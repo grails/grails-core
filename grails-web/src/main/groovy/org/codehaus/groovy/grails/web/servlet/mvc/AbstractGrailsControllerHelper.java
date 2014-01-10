@@ -186,7 +186,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
                     return null;
                 }
                 catch (IOException e) {
-                    throw new ControllerExecutionException("I/O error sending 403 error",e);
+                    throw new ControllerExecutionException("I/O error sending 405 error",e);
                 }
             }
         }
