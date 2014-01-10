@@ -57,7 +57,7 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
 
     private static final String SLASH = "/";
     private static final String DEFAULT_CLOSURE_PROPERTY = "defaultAction";
-    private static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
+    public static final String ALLOWED_HTTP_METHODS_PROPERTY = "allowedMethods";
 
     private static final String EXCEPT = "except";
     private static final String ONLY = "only";

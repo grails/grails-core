@@ -35,6 +35,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
@@ -212,10 +213,9 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     protected boolean hasCompileTimeSupportForAllowedMethods(GroovyObject controller) {
         final Class<?> controllerClass = controller.getClass();
-        final String featureName = "allowedMethods";
         Boolean allowedMethodsHandledAtCompileTime = allowedMethodsSupport.get(controllerClass);
         if (allowedMethodsHandledAtCompileTime == null) {
-            allowedMethodsHandledAtCompileTime = GrailsClassUtils.hasBeenEnhancedForFeature(controllerClass, featureName);
+            allowedMethodsHandledAtCompileTime = GrailsClassUtils.hasBeenEnhancedForFeature(controllerClass, DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
             if (!developerMode) {
                 allowedMethodsSupport.put(controllerClass, allowedMethodsHandledAtCompileTime);
             }

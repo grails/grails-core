@@ -82,6 +82,7 @@ import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass;
 import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
@@ -467,9 +468,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
     }
 
     protected BlockStatement getCodeToHandleAllowedMethods(ClassNode controllerClass, MethodNode methodNode) {
-        GrailsASTUtils.addEnhancedAnnotation(controllerClass, "allowedMethods");
+        GrailsASTUtils.addEnhancedAnnotation(controllerClass, DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
         final BlockStatement checkAllowedMethodsBlock = new BlockStatement();
-        final FieldNode allowedMethodsField = controllerClass.getField("allowedMethods");
+        final FieldNode allowedMethodsField = controllerClass.getField(DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
         if(allowedMethodsField != null) {
             final Expression initialAllowedMethodsExpression = allowedMethodsField.getInitialExpression();
             if(initialAllowedMethodsExpression instanceof MapExpression) {
