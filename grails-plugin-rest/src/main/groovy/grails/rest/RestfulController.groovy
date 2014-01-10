@@ -15,12 +15,13 @@
  */
 package grails.rest
 
-import org.codehaus.groovy.grails.web.servlet.HttpHeaders
-
 import static org.springframework.http.HttpStatus.*
 import grails.artefact.Artefact
 import grails.transaction.Transactional
 import grails.util.GrailsNameUtils
+
+import org.codehaus.groovy.grails.web.servlet.HttpHeaders
+import org.springframework.http.HttpStatus
 
 /**
  * Base class that can be extended to get the basic CRUD operations needed for a RESTful API.
@@ -31,15 +32,20 @@ import grails.util.GrailsNameUtils
 @Artefact("Controller")
 @Transactional(readOnly = true)
 class RestfulController<T> {
-
     static allowedMethods = [save: "POST", update: "PUT", delete: "DELETE"]
 
     Class<T> resource
     String resourceName
     String resourceClassName
-
+    boolean readOnly
+    
     RestfulController(Class<T> resource) {
+        this(resource, false)
+    }
+
+    RestfulController(Class<T> resource, boolean readOnly) {
         this.resource = resource
+        this.readOnly = readOnly
         resourceClassName = resource.simpleName
         resourceName = GrailsNameUtils.getPropertyName(resource)
     }
@@ -68,6 +74,9 @@ class RestfulController<T> {
      * Displays a form to create a new resource
      */
     def create() {
+        if(handleReadOnly()) {
+            return
+        }
         respond createResource(getParametersToBind())
     }
 
@@ -76,6 +85,9 @@ class RestfulController<T> {
      */
     @Transactional
     def save() {
+        if(handleReadOnly()) {
+            return
+        }
         def instance = createResource(getParametersToBind())
 
         instance.validate()
@@ -102,6 +114,9 @@ class RestfulController<T> {
     }
 
     def edit() {
+        if(handleReadOnly()) {
+            return
+        }
         respond queryForResource(params.id)
     }
 
@@ -111,6 +126,10 @@ class RestfulController<T> {
      */
     @Transactional
     def update() {
+        if(handleReadOnly()) {
+            return
+        }
+
         T instance = queryForResource(params.id)
         if (instance == null) {
             notFound()
@@ -146,6 +165,10 @@ class RestfulController<T> {
      */
     @Transactional
     def delete() {
+        if(handleReadOnly()) {
+            return
+        }
+
         def instance = queryForResource(params.id)
         if (instance == null) {
             notFound()
@@ -160,6 +183,20 @@ class RestfulController<T> {
                 redirect action:"index", method:"GET"
             }
             '*'{ render status: NO_CONTENT } // NO CONTENT STATUS CODE
+        }
+    }
+    
+    /**
+     * handles the request for write methods (create, edit, update, save, delete) when controller is in read only mode
+     * 
+     * @return true if controller is read only
+     */
+    protected boolean handleReadOnly() {
+        if(readOnly) {
+            render status: HttpStatus.NOT_FOUND.value()
+            return true
+        } else {
+            return false
         }
     }
 
