@@ -76,9 +76,8 @@ class Video {
     void "Test the save action correctly persists an instance"() {
 
         when:"The save action is executed with an invalid instance"
-            def video = domainClass.newInstance(title: '')
-            video.validate()
-            controller.save(video)
+            params.title = ''
+            controller.save()
 
         then:"The create view is rendered again with the correct model"
             model.video != null
@@ -86,8 +85,8 @@ class Video {
 
         when:"The save action is executed with a valid instance"
             response.reset()
-            video = domainClass.newInstance(title: "Game of Thrones")
-            controller.save(video)
+            params.title = "Game of Thrones"
+            controller.save()
 
         then:"A redirect is issued to the show action"
             response.status == 201
@@ -96,14 +95,16 @@ class Video {
 
     void "Test that the show action returns the correct model"() {
         when:"The show action is executed with a null domain"
-            controller.show(null)
+            controller.show()
 
         then:"A 404 error is returned"
             response.status == 404
 
         when:"A domain instance is passed to the show action"
             def video = domainClass.newInstance(title: "Game of Thrones")
-            controller.show(video)
+            video.save(flush:true)
+            params.id = video.id
+            controller.show()
 
 
         then:"A model is populated containing the domain instance"
@@ -112,15 +113,16 @@ class Video {
 
     void "Test that the edit action returns the correct model"() {
         when:"The edit action is executed with a null domain"
-            controller.edit(null)
+            controller.edit()
 
         then:"A 404 error is returned"
             response.status == 404
 
         when:"A domain instance is passed to the edit action"
             def video = domainClass.newInstance(title: "Game of Thrones")
-            controller.edit(video)
-
+            video.save(flush:true)
+            params.id = video.id
+            controller.edit()
 
         then:"A model is populated containing the domain instance"
             model.video == video
@@ -129,28 +131,18 @@ class Video {
 
     void "Test the update action performs an update on a valid domain instance"() {
         when:"Update is called for a domain instance that doesn't exist"
-            controller.update(null)
+            controller.update()
 
         then:"A 404 error is returned"
             status == 404
 
-        when:"An invalid domain instance is passed to the update action"
-            response.reset()
-            def video = domainClass.newInstance(title: '')
-            video.validate()
-            controller.update(video)
-
-        then:"The edit view is rendered again with the invalid instance"
-            view == 'edit'
-            model.video == video
-
         when:"A valid domain instance is passed to the update action"
+            def video = domainClass.newInstance(title: 'Title').save(flush: true)
             response.reset()
-            video = domainClass.newInstance(title: 'Game of Thrones')
-            video.validate()
             request.contentType = 'application/x-www-form-urlencoded'
-            controller.update(video)
-            video.discard()
+            params.id = video.id
+            params.title = 'Game of Thrones'
+            controller.update()
 
         then:"A redirect is issues to the show action"
             response.status == 200
@@ -160,7 +152,7 @@ class Video {
 
     void "Test that the delete action deletes an instance if it exists"() {
         when:"The delete action is called for a null instance"
-            controller.delete(null)
+            controller.delete()
 
         then:"A 404 is returned"
             status == 404
@@ -173,7 +165,8 @@ class Video {
             domainClass.count() == 1
 
         when:"The domain instance is passed to the delete action"
-            controller.delete(video)
+            params.id = video.id
+            controller.delete()
 
         then:"The instance is deleted"
             response.status == 204

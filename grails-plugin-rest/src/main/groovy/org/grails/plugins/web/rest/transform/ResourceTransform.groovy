@@ -21,11 +21,14 @@ import static org.codehaus.groovy.grails.web.mapping.ControllerActionConventions
 import static org.springframework.http.HttpMethod.*
 import grails.artefact.Artefact
 import grails.rest.Resource
+import grails.rest.RestfulController
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.GrailsNameUtils
 import grails.web.controllers.ControllerMethod
 import groovy.transform.CompileStatic
+
+import java.lang.reflect.Modifier
 
 import javax.annotation.PostConstruct
 
@@ -33,30 +36,27 @@ import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.AnnotationNode
 import org.codehaus.groovy.ast.ClassHelper
 import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.ConstructorNode
 import org.codehaus.groovy.ast.FieldNode
 import org.codehaus.groovy.ast.MethodNode
 import org.codehaus.groovy.ast.Parameter
-import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.BinaryExpression
 import org.codehaus.groovy.ast.expr.BooleanExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ClosureExpression
 import org.codehaus.groovy.ast.expr.ConstantExpression
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression
-import org.codehaus.groovy.ast.expr.ElvisOperatorExpression
 import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.expr.ListExpression
 import org.codehaus.groovy.ast.expr.MapEntryExpression
 import org.codehaus.groovy.ast.expr.MapExpression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.expr.NotExpression
-import org.codehaus.groovy.ast.expr.PropertyExpression
+import org.codehaus.groovy.ast.expr.TupleExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.BlockStatement
 import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
 import org.codehaus.groovy.ast.stmt.IfStatement
-import org.codehaus.groovy.ast.stmt.ReturnStatement
 import org.codehaus.groovy.control.CompilePhase
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
@@ -75,7 +75,6 @@ import org.codehaus.groovy.transform.ASTTransformation
 import org.codehaus.groovy.transform.GroovyASTTransformation
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.HttpStatus
 
 /**
  * The Resource transform automatically exposes a domain class as a RESTful resource. In effect the transform adds a controller to a Grails application
@@ -137,16 +136,20 @@ class ResourceTransform implements ASTTransformation{
 
         if (resource == null) {
             final ast = source.getAST()
-            final newControllerClassNode = new ClassNode(className, PUBLIC, GrailsASTUtils.OBJECT_CLASS_NODE)
+            final newControllerClassNode = new ClassNode(className, PUBLIC, nonGeneric(ClassHelper.make(RestfulController), parent))
+            
             final transactionalAnn = new AnnotationNode(TransactionalTransform.MY_TYPE)
             transactionalAnn.addMember(ATTR_READY_ONLY,ConstantExpression.PRIM_TRUE)
             newControllerClassNode.addAnnotation(transactionalAnn)
+            
+            final readOnlyAttr = annotationNode.getMember(ATTR_READY_ONLY)
+            boolean isReadOnly = readOnlyAttr != null && ((ConstantExpression)readOnlyAttr).trueExpression
+            addConstructor(newControllerClassNode, parent, isReadOnly)
             
             List<ClassInjector> injectors = ArtefactTypeAstTransformation.findInjectors(ControllerArtefactHandler.TYPE, GrailsAwareInjectionOperation.getClassInjectors());
                         
             ArtefactTypeAstTransformation.performInjection(source, newControllerClassNode, injectors.findAll { !(it instanceof ControllerActionTransformer) })
             
-            final readOnlyAttr = annotationNode.getMember(ATTR_READY_ONLY)
             final responseFormatsAttr = annotationNode.getMember(ATTR_RESPONSE_FORMATS)
             final uriAttr = annotationNode.getMember(ATTR_URI)
             final domainPropertyName = GrailsNameUtils.getPropertyName(parent.getName())
@@ -214,29 +217,7 @@ class ResourceTransform implements ASTTransformation{
             newControllerClassNode.addProperty("scope", publicStaticFinal, ClassHelper.STRING_TYPE, new ConstantExpression("singleton"), null, null)
             newControllerClassNode.addProperty("responseFormats", publicStaticFinal, new ClassNode(List).getPlainNodeReference(), responseFormatsExpression, null, null)
 
-            boolean isReadOnly = readOnlyAttr != null && ((ConstantExpression)readOnlyAttr).trueExpression
-
-            List<MethodNode> weavedMethods = []
-            weaveReadActions(parent, domainPropertyName,newControllerClassNode, annotationNode.lineNumber, weavedMethods)
-            if (!isReadOnly) {
-                final mapExpression = new MapExpression()
-                mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_SAVE),new ConstantExpression(POST.toString()))
-                mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_UPDATE),new ConstantExpression(PUT.toString()))
-                mapExpression.addMapEntryExpression(new ConstantExpression(ACTION_DELETE),new ConstantExpression(DELETE.toString()))
-                newControllerClassNode.addField("allowedMethods", publicStaticFinal,new ClassNode(Map.class).getPlainNodeReference(), mapExpression)
-                weaveWriteActions(parent,domainPropertyName, newControllerClassNode, hasHtml, annotationNode.lineNumber,weavedMethods)
-            }
-
             ArtefactTypeAstTransformation.performInjection(source, newControllerClassNode, injectors.findAll { it instanceof ControllerActionTransformer })
-            
-            for(MethodNode mn in weavedMethods) {
-                if(!mn.getAnnotations(ControllerActionTransformer.ACTION_ANNOTATION_NODE.classNode)) {
-                    mn.addAnnotation(ControllerActionTransformer.ACTION_ANNOTATION_NODE)
-                }
-                processVariableScopes(source, newControllerClassNode, mn)
-            }
-            
-            
             new TransactionalTransform().weaveTransactionalBehavior(source, newControllerClassNode, transactionalAnn)
             newControllerClassNode.setModule(ast)
 
@@ -247,259 +228,10 @@ class ResourceTransform implements ASTTransformation{
             ast.classes.add(newControllerClassNode)
         }
     }
-
-    void weaveWriteActions(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml, int annotationLineNumber,List<MethodNode> weavedMethods) {
-        if (hasHtml) {
-            // the edit action
-            createReadObjectAction(domainClass, domainPropertyName, controllerClass, ACTION_EDIT, annotationLineNumber, weavedMethods)
-            // the create action
-            weaveCreateAction(domainClass, controllerClass, weavedMethods)
-        }
-
-        weaveSaveAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
-        weaveDeleteAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
-        weaveUpdateAction(domainClass, domainPropertyName, controllerClass,hasHtml, annotationLineNumber, weavedMethods)
-    }
     
-    private ExpressionStatement createWithFormatStatement(Expression expression, Expression withFormatClosure, ClassNode controllerClass) {
-        new ExpressionStatement(applyDefaultMethodTarget(new MethodCallExpression(expression, "withFormat", withFormatClosure), controllerClass))
-    }
-
-    void weaveUpdateAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml,int annotationLineNumber,List<MethodNode> weavedMethods) {
-        def domainParameter = new Parameter(domainClass.getPlainNodeReference(),domainPropertyName)
-        def domainVar = new VariableExpression(domainParameter)
-        final args = new MapExpression()
-        args.addMapEntryExpression(new ConstantExpression(ARGUMENT_STATUS), new ConstantExpression(HttpStatus.NOT_FOUND.value()))
-        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, args), controllerClass, [Map] as Class[]))
-
-        def elseBlock = new BlockStatement()
-        def ifElseBlock = new BlockStatement()
-        final respondArgs = new ArgumentListExpression()
-        respondArgs.addExpression(buildGetPropertyExpression(domainVar, "errors", domainClass))
-        final viewArgs = new MapExpression()
-        viewArgs.addMapEntryExpression(new ConstantExpression("view"), new ConstantExpression("edit"))
-        respondArgs.addExpression(viewArgs)
-
-        final respondStatement = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[]))
-        ifElseBlock.addStatement(new IfStatement(new BooleanExpression(applyDefaultMethodTarget(new MethodCallExpression(domainVar, "hasErrors", ZERO_ARGUMENTS), domainClass)), respondStatement,elseBlock))
-
-        def ifStatement = new IfStatement(new BooleanExpression(new NotExpression(domainVar)),ifBlock,ifElseBlock)
-
-        final updateArgs = new ArgumentListExpression()
-        final namedArgs = new MapExpression()
-        namedArgs.addMapEntryExpression(new ConstantExpression("flush"), ConstantExpression.TRUE)
-        updateArgs.addExpression(namedArgs)
-        elseBlock.addStatement(new ExpressionStatement(applyMethodTarget(new MethodCallExpression(domainVar, ACTION_SAVE, updateArgs), domainClass, [Map] as Class[])))
-        final withFormatBody = new BlockStatement()
-        final withFormatClosure = new ClosureExpression(null, withFormatBody)
-        elseBlock.addStatement(createWithFormatStatement(buildThisExpression(), withFormatClosure, controllerClass))
-
-        if (hasHtml) {
-            // add html specific method call
-            final messageKey = "default.updated.message"
-            final message = getFlashMessage(messageKey, domainPropertyName, domainClass, domainVar)
-            final redirect = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), REDIRECT_METHOD, domainVar), controllerClass, [Object] as Class[]))
-            final closureBody = new BlockStatement()
-            closureBody.addStatement(message)
-            closureBody.addStatement(redirect)
-            final htmlFormatClosure = new ClosureExpression(null, closureBody)
-            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), 'form', htmlFormatClosure)))
-
-        }
-        final renderArgs = new ArgumentListExpression()
-        final renderNamedArgs = new MapExpression()
-        renderNamedArgs.addMapEntryExpression(CONSTANT_STATUS, new ConstantExpression(HttpStatus.OK.value()))
-        renderArgs.addExpression(domainVar)
-        renderArgs.addExpression(renderNamedArgs)
-        final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, renderArgs), controllerClass, [Object, Map] as Class[])))
-        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
-
-        final updateMethod = new MethodNode(ACTION_UPDATE, PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
-        updateMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
-        updateMethod.lineNumber = annotationLineNumber
-        weavedMethods << updateMethod
-        controllerClass.addMethod(updateMethod)
-    }
-
-    protected ExpressionStatement getFlashMessage(String messageKey, String domainPropertyName, ClassNode domainClass, VariableExpression domainVar) {
-        final flashArgs = new MapExpression()
-        flashArgs.addMapEntryExpression(new ConstantExpression("code"), new ConstantExpression(messageKey))
-        final messageArgs = new MapExpression()
-        messageArgs.addMapEntryExpression(new ConstantExpression("code"), new ConstantExpression("${domainPropertyName}.label".toString()))
-        messageArgs.addMapEntryExpression(new ConstantExpression("default"), new ConstantExpression(domainClass.getNameWithoutPackage()))
-        final defaultMessageList = new ListExpression()
-        defaultMessageList.addExpression( new MethodCallExpression(buildThisExpression(), "message", messageArgs) )
-        defaultMessageList.addExpression( new PropertyExpression(domainVar, "id") )
-        flashArgs.addMapEntryExpression(new ConstantExpression("args"), defaultMessageList)
-        new ExpressionStatement(
-            new BinaryExpression(new PropertyExpression(new VariableExpression("flash"), "message"),
-                Token.newSymbol(Types.EQUAL, 0, 0),
-                new MethodCallExpression(buildThisExpression(), "message", flashArgs))
-        )
-    }
-
-    void weaveDeleteAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml,int annotationLineNumber,List<MethodNode> weavedMethods) {
-        def domainParameter = new Parameter(domainClass.getPlainNodeReference(),domainPropertyName)
-        def domainVar = new VariableExpression(domainParameter)
-        final args = new MapExpression()
-        args.addMapEntryExpression(new ConstantExpression(ARGUMENT_STATUS), new ConstantExpression(HttpStatus.NOT_FOUND.value()))
-        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, args), controllerClass, [Map] as Class[]))
-        def elseBlock = new BlockStatement()
-
-        def ifStatement = new IfStatement(new BooleanExpression(new NotExpression(domainVar)),ifBlock,elseBlock)
-
-        final deleteArgs = new ArgumentListExpression()
-        final namedArgs = new MapExpression()
-        namedArgs.addMapEntryExpression(new ConstantExpression("flush"), ConstantExpression.TRUE)
-        deleteArgs.addExpression(namedArgs)
-        elseBlock.addStatement(new ExpressionStatement(applyDefaultMethodTarget(new MethodCallExpression(domainVar,ACTION_DELETE, deleteArgs), domainClass)))
-        final withFormatBody = new BlockStatement()
-        final withFormatClosure = new ClosureExpression(null, withFormatBody)
-        elseBlock.addStatement(createWithFormatStatement(buildThisExpression(), withFormatClosure, controllerClass))
-
-        if (hasHtml) {
-            // add html specific method call
-            final message = getFlashMessage('default.deleted.message', domainPropertyName, domainClass, domainVar)
-            final redirectArgs = new MapExpression()
-            redirectArgs.addMapEntryExpression(new ConstantExpression("action"), new ConstantExpression("index"))
-            redirectArgs.addMapEntryExpression(new ConstantExpression("method"), new ConstantExpression(GET.toString()))
-            final redirect = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), REDIRECT_METHOD, redirectArgs), controllerClass, [Map] as Class[]))
-            final closureBody = new BlockStatement()
-            closureBody.addStatement(message)
-            closureBody.addStatement(redirect)
-            final htmlFormatClosure = new ClosureExpression(null, closureBody)
-            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), 'form', htmlFormatClosure)))
-
-        }
-        final renderArgs = new ArgumentListExpression()
-        final renderNamedArgs = new MapExpression()
-        renderNamedArgs.addMapEntryExpression(CONSTANT_STATUS, new ConstantExpression(HttpStatus.NO_CONTENT.value()))
-        renderArgs.addExpression(renderNamedArgs)
-        final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RENDER_METHOD, renderArgs), controllerClass, [Map] as Class[])))
-        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
-
-        final deleteMethod = new MethodNode(ACTION_DELETE, PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
-        deleteMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
-        deleteMethod.lineNumber = annotationLineNumber
-        weavedMethods << deleteMethod
-        controllerClass.addMethod(deleteMethod)
-    }
-
-    void weaveSaveAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, boolean hasHtml,int annotationLineNumber,List<MethodNode> weavedMethods) {
-        def domainParameter = new Parameter(domainClass.getPlainNodeReference(),domainPropertyName)
-        def domainVar = new VariableExpression(domainParameter)
-        def respondArgs = new ArgumentListExpression()
-        respondArgs.addExpression(buildGetPropertyExpression(domainVar, "errors", domainClass))
-        final args = new MapExpression()
-        args.addMapEntryExpression(new ConstantExpression("view"), new ConstantExpression(ACTION_CREATE))
-        respondArgs.addExpression(args)
-
-        final ifBlock = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[]))
-        def elseBlock = new BlockStatement()
-
-        def ifStatement = new IfStatement(new BooleanExpression(applyDefaultMethodTarget(new MethodCallExpression(domainVar, "hasErrors", ZERO_ARGUMENTS), domainClass)),ifBlock,elseBlock)
-
-        final saveArgs = new ArgumentListExpression()
-        final namedArgs = new MapExpression()
-        namedArgs.addMapEntryExpression(new ConstantExpression("flush"), ConstantExpression.TRUE)
-        saveArgs.addExpression(namedArgs)
-        elseBlock.addStatement(new ExpressionStatement(applyMethodTarget(new MethodCallExpression(domainVar,"save", saveArgs), domainClass, [Map] as Class[])))
-        final withFormatBody = new BlockStatement()
-        final withFormatClosure = new ClosureExpression(null, withFormatBody)
-        elseBlock.addStatement(createWithFormatStatement(buildThisExpression(), withFormatClosure, controllerClass))
-
-
-        if (hasHtml) {
-            // add html specific method call
-            final message = getFlashMessage('default.created.message', domainPropertyName, domainClass, domainVar)
-            final redirect = new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), REDIRECT_METHOD, domainVar), controllerClass, [Object] as Class[]))
-            final closureBody = new BlockStatement()
-            closureBody.addStatement(message)
-            closureBody.addStatement(redirect)
-            final htmlFormatClosure = new ClosureExpression(null, closureBody)
-            withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), 'form', htmlFormatClosure)))
-
-        }
-        final renderArgs = new ArgumentListExpression()
-        final renderNamedArgs = new MapExpression()
-        renderNamedArgs.addMapEntryExpression(CONSTANT_STATUS, new ConstantExpression(HttpStatus.CREATED.value()))
-        renderArgs.addExpression(domainVar)
-        renderArgs.addExpression(renderNamedArgs)
-        final allFormatsClosure = new ClosureExpression(null, new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, renderArgs), controllerClass, [Object, Map] as Class[])))
-        withFormatBody.addStatement(new ExpressionStatement(new MethodCallExpression(buildThisExpression(), '*', allFormatsClosure)))
-
-        final saveMethod = new MethodNode("save", PUBLIC, OBJECT_CLASS_NODE, [domainParameter] as Parameter[],null, ifStatement)
-        saveMethod.addAnnotation(new AnnotationNode(TransactionalTransform.MY_TYPE))
-        saveMethod.lineNumber = annotationLineNumber
-        weavedMethods << saveMethod
-        controllerClass.addMethod(saveMethod)
-    }
-
-    void weaveCreateAction(ClassNode domainClass, ClassNode controllerClass,List<MethodNode> weavedMethods) {
-        BlockStatement methodBody = new BlockStatement()
-        final args = new ArgumentListExpression()
-        args.addExpression(new VariableExpression(PARAMS_VARIABLE))
-        final constructorCall = new ConstructorCallExpression(domainClass.getPlainNodeReference(), args)
-        methodBody.addStatement(new ReturnStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, constructorCall), controllerClass, [Object, Map] as Class[])))
-        final method = new MethodNode(ACTION_CREATE, PUBLIC, OBJECT_CLASS_NODE, ZERO_PARAMETERS, null, methodBody)
-        weavedMethods << method
-        controllerClass.addMethod(method)
-    }
-
-    void weaveReadActions(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, int annotationLineNumber,List<MethodNode> weavedMethods) {
-        weaveIndexAction(domainClass,domainPropertyName,controllerClass, annotationLineNumber,weavedMethods)
-        weaveShowAction(domainClass,domainPropertyName,controllerClass,annotationLineNumber,weavedMethods)
-    }
-
-    void weaveShowAction(ClassNode domainClass, String domainPropertyName,ClassNode controllerClass, int annotationLineNumber,List<MethodNode> weavedMethods) {
-        createReadObjectAction(domainClass, domainPropertyName, controllerClass, ACTION_SHOW, annotationLineNumber,weavedMethods)
-    }
-
-    protected void createReadObjectAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, String actionName, int annotationLineNumber,List<MethodNode> weavedMethods) {
-        Parameter[] params = [new Parameter(domainClass.getPlainNodeReference(), domainPropertyName)] as Parameter[]
-
-        BlockStatement methodBody = new BlockStatement()
-        methodBody.addStatement(new ExpressionStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, new VariableExpression(domainPropertyName)), controllerClass, [Object, Map] as Class[])))
-        final method = new MethodNode(actionName, PUBLIC, OBJECT_CLASS_NODE, params, null, methodBody)
-        weavedMethods << method
-        method.lineNumber = annotationLineNumber
-        controllerClass.addMethod(method)
-    }
-
-    void weaveIndexAction(ClassNode domainClass, String domainPropertyName, ClassNode controllerClass, int annotationLineNumber,List<MethodNode> weavedMethods) {
-        final maxParam = new Parameter(INTEGER_CLASS_NODE, "max")
-        Parameter[] params = [maxParam] as Parameter[]
-        BlockStatement  methodBody = new BlockStatement()
-
-        final domainExpr = new ClassExpression(domainClass)
-        final listArgs = new ArgumentListExpression()
-
-        final paginationArgs = new ArgumentListExpression()
-        paginationArgs.addExpression(new ElvisOperatorExpression(new VariableExpression(maxParam), new ConstantExpression(10)))
-        paginationArgs.addExpression(new ConstantExpression(100))
-        Expression getParamsExpression = buildGetPropertyExpression(buildThisExpression(), "params", controllerClass);
-        methodBody.addStatement(
-                new ExpressionStatement(
-                buildPutMapExpression(getParamsExpression, "max",
-                applyMethodTarget(new MethodCallExpression(new ClassExpression(new ClassNode(Math)), "max", paginationArgs), Math.class, int.class, int.class)))
-                )
-
-        listArgs.addExpression(new VariableExpression(PARAMS_VARIABLE))
-        def listCall = applyDefaultMethodTarget(new MethodCallExpression(domainExpr, new ConstantExpression("list"), listArgs), domainClass)
-        def countCall = applyDefaultMethodTarget(new MethodCallExpression(domainExpr, new ConstantExpression("count"), MethodCallExpression.NO_ARGUMENTS), domainClass)
-        def respondArgs = new ArgumentListExpression()
-        respondArgs.addExpression(listCall)
-        final args = new MapExpression()
-        final model = new MapExpression()
-        model.addMapEntryExpression(new ConstantExpression("${domainPropertyName}Count".toString()), countCall)
-        args.addMapEntryExpression(new ConstantExpression("model"), model)
-        respondArgs.addExpression(args)
-
-        methodBody.addStatement(new ReturnStatement(applyMethodTarget(new MethodCallExpression(buildThisExpression(), RESPOND_METHOD, respondArgs), controllerClass, [Object, Map] as Class[])))
-        final method = new MethodNode(ACTION_INDEX, PUBLIC, OBJECT_CLASS_NODE, params, null, methodBody)
-//        method.addAnnotation(ControllerActionTransformer.ACTION_ANNOTATION_NODE)
-        weavedMethods << method
-        method.lineNumber = annotationLineNumber
-        controllerClass.addMethod(method)
+    ConstructorNode addConstructor(ClassNode controllerClassNode, ClassNode domainClassNode, boolean readOnly) {
+        BlockStatement constructorBody = new BlockStatement()
+        constructorBody.addStatement(new ExpressionStatement(new ConstructorCallExpression(ClassNode.SUPER, new TupleExpression(new ClassExpression(domainClassNode),new ConstantExpression(readOnly, true)))))
+        controllerClassNode.addConstructor(Modifier.PUBLIC, ZERO_PARAMETERS, ClassNode.EMPTY_ARRAY, constructorBody)
     }
 }

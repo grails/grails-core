@@ -47,18 +47,14 @@ class Book {
 
         then:"It exists"
             ctrl != null
-            getMethod(ctrl, "index", Integer)
-            getMethod(ctrl, "index", Integer).getAnnotation(Action)
+            getMethod(ctrl, "index", Integer.class)
             getMethod(ctrl, "index")
             getMethod(ctrl, "index").getAnnotation(Action)
-            getMethod(ctrl, "show", domain)
-            getMethod(ctrl, "edit", domain)
+            getMethod(ctrl, "show")
+            getMethod(ctrl, "edit")
             getMethod(ctrl, "create")
-            getMethod(ctrl, "save", domain)
             getMethod(ctrl, "save")
-            getMethod(ctrl, "update", domain)
             getMethod(ctrl, "update")
-            getMethod(ctrl, "delete", domain)
             getMethod(ctrl, "delete")
 
             ctrl.scope == "singleton"
@@ -93,22 +89,11 @@ class Book {
 
         then:"It exists"
             ctrl != null
-            getMethod(ctrl, "index", Integer)
-            getMethod(ctrl, "index", Integer).getAnnotation(Action)
+            getMethod(ctrl, "index", Integer.class)
             getMethod(ctrl, "index")
             getMethod(ctrl, "index").getAnnotation(Action)
-            getMethod(ctrl, "show", domain)
+            getMethod(ctrl, "show")
             ctrl.scope == "singleton"
-
-        and:"It doesn't exist"
-            !getMethod(ctrl, "edit", domain)
-            !getMethod(ctrl, "create")
-            !getMethod(ctrl, "save", domain)
-            !getMethod(ctrl, "save")
-            !getMethod(ctrl, "update", domain)
-            !getMethod(ctrl, "update")
-            !getMethod(ctrl, "delete", domain)
-            !getMethod(ctrl, "delete")
 
         when:"A link is added"
             def book = domain.newInstance()
@@ -121,7 +106,7 @@ class Book {
 
     private Method getMethod(Class clazz, String methodName, Class[] paramTypes) {
         try {
-            clazz.getDeclaredMethod(methodName, paramTypes)
+            clazz.getMethod(methodName, paramTypes)
         } catch (NoSuchMethodException e) {
             return null
         }

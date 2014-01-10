@@ -86,6 +86,9 @@ target(allTests: "Runs the project's tests.") {
     depends(compile, startLogging, packagePlugins, configureServerContextPath)
     Integer exitCode
     if(grailsSettings.forkSettings.test) {
+        if(argsMap?.war) {
+            projectRunner.warCreator.packageWar()
+        }
         def forkedTestRunner = new ForkedGrailsTestRunner(grailsSettings)
         if(grailsSettings.forkSettings.test instanceof Map) {
             forkedTestRunner.configure(grailsSettings.forkSettings.test)
