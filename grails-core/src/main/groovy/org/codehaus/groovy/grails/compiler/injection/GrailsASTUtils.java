@@ -15,9 +15,11 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.artefact.Enhanced;
 import grails.build.logging.GrailsConsole;
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
+import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 import groovy.transform.CompileStatic;
@@ -110,6 +112,7 @@ public class GrailsASTUtils {
     public static final Token LOGICAL_AND_OPERATOR = Token.newSymbol("&&", 0, 0);
     public static final Token NOT_EQUALS_OPERATOR = Token.newSymbol("!=", 0, 0);
 
+    private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
     public static final ClassNode MISSING_METHOD_EXCEPTION = new ClassNode(MissingMethodException.class);
     public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
     public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
@@ -793,6 +796,20 @@ public class GrailsASTUtils {
             boolean foundAnn = findAnnotation(annotationClassNode, annotations) != null;
             if (!foundAnn) classNode.addAnnotation(annotationToAdd);
         }
+    }
+    
+    public static AnnotationNode addEnhancedAnnotation(ClassNode classNode) {
+        final AnnotationNode annotationNode;
+        final List<AnnotationNode> annotations = classNode.getAnnotations(ENHANCED_CLASS_NODE);
+        if (annotations.isEmpty()) {
+            annotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
+            annotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
+            classNode.addAnnotation(annotationNode);
+        } else {
+            annotationNode = annotations.get(0);
+        }
+
+        return annotationNode;
     }
 
     public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations) {

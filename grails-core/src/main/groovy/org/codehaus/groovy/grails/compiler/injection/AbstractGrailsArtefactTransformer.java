@@ -16,8 +16,6 @@
 package org.codehaus.groovy.grails.compiler.injection;
 
 import grails.artefact.Artefact;
-import grails.artefact.Enhanced;
-import grails.util.GrailsUtil;
 import groovy.lang.Mixin;
 
 import java.lang.reflect.Modifier;
@@ -70,7 +68,6 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     private static final String INSTANCE_PREFIX = "instance";
     private static final String STATIC_PREFIX = "static";
     private static final AnnotationNode AUTO_WIRED_ANNOTATION = new AnnotationNode(new ClassNode(Autowired.class));
-    private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
 
     protected static final ClassNode OBJECT_CLASS = new ClassNode(Object.class);
 
@@ -206,17 +203,13 @@ public abstract class AbstractGrailsArtefactTransformer implements GrailsArtefac
     }
 
     protected void addEnhancedAnnotation(ClassNode classNode) {
-        if (classNode.getAnnotations(ENHANCED_CLASS_NODE).isEmpty()) {
-            final AnnotationNode annotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
-            annotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
-            classNode.addAnnotation(annotationNode);
+        final AnnotationNode annotationNode = GrailsASTUtils.addEnhancedAnnotation(classNode);
 
-            AnnotationNode annotation = GrailsASTUtils.findAnnotation(classNode, Mixin.class);
-            if (annotation != null) {
-                Expression value = annotation.getMember("value");
-                if (value != null) {
-                    annotationNode.setMember("mixins", value);
-                }
+        AnnotationNode annotation = GrailsASTUtils.findAnnotation(classNode, Mixin.class);
+        if (annotation != null) {
+            Expression value = annotation.getMember("value");
+            if (value != null) {
+                annotationNode.setMember("mixins", value);
             }
         }
     }
