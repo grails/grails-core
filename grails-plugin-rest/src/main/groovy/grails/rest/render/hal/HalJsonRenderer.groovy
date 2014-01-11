@@ -24,6 +24,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry
 import org.codehaus.groovy.grails.web.binding.bindingsource.HalJsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.mime.MimeType
+import org.grails.datastore.mapping.model.MappingFactory
 import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.model.types.Association
 import org.grails.datastore.mapping.model.types.ToOne
@@ -33,8 +34,6 @@ import org.springframework.core.convert.converter.Converter
 import org.springframework.http.HttpMethod
 
 import javax.annotation.PostConstruct
-import org.grails.datastore.mapping.model.MappingFactory
-
 import javax.xml.bind.DatatypeConverter
 /**
  * Renders domain instances in HAL JSON format (see http://tools.ietf.org/html/draft-kelly-json-hal-05)
@@ -326,7 +325,8 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             jsonWriter.name(propertyName).value(asStringDate)
         }
         else {
-            jsonWriter.name(propertyName).value(gson.toJson(value))
+            jsonWriter.name(propertyName)
+            gson.toJson(value, value.class, jsonWriter)
         }
     }
 }
