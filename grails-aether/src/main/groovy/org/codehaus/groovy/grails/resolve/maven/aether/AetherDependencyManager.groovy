@@ -522,7 +522,7 @@ class AetherDependencyManager implements DependencyManager {
         grailsDependenciesByScope[dependency.scope] << grailsDependency
         final aetherDependencies = dependencies
         aetherDependencies << dependency
-        if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.properties.extension == 'zip') {
+        if (dependency.artifact.groupId == 'org.grails.plugins' || dependency.artifact.extension == 'zip') {
             grailsPluginDependencies << grailsDependency
             grailsPluginDependenciesByScope[dependency.scope] << grailsDependency
         }
@@ -531,6 +531,7 @@ class AetherDependencyManager implements DependencyManager {
     protected org.codehaus.groovy.grails.resolve.Dependency createGrailsDependency(Dependency dependency, DependencyConfiguration configuration = null) {
         Artifact artifact = dependency.artifact
         final grailsDependency = new org.codehaus.groovy.grails.resolve.Dependency(artifact.groupId, artifact.artifactId, artifact.version)
+        grailsDependency.extension = artifact.extension
         if (configuration) {
             grailsDependency.transitive = configuration.transitive
             grailsDependency.exported = configuration.exported
@@ -564,7 +565,7 @@ class AetherDependencyManager implements DependencyManager {
             grailsDependencies << dependency
             grailsDependenciesByScope["build"] << dependency
             buildDependencies << mavenDependency
-            if (dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip') {
+            if (dependency.group == 'org.grails.plugins' || dependency.extension == 'zip') {
                 grailsPluginDependencies << dependency
                 grailsPluginDependenciesByScope["build"] << dependency
             }
@@ -602,7 +603,7 @@ class AetherDependencyManager implements DependencyManager {
     }
 
     protected boolean isGrailsPlugin(org.codehaus.groovy.grails.resolve.Dependency dependency) {
-        dependency.group == 'org.grails.plugins' || dependency.properties.extension == 'zip'
+        dependency.group == 'org.grails.plugins' || dependency.extension == 'zip'
     }
 
     @Override
