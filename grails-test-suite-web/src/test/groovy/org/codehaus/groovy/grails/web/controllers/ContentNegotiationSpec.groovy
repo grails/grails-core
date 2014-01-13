@@ -4,11 +4,36 @@ import grails.artefact.Artefact
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.TestFor
+
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
+
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
+import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
+
 import spock.lang.Issue
 import spock.lang.Specification
 
 @TestFor(ContentNegotiationController)
 class ContentNegotiationSpec extends Specification {
+    void setupSpec() {
+        removeAllMetaClasses(GrailsMockHttpServletRequest)
+        removeAllMetaClasses(GrailsMockHttpServletResponse)
+    }
+    
+    void removeAllMetaClasses(Class clazz) {
+        GroovySystem.metaClassRegistry.removeMetaClass clazz
+        if(!clazz.isInterface()) {
+            def superClazz = clazz.getSuperclass()
+            if(superClazz) {
+                removeAllMetaClasses(superClazz)
+            }
+        }
+        for(Class interfaceClazz : clazz.getInterfaces()) {
+            removeAllMetaClasses(interfaceClazz)
+        }
+    }
+    
     void setup() {
         config.grails.mime.use.accept.header=true
         config.grails.mime.types = [ // the first one is the default format
