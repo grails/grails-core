@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -321,9 +322,9 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     }
 
     /**
-     * Helper method for obtaining float value from parameter
+     * Helper method for obtaining boolean value from parameter
      * @param name The name of the parameter
-     * @return The double value or null if there isn't one
+     * @return The boolean value or null if there isn't one
      */
     public Boolean getBoolean(String name) {
         Object o = get(name);
@@ -335,7 +336,7 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
             try {
                 String string = o.toString();
                 if (string != null) {
-                    return Boolean.parseBoolean(string);
+                    return BooleanUtils.toBoolean(string);
                 }
             }
             catch (Exception e) {}

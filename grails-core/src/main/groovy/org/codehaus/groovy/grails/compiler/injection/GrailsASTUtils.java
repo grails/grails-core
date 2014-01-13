@@ -15,9 +15,11 @@
  */
 package org.codehaus.groovy.grails.compiler.injection;
 
+import grails.artefact.Enhanced;
 import grails.build.logging.GrailsConsole;
 import grails.persistence.Entity;
 import grails.util.GrailsNameUtils;
+import grails.util.GrailsUtil;
 import groovy.lang.Closure;
 import groovy.lang.MissingMethodException;
 import groovy.transform.CompileStatic;
@@ -59,6 +61,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -67,6 +70,7 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
@@ -110,6 +114,7 @@ public class GrailsASTUtils {
     public static final Token LOGICAL_AND_OPERATOR = Token.newSymbol("&&", 0, 0);
     public static final Token NOT_EQUALS_OPERATOR = Token.newSymbol("!=", 0, 0);
 
+    private static final ClassNode ENHANCED_CLASS_NODE = new ClassNode(Enhanced.class);
     public static final ClassNode MISSING_METHOD_EXCEPTION = new ClassNode(MissingMethodException.class);
     public static final ConstantExpression NULL_EXPRESSION = new ConstantExpression(null);
     public static final Token ASSIGNMENT_OPERATOR = Token.newSymbol(Types.ASSIGNMENT_OPERATOR, 0, 0);
@@ -793,6 +798,49 @@ public class GrailsASTUtils {
             boolean foundAnn = findAnnotation(annotationClassNode, annotations) != null;
             if (!foundAnn) classNode.addAnnotation(annotationToAdd);
         }
+    }
+    
+    /**
+     * Add the grails.artefact.Enhanced annotation to classNode if it does not already exist and ensure that
+     * all of the features in the enhancedFor array are represented in the enhancedFor attribute of the
+     * Enhanced annnotation
+     * @param classNode the class to add the Enhanced annotation to
+     * @param enhancedFor an array of feature names to include in the enhancedFor attribute of the annotation
+     * @return the AnnotationNode associated with the Enhanced annotation for classNode
+     * @see Enhanced
+     */
+    public static AnnotationNode addEnhancedAnnotation(final ClassNode classNode, final String... enhancedFor) {
+        final AnnotationNode enhancedAnnotationNode;
+        final List<AnnotationNode> annotations = classNode.getAnnotations(ENHANCED_CLASS_NODE);
+        if (annotations.isEmpty()) {
+            enhancedAnnotationNode = new AnnotationNode(ENHANCED_CLASS_NODE);
+            enhancedAnnotationNode.setMember("version", new ConstantExpression(GrailsUtil.getGrailsVersion()));
+            classNode.addAnnotation(enhancedAnnotationNode);
+        } else {
+            enhancedAnnotationNode = annotations.get(0);
+        }
+        
+        if(enhancedFor != null && enhancedFor.length > 0) {
+            ListExpression enhancedForArray = (ListExpression) enhancedAnnotationNode.getMember("enhancedFor");
+            if(enhancedForArray == null) {
+                enhancedForArray = new ListExpression();
+                enhancedAnnotationNode.setMember("enhancedFor", enhancedForArray);
+            }
+            final List<Expression> featureNameExpressions = enhancedForArray.getExpressions();
+            for(final String feature : enhancedFor) {
+                final boolean exists =  CollectionUtils.exists(featureNameExpressions, new Predicate() {
+                    @SuppressWarnings({ "unchecked", "rawtypes" })
+                    public boolean evaluate(Object object) {
+                        return object instanceof ConstantExpression && feature.equals(((ConstantExpression)object).getValue());  
+                    }
+                });
+                if(!exists) {
+                    featureNameExpressions.add(new ConstantExpression(feature));
+                }
+            }
+        }
+
+        return enhancedAnnotationNode;
     }
 
     public static AnnotationNode findAnnotation(ClassNode annotationClassNode, List<AnnotationNode> annotations) {

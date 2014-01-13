@@ -831,7 +831,7 @@ class ExecutionContext implements Serializable {
             if(p.startsWith("grails.")) {
                 final value = System.properties.get(prop)
                 if (value)
-                    systemProps[p] = value
+                    systemProps[p] = value.toString()
             }
         }
         final commandLine = CommandLineParser.getCurrentCommandLine()
@@ -841,7 +841,7 @@ class ExecutionContext implements Serializable {
                 String p = prop.toString()
                 final value = commandLineSystemProperties.get(prop)
                 if (value)
-                    systemProps[p] = value
+                    systemProps[p] = value.toString()
 
             }
         }

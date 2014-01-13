@@ -45,6 +45,7 @@ import org.springframework.util.Assert;
 public class DefaultBeanConfiguration extends GroovyObjectSupport implements BeanConfiguration {
 
     private static final String AUTOWIRE = "autowire";
+    private static final String SINGLETON = "singleton";
     private static final String CONSTRUCTOR_ARGS = "constructorArgs";
     private static final String DESTROY_METHOD = "destroyMethod";
     private static final String FACTORY_BEAN = "factoryBean";
@@ -133,6 +134,10 @@ public class DefaultBeanConfiguration extends GroovyObjectSupport implements Bea
             if (newValue != null) {
                 bd.setInitMethodName(newValue.toString());
             }
+        }
+         // singleton property
+        else if(SINGLETON.equals(property)) {
+            bd.setScope(Boolean.TRUE.equals(newValue) ? BeanDefinition.SCOPE_SINGLETON : BeanDefinition.SCOPE_PROTOTYPE);
         }
         else if (wrapper.isWritableProperty(property)) {
             wrapper.setPropertyValue(property, newValue);

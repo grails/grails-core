@@ -184,6 +184,25 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
         }
         return submap;
     }
+    
+    /**
+     * Find all names of beans whose {@code Class} has the supplied {@link Annotation}
+     * type, without creating any bean instances yet.
+     * @param annotationType the type of annotation to look for
+     * @return the names of all matching beans
+     * @since 2.4
+     */
+    public String[] getBeanNamesForAnnotation(Class<? extends Annotation> annotationType) {
+        List<String> beanNamesList = new ArrayList<String>();
+        for (Object beanName : beans.keySet()) {
+            Object bean = beans.get(beanName);
+            if (bean != null && bean.getClass().getAnnotation(annotationType) != null) {
+                beanNamesList.add(beanName.toString());
+            }
+        }
+        return beanNamesList.toArray(new String[beanNamesList.size()]);
+    }
+
 
     public Object getBean(String name) throws BeansException {
         if (!beans.containsKey(name)) {

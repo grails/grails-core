@@ -15,7 +15,11 @@
  */
 package org.codehaus.groovy.grails.compiler.web;
 
-import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*;
+import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.applyDefaultMethodTarget;
+import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.applyMethodTarget;
+import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildGetMapExpression;
+import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildGetPropertyExpression;
+import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.buildSetPropertyExpression;
 import grails.artefact.Artefact;
 import grails.util.BuildSettings;
 import grails.util.CollectionUtils;
@@ -59,6 +63,8 @@ import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.EmptyExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.ListExpression;
+import org.codehaus.groovy.ast.expr.MapEntryExpression;
+import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.TernaryExpression;
@@ -76,6 +82,7 @@ import org.codehaus.groovy.ast.stmt.TryCatchStatement;
 import org.codehaus.groovy.classgen.GeneratorContext;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass;
 import org.codehaus.groovy.grails.compiler.injection.AnnotatedClassInjector;
 import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
@@ -196,7 +203,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             processMethods(classNode, source, context);
             processClosures(classNode, source, context);
         }
-
     }
 
     @Override
@@ -461,6 +467,70 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         wrapMethodBodyWithExceptionHandling(controllerClassNode, methodNode);
     }
 
+    protected BlockStatement getCodeToHandleAllowedMethods(ClassNode controllerClass, MethodNode methodNode) {
+        GrailsASTUtils.addEnhancedAnnotation(controllerClass, DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
+        final BlockStatement checkAllowedMethodsBlock = new BlockStatement();
+        final FieldNode allowedMethodsField = controllerClass.getField(DefaultGrailsControllerClass.ALLOWED_HTTP_METHODS_PROPERTY);
+        if(allowedMethodsField != null) {
+            final Expression initialAllowedMethodsExpression = allowedMethodsField.getInitialExpression();
+            if(initialAllowedMethodsExpression instanceof MapExpression) {
+                final List<String> allowedMethodNames = new ArrayList<String>();
+                final MapExpression allowedMethodsMapExpression = (MapExpression) initialAllowedMethodsExpression;
+                final List<MapEntryExpression> allowedMethodsMapEntryExpressions = allowedMethodsMapExpression.getMapEntryExpressions();
+                final String methodName = methodNode.getName();
+                for(MapEntryExpression allowedMethodsMapEntryExpression : allowedMethodsMapEntryExpressions) {
+                    final Expression allowedMethodsMapEntryKeyExpression = allowedMethodsMapEntryExpression.getKeyExpression();
+                    if(allowedMethodsMapEntryKeyExpression instanceof ConstantExpression) {
+                        final ConstantExpression allowedMethodsMapKeyConstantExpression = (ConstantExpression) allowedMethodsMapEntryKeyExpression;
+                        final Object allowedMethodsMapKeyValue = allowedMethodsMapKeyConstantExpression.getValue();
+                        if(methodName.equals(allowedMethodsMapKeyValue)) {
+                            final Expression allowedMethodsMapEntryValueExpression = allowedMethodsMapEntryExpression.getValueExpression();
+                            if(allowedMethodsMapEntryValueExpression instanceof ListExpression) {
+                                final ListExpression allowedMethodsEntryListExpression = (ListExpression) allowedMethodsMapEntryValueExpression;
+                                final List<Expression> listExpressions = allowedMethodsEntryListExpression.getExpressions();
+                                for(Expression expression : listExpressions) {
+                                    if(expression instanceof ConstantExpression) {
+                                        final ConstantExpression constantListValue = (ConstantExpression) expression;
+                                        allowedMethodNames.add(constantListValue.getValue().toString());
+                                    }
+                                }
+                            } else if(allowedMethodsMapEntryValueExpression instanceof ConstantExpression) {
+                                final ConstantExpression contantValue = (ConstantExpression) allowedMethodsMapEntryValueExpression;
+                                allowedMethodNames.add(contantValue.getValue().toString());
+                            }
+                            break;
+                        }
+                    }
+                }
+                final int numberOfAllowedMethods = allowedMethodNames.size();
+                if(numberOfAllowedMethods > 0) {
+                    final PropertyExpression responsePropertyExpression = new PropertyExpression(new VariableExpression("this"), "response");
+                    final PropertyExpression requestPropertyExpression = new PropertyExpression(new VariableExpression("this"), "request");
+                    final PropertyExpression requestMethodExpression = new PropertyExpression(requestPropertyExpression, "method");
+                    BooleanExpression isValidRequestMethod = new BooleanExpression(new MethodCallExpression(requestMethodExpression, 
+                                                                                                            "equalsIgnoreCase", 
+                                                                                                            new ConstantExpression(allowedMethodNames.get(0))));
+                    for(int x = 1; x < numberOfAllowedMethods; x++) {
+                        isValidRequestMethod = new BooleanExpression(new BinaryExpression(isValidRequestMethod, 
+                                                                                          Token.newSymbol(Types.LOGICAL_OR, 0, 0), 
+                                                                                          new MethodCallExpression(requestMethodExpression, 
+                                                                                                                   "equalsIgnoreCase", 
+                                                                                                                   new ConstantExpression(allowedMethodNames.get(x)))));
+                    }
+                  final MethodCallExpression sendErrorMethodCall = new MethodCallExpression(responsePropertyExpression, "sendError", new ConstantExpression(HttpServletResponse.SC_METHOD_NOT_ALLOWED));
+                  final ReturnStatement returnStatement = new ReturnStatement(new ConstantExpression(null));
+                  final BlockStatement blockToSendError = new BlockStatement();
+                  blockToSendError.addStatement(new ExpressionStatement(sendErrorMethodCall));
+                  blockToSendError.addStatement(returnStatement);
+                  final IfStatement ifStatement = new IfStatement(isValidRequestMethod, new ExpressionStatement(new EmptyExpression()), blockToSendError);
+                  checkAllowedMethodsBlock.addStatement(ifStatement);
+                    
+                    
+                }
+            }
+        }
+        return checkAllowedMethodsBlock;
+    }
     /**
      * This will wrap the method body in a try catch block which does something
      * like this:
@@ -506,7 +576,13 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
         final CatchStatement catchStatement = new CatchStatement(new Parameter(new ClassNode(Exception.class), caughtExceptionArgumentName), catchBlockCode);
         final Statement methodBody = methodNode.getCode();
-        final TryCatchStatement tryCatchStatement = new TryCatchStatement(methodBody, new EmptyStatement());
+
+        BlockStatement tryBlock = new BlockStatement();
+        BlockStatement codeToHandleAllowedMethods = getCodeToHandleAllowedMethods(controllerClassNode, methodNode);
+        tryBlock.addStatement(codeToHandleAllowedMethods);
+        tryBlock.addStatement(methodBody);
+
+        final TryCatchStatement tryCatchStatement = new TryCatchStatement(tryBlock, new EmptyStatement());
         tryCatchStatement.addCatch(catchStatement);
 
         methodNode.setCode(tryCatchStatement);

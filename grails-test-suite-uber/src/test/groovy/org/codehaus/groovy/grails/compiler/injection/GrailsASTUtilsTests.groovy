@@ -1,5 +1,7 @@
 package org.codehaus.groovy.grails.compiler.injection
 
+import grails.artefact.Enhanced
+
 import java.lang.annotation.Retention
 import java.lang.annotation.RetentionPolicy
 
@@ -69,6 +71,94 @@ class GrailsASTUtilsTests extends GroovyTestCase {
         assert 1 == lastNameMetaData.size()
         def lastNameBindableExpression = lastNameMetaData['bindable']
         assert false == lastNameBindableExpression.value
+    }
+    
+    void testAddEnhanced() {
+        def result = new AstBuilder().buildFromString('''
+            class SomeArtefact {}
+        ''')
+        
+        def classNode = result[1]
+        
+        assert !GrailsASTUtils.hasAnnotation(classNode, Enhanced)
+        
+        GrailsASTUtils.addEnhancedAnnotation(classNode, 'someFeature')
+
+        def enhancedAnnotation = classNode.getAnnotations(new ClassNode(Enhanced))[0]
+        assert enhancedAnnotation.getMember('enhancedFor').expressions.size() == 1
+        assert enhancedAnnotation.getMember('enhancedFor').expressions[0].value == 'someFeature'
+    }
+    
+    void testAddEnhancedWithMultipleFeatures() {
+        def result = new AstBuilder().buildFromString('''
+            class SomeOtherArtefact {}
+        ''')
+        
+        def classNode = result[1]
+        
+        assert !GrailsASTUtils.hasAnnotation(classNode, Enhanced)
+        
+        GrailsASTUtils.addEnhancedAnnotation(classNode, 'someFeature', 'someOtherFeature')
+
+        def enhancedAnnotation = classNode.getAnnotations(new ClassNode(Enhanced))[0]
+        def featureNames = enhancedAnnotation.getMember('enhancedFor').expressions*.value
+        assert featureNames.size() == 2
+        assert 'someFeature' in featureNames
+        assert 'someOtherFeature' in featureNames
+    }
+    
+    void testAddEnhancedToClassWhichAlreadyHasBeenEnhanced() {
+        def result = new AstBuilder().buildFromString('''
+            class YetAnotherArtefact {}
+        ''')
+        
+        def classNode = result[1]
+        
+        assert !GrailsASTUtils.hasAnnotation(classNode, Enhanced)
+        
+        GrailsASTUtils.addEnhancedAnnotation(classNode, 'someFeature', 'someOtherFeature')
+
+        def enhancedAnnotation = classNode.getAnnotations(new ClassNode(Enhanced))[0]
+        def featureNames = enhancedAnnotation.getMember('enhancedFor').expressions*.value
+        assert featureNames.size() == 2
+        assert 'someFeature' in featureNames
+        assert 'someOtherFeature' in featureNames
+        
+        GrailsASTUtils.addEnhancedAnnotation(classNode, 'aThirdFeature')
+        enhancedAnnotation = classNode.getAnnotations(new ClassNode(Enhanced))[0]
+        featureNames = enhancedAnnotation.getMember('enhancedFor').expressions*.value
+        assert featureNames.size() == 3
+        assert 'someFeature' in featureNames
+        assert 'someOtherFeature' in featureNames
+        assert 'aThirdFeature' in featureNames
+        
+    }
+    
+    
+    void testAddEnhancedWithFeatureThatIsAlreadyPresent() {
+        def result = new AstBuilder().buildFromString('''
+            class SomeOtherArtefact {}
+        ''')
+        
+        def classNode = result[1]
+        
+        assert !GrailsASTUtils.hasAnnotation(classNode, Enhanced)
+        
+        GrailsASTUtils.addEnhancedAnnotation(classNode, 'someFeature', 'someOtherFeature')
+
+        def enhancedAnnotation = classNode.getAnnotations(new ClassNode(Enhanced))[0]
+        def featureNames = enhancedAnnotation.getMember('enhancedFor').expressions*.value
+        assert 'someFeature' in featureNames
+        assert 'someOtherFeature' in featureNames
+        
+        GrailsASTUtils.addEnhancedAnnotation(classNode, 'someFeature', 'aThirdFeature')
+
+        enhancedAnnotation = classNode.getAnnotations(new ClassNode(Enhanced))[0]
+        featureNames = enhancedAnnotation.getMember('enhancedFor').expressions*.value
+        assert featureNames.size() == 3
+        assert 'someFeature' in featureNames
+        assert 'someOtherFeature' in featureNames
+        assert 'aThirdFeature' in featureNames
     }
 }
 

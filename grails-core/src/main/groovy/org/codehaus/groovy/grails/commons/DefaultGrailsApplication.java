@@ -46,6 +46,7 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsConfigurationAware
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
 
@@ -343,11 +344,19 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
 
     public void setMainContext(ApplicationContext context) {
         mainContext = context;
-        if (context != null) {
-            if (mainContext.containsBean("pluginManager")) {
-                mainContext.getBean("pluginManager", GrailsPluginManager.class).setApplicationContext(context);
+        if (mainContext == null) {
+            return;
+        }
+        if (!mainContext.containsBean("pluginManager")) {
+            return;
+        }
+        if (mainContext instanceof ConfigurableApplicationContext) {
+            if (!((ConfigurableApplicationContext) mainContext).isActive()) {
+                // unrefreshed context - plugin manager will get the context from GrailsRuntimeConfiguration
+                return;
             }
         }
+        mainContext.getBean("pluginManager", GrailsPluginManager.class).setApplicationContext(context);
     }
 
     /**
