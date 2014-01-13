@@ -50,8 +50,12 @@ public class GrailsRootLoader extends RootLoader {
             }
             return super.loadClass(name, resolve);
         }
-        catch (LinkageError e) {
-            return getParent().loadClass(name);
+        catch (LinkageError primary) {
+            try {
+                return getParent().loadClass(name);
+            } catch (ClassNotFoundException secondary) {
+                throw primary;
+            }
         }
     }
 }
