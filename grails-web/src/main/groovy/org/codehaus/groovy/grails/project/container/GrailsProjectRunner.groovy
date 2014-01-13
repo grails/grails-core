@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 SpringSource
+ * Copyright 2012, 2014 SpringSource
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,6 +71,14 @@ class GrailsProjectRunner extends BaseSettingsApi {
 
     String getServerContextPath() {
         return serverContextPath
+    }
+
+    String getUrl () {
+        "http://${serverHost ?: 'localhost'}:$serverPort$serverContextPath"
+    }
+
+    String getUrlHttps () {
+        "https://${serverHost ?: 'localhost'}:$serverPortHttps$serverContextPath"
     }
 
     /**
@@ -195,7 +203,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
     EmbeddableServer runServer(Map args) {
         try {
             eventListener.triggerEvent("StatusUpdate","Running Grails application")
-            def message = "Server running. Browse to http://${args.host ?: 'localhost'}:${args.httpPort}$serverContextPath"
+            def message = "Server running. Browse to $url"
 
             EmbeddableServer server = args["server"]
             if (server.hasProperty('eventListener')) {
@@ -225,7 +233,7 @@ class GrailsProjectRunner extends BaseSettingsApi {
                     server.startSecure args.host, args.httpPort, args.httpsPort
 
                     // Update the message to reflect the fact we are running HTTPS as well.
-                    message += " or https://${args.host ?: 'localhost'}:${args.httpsPort}$serverContextPath"
+                    message += " or $urlHttps"
                 }
                 else {
                     server.start args.host, args.httpPort
