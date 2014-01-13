@@ -63,6 +63,10 @@ class ResponseMimeTypesApi {
     ResponseMimeTypesApi(GrailsApplication application, MimeType[] types) {
         grailsApplication = application
         mimeTypes = types
+        loadConfig()
+    }
+
+    protected void loadConfig() {
         final config = grailsApplication.flatConfig
         final useAcceptHeader = config.get("grails.mime.use.accept.header")
         this.useAcceptHeader = useAcceptHeader instanceof Boolean ? useAcceptHeader : true
@@ -71,7 +75,6 @@ class ResponseMimeTypesApi {
             final userAgents = disableForUserAgentsConfig.join('(?i)|')
             this.disableForUserAgents = Pattern.compile("(${userAgents})")
         }
-
     }
 
     /**
