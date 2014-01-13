@@ -15,13 +15,13 @@ grails.project.groupId = appName // change this to alter the default package nam
 
 // The ACCEPT header will not be used for content negotiation for user agents containing the following strings (defaults to the 4 major rendering engines)
 grails.mime.disable.accept.header.userAgents = ['Gecko', 'WebKit', 'Presto', 'Trident']
-grails.mime.types = [
+grails.mime.types = [ // the first one is the default format
+    html:          ['text/html','application/xhtml+xml'],
     all:           '*/*',
     atom:          'application/atom+xml',
     css:           'text/css',
     csv:           'text/csv',
     form:          'application/x-www-form-urlencoded',
-    html:          ['text/html','application/xhtml+xml'],
     js:            'text/javascript',
     json:          ['application/json', 'text/json'],
     multipartForm: 'multipart/form-data',

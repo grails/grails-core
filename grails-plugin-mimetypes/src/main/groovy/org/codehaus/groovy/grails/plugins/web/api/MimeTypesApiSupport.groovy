@@ -49,8 +49,7 @@ class MimeTypesApiSupport {
         String format = lookupFormat(formatProvider)
         if (formats) {
             if (format == 'all') {
-                def firstKey = formats.keySet().iterator().next()
-                result = getResponseForFormat(formats[firstKey], firstKey, formatProvider)
+                result = resolveAllFormat(formatProvider, formats)
             }
             else {
                 // if the format has been specified then use that
@@ -69,8 +68,7 @@ class MimeTypesApiSupport {
                         else {
                             if (mime.extension == 'all') {
                                 matchFound = true
-                                def firstKey = formats.keySet().iterator().next()
-                                result = getResponseForFormat(formats[firstKey], firstKey, formatProvider)
+                                result = resolveAllFormat(formatProvider, formats)
                                 break
                             }
                         }
@@ -82,6 +80,27 @@ class MimeTypesApiSupport {
             }
         }
         return result
+    }
+
+    /**
+     * implementation for resolving "all" format
+     * 
+     * @param formatProvider
+     * @param formats
+     * @return
+     */
+    protected Object resolveAllFormat(formatProvider, LinkedHashMap<String, Object> formats) {
+        def formatKey
+        def format
+        if(formats.containsKey('*')) {
+            formatKey = '*'
+            format = 'all'
+        } else {
+            // choose first key
+            formatKey = formats.keySet().iterator().next()
+            format = formatKey
+        }
+        getResponseForFormat(formats[formatKey], format, formatProvider)
     }
 
     @CompileStatic(TypeCheckingMode.SKIP)
