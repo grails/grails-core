@@ -289,6 +289,19 @@ class IvyDependencyManagerTests extends GroovyTestCase {
         assertEquals 2,manager.chainResolver.resolvers.size()
     }
 
+    void testJcenterResolver() {
+        def settings = new BuildSettings()
+        def manager = new IvyDependencyManager("test", "0.1", settings)
+
+        manager.parseDependencies {
+            repositories {
+                jcenter()
+            }
+        }
+
+        assertEquals 1, manager.chainResolver.resolvers.size()
+    }
+
     void testCredentials() {
         def settings = new BuildSettings()
         def manager = new IvyDependencyManager("test", "0.1",settings)

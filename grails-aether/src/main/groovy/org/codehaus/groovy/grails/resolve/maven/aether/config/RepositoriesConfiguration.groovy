@@ -95,6 +95,20 @@ class RepositoriesConfiguration {
         }
     }
 
+    RemoteRepository jcenter(Closure configurer = null) {
+        final existing = repositories.find { ArtifactRepository ar -> ar.id == "jcenter" }
+        if (!existing) {
+            final repositoryBuilder = new RemoteRepository.Builder("jcenter", null, "http://jcenter.bintray.com")
+
+            configureRepository(repositoryBuilder, configurer)
+            final repository = repositoryBuilder.build()
+            repositories << repository
+            repository
+        } else {
+            existing
+        }
+    }
+
     protected void configureRepository(RemoteRepository.Builder repositoryBuilder, Closure configurer) {
         final proxyHost = System.getProperty("http.proxyHost")
         final proxyPort = System.getProperty("http.proxyPort")
