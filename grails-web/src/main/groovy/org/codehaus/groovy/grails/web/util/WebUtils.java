@@ -44,6 +44,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mime.MimeType;
@@ -210,12 +211,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static View resolveView(HttpServletRequest request, String viewName, String controllerName, ViewResolver viewResolver) throws Exception {
         return viewResolver.resolveViewName(addViewPrefix(viewName, controllerName), GrailsWebRequest.lookup(request).getLocale());
     }
-    
+
     public static String addViewPrefix(String viewName) {
         GrailsWebRequest webRequest = GrailsWebRequest.lookup();
         return addViewPrefix(viewName, webRequest != null ? webRequest.getControllerName() : null);
     }
-    
+
     public static String addViewPrefix(String viewName, String controllerName) {
         if (!viewName.startsWith(String.valueOf(SLASH))) {
             StringBuilder buf = new StringBuilder();
@@ -723,6 +724,9 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
                 webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
                 webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
                 webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, Boolean.TRUE, WebRequest.SCOPE_REQUEST);
+                if(((GrailsControllerClass)controller).getNamespace() != null) {
+                    webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, ((GrailsControllerClass)controller).getNamespace(), WebRequest.SCOPE_REQUEST);
+                }
             }
 
         }
