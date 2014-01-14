@@ -32,10 +32,6 @@ import org.codehaus.groovy.grails.plugins.CompositePluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.plugins.PluginInfo
 import org.codehaus.groovy.grails.plugins.build.scopes.PluginScopeInfo
-import javax.xml.parsers.SAXParserFactory
-import groovy.xml.FactorySupport
-import javax.xml.parsers.ParserConfigurationException
-import javax.xml.XMLConstants
 
 /**
  * Uses the project BuildSettings object to discover information about the installed plugin
@@ -156,8 +152,10 @@ class PluginBuildSettings {
 
     @CompileStatic
     private populateSourceDirectories(PluginScopeInfo compileInfo, List<File> pluginDependencies) {
-        for (zip in pluginDependencies) {
-            registerPluginZipWithScope(zip, compileInfo)
+        if(pluginDependencies) {
+            for (zip in pluginDependencies) {
+                registerPluginZipWithScope(zip, compileInfo)
+            }
         }
     }
 

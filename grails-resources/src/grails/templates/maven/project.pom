@@ -42,6 +42,7 @@
             <artifactId>grails-plugin-services</artifactId>
             <version>\${grails.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.grails</groupId>
             <artifactId>grails-plugin-i18n</artifactId>
@@ -104,7 +105,6 @@
             <version>\${grails.version}</version>
             <scope>test</scope>
         </dependency>
-
         <% if (!pluginProject) { %>
         <dependency>
             <groupId>com.h2database</groupId>
@@ -113,27 +113,38 @@
             <scope>runtime</scope>
         </dependency>
         <% } %>
-
         <% for (dep in dependencies) { %>
         <dependency>
             <groupId>${dep.group}</groupId>
             <artifactId>${dep.name}</artifactId>
             <version>${dep.version}</version>
             <scope>${dep.scope}</scope>
-            <% if (dep.type) { %><type>${dep.type}</type><% } %>
+            <% if (dep.type) { %>
+            <type>${dep.type}</type>
+            <% } %>
+            <% if (dep.excludes) { %>
+            <exclusions>
+                <% for (exclusion in dep.excludes) { %>
+                <exclusion>
+                    <groupId>${exclusion.group}</groupId>
+                    <artifactId>${exclusion.name}</artifactId>
+                </exclusion>
+                <% } %>
+            </exclusions>
+            <% } %>
         </dependency>
         <% } %>
-
         <% for (p in plugins) { %>
         <dependency>
             <groupId>${p.group}</groupId>
             <artifactId>${p.name}</artifactId>
             <version>${p.version}</version>
             <scope>${p.scope}</scope>
-            <% if (p.type) { %><type>${p.type}</type><% } %>
+            <% if (p.type) { %>
+            <type>${p.type}</type>
+            <% } %>
         </dependency>
         <% } %>
-
     </dependencies>
 
     <build>
