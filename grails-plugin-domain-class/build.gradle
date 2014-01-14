@@ -43,5 +43,4 @@ dependencies {
     compile("org.grails:grails-datastore-simple:$datastoreVersion") {
         exclude group: 'org.grails', module:'grails-datastore-core'
     }
-    runtime project(":grails-plugin-i18n") // for messageSource
 }

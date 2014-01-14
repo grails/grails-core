@@ -20,14 +20,16 @@ import grails.util.GrailsNameUtils
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerAware
 import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.codehaus.groovy.grails.web.util.WebUtils
+import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PersistentEntity
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpMethod
@@ -68,6 +70,10 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
     @Autowired
     @Qualifier("grailsUrlMappingsHolder")
     UrlMappingsHolder urlMappingsHolder
+    
+    @Autowired(required=false)
+    @Qualifier('grailsDomainClassMappingContext')
+    MappingContext mappingContext
 
     @Autowired
     UrlConverter grailsUrlConverter
@@ -132,14 +138,21 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     String resource
                     if (resourceAttribute instanceof CharSequence)
                         resource = resourceAttribute.toString()
-                    else if (DomainClassArtefactHandler.isDomainClass(resourceAttribute.getClass())) {
-                        resource = GrailsNameUtils.getPropertyName(resourceAttribute.getClass())
-                        if(!id) {
+                    else {
+                        PersistentEntity persistentEntity = (mappingContext != null) ? mappingContext.getPersistentEntity(resourceAttribute.getClass().getName()) : null
+                        boolean hasId = false
+                        if(persistentEntity != null) {
+                            resource = persistentEntity.getDecapitalizedName()
+                            hasId = true
+                        } else if (DomainClassArtefactHandler.isDomainClass(resourceAttribute.getClass(), true)) {
+                            resource = GrailsNameUtils.getPropertyName(resourceAttribute.getClass())
+                            hasId = true
+                        } else {
+                            resource = resourceAttribute.toString()
+                        }
+                        if(!id && hasId) {
                             id = getResourceId(resourceAttribute)
                         }
-                    }
-                    else {
-                        resource = resourceAttribute.toString()
                     }
                     List tokens = resource.contains('/') ?  resource.tokenize('/') :[resource]
                     controller = tokens[-1]
