@@ -270,6 +270,10 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         getCurrentRequest().setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controllerName);
     }
 
+    public void setControllerNamespace(String controllerNamespace) {
+     getCurrentRequest().setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, controllerNamespace);
+    }
+
     /**
      * @return the actionName
      */
@@ -282,6 +286,20 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public String getControllerName() {
         return (String)getCurrentRequest().getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE);
+    }
+
+    /**
+     * @return the controllerClass
+     */
+    public GrailsControllerClass getControllerClass() {
+        return (GrailsControllerClass)getCurrentRequest().getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS);
+    }
+
+    /**
+    * @return the controllerNamespace
+    */
+    public String getControllerNamespace() {
+        return (String)getCurrentRequest().getAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE);
     }
 
     public void setRenderView(boolean renderView) {
@@ -307,8 +325,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public boolean isFlowRequest() {
         GrailsApplication application = getAttributes().getGrailsApplication();
-        GrailsControllerClass controllerClass = (GrailsControllerClass)application.getArtefactByLogicalPropertyName(
-                ControllerArtefactHandler.TYPE, getControllerName());
+        GrailsControllerClass controllerClass = getControllerClass();
 
         if (controllerClass == null) return false;
 
