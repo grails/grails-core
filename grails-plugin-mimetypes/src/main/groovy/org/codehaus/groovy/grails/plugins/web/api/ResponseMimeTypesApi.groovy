@@ -63,15 +63,24 @@ class ResponseMimeTypesApi {
     ResponseMimeTypesApi(GrailsApplication application, MimeType[] types) {
         grailsApplication = application
         mimeTypes = types
+        loadConfig()
+    }
+
+    protected void loadConfig() {
         final config = grailsApplication.flatConfig
         final useAcceptHeader = config.get("grails.mime.use.accept.header")
         this.useAcceptHeader = useAcceptHeader instanceof Boolean ? useAcceptHeader : true
-        final disableForUserAgentsConfig = config.get('grails.mime.disable.accept.header.userAgents')
-        if (disableForUserAgentsConfig instanceof Collection) {
-            final userAgents = disableForUserAgentsConfig.join('(?i)|')
-            this.disableForUserAgents = Pattern.compile("(${userAgents})")
+        if (config.containsKey('grails.mime.disable.accept.header.userAgents')) {
+            final disableForUserAgentsConfig = config.get('grails.mime.disable.accept.header.userAgents')
+            if(disableForUserAgentsConfig instanceof Pattern) {
+                this.disableForUserAgents = (Pattern)disableForUserAgentsConfig
+            } else if (disableForUserAgentsConfig instanceof Collection && disableForUserAgentsConfig) {
+                final userAgents = disableForUserAgentsConfig.join('(?i)|')
+                this.disableForUserAgents = Pattern.compile("(${userAgents})")
+            } else {
+                this.disableForUserAgents = null
+            }
         }
-
     }
 
     /**
@@ -170,7 +179,7 @@ class ResponseMimeTypesApi {
             def parser = new DefaultAcceptHeaderParser(getMimeTypes())
             String header = null
 
-            boolean disabledForUserAgent = userAgent ? disableForUserAgents.matcher(userAgent).find() : false
+            boolean disabledForUserAgent = disableForUserAgents != null && userAgent ? disableForUserAgents.matcher(userAgent).find() : false
             if (msie) header = "*/*"
             if (!header && useAcceptHeader && !disabledForUserAgent) header = request.getHeader(HttpHeaders.ACCEPT)
             result = parser.parse(header)

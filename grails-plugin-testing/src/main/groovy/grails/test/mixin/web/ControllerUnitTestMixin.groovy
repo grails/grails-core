@@ -268,8 +268,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         ServletsGrailsPluginSupport.enhanceServletApi()
         ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
-        request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(applicationContext: applicationContext))
-        response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(applicationContext: applicationContext))
+        request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
+        response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
         webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         request = (GrailsMockHttpServletRequest)webRequest.getCurrentRequest()
         response = (GrailsMockHttpServletResponse)webRequest.getCurrentResponse()
@@ -371,10 +371,13 @@ class TestResponseMimeTypesApi extends ResponseMimeTypesApi {
 
     @Override
     MimeType[] getMimeTypes() {
+        loadConfig()
         def factory = new MimeTypesFactoryBean()
         factory.applicationContext = applicationContext
         return factory.getObject()
     }
+    
+    
 }
 
 @CompileStatic

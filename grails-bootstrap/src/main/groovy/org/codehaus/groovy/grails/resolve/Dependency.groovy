@@ -36,6 +36,7 @@ class Dependency {
     boolean transitive = true
     boolean inherited = false
     boolean exported = true
+    String extension = null
 
     Dependency(String group, String name, String version, String...exc) {
         this.group = group

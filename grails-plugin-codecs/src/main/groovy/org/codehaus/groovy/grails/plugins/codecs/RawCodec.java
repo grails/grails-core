@@ -56,7 +56,15 @@ public class RawCodec implements Encoder, Decoder, StreamingEncoder {
      * @see org.codehaus.groovy.grails.support.encoding.Encoder#encode(java.lang.Object)
      */
     public Object encode(Object o) {
-        return o;
+        if(o instanceof String) {
+            // create a new copy of the String instance            
+            return new String((String)o);
+        } else if(o instanceof CharSequence) {
+            // convert CharSequence to String so that we have a new instance
+            return String.valueOf(o);
+        } else {
+            return o;
+        }
     }
 
     /* (non-Javadoc)

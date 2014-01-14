@@ -321,7 +321,16 @@ class TestUrlMappings {
         request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
         assertOutputEquals('''<script type="text/javascript">\r\nvar value='<>';\r\n</script>\r\n''', template)
     }
-    
+
+    // GRAILS-10985
+    void testJavascriptExpressionRawAndEscaped() {
+        withConfig("grails.views.default.codec='HTML'") {
+            def template = '''<g:javascript>var value='${raw('<>'.intern())}${'<>'.intern()}';</g:javascript>'''
+            request.setAttribute("org.codehaus.grails.INCLUDED_JS_LIBRARIES", ['test'])
+            assertOutputEquals('''<script type="text/javascript">\r\nvar value='<>\\u003c\\u003e';\r\n</script>\r\n''', template)
+        }
+    }
+
     void testJavascriptExpressionNoneDefaultCodecLegacySettings() {
         withConfig("grails.views.default.codec='none'") {
             def template = '''<g:javascript>var value='${'<>'}';</g:javascript>'''
