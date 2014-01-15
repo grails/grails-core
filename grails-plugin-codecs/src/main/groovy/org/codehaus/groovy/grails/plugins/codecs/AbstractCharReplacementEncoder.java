@@ -54,6 +54,10 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
      * @see org.codehaus.groovy.grails.support.encoding.Encoder#encode(java.lang.Object)
      */
     public Object encode(Object o) {
+        return doCharReplacementEncoding(o);
+    }
+
+    protected final Object doCharReplacementEncoding(Object o) {
         if (o == null) {
             return null;
         }
@@ -72,9 +76,17 @@ public abstract class AbstractCharReplacementEncoder implements Encoder, Streami
             }
         }
         else {
-            str = String.valueOf(o);
+            str = convertToString(o);
         }
 
+        return escapeCharSequence(str);
+    }
+
+    protected String convertToString(Object o) {
+        return String.valueOf(o);
+    }
+
+    protected Object escapeCharSequence(CharSequence str) {
         if (str == null || str.length() == 0) {
             return str;
         }
