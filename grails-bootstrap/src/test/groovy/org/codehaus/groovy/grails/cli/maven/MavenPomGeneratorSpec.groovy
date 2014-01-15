@@ -5,14 +5,12 @@ import grails.util.Metadata
 import groovy.util.slurpersupport.GPathResult
 
 import org.apache.ivy.core.cache.ResolutionCacheManager
-import org.apache.ivy.core.module.id.ModuleRevisionId
-import org.apache.ivy.core.report.ResolveReport
-import org.apache.ivy.core.resolve.IvyNode
-import org.apache.ivy.core.resolve.ResolveEngine
 import org.apache.ivy.core.settings.IvySettings
 import org.apache.ivy.plugins.resolver.ChainResolver
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.IvyDependencyManager
+import org.codehaus.groovy.grails.resolve.IvyDependencyReport
+import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
 
 import spock.lang.Shared
 import spock.lang.Specification
@@ -37,7 +35,7 @@ class MavenPomGeneratorSpec extends Specification {
         }
     }
 
-    def "test generating a pom file"() {
+    def "test generating a pom file using Ivy dependency manager"() {
         setup:
             File pluginsDir = new File('build/plugins')
             pluginsDir.mkdirs()
@@ -80,6 +78,10 @@ class MavenPomGeneratorSpec extends Specification {
                             }
                         }
                         getChainResolver() >> { Mock(ChainResolver) }
+                        resolveDependency(_) >> { Mock(IvyDependencyReport) {
+                                getResolvedArtifacts() >> { [new ResolvedArtifactReport(dependency:new Dependency('org.slf4j', 'slf4j-api', '1.7.0')), new ResolvedArtifactReport(dependency:new Dependency('log4j', 'log4j', '1.2.16')) ] }
+                            }
+                        }
                     }
                 }
                 getGrailsAppVersion() >> { '1.0.0' }
@@ -91,22 +93,7 @@ class MavenPomGeneratorSpec extends Specification {
                 }
                 getProjectPluginsDir() >> { pluginsDir }
             }
-            MavenPomGenerator generator = Spy(MavenPomGenerator, constructorArgs:[settings]) {
-                    getResolveEngine() >> { Mock(ResolveEngine) {
-                            resolve(_,_) >> { Mock(ResolveReport) {
-                                getDependencies() >> {
-                                    [Mock(IvyNode) {
-                                        getId() >> { ModuleRevisionId.newInstance('org.slf4j', 'slf4j-api', '1.7.0') }
-                                    },
-                                    Mock(IvyNode) {
-                                        getId() >> { ModuleRevisionId.newInstance('log4j', 'log4j', '1.2.16') }
-                                    }]
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            MavenPomGenerator generator = new MavenPomGenerator(settings)
         when:
             generator.generate('org.grails.test')
         then:

@@ -16,10 +16,15 @@
 package org.codehaus.groovy.grails.resolve.maven
 
 import org.codehaus.groovy.grails.resolve.Dependency
+import org.codehaus.groovy.grails.resolve.DependencyReport
 import org.codehaus.groovy.grails.resolve.maven.aether.AetherDependencyManager
 import org.codehaus.groovy.grails.resolve.maven.aether.config.GrailsAetherCoreDependencies
+import org.eclipse.aether.RepositorySystem
 import org.eclipse.aether.repository.Authentication
 import org.eclipse.aether.repository.RemoteRepository
+import org.eclipse.aether.resolution.DependencyRequest
+import org.eclipse.aether.resolution.DependencyResult
+
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
@@ -509,4 +514,17 @@ class AetherDependencyManagerSpec extends Specification {
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
     }
 
+    void "Test the resolution of a single dependency"() {
+        given: "A dependency manager instance"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.repositorySystem = Mock(RepositorySystem) {
+                resolveDependencies(_,_) >> { new DependencyResult(new DependencyRequest()) }
+            }
+        when: "A dependency is provided"
+            org.codehaus.groovy.grails.resolve.Dependency dependency = new org.codehaus.groovy.grails.resolve.Dependency('org.slf4j', 'slf4j-api', '1.7.2')
+            DependencyReport report = dependencyManager.resolveDependency(dependency)
+        then: "The dependency is resolved"
+            report != null
+            !report.hasError()
+    }
 }

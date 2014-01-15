@@ -19,14 +19,6 @@ import grails.util.BuildSettings
 import grails.util.Metadata
 import groovy.text.SimpleTemplateEngine
 
-import org.apache.ivy.core.event.EventManager
-import org.apache.ivy.core.module.descriptor.DefaultModuleDescriptor
-import org.apache.ivy.core.module.id.ModuleRevisionId
-import org.apache.ivy.core.report.ResolveReport
-import org.apache.ivy.core.resolve.IvyNode
-import org.apache.ivy.core.resolve.ResolveEngine
-import org.apache.ivy.core.resolve.ResolveOptions
-import org.apache.ivy.core.sort.SortEngine
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.io.support.FileSystemResource
 import org.codehaus.groovy.grails.io.support.IOUtils
@@ -34,6 +26,8 @@ import org.codehaus.groovy.grails.plugins.AstPluginDescriptorReader
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
 import org.codehaus.groovy.grails.resolve.Dependency
 import org.codehaus.groovy.grails.resolve.DependencyManager
+import org.codehaus.groovy.grails.resolve.DependencyReport
+import org.codehaus.groovy.grails.resolve.ResolvedArtifactReport
 
 /**
  * Generates a POM for a Grails application.
@@ -293,14 +287,14 @@ class MavenPomGenerator extends BaseSettingsApi {
         }
     }
 
-	/**
-	 * Checks to see if the provided dependency matches any of the excluded dependencies in
-	 * the provided list.
-	 * @param dependency The dependency to be compared to the exclusion list.
-	 * @param exclusion The list of excluded dependencies.
-	 * @return {@code true} if the provided dependency matches any of the excluded dependencies
-	 * 		or {@code false} if the provided dependency should not be excluded.
-	 */
+    /**
+     * Checks to see if the provided dependency matches any of the excluded dependencies in
+     * the provided list.
+     * @param dependency The dependency to be compared to the exclusion list.
+     * @param exclusion The list of excluded dependencies.
+     * @return {@code true} if the provided dependency matches any of the excluded dependencies
+     * 		or {@code false} if the provided dependency should not be excluded.
+     */
     private boolean isExclusion(Dependency dependency, List<Dependency> exclusions) {
         exclusions.find { Dependency ivyExclusion ->
             boolean isMatch = false
@@ -324,40 +318,11 @@ class MavenPomGenerator extends BaseSettingsApi {
      * 	dependency or an empty set if there are no transitive dependencies.
      */
     private Set<Dependency> getTransitiveDependencies(Dependency rootDependency) {
-        Set<Dependency> transitiveDeps = [] as Set
-
-        // Convert dependency to Ivy dependency descriptor for resolution
-        ModuleRevisionId revId = ModuleRevisionId.newInstance(rootDependency.group, rootDependency.name, rootDependency.version)
-
-        // Ivy dependency resolution engine set up
-        ResolveEngine resolveEngine = getResolveEngine()
-
-        // Ivy report options
-        ResolveOptions options = new ResolveOptions()
-        options.setDownload(false)
-        options.setOutputReport(false)
-        options.setValidate(false)
-
         // Generate the Ivy resolution report and extract the transitive dependencies...
-        ResolveReport report = resolveEngine.resolve(DefaultModuleDescriptor.newDefaultInstance(revId), options)
-        report.dependencies.each { IvyNode dep ->
-            transitiveDeps << new Dependency(dep.id.organisation, dep.id.name, dep.id.revision)
-        }
-
-        transitiveDeps
-    }
-
-    /**
-     * Creates a new Ivy {@link ResolveEngine} instance used to determine the transitive 
-     * dependencies for a given dependency.
-     * @return a new {@link ResolveEngine} instance.
-     **/
-    protected ResolveEngine getResolveEngine() {
-        EventManager eventManager = new EventManager()
-        SortEngine sortEngine = new SortEngine(buildSettings.dependencyManager.ivySettings)
-        ResolveEngine resolveEngine = new ResolveEngine(buildSettings.dependencyManager.ivySettings, eventManager,sortEngine)
-        resolveEngine.dictatorResolver = buildSettings.dependencyManager.chainResolver
-        resolveEngine
+        DependencyReport report = buildSettings.dependencyManager.resolveDependency(rootDependency)
+        report.getResolvedArtifacts().collect { ResolvedArtifactReport artifactReport ->
+            artifactReport.dependency
+        } as Set
     }
 }
 
