@@ -17,10 +17,11 @@
 package grails.test.mixin.integration
 
 import groovy.transform.CompileStatic
+import junit.framework.AssertionFailedError
+import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.junit.Before
 import org.codehaus.groovy.grails.test.support.GrailsTestInterceptor
 import grails.test.mixin.TestMixinTargetAware
-import grails.util.Holders
 import org.codehaus.groovy.grails.test.support.GrailsTestMode
 import org.junit.After
 import groovy.transform.TypeCheckingMode
@@ -60,5 +61,61 @@ class IntegrationTestMixin implements TestMixinTargetAware {
     @After
     void destoryIntegrationTest() {
         interceptor?.destroy()
+    }
+
+    /**
+     * Asserts that the given code closure fails when it is evaluated
+     *
+     * @param code
+     * @return the message of the thrown Throwable
+     */
+    String shouldFail(Closure code) {
+        boolean failed = false
+        String result = null
+        try {
+            code.call()
+        }
+        catch (GroovyRuntimeException gre) {
+            failed = true
+            result = ScriptBytecodeAdapter.unwrap(gre).getMessage()
+        }
+        catch (Throwable e) {
+            failed = true
+            result = e.getMessage()
+        }
+        if (!failed) {
+            throw new AssertionFailedError("Closure " + code + " should have failed")
+        }
+
+        return result
+    }
+
+    /**
+     * Asserts that the given code closure fails when it is evaluated
+     * and that a particular exception is thrown.
+     *
+     * @param clazz the class of the expected exception
+     * @param code the closure that should fail
+     * @return the message of the expected Throwable
+     */
+    String shouldFail(Class clazz, Closure code) {
+        Throwable th = null
+        try {
+            code.call()
+        } catch (GroovyRuntimeException gre) {
+            th = ScriptBytecodeAdapter.unwrap(gre)
+        } catch (Throwable e) {
+            th = e
+        }
+
+        if (th == null) {
+            throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name")
+        }
+
+        if (!clazz.isInstance(th)) {
+            throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name, instead got Exception $th")
+        }
+
+        return th.message
     }
 }
