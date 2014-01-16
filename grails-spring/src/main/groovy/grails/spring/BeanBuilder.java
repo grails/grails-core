@@ -669,8 +669,6 @@ public class BeanBuilder extends GroovyObjectSupport {
             }
             // factory method syntax
             else {
-                currentBeanConfig = springConfig.addSingletonBean(name);
-
                 //First arg is the map containing factoryBean : factoryMethod
                 @SuppressWarnings("rawtypes")
                 Map.Entry factoryBeanEntry = (Map.Entry)((Map)args[0]).entrySet().iterator().next();
