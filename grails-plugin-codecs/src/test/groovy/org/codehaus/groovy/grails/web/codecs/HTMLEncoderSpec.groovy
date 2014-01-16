@@ -34,7 +34,7 @@ class HTMLEncoderSpec extends Specification {
     }
 
     @Unroll
-    def "streaming should encode longest part at a time for #streamingEncoder.codecName codec"(StreamingEncoder streamingEncoder) {
+    def "streaming should encode longest part at a time for #streamingEncoder.codecIdentifier.codecName codec"(StreamingEncoder streamingEncoder) {
         given:
              EncodedAppender appender=Mock(EncodedAppender)
              EncodingState encodingState=Mock(EncodingState)

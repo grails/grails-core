@@ -20,6 +20,7 @@ import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
 import org.codehaus.groovy.runtime.GStringImpl
+import org.codehaus.groovy.runtime.NullObject
 
 /**
  * Helper methods for Codec metaclass operations.
@@ -53,7 +54,7 @@ class CodecMetaClassSupport {
                 ->
                 def encoder = codecClass.getEncoder()
                 if (encoder) {
-                    return encoder.encode(delegate)
+                    return encoder.encode(delegate != NullObject.NullObject ? delegate : null)
                 }
 
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
@@ -66,7 +67,7 @@ class CodecMetaClassSupport {
                 ->
                 def decoder = codecClass.getDecoder()
                 if (decoder) {
-                    return decoder.decode(delegate)
+                    return decoder.decode(delegate != NullObject.NullObject ? delegate : null)
                 }
 
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
@@ -79,13 +80,13 @@ class CodecMetaClassSupport {
             // Resolve codec methods once only at startup
             def encoder = codecClass.getEncoder()
             if (encoder) {
-                encoderClosure = { -> encoder.encode(delegate) }
+                encoderClosure = { -> encoder.encode(delegate != NullObject.NullObject ? delegate : null) }
             } else {
                 encoderClosure = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }
             def decoder = codecClass.getDecoder()
             if (decoder) {
-                decoderClosure = { -> decoder.decode(delegate) }
+                decoderClosure = { -> decoder.decode(delegate != NullObject.NullObject ? delegate : null) }
             } else {
                 decoderClosure = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }

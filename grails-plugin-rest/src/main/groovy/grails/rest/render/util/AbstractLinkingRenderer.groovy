@@ -119,7 +119,11 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
     abstract void renderInternal(T object, RenderContext context)
 
     protected boolean isDomainResource(Class clazz) {
-        DomainClassArtefactHandler.isDomainClass(clazz)
+        if(mappingContext != null) {
+            return mappingContext.isPersistentEntity(clazz)
+        } else {
+            DomainClassArtefactHandler.isDomainClass(clazz, true)
+        }
     }
 
     protected String getLinkTitle(PersistentEntity entity, Locale locale) {
