@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.NullView
 import org.codehaus.groovy.grails.web.util.WebUtils
@@ -44,6 +44,8 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
 
     def controllerRegex
     def controllerExcludeRegex
+    def controllerNamespaceRegex
+    def controllerNamespaceExcludeRegex
     def actionRegex
     def actionExcludeRegex
     def uriPattern
@@ -74,6 +76,16 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
             controllerExcludeRegex = Pattern.compile((useRegex)?scope.controllerExclude:scope.controllerExclude.replaceAll("\\*", ".*"))
         }
 
+        if(scope.namespace) {
+            controllerNamespaceRegex = Pattern.compile((useRegex)?scope.namespace:scope.namespace.replaceAll("\\*", ".*"))
+        } else {
+            controllerNamespaceRegex = Pattern.compile(".*")
+        }
+
+        if(scope.namespaceExclude) {
+            controllerNamespaceExcludeRegex = Pattern.compile((useRegex)?scope.namespaceExclude:scope.namespaceExclude.replaceAll("\\*", ".*"))
+        }
+
         if (scope.action) {
             actionRegex = Pattern.compile((useRegex)?scope.action:scope.action.replaceAll("\\*", ".*"))
         }
@@ -100,6 +112,17 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE)?.toString()
     }
 
+    def controllerClass(request) {
+     return request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
+    }
+
+    /**
+    * Returns the namespace of the controller targeted by the given request.
+    **/
+    String controllerNamespace(request) {
+     return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE)?.toString()
+    }
+
     /**
      * Returns the name of the action targeted by the given request.
      */
@@ -117,10 +140,12 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         if (filterConfig.before) {
 
             String controllerName = controllerName(request)
+            def controllerClass   = controllerClass(request)
+            String controllerNamespace = controllerNamespace(request)
             String actionName = actionName(request)
             String uri = uri(request)
 
-            if (!accept(controllerName, actionName, uri)) return true
+            if (!accept(controllerName, actionName, uri, controllerNamespace, controllerClass)) return true
 
             def callable = filterConfig.before.clone()
             def result = callable.call()
@@ -141,10 +166,12 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         }
 
         String controllerName = controllerName(request)
+        def controllerClass = controllerClass(request)
+        String controllerNamespace = controllerNamespace(request)
         String actionName = actionName(request)
         String uri = uri(request)
 
-        if (!accept(controllerName, actionName, uri)) return
+        if (!accept(controllerName, actionName, uri, controllerNamespace, controllerClass)) return
 
         def callable = filterConfig.after.clone()
         def currentModel = modelAndView?.model
@@ -192,16 +219,18 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         }
 
         String controllerName = controllerName(request)
+        String controllerNamespace = controllerNamespace(request)
+        def controllerClass = controllerClass(request)
         String actionName = actionName(request)
         String uri = uri(request)
 
-        if (!accept(controllerName, actionName, uri)) return
+        if (!accept(controllerName, actionName, uri, controllerNamespace, controllerClass)) return
 
         def callable = filterConfig.afterView.clone()
         callable.call(e)
     }
 
-    boolean accept(String controllerName, String actionName, String uri) {
+    boolean accept(String controllerName, String actionName, String uri, String controllerNamespace, controllerClass) {
         boolean matched=true
 
         if (uriPattern) {
@@ -222,12 +251,21 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
                 if (matched && controllerExcludeRegex) {
                     matched = !doesMatch(controllerExcludeRegex, controllerName)
                 }
+                if(matched && controllerNamespaceRegex) {
+                    if(!controllerNamespace) {
+                        controllerNamespace = ''
+                    }
+                    matched = doesMatch(controllerNamespaceRegex, controllerNamespace)
+                    if(matched && controllerNamespaceExcludeRegex) {
+                        matched = !doesMatch(controllerNamespaceExcludeRegex, controllerNamespace)
+                    }
+                }
             }
-            if (matched && filterConfig.scope.action) {
+            if (matched && (filterConfig.scope.action)) {
                 if (!actionName && controllerName) {
-                    def controllerClass = grailsApplication?.getArtefactByLogicalPropertyName(
-                       DefaultGrailsControllerClass.CONTROLLER, controllerName)
-                    actionName = controllerClass?.getDefaultAction()
+                    if(controllerClass && controllerClass.respondsTo("getDefaultAction")) {
+                        actionName = controllerClass?.getDefaultAction()
+                    }
                 }
                 matched = doesMatch(actionRegex, actionName)
                 if (matched && actionExcludeRegex) {
