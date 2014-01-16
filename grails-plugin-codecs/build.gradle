@@ -1,4 +1,4 @@
 dependencies {
     compile 'commons-codec:commons-codec:1.6'
-    compile project(":grails-web")
+    compile project(":grails-web"), project(":grails-plugin-converters")
 }

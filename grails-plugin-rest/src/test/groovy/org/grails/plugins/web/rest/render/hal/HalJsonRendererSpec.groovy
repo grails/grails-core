@@ -16,6 +16,10 @@
 
 package org.grails.plugins.web.rest.render.hal
 
+import com.google.gson.GsonBuilder
+import com.google.gson.TypeAdapter
+import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonWriter
 import grails.persistence.Entity
 import grails.rest.render.Renderer
 import grails.rest.render.hal.HalJsonCollectionRenderer
@@ -23,25 +27,21 @@ import grails.rest.render.hal.HalJsonRenderer
 import grails.util.GrailsWebUtil
 import grails.web.CamelCaseUrlConverter
 import groovy.transform.NotYetImplemented
-
-import javax.xml.bind.DatatypeConverter
-
-import org.codehaus.groovy.grails.web.mapping.DefaultLinkGenerator
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
-import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
-import org.codehaus.groovy.grails.web.mapping.LinkGenerator
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder
+import org.codehaus.groovy.grails.web.mapping.*
 import org.grails.datastore.mapping.keyvalue.mapping.config.KeyValueMappingContext
+import org.grails.datastore.mapping.model.AbstractPersistentProperty
 import org.grails.datastore.mapping.model.MappingContext
+import org.grails.datastore.mapping.model.PropertyMapping
 import org.grails.plugins.web.rest.render.ServletRenderContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.core.convert.converter.Converter
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.util.WebUtils
-
 import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
+
+import javax.xml.bind.DatatypeConverter
 
 /**
  */
@@ -699,6 +699,39 @@ class HalJsonRendererSpec extends Specification{
 }'''
 
     }
+    @Issue('GRAILS-10977')
+    void "Test that the HAL renderer allows for custom Gson implementation with custom TypeAdapter"() {
+        given:"A HAL renderer"
+        HalJsonRenderer renderer = getSpecialEventRenderer()
+        renderer.prettyPrint = true
+        GsonBuilder gsonBuilder = new GsonBuilder()
+        gsonBuilder.registerTypeAdapter(SpecialType, new SpecialTypeAdapter())
+        renderer.gson = gsonBuilder.create()
+
+        when:"A domain object is rendered"
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/specialEvent/Lollapalooza")
+        def response = webRequest.response
+        def renderContext = new ServletRenderContext(webRequest)
+        def event = new SpecialEvent(name: "Lollapalooza", specialType: new SpecialType())
+
+        renderer.render(event, renderContext)
+
+        then:"The resulting HAL is correct"
+        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+        response.contentAsString == '''{
+  "_links": {
+    "self": {
+      "href": "http://localhost/specialEvents",
+      "hreflang": "en",
+      "type": "application/hal+json"
+    }
+  },
+  "name": "Lollapalooza",
+  "specialType": "special-type"
+}'''
+
+    }
 
     protected HalJsonCollectionRenderer getCollectionRenderer() {
         def renderer = new HalJsonCollectionRenderer(Product)
@@ -739,6 +772,31 @@ class HalJsonRendererSpec extends Specification{
             "/events"(resources: "event")
         }
         renderer
+    }
+
+    protected HalJsonRenderer getSpecialEventRenderer() {
+        def renderer = new HalJsonRenderer(SpecialEvent)
+        renderer.mappingContext = mappingContextForSpecialEvent
+        renderer.messageSource = new StaticMessageSource()
+        renderer.linkGenerator = getLinkGenerator {
+            "/specialEvents"(resources: "specialEvent")
+        }
+        renderer
+    }
+
+    MappingContext getMappingContextForSpecialEvent() {
+        final context = new KeyValueMappingContext("")
+        def specialEventEntity = context.addPersistentEntity(SpecialEvent)
+        // To make 'specialType' appear as a persistentProperty on SpecialEvent we need to fake it here
+        def pp = new AbstractPersistentProperty(specialEventEntity, context, 'specialType', SpecialType) {
+            PropertyMapping getMapping() {
+                return null
+            }
+        }
+        specialEventEntity.persistentProperties.add(pp)
+        specialEventEntity.persistentPropertyNames.add('specialType')
+        specialEventEntity.propertiesByName.put('specialType',pp)
+        context
     }
 
     MappingContext getMappingContext() {
@@ -818,6 +876,12 @@ class Event {
 }
 
 @Entity
+class SpecialEvent {
+    String name
+    SpecialType specialType
+}
+
+@Entity
 class Project {
     static hasMany = [employees: Employee]
     static mapping = {
@@ -851,4 +915,18 @@ class SimpleProduct {
 
 class SimpleCategory {
     String name
+}
+
+class SpecialType {
+}
+
+class SpecialTypeAdapter extends TypeAdapter<SpecialType> {
+
+    void write(JsonWriter out, SpecialType value) {
+        out.value("special-type")
+    }
+
+    SpecialType read(JsonReader jsonReader)  {
+        return null
+    }
 }

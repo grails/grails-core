@@ -74,7 +74,17 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
 
     static final Map<Integer, Boolean> DOMAIN_CLASS_CHECK_CACHE = new ConcurrentHashMap<Integer, Boolean>();
 
+    public static boolean isDomainClass(Class<?> clazz, boolean allowProxyClass) {
+        boolean retval = isDomainClass(clazz);
+        if(!retval && allowProxyClass && clazz != null && clazz.getSimpleName().contains("$")) {
+            retval = isDomainClass(clazz.getSuperclass());
+        }
+        return retval;
+    }
+    
     public static boolean isDomainClass(Class<?> clazz) {
+        if (clazz == null) return false;
+
         Integer cacheKey = System.identityHashCode(clazz);
 
         Boolean retval = DOMAIN_CLASS_CHECK_CACHE.get(cacheKey);
@@ -83,6 +93,7 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
         }
 
         retval = doIsDomainClassCheck(clazz);
+        
         if (!developmentMode) {
             DOMAIN_CLASS_CHECK_CACHE.put(cacheKey, retval);
         }
@@ -91,8 +102,6 @@ public class DomainClassArtefactHandler extends ArtefactHandlerAdapter implement
 
     private static boolean doIsDomainClassCheck(Class<?> clazz) {
         // it's not a closure
-        if (clazz == null) return false;
-
         if (Closure.class.isAssignableFrom(clazz)) {
             return false;
         }

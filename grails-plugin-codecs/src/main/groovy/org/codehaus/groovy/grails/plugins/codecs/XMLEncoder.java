@@ -15,8 +15,11 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import grails.converters.XML;
+
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
+import org.springframework.util.ClassUtils;
 
 /**
  * Encoder implementation that escapes some characters for inclusion in XML documents
@@ -81,4 +84,24 @@ public class XMLEncoder extends AbstractCharReplacementEncoder {
       }
       return null;
     }
+    
+    @Override
+    public final Object encode(Object o) {
+        return doEncode(o);
+    }
+
+    protected Object doEncode(Object o) {
+        if(o == null) {
+            return null;
+        }
+        if(o instanceof CharSequence || (o != null && ClassUtils.isPrimitiveOrWrapper(o.getClass()))) {
+            return doCharReplacementEncoding(o);
+        } else {
+            return encodeToXmlString(o);            
+        }
+    }
+
+    protected Object encodeToXmlString(Object o) {
+        return new XML(o).toString();
+    }    
 }
