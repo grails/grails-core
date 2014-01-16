@@ -230,7 +230,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         callable.call(e)
     }
 
-    boolean accept(String controllerName, String actionName, String uri, String controllerNamespace, GroovyObject controllerClass) {
+    boolean accept(String controllerName, String actionName, String uri, String controllerNamespace, controllerClass) {
         boolean matched=true
 
         if (uriPattern) {

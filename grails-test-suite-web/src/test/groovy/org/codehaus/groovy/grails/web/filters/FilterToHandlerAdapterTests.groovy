@@ -4,6 +4,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
+import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass
 import org.codehaus.groovy.grails.plugins.web.filters.FilterToHandlerAdapter
 import org.codehaus.groovy.grails.support.MockApplicationContext
 
@@ -110,7 +111,8 @@ class FilterToHandlerAdapterTests extends GroovyTestCase {
         filterAdapter.filterConfig.scope.action = "index"
         filterAdapter.afterPropertiesSet()
 
-        assertTrue filterAdapter.accept("demo", null, "/ignored",null, (GroovyObject)DemoController)
+        def controllerClass = application?.getArtefactByLogicalPropertyName(DefaultGrailsControllerClass.CONTROLLER, "demo")
+        assertTrue filterAdapter.accept("demo", null, "/ignored",null,controllerClass)
     }
 
     void testDefaultActionWithControllerMatchAndNoActionSpecifiedInConfig() {
