@@ -20,7 +20,7 @@ import java.util.regex.Pattern
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.NullView
 import org.codehaus.groovy.grails.web.util.WebUtils
@@ -112,8 +112,8 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE)?.toString()
     }
 
-    GrailsControllerClass controllerClass(request) {
-     return (GrailsControllerClass)request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
+    GroovyObject controllerClass(request) {
+     return (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
     }
 
     /**
@@ -140,7 +140,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         if (filterConfig.before) {
 
             String controllerName = controllerName(request)
-            GrailsControllerClass controllerClass = controllerClass(request)
+            GroovyObject controllerClass = controllerClass(request)
             String controllerNamespace = controllerNamespace(request)
             String actionName = actionName(request)
             String uri = uri(request)
@@ -166,7 +166,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         }
 
         String controllerName = controllerName(request)
-        GrailsControllerClass controllerClass = controllerClass(request)
+        GroovyObject controllerClass = controllerClass(request)
         String controllerNamespace = controllerNamespace(request)
         String actionName = actionName(request)
         String uri = uri(request)
@@ -220,7 +220,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
 
         String controllerName = controllerName(request)
         String controllerNamespace = controllerNamespace(request)
-        GrailsControllerClass controllerClass = controllerClass(request)
+        GroovyObject controllerClass = controllerClass(request)
         String actionName = actionName(request)
         String uri = uri(request)
 
@@ -230,7 +230,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         callable.call(e)
     }
 
-    boolean accept(String controllerName, String actionName, String uri, String controllerNamespace, GrailsControllerClass controllerClass) {
+    boolean accept(String controllerName, String actionName, String uri, String controllerNamespace, GroovyObject controllerClass) {
         boolean matched=true
 
         if (uriPattern) {
@@ -263,7 +263,9 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
             }
             if (matched && (filterConfig.scope.action)) {
                 if (!actionName && controllerName) {
-                    actionName = controllerClass?.getDefaultAction()
+                    if(controllerClass && controllerClass.respondsTo("getDefaultAction")) {
+                        actionName = controllerClass?.getDefaultAction()
+                    }
                 }
                 matched = doesMatch(actionRegex, actionName)
                 if (matched && actionExcludeRegex) {

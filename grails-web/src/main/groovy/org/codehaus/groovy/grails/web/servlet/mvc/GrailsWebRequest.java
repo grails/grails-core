@@ -26,7 +26,7 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -291,8 +291,8 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
     /**
      * @return the controllerClass
      */
-    public GrailsControllerClass getControllerClass() {
-        return (GrailsControllerClass)getCurrentRequest().getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS);
+    public GroovyObject getControllerClass() {
+        return (GroovyObject)getCurrentRequest().getAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS);
     }
 
     /**
@@ -325,7 +325,11 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
      */
     public boolean isFlowRequest() {
         GrailsApplication application = getAttributes().getGrailsApplication();
-        GrailsControllerClass controllerClass = getControllerClass();
+        GroovyObject controllerClassGroovyObject = getControllerClass();
+        GrailsControllerClass controllerClass = null;
+        if(controllerClassGroovyObject instanceof GrailsControllerClass) {
+            controllerClass = (GrailsControllerClass) controllerClassGroovyObject;
+        }
 
         if (controllerClass == null) return false;
 
@@ -333,7 +337,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         if (actionName == null) actionName = controllerClass.getDefaultAction();
         if (actionName == null) return false;
 
-        if (controllerClass != null && controllerClass.isFlowAction(actionName)) return true;
+        if (controllerClass.isFlowAction(actionName)) return true;
         return false;
     }
 

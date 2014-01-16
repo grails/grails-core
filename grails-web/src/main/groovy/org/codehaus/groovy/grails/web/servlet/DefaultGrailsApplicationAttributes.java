@@ -29,7 +29,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
-import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
@@ -133,9 +133,13 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
             if (controller != null) {
                 controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
                 request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controllerName);
-                if(((DefaultGrailsControllerClass)controller).getNamespace() != null) {
-                    request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, ((DefaultGrailsControllerClass)controller).getNamespace());
+                if(controller instanceof GrailsControllerClass) {
+                    String namespace = ((GrailsControllerClass)controller).getNamespace();
+                    if(namespace != null) {
+                        request.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, namespace);
+                    }
                 }
+
             }
         }
         return controllerName != null ? controllerName : "";

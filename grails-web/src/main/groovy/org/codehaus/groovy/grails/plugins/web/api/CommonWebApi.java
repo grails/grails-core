@@ -21,9 +21,9 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
+import groovy.lang.GroovyObject;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
@@ -211,7 +211,7 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      * Obtains the currently executing controllerClass
      * @return The controller class
      */
-    public GrailsControllerClass getControllerClass(Object instance) {
+    public GroovyObject getControllerClass(Object instance) {
         return currentRequestAttributes().getControllerClass();
     }
 
