@@ -23,7 +23,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
@@ -197,22 +196,6 @@ public class CommonWebApi implements GrailsApplicationAware, ServletContextAware
      */
     public String getControllerName(Object instance) {
         return currentRequestAttributes().getControllerName();
-    }
-
-    /**
-     * Obtains the currently executing controller namespace
-     * @return The controller name
-     */
-    public String getControllerNamespace(Object instance) {
-        return currentRequestAttributes().getControllerNamespace();
-    }
-
-    /**
-     * Obtains the currently executing controllerClass
-     * @return The controller class
-     */
-    public GrailsControllerClass getControllerClass(Object instance) {
-        return currentRequestAttributes().getControllerClass();
     }
 
     /**

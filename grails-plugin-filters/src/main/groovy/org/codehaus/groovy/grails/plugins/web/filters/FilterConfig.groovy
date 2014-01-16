@@ -22,7 +22,6 @@ import javax.servlet.http.HttpSession
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.web.servlet.FlashScope
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -267,15 +266,6 @@ class FilterConfig extends ControllersApi {
     String getControllerName() {
         return super.getControllerName(this)
     }
-
-    String getControllerNamespace() {
-        return super.getControllerNamespace(this)
-    }
-
-    GrailsControllerClass getControllerClass() {
-        return super.getControllerClass(this)
-    }
-
 
     GrailsWebRequest getWebRequest() {
         return super.getWebRequest(this)
