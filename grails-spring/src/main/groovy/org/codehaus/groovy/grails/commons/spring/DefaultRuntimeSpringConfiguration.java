@@ -20,9 +20,12 @@ import groovy.lang.MetaClass;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -53,7 +56,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     protected GenericApplicationContext context;
     private Map<String, BeanConfiguration> beanConfigs = new HashMap<String, BeanConfiguration>();
     private Map<String, BeanDefinition> beanDefinitions = new HashMap<String, BeanDefinition>();
-    private List<String> beanNames = new ArrayList<String>();
+    private Set<String> beanNames = new LinkedHashSet<String>();
     protected ApplicationContext parent;
     protected ClassLoader classLoader;
     protected Map<String, List<String>> aliases = new HashMap<String, List<String>>();
@@ -210,6 +213,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
 
     public void addBeanDefinition(String name, BeanDefinition bd) {
         beanDefinitions.put(name,bd);
+        beanConfigs.remove(name);
         beanNames.add(name);
     }
 
@@ -239,7 +243,7 @@ public class DefaultRuntimeSpringConfiguration implements RuntimeSpringConfigura
     }
 
     public List<String> getBeanNames() {
-        return beanNames;
+        return Collections.unmodifiableList(new ArrayList<String>(beanNames));
     }
 
     public void registerBeansWithContext(GenericApplicationContext applicationContext) {
