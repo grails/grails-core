@@ -271,7 +271,7 @@ class FilterConfig extends ControllersApi {
         return super.getControllerNamespace(this)
     }
 
-    GroovyObject getControllerClass() {
+    Object getControllerClass() {
         return super.getControllerClass(this)
     }
 

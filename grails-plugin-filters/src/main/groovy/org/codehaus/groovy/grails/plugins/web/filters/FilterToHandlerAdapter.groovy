@@ -112,8 +112,8 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         return request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE)?.toString()
     }
 
-    GroovyObject controllerClass(request) {
-     return (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
+    def controllerClass(request) {
+     return request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
     }
 
     /**
@@ -140,7 +140,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         if (filterConfig.before) {
 
             String controllerName = controllerName(request)
-            GroovyObject controllerClass = controllerClass(request)
+            def controllerClass   = controllerClass(request)
             String controllerNamespace = controllerNamespace(request)
             String actionName = actionName(request)
             String uri = uri(request)
@@ -166,7 +166,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
         }
 
         String controllerName = controllerName(request)
-        GroovyObject controllerClass = controllerClass(request)
+        def controllerClass = controllerClass(request)
         String controllerNamespace = controllerNamespace(request)
         String actionName = actionName(request)
         String uri = uri(request)
@@ -220,7 +220,7 @@ class FilterToHandlerAdapter implements HandlerInterceptor, InitializingBean, Gr
 
         String controllerName = controllerName(request)
         String controllerNamespace = controllerNamespace(request)
-        GroovyObject controllerClass = controllerClass(request)
+        def controllerClass = controllerClass(request)
         String actionName = actionName(request)
         String uri = uri(request)
 
