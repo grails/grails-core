@@ -104,7 +104,7 @@ task pluginsFromRepo {
         jquery: "1.10.2.2",
         resources: "1.2.1",
         scaffolding: "2.0.1",
-        tomcat: "7.0.47",
+        tomcat: "7.0.50",
         webxml: "1.4.1"
     ]
 
