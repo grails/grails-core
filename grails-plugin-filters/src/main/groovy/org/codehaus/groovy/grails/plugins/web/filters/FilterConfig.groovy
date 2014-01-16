@@ -267,6 +267,15 @@ class FilterConfig extends ControllersApi {
         return super.getControllerName(this)
     }
 
+    String getControllerNamespace() {
+        return super.getControllerNamespace(this)
+    }
+
+    Object getControllerClass() {
+        return super.getControllerClass(this)
+    }
+
+
     GrailsWebRequest getWebRequest() {
         return super.getWebRequest(this)
     }
