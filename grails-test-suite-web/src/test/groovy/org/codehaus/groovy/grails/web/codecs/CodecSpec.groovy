@@ -2,6 +2,7 @@ package org.codehaus.groovy.grails.web.codecs
 
 import grails.test.mixin.TestMixin
 import grails.test.mixin.web.GroovyPageUnitTestMixin
+import spock.lang.Issue
 import spock.lang.Specification
 
 /**
@@ -28,6 +29,28 @@ class CodecSpec extends Specification {
         expect:
             '"<script>"'.encodeAsJavaScript() == '\\u0022\\u003cscript\\u003e\\u0022'
             '"<script>"'.encodeAsJavaScript().encodeAsHTML() == '"<script>"'.encodeAsJavaScript()
+    }
+    
+    @Issue("GRAILS-10980")
+    void "JSON codec behaviour like in Grails versions pre 2.3.x"() {
+        when:
+            String x=null
+        then:
+            [a: 1, b: 2, c: 3].encodeAsJSON() == '{"a":1,"b":2,"c":3}'
+            x.encodeAsJSON() == null
+            1.encodeAsJSON() == '1' // convert primitives to string
+            true.encodeAsJSON() == 'true'
+    }
+
+    @Issue("GRAILS-10980")
+    void "XML codec behaviour like in Grails versions pre 2.3.x"() {
+        when:
+            String x=null
+        then:
+            [a: 1, b: 2, c: 3].encodeAsXML() == '<?xml version="1.0" encoding="UTF-8"?><map><entry key="a">1</entry><entry key="b">2</entry><entry key="c">3</entry></map>'
+            x.encodeAsXML() == null
+            1.encodeAsXML() == '1' // convert primitives to string
+            true.encodeAsXML() == 'true'
     }
 
     void "Test that the raw method works in GSP"() {

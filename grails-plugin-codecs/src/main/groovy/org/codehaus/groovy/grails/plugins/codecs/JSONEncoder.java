@@ -15,9 +15,12 @@
  */
 package org.codehaus.groovy.grails.plugins.codecs;
 
+import grails.converters.JSON;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
+import org.springframework.util.ClassUtils;
 
 /**
  * Escapes characters in JSON output
@@ -37,6 +40,8 @@ public class JSONEncoder extends AbstractCharReplacementEncoder {
         super(JSON_CODEC_IDENTIFIER);
     }
 
+    
+    
     /* (non-Javadoc)
      * @see org.codehaus.groovy.grails.plugins.codecs.AbstractCharReplacementEncoder#escapeCharacter(char, char)
      */
@@ -81,5 +86,25 @@ public class JSONEncoder extends AbstractCharReplacementEncoder {
     @Override
     public boolean isApplyToSafelyEncoded() {
         return true;
+    }
+
+    @Override
+    public final Object encode(Object o) {
+        return doEncode(o);
+    }
+
+    protected Object doEncode(Object o) {
+        if(o == null) {
+            return null;
+        }        
+        if(o instanceof CharSequence || (o != null && ClassUtils.isPrimitiveOrWrapper(o.getClass())) ) {
+            return super.encode(o);
+        } else {
+            return encodeToJsonString(o);            
+        }
+    }
+
+    protected Object encodeToJsonString(Object o) {
+        return new JSON(o).toString();
     }
 }

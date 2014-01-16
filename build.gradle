@@ -28,7 +28,7 @@ ext {
     commonsCollectionsVersion = "3.2.1"
     commonsIOVersion = "2.1"
     commonsLangVersion = "2.6"
-    datastoreVersion = "2.0.6.RELEASE"
+    datastoreVersion = "2.0.7.RELEASE"
     gantVersion = "1.9.6"
     gdocEngineVersion = "1.0.1"
     groovyVersion = "2.2.1"
@@ -51,7 +51,7 @@ ext {
 
 version = grailsVersion
 
-// directories created during the build which are related 
+// directories created during the build which are related
 // to turning the workspace root into a GRAILS_HOME
 ext {
     distInstallDir = file("$buildDir/dist-tmp")
@@ -246,7 +246,7 @@ subprojects { project ->
             pomModifications = []
             modifyPom = { Closure modification -> project.pomModifications << modification }
         }
-        
+
         task installToHomeDist(type: Upload) {
             configuration = configurations.archives
             repositories {
@@ -290,7 +290,7 @@ subprojects { project ->
                             password: project.hasProperty("artifactoryPublishPassword") ?  project.artifactoryPublishPassword : null)
                     }
 
-                    
+
                 }.pom
             }
         }
@@ -345,8 +345,8 @@ subprojects { project ->
                 }
             }
         }
-        
-        poms*.whenConfigured { pomModifications*.call(it) }        
+
+        poms*.whenConfigured { pomModifications*.call(it) }
     }
 
 }

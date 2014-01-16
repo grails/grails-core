@@ -32,4 +32,8 @@ public class HTMLEncoder extends XMLEncoder {
     public HTMLEncoder() {
         super(HTML_CODEC_IDENTIFIER);
     }
+    
+    protected Object doEncode(Object o) {
+        return doCharReplacementEncoding(o);
+    }    
 }
