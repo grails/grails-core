@@ -39,7 +39,7 @@ public class MethodGrailsControllerHelper extends AbstractGrailsControllerHelper
     @Override
     protected Method retrieveAction(GroovyObject controller, String actionName,
              HttpServletResponse response) {
-        Method action = ReflectionUtils.findMethod(controller.getClass(), actionName, NOARGS);
+        Method action = (controller != null && actionName != null) ? ReflectionUtils.findMethod(controller.getClass(), actionName, NOARGS) : null;
         if (action != null) {
             ReflectionUtils.makeAccessible(action);
         }
