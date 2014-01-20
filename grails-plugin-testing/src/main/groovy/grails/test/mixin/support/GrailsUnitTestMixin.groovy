@@ -33,6 +33,7 @@ import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.InstanceFactoryBean
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
@@ -98,9 +99,11 @@ class GrailsUnitTestMixin {
             ExpandoMetaClass.enableGlobally()
             applicationContext = new GrailsWebApplicationContext()
 
+            grailsApplication = new DefaultGrailsApplication()
+            grailsApplication.setApplicationContext(applicationContext)
+        
             registerBeans()
             applicationContext.refresh()
-            grailsApplication = applicationContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication)
             grailsApplication.metadata[Metadata.APPLICATION_NAME] =  GrailsUnitTestMixin.simpleName
             applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
             messageSource = applicationContext.getBean("messageSource", MessageSource)
@@ -129,7 +132,7 @@ class GrailsUnitTestMixin {
             context.'annotation-config'()
 
             proxyHandler(DefaultProxyHandler)
-            grailsApplication(DefaultGrailsApplication)
+            grailsApplication(InstanceFactoryBean, grailsApplication, GrailsApplication)
             pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
