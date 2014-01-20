@@ -101,10 +101,12 @@ class GrailsUnitTestMixin {
 
             grailsApplication = new DefaultGrailsApplication()
             grailsApplication.setApplicationContext(applicationContext)
+            if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
+                 grailsApplication.metadata[Metadata.APPLICATION_NAME] = GrailsUnitTestMixin.simpleName
+            }
         
             registerBeans()
             applicationContext.refresh()
-            grailsApplication.metadata[Metadata.APPLICATION_NAME] =  GrailsUnitTestMixin.simpleName
             applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
             messageSource = applicationContext.getBean("messageSource", MessageSource)
 
