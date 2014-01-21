@@ -295,4 +295,8 @@ class MockGrailsApplication implements GrailsApplication {
     public ArtefactHandler getArtefactHandler(String type) {
         throw new UnsupportedOperationException();
     }
+    
+    public void clear() {
+        
+    }
 }

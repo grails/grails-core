@@ -426,4 +426,6 @@ public interface GrailsApplication extends ApplicationContextAware {
      * @return The artefact handler
      */
     ArtefactHandler getArtefactHandler(String type);
+    
+    void clear();
 }
