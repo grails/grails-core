@@ -19,12 +19,15 @@ import grails.async.Promises
 import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
+import grails.test.mixin.ClassRuleFactory
+import grails.test.mixin.RuleFactory
 import grails.util.Holders
 import grails.util.Metadata
 import grails.validation.DeferredBindingActions
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 import junit.framework.AssertionFailedError
 
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
@@ -48,6 +51,9 @@ import org.grails.async.factory.SynchronousPromiseFactory
 import org.junit.After
 import org.junit.AfterClass
 import org.junit.BeforeClass
+import org.junit.rules.TestRule
+import org.junit.runner.Description
+import org.junit.runners.model.Statement
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.context.MessageSource
 import org.springframework.context.support.ConversionServiceFactoryBean
@@ -61,25 +67,25 @@ import org.springframework.web.context.WebApplicationContext
  * @author Graeme Rocher
  * @since 2.0
  */
-class GrailsUnitTestMixin {
-
+@CompileStatic
+class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
     static {
         ExpandoMetaClass.enableGlobally()
     }
 
-    static GrailsWebApplicationContext applicationContext
-    static GrailsWebApplicationContext mainContext
-    static GrailsApplication grailsApplication
-    static ConfigObject config
-    static MessageSource messageSource
+    GrailsWebApplicationContext applicationContext
+    GrailsWebApplicationContext mainContext
+    GrailsApplication grailsApplication
+    ConfigObject config
+    MessageSource messageSource
+    Description currentDescription
 
-    private static MetaClassRegistryCleaner metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
+    MetaClassRegistryCleaner metaClassRegistryListener
 
     Map validationErrorsMap = new IdentityHashMap()
     Set loadedCodecs = []
 
-    @CompileStatic
-    static void defineBeans(Closure callable) {
+    void defineBeans(Closure callable) {
         def bb = new BeanBuilder()
         def binding = new Binding()
         binding.setVariable "application", grailsApplication
@@ -88,12 +94,9 @@ class GrailsUnitTestMixin {
         beans.registerBeans(applicationContext)
     }
 
-    @BeforeClass
-    @CompileStatic
-    static void initGrailsApplication() {
+    protected void initGrailsApplication() {
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.class.classLoader)
-        registerMetaClassRegistryWatcher()
         Promises.promiseFactory = new SynchronousPromiseFactory()
         if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
@@ -124,7 +127,8 @@ class GrailsUnitTestMixin {
         }
     }
 
-    protected static void registerBeans() {
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected void registerBeans() {
         defineBeans(new DataBindingGrailsPlugin().doWithSpring)
 
         defineBeans {
@@ -142,7 +146,6 @@ class GrailsUnitTestMixin {
         }
     }
 
-    @After
     void resetGrailsApplication() {
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
@@ -150,21 +153,17 @@ class GrailsUnitTestMixin {
         cleanupModifiedMetaClasses()
     }
 
-    @CompileStatic
-    static void registerMetaClassRegistryWatcher() {
-        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
+    protected void registerMetaClassRegistryWatcher() {
+        metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
     }
 
-    @CompileStatic
-    static void cleanupModifiedMetaClasses() {
+    void cleanupModifiedMetaClasses() {
         metaClassRegistryListener.clean()
     }
 
-    @AfterClass
-    @CompileStatic
-    static void deregisterMetaClassCleaner() {
+    void deregisterMetaClassCleaner() {
         Promises.promiseFactory = null
-        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
+        MetaClassRegistryCleaner.cleanAndRemove(metaClassRegistryListener)
     }
 
     /**
@@ -172,7 +171,6 @@ class GrailsUnitTestMixin {
      * so that a "validate()" method is added. This can then be used
      * to test the constraints on the class.
      */
-    @CompileStatic
     void mockForConstraintsTests(Class clazz, List instances = []) {
         ConstraintEvalUtils.clearDefaultConstraints()
         MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances, ConstraintEvalUtils.getDefaultConstraints(grailsApplication.config))
@@ -196,7 +194,6 @@ class GrailsUnitTestMixin {
      * @param code
      * @return the message of the thrown Throwable
      */
-    @CompileStatic
     String shouldFail(Closure code) {
         boolean failed = false
         String result = null
@@ -240,7 +237,7 @@ class GrailsUnitTestMixin {
             throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name")
         }
 
-        if (!clazz.isInstance(th)) {
+        if (!(th in clazz)) {
             throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name, instead got Exception $th")
         }
 
@@ -251,7 +248,6 @@ class GrailsUnitTestMixin {
      * methods to objects.
      * @param codecClass The codec to load, e.g. HTMLCodec.
      */
-    @CompileStatic
     void mockCodec(Class codecClass) {
         if (loadedCodecs.contains(codecClass)) {
             return
@@ -266,9 +262,7 @@ class GrailsUnitTestMixin {
         }
     }
 
-    @AfterClass
-    @CompileStatic
-    static void shutdownApplicationContext() {
+    void shutdownApplicationContext() {
         if (applicationContext.isActive()) {
             if(grailsApplication.mainContext instanceof Closeable) {
                 ((Closeable)grailsApplication.mainContext).close()
@@ -281,5 +275,65 @@ class GrailsUnitTestMixin {
         applicationContext = null
         grailsApplication = null
         Holders.setServletContext null
+    }
+
+    @Override
+    public TestRule newRule(Object targetInstance) {
+        return new TestRule() {
+            Statement apply(Statement statement, Description description) {
+                return new Statement() {
+                    @Override
+                    public void evaluate() throws Throwable {
+                        currentDescription = description
+                        before(description)
+                        try {
+                            statement.evaluate()
+                        } finally {
+                            after(description)
+                            currentDescription = null
+                        }
+                    }
+                };
+            }
+        }
+    }
+    
+    protected void before(Description description) {
+        
+    }
+
+    protected void after(Description description) {
+        resetGrailsApplication()
+    }
+    
+    @Override
+    public TestRule newClassRule(Class<?> targetClass) {
+        return new TestRule() {
+            Statement apply(Statement statement, Description description) {
+                return new Statement() {
+                    @Override
+                    public void evaluate() throws Throwable {
+                        currentDescription = description
+                        beforeClass(description)
+                        try {
+                            statement.evaluate()
+                        } finally {
+                            afterClass(description)
+                            currentDescription = null
+                        }
+                    }
+                };
+            }
+        }
+    }
+
+    protected void beforeClass(Description description) {
+        registerMetaClassRegistryWatcher()
+        initGrailsApplication()
+    }
+    
+    protected void afterClass(Description description) {
+        shutdownApplicationContext()
+        deregisterMetaClassCleaner()
     }
 }
