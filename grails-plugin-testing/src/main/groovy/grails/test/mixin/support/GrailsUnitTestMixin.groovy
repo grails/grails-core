@@ -73,17 +73,15 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
         ExpandoMetaClass.enableGlobally()
     }
 
-    GrailsWebApplicationContext applicationContext
-    GrailsWebApplicationContext mainContext
-    GrailsApplication grailsApplication
-    ConfigObject config
-    MessageSource messageSource
-    Description currentDescription
-
-    MetaClassRegistryCleaner metaClassRegistryListener
-
-    Map validationErrorsMap = new IdentityHashMap()
-    Set loadedCodecs = []
+    protected GrailsWebApplicationContext applicationContext
+    protected GrailsWebApplicationContext mainContext
+    protected GrailsApplication grailsApplication
+    protected ConfigObject config
+    protected MessageSource messageSource
+    protected Description currentDescription
+    protected MetaClassRegistryCleaner metaClassRegistryListener
+    protected Map validationErrorsMap = new IdentityHashMap()
+    protected Set loadedCodecs = []
 
     void defineBeans(Closure callable) {
         def bb = new BeanBuilder()
