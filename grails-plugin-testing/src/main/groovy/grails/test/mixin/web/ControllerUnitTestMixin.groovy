@@ -349,7 +349,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         return instance
     }
 
-    void clearGrailsWebRequest() {
+    protected void clearGrailsWebRequest() {
         webRequest = null
         request = null
         response = null
