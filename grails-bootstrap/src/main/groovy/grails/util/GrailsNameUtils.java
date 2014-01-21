@@ -355,7 +355,7 @@ public class GrailsNameUtils {
                 words.set(i, w + c);
             }
             else if (Character.isUpperCase(c)) {
-                if ((i == 0 && w.length() == 0) || Character.isUpperCase(w.charAt(w.length() - 1))) {
+                if ((i == 0 && w.length() == 0) || (Character.isUpperCase(w.charAt(w.length() - 1)) && Character.isUpperCase(chars[j-1]))) {
                     words.set(i, w + c);
                 }
                 else {

@@ -38,8 +38,10 @@ public class GrailsNameUtilsTests extends TestCase {
         assertEquals("URL", GrailsNameUtils.getNaturalName("URL"));
         assertEquals("Local URL", GrailsNameUtils.getNaturalName("localURL"));
         assertEquals("URL local", GrailsNameUtils.getNaturalName("URLlocal"));
+        assertEquals("A URL local", GrailsNameUtils.getNaturalName("aURLlocal"));
         assertEquals("My Domain Class", GrailsNameUtils.getNaturalName("MyDomainClass"));
         assertEquals("My Domain Class", GrailsNameUtils.getNaturalName("com.myco.myapp.MyDomainClass"));
+        assertEquals("A Name", GrailsNameUtils.getNaturalName("aName"));
     }
 
     public void testGetLogicalName() {
