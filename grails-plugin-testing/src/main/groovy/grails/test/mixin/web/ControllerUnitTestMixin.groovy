@@ -65,6 +65,7 @@ import org.junit.After
 import org.junit.AfterClass
 import org.junit.Before
 import org.junit.BeforeClass
+import org.junit.runner.Description;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockHttpSession
@@ -85,32 +86,32 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     /**
      * The {@link GrailsWebRequest} object
      */
-    GrailsWebRequest webRequest
+    protected GrailsWebRequest webRequest
     /**
      * The {@link GrailsMockHttpServletRequest} object
      */
-    GrailsMockHttpServletRequest request
+    protected GrailsMockHttpServletRequest request
     /**
      * The {@link GrailsMockHttpServletResponse} object
      */
-    GrailsMockHttpServletResponse response
+    protected GrailsMockHttpServletResponse response
 
     /**
      * The ServletContext
      */
-    static MockServletContext servletContext
+    protected MockServletContext servletContext
 
     /**
      * Used to define additional GSP pages or templates where the key is the path to the template and
      * the value is the contents of the template. Allows loading of templates without using the file system
      */
-    static Map<String, String> groovyPages = [:]
+    protected Map<String, String> groovyPages = [:]
 
     /**
      * Used to define additional GSP pages or templates where the key is the path to the template and
      * the value is the contents of the template. Allows loading of templates without using the file system
      */
-    static Map<String, String> views = groovyPages
+    protected Map<String, String> views = groovyPages
 
     /**
      * The {@link MockHttpSession} instance
@@ -167,11 +168,13 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         webRequest.getFlashScope()
     }
 
-    @BeforeClass
-    static void configureGrailsWeb() {
-        if (applicationContext == null) {
-            initGrailsApplication()
-        }
+    @Override
+    protected void registerBeans() {
+        super.registerBeans()
+        registerGrailsWebBeans()
+    }
+    
+    protected void registerGrailsWebBeans() {
         servletContext = new MockServletContext()
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
@@ -199,8 +202,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             }
             multipartResolver(CommonsMultipartResolver)
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
-                grailsApplication = GrailsUnitTestMixin.grailsApplication
-                servletContext = ControllerUnitTestMixin.servletContext
+                grailsApplication = grailsApplication
+                servletContext = servletContext
             }
 
             def lazyBean = { bean ->
@@ -227,20 +230,20 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, ref('grailsApplication'))
         }
         defineBeans(new CodecsGrailsPlugin().doWithSpring)
-
+    }
+    
+    protected void configureGrailsWeb() {
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
 
-    @AfterClass
     @CompileStatic
-    static void cleanupGrailsWeb() {
+    protected void cleanupGrailsWeb() {
         servletContext = null
         ServletContextHolder.setServletContext(null)
     }
 
-    @Before
     @CompileStatic
-    void bindGrailsWebRequest() {
+    protected void bindGrailsWebRequest() {
         new CodecsGrailsPlugin().providedArtefacts.each { Class codecClass ->
             mockCodec(codecClass)
         }
@@ -317,8 +320,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         return callable.call()
     }
 
-    @CompileStatic
-    protected GrailsClass createAndEnhance(Class controllerClass) {
+    protected GrailsClass createAndEnhance(Class<?> controllerClass) {
         final GrailsControllerClass controllerArtefact = (GrailsControllerClass)grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         controllerArtefact.initialize()
         if (!controllerClass.getAnnotation(Enhanced)) {
@@ -347,7 +349,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         return instance
     }
 
-    @After
     void clearGrailsWebRequest() {
         webRequest = null
         request = null
@@ -361,6 +362,30 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         if (ctx?.containsBean("grovyPagesTemplateRenderer")) {
             ctx.groovyPagesTemplateRenderer.clearCache()
         }
+    }
+    
+    @Override
+    protected void before(Description description) {
+        super.before(description)
+        bindGrailsWebRequest()
+    }
+
+    @Override
+    protected void after(Description description) {
+        clearGrailsWebRequest()
+        super.after(description)
+    }
+    
+    @Override
+    protected void beforeClass(Description description) {
+        super.beforeClass(description)
+        configureGrailsWeb()
+    }
+
+    @Override
+    protected void afterClass(Description description) {
+        cleanupGrailsWeb()
+        super.afterClass(description)
     }
 }
 
