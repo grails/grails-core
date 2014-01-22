@@ -13,12 +13,8 @@ import spock.lang.Specification
 /**
  * @author Lari Hotari
  */
-//@TestMixin(GrailsUnitTestMixin)
+@TestMixin(GrailsUnitTestMixin)
 class CallbackSpec extends Specification {
-    static GrailsUnitTestMixin gutMixin = new GrailsUnitTestMixin()
-    static TestRule gutRuleStatic = gutMixin.newClassRule(CallbackSpec)
-    @Shared @ClassRule TestRule gutRule = gutRuleStatic
-    
     static doWithSpring = {
         myService(MyService)
     }
@@ -27,10 +23,6 @@ class CallbackSpec extends Specification {
         c.myConfigValue = 'Hello'    
     }
     
-    def getGrailsApplication() {
-        gutMixin.getGrailsApplication()
-    }
-
     def "grailsApplication is not null"() {
         expect:
         grailsApplication != null
