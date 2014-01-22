@@ -20,6 +20,7 @@ import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
 import grails.test.mixin.ClassRuleFactory
+import grails.test.mixin.Junit3TestCaseSupport
 import grails.test.mixin.RuleFactory
 import grails.util.Holders
 import grails.util.Metadata
@@ -66,7 +67,7 @@ import org.springframework.web.context.WebApplicationContext
  * @since 2.0
  */
 @CompileStatic
-class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
+class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory, Junit3TestCaseSupport {
     static {
         ExpandoMetaClass.enableGlobally()
     }
@@ -344,5 +345,17 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
     protected void afterClass(Description description) {
         shutdownApplicationContext()
         deregisterMetaClassCleaner()
+    }
+
+    @Override
+    public void setUp(Object testInstance) {
+        beforeClass(Description.createSuiteDescription(testInstance.getClass()))
+        before(Description.createTestDescription(testInstance.getClass(), "setUp"))
+    }
+
+    @Override
+    public void tearDown(Object testInstance) {
+        after(Description.createTestDescription(testInstance.getClass(), "tearDown"))
+        afterClass(Description.createSuiteDescription(testInstance.getClass()))
     }
 }

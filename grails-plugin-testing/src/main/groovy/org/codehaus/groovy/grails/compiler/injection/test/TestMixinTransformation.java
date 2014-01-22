@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.compiler.injection.test;
 
 import grails.test.mixin.ClassRuleFactory;
+import grails.test.mixin.Junit3TestCaseSupport;
 import grails.test.mixin.RuleFactory;
 import grails.test.mixin.TestMixin;
 import grails.test.mixin.TestMixinTargetAware;
@@ -38,6 +39,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -163,7 +165,7 @@ public class TestMixinTransformation implements ASTTransformation{
             return;
         }
 
-        Junit3TestFixtureMethodHandler junit3MethodHandler = isJunit3Test(classNode) ? new Junit3TestFixtureMethodHandler() : null; 
+        Junit3TestFixtureMethodHandler junit3MethodHandler = isJunit3Test(classNode) ? new Junit3TestFixtureMethodHandler(classNode) : null; 
 
         for (Expression current : values.getExpressions()) {
             if (current instanceof ClassExpression) {
@@ -174,30 +176,31 @@ public class TestMixinTransformation implements ASTTransformation{
         }
 
         if (junit3MethodHandler != null) {
-            junit3MethodHandler.postProcessClassNode(classNode);
+            junit3MethodHandler.postProcessClassNode();
         }
     }
 
-    protected void weaveMixinIntoClass(ClassNode classNode, ClassNode mixinClassNode,
-            Junit3TestFixtureMethodHandler junit3MethodHandler) {
+    protected void weaveMixinIntoClass(final ClassNode classNode, final ClassNode mixinClassNode,
+            final Junit3TestFixtureMethodHandler junit3MethodHandler) {
         final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
         
         boolean implementsClassRuleFactory = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(ClassRuleFactory.class)) != null;
         boolean implementsRuleFactory = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(RuleFactory.class)) != null;
         
-        FieldNode fieldNode = null;
+        FieldNode mixinFieldNode = null;
         if(!(implementsClassRuleFactory || implementsRuleFactory)) { 
-            fieldNode = addLegacyMixinFieldIfNonExistent(classNode, mixinClassNode, fieldName);
+            mixinFieldNode = addLegacyMixinFieldIfNonExistent(classNode, mixinClassNode, fieldName);
         } else {
-            fieldNode = addTestRuleMixinFieldIfNonExistent(classNode, mixinClassNode, fieldName, implementsClassRuleFactory, implementsRuleFactory);
+            mixinFieldNode = addTestRuleMixinFieldIfNonExistent(classNode, mixinClassNode, fieldName, implementsClassRuleFactory, implementsRuleFactory);
         }
 
-        if (fieldNode == null) return; // already woven
+        if (mixinFieldNode == null) return; // already woven
         
         VariableExpression fieldReference = new VariableExpression(fieldName);
 
-        while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
-            final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
+        ClassNode currentMixinClassNode = mixinClassNode; 
+        while (!currentMixinClassNode.getName().equals(OBJECT_CLASS)) {
+            final List<MethodNode> mixinMethods = currentMixinClassNode.getMethods();
 
             for (MethodNode mixinMethod : mixinMethods) {
                 if (!isCandidateMethod(mixinMethod) || hasDeclaredMethod(classNode, mixinMethod)) {
@@ -221,9 +224,16 @@ public class TestMixinTransformation implements ASTTransformation{
                 }
             }
 
-            mixinClassNode = mixinClassNode.getSuperClass();
+            currentMixinClassNode = currentMixinClassNode.getSuperClass();
             if (junit3MethodHandler != null) {
                 junit3MethodHandler.mixinSuperClassChanged();
+            }
+        }
+        
+        if (junit3MethodHandler != null) {
+            boolean implementsJunit3TestCaseSupport = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(Junit3TestCaseSupport.class)) != null;
+            if (implementsJunit3TestCaseSupport) {
+                junit3MethodHandler.addJunit3TestCaseSupportCalls(mixinFieldNode);
             }
         }
     }
@@ -274,11 +284,25 @@ public class TestMixinTransformation implements ASTTransformation{
       }
 
     private static class Junit3TestFixtureMethodHandler {
+        ClassNode classNode;
         List<MethodNode> beforeMethods = new ArrayList<MethodNode>();
         List<MethodNode> afterMethods = new ArrayList<MethodNode>();
+        List<FieldNode> mixinFieldNodesForSetUpTearDown = new ArrayList<FieldNode>();
         int beforeClassMethodCount = 0;
         int afterClassMethodCount = 0;
+        boolean hasExistingSetUp;
+        boolean hasExistingTearDown;
+        
+        public Junit3TestFixtureMethodHandler(ClassNode classNode) {
+            this.classNode=classNode;
+            hasExistingSetUp = classNode.hasDeclaredMethod(SET_UP_METHOD, Parameter.EMPTY_ARRAY);
+            hasExistingTearDown = classNode.hasDeclaredMethod(TEAR_DOWN_METHOD, Parameter.EMPTY_ARRAY);
+        }
 
+        public void addJunit3TestCaseSupportCalls(FieldNode mixinFieldNode) {
+            mixinFieldNodesForSetUpTearDown.add(mixinFieldNode);
+        }
+        
         public void mixinSuperClassChanged() {
             beforeClassMethodCount = 0;
             afterClassMethodCount = 0;
@@ -299,9 +323,28 @@ public class TestMixinTransformation implements ASTTransformation{
             }
         }
         
-        public void postProcessClassNode(ClassNode classNode) {
+        public void postProcessClassNode() {
             addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
             addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
+            handleMixinFieldNodes();
+        }
+
+        private void handleMixinFieldNodes() {
+            if(mixinFieldNodesForSetUpTearDown.size()==0) {
+                return;
+            }
+            BlockStatement setUpMethodBody = getOrCreateNoArgsMethodBody(classNode, SET_UP_METHOD);
+            if(!hasExistingSetUp) {
+                setUpMethodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
+            }
+            BlockStatement tearDownMethodBody = getOrCreateNoArgsMethodBody(classNode, TEAR_DOWN_METHOD);
+            for(FieldNode mixinFieldNode : mixinFieldNodesForSetUpTearDown) { 
+                setUpMethodBody.getStatements().add(1, new ExpressionStatement(new MethodCallExpression(new FieldExpression(mixinFieldNode), SET_UP_METHOD, new VariableExpression("this"))));
+                tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new FieldExpression(mixinFieldNode), TEAR_DOWN_METHOD, new VariableExpression("this"))));
+            }
+            if(!hasExistingTearDown) {
+                tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
+            }
         }
     }
 
@@ -345,9 +388,9 @@ public class TestMixinTransformation implements ASTTransformation{
 
     static protected BlockStatement getOrCreateMethodBody(ClassNode classNode, MethodNode setupMethod, String name) {
         BlockStatement methodBody;
-        if (setupMethod.getDeclaringClass().getName().equals(TestCase.class.getName())) {
+        if (!setupMethod.getDeclaringClass().equals(classNode)) {
             methodBody = new BlockStatement();
-            setupMethod = new MethodNode(name, Modifier.PUBLIC,setupMethod.getReturnType(), GrailsArtefactClassInjector.ZERO_PARAMETERS,null, methodBody);
+            setupMethod = new MethodNode(name, Modifier.PUBLIC, setupMethod.getReturnType(), GrailsArtefactClassInjector.ZERO_PARAMETERS, null, methodBody);
             classNode.addMethod(setupMethod);
         }
         else {
@@ -386,7 +429,10 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected boolean isCandidateMethod(MethodNode declaredMethod) {
-        return isAddableMethod(declaredMethod);
+        return isAddableMethod(declaredMethod) && 
+                !hasSimilarMethod(declaredMethod, ClassHelper.make(Junit3TestCaseSupport.class)) && 
+                !hasSimilarMethod(declaredMethod, ClassHelper.make(ClassRuleFactory.class)) &&
+                !hasSimilarMethod(declaredMethod, ClassHelper.make(RuleFactory.class));
     }
 
     public static boolean isAddableMethod(MethodNode declaredMethod) {
@@ -396,7 +442,11 @@ public class TestMixinTransformation implements ASTTransformation{
                 !methodName.contains("$") &&
                 Modifier.isPublic(declaredMethod.getModifiers()) &&
                 !Modifier.isAbstract(declaredMethod.getModifiers()) &&
-                !groovyMethods.hasMethod(declaredMethod.getName(), declaredMethod.getParameters());
+                !hasSimilarMethod(declaredMethod, groovyMethods);
+    }
+
+    protected static boolean hasSimilarMethod(MethodNode declaredMethod, ClassNode groovyMethods) {
+        return groovyMethods.hasMethod(declaredMethod.getName(), declaredMethod.getParameters());
     }
 
     protected void error(SourceUnit source, String me) {
