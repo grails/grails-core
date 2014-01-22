@@ -139,13 +139,7 @@ public class TestMixinTransformation implements ASTTransformation{
             return;
         }
 
-        boolean isJunit3 = isJunit3Test(classNode);
-        List<MethodNode> beforeMethods = null;
-        List<MethodNode> afterMethods = null;
-        if (isJunit3) {
-            beforeMethods = new ArrayList<MethodNode>();
-            afterMethods = new ArrayList<MethodNode>();
-        }
+        Junit3TestFixtureMethodHandler junit3MethodHandler = isJunit3Test(classNode) ? new Junit3TestFixtureMethodHandler() : null; 
 
         for (Expression current : values.getExpressions()) {
             if (current instanceof ClassExpression) {
@@ -163,8 +157,6 @@ public class TestMixinTransformation implements ASTTransformation{
                 while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
                     final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
 
-                    int beforeClassMethodCount = 0;
-                    int afterClassMethodCount = 0;
                     for (MethodNode mixinMethod : mixinMethods) {
                         if (!isCandidateMethod(mixinMethod) || hasDeclaredMethod(classNode, mixinMethod)) {
                             continue;
@@ -182,28 +174,51 @@ public class TestMixinTransformation implements ASTTransformation{
                             GrailsASTUtils.addCompileStaticAnnotation(methodNode);
                         }
 
-                        if (isJunit3) {
-                            if (hasAnnotation(mixinMethod, Before.class)) {
-                                beforeMethods.add(mixinMethod);
-                            }
-                            if (hasAnnotation(mixinMethod, BeforeClass.class)) {
-                                beforeMethods.add(beforeClassMethodCount++, mixinMethod);
-                            }
-                            if (hasAnnotation(mixinMethod, After.class)) {
-                                afterMethods.add(mixinMethod);
-                            }
-                            if (hasAnnotation(mixinMethod, AfterClass.class)) {
-                                afterMethods.add(afterClassMethodCount++, mixinMethod);
-                            }
+                        if (junit3MethodHandler != null) {
+                            junit3MethodHandler.handleMixinMethod(mixinMethod);
                         }
                     }
 
                     mixinClassNode = mixinClassNode.getSuperClass();
+                    if (junit3MethodHandler != null) {
+                        junit3MethodHandler.mixinSuperClassChanged();
+                    }
                 }
             }
         }
 
-        if (isJunit3) {
+        if (junit3MethodHandler != null) {
+            junit3MethodHandler.postProcessClassNode(classNode);
+        }
+    }
+    
+    private static class Junit3TestFixtureMethodHandler {
+        List<MethodNode> beforeMethods = new ArrayList<MethodNode>();
+        List<MethodNode> afterMethods = new ArrayList<MethodNode>();
+        int beforeClassMethodCount = 0;
+        int afterClassMethodCount = 0;
+
+        public void mixinSuperClassChanged() {
+            beforeClassMethodCount = 0;
+            afterClassMethodCount = 0;
+        }
+        
+        public void handleMixinMethod(MethodNode mixinMethod) {
+            if (hasAnnotation(mixinMethod, Before.class)) {
+                beforeMethods.add(mixinMethod);
+            }
+            if (hasAnnotation(mixinMethod, BeforeClass.class)) {
+                beforeMethods.add(beforeClassMethodCount++, mixinMethod);
+            }
+            if (hasAnnotation(mixinMethod, After.class)) {
+                afterMethods.add(mixinMethod);
+            }
+            if (hasAnnotation(mixinMethod, AfterClass.class)) {
+                afterMethods.add(afterClassMethodCount++, mixinMethod);
+            }
+        }
+        
+        public void postProcessClassNode(ClassNode classNode) {
             addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
             addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
         }
@@ -225,15 +240,15 @@ public class TestMixinTransformation implements ASTTransformation{
         return null;
     }
 
-    protected boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
+    static protected boolean hasDeclaredMethod(ClassNode classNode, MethodNode mixinMethod) {
         return classNode.hasDeclaredMethod(mixinMethod.getName(), mixinMethod.getParameters());
     }
 
-    protected boolean hasAnnotation(MethodNode mixinMethod, Class<?> beforeClass) {
+    static protected boolean hasAnnotation(MethodNode mixinMethod, Class<?> beforeClass) {
         return !mixinMethod.getAnnotations(new ClassNode(beforeClass)).isEmpty();
     }
 
-    protected void addMethodCallsToMethod(ClassNode classNode, String name, List<MethodNode> methods) {
+    static protected void addMethodCallsToMethod(ClassNode classNode, String name, List<MethodNode> methods) {
         if (methods != null && !methods.isEmpty()) {
             BlockStatement setupMethodBody = getOrCreateNoArgsMethodBody(classNode, name);
             for (MethodNode beforeMethod : methods) {
@@ -242,12 +257,12 @@ public class TestMixinTransformation implements ASTTransformation{
         }
     }
 
-    protected BlockStatement getOrCreateNoArgsMethodBody(ClassNode classNode, String name) {
+    static protected BlockStatement getOrCreateNoArgsMethodBody(ClassNode classNode, String name) {
         MethodNode setupMethod = classNode.getMethod(name, GrailsArtefactClassInjector.ZERO_PARAMETERS);
         return getOrCreateMethodBody(classNode, setupMethod, name);
     }
 
-    protected BlockStatement getOrCreateMethodBody(ClassNode classNode, MethodNode setupMethod, String name) {
+    static protected BlockStatement getOrCreateMethodBody(ClassNode classNode, MethodNode setupMethod, String name) {
         BlockStatement methodBody;
         if (setupMethod.getDeclaringClass().getName().equals(TestCase.class.getName())) {
             methodBody = new BlockStatement();
