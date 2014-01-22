@@ -75,7 +75,6 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
     protected GrailsWebApplicationContext mainContext
     protected GrailsApplication grailsApplication
     protected MessageSource messageSource
-    protected Description currentDescription
     protected MetaClassRegistryCleaner metaClassRegistryListener
     protected Map validationErrorsMap = new IdentityHashMap()
     protected Set loadedCodecs = []
@@ -298,13 +297,11 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
                 return new Statement() {
                     @Override
                     public void evaluate() throws Throwable {
-                        currentDescription = description
                         before(description)
                         try {
                             statement.evaluate()
                         } finally {
                             after(description)
-                            currentDescription = null
                         }
                     }
                 };
@@ -327,13 +324,11 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
                 return new Statement() {
                     @Override
                     public void evaluate() throws Throwable {
-                        currentDescription = description
                         beforeClass(description)
                         try {
                             statement.evaluate()
                         } finally {
                             afterClass(description)
-                            currentDescription = null
                         }
                     }
                 };
