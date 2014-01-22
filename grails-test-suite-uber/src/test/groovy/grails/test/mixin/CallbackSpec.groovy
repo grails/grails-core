@@ -8,11 +8,11 @@ import spock.lang.Specification
  */
 @TestMixin(GrailsUnitTestMixin)
 class CallbackSpec extends Specification {
-    def doWithSpring = {
+    static doWithSpring = {
         myService(MyService)
     }
     
-    def doWithConfig(c) {
+    static doWithConfig(c) {
         c.myConfigValue = 'Hello'    
     }
 
