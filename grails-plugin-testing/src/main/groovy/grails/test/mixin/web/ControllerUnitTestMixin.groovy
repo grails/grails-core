@@ -25,6 +25,7 @@ import grails.web.HyphenatedUrlConverter
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
@@ -61,11 +62,7 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.Before
-import org.junit.BeforeClass
-import org.junit.runner.Description;
+import org.junit.runner.Description
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockHttpSession
@@ -107,12 +104,31 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
      */
     protected Map<String, String> groovyPages = [:]
 
-    /**
-     * Used to define additional GSP pages or templates where the key is the path to the template and
-     * the value is the contents of the template. Allows loading of templates without using the file system
-     */
-    protected Map<String, String> views = groovyPages
+    
+    GrailsWebRequest getWebRequest() {
+        this.@webRequest
+    }
+    
+    GrailsMockHttpServletRequest getRequest() {
+        this.@request
+    }
+    
+    GrailsMockHttpServletResponse getResponse() {
+        this.@response
+    }
 
+    MockServletContext getServletContext() {
+        this.@servletContext
+    }
+    
+    Map<String, String> getGroovyPages() {
+        this.@groovyPages
+    }
+    
+    Map<String, String> getViews() {
+        this.@groovyPages
+    }
+    
     /**
      * The {@link MockHttpSession} instance
      */
