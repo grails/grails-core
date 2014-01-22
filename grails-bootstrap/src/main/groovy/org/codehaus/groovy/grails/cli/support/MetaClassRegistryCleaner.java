@@ -113,7 +113,7 @@ public class MetaClassRegistryCleaner implements MetaClassRegistryChangeEventLis
         }
     }
 
-    public void clean() {
+    public synchronized void clean() {
         try {
             cleaning = true;
             MetaClassRegistryImpl registry = (MetaClassRegistryImpl) GroovySystem.getMetaClassRegistry();
