@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
 import org.codehaus.groovy.grails.web.taglib.TemplateNamespacedTagDispatcher;
@@ -56,7 +57,11 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
             return;
         }
 
-        registerTagLibraries();
+        try {
+            registerTagLibraries();
+        } catch (GrailsConfigurationException e) {
+            // ignore exception
+        }
         registerTemplateNamespace();
     }
 

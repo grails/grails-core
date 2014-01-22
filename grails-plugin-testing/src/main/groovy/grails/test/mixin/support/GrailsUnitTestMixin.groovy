@@ -124,7 +124,6 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
         
             registerBeans()
             applicationContext.refresh()
-            applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
             messageSource = applicationContext.getBean("messageSource", MessageSource)
 
             mainContext = new GrailsWebApplicationContext(applicationContext)
@@ -152,10 +151,11 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
 
             proxyHandler(DefaultProxyHandler)
             grailsApplication(InstanceFactoryBean, grailsApplication, GrailsApplication)
-            pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
+            pluginManager(DefaultGrailsPluginManager, [] as Class[], grailsApplication)
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             conversionService(ConversionServiceFactoryBean)
+            grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplication)
         }
     }
 
