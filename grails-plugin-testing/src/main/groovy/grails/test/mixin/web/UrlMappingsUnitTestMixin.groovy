@@ -53,7 +53,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
         defineBeans {
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
                 grailsApplication = grailsApplication
-                servletContext = ControllerUnitTestMixin.servletContext
+                servletContext = servletContext
             }
         }
 
