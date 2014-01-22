@@ -48,13 +48,11 @@ import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.grails.async.factory.SynchronousPromiseFactory
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.BeforeClass
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
 import org.springframework.beans.CachedIntrospectionResults
+import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
@@ -76,12 +74,31 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
     protected GrailsWebApplicationContext applicationContext
     protected GrailsWebApplicationContext mainContext
     protected GrailsApplication grailsApplication
-    protected ConfigObject config
     protected MessageSource messageSource
     protected Description currentDescription
     protected MetaClassRegistryCleaner metaClassRegistryListener
     protected Map validationErrorsMap = new IdentityHashMap()
     protected Set loadedCodecs = []
+    
+    GrailsApplication getGrailsApplication() {
+        this.@grailsApplication
+    }
+    
+    WebApplicationContext getApplicationContext() {
+        this.@applicationContext
+    }
+    
+    ApplicationContext getMainContext() {
+        this.@mainContext
+    }
+    
+    ConfigObject getConfig() {
+        getGrailsApplication().getConfig()
+    }
+    
+    MessageSource getMessageSource() {
+        this.@messageSource
+    }
 
     void defineBeans(Closure callable) {
         def bb = new BeanBuilder()
@@ -121,7 +138,6 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
             Holders.setServletContext servletContext
 
             grailsApplication.applicationContext = applicationContext
-            config = grailsApplication.config
         }
     }
 
