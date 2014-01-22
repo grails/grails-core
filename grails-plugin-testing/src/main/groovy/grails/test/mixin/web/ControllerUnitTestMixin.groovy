@@ -268,7 +268,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         ServletsGrailsPluginSupport.enhanceServletApi()
         ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
-        request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
+        request = new GrailsMockHttpServletRequest(servletContext)
+        request.requestMimeTypesApi = new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext)
         response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
         webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         request = (GrailsMockHttpServletRequest)webRequest.getCurrentRequest()
