@@ -57,17 +57,17 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
     GroovyPageBinding pageScope
 
     @Override
-    @Before
-    void bindGrailsWebRequest() {
+    protected void bindGrailsWebRequest() {
         super.bindGrailsWebRequest()
         pageScope = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest))
         request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
 
     }
 
-    @After
-    void clearPageScope() {
+    @Override
+    protected void clearGrailsWebRequest() {
         pageScope = null
+        super.clearGrailsWebRequest()
     }
 
     /**

@@ -20,7 +20,7 @@ import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandl
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.junit.After
-import org.junit.BeforeClass
+import org.junit.runner.Description
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.web.servlet.ModelAndView
 
@@ -46,21 +46,23 @@ import org.springframework.web.servlet.ModelAndView
  * @author Graeme Rocher
  */
 class FiltersUnitTestMixin extends ControllerUnitTestMixin {
-
-    @BeforeClass
-    static void setupFilterBeans() {
-        if (applicationContext == null) {
-            initGrailsApplication()
-        }
-
+    @Override
+    protected void registerBeans() {
+        super.registerBeans();
         defineBeans {
             filterInterceptor(CompositeInterceptor)
         }
     }
 
     @After
-    void clearFilters() {
+    protected void clearFilters() {
         getCompositeInterceptor().handlers?.clear()
+    }
+    
+    @Override
+    protected void after(Description description) {
+        clearFilters()
+        super.after(description);
     }
 
     /**
