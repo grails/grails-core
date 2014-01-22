@@ -258,25 +258,18 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         if (webRequest?.currentRequest instanceof GrailsMockHttpServletRequest) {
             request = (GrailsMockHttpServletRequest)webRequest.currentRequest
             response = (GrailsMockHttpServletResponse)webRequest.currentResponse
-            servletContext = (MockServletContext)webRequest.servletContext
             return
         }
-
-        if (!applicationContext.isActive()) {
-            applicationContext.refresh()
-        }
-
-        applicationContext.servletContext = servletContext
 
         ServletsGrailsPluginSupport.enhanceServletApi()
         ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
 
-        request = new GrailsMockHttpServletRequest(requestMimeTypesApi:  new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
+        request = new GrailsMockHttpServletRequest(servletContext)
+        request.requestMimeTypesApi = new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext)
         response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
         webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         request = (GrailsMockHttpServletRequest)webRequest.getCurrentRequest()
         response = (GrailsMockHttpServletResponse)webRequest.getCurrentResponse()
-        servletContext = (MockServletContext)webRequest.getServletContext()
     }
 
     /**
