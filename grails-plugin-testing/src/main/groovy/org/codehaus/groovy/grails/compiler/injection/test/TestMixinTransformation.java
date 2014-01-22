@@ -68,6 +68,7 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
+import org.spockframework.runtime.model.FieldMetadata;
 
 import spock.lang.Shared;
 
@@ -233,8 +234,7 @@ public class TestMixinTransformation implements ASTTransformation{
             FieldNode mixinInstanceFieldNode = classNode.addField(fieldName, Modifier.PRIVATE | (implementsClassRuleFactory ? Modifier.STATIC : 0), fieldType,
                 new ConstructorCallExpression(fieldType, MethodCallExpression.NO_ARGUMENTS));
             
-            // spock doesn't like $ in @Rule/@ClassRule fields
-            String ruleFieldNameBase = StringUtils.remove(fieldName, '$');
+            String ruleFieldNameBase = fieldName;
             
             boolean spockTest = isSpockTest(classNode);
             if(implementsClassRuleFactory) {
@@ -245,6 +245,9 @@ public class TestMixinTransformation implements ASTTransformation{
                     FieldNode spockSharedRuleFieldNode = classNode.addField(ruleFieldNameBase + "SharedClassRule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new FieldExpression(staticRuleFieldNode));
                     spockSharedRuleFieldNode.addAnnotation(classRuleAnnotation);
                     spockSharedRuleFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(Shared.class)));
+                    if(spockTest) {
+                        addSpockFieldMetadata(spockSharedRuleFieldNode, 0);
+                    }
                 } else {
                     staticRuleFieldNode.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
                     staticRuleFieldNode.addAnnotation(classRuleAnnotation);
@@ -253,11 +256,22 @@ public class TestMixinTransformation implements ASTTransformation{
             if(implementsRuleFactory) {
                 FieldNode ruleFieldNode = classNode.addField(ruleFieldNameBase + "Rule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(mixinInstanceFieldNode), "newRule", new VariableExpression("this")));
                 ruleFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(Rule.class)));
+                if(spockTest) {
+                    addSpockFieldMetadata(ruleFieldNode, 0);
+                }
             }
             return mixinInstanceFieldNode;
         }
         return null;
     }
+    
+    private void addSpockFieldMetadata(FieldNode field, int ordinal) {
+        AnnotationNode ann = new AnnotationNode(ClassHelper.make(FieldMetadata.class));
+        ann.setMember(FieldMetadata.NAME, new ConstantExpression(field.getName()));
+        ann.setMember(FieldMetadata.ORDINAL, new ConstantExpression(ordinal));
+        ann.setMember(FieldMetadata.LINE, new ConstantExpression(field.getLineNumber()));
+        field.addAnnotation(ann);
+      }
 
     private static class Junit3TestFixtureMethodHandler {
         List<MethodNode> beforeMethods = new ArrayList<MethodNode>();
