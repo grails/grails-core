@@ -1235,6 +1235,20 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         publisher.publications.size() == 0
     }
+    
+    @Issue('GRAILS-11018')
+    void 'Test binding an invalid String to a List<Long>'() {
+        given:
+        def command = new ListCommand()
+        
+        when:
+        binder.bind command, [myLongList: 'a,b,c'] as SimpleMapDataBindingSource
+        
+        then:
+        command.hasErrors()
+        command.errors.errorCount == 1
+        command.errors['myLongList'].code == 'typeMismatch'
+    }
 }
 
 @Entity
@@ -1459,3 +1473,7 @@ class Album {
     String title
 }
 
+@Validateable
+class ListCommand { 
+    List<Long> myLongList 
+}

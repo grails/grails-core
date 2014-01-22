@@ -622,10 +622,8 @@ class SimpleDataBinder implements DataBinder {
                     coll << propertyValue
                     isSet = true
                 } else {
-                    try {
-                        coll << convert(referencedType, propertyValue)
-                        isSet = true
-                    } catch(Exception e){}
+                    coll << convert(referencedType, propertyValue)
+                    isSet = true
                 }
             }
         }
