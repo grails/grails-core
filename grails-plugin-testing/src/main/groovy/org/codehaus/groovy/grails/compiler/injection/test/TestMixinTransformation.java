@@ -144,51 +144,54 @@ public class TestMixinTransformation implements ASTTransformation{
         for (Expression current : values.getExpressions()) {
             if (current instanceof ClassExpression) {
                 ClassExpression ce = (ClassExpression) current;
-
                 ClassNode mixinClassNode = ce.getType();
-
-                final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
-
-                FieldNode fieldNode = addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
-
-                if (fieldNode == null) return; // already woven
-                VariableExpression fieldReference = new VariableExpression(fieldName);
-
-                while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
-                    final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
-
-                    for (MethodNode mixinMethod : mixinMethods) {
-                        if (!isCandidateMethod(mixinMethod) || hasDeclaredMethod(classNode, mixinMethod)) {
-                            continue;
-                        }
-
-                        MethodNode methodNode;
-                        if (mixinMethod.isStatic()) {
-                            methodNode = GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod);
-                        }
-                        else {
-                            methodNode = GrailsASTUtils.addDelegateInstanceMethod(classNode, fieldReference, mixinMethod, false);
-                        }
-                        if (methodNode != null) {
-                            methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
-                            GrailsASTUtils.addCompileStaticAnnotation(methodNode);
-                        }
-
-                        if (junit3MethodHandler != null) {
-                            junit3MethodHandler.handleMixinMethod(mixinMethod);
-                        }
-                    }
-
-                    mixinClassNode = mixinClassNode.getSuperClass();
-                    if (junit3MethodHandler != null) {
-                        junit3MethodHandler.mixinSuperClassChanged();
-                    }
-                }
+                weaveMixinIntoClass(classNode, mixinClassNode, junit3MethodHandler);
             }
         }
 
         if (junit3MethodHandler != null) {
             junit3MethodHandler.postProcessClassNode(classNode);
+        }
+    }
+
+    protected void weaveMixinIntoClass(ClassNode classNode, ClassNode mixinClassNode,
+            Junit3TestFixtureMethodHandler junit3MethodHandler) {
+        final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
+
+        FieldNode fieldNode = addFieldIfNonExistent(classNode, mixinClassNode, fieldName);
+
+        if (fieldNode == null) return; // already woven
+        VariableExpression fieldReference = new VariableExpression(fieldName);
+
+        while (!mixinClassNode.getName().equals(OBJECT_CLASS)) {
+            final List<MethodNode> mixinMethods = mixinClassNode.getMethods();
+
+            for (MethodNode mixinMethod : mixinMethods) {
+                if (!isCandidateMethod(mixinMethod) || hasDeclaredMethod(classNode, mixinMethod)) {
+                    continue;
+                }
+
+                MethodNode methodNode;
+                if (mixinMethod.isStatic()) {
+                    methodNode = GrailsASTUtils.addDelegateStaticMethod(classNode, mixinMethod);
+                }
+                else {
+                    methodNode = GrailsASTUtils.addDelegateInstanceMethod(classNode, fieldReference, mixinMethod, false);
+                }
+                if (methodNode != null) {
+                    methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
+                    GrailsASTUtils.addCompileStaticAnnotation(methodNode);
+                }
+
+                if (junit3MethodHandler != null) {
+                    junit3MethodHandler.handle(mixinMethod, methodNode);
+                }
+            }
+
+            mixinClassNode = mixinClassNode.getSuperClass();
+            if (junit3MethodHandler != null) {
+                junit3MethodHandler.mixinSuperClassChanged();
+            }
         }
     }
     
@@ -203,7 +206,7 @@ public class TestMixinTransformation implements ASTTransformation{
             afterClassMethodCount = 0;
         }
         
-        public void handleMixinMethod(MethodNode mixinMethod) {
+        public void handle(MethodNode mixinMethod, MethodNode weavedMethod) {
             if (hasAnnotation(mixinMethod, Before.class)) {
                 beforeMethods.add(mixinMethod);
             }
