@@ -39,10 +39,7 @@ import org.grails.datastore.mapping.model.PersistentEntity
 import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
 import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.Before
-import org.junit.BeforeClass
+import org.junit.runner.Description
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.validation.Validator
 
@@ -72,20 +69,14 @@ import org.springframework.validation.Validator
  * @since 2.0
  */
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
-
-    static SimpleMapDatastore simpleDatastore
-    static PlatformTransactionManager transactionManager
+    protected SimpleMapDatastore simpleDatastore
+    protected PlatformTransactionManager transactionManager
 
     protected Session currentSession
 
-    @BeforeClass
-    static void initializeDatastoreImplementation() {
-        ClassPropertyFetcher.clearCache()
-        if (applicationContext == null) {
-            initGrailsApplication()
-        }
-
-
+    @Override
+    protected void registerBeans() {
+        super.registerBeans();
         defineBeans {
             grailsDatastore(SimpleMapDatastore, applicationContext)
             transactionManager(DatastoreTransactionManager) {
@@ -96,7 +87,9 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
             }
             grailsDomainClassCleaner(GrailsDomainClassCleaner, grailsApplication)
         }
-
+    }
+    
+    protected void initializeDatastoreImplementation() {
         simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         simpleDatastore.mappingContext.setCanInitializeEntities(false)
         transactionManager = applicationContext.getBean(PlatformTransactionManager)
@@ -104,22 +97,18 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
         applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
         ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
-
     }
 
-    @AfterClass
-    static void cleanupDatastore() {
+    protected void cleanupDatastore() {
         ClassPropertyFetcher.clearCache()
         ConstrainedProperty.removeConstraint("unique")
     }
 
-    @Before
-    void connectDatastore() {
+    protected void connectDatastore() {
         currentSession = DatastoreUtils.bindSession(simpleDatastore.connect())
     }
 
-    @After
-    void shutdownDatastoreImplementation() {
+    protected void shutdownDatastoreImplementation() {
         currentSession?.disconnect()
         if (currentSession != null) {
             DatastoreUtils.unbindSession(currentSession)
@@ -223,5 +212,30 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         ControllersGrailsPlugin.enhanceDomainWithBinding(applicationContext, domain, mc)
         DomainClassGrailsPlugin.registerConstraintsProperty(mc, domain)
         return domain
+    }
+
+    @Override
+    protected void before(Description description) {
+        super.before(description)
+        connectDatastore()
+    }
+
+    @Override
+    protected void after(Description description) {
+        shutdownDatastoreImplementation()
+        super.after(description)
+    }
+    
+    @Override
+    protected void beforeClass(Description description) {
+        ClassPropertyFetcher.clearCache()
+        super.beforeClass(description)
+        initializeDatastoreImplementation()
+    }
+
+    @Override
+    protected void afterClass(Description description) {
+        cleanupDatastore()
+        super.afterClass(description)
     }
 }

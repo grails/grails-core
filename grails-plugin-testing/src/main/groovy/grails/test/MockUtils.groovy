@@ -431,7 +431,7 @@ class MockUtils {
         mockDomain(null, clazz, testInstances)
     }
 
-    static TEST_INSTANCES = [:]
+    static Map TEST_INSTANCES = [:]
 
     static GrailsDomainClass mockDomain(Class clazz, Map errorsMap, List testInstances = []) {
         mockDomain null, clazz, errorsMap, testInstances
