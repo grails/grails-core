@@ -19,15 +19,12 @@ import grails.async.Promises
 import grails.spring.BeanBuilder
 import grails.test.GrailsMock
 import grails.test.MockUtils
-import grails.test.mixin.ClassRuleFactory
-import grails.test.mixin.RuleFactory
 import grails.util.Holders
 import grails.util.Metadata
 import grails.validation.DeferredBindingActions
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 import junit.framework.AssertionFailedError
 
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
@@ -48,11 +45,10 @@ import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
 import org.grails.async.factory.SynchronousPromiseFactory
-import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
+import org.junit.After
+import org.junit.AfterClass
+import org.junit.BeforeClass
 import org.springframework.beans.CachedIntrospectionResults
-import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
 import org.springframework.context.support.ConversionServiceFactoryBean
 import org.springframework.context.support.StaticMessageSource
@@ -65,41 +61,25 @@ import org.springframework.web.context.WebApplicationContext
  * @author Graeme Rocher
  * @since 2.0
  */
-@CompileStatic
-class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
+class GrailsUnitTestMixin {
+
     static {
         ExpandoMetaClass.enableGlobally()
     }
 
-    protected GrailsWebApplicationContext applicationContext
-    protected GrailsWebApplicationContext mainContext
-    protected GrailsApplication grailsApplication
-    protected MessageSource messageSource
-    protected MetaClassRegistryCleaner metaClassRegistryListener
-    protected Map validationErrorsMap = new IdentityHashMap()
-    protected Set loadedCodecs = []
-    
-    GrailsApplication getGrailsApplication() {
-        this.@grailsApplication
-    }
-    
-    WebApplicationContext getApplicationContext() {
-        this.@applicationContext
-    }
-    
-    ApplicationContext getMainContext() {
-        this.@mainContext
-    }
-    
-    ConfigObject getConfig() {
-        getGrailsApplication().getConfig()
-    }
-    
-    MessageSource getMessageSource() {
-        this.@messageSource
-    }
+    static GrailsWebApplicationContext applicationContext
+    static GrailsWebApplicationContext mainContext
+    static GrailsApplication grailsApplication
+    static ConfigObject config
+    static MessageSource messageSource
 
-    void defineBeans(Closure callable) {
+    private static MetaClassRegistryCleaner metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
+
+    Map validationErrorsMap = new IdentityHashMap()
+    Set loadedCodecs = []
+
+    @CompileStatic
+    static void defineBeans(Closure callable) {
         def bb = new BeanBuilder()
         def binding = new Binding()
         binding.setVariable "application", grailsApplication
@@ -108,9 +88,12 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
         beans.registerBeans(applicationContext)
     }
 
-    protected void initGrailsApplication() {
+    @BeforeClass
+    @CompileStatic
+    static void initGrailsApplication() {
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.class.classLoader)
+        registerMetaClassRegistryWatcher()
         Promises.promiseFactory = new SynchronousPromiseFactory()
         if (applicationContext == null) {
             ExpandoMetaClass.enableGlobally()
@@ -137,11 +120,11 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
             Holders.setServletContext servletContext
 
             grailsApplication.applicationContext = applicationContext
+            config = grailsApplication.config
         }
     }
 
-    @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerBeans() {
+    protected static void registerBeans() {
         defineBeans(new DataBindingGrailsPlugin().doWithSpring)
 
         defineBeans {
@@ -159,24 +142,29 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
         }
     }
 
+    @After
     void resetGrailsApplication() {
         MockUtils.TEST_INSTANCES.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
-        ((DefaultGrailsApplication)grailsApplication)?.clear()
+        grailsApplication?.clear()
         cleanupModifiedMetaClasses()
     }
 
-    protected void registerMetaClassRegistryWatcher() {
-        metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
+    @CompileStatic
+    static void registerMetaClassRegistryWatcher() {
+        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
     }
 
-    void cleanupModifiedMetaClasses() {
+    @CompileStatic
+    static void cleanupModifiedMetaClasses() {
         metaClassRegistryListener.clean()
     }
 
-    void deregisterMetaClassCleaner() {
+    @AfterClass
+    @CompileStatic
+    static void deregisterMetaClassCleaner() {
         Promises.promiseFactory = null
-        MetaClassRegistryCleaner.cleanAndRemove(metaClassRegistryListener)
+        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
     }
 
     /**
@@ -184,6 +172,7 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
      * so that a "validate()" method is added. This can then be used
      * to test the constraints on the class.
      */
+    @CompileStatic
     void mockForConstraintsTests(Class clazz, List instances = []) {
         ConstraintEvalUtils.clearDefaultConstraints()
         MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances, ConstraintEvalUtils.getDefaultConstraints(grailsApplication.config))
@@ -207,6 +196,7 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
      * @param code
      * @return the message of the thrown Throwable
      */
+    @CompileStatic
     String shouldFail(Closure code) {
         boolean failed = false
         String result = null
@@ -250,7 +240,7 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
             throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name")
         }
 
-        if (!(th in clazz)) {
+        if (!clazz.isInstance(th)) {
             throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name, instead got Exception $th")
         }
 
@@ -261,6 +251,7 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
      * methods to objects.
      * @param codecClass The codec to load, e.g. HTMLCodec.
      */
+    @CompileStatic
     void mockCodec(Class codecClass) {
         if (loadedCodecs.contains(codecClass)) {
             return
@@ -275,7 +266,9 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
         }
     }
 
-    void shutdownApplicationContext() {
+    @AfterClass
+    @CompileStatic
+    static void shutdownApplicationContext() {
         if (applicationContext.isActive()) {
             if(grailsApplication.mainContext instanceof Closeable) {
                 ((Closeable)grailsApplication.mainContext).close()
@@ -288,61 +281,5 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory {
         applicationContext = null
         grailsApplication = null
         Holders.setServletContext null
-    }
-
-    @Override
-    public TestRule newRule(Object targetInstance) {
-        return new TestRule() {
-            Statement apply(Statement statement, Description description) {
-                return new Statement() {
-                    @Override
-                    public void evaluate() throws Throwable {
-                        before(description)
-                        try {
-                            statement.evaluate()
-                        } finally {
-                            after(description)
-                        }
-                    }
-                };
-            }
-        }
-    }
-    
-    protected void before(Description description) {
-        
-    }
-
-    protected void after(Description description) {
-        resetGrailsApplication()
-    }
-    
-    @Override
-    public TestRule newClassRule(Class<?> targetClass) {
-        return new TestRule() {
-            Statement apply(Statement statement, Description description) {
-                return new Statement() {
-                    @Override
-                    public void evaluate() throws Throwable {
-                        beforeClass(description)
-                        try {
-                            statement.evaluate()
-                        } finally {
-                            afterClass(description)
-                        }
-                    }
-                };
-            }
-        }
-    }
-
-    protected void beforeClass(Description description) {
-        registerMetaClassRegistryWatcher()
-        initGrailsApplication()
-    }
-    
-    protected void afterClass(Description description) {
-        shutdownApplicationContext()
-        deregisterMetaClassCleaner()
     }
 }

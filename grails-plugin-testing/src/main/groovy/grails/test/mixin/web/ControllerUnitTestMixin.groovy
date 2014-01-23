@@ -25,7 +25,6 @@ import grails.web.HyphenatedUrlConverter
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
-import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler
@@ -62,7 +61,10 @@ import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
-import org.junit.runner.Description
+import org.junit.After
+import org.junit.AfterClass
+import org.junit.Before
+import org.junit.BeforeClass
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory
 import org.springframework.context.ApplicationContext
 import org.springframework.mock.web.MockHttpSession
@@ -83,52 +85,33 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     /**
      * The {@link GrailsWebRequest} object
      */
-    protected GrailsWebRequest webRequest
+    GrailsWebRequest webRequest
     /**
      * The {@link GrailsMockHttpServletRequest} object
      */
-    protected GrailsMockHttpServletRequest request
+    GrailsMockHttpServletRequest request
     /**
      * The {@link GrailsMockHttpServletResponse} object
      */
-    protected GrailsMockHttpServletResponse response
+    GrailsMockHttpServletResponse response
 
     /**
      * The ServletContext
      */
-    protected MockServletContext servletContext
+    static MockServletContext servletContext
 
     /**
      * Used to define additional GSP pages or templates where the key is the path to the template and
      * the value is the contents of the template. Allows loading of templates without using the file system
      */
-    protected Map<String, String> groovyPages = [:]
+    static Map<String, String> groovyPages = [:]
 
-    
-    GrailsWebRequest getWebRequest() {
-        this.@webRequest
-    }
-    
-    GrailsMockHttpServletRequest getRequest() {
-        this.@request
-    }
-    
-    GrailsMockHttpServletResponse getResponse() {
-        this.@response
-    }
+    /**
+     * Used to define additional GSP pages or templates where the key is the path to the template and
+     * the value is the contents of the template. Allows loading of templates without using the file system
+     */
+    static Map<String, String> views = groovyPages
 
-    MockServletContext getServletContext() {
-        this.@servletContext
-    }
-    
-    Map<String, String> getGroovyPages() {
-        this.@groovyPages
-    }
-    
-    Map<String, String> getViews() {
-        this.@groovyPages
-    }
-    
     /**
      * The {@link MockHttpSession} instance
      */
@@ -184,13 +167,11 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         webRequest.getFlashScope()
     }
 
-    @Override
-    protected void registerBeans() {
-        super.registerBeans()
-        registerGrailsWebBeans()
-    }
-    
-    protected void registerGrailsWebBeans() {
+    @BeforeClass
+    static void configureGrailsWeb() {
+        if (applicationContext == null) {
+            initGrailsApplication()
+        }
         servletContext = new MockServletContext()
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext)
         servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
@@ -218,8 +199,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             }
             multipartResolver(CommonsMultipartResolver)
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
-                grailsApplication = grailsApplication
-                servletContext = servletContext
+                grailsApplication = GrailsUnitTestMixin.grailsApplication
+                servletContext = ControllerUnitTestMixin.servletContext
             }
 
             def lazyBean = { bean ->
@@ -246,20 +227,20 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             filteringCodecsByContentTypeSettings(FilteringCodecsByContentTypeSettings, ref('grailsApplication'))
         }
         defineBeans(new CodecsGrailsPlugin().doWithSpring)
-    }
-    
-    protected void configureGrailsWeb() {
+
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
 
+    @AfterClass
     @CompileStatic
-    protected void cleanupGrailsWeb() {
+    static void cleanupGrailsWeb() {
         servletContext = null
         ServletContextHolder.setServletContext(null)
     }
 
+    @Before
     @CompileStatic
-    protected void bindGrailsWebRequest() {
+    void bindGrailsWebRequest() {
         new CodecsGrailsPlugin().providedArtefacts.each { Class codecClass ->
             mockCodec(codecClass)
         }
@@ -274,8 +255,15 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         if (webRequest?.currentRequest instanceof GrailsMockHttpServletRequest) {
             request = (GrailsMockHttpServletRequest)webRequest.currentRequest
             response = (GrailsMockHttpServletResponse)webRequest.currentResponse
+            servletContext = (MockServletContext)webRequest.servletContext
             return
         }
+
+        if (!applicationContext.isActive()) {
+            applicationContext.refresh()
+        }
+
+        applicationContext.servletContext = servletContext
 
         ServletsGrailsPluginSupport.enhanceServletApi()
         ConvertersPluginSupport.enhanceApplication(grailsApplication,applicationContext)
@@ -286,6 +274,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         request = (GrailsMockHttpServletRequest)webRequest.getCurrentRequest()
         response = (GrailsMockHttpServletResponse)webRequest.getCurrentResponse()
+        servletContext = (MockServletContext)webRequest.getServletContext()
     }
 
     /**
@@ -329,7 +318,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         return callable.call()
     }
 
-    protected GrailsClass createAndEnhance(Class<?> controllerClass) {
+    @CompileStatic
+    protected GrailsClass createAndEnhance(Class controllerClass) {
         final GrailsControllerClass controllerArtefact = (GrailsControllerClass)grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         controllerArtefact.initialize()
         if (!controllerClass.getAnnotation(Enhanced)) {
@@ -358,7 +348,8 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         return instance
     }
 
-    protected void clearGrailsWebRequest() {
+    @After
+    void clearGrailsWebRequest() {
         webRequest = null
         request = null
         response = null
@@ -371,30 +362,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         if (ctx?.containsBean("grovyPagesTemplateRenderer")) {
             ctx.groovyPagesTemplateRenderer.clearCache()
         }
-    }
-    
-    @Override
-    protected void before(Description description) {
-        super.before(description)
-        bindGrailsWebRequest()
-    }
-
-    @Override
-    protected void after(Description description) {
-        clearGrailsWebRequest()
-        super.after(description)
-    }
-    
-    @Override
-    protected void beforeClass(Description description) {
-        super.beforeClass(description)
-        configureGrailsWeb()
-    }
-
-    @Override
-    protected void afterClass(Description description) {
-        cleanupGrailsWeb()
-        super.afterClass(description)
     }
 }
 
