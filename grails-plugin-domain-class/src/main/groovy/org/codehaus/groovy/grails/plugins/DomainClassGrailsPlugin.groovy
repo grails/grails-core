@@ -383,7 +383,7 @@ class DomainClassGrailsPlugin {
                     metaClass."removeFrom${collectionName}" = {Object arg ->
                         if (otherDomainClass.clazz.isInstance(arg)) {
                             delegate[prop.name]?.remove(arg)
-                            if (prop.bidirectional) {
+                            if (prop.bidirectional && prop.otherSide) {
                                 if (prop.manyToMany) {
                                     String name = prop.otherSide.name
                                     arg[name]?.remove(delegate)
