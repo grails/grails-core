@@ -104,6 +104,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
      */
     protected Map<String, String> groovyPages = [:]
 
+    private boolean codecsChanged = false;
     
     GrailsWebRequest getWebRequest() {
         this.@webRequest
@@ -248,6 +249,24 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         defineBeans(new CodecsGrailsPlugin().doWithSpring)
     }
     
+    @Override
+    protected void applicationInitialized() {
+        super.applicationInitialized()
+        mockDefaultCodecs()
+    }
+
+    protected void mockDefaultCodecs() {
+        new CodecsGrailsPlugin().providedArtefacts.each { Class codecClass ->
+            mockCodec(codecClass)
+        }
+    }
+    
+    @Override
+    public void mockCodec(Class codecClass) {
+        super.mockCodec(codecClass)
+        codecsChanged = true
+    }
+    
     protected void configureGrailsWeb() {
         applicationContext.getBean("convertersConfigurationInitializer").initialize(grailsApplication)
     }
@@ -260,11 +279,10 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
 
     @CompileStatic
     protected void bindGrailsWebRequest() {
-        new CodecsGrailsPlugin().providedArtefacts.each { Class codecClass ->
-            mockCodec(codecClass)
+        if(codecsChanged) {
+            applicationContext.getBean(DefaultCodecLookup).reInitialize()
+            codecsChanged = false
         }
-
-        applicationContext.getBean(DefaultCodecLookup).reInitialize()
 
         if (webRequest != null) {
             return

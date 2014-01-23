@@ -137,6 +137,8 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory, Junit3TestCa
             Holders.setServletContext servletContext
 
             grailsApplication.applicationContext = applicationContext
+            
+            applicationInitialized()
         }
     }
 
@@ -158,6 +160,10 @@ class GrailsUnitTestMixin implements ClassRuleFactory, RuleFactory, Junit3TestCa
             conversionService(ConversionServiceFactoryBean)
             grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplication)
         }
+    }
+    
+    protected void applicationInitialized() {
+        
     }
 
     void resetGrailsApplication() {
