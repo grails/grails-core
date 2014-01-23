@@ -204,7 +204,9 @@ public class GrailsConsole {
      * is controlled by the jline.terminal system property.
      */
     protected Terminal createTerminal() {
-        return terminal = TerminalFactory.create();
+        terminal = TerminalFactory.create();
+        terminal.setEchoEnabled(true);
+        return terminal;
     }
 
     /**
