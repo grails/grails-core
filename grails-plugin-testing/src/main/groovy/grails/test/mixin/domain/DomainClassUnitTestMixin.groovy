@@ -89,6 +89,12 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
         }
     }
     
+    @Override
+    protected void applicationInitialized() {
+        super.applicationInitialized()
+        initializeDatastoreImplementation()
+    }
+    
     protected void initializeDatastoreImplementation() {
         simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
         simpleDatastore.mappingContext.setCanInitializeEntities(false)
@@ -230,7 +236,6 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     protected void beforeClass(Description description) {
         ClassPropertyFetcher.clearCache()
         super.beforeClass(description)
-        initializeDatastoreImplementation()
     }
 
     @Override
