@@ -6,6 +6,6 @@ class TestEvent {
     TestRuntime runtime
     String name
     Map<String, Object> arguments
-    boolean preventDefault
-    boolean stopHandling
+    boolean stopDelivery
+    boolean immediateDelivery
 }

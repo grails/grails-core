@@ -32,12 +32,16 @@ class TestRuntime {
     
     private Map<String, Object> registry = [:]
     
-    public Object getValue(String name) {
-        publishEvent("valueRequested", [name: name])
+    public Object getValue(String name, Map callerInfo = [:]) {
         if(!containsValueFor(name)) {
-            publishEvent("valueMissing", [name: name])
+            publishEvent("valueMissing", [name: name, callerInfo: callerInfo], true)
         }
-        registry.get(name)
+        Object val = registry.get(name)
+        if(val instanceof LazyValue) {
+            return val.get(callerInfo)
+        } else {
+            return val
+        }
     }
     
     public boolean containsValueFor(String name) {
@@ -66,21 +70,66 @@ class TestRuntime {
         String name
         Closure closure
         
-        public Object get() {
+        public Object get(Map callerInfo = [:]) {
             if(closure.getMaximumNumberOfParameters()==1) {
                 closure.call(runtime)
-            } else if (closure.getMaximumNumberOfParameters() > 1) {
+            } else if(closure.getMaximumNumberOfParameters()==2) {
                 closure.call(runtime, name)
+            } else if (closure.getMaximumNumberOfParameters() > 2) {
+                closure.call(runtime, name, callerInfo)
             } else {
                 closure.call()
             }
         }
     }
     
-    public void publishEvent(String name, Map arguments) {
-        TestEvent event = new TestEvent(name: name, arguments: arguments)
-        plugins*.onTestEvent(event)
-    } 
+    protected boolean inEventLoop = false
+    protected List<TestEvent> deferredEvents = new ArrayList<TestEvent>()
+    
+    public synchronized void publishEvent(String name, Map arguments = [:], boolean immediateDelivery = false) {
+        TestEvent event = new TestEvent(runtime: this, name: name, arguments: arguments, immediateDelivery: immediateDelivery)
+        if(inEventLoop) {
+            if(immediateDelivery) {
+                deliverEvent(event)
+            } else {
+                deferredEvents.add(event)
+            }
+        } else {
+            try {
+                inEventLoop = true
+                deliverEvent(event)
+                executeEventLoop()
+            } finally {
+                inEventLoop = false
+            }
+        }
+    }
+
+    protected executeEventLoop() {
+        while(true) {
+            List<TestEvent> currentLoopEvents = new ArrayList<TestEvent>(deferredEvents)
+            deferredEvents.clear()
+            if(currentLoopEvents) {
+                for(TestEvent deferredEvent : currentLoopEvents) {
+                    deliverEvent(deferredEvent)
+                }
+            } else {
+                break
+            }
+        }
+    }
+    
+    protected void deliverEvent(TestEvent event) {
+        if(event.stopDelivery) {
+            return
+        }
+        for(TestPlugin plugin : plugins) {
+            plugin.onTestEvent(event)
+            if(event.stopDelivery) {
+                break
+            }
+        }
+    }
     
     public TestRule newRule(Object targetInstance) {
         return new TestRule() {
