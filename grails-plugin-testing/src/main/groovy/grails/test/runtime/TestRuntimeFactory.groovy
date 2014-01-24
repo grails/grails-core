@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap
 @CompileStatic
 class TestRuntimeFactory {
     static TestRuntimeFactory INSTANCE=new TestRuntimeFactory()
-    Map<Object, TestRuntime> runtimes=[:]
     Set<Class<? extends TestPlugin>> availablePluginClasses=[
         GrailsApplicationTestPlugin,
         CoreBeansTestPlugin,
@@ -28,10 +27,6 @@ class TestRuntimeFactory {
 
     static TestRuntime getRuntime(Set<String> features) {
         INSTANCE.getTestRuntimeForFeatures(features)
-    }
-
-    static void removeRuntime(TestRuntime runtime) {
-        INSTANCE.removeTestRuntime(runtime)
     }
 
     static void addPluginClass(Class<? extends TestPlugin> pluginClass) {
@@ -152,14 +147,6 @@ class TestRuntimeFactory {
         }
     }
 
-    private void removeTestRuntime(TestRuntime runtime) {
-        for(Iterator iterator = runtimes.entrySet().iterator(); iterator.hasNext();) {
-            if (runtime.is(iterator.next().value)) {
-                iterator.remove()
-            }
-        }
-    }
-
     private void addTestPluginClass(Class<? extends TestPlugin> pluginClass) {
         availablePluginClasses.add(pluginClass)
     }
@@ -167,6 +154,23 @@ class TestRuntimeFactory {
     private void removeTestPluginClass(Class<? extends TestPlugin> pluginClass) {
         availablePluginClasses.remove(pluginClass)
     }
+    
+    /*
+    // cached runtimes for sharing runtimes across test classes, not implemented yet
+    private Map<Object, TestRuntime> runtimes=[:]
+
+    static void removeRuntime(TestRuntime runtime) {
+        INSTANCE.removeTestRuntime(runtime)
+    }
+
+    private void removeTestRuntime(TestRuntime runtime) {
+        for(Iterator iterator = runtimes.entrySet().iterator(); iterator.hasNext();) {
+            if (runtime.is(iterator.next().value)) {
+                iterator.remove()
+            }
+        }
+    }
+    */
 }
 
 @CompileStatic
