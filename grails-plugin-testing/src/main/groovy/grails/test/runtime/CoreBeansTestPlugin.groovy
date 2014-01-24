@@ -51,4 +51,8 @@ public class CoreBeansTestPlugin implements TestPlugin {
                 break
         }
     }
+    
+    public void close() {
+    
+    }
 }

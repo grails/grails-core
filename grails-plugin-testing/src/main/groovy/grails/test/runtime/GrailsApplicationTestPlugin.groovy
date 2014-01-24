@@ -183,4 +183,8 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                 break
         }
     }
+    
+    public void close() {
+    
+    }
 }

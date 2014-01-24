@@ -178,6 +178,10 @@ class ControllerTestPlugin implements TestPlugin {
                 break
         }
     }
+    
+    public void close() {
+        
+    }
 }
 
 @CompileStatic

@@ -192,6 +192,19 @@ class TestRuntime {
 
     protected void afterClass(Description description, Throwable throwable) {
         publishEvent("afterClass", [description: description, throwable: throwable], [reverseOrderDelivery: true])
+        close()
+    }
+
+    private close() {
+        for(TestPlugin plugin : plugins) {
+            try {
+                plugin.close()
+            } catch (Exception e) {
+                // ignore exceptions
+            }
+        }
+        registry.clear()
+        plugins.clear()
     }
 
     public void setUp(Object testInstance) {

@@ -5,4 +5,5 @@ public interface TestPlugin {
     String[] getProvidedFeatures();
     int getOrdinal();
     void onTestEvent(TestEvent event);
+    void close();
 }

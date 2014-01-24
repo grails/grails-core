@@ -34,4 +34,8 @@ public class MetaClassCleanerTestPlugin implements TestPlugin {
                 break
         }
     }
+    
+    public void close() {
+    
+    }
 }
