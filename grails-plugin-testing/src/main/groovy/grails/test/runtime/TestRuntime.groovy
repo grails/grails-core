@@ -10,9 +10,12 @@ import org.junit.runners.model.Statement
 
 @CompileStatic
 class TestRuntime {
-    private List<TestPlugin> plugins = new ArrayList<TestPlugin>()
-    
+    private List<TestPlugin> plugins
     private Map<String, Object> registry = [:]
+    
+    public TestRuntime(List<TestPlugin> plugins) {
+        this.plugins =  new ArrayList<TestPlugin>(plugins)
+    }
     
     public Object getValue(String name, Map callerInfo = [:]) {
         if(!containsValueFor(name)) {
