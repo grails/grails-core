@@ -45,7 +45,11 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
 @CompileStatic
-class ControllerTestPlugin {
+class ControllerTestPlugin implements TestPlugin {
+    String[] requiredFeatures = ['grailsApplication', 'coreBeans']
+    String[] providedFeatures = ['controller']
+    int ordinal = 0
+
     @CompileStatic(TypeCheckingMode.SKIP)
     protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplication) {
         Map<String, String> groovyPages = [:]

@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2011 SpringSource
  *
@@ -20,6 +18,8 @@ package grails.test.mixin.web
 import grails.artefact.Enhanced
 import grails.test.mixin.support.GrailsUnitTestMixin
 import grails.test.runtime.TestRuntime
+import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClass
@@ -47,13 +47,24 @@ import org.springframework.mock.web.MockServletContext
  * @author Graeme Rocher
  * @since 2.0
  */
+@groovy.transform.CompileStatic
 class ControllerUnitTestMixin extends GrailsUnitTestMixin {
+    private static final Set<String> REQUIRED_FEATURES = (["controller"] as Set).asImmutable() 
+    
+    public ControllerUnitTestMixin(Set<String> features) {
+        super((REQUIRED_FEATURES + features) as Set)
+    }
+    
+    public ControllerUnitTestMixin() {
+        super(REQUIRED_FEATURES)
+    }
+    
     public ControllerUnitTestMixin(TestRuntime runtime) {
         super(runtime)
     }
 
     GrailsWebRequest getWebRequest() {
-        runtime.getValue("webRequest")
+        (GrailsWebRequest)runtime.getValue("webRequest")
     }
     
     GrailsMockHttpServletRequest getRequest() {
@@ -65,11 +76,11 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     }
 
     MockServletContext getServletContext() {
-        runtime.getValue("servletContext")
+        (MockServletContext)runtime.getValue("servletContext")
     }
     
     Map<String, String> getGroovyPages() {
-        runtime.getValue("groovyPages")
+        (Map<String, String>)runtime.getValue("groovyPages")
     }
     
     Map<String, String> getViews() {
@@ -80,7 +91,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
      * The {@link MockHttpSession} instance
      */
     MockHttpSession getSession() {
-        request.session
+        (MockHttpSession)request.session
     }
 
     /**
@@ -100,6 +111,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     /**
      * @return The model of the current controller
      */
+    @CompileStatic(TypeCheckingMode.SKIP)
     Map getModel() {
         request.getAttribute(GrailsApplicationAttributes.CONTROLLER)?.modelAndView?.model ?: [:]
     }
@@ -107,6 +119,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     /**
      * @return The view of the current controller
      */
+    @CompileStatic(TypeCheckingMode.SKIP)
     String getView() {
         final controller = request.getAttribute(GrailsApplicationAttributes.CONTROLLER)
 
@@ -147,6 +160,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
      * @param controllerClass The controller class
      * @return An instance of the controller
      */
+    @CompileStatic(TypeCheckingMode.SKIP)
     def <T> T mockController(Class<T> controllerClass) {
         GrailsClass controllerArtefact = createAndEnhance(controllerClass)
         defineBeans {

@@ -34,6 +34,16 @@ import org.springframework.context.MessageSource
  */
 @CompileStatic
 class GrailsUnitTestMixin extends TestMixinRuleSupport {
+    private static final Set<String> REQUIRED_FEATURES = (["grailsApplication", "coreBeans"] as Set).asImmutable() 
+    
+    public GrailsUnitTestMixin(Set<String> features) {
+        super((REQUIRED_FEATURES + features) as Set)
+    }
+    
+    public GrailsUnitTestMixin() {
+        super(REQUIRED_FEATURES)
+    }
+    
     public GrailsUnitTestMixin(TestRuntime runtime) {
         super(runtime)
     }

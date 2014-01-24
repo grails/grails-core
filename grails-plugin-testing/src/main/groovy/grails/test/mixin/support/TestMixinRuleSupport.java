@@ -1,15 +1,22 @@
 package grails.test.mixin.support;
 
+import java.util.Set;
+
 import grails.test.mixin.ClassRuleFactory;
 import grails.test.mixin.Junit3TestCaseSupport;
 import grails.test.mixin.RuleFactory;
 import grails.test.runtime.TestRuntime;
+import grails.test.runtime.TestRuntimeFactory;
 import groovy.lang.GroovyObjectSupport;
 
 import org.junit.rules.TestRule;
 
-public class TestMixinRuleSupport extends GroovyObjectSupport implements ClassRuleFactory, RuleFactory, Junit3TestCaseSupport {
+public abstract class TestMixinRuleSupport extends GroovyObjectSupport implements ClassRuleFactory, RuleFactory, Junit3TestCaseSupport {
     protected TestRuntime runtime;
+
+    public TestMixinRuleSupport(Set<String> features) {
+        this(TestRuntimeFactory.getRuntime(features));
+    }
 
     public TestMixinRuleSupport(TestRuntime runtime) {
         this.runtime = runtime;
