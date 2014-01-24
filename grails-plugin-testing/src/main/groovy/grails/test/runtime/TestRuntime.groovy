@@ -103,6 +103,8 @@ class TestRuntime {
         }
     }
 
+    // TODO: IMPLEMENT STACK for event handling
+    
     protected executeEventLoop() {
         while(true) {
             List<TestEvent> currentLoopEvents = new ArrayList<TestEvent>(deferredEvents)
