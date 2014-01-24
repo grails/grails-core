@@ -9,7 +9,7 @@ import groovy.lang.GroovyObjectSupport;
 import org.junit.rules.TestRule;
 
 public class TestMixinRuleSupport extends GroovyObjectSupport implements ClassRuleFactory, RuleFactory, Junit3TestCaseSupport {
-    TestRuntime runtime;
+    protected TestRuntime runtime;
 
     public TestMixinRuleSupport(TestRuntime runtime) {
         this.runtime = runtime;

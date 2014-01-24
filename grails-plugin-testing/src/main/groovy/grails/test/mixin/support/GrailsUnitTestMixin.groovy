@@ -15,51 +15,16 @@
  */
 package grails.test.mixin.support
 
-import grails.async.Promises
-import grails.spring.BeanBuilder
 import grails.test.GrailsMock
-import grails.test.MockUtils
-import grails.test.mixin.ClassRuleFactory
-import grails.test.mixin.Junit3TestCaseSupport
-import grails.test.mixin.RuleFactory
-import grails.test.runtime.TestRuntime;
-import grails.util.Holders
-import grails.util.Metadata
-import grails.validation.DeferredBindingActions
-import grails.web.CamelCaseUrlConverter
-import grails.web.UrlConverter
+import grails.test.runtime.TestRuntime
 import groovy.transform.CompileStatic
-import groovy.transform.TypeCheckingMode
 import junit.framework.AssertionFailedError
 
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
-import org.codehaus.groovy.grails.commons.CodecArtefactHandler
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.InstanceFactoryBean
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
-import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
-import org.grails.async.factory.SynchronousPromiseFactory
 import org.junit.rules.TestRule
-import org.junit.runner.Description
-import org.junit.runners.model.Statement
-import org.springframework.beans.CachedIntrospectionResults
-import org.springframework.context.ApplicationContext
 import org.springframework.context.MessageSource
-import org.springframework.context.support.ConversionServiceFactoryBean
-import org.springframework.context.support.StaticMessageSource
-import org.springframework.mock.web.MockServletContext
-import org.springframework.web.context.WebApplicationContext
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -69,10 +34,8 @@ import org.springframework.web.context.WebApplicationContext
  */
 @CompileStatic
 class GrailsUnitTestMixin extends TestMixinRuleSupport {
-    protected TestRuntime runtime
-    
     public GrailsUnitTestMixin(TestRuntime runtime) {
-        this.runtime = runtime
+        super(runtime)
     }
 
     /**
@@ -159,5 +122,29 @@ class GrailsUnitTestMixin extends TestMixinRuleSupport {
      */
     void mockCodec(Class codecClass) {
         runtime.publishEvent("mockCodec", [codecClass: codecClass])
+    }
+    
+    void defineBeans(Closure closure) {
+        runtime.publishEvent("defineBeans", [closure: closure])
+    }
+    
+    GrailsWebApplicationContext getApplicationContext() {
+        (GrailsWebApplicationContext)grailsApplication.parentContext
+    }
+    
+    GrailsWebApplicationContext getMainContext() {
+        (GrailsWebApplicationContext)grailsApplication.mainContext
+    }
+    
+    GrailsApplication getGrailsApplication() {
+        (GrailsApplication)runtime.getValue("grailsApplication")
+    }
+    
+    ConfigObject getConfig() {
+        getGrailsApplication().getConfig()
+    }
+    
+    MessageSource getMessageSource() {
+        applicationContext.getBean("messageSource", MessageSource)
     }
 }
