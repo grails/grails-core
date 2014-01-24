@@ -61,7 +61,7 @@ class TestRuntimeFactory {
     }
 
     private List<TestPlugin> resolveRequiredPlugins(TestPlugin plugin, Map<String, TestPlugin> featureToPlugin) {
-        sortByOrdinal(plugin.requiredFeatures.collect{ String feature -> resolveFeature(feature, featureToPlugin) })
+        sortByOrdinal((List<TestPlugin>)plugin.requiredFeatures.collect{ String feature -> resolveFeature(feature, featureToPlugin) })
     }
 
     private TestPlugin resolveFeature(String feature, Map<String, TestPlugin> featureToPlugin) {
@@ -139,7 +139,7 @@ class TestRuntimeFactory {
     private List<TestPlugin> sortByOrdinal(List<TestPlugin> pluginList) {
         // remove duplicates
         def pluginSet = [] as Set
-        pluginSet << pluginList
+        pluginSet.addAll(pluginList)
         def newPluginList = new ArrayList(pluginSet)
         // sort by ordinal
         newPluginList.sort(false) { TestPlugin a, TestPlugin b ->
