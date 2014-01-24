@@ -59,10 +59,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         super(REQUIRED_FEATURES)
     }
     
-    public ControllerUnitTestMixin(TestRuntime runtime) {
-        super(runtime)
-    }
-
     GrailsWebRequest getWebRequest() {
         (GrailsWebRequest)runtime.getValue("webRequest")
     }

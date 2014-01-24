@@ -44,10 +44,6 @@ class GrailsUnitTestMixin extends TestMixinRuleSupport {
         super(REQUIRED_FEATURES)
     }
     
-    public GrailsUnitTestMixin(TestRuntime runtime) {
-        super(runtime)
-    }
-
     /**
      * Mocks the given class (either a domain class or a command object)
      * so that a "validate()" method is added. This can then be used

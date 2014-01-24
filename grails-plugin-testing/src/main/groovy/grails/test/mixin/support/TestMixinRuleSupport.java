@@ -12,29 +12,33 @@ import groovy.lang.GroovyObjectSupport;
 import org.junit.rules.TestRule;
 
 public abstract class TestMixinRuleSupport extends GroovyObjectSupport implements ClassRuleFactory, RuleFactory, Junit3TestCaseSupport {
-    protected TestRuntime runtime;
+    private TestRuntime currentRuntime;
+    private Set<String> features;
 
     public TestMixinRuleSupport(Set<String> features) {
-        this(TestRuntimeFactory.getRuntime(features));
+        this.features = features;
     }
 
-    public TestMixinRuleSupport(TestRuntime runtime) {
-        this.runtime = runtime;
+    protected TestRuntime getRuntime() {
+        if(currentRuntime == null || currentRuntime.isClosed()) {
+            currentRuntime = TestRuntimeFactory.getRuntime(features);
+        }
+        return currentRuntime;
     }
-
+    
     public TestRule newRule(Object targetInstance) {
-        return runtime.newRule(targetInstance);
+        return getRuntime().newRule(targetInstance);
     }
 
     public TestRule newClassRule(Class<?> targetClass) {
-        return runtime.newClassRule(targetClass);
+        return getRuntime().newClassRule(targetClass);
     }
 
     public void setUp(Object testInstance) {
-        runtime.setUp(testInstance);
+        getRuntime().setUp(testInstance);
     }
 
     public void tearDown(Object testInstance) {
-        runtime.tearDown(testInstance);
+        getRuntime().tearDown(testInstance);
     }
 }

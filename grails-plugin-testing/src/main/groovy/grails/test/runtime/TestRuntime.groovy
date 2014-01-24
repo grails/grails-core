@@ -12,6 +12,7 @@ import org.junit.runners.model.Statement
 class TestRuntime {
     private List<TestPlugin> plugins
     private Map<String, Object> registry = [:]
+    private boolean runtimeClosed = false
     
     public TestRuntime(List<TestPlugin> plugins) {
         this.plugins =  new ArrayList<TestPlugin>(plugins)
@@ -195,16 +196,19 @@ class TestRuntime {
         close()
     }
 
-    private close() {
-        for(TestPlugin plugin : plugins) {
-            try {
-                plugin.close()
-            } catch (Exception e) {
-                // ignore exceptions
+    private synchronized void close() {
+        if(!runtimeClosed) {
+            for(TestPlugin plugin : plugins) {
+                try {
+                    plugin.close()
+                } catch (Exception e) {
+                    // ignore exceptions
+                }
             }
+            registry.clear()
+            plugins.clear()
+            runtimeClosed = true
         }
-        registry.clear()
-        plugins.clear()
     }
 
     public void setUp(Object testInstance) {
@@ -215,5 +219,9 @@ class TestRuntime {
     public void tearDown(Object testInstance) {
         after(Description.createTestDescription(testInstance.getClass(), "tearDown"), null)
         afterClass(Description.createSuiteDescription(testInstance.getClass()), null)
+    }
+
+    public boolean isClosed() {
+        return runtimeClosed;
     }
 }
