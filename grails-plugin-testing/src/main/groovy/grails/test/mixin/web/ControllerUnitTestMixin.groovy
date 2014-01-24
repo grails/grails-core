@@ -357,7 +357,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         if (ctx?.containsBean("groovyPagesTemplateEngine")) {
             ctx.groovyPagesTemplateEngine.clearPageCache()
         }
-        if (ctx?.containsBean("grovyPagesTemplateRenderer")) {
+        if (ctx?.containsBean("groovyPagesTemplateRenderer")) {
             ctx.groovyPagesTemplateRenderer.clearCache()
         }
         webRequest = null
