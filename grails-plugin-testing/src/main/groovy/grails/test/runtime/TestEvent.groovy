@@ -8,4 +8,5 @@ class TestEvent {
     Map<String, Object> arguments
     boolean stopDelivery
     boolean immediateDelivery
+    boolean reverseOrderDelivery
 }

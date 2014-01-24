@@ -1,30 +1,12 @@
 package grails.test.runtime;
 
-import java.util.Map;
-
-import grails.async.Promises
-import grails.spring.BeanBuilder
-import grails.util.Holders
-import grails.util.Metadata
-import grails.web.CamelCaseUrlConverter
-import grails.web.UrlConverter
 import groovy.transform.CompileStatic
-import groovy.transform.Immutable;
+import groovy.transform.Immutable
+import groovy.transform.TypeCheckingMode
 
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
-import org.grails.async.factory.SynchronousPromiseFactory
 import org.junit.rules.TestRule
 import org.junit.runner.Description
 import org.junit.runners.model.Statement
-import org.springframework.beans.CachedIntrospectionResults
-import org.springframework.context.ApplicationContext
-import org.springframework.context.MessageSource
-import org.springframework.mock.web.MockServletContext
-import org.springframework.web.context.WebApplicationContext
 
 @CompileStatic
 class TestRuntime {
@@ -34,7 +16,7 @@ class TestRuntime {
     
     public Object getValue(String name, Map callerInfo = [:]) {
         if(!containsValueFor(name)) {
-            publishEvent("valueMissing", [name: name, callerInfo: callerInfo], true)
+            publishEvent("valueMissing", [name: name, callerInfo: callerInfo], [immediateDelivery: true])
         }
         Object val = registry.get(name)
         if(val instanceof LazyValue) {
@@ -86,10 +68,18 @@ class TestRuntime {
     protected boolean inEventLoop = false
     protected List<TestEvent> deferredEvents = new ArrayList<TestEvent>()
     
-    public synchronized void publishEvent(String name, Map arguments = [:], boolean immediateDelivery = false) {
-        TestEvent event = new TestEvent(runtime: this, name: name, arguments: arguments, immediateDelivery: immediateDelivery)
+    public void publishEvent(String name, Map arguments = [:], Map extraEventProperties = [:]) {
+        doPublishEvent(createEvent([runtime: this, name: name, arguments: arguments] + extraEventProperties))
+    }
+    
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected TestEvent createEvent(Map properties) {
+        new TestEvent(properties)
+    }
+
+    protected synchronized doPublishEvent(TestEvent event) {
         if(inEventLoop) {
-            if(immediateDelivery) {
+            if(event.immediateDelivery) {
                 deliverEvent(event)
             } else {
                 deferredEvents.add(event)
@@ -123,7 +113,7 @@ class TestRuntime {
         if(event.stopDelivery) {
             return
         }
-        for(TestPlugin plugin : plugins) {
+        for(TestPlugin plugin : (event.reverseOrderDelivery ? plugins.reverse() : plugins)) {
             plugin.onTestEvent(event)
             if(event.stopDelivery) {
                 break
@@ -161,7 +151,7 @@ class TestRuntime {
     }
 
     protected void after(Description description, Throwable throwable) {
-        publishEvent("after", [description: description, throwable: throwable])
+        publishEvent("after", [description: description, throwable: throwable], [reverseOrderDelivery: true])
     }
 
     public TestRule newClassRule(Class<?> targetClass) {
@@ -194,7 +184,7 @@ class TestRuntime {
     }
 
     protected void afterClass(Description description, Throwable throwable) {
-        publishEvent("afterClass", [description: description, throwable: throwable])
+        publishEvent("afterClass", [description: description, throwable: throwable], [reverseOrderDelivery: true])
     }
 
     public void setUp(Object testInstance) {
