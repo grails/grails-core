@@ -18,6 +18,10 @@ class TestRuntime {
         if(!containsValueFor(name)) {
             publishEvent("valueMissing", [name: name, callerInfo: callerInfo], [immediateDelivery: true])
         }
+        getValueIfExists(name, callerInfo)
+    }
+    
+    public Object getValueIfExists(String name, Map callerInfo = [:]) {
         Object val = registry.get(name)
         if(val instanceof LazyValue) {
             return val.get(callerInfo)

@@ -10,7 +10,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
@@ -18,12 +18,14 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
+import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport;
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ApplicationContext
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 
@@ -55,7 +57,9 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         grailsApplication.mainContext = mainContext
         
         MockServletContext servletContext = new MockServletContext()
-        servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mainContext
+        servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext
+        servletContext.setAttribute ApplicationAttributes.APPLICATION_CONTEXT, applicationContext
+
         Holders.setServletContext servletContext
         runtime.putValue("servletContext", servletContext)
         
@@ -77,6 +81,8 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     
     void applicationInitialized(TestRuntime runtime, DefaultGrailsApplication grailsApplication) {
         runtime.publishEvent("applicationInitialized", [grailsApplication: grailsApplication])
+        // TODO: which is correct mainContext or parentContext?
+        ConvertersPluginSupport.enhanceApplication(grailsApplication, grailsApplication.mainContext)
     }
     
     void mockCodec(TestRuntime runtime, Class codecClass) {
