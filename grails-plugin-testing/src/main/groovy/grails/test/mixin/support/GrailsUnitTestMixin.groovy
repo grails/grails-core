@@ -130,8 +130,8 @@ class GrailsUnitTestMixin extends TestMixinRuleSupport {
         runtime.publishEvent("mockCodec", [codecClass: codecClass])
     }
     
-    void defineBeans(Closure closure) {
-        runtime.publishEvent("defineBeans", [closure: closure])
+    void defineBeans(boolean immediateDelivery = false, Closure closure) {
+        runtime.publishEvent("defineBeans", [closure: closure], [immediateDelivery: immediateDelivery])
     }
     
     GrailsWebApplicationContext getApplicationContext() {

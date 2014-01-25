@@ -41,6 +41,10 @@ public class CompositeInterceptor implements HandlerInterceptor {
     protected List<HandlerInterceptor> handlers = new ArrayList<HandlerInterceptor>();
     protected List<HandlerInterceptor> handlersReversed = new ArrayList<HandlerInterceptor>();
 
+    public List<HandlerInterceptor> getHandlers() {
+        return handlers;
+    }
+    
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object o) throws Exception {
         if (log.isDebugEnabled()) log.debug("preHandle " + request + ", " + response + ", " + o);
 

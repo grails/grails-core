@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact;
 import grails.test.GrailsMock
 import grails.test.mixin.web.FiltersUnitTestMixin
 import org.junit.Before
@@ -117,6 +118,7 @@ class FiltersUnitTestMixinTests {
     }
 }
 
+@Artefact("Controller")
 class AuthorController {
     def list = { [authors:['bob', 'fred']]}
 }

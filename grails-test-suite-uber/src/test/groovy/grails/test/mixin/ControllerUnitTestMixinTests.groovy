@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact;
 import grails.converters.JSON
 import grails.converters.XML
 import grails.test.mixin.web.ControllerUnitTestMixin
@@ -400,6 +401,7 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 }
 
+@Artefact("Controller")
 class TestController {
 
     static allowedMethods = [action2: 'POST', action3: ['POST', 'PUT'], method2: 'POST', method3: ['POST', 'PUT']]
@@ -546,6 +548,7 @@ class TestCommand {
     }
 }
 
+@Artefact("Controller")
 class SubController extends TestController {
     def method1() {
         super.method1()

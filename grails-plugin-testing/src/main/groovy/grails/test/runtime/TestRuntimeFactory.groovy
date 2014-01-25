@@ -16,7 +16,8 @@ class TestRuntimeFactory {
         GrailsApplicationTestPlugin,
         CoreBeansTestPlugin,
         MetaClassCleanerTestPlugin,
-        ControllerTestPlugin] as Set
+        ControllerTestPlugin,
+        FiltersTestPlugin] as Set
 
     private TestRuntimeFactory() {
     }
