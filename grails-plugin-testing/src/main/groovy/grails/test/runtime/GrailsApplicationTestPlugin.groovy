@@ -59,7 +59,9 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         MockServletContext servletContext = new MockServletContext()
         servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext
         servletContext.setAttribute ApplicationAttributes.APPLICATION_CONTEXT, applicationContext
-
+        applicationContext.servletContext = servletContext
+        mainContext.servletContext = servletContext
+        
         Holders.setServletContext servletContext
         runtime.putValue("servletContext", servletContext)
         
