@@ -21,7 +21,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
     int ordinal = 0
 
     @CompileStatic(TypeCheckingMode.SKIP)
-    protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplication) {
+    protected void registerBeans(TestRuntime runtime, GrailsApplication grailsApplicationParam) {
         defineBeans(runtime, new DataBindingGrailsPlugin().doWithSpring)
 
         defineBeans(runtime) {
@@ -31,12 +31,15 @@ public class CoreBeansTestPlugin implements TestPlugin {
             context.'annotation-config'()
 
             proxyHandler(DefaultProxyHandler)
-            grailsApplication(InstanceFactoryBean, grailsApplication, GrailsApplication)
-            pluginManager(DefaultGrailsPluginManager, [] as Class[], grailsApplication)
+            grailsApplication(InstanceFactoryBean) {
+                object = grailsApplicationParam
+                objectType = GrailsApplication
+            }
+            pluginManager(DefaultGrailsPluginManager, [] as Class[], grailsApplicationParam)
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
             conversionService(ConversionServiceFactoryBean)
-            grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplication)
+            grailsApplicationPostProcessor(GrailsApplicationAwareBeanPostProcessor, grailsApplicationParam)
         }
     }
     
