@@ -76,7 +76,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
     
     void registerBeans(TestRuntime runtime, DefaultGrailsApplication grailsApplication) {
-        runtime.publishEvent("registerBeans", [grailsApplication: grailsApplication])
+        runtime.publishEvent("registerBeans", [grailsApplication: grailsApplication], [immediateDelivery: true])
     }
     
     void applicationInitialized(TestRuntime runtime, DefaultGrailsApplication grailsApplication) {
