@@ -57,6 +57,7 @@ class ControllerTestPlugin implements TestPlugin {
         
         defineBeans(runtime, new MimeTypesGrailsPlugin().doWithSpring)
         defineBeans(runtime, new ConvertersGrailsPlugin().doWithSpring)
+        def config = grailsApplication.config
         defineBeans(runtime) {
             instanceControllersApi(ControllersApi)
             rendererRegistry(DefaultRendererRegistry) {
