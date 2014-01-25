@@ -88,19 +88,29 @@ class TestRuntime {
     protected synchronized doPublishEvent(TestEvent event) {
         if(inEventLoop) {
             if(event.immediateDelivery) {
-                deliverEvent(event)
+                List<TestEvent> previousDeferredEvents = deferredEvents
+                try {
+                    deferredEvents = new ArrayList<TestEvent>()
+                    processEvents(event)
+                } finally {
+                    deferredEvents = previousDeferredEvents
+                }
             } else {
                 deferredEvents.add(event)
             }
         } else {
             try {
                 inEventLoop = true
-                deliverEvent(event)
-                executeEventLoop()
+                processEvents(event)
             } finally {
                 inEventLoop = false
             }
         }
+    }
+
+    private processEvents(TestEvent event) {
+        deliverEvent(event)
+        executeEventLoop()
     }
 
     // TODO: IMPLEMENT STACK for event handling
