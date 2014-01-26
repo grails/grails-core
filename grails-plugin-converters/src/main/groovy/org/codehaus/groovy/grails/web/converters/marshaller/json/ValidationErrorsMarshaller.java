@@ -27,6 +27,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
 
 /**
  * @author Siegfried Puchbauer
@@ -56,6 +57,18 @@ public class ValidationErrorsMarshaller implements ObjectMarshaller<JSON>, Appli
                     json.property("object", fe.getObjectName());
                     json.property("field", fe.getField());
                     json.property("rejected-value", fe.getRejectedValue());
+                    Locale locale = LocaleContextHolder.getLocale();
+                    if (applicationContext != null) {
+                        json.property("message", applicationContext.getMessage(fe, locale));
+                    }
+                    else {
+                        json.property("message", fe.getDefaultMessage());
+                    }
+                    writer.endObject();
+                } else if (o instanceof ObjectError) {
+                    ObjectError fe = (ObjectError) o;
+                    writer.object();
+                    json.property("object", fe.getObjectName());
                     Locale locale = LocaleContextHolder.getLocale();
                     if (applicationContext != null) {
                         json.property("message", applicationContext.getMessage(fe, locale));
