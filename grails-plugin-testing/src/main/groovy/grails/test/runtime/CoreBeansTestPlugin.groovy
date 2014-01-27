@@ -55,7 +55,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
         }
     }
     
-    public void close() {
+    public void close(TestRuntime runtime) {
     
     }
 }

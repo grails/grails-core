@@ -211,7 +211,7 @@ class TestRuntime {
         if(!runtimeClosed) {
             for(TestPlugin plugin : plugins) {
                 try {
-                    plugin.close()
+                    plugin.close(this)
                 } catch (Exception e) {
                     // ignore exceptions
                 }

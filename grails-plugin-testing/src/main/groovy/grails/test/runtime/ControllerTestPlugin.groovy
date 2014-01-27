@@ -180,7 +180,7 @@ class ControllerTestPlugin implements TestPlugin {
         }
     }
     
-    public void close() {
+    public void close(TestRuntime runtime) {
         
     }
 }

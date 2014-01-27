@@ -46,7 +46,7 @@ public class FiltersTestPlugin implements TestPlugin {
         }
     }
     
-    public void close() {
+    public void close(TestRuntime runtime) {
     
     }
 }

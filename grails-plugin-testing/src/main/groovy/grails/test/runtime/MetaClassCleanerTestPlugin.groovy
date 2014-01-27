@@ -35,7 +35,7 @@ public class MetaClassCleanerTestPlugin implements TestPlugin {
         }
     }
     
-    public void close() {
+    public void close(TestRuntime runtime) {
     
     }
 }
