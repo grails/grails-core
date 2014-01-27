@@ -23,7 +23,6 @@ import junit.framework.AssertionFailedError
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
-import org.junit.rules.TestRule
 import org.springframework.context.MessageSource
 
 /**
@@ -34,6 +33,10 @@ import org.springframework.context.MessageSource
  */
 @CompileStatic
 class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
+    static {
+        ExpandoMetaClass.enableGlobally()
+    }
+
     private static final Set<String> REQUIRED_FEATURES = (["grailsApplication", "coreBeans"] as Set).asImmutable() 
     
     public GrailsUnitTestMixin(Set<String> features) {
