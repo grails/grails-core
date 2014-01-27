@@ -1,8 +1,14 @@
 package grails.test.runtime
 
 import grails.test.mixin.TestRuntimeAwareMixin
+import grails.test.mixin.support.MixinInstance;
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+
+import java.lang.reflect.Field
+import java.lang.reflect.Modifier;
+
+import org.springframework.util.ReflectionUtils;
 
 @CompileStatic
 class TestRuntimeFactory {
@@ -27,18 +33,15 @@ class TestRuntimeFactory {
         Set<TestRuntimeAwareMixin> allInstances = [] as Set
         Set<String> allFeatures = [] as Set
         while(currentClass != Object) {
-            try {
-                List currentInstances = currentClass.TEST_RUNTIME_MIXIN_INSTANCES
-                if(currentInstances) {
-                    currentInstances.each { testMixinInstance ->
-                        if(testMixinInstance instanceof TestRuntimeAwareMixin) {
-                            allInstances.add(testMixinInstance)
-                            allFeatures.addAll(testMixinInstance.features)
-                        }
+            currentClass.getDeclaredFields().each { Field field ->
+                if(field.getAnnotation(MixinInstance.class) != null && Modifier.isStatic(field.getModifiers())) {
+                    ReflectionUtils.makeAccessible(field)
+                    def instance = field.get(null)
+                    if(instance instanceof TestRuntimeAwareMixin) {
+                        allInstances.add(instance)
+                        allFeatures.addAll(instance.features)
                     }
                 }
-            } catch (MissingPropertyException e) {
-                // ignore
             }
             currentClass = currentClass.superclass
         }

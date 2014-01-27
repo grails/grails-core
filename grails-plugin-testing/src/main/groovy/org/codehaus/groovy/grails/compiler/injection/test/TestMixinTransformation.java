@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.compiler.injection.test;
 import grails.test.mixin.TestMixin;
 import grails.test.mixin.TestMixinTargetAware;
 import grails.test.mixin.TestRuntimeAwareMixin;
+import grails.test.mixin.support.MixinInstance;
 import grails.test.mixin.support.MixinMethod;
 import grails.test.runtime.TestRuntimeJunitAdapter;
 import grails.util.GrailsNameUtils;
@@ -46,7 +47,6 @@ import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
@@ -92,7 +92,6 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final String VOID_TYPE = "void";
-    public static final String MIXIN_INSTANCES_FIELD_NAME = "TEST_RUNTIME_MIXIN_INSTANCES";
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -239,24 +238,11 @@ public class TestMixinTransformation implements ASTTransformation{
         MapExpression constructorArguments = new MapExpression();
         constructorArguments.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("testClass"), new ClassExpression(classNode)));
         FieldNode mixinInstanceFieldNode = classNode.addField(fieldName, Modifier.STATIC, fieldType, new ConstructorCallExpression(fieldType, constructorArguments));
-        
-        registerStaticMixinInstance(classNode, mixinInstanceFieldNode);
+        mixinInstanceFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(MixinInstance.class)));
         
         addJunitRuleFields(classNode);
         
         return mixinInstanceFieldNode;
-    }
-
-    private void registerStaticMixinInstance(ClassNode classNode, FieldNode mixinInstanceFieldNode) {
-        FieldNode mixinInstanceListFieldNode = classNode.getDeclaredField(MIXIN_INSTANCES_FIELD_NAME);
-        ListExpression mixinInstanceListExpression;
-        if(mixinInstanceListFieldNode == null) {
-            mixinInstanceListExpression = new ListExpression();
-            mixinInstanceListFieldNode = classNode.addField(MIXIN_INSTANCES_FIELD_NAME, Modifier.PUBLIC | Modifier.STATIC, GrailsASTUtils.nonGeneric(ClassHelper.make(List.class)), mixinInstanceListExpression);
-        } else {
-            mixinInstanceListExpression = (ListExpression)mixinInstanceListFieldNode.getInitialValueExpression();
-        }
-        mixinInstanceListExpression.addExpression(new FieldExpression(mixinInstanceFieldNode));
     }
 
     protected void addJunitRuleFields(ClassNode classNode) {
