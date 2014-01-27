@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact
 import grails.test.mixin.web.UrlMappingsUnitTestMixin
 import grails.web.Action
 import junit.framework.AssertionFailedError
@@ -162,15 +163,17 @@ class AnotherUrlMappings {
     }
 }
 
+@Artefact("Controller")
 class GrailsUrlMappingsTestCaseFakeController {
    static defaultAction = 'action1'
-   @Action def action1(){}
-   @Action def action2(){}
-   @Action def action3(){}
+   def action1(){}
+   def action2(){}
+   def action3(){}
 }
 
+@Artefact("Controller")
 class UserController {
-    @Action def publicProfile() {}
+    def publicProfile() {}
 }
 
 class MyUrlMappings {
