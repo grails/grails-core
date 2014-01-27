@@ -43,6 +43,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -383,7 +384,12 @@ public class TestForTransformation extends TestMixinTransformation {
     }
 
     private BlockStatement getJunit3Setup(ClassNode classNode) {
-        return getOrCreateNoArgsMethodBody(classNode, SET_UP_METHOD);
+        boolean hasExistingSetupMethod = classNode.hasDeclaredMethod(SET_UP_METHOD, Parameter.EMPTY_ARRAY);
+        BlockStatement setUpMethodBody = getOrCreateNoArgsMethodBody(classNode, SET_UP_METHOD);
+        if(!hasExistingSetupMethod) {
+            setUpMethodBody.getStatements().add(new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
+        }
+        return setUpMethodBody;
     }
 
     private boolean isAlreadyWoven(ClassNode classNode, Class mixinClass) {
