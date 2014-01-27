@@ -66,6 +66,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
+import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.logging.LoggingTransformer;
@@ -428,7 +429,7 @@ public class TestForTransformation extends TestMixinTransformation {
 
         MethodNode methodNode = classNode.getDeclaredMethod(methodName,GrailsArtefactClassInjector.ZERO_PARAMETERS);
 
-        VariableExpression fieldExpression = new VariableExpression(fieldName);
+        VariableExpression fieldExpression = new VariableExpression(fieldName, targetClass.getType());
         if (methodNode == null) {
             BlockStatement setupMethodBody = new BlockStatement();
             addMockCollaborator(type, targetClass, setupMethodBody);
@@ -436,7 +437,9 @@ public class TestForTransformation extends TestMixinTransformation {
             methodNode = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, setupMethodBody);
             methodNode.addAnnotation(BEFORE_ANNOTATION);
             methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
+            
             classNode.addMethod(methodNode);
+            GrailsASTUtils.addCompileStaticAnnotation(methodNode);
         }
 
         MethodNode getter = classNode.getDeclaredMethod(getterName, GrailsArtefactClassInjector.ZERO_PARAMETERS);
@@ -451,13 +454,14 @@ public class TestForTransformation extends TestMixinTransformation {
 
             getterBody.addStatement(new ReturnStatement(fieldExpression));
             classNode.addMethod(getter);
+            GrailsASTUtils.addCompileStaticAnnotation(getter);
         }
 
         return methodNode;
     }
 
     private IfStatement getAutowiringIfStatement(ClassExpression targetClass, VariableExpression fieldExpression, BinaryExpression testTargetAssignment) {
-        VariableExpression appCtxVar = new VariableExpression("applicationContext");
+        VariableExpression appCtxVar = new VariableExpression("applicationContext", ClassHelper.make(GrailsWebApplicationContext.class));
 
         BooleanExpression applicationContextCheck = new BooleanExpression(
                 new BinaryExpression(
