@@ -42,6 +42,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         GrailsWebApplicationContext applicationContext = new GrailsWebApplicationContext()
 
         DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication()
+        grailsApplication.initialise()
         grailsApplication.setApplicationContext(applicationContext)
         if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
             grailsApplication.metadata[Metadata.APPLICATION_NAME] = "GrailsUnitTestMixin"
@@ -65,8 +66,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         Holders.setServletContext servletContext
         runtime.putValue("servletContext", servletContext)
         
-        grailsApplication.initialise()
-
         applicationInitialized(runtime, grailsApplication)
     }
 
