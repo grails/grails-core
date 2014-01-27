@@ -353,7 +353,8 @@ class ValidationTagLib {
             if (value == null || value instanceof Number || value instanceof Date) {
                 value
             } else {
-                codecLookup.lookupEncoder('HTML').encode(value)
+                Encoder encoder = codecLookup.lookupEncoder('HTML')
+                encoder ? encoder.encode(value) : value
             }
         }
     }
