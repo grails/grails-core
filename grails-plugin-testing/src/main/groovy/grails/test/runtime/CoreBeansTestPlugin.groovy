@@ -31,10 +31,7 @@ public class CoreBeansTestPlugin implements TestPlugin {
             context.'annotation-config'()
 
             proxyHandler(DefaultProxyHandler)
-            grailsApplication(InstanceFactoryBean) {
-                object = grailsApplicationParam
-                objectType = GrailsApplication
-            }
+            grailsApplication(InstanceFactoryBean, grailsApplicationParam, GrailsApplication)
             pluginManager(DefaultGrailsPluginManager, [] as Class[], grailsApplicationParam)
             messageSource(StaticMessageSource)
             "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
