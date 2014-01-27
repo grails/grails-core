@@ -36,8 +36,6 @@ class TestMixinSpec extends Specification {
         then: "Check that @Before and @After hooks are called"
             MyMixin.doFirstCalled == true
             MyMixin.doLastCalled == true
-            test.grailsApplication == null
-            test.applicationContext == null
     }
 
     void "Test that appropriate test hooks are called for a JUnit 4 test"() {
