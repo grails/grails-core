@@ -17,11 +17,14 @@ public class MetaClassCleanerTestPlugin implements TestPlugin {
     }
 
     void cleanupModifiedMetaClasses() {
-        metaClassRegistryListener.clean()
+        metaClassRegistryListener?.clean()
     }
 
     void deregisterMetaClassCleaner() {
-        MetaClassRegistryCleaner.cleanAndRemove(metaClassRegistryListener)
+        if (metaClassRegistryListener != null) {
+            MetaClassRegistryCleaner.cleanAndRemove(metaClassRegistryListener)
+            metaClassRegistryListener = null
+        }
     }
 
     public void onTestEvent(TestEvent event) {
@@ -36,6 +39,6 @@ public class MetaClassCleanerTestPlugin implements TestPlugin {
     }
     
     public void close(TestRuntime runtime) {
-    
+        deregisterMetaClassCleaner()
     }
 }
