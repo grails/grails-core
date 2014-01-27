@@ -50,7 +50,7 @@ class ConvertersPluginSupport {
         enhancer.addApi(new ConvertersApi(applicationContext:applicationContext))
 
         // Override GDK asType for some common Interfaces and Classes
-        enhancer.enhanceAll([Errors,BeanPropertyBindingResult, ValidationErrors, ValidationErrors, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum].collect {  Class c ->
+        enhancer.enhanceAll([Errors,BeanPropertyBindingResult, ValidationErrors, ValidationErrors, ArrayList, TreeSet, HashSet, List, Set, Collection, GroovyObject, Object, Enum, Object[], String[]].collect {  Class c ->
             GrailsMetaClassUtils.getExpandoMetaClass(c)
         })
 

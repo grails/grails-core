@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.web.converters
 
+import grails.artefact.Artefact;
 import grails.converters.XML
 import grails.test.mixin.TestFor
 
@@ -22,6 +23,7 @@ class ControllerWithXmlConvertersTests {
     }
 }
 
+@Artefact("Controller")
 class XmlController {
 
      def convertArray() {
