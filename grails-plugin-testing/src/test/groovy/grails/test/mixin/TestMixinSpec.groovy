@@ -49,7 +49,9 @@ class TestMixinSpec extends Specification {
             def result = new Result()
             notifier.addListener(result.createListener())
             runner.run(notifier)
-
+            result.failures.each { f ->
+                println f.trace
+            }
         then: "Check that @Before and @After hooks are called and the test was run"
             result.runCount == 1
             result.failureCount == 0
@@ -68,7 +70,9 @@ class TestMixinSpec extends Specification {
             def result = new Result()
             notifier.addListener(result.createListener())
             adapter.run(notifier)
-
+            result.failures.each { f ->
+                println f.trace
+            }
         then: "Check that the test is run and @Before and @After hooks are called"
             result.runCount == 1
             result.failureCount == 0
