@@ -35,7 +35,7 @@ import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
  */
 public abstract class BaseApiProvider {
 
-    private static List<String> EXCLUDED_METHODS = Arrays.asList("setMetaClass", "getMetaClass");
+    private static List<String> EXCLUDED_METHODS = Arrays.asList("setMetaClass", "getMetaClass", "setProperties", "getProperties");
 
     public static final String CONSTRUCTOR_METHOD = "initialize";
     public static final String CTOR_GROOVY_METHOD = "<ctor>";
@@ -71,16 +71,22 @@ public abstract class BaseApiProvider {
                 }
                 else {
                     instanceMethods.add(new ReflectionMetaMethod(new CachedMethod(javaMethod)) {
+                        {
+                            CachedClass[] paramTypes = super.getParameterTypes();
+                            if(paramTypes.length > 0) {
+                                setParametersTypes((CachedClass[]) ArrayUtils.subarray(paramTypes, 1, paramTypes.length));
+                            }
+                        }
+                        
                         @Override
                         public String getName() {
-
                             String methodName = super.getName();
                             if (isConstructorCallMethod(javaMethod)) {
                                 return CTOR_GROOVY_METHOD;
                             }
                             return methodName;
                         }
-
+                        
                         @Override
                         public Object invoke(Object object, Object[] arguments) {
                             if (arguments.length == 0) {
@@ -96,15 +102,6 @@ public abstract class BaseApiProvider {
                                 }
                             }
                             return arguments;
-                        }
-
-                        @Override
-                        public CachedClass[] getParameterTypes() {
-                            final CachedClass[] paramTypes = method.getParameterTypes();
-                            if (paramTypes.length > 0) {
-                                return (CachedClass[]) ArrayUtils.subarray(paramTypes, 1, paramTypes.length);
-                            }
-                            return paramTypes;
                         }
                     });
                 }
