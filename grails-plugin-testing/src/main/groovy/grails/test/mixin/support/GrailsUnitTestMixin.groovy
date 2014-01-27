@@ -49,7 +49,7 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
      * so that a "validate()" method is added. This can then be used
      * to test the constraints on the class.
      */
-    void mockForConstraintsTests(Class clazz, List instances = []) {
+    void mockForConstraintsTests(Class<?> clazz, List instances = []) {
         runtime.publishEvent("mockForConstraintsTests", [clazz: clazz, instances: instances])
     }
 
@@ -61,7 +61,7 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
      * expectation mock, otherwise it returns a strict one. The default
      * is a strict mock.
      */
-    GrailsMock mockFor(Class clazz, boolean loose = false) {
+    GrailsMock mockFor(Class<?> clazz, boolean loose = false) {
         return new GrailsMock(clazz, loose)
     }
 
@@ -100,7 +100,7 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
      * @param code  the closure that should fail
      * @return the message of the expected Throwable
      */
-    String shouldFail(Class clazz, Closure code) {
+    String shouldFail(Class<?> clazz, Closure code) {
         Throwable th = null
         try {
             code.call()
@@ -126,11 +126,11 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
      * methods to objects.
      * @param codecClass The codec to load, e.g. HTMLCodec.
      */
-    void mockCodec(Class codecClass) {
+    void mockCodec(Class<?> codecClass) {
         runtime.publishEvent("mockCodec", [codecClass: codecClass])
     }
     
-    void defineBeans(boolean immediateDelivery = false, Closure closure) {
+    void defineBeans(boolean immediateDelivery = false, Closure<?> closure) {
         runtime.publishEvent("defineBeans", [closure: closure], [immediateDelivery: immediateDelivery])
     }
     

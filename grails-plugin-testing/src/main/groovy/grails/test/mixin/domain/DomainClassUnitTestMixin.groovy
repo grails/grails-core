@@ -1,5 +1,3 @@
-
-
 /*
  * Copyright 2011 SpringSource
  *
@@ -59,10 +57,10 @@ import org.springframework.validation.Validator
  * @since 2.0
  */
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
-    private static final Set<String> REQUIRED_FEATURES = (["domainClass"] as Set).asImmutable()
+    private static final Set<String> REQUIRED_FEATURES = (["domainClass"] as Set<String>).asImmutable()
     
     public DomainClassUnitTestMixin(Set<String> features) {
-        super((REQUIRED_FEATURES + features) as Set)
+        super((REQUIRED_FEATURES + features) as Set<String>)
     }
     
     public DomainClassUnitTestMixin() {
@@ -78,7 +76,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     }
     
     @CompileStatic
-    def mockDomains(Class... domainClassesToMock) {
+    def mockDomains(Class<?>... domainClassesToMock) {
         initialMockDomainSetup()
         Collection<PersistentEntity> entities = simpleDatastore.mappingContext.addPersistentEntities(domainClassesToMock)
         for (PersistentEntity entity in entities) {
@@ -112,7 +110,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
      * @return An instance of the mocked domain class
      */
     @CompileStatic
-    def mockDomain(Class domainClassToMock, List domains = []) {
+    def mockDomain(Class<?> domainClassToMock, List domains = []) {
         mockDomains(domainClassToMock)
         final entity = simpleDatastore.mappingContext.getPersistentEntity(domainClassToMock.name)
         if (domains) {
@@ -165,7 +163,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     }
 
     @CompileStatic
-    protected GrailsDomainClass registerGrailsDomainClass(Class domainClassToMock) {
+    protected GrailsDomainClass registerGrailsDomainClass(Class<?> domainClassToMock) {
         GrailsDomainClass domain = (GrailsDomainClass)grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, domainClassToMock)
 
         final mc = GrailsClassUtils.getExpandoMetaClass(domainClassToMock)
