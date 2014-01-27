@@ -10,12 +10,18 @@ import org.junit.runners.model.Statement
 
 @CompileStatic
 class TestRuntime {
-    private List<TestPlugin> plugins
+    Set<String> features
+    List<TestPlugin> plugins
     private Map<String, Object> registry = [:]
     private boolean runtimeClosed = false
     
-    public TestRuntime(List<TestPlugin> plugins) {
-        this.plugins =  new ArrayList<TestPlugin>(plugins)
+    public TestRuntime(Set<String> features, List<TestPlugin> plugins) {
+        changeFeaturesAndPlugins(features, plugins)
+    }
+    
+    public void changeFeaturesAndPlugins(Set<String> features, List<TestPlugin> plugins) {
+        this.features = new LinkedHashSet<String>(features).asImmutable()
+        this.plugins =  new ArrayList<TestPlugin>(plugins).asImmutable()
     }
     
     public Object getValue(String name, Map callerInfo = [:]) {
@@ -219,6 +225,7 @@ class TestRuntime {
             registry.clear()
             plugins.clear()
             runtimeClosed = true
+            TestRuntimeFactory.removeRuntime(this)
         }
     }
 

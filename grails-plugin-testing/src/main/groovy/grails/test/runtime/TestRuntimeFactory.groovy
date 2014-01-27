@@ -44,9 +44,24 @@ class TestRuntimeFactory {
     }
 
     private TestRuntime getTestRuntimeForFeatures(Set<String> features) {
+        if(activeRuntime) {
+            if(!activeRuntime.features.containsAll(features)) {
+                Set<String> combinedFeatures = [] as Set
+                combinedFeatures.addAll(activeRuntime.features)
+                combinedFeatures.addAll(features)
+                activeRuntime.changeFeaturesAndPlugins(combinedFeatures, resolveFeaturesToPlugins(combinedFeatures))
+            }
+            return activeRuntime
+        }
+        TestRuntime runtime = new TestRuntime(features, resolveFeaturesToPlugins(features))
+        activeRuntime = runtime
+        runtime
+    }
+
+    private List resolveFeaturesToPlugins(Set features) {
         Map<String, TestPlugin> featureToPlugin = resolvePlugins()
         List<TestPlugin> requiredPlugins = resolveTransitiveDependencies(features, featureToPlugin)
-        new TestRuntime(requiredPlugins)
+        return requiredPlugins
     }
 
     private List<TestPlugin> resolveTransitiveDependencies(Set<String> features, Map<String, TestPlugin> featureToPlugin) {
@@ -161,22 +176,18 @@ class TestRuntimeFactory {
         availablePluginClasses.remove(pluginClass)
     }
     
-    /*
-    // cached runtimes for sharing runtimes across test classes, not implemented yet
-    private Map<Object, TestRuntime> runtimes=[:]
+    // cached runtimes for sharing runtimes across test classes
+    private TestRuntime activeRuntime=null
 
     static void removeRuntime(TestRuntime runtime) {
         INSTANCE.removeTestRuntime(runtime)
     }
 
     private void removeTestRuntime(TestRuntime runtime) {
-        for(Iterator iterator = runtimes.entrySet().iterator(); iterator.hasNext();) {
-            if (runtime.is(iterator.next().value)) {
-                iterator.remove()
-            }
+        if(activeRuntime==runtime) {
+            activeRuntime=null
         }
     }
-    */
 }
 
 @CompileStatic
