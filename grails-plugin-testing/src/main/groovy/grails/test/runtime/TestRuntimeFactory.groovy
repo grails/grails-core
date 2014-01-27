@@ -32,7 +32,7 @@ class TestRuntimeFactory {
         Class<?> currentClass = testClass
         Set<TestRuntimeAwareMixin> allInstances = [] as Set
         Set<String> allFeatures = [] as Set
-        while(currentClass != Object) {
+        while(currentClass != Object && currentClass != null) {
             currentClass.getDeclaredFields().each { Field field ->
                 if(field.getAnnotation(MixinInstance.class) != null && Modifier.isStatic(field.getModifiers())) {
                     ReflectionUtils.makeAccessible(field)
@@ -43,7 +43,7 @@ class TestRuntimeFactory {
                     }
                 }
             }
-            currentClass = currentClass.superclass
+            currentClass = currentClass.getSuperclass()
         }
         TestRuntime runtime = getRuntime(allFeatures)
         allInstances.each { testMixinInstance ->
