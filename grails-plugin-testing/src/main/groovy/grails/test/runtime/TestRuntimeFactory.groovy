@@ -27,6 +27,7 @@ class TestRuntimeFactory {
     }
 
     static TestRuntime getRuntime(Set<String> features) {
+        ExpandoMetaClass.enableGlobally()
         INSTANCE.getTestRuntimeForFeatures(features)
     }
 
