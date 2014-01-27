@@ -114,7 +114,7 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
             throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name")
         }
 
-        if (!(th in clazz)) {
+        if (!clazz.isInstance(th)) {
             throw new AssertionFailedError("Closure $code should have failed with an exception of type $clazz.name, instead got Exception $th")
         }
 
