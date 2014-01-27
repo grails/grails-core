@@ -50,7 +50,7 @@ class UrlMappingsUnitTestMixin extends ControllerUnitTestMixin {
     UrlMappingsHolder mockUrlMappings(Class urlMappingsClass) {
         grailsApplication.addArtefact(UrlMappingsArtefactHandler.TYPE, urlMappingsClass)
 
-        defineBeans {
+        defineBeans(true) {
             grailsUrlMappingsHolder(UrlMappingsHolderFactoryBean) {
                 grailsApplication = grailsApplication
                 servletContext = servletContext
