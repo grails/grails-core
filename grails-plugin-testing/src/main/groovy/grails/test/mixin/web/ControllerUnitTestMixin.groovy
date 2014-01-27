@@ -159,7 +159,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     @CompileStatic(TypeCheckingMode.SKIP)
     def <T> T mockController(Class<T> controllerClass) {
         GrailsClass controllerArtefact = createAndEnhance(controllerClass)
-        defineBeans {
+        defineBeans(true) {
             "$controllerClass.name"(controllerClass) { bean ->
                 bean.scope = 'prototype'
                 bean.autowire = true
