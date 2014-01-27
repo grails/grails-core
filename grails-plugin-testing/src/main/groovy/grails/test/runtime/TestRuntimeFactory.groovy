@@ -19,7 +19,8 @@ class TestRuntimeFactory {
         ControllerTestPlugin,
         FiltersTestPlugin,
         GroovyPageTestPlugin,
-        WebFlowTestPlugin
+        WebFlowTestPlugin,
+        DomainClassTestPlugin
         ] as Set
 
     private TestRuntimeFactory() {

@@ -38,9 +38,10 @@ class TestRuntime {
         registry.containsKey(name)
     }
     
-    public void removeValue(String name) {
+    public Object removeValue(String name) {
         Object value = registry.remove(name)
         publishEvent("valueRemoved", [name: name, value: value, lazy: (value instanceof LazyValue)])
+        value
     }
     
     public void putValue(String name, Object value) {
