@@ -178,7 +178,9 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
         return callable.call()
     }
     
-    protected GrailsClass createAndEnhance(Class<?> controllerClass) {
+    // don't remove TypeCheckingMode.SKIP before GROOVY-6533 has been fixed
+    @CompileStatic(TypeCheckingMode.SKIP)
+    protected GrailsClass createAndEnhance(Class controllerClass) {
         final GrailsControllerClass controllerArtefact = (GrailsControllerClass)grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         controllerArtefact.initialize()
         if (!controllerClass.getAnnotation(Enhanced)) {
@@ -188,7 +190,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             enhancer.addApi(new ConvertersControllersApi())
             enhancer.addApi(new ControllerTagLibraryApi())
             enhancer.addApi(new ControllersMimeTypesApi())
-            enhancer.enhance(controllerClass.metaClass)
+            enhancer.enhance(controllerClass.getMetaClass())
         }
         controllerArtefact
     }
