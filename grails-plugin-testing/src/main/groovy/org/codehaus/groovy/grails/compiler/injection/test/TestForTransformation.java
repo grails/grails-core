@@ -370,7 +370,7 @@ public class TestForTransformation extends TestMixinTransformation {
     }
 
     private BlockStatement getJunit4Setup(ClassNode classNode) {
-        MethodNode setupMethod = classNode.getMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        MethodNode setupMethod = classNode.getDeclaredMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
         if (setupMethod == null) {
             setupMethod = new MethodNode(SET_UP_METHOD,Modifier.PUBLIC,ClassHelper.VOID_TYPE,GrailsArtefactClassInjector.ZERO_PARAMETERS,null,new BlockStatement());
             setupMethod.addAnnotation(MIXIN_METHOD_ANNOTATION);
@@ -426,7 +426,7 @@ public class TestForTransformation extends TestMixinTransformation {
             classNode.addField(fieldName, Modifier.PRIVATE, targetClass.getType(),null);
         }
 
-        MethodNode methodNode = classNode.getMethod(methodName,GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        MethodNode methodNode = classNode.getDeclaredMethod(methodName,GrailsArtefactClassInjector.ZERO_PARAMETERS);
 
         VariableExpression fieldExpression = new VariableExpression(fieldName);
         if (methodNode == null) {
@@ -439,7 +439,7 @@ public class TestForTransformation extends TestMixinTransformation {
             classNode.addMethod(methodNode);
         }
 
-        MethodNode getter = classNode.getMethod(getterName, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        MethodNode getter = classNode.getDeclaredMethod(getterName, GrailsArtefactClassInjector.ZERO_PARAMETERS);
         if (getter == null) {
             BlockStatement getterBody = new BlockStatement();
             getter = new MethodNode(getterName, Modifier.PUBLIC, targetClass.getType().getPlainNodeReference(),GrailsArtefactClassInjector.ZERO_PARAMETERS,null, getterBody);

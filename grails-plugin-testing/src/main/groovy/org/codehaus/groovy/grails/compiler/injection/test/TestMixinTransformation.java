@@ -393,15 +393,15 @@ public class TestMixinTransformation implements ASTTransformation{
         return getOrCreateMethodBody(classNode, setupMethod, name);
     }
 
-    static protected BlockStatement getOrCreateMethodBody(ClassNode classNode, MethodNode setupMethod, String name) {
+    static protected BlockStatement getOrCreateMethodBody(ClassNode classNode, MethodNode methodNode, String name) {
         BlockStatement methodBody;
-        if (!setupMethod.getDeclaringClass().equals(classNode)) {
+        if (!methodNode.getDeclaringClass().equals(classNode)) {
             methodBody = new BlockStatement();
-            setupMethod = new MethodNode(name, Modifier.PUBLIC, setupMethod.getReturnType(), GrailsArtefactClassInjector.ZERO_PARAMETERS, null, methodBody);
-            classNode.addMethod(setupMethod);
+            methodNode = new MethodNode(name, Modifier.PUBLIC, methodNode.getReturnType(), GrailsArtefactClassInjector.ZERO_PARAMETERS, null, methodBody);
+            classNode.addMethod(methodNode);
         }
         else {
-            final Statement setupMethodBody = setupMethod.getCode();
+            final Statement setupMethodBody = methodNode.getCode();
             if (!(setupMethodBody instanceof BlockStatement)) {
                 methodBody = new BlockStatement();
                 if (setupMethodBody != null) {
@@ -409,7 +409,7 @@ public class TestMixinTransformation implements ASTTransformation{
                         methodBody.addStatement(setupMethodBody);
                     }
                 }
-                setupMethod.setCode(methodBody);
+                methodNode.setCode(methodBody);
             }
             else {
                 methodBody = (BlockStatement) setupMethodBody;
@@ -459,12 +459,12 @@ public class TestMixinTransformation implements ASTTransformation{
     }
 
     protected void autoAnnotateSetupTeardown(ClassNode classNode) {
-        MethodNode setupMethod = classNode.getMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        MethodNode setupMethod = classNode.getDeclaredMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
         if ( setupMethod != null && setupMethod.getAnnotations(TestForTransformation.BEFORE_CLASS_NODE).size() == 0) {
             setupMethod.addAnnotation(TestForTransformation.BEFORE_ANNOTATION);
         }
 
-        MethodNode tearDown = classNode.getMethod(TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        MethodNode tearDown = classNode.getDeclaredMethod(TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
         if ( tearDown != null && tearDown.getAnnotations(TestForTransformation.AFTER_CLASS_NODE).size() == 0) {
             tearDown.addAnnotation(TestForTransformation.AFTER_ANNOTATION);
         }
