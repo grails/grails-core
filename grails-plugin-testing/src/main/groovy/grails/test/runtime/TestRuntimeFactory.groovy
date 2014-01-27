@@ -47,7 +47,7 @@ class TestRuntimeFactory {
     private List<TestPlugin> resolveTransitiveDependencies(Set<String> features, Map<String, TestPlugin> featureToPlugin) {
         // resolve required plugins
         List<TestPlugin> requiredPlugins = features.collect { String feature ->
-            featureToPlugin.get(feature)
+            resolveFeature(feature, featureToPlugin)
         }
 
         // resolve transitive plugins
