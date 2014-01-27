@@ -1,5 +1,7 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact
+
 /**
  *
  */
@@ -31,6 +33,8 @@ class ControllerAndMockForTests {
     }
 
 }
+
+@Artefact("Controller")
 class MyController {
 
     def index() {
