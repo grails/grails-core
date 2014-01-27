@@ -146,62 +146,12 @@ class TestRuntime {
         }
     }
     
-    public TestRule newRule(Object targetInstance) {
-        return new TestRule() {
-            Statement apply(Statement statement, Description description) {
-                return new Statement() {
-                    public void evaluate() throws Throwable {
-                        before(description)
-                        try {
-                            statement.evaluate()
-                        } catch (Throwable t) {
-                            try {
-                                after(description, t)
-                            } catch (Throwable t2) {
-                                // ignore
-                            } finally {
-                                // throw original exception
-                                throw t
-                            }
-                        }
-                        after(description, null)
-                    }
-                }
-            }
-        }
-    }
-
     protected void before(Description description) {
         publishEvent("before", [description: description])
     }
 
     protected void after(Description description, Throwable throwable) {
         publishEvent("after", [description: description, throwable: throwable], [reverseOrderDelivery: true])
-    }
-
-    public TestRule newClassRule(Class<?> targetClass) {
-        return new TestRule() {
-            Statement apply(Statement statement, Description description) {
-                return new Statement() {
-                    public void evaluate() throws Throwable {
-                        beforeClass(description)
-                        try {
-                            statement.evaluate()
-                        } catch (Throwable t) {
-                            try {
-                                afterClass(description, t)
-                            } catch (Throwable t2) {
-                                // ignore
-                            } finally {
-                                // throw original exception
-                                throw t
-                            }
-                        }
-                        afterClass(description, null)
-                    }
-                }
-            }
-        }
     }
 
     protected void beforeClass(Description description) {
@@ -223,7 +173,7 @@ class TestRuntime {
                 }
             }
             registry.clear()
-            plugins.clear()
+            plugins = null
             runtimeClosed = true
             TestRuntimeFactory.removeRuntime(this)
         }

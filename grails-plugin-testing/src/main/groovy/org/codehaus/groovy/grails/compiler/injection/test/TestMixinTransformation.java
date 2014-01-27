@@ -15,12 +15,11 @@
  */
 package org.codehaus.groovy.grails.compiler.injection.test;
 
-import grails.test.mixin.ClassRuleFactory;
-import grails.test.mixin.Junit3TestCaseSupport;
-import grails.test.mixin.RuleFactory;
 import grails.test.mixin.TestMixin;
 import grails.test.mixin.TestMixinTargetAware;
+import grails.test.mixin.TestRuntimeAwareMixin;
 import grails.test.mixin.support.MixinMethod;
+import grails.test.runtime.TestRuntimeJunitAdapter;
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObjectSupport;
 
@@ -29,9 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -50,6 +46,7 @@ import org.codehaus.groovy.ast.expr.ListExpression;
 import org.codehaus.groovy.ast.expr.MapEntryExpression;
 import org.codehaus.groovy.ast.expr.MapExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.TupleExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
@@ -82,6 +79,8 @@ import spock.lang.Shared;
  */
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class TestMixinTransformation implements ASTTransformation{
+    private static final String RULE_FIELD_NAME_BASE = "$testRuntime";
+    private static final String JUNIT_ADAPTER_FIELD_NAME = RULE_FIELD_NAME_BASE + "JunitAdapter";
     public static final AnnotationNode MIXIN_METHOD_ANNOTATION = new AnnotationNode(new ClassNode(MixinMethod.class));
     private static final ClassNode MY_TYPE = new ClassNode(TestMixin.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
@@ -93,6 +92,7 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final String VOID_TYPE = "void";
+    public static final String MIXIN_INSTANCES_FIELD_NAME = "TEST_RUNTIME_MIXIN_INSTANCES";
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -184,14 +184,13 @@ public class TestMixinTransformation implements ASTTransformation{
             final Junit3TestFixtureMethodHandler junit3MethodHandler) {
         final String fieldName = '$' + GrailsNameUtils.getPropertyName(mixinClassNode.getName());
         
-        boolean implementsClassRuleFactory = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(ClassRuleFactory.class)) != null;
-        boolean implementsRuleFactory = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(RuleFactory.class)) != null;
+        boolean implementsTestRuntimeAwareMixin = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(TestRuntimeAwareMixin.class)) != null;
         
         FieldNode mixinFieldNode = null;
-        if(!(implementsClassRuleFactory || implementsRuleFactory)) { 
+        if(!implementsTestRuntimeAwareMixin) { 
             mixinFieldNode = addLegacyMixinFieldIfNonExistent(classNode, mixinClassNode, fieldName);
         } else {
-            mixinFieldNode = addTestRuleMixinFieldIfNonExistent(classNode, mixinClassNode, fieldName, implementsClassRuleFactory, implementsRuleFactory);
+            mixinFieldNode = addTestRuntimeAwareMixinFieldIfNonExistent(classNode, mixinClassNode, fieldName);
         }
 
         if (mixinFieldNode == null) return; // already woven
@@ -229,50 +228,64 @@ public class TestMixinTransformation implements ASTTransformation{
                 junit3MethodHandler.mixinSuperClassChanged();
             }
         }
-        
-        if (junit3MethodHandler != null) {
-            boolean implementsJunit3TestCaseSupport = GrailsASTUtils.findInterface(mixinClassNode, ClassHelper.make(Junit3TestCaseSupport.class)) != null;
-            if (implementsJunit3TestCaseSupport) {
-                junit3MethodHandler.addJunit3TestCaseSupportCalls(mixinFieldNode);
-            }
-        }
     }
     
-    protected FieldNode addTestRuleMixinFieldIfNonExistent(ClassNode classNode, ClassNode fieldType,
-            String fieldName, boolean implementsClassRuleFactory, boolean implementsRuleFactory) {
-        if (classNode != null && classNode.getField(fieldName) == null) {
-            FieldNode mixinInstanceFieldNode = classNode.addField(fieldName, Modifier.PRIVATE | (implementsClassRuleFactory ? Modifier.STATIC : 0), fieldType,
-                new ConstructorCallExpression(fieldType, MethodCallExpression.NO_ARGUMENTS));
-            
-            String ruleFieldNameBase = fieldName;
-            
-            boolean spockTest = isSpockTest(classNode);
-            if(implementsClassRuleFactory) {
-                FieldNode staticRuleFieldNode = classNode.addField(ruleFieldNameBase + "StaticClassRule", Modifier.PRIVATE | Modifier.STATIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(mixinInstanceFieldNode), "newClassRule", new ClassExpression(classNode)));
-                AnnotationNode classRuleAnnotation = new AnnotationNode(ClassHelper.make(ClassRule.class));
-                if(spockTest) {
-                    // @ClassRule must be added to @Shared field in spock
-                    FieldNode spockSharedRuleFieldNode = classNode.addField(ruleFieldNameBase + "SharedClassRule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new FieldExpression(staticRuleFieldNode));
-                    spockSharedRuleFieldNode.addAnnotation(classRuleAnnotation);
-                    spockSharedRuleFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(Shared.class)));
-                    if(spockTest) {
-                        addSpockFieldMetadata(spockSharedRuleFieldNode, 0);
-                    }
-                } else {
-                    staticRuleFieldNode.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
-                    staticRuleFieldNode.addAnnotation(classRuleAnnotation);
-                }
-            }
-            if(implementsRuleFactory) {
-                FieldNode ruleFieldNode = classNode.addField(ruleFieldNameBase + "Rule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(mixinInstanceFieldNode), "newRule", new VariableExpression("this")));
-                ruleFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(Rule.class)));
-                if(spockTest) {
-                    addSpockFieldMetadata(ruleFieldNode, 0);
-                }
-            }
-            return mixinInstanceFieldNode;
+    protected FieldNode addTestRuntimeAwareMixinFieldIfNonExistent(ClassNode classNode, ClassNode fieldType,
+            String fieldName) {
+        if (classNode == null || classNode.getField(fieldName) != null) {
+            return null;
         }
-        return null;
+        
+        MapExpression constructorArguments = new MapExpression();
+        constructorArguments.addMapEntryExpression(new MapEntryExpression(new ConstantExpression("testClass"), new ClassExpression(classNode)));
+        FieldNode mixinInstanceFieldNode = classNode.addField(fieldName, Modifier.STATIC, fieldType, new ConstructorCallExpression(fieldType, constructorArguments));
+        
+        registerStaticMixinInstance(classNode, mixinInstanceFieldNode);
+        
+        addJunitRuleFields(classNode);
+        
+        return mixinInstanceFieldNode;
+    }
+
+    private void registerStaticMixinInstance(ClassNode classNode, FieldNode mixinInstanceFieldNode) {
+        FieldNode mixinInstanceListFieldNode = classNode.getDeclaredField(MIXIN_INSTANCES_FIELD_NAME);
+        ListExpression mixinInstanceListExpression;
+        if(mixinInstanceListFieldNode == null) {
+            mixinInstanceListExpression = new ListExpression();
+            mixinInstanceListFieldNode = classNode.addField(MIXIN_INSTANCES_FIELD_NAME, Modifier.PUBLIC | Modifier.STATIC, GrailsASTUtils.nonGeneric(ClassHelper.make(List.class)), mixinInstanceListExpression);
+        } else {
+            mixinInstanceListExpression = (ListExpression)mixinInstanceListFieldNode.getInitialValueExpression();
+        }
+        mixinInstanceListExpression.addExpression(new FieldExpression(mixinInstanceFieldNode));
+    }
+
+    protected void addJunitRuleFields(ClassNode classNode) {
+        if(classNode.getField(JUNIT_ADAPTER_FIELD_NAME) != null) {
+            return;
+        }
+        ClassNode junitAdapterType = ClassHelper.make(TestRuntimeJunitAdapter.class);
+        FieldNode junitAdapterFieldNode = classNode.addField(JUNIT_ADAPTER_FIELD_NAME, Modifier.STATIC, junitAdapterType, new ConstructorCallExpression(junitAdapterType, MethodCallExpression.NO_ARGUMENTS));
+        boolean spockTest = isSpockTest(classNode);
+        FieldNode staticRuleFieldNode = classNode.addField(RULE_FIELD_NAME_BASE + "StaticClassRule", Modifier.PRIVATE | Modifier.STATIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), "newClassRule", MethodCallExpression.NO_ARGUMENTS));
+        AnnotationNode classRuleAnnotation = new AnnotationNode(ClassHelper.make(ClassRule.class));
+        if(spockTest) {
+            // @ClassRule must be added to @Shared field in spock
+            FieldNode spockSharedRuleFieldNode = classNode.addField(RULE_FIELD_NAME_BASE + "SharedClassRule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new FieldExpression(staticRuleFieldNode));
+            spockSharedRuleFieldNode.addAnnotation(classRuleAnnotation);
+            spockSharedRuleFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(Shared.class)));
+            if(spockTest) {
+                addSpockFieldMetadata(spockSharedRuleFieldNode, 0);
+            }
+        } else {
+            staticRuleFieldNode.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
+            staticRuleFieldNode.addAnnotation(classRuleAnnotation);
+        }
+
+        FieldNode ruleFieldNode = classNode.addField(RULE_FIELD_NAME_BASE + "Rule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), "newRule", MethodCallExpression.NO_ARGUMENTS));
+        ruleFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(Rule.class)));
+        if(spockTest) {
+            addSpockFieldMetadata(ruleFieldNode, 0);
+        }
     }
     
     private void addSpockFieldMetadata(FieldNode field, int ordinal) {
@@ -287,7 +300,6 @@ public class TestMixinTransformation implements ASTTransformation{
         ClassNode classNode;
         List<MethodNode> beforeMethods = new ArrayList<MethodNode>();
         List<MethodNode> afterMethods = new ArrayList<MethodNode>();
-        List<FieldNode> mixinFieldNodesForSetUpTearDown = new ArrayList<FieldNode>();
         int beforeClassMethodCount = 0;
         int afterClassMethodCount = 0;
         boolean hasExistingSetUp;
@@ -299,10 +311,6 @@ public class TestMixinTransformation implements ASTTransformation{
             hasExistingTearDown = classNode.hasDeclaredMethod(TEAR_DOWN_METHOD, Parameter.EMPTY_ARRAY);
         }
 
-        public void addJunit3TestCaseSupportCalls(FieldNode mixinFieldNode) {
-            mixinFieldNodesForSetUpTearDown.add(mixinFieldNode);
-        }
-        
         public void mixinSuperClassChanged() {
             beforeClassMethodCount = 0;
             afterClassMethodCount = 0;
@@ -326,11 +334,12 @@ public class TestMixinTransformation implements ASTTransformation{
         public void postProcessClassNode() {
             addMethodCallsToMethod(classNode, SET_UP_METHOD, beforeMethods);
             addMethodCallsToMethod(classNode, TEAR_DOWN_METHOD, afterMethods);
-            handleMixinFieldNodes();
+            handleTestRuntimeJunitSetUpAndTearDownCalls();
         }
 
-        private void handleMixinFieldNodes() {
-            if(mixinFieldNodesForSetUpTearDown.size()==0) {
+        private void handleTestRuntimeJunitSetUpAndTearDownCalls() {
+            FieldNode junitAdapterFieldNode = classNode.getDeclaredField(JUNIT_ADAPTER_FIELD_NAME);
+            if(junitAdapterFieldNode==null) {
                 return;
             }
             BlockStatement setUpMethodBody = getOrCreateNoArgsMethodBody(classNode, SET_UP_METHOD);
@@ -338,10 +347,8 @@ public class TestMixinTransformation implements ASTTransformation{
                 setUpMethodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
             }
             BlockStatement tearDownMethodBody = getOrCreateNoArgsMethodBody(classNode, TEAR_DOWN_METHOD);
-            for(FieldNode mixinFieldNode : mixinFieldNodesForSetUpTearDown) { 
-                setUpMethodBody.getStatements().add(1, new ExpressionStatement(new MethodCallExpression(new FieldExpression(mixinFieldNode), SET_UP_METHOD, new VariableExpression("this"))));
-                tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new FieldExpression(mixinFieldNode), TEAR_DOWN_METHOD, new VariableExpression("this"))));
-            }
+            setUpMethodBody.getStatements().add(1, new ExpressionStatement(new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), SET_UP_METHOD, new VariableExpression("this"))));
+            tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), TEAR_DOWN_METHOD, new VariableExpression("this"))));
             if(!hasExistingTearDown) {
                 tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
             }
@@ -430,9 +437,7 @@ public class TestMixinTransformation implements ASTTransformation{
 
     protected boolean isCandidateMethod(MethodNode declaredMethod) {
         return isAddableMethod(declaredMethod) && 
-                !hasSimilarMethod(declaredMethod, ClassHelper.make(Junit3TestCaseSupport.class)) && 
-                !hasSimilarMethod(declaredMethod, ClassHelper.make(ClassRuleFactory.class)) &&
-                !hasSimilarMethod(declaredMethod, ClassHelper.make(RuleFactory.class));
+                !hasSimilarMethod(declaredMethod, ClassHelper.make(TestRuntimeAwareMixin.class));
     }
 
     public static boolean isAddableMethod(MethodNode declaredMethod) {

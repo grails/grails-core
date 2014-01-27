@@ -1,13 +1,8 @@
 package grails.test.runtime
 
+import grails.test.mixin.TestRuntimeAwareMixin
 import groovy.transform.CompileStatic
-
-import java.util.ArrayList
-import java.util.HashSet
-import java.util.List
-import java.util.Map
-import java.util.Set
-import java.util.concurrent.ConcurrentHashMap
+import groovy.transform.TypeCheckingMode
 
 @CompileStatic
 class TestRuntimeFactory {
@@ -26,6 +21,34 @@ class TestRuntimeFactory {
     private TestRuntimeFactory() {
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
+    static TestRuntime getRuntimeForTestClass(Class<?> testClass) {
+        Class<?> currentClass = testClass
+        Set<TestRuntimeAwareMixin> allInstances = [] as Set
+        Set<String> allFeatures = [] as Set
+        while(currentClass != Object) {
+            try {
+                List currentInstances = currentClass.TEST_RUNTIME_MIXIN_INSTANCES
+                if(currentInstances) {
+                    currentInstances.each { testMixinInstance ->
+                        if(testMixinInstance instanceof TestRuntimeAwareMixin) {
+                            allInstances.add(testMixinInstance)
+                            allFeatures.addAll(testMixinInstance.features)
+                        }
+                    }
+                }
+            } catch (MissingPropertyException e) {
+                // ignore
+            }
+            currentClass = currentClass.superclass
+        }
+        TestRuntime runtime = getRuntime(allFeatures)
+        allInstances.each { testMixinInstance ->
+            testMixinInstance.runtime = runtime
+        }
+        runtime
+    }
+    
     static TestRuntime getRuntime(String... features) {
         getRuntime(features as Set)
     }
@@ -168,10 +191,12 @@ class TestRuntimeFactory {
         }
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
     private void addTestPluginClass(Class<? extends TestPlugin> pluginClass) {
         availablePluginClasses.add(pluginClass)
     }
 
+    @CompileStatic(TypeCheckingMode.SKIP)
     private void removeTestPluginClass(Class<? extends TestPlugin> pluginClass) {
         availablePluginClasses.remove(pluginClass)
     }
