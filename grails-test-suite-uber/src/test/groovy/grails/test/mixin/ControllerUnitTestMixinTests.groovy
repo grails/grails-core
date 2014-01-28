@@ -245,8 +245,6 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
     }
 
     void testAllowedMethods() {
-        if (notYetImplemented()) return
-
         def controller = getMockController()
 
         controller.action1()
