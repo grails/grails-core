@@ -281,6 +281,7 @@ public class DataBindingUtils {
                     GrailsDataBinder binder = createDataBinder(object, include, exclude, webRequest.getCurrentRequest());
                     HttpServletRequest request = webRequest.getCurrentRequest();
                     performBindFromRequest(binder, request, filter);
+                    bindingResult = binder.getBindingResult();
                 }
             }
         }
