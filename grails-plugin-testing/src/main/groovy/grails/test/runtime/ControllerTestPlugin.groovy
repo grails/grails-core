@@ -121,7 +121,7 @@ class ControllerTestPlugin implements TestPlugin {
     }
     
     protected void mockCodec(TestRuntime runtime, Class codecClass) {
-        runtime.publishEvent("mockCodec", [codecClass: codecClass])
+        runtime.publishEvent("mockCodec", [codecClass: codecClass], [immediateDelivery: true])
     }
     
     protected void bindGrailsWebRequest(TestRuntime runtime, GrailsApplication grailsApplication) {
