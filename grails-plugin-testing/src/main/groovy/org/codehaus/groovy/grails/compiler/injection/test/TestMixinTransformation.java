@@ -195,7 +195,7 @@ public class TestMixinTransformation implements ASTTransformation{
 
         if (mixinFieldNode == null) return; // already woven
         
-        VariableExpression fieldReference = new VariableExpression(fieldName);
+        FieldExpression fieldReference = new FieldExpression(mixinFieldNode);
 
         ClassNode currentMixinClassNode = mixinClassNode; 
         while (!currentMixinClassNode.getName().equals(OBJECT_CLASS)) {
