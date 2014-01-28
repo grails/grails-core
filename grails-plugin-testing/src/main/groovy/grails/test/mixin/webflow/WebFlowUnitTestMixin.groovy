@@ -16,6 +16,7 @@
 package grails.test.mixin.webflow
 
 import grails.test.mixin.web.ControllerUnitTestMixin
+import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -28,18 +29,39 @@ import org.junit.Assert
  * @since 2.0
  */
 class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
+    private static final Set<String> REQUIRED_FEATURES = (["webFlow"] as Set).asImmutable()
+    
+    public WebFlowUnitTestMixin(Set<String> features) {
+        super((REQUIRED_FEATURES + features) as Set)
+    }
+    
+    public WebFlowUnitTestMixin() {
+        super(REQUIRED_FEATURES)
+    }
 
-    String stateTransition
-    String lastEventName
-    String lastTransitionName
-    Boolean isOutput
-    Boolean isInput
-    Map conversation = [:]
-    Map flow = [:]
-    Map flowMap = [:]
-    Map currentEvent = [:]
-    Map inputParams = [:]
-
+    @CompileStatic
+    static class TestState {
+        String stateTransition
+        String lastEventName
+        String lastTransitionName
+        Boolean isOutput
+        Boolean isInput
+        Map conversation = [:]
+        Map flow = [:]
+        Map flowMap = [:]
+        Map currentEvent = [:]
+        Map inputParams = [:]
+    }
+    
+    protected TestState getTestState() {
+         TestState testState = runtime.getValue("webFlowTestState")
+         if(testState == null) {
+             testState = new TestState()
+             runtime.putValue("webFlowTestState", testState)
+         }
+         testState
+    }
+    
     @Override
     def <T> T mockController(Class<T> controllerClass) {
         super.mockController(controllerClass)
@@ -64,13 +86,15 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
         }
 
         if (webFlowClosure instanceof Closure) {
-            flowMap = WebFlowUnitTestSupport.translate(webFlowClosure, {
-                lastEventName = it.event
-                lastTransitionName = it.transition
-                isOutput = it.isOutput
-                isInput = it.isInput
-                inputParams = it.inputParams
+            def flowMap = WebFlowUnitTestSupport.translate(webFlowClosure, {
+                TestState testState = this.getTestState()
+                testState.lastEventName = it.event
+                testState.lastTransitionName = it.transition
+                testState.isOutput = it.isOutput
+                testState.isInput = it.isInput
+                testState.inputParams = it.inputParams
             })
+            testState.flowMap = flowMap
             webFlowClosure.delegate = this
             return flowMap
         }
@@ -82,25 +106,26 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
      * <code>return success()</code>
      */
     protected Object methodMissing(String name, Object args) {
-        if (isOutput) {
+        TestState testState = this.getTestState()
+        if (testState.isOutput) {
             doOutput(name, args[0])
             return
         }
-        if (isInput) {
+        if (testState.isInput) {
             args ? doInput(name, args[0]) : doInput(name)
             return
         }
-        if (lastEventName && flowMap[lastEventName].on."$name") {
-            stateTransition = name
+        if (testState.lastEventName && testState.flowMap[testState.lastEventName].on."$name") {
+            testState.stateTransition = name
             return name
         }
-        if (lastEventName && lastTransitionName) {
+        if (testState.lastEventName && testState.lastTransitionName) {
             if (name == 'error') {
-                stateTransition = lastEventName
+                testState.stateTransition = testState.lastEventName
                 return name
             }
-            if (name == 'success' && flowMap[lastEventName].on?."$lastTransitionName"?.to) {
-                stateTransition = flowMap[lastEventName].on?."$lastTransitionName"?.to
+            if (name == 'success' && testState.flowMap[testState.lastEventName].on?."${testState.lastTransitionName}"?.to) {
+                testState.stateTransition = testState.flowMap[testState.lastEventName].on?."${testState.lastTransitionName}"?.to
                 return name
             }
         }
@@ -108,24 +133,27 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
     }
 
     protected doOutput(String name, Closure valueClosure) {
-        if (currentEvent.attributes == null) {
-            currentEvent.attributes = [:]
+        TestState testState = this.getTestState()
+        if (testState.currentEvent.attributes == null) {
+            testState.currentEvent.attributes = [:]
         }
-        currentEvent.attributes[name] = valueClosure()
+        testState.currentEvent.attributes[name] = valueClosure()
     }
 
     protected doOutput(String name, Map valueMap) {
-        if (currentEvent.attributes == null) {
-            currentEvent.attributes = [:]
+        TestState testState = this.getTestState()
+        if (testState.currentEvent.attributes == null) {
+            testState.currentEvent.attributes = [:]
         }
-        currentEvent.attributes[name] = valueMap.value
+        testState.currentEvent.attributes[name] = valueMap.value
     }
 
     protected doOutput(String name, Object value) {
-        if (currentEvent.attributes == null) {
-            currentEvent.attributes = [:]
+        TestState testState = this.getTestState()
+        if (testState.currentEvent.attributes == null) {
+            testState.currentEvent.attributes = [:]
         }
-        currentEvent.attributes[name] = value
+        testState.currentEvent.attributes[name] = value
     }
 
     protected doInput(String name) {
@@ -150,10 +178,11 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
     }
 
     protected doInput(String name, Boolean required, Object defaultValue) {
-        def value = inputParams[name] ?: defaultValue
+        TestState testState = this.getTestState()
+        def value = testState.inputParams[name] ?: defaultValue
         if (required && !value) {
             throw new MissingPropertyException("Missing required attribute $name")
         }
-        flow[name] = value
+        testState.flow[name] = value
     }
 }

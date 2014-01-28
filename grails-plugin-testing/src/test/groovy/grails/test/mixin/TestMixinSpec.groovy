@@ -27,8 +27,8 @@ class TestMixinSpec extends Specification {
             test.setUp()
 
         then:
-            GrailsUnitTestMixin.grailsApplication != null
-            GrailsUnitTestMixin.applicationContext != null
+            test.grailsApplication != null
+            test.applicationContext != null
         when:
             test.testSomething()
             test.tearDown()
@@ -36,8 +36,6 @@ class TestMixinSpec extends Specification {
         then: "Check that @Before and @After hooks are called"
             MyMixin.doFirstCalled == true
             MyMixin.doLastCalled == true
-            GrailsUnitTestMixin.grailsApplication == null
-            GrailsUnitTestMixin.applicationContext == null
     }
 
     void "Test that appropriate test hooks are called for a JUnit 4 test"() {
@@ -51,7 +49,9 @@ class TestMixinSpec extends Specification {
             def result = new Result()
             notifier.addListener(result.createListener())
             runner.run(notifier)
-
+            result.failures.each { f ->
+                println f.trace
+            }
         then: "Check that @Before and @After hooks are called and the test was run"
             result.runCount == 1
             result.failureCount == 0
@@ -70,7 +70,9 @@ class TestMixinSpec extends Specification {
             def result = new Result()
             notifier.addListener(result.createListener())
             adapter.run(notifier)
-
+            result.failures.each { f ->
+                println f.trace
+            }
         then: "Check that the test is run and @Before and @After hooks are called"
             result.runCount == 1
             result.failureCount == 0

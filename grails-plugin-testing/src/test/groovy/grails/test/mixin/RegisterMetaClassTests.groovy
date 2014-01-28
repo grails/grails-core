@@ -8,25 +8,25 @@ import grails.test.GrailsUnitTestCase
 class RegisterMetaClassTests extends GrailsUnitTestCase {
     void setUp() {
         super.setUp()
-        Book.metaClass.'static'.beforeRegister = { -> "beforeRegister exists" }
-        registerMetaClass(Book)
-        Book.metaClass.'static'.afterRegister = {-> "afterRegister exists" }
+        MCBook.metaClass.'static'.beforeRegister = { -> "beforeRegister exists" }
+        registerMetaClass(MCBook)
+        MCBook.metaClass.'static'.afterRegister = {-> "afterRegister exists" }
     }
 
     void tearDown() {
         super.tearDown()
-        assert "beforeRegister exists" == Book.beforeRegister()
+        assert "beforeRegister exists" == MCBook.beforeRegister()
         shouldFail(MissingMethodException) {
-            assert "afterRegister exists" == Book.afterRegister()
+            assert "afterRegister exists" == MCBook.afterRegister()
         }
 
     }
 
     void testSomething() {
-        assert "beforeRegister exists" == Book.beforeRegister()
-        assert "afterRegister exists" == Book.afterRegister()
+        assert "beforeRegister exists" == MCBook.beforeRegister()
+        assert "afterRegister exists" == MCBook.afterRegister()
     }
 }
-class Book {
+class MCBook {
     String title
 }

@@ -1,3 +1,5 @@
+
+
 /*
  * Copyright 2011 SpringSource
  *
@@ -20,7 +22,7 @@ import org.codehaus.groovy.grails.plugins.web.filters.FiltersConfigArtefactHandl
 import org.codehaus.groovy.grails.plugins.web.filters.FiltersGrailsPlugin
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.junit.After
-import org.junit.BeforeClass
+import org.junit.runner.Description
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
 import org.springframework.web.servlet.ModelAndView
 
@@ -46,21 +48,14 @@ import org.springframework.web.servlet.ModelAndView
  * @author Graeme Rocher
  */
 class FiltersUnitTestMixin extends ControllerUnitTestMixin {
-
-    @BeforeClass
-    static void setupFilterBeans() {
-        if (applicationContext == null) {
-            initGrailsApplication()
-        }
-
-        defineBeans {
-            filterInterceptor(CompositeInterceptor)
-        }
+    private static final Set<String> REQUIRED_FEATURES = (["filters"] as Set).asImmutable()
+    
+    public FiltersUnitTestMixin(Set<String> features) {
+        super((REQUIRED_FEATURES + features) as Set)
     }
-
-    @After
-    void clearFilters() {
-        getCompositeInterceptor().handlers?.clear()
+    
+    public FiltersUnitTestMixin() {
+        super(REQUIRED_FEATURES)
     }
 
     /**
@@ -70,15 +65,12 @@ class FiltersUnitTestMixin extends ControllerUnitTestMixin {
      * @return
      */
     CompositeInterceptor mockFilters(Class filterClass) {
-        if (webRequest == null) {
-            bindGrailsWebRequest()
-        }
         if (!grailsApplication.hasArtefactHandler(FiltersConfigArtefactHandler.TYPE)) {
             grailsApplication.registerArtefactHandler(new FiltersConfigArtefactHandler())
         }
 
         final grailsFilter = grailsApplication.addArtefact(FiltersConfigArtefactHandler.TYPE, filterClass)
-        defineBeans {
+        defineBeans(true) {
             "${grailsFilter.fullName}Class"(MethodInvokingFactoryBean) {
                 targetObject = grailsApplication
                 targetMethod = "getArtefact"

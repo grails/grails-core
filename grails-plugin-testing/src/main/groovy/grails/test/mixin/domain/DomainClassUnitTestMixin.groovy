@@ -22,27 +22,12 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
-import org.codehaus.groovy.grails.domain.GrailsDomainClassCleaner
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.plugins.web.ControllersGrailsPlugin
-import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 import org.grails.datastore.gorm.GormEnhancer
-import org.grails.datastore.gorm.events.AutoTimestampEventListener
-import org.grails.datastore.gorm.events.DomainEventListener
-import org.grails.datastore.gorm.validation.constraints.UniqueConstraintFactory
-import org.grails.datastore.mapping.core.DatastoreUtils
-import org.grails.datastore.mapping.core.Session
 import org.grails.datastore.mapping.model.PersistentEntity
-import org.grails.datastore.mapping.reflect.ClassPropertyFetcher
 import org.grails.datastore.mapping.simple.SimpleMapDatastore
-import org.grails.datastore.mapping.transactions.DatastoreTransactionManager
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.Before
-import org.junit.BeforeClass
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.validation.Validator
 
@@ -72,63 +57,26 @@ import org.springframework.validation.Validator
  * @since 2.0
  */
 class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
-
-    static SimpleMapDatastore simpleDatastore
-    static PlatformTransactionManager transactionManager
-
-    protected Session currentSession
-
-    @BeforeClass
-    static void initializeDatastoreImplementation() {
-        ClassPropertyFetcher.clearCache()
-        if (applicationContext == null) {
-            initGrailsApplication()
-        }
-
-
-        defineBeans {
-            grailsDatastore(SimpleMapDatastore, applicationContext)
-            transactionManager(DatastoreTransactionManager) {
-                datastore = ref("grailsDatastore")
-            }
-            "${ConstraintsEvaluator.BEAN_NAME}"(ConstraintsEvaluatorFactoryBean) {
-                defaultConstraints = DomainClassGrailsPlugin.getDefaultConstraints(grailsApplication.config)
-            }
-            grailsDomainClassCleaner(GrailsDomainClassCleaner, grailsApplication)
-        }
-
-        simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
-        simpleDatastore.mappingContext.setCanInitializeEntities(false)
-        transactionManager = applicationContext.getBean(PlatformTransactionManager)
-        applicationContext.addApplicationListener applicationContext.getBean(GrailsDomainClassCleaner)
-        applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
-        applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
-        ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
-
+    private static final Set<String> REQUIRED_FEATURES = (["domainClass"] as Set<String>).asImmutable()
+    
+    public DomainClassUnitTestMixin(Set<String> features) {
+        super((REQUIRED_FEATURES + features) as Set<String>)
+    }
+    
+    public DomainClassUnitTestMixin() {
+        super(REQUIRED_FEATURES)
     }
 
-    @AfterClass
-    static void cleanupDatastore() {
-        ClassPropertyFetcher.clearCache()
-        ConstrainedProperty.removeConstraint("unique")
+    SimpleMapDatastore getSimpleDatastore() {
+        grailsApplication.mainContext.getBean(SimpleMapDatastore)
     }
-
-    @Before
-    void connectDatastore() {
-        currentSession = DatastoreUtils.bindSession(simpleDatastore.connect())
+    
+    PlatformTransactionManager getTransactionManager() {
+        grailsApplication.mainContext.getBean('transactionManager')
     }
-
-    @After
-    void shutdownDatastoreImplementation() {
-        currentSession?.disconnect()
-        if (currentSession != null) {
-            DatastoreUtils.unbindSession(currentSession)
-        }
-        simpleDatastore.clearData()
-    }
-
+    
     @CompileStatic
-    def mockDomains(Class... domainClassesToMock) {
+    def mockDomains(Class<?>... domainClassesToMock) {
         initialMockDomainSetup()
         Collection<PersistentEntity> entities = simpleDatastore.mappingContext.addPersistentEntities(domainClassesToMock)
         for (PersistentEntity entity in entities) {
@@ -162,7 +110,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
      * @return An instance of the mocked domain class
      */
     @CompileStatic
-    def mockDomain(Class domainClassToMock, List domains = []) {
+    def mockDomain(Class<?> domainClassToMock, List domains = []) {
         mockDomains(domainClassToMock)
         final entity = simpleDatastore.mappingContext.getPersistentEntity(domainClassToMock.name)
         if (domains) {
@@ -198,7 +146,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
     protected Validator registerDomainClassValidator(GrailsDomainClass domain) {
         String validationBeanName = "${domain.fullName}Validator"
-        defineBeans {
+        defineBeans(true) {
             "${domain.fullName}"(domain.clazz) { bean ->
                 bean.singleton = false
                 bean.autowire = "byName"
@@ -215,7 +163,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
     }
 
     @CompileStatic
-    protected GrailsDomainClass registerGrailsDomainClass(Class domainClassToMock) {
+    protected GrailsDomainClass registerGrailsDomainClass(Class<?> domainClassToMock) {
         GrailsDomainClass domain = (GrailsDomainClass)grailsApplication.addArtefact(DomainClassArtefactHandler.TYPE, domainClassToMock)
 
         final mc = GrailsClassUtils.getExpandoMetaClass(domainClassToMock)

@@ -15,45 +15,15 @@
  */
 package grails.test.mixin.support
 
-import grails.async.Promises
-import grails.spring.BeanBuilder
 import grails.test.GrailsMock
-import grails.test.MockUtils
-import grails.util.Holders
-import grails.util.Metadata
-import grails.validation.DeferredBindingActions
-import grails.web.CamelCaseUrlConverter
-import grails.web.UrlConverter
+import grails.test.runtime.TestRuntime
 import groovy.transform.CompileStatic
 import junit.framework.AssertionFailedError
 
-import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
-import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
-import org.codehaus.groovy.grails.commons.CodecArtefactHandler
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
-import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.InstanceFactoryBean
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
-import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.databinding.DataBindingGrailsPlugin
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
-import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
-import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
-import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
 import org.codehaus.groovy.runtime.ScriptBytecodeAdapter
-import org.grails.async.factory.SynchronousPromiseFactory
-import org.junit.After
-import org.junit.AfterClass
-import org.junit.BeforeClass
-import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.context.MessageSource
-import org.springframework.context.support.ConversionServiceFactoryBean
-import org.springframework.context.support.StaticMessageSource
-import org.springframework.mock.web.MockServletContext
-import org.springframework.web.context.WebApplicationContext
 
 /**
  * A base unit testing mixin that watches for MetaClass changes and unbinds them on tear down.
@@ -61,121 +31,29 @@ import org.springframework.web.context.WebApplicationContext
  * @author Graeme Rocher
  * @since 2.0
  */
-class GrailsUnitTestMixin {
-
+@CompileStatic
+class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
     static {
         ExpandoMetaClass.enableGlobally()
     }
 
-    static GrailsWebApplicationContext applicationContext
-    static GrailsWebApplicationContext mainContext
-    static GrailsApplication grailsApplication
-    static ConfigObject config
-    static MessageSource messageSource
-
-    private static MetaClassRegistryCleaner metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
-
-    Map validationErrorsMap = new IdentityHashMap()
-    Set loadedCodecs = []
-
-    @CompileStatic
-    static void defineBeans(Closure callable) {
-        def bb = new BeanBuilder()
-        def binding = new Binding()
-        binding.setVariable "application", grailsApplication
-        bb.setBinding binding
-        def beans = bb.beans(callable)
-        beans.registerBeans(applicationContext)
+    private static final Set<String> REQUIRED_FEATURES = (["grailsApplication", "coreBeans"] as Set).asImmutable() 
+    
+    public GrailsUnitTestMixin(Set<String> features) {
+        super((REQUIRED_FEATURES + features) as Set)
     }
-
-    @BeforeClass
-    @CompileStatic
-    static void initGrailsApplication() {
-        ClassPropertyFetcher.clearClassPropertyFetcherCache()
-        CachedIntrospectionResults.clearClassLoader(GrailsUnitTestMixin.class.classLoader)
-        registerMetaClassRegistryWatcher()
-        Promises.promiseFactory = new SynchronousPromiseFactory()
-        if (applicationContext == null) {
-            ExpandoMetaClass.enableGlobally()
-            applicationContext = new GrailsWebApplicationContext()
-
-            grailsApplication = new DefaultGrailsApplication()
-            grailsApplication.setApplicationContext(applicationContext)
-            if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
-                 grailsApplication.metadata[Metadata.APPLICATION_NAME] = GrailsUnitTestMixin.simpleName
-            }
-        
-            registerBeans()
-            applicationContext.refresh()
-            applicationContext.beanFactory.addBeanPostProcessor(new GrailsApplicationAwareBeanPostProcessor(grailsApplication))
-            messageSource = applicationContext.getBean("messageSource", MessageSource)
-
-            mainContext = new GrailsWebApplicationContext(applicationContext)
-            mainContext.registerSingleton UrlConverter.BEAN_NAME, CamelCaseUrlConverter
-            mainContext.refresh()
-            grailsApplication.mainContext = mainContext
-            grailsApplication.initialise()
-            def servletContext = new MockServletContext()
-            servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, mainContext
-            Holders.setServletContext servletContext
-
-            grailsApplication.applicationContext = applicationContext
-            config = grailsApplication.config
-        }
+    
+    public GrailsUnitTestMixin() {
+        super(REQUIRED_FEATURES)
     }
-
-    protected static void registerBeans() {
-        defineBeans(new DataBindingGrailsPlugin().doWithSpring)
-
-        defineBeans {
-            xmlns context:"http://www.springframework.org/schema/context"
-            // adds AutowiredAnnotationBeanPostProcessor, CommonAnnotationBeanPostProcessor and others
-            // see org.springframework.context.annotation.AnnotationConfigUtils.registerAnnotationConfigProcessors method
-            context.'annotation-config'()
-
-            proxyHandler(DefaultProxyHandler)
-            grailsApplication(InstanceFactoryBean, grailsApplication, GrailsApplication)
-            pluginManager(DefaultGrailsPluginManager, [] as Class[], ref("grailsApplication"))
-            messageSource(StaticMessageSource)
-            "${ConstraintsEvaluator.BEAN_NAME}"(DefaultConstraintEvaluator)
-            conversionService(ConversionServiceFactoryBean)
-        }
-    }
-
-    @After
-    void resetGrailsApplication() {
-        MockUtils.TEST_INSTANCES.clear()
-        ClassPropertyFetcher.clearClassPropertyFetcherCache()
-        grailsApplication?.clear()
-        cleanupModifiedMetaClasses()
-    }
-
-    @CompileStatic
-    static void registerMetaClassRegistryWatcher() {
-        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener metaClassRegistryListener
-    }
-
-    @CompileStatic
-    static void cleanupModifiedMetaClasses() {
-        metaClassRegistryListener.clean()
-    }
-
-    @AfterClass
-    @CompileStatic
-    static void deregisterMetaClassCleaner() {
-        Promises.promiseFactory = null
-        GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(metaClassRegistryListener)
-    }
-
+    
     /**
      * Mocks the given class (either a domain class or a command object)
      * so that a "validate()" method is added. This can then be used
      * to test the constraints on the class.
      */
-    @CompileStatic
-    void mockForConstraintsTests(Class clazz, List instances = []) {
-        ConstraintEvalUtils.clearDefaultConstraints()
-        MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances, ConstraintEvalUtils.getDefaultConstraints(grailsApplication.config))
+    void mockForConstraintsTests(Class<?> clazz, List instances = []) {
+        runtime.publishEvent("mockForConstraintsTests", [clazz: clazz, instances: instances])
     }
 
     /**
@@ -186,7 +64,7 @@ class GrailsUnitTestMixin {
      * expectation mock, otherwise it returns a strict one. The default
      * is a strict mock.
      */
-    GrailsMock mockFor(Class clazz, boolean loose = false) {
+    GrailsMock mockFor(Class<?> clazz, boolean loose = false) {
         return new GrailsMock(clazz, loose)
     }
 
@@ -196,7 +74,6 @@ class GrailsUnitTestMixin {
      * @param code
      * @return the message of the thrown Throwable
      */
-    @CompileStatic
     String shouldFail(Closure code) {
         boolean failed = false
         String result = null
@@ -226,7 +103,7 @@ class GrailsUnitTestMixin {
      * @param code  the closure that should fail
      * @return the message of the expected Throwable
      */
-    String shouldFail(Class clazz, Closure code) {
+    String shouldFail(Class<?> clazz, Closure code) {
         Throwable th = null
         try {
             code.call()
@@ -246,40 +123,37 @@ class GrailsUnitTestMixin {
 
         return th.message
     }
+    
     /**
      * Loads the given codec, adding the "encodeAs...()" and "decode...()"
      * methods to objects.
      * @param codecClass The codec to load, e.g. HTMLCodec.
      */
-    @CompileStatic
-    void mockCodec(Class codecClass) {
-        if (loadedCodecs.contains(codecClass)) {
-            return
-        }
-
-        loadedCodecs << codecClass
-
-        DefaultGrailsCodecClass grailsCodecClass = new DefaultGrailsCodecClass(codecClass)
-        grailsCodecClass.configureCodecMethods()
-        if(grailsApplication != null) {
-            grailsApplication.addArtefact(CodecArtefactHandler.TYPE, grailsCodecClass)
-        }
+    void mockCodec(Class<?> codecClass) {
+        runtime.publishEvent("mockCodec", [codecClass: codecClass])
     }
-
-    @AfterClass
-    @CompileStatic
-    static void shutdownApplicationContext() {
-        if (applicationContext.isActive()) {
-            if(grailsApplication.mainContext instanceof Closeable) {
-                ((Closeable)grailsApplication.mainContext).close()
-            }
-            applicationContext.close()
-        }
-        ShutdownOperations.runOperations()
-        DeferredBindingActions.clear()
-
-        applicationContext = null
-        grailsApplication = null
-        Holders.setServletContext null
+    
+    void defineBeans(boolean immediateDelivery = true, Closure<?> closure) {
+        runtime.publishEvent("defineBeans", [closure: closure], [immediateDelivery: immediateDelivery])
+    }
+    
+    GrailsWebApplicationContext getApplicationContext() {
+        (GrailsWebApplicationContext)grailsApplication.parentContext
+    }
+    
+    GrailsWebApplicationContext getMainContext() {
+        (GrailsWebApplicationContext)grailsApplication.mainContext
+    }
+    
+    GrailsApplication getGrailsApplication() {
+        (GrailsApplication)runtime.getValue("grailsApplication")
+    }
+    
+    ConfigObject getConfig() {
+        getGrailsApplication().getConfig()
+    }
+    
+    MessageSource getMessageSource() {
+        applicationContext.getBean("messageSource", MessageSource)
     }
 }

@@ -5,7 +5,12 @@ import grails.util.Mixin
 
 import org.junit.AfterClass
 import org.junit.Assert
+import org.junit.ClassRule;
+import org.junit.Rule
+import org.junit.rules.ExternalResource
+import org.junit.rules.TestRule
 
+import spock.lang.Shared
 import spock.lang.Specification
 
 @TestMixin(GrailsUnitTestMixin)
@@ -13,15 +18,15 @@ class MetaClassCleanupSpec extends Specification {
 
     def "Test that meta classes are restored to prior state after test run"() {
         when:"A meta class is modified in the test"
-            Author.metaClass.testMe = {-> "test"}
-            Author.metaClass.testToo = {-> "second"}
-            def a = new Author()
+            MCAuthor.metaClass.testMe = {-> "test"}
+            MCAuthor.metaClass.testToo = {-> "second"}
+            def a = new MCAuthor()
         then:"The methods are available"
             a.testMe() == "test"
             a.testToo() == "second"
     }
 
-    def instance = new Author()
+    def instance = new MCAuthor()
     def "Test that changes made to an instance are cleaned up - step 1"() {
         when:"a change is made to an instance"
             instance.metaClass.doWork = {->"done"}
@@ -76,25 +81,27 @@ class MetaClassCleanupSpec extends Specification {
         then:"The the mixin method works"
             rs == "A with mixin: mixMe from AMixin mix static"
     }
-    @AfterClass
-    static void checkCleanup() {
-        def a = new Author()
+    
+    @Shared @ClassRule TestRule checkCleanupRule = new ExternalResource() {
+        @Override
+        protected void after() {
+            def a = new MCAuthor()
+            try {
+                a.testMe()
+                Assert.fail("Should have cleaned up meta class changes")
+            } catch (MissingMethodException) {
+            }
 
-        try {
-            a.testMe()
-            Assert.fail("Should have cleaned up meta class changes")
-        } catch (MissingMethodException) {
-        }
-
-        try {
-            a.testToo()
-            Assert.fail("Should have cleaned up meta class changes")
-        } catch (MissingMethodException) {
+            try {
+                a.testToo()
+                Assert.fail("Should have cleaned up meta class changes")
+            } catch (MissingMethodException) {
+            }
         }
     }
 }
 
-class Author {
+class MCAuthor {
     String name
 }
 

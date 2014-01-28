@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2011 SpringSource
  *
@@ -23,16 +24,11 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
-import org.codehaus.groovy.grails.web.pages.GroovyPageBinding
-import org.codehaus.groovy.grails.web.pages.GroovyPageRequestBinding
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
-import org.junit.After
 import org.junit.Assert
-import org.junit.Before
 
 /**
  * <p>A unit testing mixing that add behavior to support the testing of tag libraries
@@ -54,21 +50,14 @@ import org.junit.Before
  * @since 2.0
  */
 class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
-
-    GroovyPageBinding pageScope
-
-    @Override
-    @Before
-    void bindGrailsWebRequest() {
-        super.bindGrailsWebRequest()
-        pageScope = new GroovyPageBinding(new GroovyPageRequestBinding(webRequest))
-        request.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE, pageScope)
-
+    private static final Set<String> REQUIRED_FEATURES = (["groovyPage"] as Set).asImmutable()
+    
+    public GroovyPageUnitTestMixin(Set<String> features) {
+        super((REQUIRED_FEATURES + features) as Set)
     }
-
-    @After
-    void clearPageScope() {
-        pageScope = null
+    
+    public GroovyPageUnitTestMixin() {
+        super(REQUIRED_FEATURES)
     }
 
     /**
@@ -84,7 +73,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
         final tagLookup = applicationContext.getBean(TagLibraryLookup)
 
         if (!applicationContext.containsBean('instanceTagLibraryApi')) {
-            defineBeans {
+            defineBeans(true) {
                 instanceTagLibraryApi(TagLibraryApi) { bean ->
                     bean.autowire = true
                 }
@@ -99,7 +88,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
             WebMetaUtils.enhanceTagLibMetaClass(tagLib, tagLookup)
         }
 
-        defineBeans {
+        defineBeans(true) {
             "${tagLib.fullName}"(tagLibClass) { bean ->
                 bean.autowire = true
             }
@@ -120,10 +109,10 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
         def uri = null
         final attributes = webRequest.attributes
         if (args.template) {
-            uri = attributes.getTemplateUri(args.template, request)
+            uri = attributes.getTemplateUri(args.template as String, request)
         }
         else if (args.view) {
-            uri = attributes.getViewUri(args.view, request)
+            uri = attributes.getViewUri(args.view as String, request)
         }
         if (uri != null) {
             def engine = applicationContext.getBean(GroovyPagesTemplateEngine)

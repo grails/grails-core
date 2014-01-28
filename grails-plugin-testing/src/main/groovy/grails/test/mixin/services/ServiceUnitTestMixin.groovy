@@ -45,7 +45,7 @@ class ServiceUnitTestMixin extends DomainClassUnitTestMixin {
     def <T> T mockService(Class<T> serviceClass) {
         final serviceArtefact = grailsApplication.addArtefact(ServiceArtefactHandler.TYPE, serviceClass)
 
-        defineBeans {
+        defineBeans(true) {
             "${serviceArtefact.propertyName}"(serviceClass) { bean ->
                 bean.autowire = true
             }

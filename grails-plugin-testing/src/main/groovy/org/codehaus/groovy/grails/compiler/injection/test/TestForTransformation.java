@@ -43,6 +43,7 @@ import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -65,6 +66,7 @@ import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.commons.UrlMappingsArtefactHandler;
+import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext;
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils;
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector;
 import org.codehaus.groovy.grails.compiler.logging.LoggingTransformer;
@@ -155,7 +157,11 @@ public class TestForTransformation extends TestMixinTransformation {
 
         if (!junit3Test && !spockTest && !isJunit) return;
 
-        Expression value = node.getMember("value");
+        handleTestForAnnotation(classNode, source, node, junit3Test);
+    }
+
+    protected void handleTestForAnnotation(ClassNode classNode, SourceUnit source, AnnotationNode testForAnnotationNode, boolean junit3Test) {
+        Expression value = testForAnnotationNode.getMember("value");
         ClassExpression ce;
         if (value instanceof ClassExpression) {
             ce = (ClassExpression) value;
@@ -369,7 +375,7 @@ public class TestForTransformation extends TestMixinTransformation {
     }
 
     private BlockStatement getJunit4Setup(ClassNode classNode) {
-        MethodNode setupMethod = classNode.getMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        MethodNode setupMethod = classNode.getDeclaredMethod(SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_PARAMETERS);
         if (setupMethod == null) {
             setupMethod = new MethodNode(SET_UP_METHOD,Modifier.PUBLIC,ClassHelper.VOID_TYPE,GrailsArtefactClassInjector.ZERO_PARAMETERS,null,new BlockStatement());
             setupMethod.addAnnotation(MIXIN_METHOD_ANNOTATION);
@@ -383,7 +389,12 @@ public class TestForTransformation extends TestMixinTransformation {
     }
 
     private BlockStatement getJunit3Setup(ClassNode classNode) {
-        return getOrCreateNoArgsMethodBody(classNode, SET_UP_METHOD);
+        boolean hasExistingSetupMethod = classNode.hasDeclaredMethod(SET_UP_METHOD, Parameter.EMPTY_ARRAY);
+        BlockStatement setUpMethodBody = getOrCreateNoArgsMethodBody(classNode, SET_UP_METHOD);
+        if(!hasExistingSetupMethod) {
+            setUpMethodBody.getStatements().add(new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
+        }
+        return setUpMethodBody;
     }
 
     private boolean isAlreadyWoven(ClassNode classNode, Class mixinClass) {
@@ -420,9 +431,9 @@ public class TestForTransformation extends TestMixinTransformation {
             classNode.addField(fieldName, Modifier.PRIVATE, targetClass.getType(),null);
         }
 
-        MethodNode methodNode = classNode.getMethod(methodName,GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        MethodNode methodNode = classNode.getDeclaredMethod(methodName,GrailsArtefactClassInjector.ZERO_PARAMETERS);
 
-        VariableExpression fieldExpression = new VariableExpression(fieldName);
+        VariableExpression fieldExpression = new VariableExpression(fieldName, targetClass.getType());
         if (methodNode == null) {
             BlockStatement setupMethodBody = new BlockStatement();
             addMockCollaborator(type, targetClass, setupMethodBody);
@@ -430,10 +441,12 @@ public class TestForTransformation extends TestMixinTransformation {
             methodNode = new MethodNode(methodName, Modifier.PUBLIC, ClassHelper.VOID_TYPE, GrailsArtefactClassInjector.ZERO_PARAMETERS,null, setupMethodBody);
             methodNode.addAnnotation(BEFORE_ANNOTATION);
             methodNode.addAnnotation(MIXIN_METHOD_ANNOTATION);
+            
             classNode.addMethod(methodNode);
+            GrailsASTUtils.addCompileStaticAnnotation(methodNode);
         }
 
-        MethodNode getter = classNode.getMethod(getterName, GrailsArtefactClassInjector.ZERO_PARAMETERS);
+        MethodNode getter = classNode.getDeclaredMethod(getterName, GrailsArtefactClassInjector.ZERO_PARAMETERS);
         if (getter == null) {
             BlockStatement getterBody = new BlockStatement();
             getter = new MethodNode(getterName, Modifier.PUBLIC, targetClass.getType().getPlainNodeReference(),GrailsArtefactClassInjector.ZERO_PARAMETERS,null, getterBody);
@@ -445,13 +458,14 @@ public class TestForTransformation extends TestMixinTransformation {
 
             getterBody.addStatement(new ReturnStatement(fieldExpression));
             classNode.addMethod(getter);
+            GrailsASTUtils.addCompileStaticAnnotation(getter);
         }
 
         return methodNode;
     }
 
     private IfStatement getAutowiringIfStatement(ClassExpression targetClass, VariableExpression fieldExpression, BinaryExpression testTargetAssignment) {
-        VariableExpression appCtxVar = new VariableExpression("applicationContext");
+        VariableExpression appCtxVar = new VariableExpression("applicationContext", ClassHelper.make(GrailsWebApplicationContext.class));
 
         BooleanExpression applicationContextCheck = new BooleanExpression(
                 new BinaryExpression(
