@@ -94,6 +94,7 @@ public class TestMixinTransformation implements ASTTransformation{
     public static final ClassNode GROOVY_OBJECT_CLASS_NODE = new ClassNode(GroovyObjectSupport.class);
     public static final AnnotationNode TEST_ANNOTATION = new AnnotationNode(new ClassNode(Test.class));
     public static final String VOID_TYPE = "void";
+    private static final String EMC_STATEMENT_ADDED_KEY = "EMC_STATEMENT_ADDED_KEY";
 
     public void visit(ASTNode[] astNodes, SourceUnit source) {
         if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
@@ -109,6 +110,20 @@ public class TestMixinTransformation implements ASTTransformation{
         ClassNode classNode = (ClassNode) parent;
         ListExpression values = getListOfClasses(annotationNode);
         weaveTestMixins(classNode, values);
+        addEnableEMCStatement(classNode);
+    }
+
+    protected void addEnableEMCStatement(ClassNode classNode) {
+        if (classNode.redirect().getNodeMetaData(EMC_STATEMENT_ADDED_KEY) != Boolean.TRUE) {
+            List<Statement> statements = new ArrayList<Statement>();
+            ClassNode emcClassNode = ClassHelper.make(ExpandoMetaClass.class);
+            // make direct static call to ExpandoMetaClass.enableGlobally() is static initializer block
+            statements.add(new ExpressionStatement(GrailsASTUtils.applyDefaultMethodTarget(new MethodCallExpression(
+                    new ClassExpression(emcClassNode), "enableGlobally", MethodCallExpression.NO_ARGUMENTS),
+                    emcClassNode)));
+            classNode.addStaticInitializerStatements(statements, true);
+            classNode.redirect().setNodeMetaData(EMC_STATEMENT_ADDED_KEY, Boolean.TRUE);
+        }
     }
 
     /**

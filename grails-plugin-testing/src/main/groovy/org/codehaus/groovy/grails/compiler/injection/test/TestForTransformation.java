@@ -158,6 +158,7 @@ public class TestForTransformation extends TestMixinTransformation {
         if (!junit3Test && !spockTest && !isJunit) return;
 
         handleTestForAnnotation(classNode, source, node, junit3Test);
+        addEnableEMCStatement(classNode);
     }
 
     protected void handleTestForAnnotation(ClassNode classNode, SourceUnit source, AnnotationNode testForAnnotationNode, boolean junit3Test) {
