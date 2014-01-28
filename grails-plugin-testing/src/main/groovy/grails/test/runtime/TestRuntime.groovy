@@ -40,6 +40,16 @@ class TestRuntime {
         }
     }
     
+    public Object getValueOrCreate(String name, Closure valueCreator) {
+        if(containsValueFor(name)) {
+            return getValue(name)
+        } else {
+            Object value = valueCreator.call()
+            putValue(name, value)
+            return value
+        }
+    }
+    
     public boolean containsValueFor(String name) {
         registry.containsKey(name)
     }

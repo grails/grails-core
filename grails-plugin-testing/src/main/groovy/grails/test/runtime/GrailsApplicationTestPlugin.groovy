@@ -10,7 +10,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
+import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
@@ -18,9 +18,8 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
-import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport;
+import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.grails.async.factory.SynchronousPromiseFactory
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
@@ -34,9 +33,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     String[] requiredFeatures = ['metaClassCleaner']
     String[] providedFeatures = ['grailsApplication']
     int ordinal = 0
-
-    protected Map validationErrorsMap = new IdentityHashMap()
-    protected Set loadedCodecs = []
 
     void initGrailsApplication(TestRuntime runtime) {
         GrailsWebApplicationContext applicationContext = new GrailsWebApplicationContext()
@@ -86,7 +82,12 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         ConvertersPluginSupport.enhanceApplication(grailsApplication, grailsApplication.mainContext)
     }
     
+    Set getLoadedCodecs(TestRuntime runtime) {
+        (Set)runtime.getValueOrCreate("loadedCodecs", { new HashSet() })
+    }
+    
     void mockCodec(TestRuntime runtime, Class codecClass) {
+        Set loadedCodecs = getLoadedCodecs(runtime)
         if (loadedCodecs.contains(codecClass)) {
             return
         }
@@ -104,7 +105,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     
     void mockForConstraintsTests(TestRuntime runtime, Class clazz, List instances) {
         ConstraintEvalUtils.clearDefaultConstraints()
-        MockUtils.prepareForConstraintsTests(clazz, validationErrorsMap, instances ?: [], ConstraintEvalUtils.getDefaultConstraints(getGrailsApplication(runtime).config))
+        MockUtils.prepareForConstraintsTests(clazz, (Map)runtime.getValueOrCreate("validationErrorsMap", { new IdentityHashMap() }), instances ?: [], ConstraintEvalUtils.getDefaultConstraints(getGrailsApplication(runtime).config))
     }
 
     void defineBeans(TestRuntime runtime, Closure callable) {
@@ -186,6 +187,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
     
     public void close(TestRuntime runtime) {
-    
+        
     }
 }
