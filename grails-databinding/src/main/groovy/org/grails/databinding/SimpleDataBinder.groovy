@@ -479,7 +479,15 @@ class SimpleDataBinder implements DataBinder {
     protected ValueConverter getValueConverterForField(obj, String propName) {
         def converter
         try {
-            def field = obj.getClass().getDeclaredField propName
+            Field field = null
+            def clazz = obj.getClass()
+            while(field == null && clazz != Object) {
+                try {
+                    field = clazz.getDeclaredField(propName)
+                } catch (NoSuchFieldException nsfe) {
+                    clazz = clazz.getSuperclass()
+                }
+            }
             if (field) {
                 def annotation = field.getAnnotation BindUsing
                 if (annotation) {
