@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockErrors
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
@@ -78,13 +79,14 @@ class MockUtils {
      * @param clazz The class or interface to mock
      */
     static void mockAttributeAccess(Class clazz) {
-        clazz.metaClass.getProperty = { String name ->
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.getProperty = { String name ->
             if (delegate.metaClass.hasProperty(delegate,name)) {
                 return delegate.metaClass.getMetaProperty(name).getProperty(delegate)
             }
             return delegate.getAttribute(name)
         }
-        clazz.metaClass.setProperty = { String name, val ->
+        emc.setProperty = { String name, val ->
             if (delegate.metaClass.hasProperty(delegate,name)) {
                 delegate.metaClass.getMetaProperty(name).setProperty(delegate, val)
             }
@@ -112,17 +114,18 @@ class MockUtils {
         def chaArgs = [:]
         def template = [:]
         def modelAndView = new ModelAndView()
-        clazz.metaClass.getForwardArgs = {-> fwdArgs}
-        clazz.metaClass.getRedirectArgs ={-> redArgs}
-        clazz.metaClass.getRenderArgs ={-> renArgs}
-        clazz.metaClass.getChainArgs ={-> chaArgs}
-        clazz.metaClass.forward = {Map map -> forwardArgs.putAll(map)}
-        clazz.metaClass.redirect = {Map map -> redirectArgs.putAll(map)}
-        clazz.metaClass.chain = {Map map -> chainArgs.putAll(map)}
-        clazz.metaClass.render = {String text -> delegate.response.writer << text}
-        clazz.metaClass.render = {Converter arg -> delegate.response.writer << arg.toString()}
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.getForwardArgs = {-> fwdArgs}
+        emc.getRedirectArgs ={-> redArgs}
+        emc.getRenderArgs ={-> renArgs}
+        emc.getChainArgs ={-> chaArgs}
+        emc.forward = {Map map -> forwardArgs.putAll(map)}
+        emc.redirect = {Map map -> redirectArgs.putAll(map)}
+        emc.chain = {Map map -> chainArgs.putAll(map)}
+        emc.render = {String text -> delegate.response.writer << text}
+        emc.render = {Converter arg -> delegate.response.writer << arg.toString()}
 
-        clazz.metaClass.withFormat = { Closure callable ->
+        emc.withFormat = { Closure callable ->
             def formatInterceptor = new FormatInterceptor()
             def originalDelegate = delegate
             try {
@@ -150,7 +153,7 @@ class MockUtils {
             }
         }
 
-        clazz.metaClass.withForm { Closure callable ->
+        emc.withForm { Closure callable ->
             def result
             if (!delegate.request.invalidToken) {
                 def nullInvalidTokenHandler = { Closure c -> result }
@@ -177,7 +180,7 @@ class MockUtils {
             return result
         }
 
-        clazz.metaClass.render = {Map map ->
+        emc.render = {Map map ->
             renderArgs.putAll(map)
             if (map["status"] != null) {
                 delegate.response.status = map["status"]
@@ -215,7 +218,7 @@ class MockUtils {
             }
         }
 
-        clazz.metaClass.render = {Map map, Closure c ->
+        emc.render = {Map map, Closure c ->
             renderArgs.putAll(map)
 
             switch(map["contentType"]) {
@@ -237,9 +240,9 @@ class MockUtils {
             }
         }
 
-        clazz.metaClass.getTemplate = {-> template}
-        clazz.metaClass.getModelAndView = {-> modelAndView}
-        clazz.metaClass.setModelAndView = { ModelAndView mv -> modelAndView = mv}
+        emc.getTemplate = {-> template}
+        emc.getModelAndView = {-> modelAndView}
+        emc.setModelAndView = { ModelAndView mv -> modelAndView = mv}
     }
 
     /**
@@ -257,19 +260,20 @@ class MockUtils {
         // Set up the "out" property and the method for generating tag
         // errors.
         def mockOut = new StringWriter()
-        clazz.metaClass.throwTagError = {String message -> throw new GrailsTagException(message) }
-        clazz.metaClass.getOut = {-> mockOut }
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.throwTagError = {String message -> throw new GrailsTagException(message) }
+        emc.getOut = {-> mockOut }
 
         def mockPageScope = new GroovyPageBinding()
-        clazz.metaClass.getPageScope = {->mockPageScope}
+        emc.getPageScope = {->mockPageScope}
 
         // Render tag (called as a method).
         def renArgs = [:]
         def template = [:]
-        clazz.metaClass.getRenderArgs ={-> renArgs}
-        clazz.metaClass.getTemplate = {-> template}
+        emc.getRenderArgs ={-> renArgs}
+        emc.getTemplate = {-> template}
 
-        clazz.metaClass.render = {Map map ->
+        emc.render = {Map map ->
             renderArgs.putAll(map)
             if (map["template"]) {
                 assert !map["view"]  : "'view' cannot be used with 'template' in render"
@@ -311,18 +315,19 @@ class MockUtils {
         def mockFlash = [:]
         def mockChainModel = [:]
 
-        clazz.metaClass.getRequest = {-> mockRequest}
-        clazz.metaClass.getResponse = {-> mockResponse}
-        clazz.metaClass.getSession = {-> mockRequest.getSession() }
-        clazz.metaClass.getParams = {-> mockParams}
-        clazz.metaClass.getFlash = {-> mockFlash}
-        clazz.metaClass.getChainModel = {-> mockChainModel}
-        clazz.metaClass.getActionName = {-> RequestContextHolder.currentRequestAttributes().actionName }
-        clazz.metaClass.getControllerName = {-> RequestContextHolder.currentRequestAttributes().controllerName }
-        clazz.metaClass.getServletContext = {-> mockRequest.servletContext }
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.getRequest = {-> mockRequest}
+        emc.getResponse = {-> mockResponse}
+        emc.getSession = {-> mockRequest.getSession() }
+        emc.getParams = {-> mockParams}
+        emc.getFlash = {-> mockFlash}
+        emc.getChainModel = {-> mockChainModel}
+        emc.getActionName = {-> RequestContextHolder.currentRequestAttributes().actionName }
+        emc.getControllerName = {-> RequestContextHolder.currentRequestAttributes().controllerName }
+        emc.getServletContext = {-> mockRequest.servletContext }
 
         // Provide access to "g" taglib namespace.
-        clazz.metaClass.getG = {-> delegate }
+        emc.getG = {-> delegate }
     }
 
     /**
@@ -391,7 +396,8 @@ class MockUtils {
             isInfoEnabled: {-> true},
             isDebugEnabled: {-> enableDebug},
             isTraceEnabled: {-> false} ] as Log
-        clazz.metaClass.getLog = {-> mockLogger }
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.getLog = {-> mockLogger }
     }
 
     /**
@@ -579,15 +585,16 @@ class MockUtils {
     private static void addDynamicFinders(Class clazz, List testInstances) {
         // Implement the dynamic class methods for domain classes.
 
-        clazz.metaClass.static.findAll = { -> TEST_INSTANCES[clazz] }
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.static.findAll = { -> TEST_INSTANCES[clazz] }
 
-        clazz.metaClass.static.findAllWhere = { args = [:] ->
+        emc.static.findAllWhere = { args = [:] ->
             TEST_INSTANCES[clazz].findAll { instance ->
                 args.every { k,v -> instance[k] == v }
             }
         }
 
-        clazz.metaClass.static.methodMissing = { method, args ->
+        emc.static.methodMissing = { method, args ->
             def m = method =~ /^find(All)?By${DYNAMIC_FINDER_RE}$/
             if (m) {
                 def field = Introspector.decapitalize(m[0][2])
@@ -664,7 +671,8 @@ class MockUtils {
      * Adds methods that mock the behavior of the count() methods.
      */
     private static void addCountMethods(Class clazz, GrailsDomainClass dc, List testInstances) {
-         clazz.metaClass.static.count = {-> testInstances.size() }
+         def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+         emc.static.count = {-> testInstances.size() }
     }
 
     private static void addGetMethods(Class clazz, GrailsDomainClass dc, List testInstances) {
@@ -672,36 +680,37 @@ class MockUtils {
         Class idType = dc.identifier.type
 
         // First get()...
-        clazz.metaClass.static.get = { id ->
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.static.get = { id ->
             id = convertToType(id, idType)
             return testInstances.find { it?.id == id }
         }
 
-        clazz.metaClass.static.get = { Serializable id ->
+        emc.static.get = { Serializable id ->
             id = convertToType(id, idType)
             return testInstances.find { it?.id == id }
         }
 
         // ..then read()...
-        clazz.metaClass.static.read = { id ->
+        emc.static.read = { id ->
             // We don't do anything different to get(). We certainly
             // don't enforce the "read-only" aspect, which would over-
             // complicate the implementation without any real benefit.
             delegate.get id
         }
-        clazz.metaClass.static.read = { Serializable id ->
+        emc.static.read = { Serializable id ->
             delegate.get id
         }
 
         // ..then load()...
-        clazz.metaClass.static.load = { id -> delegate.get id }
+        emc.static.load = { id -> delegate.get id }
 
-       clazz.metaClass.static.load = { Serializable id ->
+       emc.static.load = { Serializable id ->
             delegate.get id
         }
 
         // ...then getAll()...
-        clazz.metaClass.static.getAll = { Object[] args ->
+        emc.static.getAll = { Object[] args ->
             def idList = args
             if (args.length == 1 && (args[0] instanceof List || args[0].getClass().array)) {
                 idList = args[0]
@@ -711,16 +720,16 @@ class MockUtils {
             return idList?.collect {id -> testInstances.find { it.id == id }}?.findAll { it != null }
         }
 
-        clazz.metaClass.static.getAll = { List idList ->
+        emc.static.getAll = { List idList ->
             idList = idList?.collect { convertToType(it, idType) }
             return idList?.collect {id -> testInstances.find { it.id == id }}?.findAll { it != null }
         }
 
         // ...then ident()...
-        clazz.metaClass.ident = {-> delegate.id }
+        emc.ident = {-> delegate.id }
 
         // ...and finally exists().
-        clazz.metaClass.static.exists = {id ->
+        emc.static.exists = {id ->
             id = convertToType(id, idType)
             return testInstances.find { it?.id == id } != null
         }
@@ -728,7 +737,8 @@ class MockUtils {
 
     private static void addListMethod(Class clazz, List testInstances) {
         // Implement the dynamic class methods for domain classes.
-        clazz.metaClass.static.list = { args = [:] ->
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.static.list = { args = [:] ->
             if (args) {
                 return applyQueryOptions(testInstances, args)
             }
@@ -741,7 +751,8 @@ class MockUtils {
      * domain classes.
      */
     private static void addOtherStaticMethods(Class clazz, List testInstances) {
-        clazz.metaClass.static.create = {-> clazz.newInstance()}
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.static.create = {-> clazz.newInstance()}
     }
 
     private static void triggerEvent(Object delegate, String eventName) {
@@ -762,7 +773,8 @@ class MockUtils {
 
     private static void addDynamicInstanceMethods(Class clazz, List testInstances) {
         // Add save() method.
-        clazz.metaClass.save = { Map args = [:] ->
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        emc.save = { Map args = [:] ->
             if (!validate()) {
                 if (args.failOnError) {
                     throw new ValidationException("Validation Error(s) occurred during save()", delegate.errors)
@@ -799,7 +811,7 @@ class MockUtils {
         }
 
         // Add delete() method.
-        clazz.metaClass.delete = { Map args = [:] ->
+        emc.delete = { Map args = [:] ->
             for (int i in 0..<testInstances.size()) {
                 if (testInstances[i] == delegate) {
                     triggerEvent delegate, 'beforeDelete'
@@ -811,12 +823,12 @@ class MockUtils {
         }
 
         // these don't need to do anything.
-        clazz.metaClass.discard = {-> delegate }
-        clazz.metaClass.refresh = {-> delegate }
-        clazz.metaClass.attach = {-> delegate }
+        emc.discard = {-> delegate }
+        emc.refresh = {-> delegate }
+        emc.attach = {-> delegate }
 
         // instanceOf() method - just delegates to regular operator
-        clazz.metaClass.instanceOf = { Class c -> c.isInstance(delegate) }
+        emc.instanceOf = { Class c -> c.isInstance(delegate) }
 
         // Add the "addTo*" and "removeFrom*" methods.
 
@@ -839,7 +851,7 @@ class MockUtils {
             // Capitalise the name of the property.
             def collectionName = propertyName[0].toUpperCase() + propertyName[1..-1]
 
-            clazz.metaClass."addTo$collectionName" = { arg ->
+            emc."addTo$collectionName" = { arg ->
                 def obj = delegate
                 if (obj."$propertyName" == null) {
                     obj."$propertyName" = GrailsClassUtils.createConcreteCollection(propertyType)
@@ -887,7 +899,7 @@ class MockUtils {
                 return obj
             }
 
-            clazz.metaClass."removeFrom$collectionName" = { arg ->
+            emc."removeFrom$collectionName" = { arg ->
                 if (arg instanceof Map) {
                     arg = createFromMap(arg, hasMany[propertyName])
                 }
@@ -981,32 +993,34 @@ class MockUtils {
             }
         }
 
+        def emc = GrailsMetaClassUtils.getExpandoMetaClass(clazz)
+        
         // Attach the instantiated constraints to the domain/command
         // object.
-        clazz.metaClass.getConstraints = {->
+        emc.getConstraints = {->
             constrainedProperties
         }
 
         // Add data binding capabilities
 
-        clazz.metaClass.constructor = { Map params ->
+        emc.constructor = { Map params ->
             def obj = BeanUtils.instantiateClass(delegate)
             DataBindingUtils.bindObjectToInstance(obj,params)
             return obj
         }
 
-        clazz.metaClass.setProperties = { Object o ->
+        emc.setProperties = { Object o ->
             DataBindingUtils.bindObjectToInstance(delegate,o)
         }
 
-        clazz.metaClass.getProperties = {->
+        emc.getProperties = {->
             new DataBindingLazyMetaPropertyMap(delegate)
         }
 
         // Add all the errors-related methods.
-        clazz.metaClass.getErrors = {-> getErrorsFor(errorsMap, delegate) }
-        clazz.metaClass.hasErrors = {-> getErrorsFor(errorsMap, delegate).hasErrors() }
-        clazz.metaClass.setErrors = { Errors errors ->
+        emc.getErrors = {-> getErrorsFor(errorsMap, delegate) }
+        emc.hasErrors = {-> getErrorsFor(errorsMap, delegate).hasErrors() }
+        emc.setErrors = { Errors errors ->
             if (!(errors instanceof GrailsMockErrors)) {
                 def mockErrors = new GrailsMockErrors(delegate)
                 mockErrors.addAllErrors errors
@@ -1014,11 +1028,11 @@ class MockUtils {
             }
             setErrorsFor(errorsMap, delegate, errors)
         }
-        clazz.metaClass.clearErrors = {-> clearErrorsFor(errorsMap, delegate) }
+        emc.clearErrors = {-> clearErrorsFor(errorsMap, delegate) }
 
         // Finally add the "validate()" method, which can simply be
         // used to test the constraints or used from code under test.
-        clazz.metaClass.validate = { Map args ->
+        emc.validate = { Map args ->
             if (args == null) args = [:]
             def obj = delegate
 
@@ -1078,7 +1092,7 @@ class MockUtils {
 
         // add no-arg attributes validator, just to be inline with what HibernatePluginSupport.addValidationMethods does.
         // It works lke validate(Map) with empty map
-        clazz.metaClass.validate = { ->
+        emc.validate = { ->
             beforeValidateHelper?.invokeBeforeValidate delegate, null
             validate([:])
         }
@@ -1087,11 +1101,11 @@ class MockUtils {
         // Validator is required for compatibility with HibernatePluginSupport.addValidationMethods.
         // Internally it call validator(Map) with evict parameter. Because current mock implementation of validator does not do any database interaction
         // so this validator works exactly the same way as validate()
-        clazz.metaClass.validate = { Boolean b -> validate([evict: b]) }
+        emc.validate = { Boolean b -> validate([evict: b]) }
 
         // add validator that validates only fields that names are passed in input list of fieldsToValdate.
         // All errors for the other fields are removed.
-        clazz.metaClass.validate = { List fieldsToValidate ->
+        emc.validate = { List fieldsToValidate ->
             beforeValidateHelper?.invokeBeforeValidate delegate, fieldsToValidate
             if (!validate([:]) && fieldsToValidate != null && !fieldsToValidate.isEmpty()) {
                 def result = new GrailsMockErrors(delegate)

@@ -18,6 +18,7 @@ package grails.test.mixin.webflow
 import grails.test.mixin.web.ControllerUnitTestMixin
 import groovy.transform.CompileStatic
 
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.junit.Assert
 
@@ -64,9 +65,10 @@ class WebFlowUnitTestMixin extends ControllerUnitTestMixin {
     @Override
     def <T> T mockController(Class<T> controllerClass) {
         super.mockController(controllerClass)
-        controllerClass.metaClass.getFlow = {-> this.testState.flow }
-        controllerClass.metaClass.getConversation = {-> this.testState.conversation }
-        controllerClass.metaClass.getCurrentEvent = {-> this.testState.currentEvent }
+        def mc = GrailsMetaClassUtils.getExpandoMetaClass(controllerClass)
+        mc.getFlow = {-> this.testState.flow }
+        mc.getConversation = {-> this.testState.conversation }
+        mc.getCurrentEvent = {-> this.testState.currentEvent }
         return controllerClass.newInstance()
     }
 

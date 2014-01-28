@@ -24,6 +24,7 @@ import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler
 import org.codehaus.groovy.grails.commons.GrailsClass
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.converters.api.ConvertersControllersApi
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
@@ -173,13 +174,11 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             controller
         }
 
-        controllerClass.metaClass.constructor = callable
+        GrailsMetaClassUtils.getExpandoMetaClass(controllerClass).constructor = callable
 
         return callable.call()
     }
     
-    // don't remove TypeCheckingMode.SKIP before GROOVY-6533 has been fixed
-    @CompileStatic(TypeCheckingMode.SKIP)
     protected GrailsClass createAndEnhance(Class controllerClass) {
         final GrailsControllerClass controllerArtefact = (GrailsControllerClass)grailsApplication.addArtefact(ControllerArtefactHandler.TYPE, controllerClass)
         controllerArtefact.initialize()
@@ -190,7 +189,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             enhancer.addApi(new ConvertersControllersApi())
             enhancer.addApi(new ControllerTagLibraryApi())
             enhancer.addApi(new ControllersMimeTypesApi())
-            enhancer.enhance(controllerClass.getMetaClass())
+            enhancer.enhance(GrailsMetaClassUtils.getExpandoMetaClass(controllerClass))
         }
         controllerArtefact
     }
