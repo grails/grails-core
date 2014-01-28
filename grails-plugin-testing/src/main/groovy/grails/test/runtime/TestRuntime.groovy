@@ -147,19 +147,19 @@ class TestRuntime {
     }
     
     protected void before(Description description) {
-        publishEvent("before", [description: description])
+        publishEvent("before", [description: description], [immediateDelivery: true])
     }
 
     protected void after(Description description, Throwable throwable) {
-        publishEvent("after", [description: description, throwable: throwable], [reverseOrderDelivery: true])
+        publishEvent("after", [description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
     }
 
     protected void beforeClass(Description description) {
-        publishEvent("beforeClass", [description: description])
+        publishEvent("beforeClass", [description: description], [immediateDelivery: true])
     }
 
     protected void afterClass(Description description, Throwable throwable) {
-        publishEvent("afterClass", [description: description, throwable: throwable], [reverseOrderDelivery: true])
+        publishEvent("afterClass", [description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
         close()
     }
 
