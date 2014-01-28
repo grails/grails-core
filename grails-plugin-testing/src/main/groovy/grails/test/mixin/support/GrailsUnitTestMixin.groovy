@@ -133,7 +133,7 @@ class GrailsUnitTestMixin extends TestMixinRuntimeSupport {
         runtime.publishEvent("mockCodec", [codecClass: codecClass])
     }
     
-    void defineBeans(boolean immediateDelivery = false, Closure<?> closure) {
+    void defineBeans(boolean immediateDelivery = true, Closure<?> closure) {
         runtime.publishEvent("defineBeans", [closure: closure], [immediateDelivery: immediateDelivery])
     }
     

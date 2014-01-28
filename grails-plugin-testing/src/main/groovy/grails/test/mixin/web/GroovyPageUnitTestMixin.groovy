@@ -73,7 +73,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
         final tagLookup = applicationContext.getBean(TagLibraryLookup)
 
         if (!applicationContext.containsBean('instanceTagLibraryApi')) {
-            defineBeans {
+            defineBeans(true) {
                 instanceTagLibraryApi(TagLibraryApi) { bean ->
                     bean.autowire = true
                 }
@@ -88,7 +88,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
             WebMetaUtils.enhanceTagLibMetaClass(tagLib, tagLookup)
         }
 
-        defineBeans {
+        defineBeans(true) {
             "${tagLib.fullName}"(tagLibClass) { bean ->
                 bean.autowire = true
             }

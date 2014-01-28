@@ -146,7 +146,7 @@ class DomainClassUnitTestMixin extends GrailsUnitTestMixin {
 
     protected Validator registerDomainClassValidator(GrailsDomainClass domain) {
         String validationBeanName = "${domain.fullName}Validator"
-        defineBeans {
+        defineBeans(true) {
             "${domain.fullName}"(domain.clazz) { bean ->
                 bean.singleton = false
                 bean.autowire = "byName"
