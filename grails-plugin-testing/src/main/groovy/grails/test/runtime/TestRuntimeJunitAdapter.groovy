@@ -8,6 +8,10 @@ import org.junit.runners.model.Statement
 
 @CompileStatic
 class TestRuntimeJunitAdapter {
+    static {
+        ExpandoMetaClass.enableGlobally()
+    }
+
     public TestRule newRule() {
         return new TestRule() {
             Statement apply(Statement statement, Description description) {

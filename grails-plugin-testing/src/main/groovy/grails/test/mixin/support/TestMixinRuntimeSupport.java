@@ -3,6 +3,7 @@ package grails.test.mixin.support;
 import grails.test.mixin.TestRuntimeAwareMixin;
 import grails.test.runtime.TestRuntime;
 import grails.test.runtime.TestRuntimeFactory;
+import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyObjectSupport;
 
 import java.util.Collections;
@@ -10,6 +11,10 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 public abstract class TestMixinRuntimeSupport extends GroovyObjectSupport implements TestRuntimeAwareMixin {
+    static {
+        ExpandoMetaClass.enableGlobally();
+    }
+
     private TestRuntime currentRuntime;
     private Set<String> features;
     private Class<?> testClass;
