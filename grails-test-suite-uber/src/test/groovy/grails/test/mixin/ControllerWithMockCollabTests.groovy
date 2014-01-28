@@ -1,5 +1,7 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact;
+
 import org.junit.Test
 
 /**
@@ -36,6 +38,7 @@ class ControllerWithMockCollabTests {
     }
 }
 
+@Artefact("Controller")
 class ControllerWithCollabController {
 
     def myCallable

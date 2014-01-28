@@ -1,5 +1,6 @@
 package grails.test.mixin
 
+import grails.artefact.Artefact;
 import grails.converters.XML
 import grails.persistence.Entity
 
@@ -238,6 +239,7 @@ class Author {
     static hasMany = [books: Book]
 }
 
+@Artefact("Controller")
 class BookController {
 
     static allowedMethods = [save: "POST", update: "POST", delete: "POST"]
