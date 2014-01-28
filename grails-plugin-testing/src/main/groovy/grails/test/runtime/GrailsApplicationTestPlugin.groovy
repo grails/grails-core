@@ -94,8 +94,9 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         loadedCodecs << codecClass
         DefaultGrailsCodecClass grailsCodecClass = new DefaultGrailsCodecClass(codecClass)
         grailsCodecClass.configureCodecMethods()
-        if(runtime.containsValueFor('grailsApplication') != null) {
-            ((GrailsApplication)runtime.getValue('grailsApplication')).addArtefact(CodecArtefactHandler.TYPE, grailsCodecClass)
+        if(runtime.containsValueFor('grailsApplication')) {
+            def grailsApplication = ((GrailsApplication)runtime.getValue('grailsApplication'))
+            grailsApplication.addArtefact(CodecArtefactHandler.TYPE, grailsCodecClass)
         }
     }
     
@@ -124,6 +125,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         if(runtime.containsValueFor('grailsApplication')) {
             ((DefaultGrailsApplication)runtime.getValue('grailsApplication'))?.clear()
         }
+        runtime.removeValue("loadedCodecs")
         //cleanupModifiedMetaClasses()
     }
     

@@ -109,6 +109,7 @@ class ControllerTestPlugin implements TestPlugin {
     
     protected void applicationInitialized(TestRuntime runtime, GrailsApplication grailsApplication) {
         mockDefaultCodecs(runtime)
+        grailsApplication.mainContext.getBean(DefaultCodecLookup).reInitialize()
         ((ConvertersConfigurationInitializer)grailsApplication.mainContext.getBean("convertersConfigurationInitializer")).initialize(grailsApplication)
         ConvertersPluginSupport.enhanceApplication(grailsApplication, grailsApplication.mainContext)
         ServletsGrailsPluginSupport.enhanceServletApi(grailsApplication.config)
