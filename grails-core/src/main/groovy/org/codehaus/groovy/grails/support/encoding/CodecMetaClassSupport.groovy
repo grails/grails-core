@@ -19,6 +19,7 @@ import grails.util.Environment
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsCodecClass
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.runtime.GStringImpl
 import org.codehaus.groovy.runtime.NullObject
 
@@ -117,6 +118,6 @@ class CodecMetaClassSupport {
             StringBuffer,
             StringBuilder,
             Object
-        ].each { it.getMetaClass()."${methodName}" << closure }
+        ].each { Class clazz -> GrailsMetaClassUtils.getExpandoMetaClass(clazz)."${methodName}" << closure }
     }
 }

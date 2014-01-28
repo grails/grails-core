@@ -313,7 +313,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             controller
         }
 
-        controllerClass.metaClass.constructor = callable
+        GrailsMetaClassUtils.getExpandoMetaClass(controllerClass).constructor = callable
 
         return callable.call()
     }
@@ -329,7 +329,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
             enhancer.addApi(new ConvertersControllersApi())
             enhancer.addApi(new ControllerTagLibraryApi())
             enhancer.addApi(new ControllersMimeTypesApi())
-            enhancer.enhance(controllerClass.metaClass)
+            enhancer.enhance(GrailsMetaClassUtils.getExpandoMetaClass(controllerClass))
         }
         controllerArtefact
     }

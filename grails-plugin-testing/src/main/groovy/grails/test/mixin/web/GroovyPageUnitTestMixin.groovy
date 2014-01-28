@@ -18,6 +18,7 @@ package grails.test.mixin.web
 import grails.artefact.Enhanced
 import groovy.text.Template
 
+import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
 import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler
 import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
@@ -93,7 +94,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
         if (!tagLibClass.getAnnotation(Enhanced)) {
             MetaClassEnhancer enhancer = new MetaClassEnhancer()
             enhancer.addApi(applicationContext.getBean('instanceTagLibraryApi'))
-            MetaClass mc = tagLib.getMetaClass()
+            MetaClass mc = GrailsMetaClassUtils.getMetaClass(tagLib)
             enhancer.enhance(mc)
             WebMetaUtils.enhanceTagLibMetaClass(tagLib, tagLookup)
         }

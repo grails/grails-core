@@ -71,7 +71,7 @@ class ConvertersPluginSupport {
         def getXMLMethod = { -> XML.parse((HttpServletRequest) delegate) }
         def getJSONMethod = { -> JSON.parse((HttpServletRequest) delegate) }
 
-        def requestMc = GroovySystem.metaClassRegistry.getMetaClass(HttpServletRequest)
+        def requestMc = GrailsMetaClassUtils.getExpandoMetaClass(HttpServletRequest)
         requestMc.getXML = getXMLMethod
         requestMc.getJSON = getJSONMethod
     }
