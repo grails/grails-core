@@ -81,6 +81,7 @@ import spock.lang.Shared;
 public class TestMixinTransformation implements ASTTransformation{
     private static final String RULE_FIELD_NAME_BASE = "$testRuntime";
     private static final String JUNIT_ADAPTER_FIELD_NAME = RULE_FIELD_NAME_BASE + "JunitAdapter";
+    private static final String JUNIT3_RULE_SETUP_TEARDOWN_APPLIED_KEY = "JUNIT3_RULE_SETUP_TEARDOWN_APPLIED_KEY";  
     public static final AnnotationNode MIXIN_METHOD_ANNOTATION = new AnnotationNode(new ClassNode(MixinMethod.class));
     private static final ClassNode MY_TYPE = new ClassNode(TestMixin.class);
     private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
@@ -328,15 +329,20 @@ public class TestMixinTransformation implements ASTTransformation{
             if(junitAdapterFieldNode==null) {
                 return;
             }
-            BlockStatement setUpMethodBody = getOrCreateNoArgsMethodBody(classNode, SET_UP_METHOD);
-            if(!hasExistingSetUp) {
-                setUpMethodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
-            }
-            BlockStatement tearDownMethodBody = getOrCreateNoArgsMethodBody(classNode, TEAR_DOWN_METHOD);
-            setUpMethodBody.getStatements().add(1, new ExpressionStatement(new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), SET_UP_METHOD, new VariableExpression("this"))));
-            tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), TEAR_DOWN_METHOD, new VariableExpression("this"))));
-            if(!hasExistingTearDown) {
-                tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
+
+            // add rule calls to junit setup/teardown only once, there might be several test mixins applied for the same class
+            if(classNode.redirect().getNodeMetaData(JUNIT3_RULE_SETUP_TEARDOWN_APPLIED_KEY) != Boolean.TRUE) {
+                BlockStatement setUpMethodBody = getOrCreateNoArgsMethodBody(classNode, SET_UP_METHOD);
+                if(!hasExistingSetUp) {
+                    setUpMethodBody.getStatements().add(0, new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), SET_UP_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
+                }
+                BlockStatement tearDownMethodBody = getOrCreateNoArgsMethodBody(classNode, TEAR_DOWN_METHOD);
+                setUpMethodBody.getStatements().add(1, new ExpressionStatement(new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), SET_UP_METHOD, new VariableExpression("this"))));
+                tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), TEAR_DOWN_METHOD, new VariableExpression("this"))));
+                if(!hasExistingTearDown) {
+                    tearDownMethodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("super"), TEAR_DOWN_METHOD, GrailsArtefactClassInjector.ZERO_ARGS)));
+                }
+                classNode.redirect().setNodeMetaData(JUNIT3_RULE_SETUP_TEARDOWN_APPLIED_KEY, Boolean.TRUE);
             }
         }
     }
