@@ -3,6 +3,7 @@ import grails.persistence.Entity
 
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
+import spock.lang.Ignore
 import spock.lang.Specification
 
 
@@ -31,6 +32,28 @@ class SomeClass {
 ''')
         then: 'no errors are thrown'
         c
+    }
+    
+    @Ignore
+    void 'Test comping a dynmaic finder call with the wrong number of arguments'() {
+        given:
+        def gcl = new GroovyClassLoader()
+        
+        when: 'a class marked with @GrailsTypeChecked invokes a dynamic finder with the wrong number of arguments'
+        gcl.parseClass('''
+package grails.compiler
+
+@GrailsTypeChecked
+class SomeClass {
+    def someMethod() {
+        Person.findAllByName('Hugh', 'Howey')
+    }
+}''')
+        
+        then: 'an error is thrown'
+        MultipleCompilationErrorsException e = thrown()
+        e.message.contains 'Cannot find matching method java.lang.Class#findAllByName'
+
     }
 
     void 'Test compiling invalid dynamic finder calls'() {
