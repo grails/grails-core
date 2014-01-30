@@ -14,6 +14,7 @@
  */
 package org.grails.databinding
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 class BindUsingSpec extends Specification {
@@ -22,6 +23,19 @@ class BindUsingSpec extends Specification {
         given:
         def binder = new SimpleDataBinder()
         def obj = new ClassWithBindUsingOnProperty()
+
+        when:
+        binder.bind(obj, new SimpleMapDataBindingSource([name: 'Jeff Was Here']))
+
+        then:
+        'JEFF WAS HERE' == obj.name
+    }
+
+    @Issue('GRAILS-11048')
+    void 'Test inheriting a property marked with BindUsing'() {
+        given:
+        def binder = new SimpleDataBinder()
+        def obj = new SubclassOfClassWithBindUsingOnProperty()
 
         when:
         binder.bind(obj, new SimpleMapDataBindingSource([name: 'Jeff Was Here']))
@@ -50,6 +64,9 @@ class ClassWithBindUsingOnProperty {
         obj, source -> source['name']?.toUpperCase()
     })
     String name
+}
+
+class SubclassOfClassWithBindUsingOnProperty extends ClassWithBindUsingOnProperty {
 }
 
 @BindUsing(MultiplyingBindingHelper)

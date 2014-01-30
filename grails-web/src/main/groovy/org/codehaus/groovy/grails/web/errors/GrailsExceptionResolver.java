@@ -41,6 +41,7 @@ import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.GrailsMVCException;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.util.WebUtils;
@@ -73,7 +74,9 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
     @Override
     public ModelAndView resolveException(HttpServletRequest request, HttpServletResponse response,
                                          Object handler, Exception ex) {
-
+        // don't reuse cached controller attribute 
+        request.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE);        
+        
         ex = findWrappedException(ex);
 
         filterStackTrace(ex);

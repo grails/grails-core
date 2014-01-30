@@ -41,6 +41,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.servlet.View;
@@ -135,6 +136,9 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             urlMappingInfo.configure(webRequest);
         }
 
+        // don't reuse cached controller attribute 
+        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);        
+        
         HttpServletResponse originalResponse = WrappedResponseHolder.getWrappedResponse();
 
         try {

@@ -372,8 +372,8 @@ class SimpleDataBinder implements DataBinder {
     
     protected Class<?> getReferencedTypeForCollectionInClass(String propertyName, Class clazz) {
         Class referencedType
-        try {
-            def field = clazz.getDeclaredField(propertyName)
+        def field = getField(clazz, propertyName)
+        if(field) {
             def genericType = field.genericType
             if (genericType instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType)genericType
@@ -383,11 +383,6 @@ class SimpleDataBinder implements DataBinder {
                 } else {
                     referencedType = pt.getActualTypeArguments()[0]
                 }
-            }
-        } catch (NoSuchFieldException e) {
-            final superClass = clazz.superclass
-            if(superClass != Object) {
-                referencedType = getReferencedTypeForCollectionInClass propertyName, superClass
             }
         }
         referencedType
@@ -476,10 +471,23 @@ class SimpleDataBinder implements DataBinder {
         converter
     }
 
+    protected Field getField(Class clazz, String fieldName) {
+        Field field = null
+        try {
+            field = clazz.getDeclaredField(fieldName)
+        } catch (NoSuchFieldException nsfe) {
+            def superClass = clazz.getSuperclass()
+            if(superClass != Object) {
+                field = getField(superClass, fieldName)
+            }
+        }
+        return field
+    }
+
     protected ValueConverter getValueConverterForField(obj, String propName) {
         def converter
         try {
-            def field = obj.getClass().getDeclaredField propName
+            def field = getField(obj.getClass(), propName)
             if (field) {
                 def annotation = field.getAnnotation BindUsing
                 if (annotation) {
@@ -622,10 +630,8 @@ class SimpleDataBinder implements DataBinder {
                     coll << propertyValue
                     isSet = true
                 } else {
-                    try {
-                        coll << convert(referencedType, propertyValue)
-                        isSet = true
-                    } catch(Exception e){}
+                    coll << convert(referencedType, propertyValue)
+                    isSet = true
                 }
             }
         }
