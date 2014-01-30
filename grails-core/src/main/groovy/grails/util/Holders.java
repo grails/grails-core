@@ -203,15 +203,15 @@ public class Holders {
         }
         catch (ClassNotFoundException e) {
             // shouldn't happen
-            LOG.error("Error initializing servlet context holder", e);
+            LOG.debug("Error initializing servlet context holder, not running in Servlet environment: " + e.getMessage(), e);
         }
         catch (InstantiationException e) {
             // shouldn't happen
-            LOG.error("Error initializing servlet context holder", e);
+            LOG.debug("Error initializing servlet context holder, not running in Servlet environment: " + e.getMessage(), e);
         }
         catch (IllegalAccessException e) {
             // shouldn't happen
-            LOG.error("Error initializing servlet context holder", e);
+            LOG.debug("Error initializing servlet context holder, not running in Servlet environment: " + e.getMessage(), e);
         }
     }
 }

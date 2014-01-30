@@ -44,10 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.map.DefaultedMap;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotatedNode;
 import org.codehaus.groovy.ast.AnnotationNode;
@@ -92,11 +88,13 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.codehaus.groovy.transform.sc.StaticCompileTransformation;
+import org.springframework.util.StringUtils;
 
 /**
  * Helper methods for working with Groovy AST trees.
@@ -171,7 +169,7 @@ public class GrailsASTUtils {
      * @return true if the property exists in the ClassNode
      */
     public static boolean hasProperty(ClassNode classNode, String propertyName) {
-        if (classNode == null || StringUtils.isBlank(propertyName)) {
+        if (classNode == null || !StringUtils.hasText(propertyName)) {
             return false;
         }
 
@@ -627,8 +625,13 @@ public class GrailsASTUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static ClassNode nonGeneric(ClassNode type, ClassNode wildcardReplacement) {
-        return replaceGenericsPlaceholders(type, DefaultedMap.decorate(emptyGenericsPlaceHoldersMap, wildcardReplacement));
+    public static ClassNode nonGeneric(ClassNode type, final ClassNode wildcardReplacement) {
+        return replaceGenericsPlaceholders(type, DefaultGroovyMethods.withDefault(emptyGenericsPlaceHoldersMap, new Closure(GrailsASTUtils.class) {
+            @Override
+            public Object call(Object... args) {
+                return wildcardReplacement;
+            }
+        }));
     }
     
     public static ClassNode replaceGenericsPlaceholders(ClassNode type, Map<String, ClassNode> genericsPlaceholders) {
@@ -873,12 +876,12 @@ public class GrailsASTUtils {
      * @return true if classNode is marked with any of the annotations in annotationsToLookFor
      */
     public static boolean hasAnyAnnotations(final ClassNode classNode, final Class<? extends Annotation>... annotationsToLookFor) {
-        return CollectionUtils.exists(Arrays.asList(annotationsToLookFor), new Predicate() {
-            @SuppressWarnings({ "unchecked", "rawtypes" })
-            public boolean evaluate(Object object) {
-                return hasAnnotation(classNode, (Class)object);
+        for (Class<? extends Annotation> annotationClass : annotationsToLookFor) {
+            if(hasAnnotation(classNode, annotationClass)) {
+                return true;
             }
-        });
+        }
+        return false;
     }
 
     public static void addMethodIfNotPresent(ClassNode controllerClassNode, MethodNode methodNode) {
