@@ -25,5 +25,5 @@ import groovy.transform.CompileStatic
  */
 @AnnotationCollector
 @CompileStatic(extensions=['grails.compiler.TypeCheckedExtensions'])
-@interface GrailsTypeChecked {
+@interface GrailsCompileStatic {
 }
