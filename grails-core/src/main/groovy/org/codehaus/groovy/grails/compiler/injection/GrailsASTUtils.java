@@ -84,7 +84,6 @@ import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.codehaus.groovy.syntax.Token;
@@ -621,15 +620,14 @@ public class GrailsASTUtils {
 
     @SuppressWarnings("unchecked")
     public static ClassNode nonGeneric(ClassNode type, final ClassNode wildcardReplacement) {
-        return replaceGenericsPlaceholders(type, DefaultGroovyMethods.withDefault(emptyGenericsPlaceHoldersMap, new Closure(GrailsASTUtils.class) {
-            @Override
-            public Object call(Object... args) {
-                return wildcardReplacement;
-            }
-        }));
+        return replaceGenericsPlaceholders(type, emptyGenericsPlaceHoldersMap, wildcardReplacement);
     }
     
     public static ClassNode replaceGenericsPlaceholders(ClassNode type, Map<String, ClassNode> genericsPlaceholders) {
+        return replaceGenericsPlaceholders(type, genericsPlaceholders, null);
+    }
+    
+    public static ClassNode replaceGenericsPlaceholders(ClassNode type, Map<String, ClassNode> genericsPlaceholders, ClassNode defaultPlaceholder) {
         if (type.isArray()) {
             return replaceGenericsPlaceholders(type.getComponentType(), genericsPlaceholders).makeArray();
         }
@@ -639,7 +637,12 @@ public class GrailsASTUtils {
         }
 
         if(type.isGenericsPlaceHolder() && genericsPlaceholders != null) {
-            ClassNode placeHolderType = genericsPlaceholders.get(type.getUnresolvedName());
+            final ClassNode placeHolderType;
+            if(genericsPlaceholders.containsKey(type.getUnresolvedName())) {
+                placeHolderType = genericsPlaceholders.get(type.getUnresolvedName());
+            } else {
+                placeHolderType = defaultPlaceholder;
+            }
             if(placeHolderType != null) {
                 return placeHolderType.getPlainNodeReference();
             } else {
