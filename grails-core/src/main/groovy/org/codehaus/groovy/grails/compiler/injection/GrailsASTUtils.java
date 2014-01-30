@@ -57,7 +57,6 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
-import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -831,12 +830,13 @@ public class GrailsASTUtils {
             }
             final List<Expression> featureNameExpressions = enhancedForArray.getExpressions();
             for(final String feature : enhancedFor) {
-                final boolean exists =  CollectionUtils.exists(featureNameExpressions, new Predicate() {
-                    @SuppressWarnings({ "unchecked", "rawtypes" })
-                    public boolean evaluate(Object object) {
-                        return object instanceof ConstantExpression && feature.equals(((ConstantExpression)object).getValue());  
+                boolean exists = false;
+                for(Expression expression : featureNameExpressions) {
+                    if(expression instanceof ConstantExpression && feature.equals(((ConstantExpression)expression).getValue())) {
+                        exists = true;
+                        break;
                     }
-                });
+                }
                 if(!exists) {
                     featureNameExpressions.add(new ConstantExpression(feature));
                 }
