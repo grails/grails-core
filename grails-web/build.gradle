@@ -14,7 +14,6 @@ dependencies {
     compile ("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
-    compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
     compile('commons-fileupload:commons-fileupload:1.2.2')
     compile "commons-io:commons-io:${commonsIOVersion}"
     compile "commons-lang:commons-lang:$commonsLangVersion"
