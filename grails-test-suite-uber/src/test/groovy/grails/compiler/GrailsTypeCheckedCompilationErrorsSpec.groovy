@@ -4,6 +4,7 @@ import grails.persistence.Entity
 import org.codehaus.groovy.control.MultipleCompilationErrorsException
 
 import spock.lang.Ignore
+import spock.lang.Issue
 import spock.lang.Specification
 
 
@@ -33,8 +34,9 @@ class SomeClass {
         then: 'no errors are thrown'
         c
     }
-    
-    @Ignore
+
+    @Ignore    
+    @Issue('GRAILS-11057')
     void 'Test comping a dynmaic finder call with the wrong number of arguments'() {
         given:
         def gcl = new GroovyClassLoader()
