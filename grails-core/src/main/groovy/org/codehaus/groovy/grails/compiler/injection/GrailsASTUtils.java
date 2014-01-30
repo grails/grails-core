@@ -621,7 +621,7 @@ public class GrailsASTUtils {
 
     @SuppressWarnings("unchecked")
     public static ClassNode nonGeneric(ClassNode type, final ClassNode wildcardReplacement) {
-        return replaceGenericsPlaceholders(type, DefaultGroovyMethods.withDefault(emptyGenericsPlaceHoldersMap, new Closure(this) {
+        return replaceGenericsPlaceholders(type, DefaultGroovyMethods.withDefault(emptyGenericsPlaceHoldersMap, new Closure(GrailsASTUtils.class) {
             @Override
             public Object call(Object... args) {
                 return wildcardReplacement;
