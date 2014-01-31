@@ -30,7 +30,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -48,6 +47,7 @@ import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -242,8 +242,8 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
             @Override
             public boolean match(String pattern, String path) {
                 if (path.endsWith(".class")) {
-                    String filename = FilenameUtils.getBaseName(path);
-                    if (filename.indexOf("$")>-1) return false;
+                    String filename = StringUtils.stripFilenameExtension(StringUtils.getFilename(path));
+                    if (filename.contains("$")) return false;
                 }
                 return super.match(pattern, path);
             }

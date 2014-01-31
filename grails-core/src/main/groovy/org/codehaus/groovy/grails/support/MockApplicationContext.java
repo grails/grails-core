@@ -16,7 +16,7 @@
 package org.codehaus.groovy.grails.support;
 
 import groovy.lang.GroovyObjectSupport;
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.BeanFactory;
@@ -59,7 +59,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
      * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
      */
     public void registerMockResource(String location) {
-        resources.add(new ClassPathResource(StringUtils.removeStart(location, "/")));
+        resources.add(new ClassPathResource(GrailsStringUtils.trimStart(location, "/")));
     }
 
     /**
@@ -67,7 +67,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
      * @param location the location of the resource. Example: /WEB-INF/grails-app/i18n/messages.properties
      */
     public void registerMockResource(String location, String contents) {
-        resources.add(new MockResource(StringUtils.removeStart(location, "/"), contents));
+        resources.add(new MockResource(GrailsStringUtils.trimStart(location, "/"), contents));
     }
 
     /**
@@ -289,7 +289,7 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
             throw new UnsupportedOperationException("Location patterns 'classpath:' and 'file:' not supported by implementation");
         }
 
-        locationPattern = StringUtils.removeStart(locationPattern, "/"); // starting with "**/" is OK
+        locationPattern = GrailsStringUtils.trimStart(locationPattern, "/"); // starting with "**/" is OK
         List<Resource> result = new ArrayList<Resource>();
         for (Resource res : resources) {
             String path = res instanceof ClassPathResource ? ((ClassPathResource) res).getPath() : res.getDescription();
@@ -302,15 +302,15 @@ public class MockApplicationContext extends GroovyObjectSupport implements WebAp
 
     public Resource getResource(String location) {
         for (Resource mockResource : resources) {
-            if (pathMatcher.match(mockResource.getDescription(), StringUtils.removeStart(location, "/"))) {
+            if (pathMatcher.match(mockResource.getDescription(), GrailsStringUtils.trimStart(location, "/"))) {
                 return mockResource;
             }
         }
         // Check for ignored resources and return null instead of a classpath resource in that case.
         for (String resourceLocation : ignoredClassLocations) {
             if (pathMatcher.match(
-                    StringUtils.removeStart(location, "/"),
-                    StringUtils.removeStart(resourceLocation, "/"))) {
+                    GrailsStringUtils.trimStart(location, "/"),
+                    GrailsStringUtils.trimStart(resourceLocation, "/"))) {
                 return null;
             }
         }

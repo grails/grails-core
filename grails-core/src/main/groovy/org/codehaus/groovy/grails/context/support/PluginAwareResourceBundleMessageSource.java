@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -49,6 +47,7 @@ import org.springframework.context.support.ReloadableResourceBundleMessageSource
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.StringUtils;
 
 /**
  * A ReloadableResourceBundleMessageSource that is capable of loading message sources from plugins.
@@ -108,7 +107,9 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                     basePath = WEB_INF_PLUGINS_PATH.substring(1) + plugin.getFileSystemName();
                 }
 
-                final String baseName = StringUtils.substringBefore(FilenameUtils.getBaseName(pluginBundle.getFilename()), "_");
+                String fileName = StringUtils.stripFilenameExtension(pluginBundle.getFilename());
+                int i = fileName.indexOf("_");
+                final String baseName = i > -1 ? fileName.substring(0, i) : fileName;
                 pluginBaseNames.add(basePath + "/grails-app/i18n/" + baseName);
             }
         }

@@ -15,8 +15,8 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.validator.EmailValidator;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.springframework.validation.Errors;
 
 /**
@@ -66,7 +66,7 @@ public class EmailConstraint extends AbstractConstraint {
         EmailValidator emailValidator = EmailValidator.getInstance();
         Object[] args = new Object[] { constraintPropertyName, constraintOwningClass, propertyValue };
         String value = propertyValue.toString();
-        if (StringUtils.isBlank(value)) {
+        if (GrailsStringUtils.isBlank(value)) {
             return;
         }
 

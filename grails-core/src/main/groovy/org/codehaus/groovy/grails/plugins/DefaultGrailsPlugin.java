@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
@@ -366,14 +365,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
         catch (IllegalArgumentException e) {
             if (GrailsUtil.isDevelopmentEnv()) {
-                LOG.debug("Cannot load plug-in resource watch list from [" + ArrayUtils.toString(watchedResourcePatternReferences) +
+                LOG.debug("Cannot load plug-in resource watch list from [" + DefaultGroovyMethods.inspect(watchedResourcePatternReferences) +
                         "]. This means that the plugin " + this +
                         ", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
         }
         catch (IOException e) {
             if (GrailsUtil.isDevelopmentEnv()) {
-                LOG.debug("Cannot load plug-in resource watch list from [" + ArrayUtils.toString(watchedResourcePatternReferences) +
+                LOG.debug("Cannot load plug-in resource watch list from [" + DefaultGroovyMethods.inspect(watchedResourcePatternReferences) +
                         "]. This means that the plugin " + this +
                         ", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
@@ -587,7 +586,9 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                 try {
                     Resource[] resources = resolver.getResources(resourcesReference);
                     if (resources.length > 0) {
-                        watchedResources = (Resource[])ArrayUtils.addAll(watchedResources, resources);
+                        List<Resource> newList = Arrays.asList(watchedResources);
+                        newList.addAll(Arrays.asList(resources));
+                        watchedResources = newList.toArray(new Resource[newList.size()]);
                     }
                 }
                 catch (Exception ignored) {

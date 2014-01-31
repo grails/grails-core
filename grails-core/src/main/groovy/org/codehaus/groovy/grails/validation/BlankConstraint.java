@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.springframework.validation.Errors;
 
 /**
@@ -72,7 +72,7 @@ public class BlankConstraint extends AbstractVetoingConstraint {
 
     @Override
     protected boolean processValidateWithVetoing(Object target, Object propertyValue, Errors errors) {
-        if (propertyValue instanceof String && StringUtils.isBlank((String)propertyValue)) {
+        if (propertyValue instanceof String && GrailsStringUtils.isBlank((String)propertyValue)) {
             if (!blank) {
                 Object[] args = new Object[] { constraintPropertyName, constraintOwningClass };
                 rejectValue(target, errors, ConstrainedProperty.DEFAULT_BLANK_MESSAGE_CODE,

@@ -15,7 +15,8 @@
  */
 package grails.web;
 
-import org.apache.commons.lang.StringUtils;
+
+import org.springframework.util.StringUtils;
 
 /**
  * URL converter that allows for hyphenated URLs
@@ -26,7 +27,7 @@ import org.apache.commons.lang.StringUtils;
 public class HyphenatedUrlConverter implements UrlConverter {
 
     public String toUrlElement(String propertyOrClassName) {
-        if (StringUtils.isBlank(propertyOrClassName)) {
+        if (!StringUtils.hasText(propertyOrClassName)) {
             return propertyOrClassName;
         }
 

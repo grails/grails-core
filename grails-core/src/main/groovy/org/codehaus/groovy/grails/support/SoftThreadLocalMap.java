@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.grails.support;
 
-import java.util.Collections;
+import org.springframework.util.ConcurrentReferenceHashMap;
+
 import java.util.Map;
 
-import org.apache.commons.collections.map.ReferenceMap;
 
 /**
  * Creates a InheritableThreadLocal with an intial value of a Map.
@@ -34,6 +34,6 @@ public class SoftThreadLocalMap extends InheritableThreadLocal<Map> {
      */
     @Override
     protected Map initialValue() {
-        return Collections.synchronizedMap(new ReferenceMap(ReferenceMap.SOFT, ReferenceMap.SOFT));
+        return new ConcurrentReferenceHashMap();
     }
 }

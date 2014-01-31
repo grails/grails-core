@@ -51,7 +51,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.CompilationFailedException;
@@ -60,6 +59,7 @@ import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.grails.support.ParentApplicationContextAware;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -496,7 +496,7 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
                 else {
                     failedPlugins.put(plugin.getName(), plugin);
                     LOG.warn("WARNING: Plugin [" + plugin.getName() + "] cannot be loaded because its dependencies [" +
-                            ArrayUtils.toString(plugin.getDependencyNames()) + "] cannot be resolved");
+                            DefaultGroovyMethods.inspect(plugin.getDependencyNames()) + "] cannot be resolved");
                 }
             }
         }

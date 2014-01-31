@@ -18,11 +18,7 @@ package grails.util;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import groovy.lang.Writable;
-import groovy.transform.CompileStatic;
-import groovy.util.XmlSlurper;
 import groovy.util.slurpersupport.GPathResult;
-import groovy.xml.FactorySupport;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
@@ -40,11 +36,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
-import org.xml.sax.SAXException;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -83,7 +75,11 @@ public class GrailsUtil {
                         mf = new Manifest(inputStream);
                     }
                     finally {
-                        IOUtils.closeQuietly(inputStream);
+                        try {
+                            inputStream.close();
+                        } catch (IOException e) {
+                            // ignore
+                        }
                     }
                     String implTitle = mf.getMainAttributes().getValue(Attributes.Name.IMPLEMENTATION_TITLE);
                     if (!isBlank(implTitle) && implTitle.equals(GRAILS_IMPLEMENTATION_TITLE)) {

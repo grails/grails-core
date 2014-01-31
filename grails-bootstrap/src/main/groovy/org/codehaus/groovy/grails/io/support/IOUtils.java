@@ -24,19 +24,7 @@ import org.xml.sax.SAXNotSupportedException;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -336,6 +324,20 @@ public class IOUtils {
             }
             catch (IOException ex) {
             }
+        }
+    }
+
+    /**
+     * Closes a closeable gracefully without throwing exceptions etc.
+     *
+     * @param closeable The closeable
+     */
+    public static void closeQuietly(Closeable closeable) {
+        try {
+            if(closeable != null)
+                closeable.close();
+        } catch (IOException e) {
+            // ignore
         }
     }
 
