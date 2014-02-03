@@ -11,6 +11,8 @@ dependencies {
         exclude module:'commons-logging'
     }
 
+    compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
+
     compile ("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }

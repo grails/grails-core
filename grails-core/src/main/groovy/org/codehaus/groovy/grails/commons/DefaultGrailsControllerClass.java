@@ -38,8 +38,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.collections.Predicate;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.AntPathMatcher;
 
@@ -300,11 +298,13 @@ public class DefaultGrailsControllerClass extends AbstractInjectableGrailsClass 
             return true;
         }
 
-        return CollectionUtils.exists((List)value, new Predicate() {
-            public boolean evaluate(Object method) {
-                return httpMethod.equalsIgnoreCase(method.toString());
+        List values = (List)value;
+        for (Object method : values) {
+            if(httpMethod.equalsIgnoreCase(method.toString())) {
+                return true;
             }
-        });
+        }
+        return false;
     }
 
     public boolean isInterceptedAfter(GroovyObject controller, String action) {

@@ -19,11 +19,11 @@ import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.Holders
 import groovy.transform.CompileStatic
-import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsStringUtils
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
@@ -96,7 +96,7 @@ class GrailsProjectPluginLoader extends BaseSettingsApi {
                 Holders.setPluginManager(pluginManager)
                 def baseDescriptor = pluginSettings.basePluginDescriptor
                 if (baseDescriptor) {
-                    def baseName = FilenameUtils.getBaseName(baseDescriptor.filename)
+                    def baseName = GrailsStringUtils.getFileBasename(baseDescriptor.filename)
                     def plugin = pluginManager.getGrailsPluginForClassName(baseName)
                     if (plugin) {
                         plugin.basePlugin = true

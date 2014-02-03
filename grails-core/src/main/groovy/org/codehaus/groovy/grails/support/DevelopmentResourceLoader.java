@@ -24,10 +24,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.Resource;
@@ -112,9 +112,9 @@ public class DevelopmentResourceLoader extends DefaultResourceLoader {
 
             BuildSettings settings = BuildSettingsHolder.getSettings();
             PluginBuildSettings pluginBuildSettings = org.codehaus.groovy.grails.plugins.GrailsPluginUtils.getPluginBuildSettings();
-            String pluginPath = StringUtils.substringAfter(noWebInf, SLASH);
-            String pluginName = StringUtils.substringBefore(pluginPath, SLASH);
-            String remainingPath = StringUtils.substringAfter(pluginPath, SLASH);
+            String pluginPath = GrailsStringUtils.substringAfter(noWebInf, SLASH);
+            String pluginName = GrailsStringUtils.substringBefore(pluginPath, SLASH);
+            String remainingPath = GrailsStringUtils.substringAfter(pluginPath, SLASH);
             org.codehaus.groovy.grails.io.support.Resource r = pluginBuildSettings.getPluginDirForName(pluginName);
             if (r != null) {
                 try {

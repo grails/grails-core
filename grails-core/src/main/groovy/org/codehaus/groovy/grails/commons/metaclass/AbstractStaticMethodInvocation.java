@@ -15,9 +15,10 @@
  */
 package org.codehaus.groovy.grails.commons.metaclass;
 
+import org.springframework.core.style.ToStringCreator;
+
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
 
 /**
  * @author Steven Devijver
@@ -50,6 +51,6 @@ public abstract class AbstractStaticMethodInvocation implements StaticMethodInvo
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append("Pattern", pattern).toString();
+        return new ToStringCreator(this).append("Pattern", pattern).toString();
     }
 }

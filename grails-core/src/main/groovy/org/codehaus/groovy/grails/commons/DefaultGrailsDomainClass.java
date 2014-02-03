@@ -28,13 +28,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.GrailsDomainException;
 import org.codehaus.groovy.grails.exceptions.InvalidPropertyException;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.Validator;
 
 /**
@@ -301,7 +301,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
                 // First check whether there is an explicit relationship
                 // mapping for this property (as provided by "mappedBy").
                 String mappingProperty = (String)mappedBy.get(property.getName());
-                if (!StringUtils.isBlank(mappingProperty)) {
+                if (StringUtils.hasText(mappingProperty)) {
                     // First find the specified property on the related class, if it exists.
                     PropertyDescriptor pd = findProperty(GrailsClassUtils.getPropertiesOfType(relatedClassType, getClazz()), mappingProperty);
 
@@ -525,7 +525,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
             // if there is only one property on many-to-one side of the relationship then
             // try to establish if it is bidirectional
             if (descriptors.length == 1 && isNotMappedToDifferentProperty(property,relatedClassPropertyName, mappedBy)) {
-                if (!StringUtils.isBlank(relatedClassPropertyName)) {
+                if (StringUtils.hasText(relatedClassPropertyName)) {
                     property.setReferencePropertyName(relatedClassPropertyName);
                     // get the type of the property
                     relatedClassPropertyType = GrailsClassUtils.getPropertyType(propType, relatedClassPropertyName);
@@ -699,7 +699,7 @@ public class DefaultGrailsDomainClass extends AbstractGrailsClass implements Gra
      */
     @Override
     public String getName() {
-        return ClassUtils.getShortClassName(super.getName());
+        return ClassUtils.getShortName(super.getName());
     }
 
     /* (non-Javadoc)

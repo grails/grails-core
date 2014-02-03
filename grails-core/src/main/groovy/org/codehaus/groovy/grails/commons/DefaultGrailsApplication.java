@@ -35,7 +35,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
@@ -49,6 +48,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 /**
  * Default implementation of the GrailsApplication interface that manages application loading,
@@ -385,7 +385,7 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
      * @return Either the Class instance or null if it doesn't exist
      */
     public Class<?> getClassForName(String className) {
-        if (StringUtils.isBlank(className)) {
+        if (!StringUtils.hasText(className)) {
             return null;
         }
 

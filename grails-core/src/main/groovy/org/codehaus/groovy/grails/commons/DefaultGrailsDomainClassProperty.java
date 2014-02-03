@@ -26,11 +26,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
+import org.springframework.core.style.ToStringCreator;
+import org.springframework.util.ClassUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 
@@ -330,7 +330,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      * @see org.codehaus.groovy.grails.commons.GrailsDomainClassProperty#getTypePropertyName()
      */
     public String getTypePropertyName() {
-        String shortTypeName = ClassUtils.getShortClassName(type);
+        String shortTypeName = ClassUtils.getShortName(type);
         return shortTypeName.substring(0,1).toLowerCase(Locale.ENGLISH) + shortTypeName.substring(1);
     }
 
@@ -419,7 +419,7 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
         else if (isEmbedded()) {
             assType = "embedded";
         }
-        return new ToStringBuilder(this)
+        return new ToStringCreator(this)
                    .append("name", name)
                    .append("type", type)
                    .append("persistent", isPersistent())

@@ -22,11 +22,11 @@ import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.core.style.ToStringCreator;
 import org.springframework.util.Assert;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.Errors;
@@ -99,7 +99,7 @@ public abstract class AbstractConstraint implements Constraint {
         }
 
         // Skip blank values if desired.
-        if (skipBlankValues() && propertyValue instanceof String && StringUtils.isBlank((String) propertyValue)) {
+        if (skipBlankValues() && propertyValue instanceof String && GrailsStringUtils.isBlank((String) propertyValue)) {
             return;
         }
 
@@ -243,7 +243,7 @@ public abstract class AbstractConstraint implements Constraint {
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this).append(constraintParameter).toString();
+        return new ToStringCreator(this).append(constraintParameter).toString();
     }
 
     /**

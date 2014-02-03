@@ -40,10 +40,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 
 /**
@@ -143,7 +143,7 @@ public class GrailsDomainConfigurationUtil {
                     // ignore (to support Hibernate entities)
                 }
 
-                if (StringUtils.isBlank(refPropertyName)) {
+                if (!StringUtils.hasText(refPropertyName)) {
                     GrailsDomainClassProperty[] referencedProperties = referenced.getPersistentProperties();
                     for (GrailsDomainClassProperty referencedProp : referencedProperties) {
                         // for bi-directional circular dependencies we don't want the other side

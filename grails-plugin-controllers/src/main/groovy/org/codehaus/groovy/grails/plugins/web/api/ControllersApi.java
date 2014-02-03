@@ -424,6 +424,12 @@ public class ControllersApi extends CommonWebApi {
                 entityIdentifierValue = webRequest != null ? webRequest.getParams().getIdentifier() : null;
             }
         }
+        if(entityIdentifierValue instanceof String) {
+            entityIdentifierValue = ((String)entityIdentifierValue).trim();
+            if("".equals(entityIdentifierValue) || "null".equals(entityIdentifierValue)) {
+                entityIdentifierValue = null;
+            }
+        }
         if(entityIdentifierValue != null) {
             commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
         } else {

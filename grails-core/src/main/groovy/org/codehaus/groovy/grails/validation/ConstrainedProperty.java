@@ -27,13 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.validation.exceptions.ConstraintException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.context.MessageSource;
+import org.springframework.core.style.ToStringCreator;
 import org.springframework.util.Assert;
 import org.springframework.validation.Errors;
 
@@ -1056,7 +1056,7 @@ public class ConstrainedProperty {
      */
     @Override
     public String toString() {
-        return new ToStringBuilder(this)
+        return new ToStringCreator(this)
                    .append(owningClass)
                    .append(propertyName)
                    .append(propertyType)

@@ -15,9 +15,10 @@
  */
 package grails.web;
 
+import org.springframework.util.StringUtils;
+
 import java.util.Locale;
 
-import org.apache.commons.lang.StringUtils;
 
 /**
  * URL converter that allows for camel case URLs
@@ -28,7 +29,7 @@ import org.apache.commons.lang.StringUtils;
 public class CamelCaseUrlConverter implements UrlConverter {
 
     public String toUrlElement(String propertyOrClassName) {
-        if (StringUtils.isBlank(propertyOrClassName)) {
+        if (!StringUtils.hasText(propertyOrClassName)) {
             return propertyOrClassName;
         }
         if (propertyOrClassName.length() > 1 && Character.isUpperCase(propertyOrClassName.charAt(0)) &&

@@ -22,9 +22,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
  * Provides the base implementation responsible for performing dynamic method invocation
@@ -129,7 +129,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
         Object[] arguments, InvocationCallback callback) {
         if (LOG.isTraceEnabled()) {
             LOG.debug("[DynamicMethods] Attempting invocation of dynamic method [" + methodName +
-                    "] on target [" + object + "] with arguments [" + ArrayUtils.toString(arguments) + "]");
+                    "] on target [" + object + "] with arguments [" + DefaultGroovyMethods.inspect(arguments) + "]");
         }
         for (DynamicMethodInvocation methodInvocation : dynamicMethodInvocations) {
             if (methodInvocation.isMethodMatch(methodName)) {
@@ -165,7 +165,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
     public Object invokeConstructor(Object[] arguments, InvocationCallback callBack) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[DynamicMethods] Attempting invocation of dynamic constructor with arguments [" +
-                    ArrayUtils.toString(arguments) + "]");
+                    DefaultGroovyMethods.inspect(arguments) + "]");
         }
 
         for (DynamicConstructor constructor : dynamicConstructors) {
@@ -187,7 +187,7 @@ public abstract class AbstractDynamicMethods implements DynamicMethods {
             Object[] arguments, InvocationCallback callBack) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("[DynamicMethods] Attempting invocation of dynamic static method [" + methodName +
-                    "] on target [" + object + "] with arguments [" + ArrayUtils.toString(arguments) + "]");
+                    "] on target [" + object + "] with arguments [" + DefaultGroovyMethods.inspect(arguments) + "]");
         }
         for (StaticMethodInvocation methodInvocation : staticMethodInvocations) {
             if (methodInvocation.isMethodMatch(methodName)) {

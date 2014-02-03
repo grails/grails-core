@@ -25,12 +25,12 @@ import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.io.IOUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader;
 import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.exceptions.CompilationFailedException;
+import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;

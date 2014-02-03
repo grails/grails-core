@@ -30,21 +30,8 @@ import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -54,6 +41,7 @@ import org.springframework.beans.FatalBeanException;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 /**
  * Utility methods for dealing with Grails class artifacts.
@@ -219,7 +207,7 @@ public class GrailsClassUtils {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public static Object getPropertyValueOfNewInstance(Class clazz, String propertyName, Class<?> propertyType) {
         // validate
-        if (clazz == null || StringUtils.isBlank(propertyName)) {
+        if (clazz == null || !StringUtils.hasText(propertyName)) {
             return null;
         }
 
@@ -241,7 +229,7 @@ public class GrailsClassUtils {
      */
     public static Object getPropertyValueOfNewInstance(Class<?> clazz, String propertyName) {
         // validate
-        if (clazz == null || StringUtils.isBlank(propertyName)) {
+        if (clazz == null || !StringUtils.hasText(propertyName)) {
             return null;
         }
 
@@ -293,7 +281,7 @@ public class GrailsClassUtils {
      * @return The property type or null if none exists
      */
     public static Class<?> getPropertyType(Class<?> clazz, String propertyName) {
-        if (clazz == null || StringUtils.isBlank(propertyName)) {
+        if (clazz == null || !StringUtils.hasText(propertyName)) {
             return null;
         }
 
@@ -919,7 +907,7 @@ public class GrailsClassUtils {
     @SuppressWarnings("rawtypes")
     public static boolean isPropertyInherited(Class clz, String propertyName) {
         if (clz == null) return false;
-        Assert.isTrue(!StringUtils.isBlank(propertyName), "Argument [propertyName] cannot be null or blank");
+        Assert.isTrue(StringUtils.hasText(propertyName), "Argument [propertyName] cannot be null or blank");
 
         Class<?> superClass = clz.getSuperclass();
 
@@ -976,7 +964,7 @@ public class GrailsClassUtils {
      */
     @Deprecated
     public static String getLogicalName(String name, String trailingName) {
-        if (!StringUtils.isBlank(trailingName)) {
+        if (StringUtils.hasText(trailingName)) {
             String shortName = getShortName(name);
             if (shortName.indexOf(trailingName) > - 1) {
                 return shortName.substring(0, shortName.length() - trailingName.length());
@@ -1010,7 +998,7 @@ public class GrailsClassUtils {
      * @return true if it is a javabean property method
      */
     public static boolean isGetter(String name, Class<?>[] args) {
-        if (StringUtils.isBlank(name) || args == null)return false;
+        if (!StringUtils.hasText(name) || args == null)return false;
         if (args.length != 0)return false;
 
         if (name.startsWith("get")) {
@@ -1031,7 +1019,7 @@ public class GrailsClassUtils {
      * @return The property name equivalent
      */
     public static String getPropertyForGetter(String getterName) {
-        if (StringUtils.isBlank(getterName))return null;
+        if (!StringUtils.hasText(getterName))return null;
 
         if (getterName.startsWith("get")) {
             String prop = getterName.substring(3);
@@ -1064,7 +1052,7 @@ public class GrailsClassUtils {
      * @return The property name equivalent
      */
     public static String getPropertyForSetter(String setterName) {
-        if (StringUtils.isBlank(setterName))return null;
+        if (!StringUtils.hasText(setterName))return null;
 
         if (setterName.startsWith("set")) {
             String prop = setterName.substring(3);
@@ -1075,7 +1063,7 @@ public class GrailsClassUtils {
 
     @SuppressWarnings("rawtypes")
     public static boolean isSetter(String name, Class[] args) {
-        if (StringUtils.isBlank(name) || args == null)return false;
+        if (!StringUtils.hasText(name) || args == null)return false;
 
         if (name.startsWith("set")) {
             if (args.length != 1) return false;
@@ -1167,7 +1155,7 @@ public class GrailsClassUtils {
      */
     @Deprecated
     public static String getClassName(String logicalName, String trailingName) {
-        Assert.isTrue(!StringUtils.isBlank(logicalName), "Argument [logicalName] cannot be null or blank");
+        Assert.isTrue(StringUtils.hasText(logicalName), "Argument [logicalName] cannot be null or blank");
 
         String className = logicalName.substring(0,1).toUpperCase() + logicalName.substring(1);
         if (trailingName != null) className = className + trailingName;

@@ -23,11 +23,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.lang.ArrayUtils;
+import org.codehaus.groovy.grails.commons.GrailsArrayUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.codehaus.groovy.reflection.CachedMethod;
 import org.codehaus.groovy.runtime.metaclass.ReflectionMetaMethod;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author Graeme Rocher
@@ -92,7 +93,7 @@ public abstract class BaseApiProvider {
                             if (arguments.length == 0) {
                                 return super.invoke(apiInstance, new Object[]{object});
                             }
-                            return super.invoke(apiInstance, ArrayUtils.add(checkForGStrings(arguments), 0, object));
+                            return super.invoke(apiInstance, (Object[])GrailsArrayUtils.add(checkForGStrings(arguments), 0, object));
                         }
 
                         private Object[] checkForGStrings(Object[] arguments) {
@@ -102,6 +103,15 @@ public abstract class BaseApiProvider {
                                 }
                             }
                             return arguments;
+                        }
+
+                        @Override
+                        public CachedClass[] getParameterTypes() {
+                            final CachedClass[] paramTypes = method.getParameterTypes();
+                            if (paramTypes.length > 0) {
+                                return (CachedClass[]) GrailsArrayUtils.subarray(paramTypes, 1, paramTypes.length);
+                            }
+                            return paramTypes;
                         }
                     });
                 }

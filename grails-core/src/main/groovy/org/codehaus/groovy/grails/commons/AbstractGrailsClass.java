@@ -21,13 +21,13 @@ import grails.web.Action;
 import groovy.lang.GroovyObject;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
-import org.apache.commons.lang.ClassUtils;
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.exceptions.NewInstanceCreationException;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.util.Assert;
+import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Constructor;
@@ -72,10 +72,10 @@ public abstract class AbstractGrailsClass implements GrailsClass {
         fullName = clazz.getName();
         packageName = ClassUtils.getPackageName(clazz);
         naturalName = GrailsNameUtils.getNaturalName(clazz.getName());
-        shortName = ClassUtils.getShortClassName(clazz);
+        shortName = ClassUtils.getShortName(clazz);
         name = GrailsNameUtils.getLogicalName(clazz, trailingName);
         propertyName = GrailsNameUtils.getPropertyNameRepresentation(shortName);
-        if (StringUtils.isBlank(name)) {
+        if (!StringUtils.hasText(name)) {
             logicalPropertyName = propertyName;
         }
         else {
