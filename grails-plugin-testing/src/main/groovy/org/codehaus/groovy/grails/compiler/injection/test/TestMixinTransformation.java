@@ -269,7 +269,7 @@ public class TestMixinTransformation implements ASTTransformation{
         ClassNode junitAdapterType = ClassHelper.make(TestRuntimeJunitAdapter.class);
         FieldNode junitAdapterFieldNode = classNode.addField(JUNIT_ADAPTER_FIELD_NAME, Modifier.STATIC, junitAdapterType, new ConstructorCallExpression(junitAdapterType, MethodCallExpression.NO_ARGUMENTS));
         boolean spockTest = isSpockTest(classNode);
-        FieldNode staticRuleFieldNode = classNode.addField(RULE_FIELD_NAME_BASE + "StaticClassRule", Modifier.PRIVATE | Modifier.STATIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), "newClassRule", MethodCallExpression.NO_ARGUMENTS));
+        FieldNode staticRuleFieldNode = classNode.addField(RULE_FIELD_NAME_BASE + "StaticClassRule", Modifier.PRIVATE | Modifier.STATIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), "newClassRule", new ClassExpression(classNode)));
         AnnotationNode classRuleAnnotation = new AnnotationNode(ClassHelper.make(ClassRule.class));
         if(spockTest) {
             // @ClassRule must be added to @Shared field in spock
@@ -284,7 +284,7 @@ public class TestMixinTransformation implements ASTTransformation{
             staticRuleFieldNode.addAnnotation(classRuleAnnotation);
         }
 
-        FieldNode ruleFieldNode = classNode.addField(RULE_FIELD_NAME_BASE + "Rule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), "newRule", MethodCallExpression.NO_ARGUMENTS));
+        FieldNode ruleFieldNode = classNode.addField(RULE_FIELD_NAME_BASE + "Rule", Modifier.PUBLIC, ClassHelper.make(TestRule.class), new MethodCallExpression(new FieldExpression(junitAdapterFieldNode), "newRule", new VariableExpression("this")));
         ruleFieldNode.addAnnotation(new AnnotationNode(ClassHelper.make(Rule.class)));
         if(spockTest) {
             addSpockFieldMetadata(ruleFieldNode, 0);

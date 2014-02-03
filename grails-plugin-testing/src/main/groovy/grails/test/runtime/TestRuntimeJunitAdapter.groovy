@@ -30,24 +30,24 @@ import org.junit.runners.model.Statement
  * @since 2.4.0
  *
  */
-@CompileStatic
+//@CompileStatic
 class TestRuntimeJunitAdapter {
     static {
         ExpandoMetaClass.enableGlobally()
     }
 
-    public TestRule newRule() {
+    public TestRule newRule(final Object testInstance) {
         return new TestRule() {
             Statement apply(Statement statement, Description description) {
                 return new Statement() {
                     public void evaluate() throws Throwable {
-                        TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(description.testClass)
-                        runtime.before(description)
+                        TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testInstance.getClass())
+                        runtime.before(testInstance, description)
                         try {
                             statement.evaluate()
                         } catch (Throwable t) {
                             try {
-                                runtime.after(description, t)
+                                runtime.after(testInstance, description, t)
                             } catch (Throwable t2) {
                                 // ignore
                             } finally {
@@ -55,25 +55,25 @@ class TestRuntimeJunitAdapter {
                                 throw t
                             }
                         }
-                        runtime.after(description, null)
+                        runtime.after(testInstance, description, null)
                     }
                 }
             }
         }
     }
 
-    public TestRule newClassRule() {
+    public TestRule newClassRule(final Class testClass) {
         return new TestRule() {
             Statement apply(Statement statement, Description description) {
                 return new Statement() {
                     public void evaluate() throws Throwable {
-                        TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(description.testClass)
-                        runtime.beforeClass(description)
+                        TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testClass)
+                        runtime.beforeClass(testClass, description)
                         try {
                             statement.evaluate()
                         } catch (Throwable t) {
                             try {
-                                runtime.afterClass(description, t)
+                                runtime.afterClass(testClass, description, t)
                             } catch (Throwable t2) {
                                 // ignore
                             } finally {
@@ -81,7 +81,7 @@ class TestRuntimeJunitAdapter {
                                 throw t
                             }
                         }
-                        runtime.afterClass(description, null)
+                        runtime.afterClass(testClass, description, null)
                     }
                 }
             }
