@@ -16,6 +16,8 @@
 
 package grails.test.runtime;
 
+import java.lang.reflect.Modifier;
+
 import grails.async.Promises
 import grails.spring.BeanBuilder
 import grails.test.MockUtils
@@ -25,6 +27,7 @@ import grails.validation.DeferredBindingActions
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
+import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
@@ -37,6 +40,7 @@ import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.grails.async.factory.SynchronousPromiseFactory
+import org.junit.runner.Description
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ApplicationContext
@@ -57,10 +61,13 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     String[] providedFeatures = ['grailsApplication']
     int ordinal = 0
 
-    void initGrailsApplication(TestRuntime runtime) {
+    void initGrailsApplication(TestRuntime runtime, Map callerInfo) {
         GrailsWebApplicationContext applicationContext = new GrailsWebApplicationContext()
 
         DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication()
+        if(callerInfo.description instanceof Description) {
+            executeDoWithConfigCallback(runtime, grailsApplication, (Description)callerInfo.description)
+        }
         grailsApplication.initialise()
         grailsApplication.setApplicationContext(applicationContext)
         if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
@@ -69,6 +76,9 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         grailsApplication.applicationContext = applicationContext
         runtime.putValue("grailsApplication", grailsApplication)
         registerBeans(runtime, grailsApplication)
+        if(callerInfo.description instanceof Description) {
+            executeDoWithSpringCallback(runtime, grailsApplication, (Description)callerInfo.description)
+        }
         applicationContext.refresh()
 
         GrailsWebApplicationContext mainContext = new GrailsWebApplicationContext(applicationContext)
@@ -99,6 +109,34 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         runtime.publishEvent("registerBeans", [grailsApplication: grailsApplication], [immediateDelivery: true])
     }
     
+    @CompileStatic(TypeCheckingMode.SKIP)
+    void executeDoWithSpringCallback(TestRuntime runtime, DefaultGrailsApplication grailsApplication, Description testDescription) {
+        def testClass=testDescription.testClass
+        MetaProperty doWithSpringProperty=testClass.getMetaClass().hasProperty(testClass, "doWithSpring")
+        if(doWithSpringProperty && Modifier.isStatic(doWithSpringProperty?.modifiers)) {
+            def closure=testClass.doWithSpring.clone()
+            runtime.publishEvent("defineBeans", [closure: closure], [immediateDelivery: true])
+        }
+    }
+    
+    @CompileStatic(TypeCheckingMode.SKIP)
+    void executeDoWithConfigCallback(TestRuntime runtime, DefaultGrailsApplication grailsApplication, Description testDescription) {
+        def testClass=testDescription.testClass
+        def configClosure
+        MetaProperty doWithConfigProperty=testClass.getMetaClass().hasProperty(testClass, "doWithConfig")
+        if(doWithConfigProperty && Modifier.isStatic(doWithConfigProperty?.modifiers)) {
+            configClosure=testClass.doWithConfig.clone()
+        } else {
+            MetaMethod doWithConfigMetaMethod=testClass.getMetaClass().respondsTo(testClass, "doWithConfig")?.find{it}
+            if(doWithConfigMetaMethod?.isStatic()) {
+                configClosure={config -> testClass.doWithConfig(config) }
+            }
+        }
+        if(configClosure) {
+            configClosure(grailsApplication.config)
+        }
+    }
+
     void applicationInitialized(TestRuntime runtime, DefaultGrailsApplication grailsApplication) {
         runtime.publishEvent("applicationInitialized", [grailsApplication: grailsApplication])
         // TODO: which is correct mainContext or parentContext?
@@ -180,8 +218,9 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     public void onTestEvent(TestEvent event) {
         switch(event.name) {
             case 'beforeClass':
+            case 'before':
                 // trigger grailsApplication initialization by requesting value
-                event.runtime.getValue("grailsApplication")
+                event.runtime.getValue("grailsApplication", event.arguments)
                 break
             case 'afterClass':
                 shutdownApplicationContext(event.runtime)
@@ -191,7 +230,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                 break
             case 'grailsApplicationRequested':
                 initialState()
-                initGrailsApplication(event.runtime)
+                initGrailsApplication(event.runtime, (Map)event.arguments.callerInfo)
                 break
             case 'valueMissing':
                 if(event.arguments.name=='grailsApplication') {
