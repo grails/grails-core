@@ -44,9 +44,11 @@ class GrailsArrayUtilsSpec extends Specification {
         given:
             int[] a = [1,2,3,4,5,6]
         expect:
-            GrailsArrayUtils.subarray(a, 2,4) == [3,4,5] as int[]
-            GrailsArrayUtils.subarray(a, 0,3) == [1,2,3,4] as int[]
-            GrailsArrayUtils.subarray(a, 3,5) == [4,5,6] as int[]
+            GrailsArrayUtils.subarray(a, -1,4) == [1,2,3,4] as int[]
+            GrailsArrayUtils.subarray(a, 2,4) == [3,4] as int[]
+            GrailsArrayUtils.subarray(a, 0,3) == [1,2,3] as int[]
+            GrailsArrayUtils.subarray(a, 3,5) == [4,5] as int[]
+            GrailsArrayUtils.subarray(a, 3,10) == [4,5,6] as int[]
     }
 }
 

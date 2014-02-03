@@ -134,12 +134,31 @@ abstract class GrailsArrayUtils {
         }
     }
 
-    static Object[] subarray(Object[] args, int i, int j) {
-        DefaultGroovyMethods.getAt(args, new IntRange(i, j)).toArray()
+    /**
+     * Returns the subarray of an existing array
+     *
+     * @param args The array object
+     * @param start The start index (inclusive)
+     * @param end The end index (exclusive)
+     * @return The new array
+     */
+    static Object subarray(Object args, int start, int end) {
+        def len = Array.getLength(args)
+
+        if(start < 0) start = 0
+        if(end > len) end = len
+
+        def type = args.getClass().componentType
+
+        def newLen = end - start
+        if(newLen <= 0) {
+            return Array.newInstance(type, 0)
+        }
+        else {
+            def newArray = Array.newInstance(type, newLen )
+            System.arraycopy args, start, newArray,0, newLen
+            return newArray
+        }
     }
 
-    static int[] subarray(int[] args, int i, int j) {
-        def list = DefaultGroovyMethods.getAt(args, new IntRange(i, j))
-        list.toArray(new Integer[list.size()])
-    }
 }
