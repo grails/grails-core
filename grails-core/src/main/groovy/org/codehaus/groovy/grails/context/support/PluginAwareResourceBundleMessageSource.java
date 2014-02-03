@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
@@ -107,9 +108,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                     basePath = WEB_INF_PLUGINS_PATH.substring(1) + plugin.getFileSystemName();
                 }
 
-                String fileName = StringUtils.stripFilenameExtension(pluginBundle.getFilename());
-                int i = fileName.indexOf("_");
-                final String baseName = i > -1 ? fileName.substring(0, i) : fileName;
+                final String baseName = GrailsStringUtils.substringBefore(GrailsStringUtils.getFileBasename(pluginBundle.getFilename()), "_");
                 pluginBaseNames.add(basePath + "/grails-app/i18n/" + baseName);
             }
         }

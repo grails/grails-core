@@ -32,6 +32,7 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.factory.BeanFactory;
@@ -242,7 +243,7 @@ public class ClosureClassIgnoringComponentScanBeanDefinitionParser extends Compo
             @Override
             public boolean match(String pattern, String path) {
                 if (path.endsWith(".class")) {
-                    String filename = StringUtils.stripFilenameExtension(StringUtils.getFilename(path));
+                    String filename = GrailsStringUtils.getFileBasename(path);
                     if (filename.contains("$")) return false;
                 }
                 return super.match(pattern, path);

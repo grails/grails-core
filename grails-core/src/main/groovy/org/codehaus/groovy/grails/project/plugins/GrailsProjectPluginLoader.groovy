@@ -96,7 +96,7 @@ class GrailsProjectPluginLoader extends BaseSettingsApi {
                 Holders.setPluginManager(pluginManager)
                 def baseDescriptor = pluginSettings.basePluginDescriptor
                 if (baseDescriptor) {
-                    def baseName = GrailsStringUtils.stripFilenameExtension(baseDescriptor.filename)
+                    def baseName = GrailsStringUtils.getFileBasename(baseDescriptor.filename)
                     def plugin = pluginManager.getGrailsPluginForClassName(baseName)
                     if (plugin) {
                         plugin.basePlugin = true

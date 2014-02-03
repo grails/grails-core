@@ -97,6 +97,16 @@ abstract class GrailsStringUtils extends StringUtils{
      * Same as {@link StringUtils#isEmpty(java.lang.Object)} }
      */
     static boolean isBlank(String str) {
-        isEmpty(str)
+        isEmpty(str?.trim())
     }
+
+    /**
+     * Obtains the base name of a file excluding path and extension
+     * @param path The path
+     * @return The name of the file excluding path and extension
+     */
+    static String getFileBasename(String path) {
+        stripFilenameExtension( getFilename(path) )
+    }
+
 }
