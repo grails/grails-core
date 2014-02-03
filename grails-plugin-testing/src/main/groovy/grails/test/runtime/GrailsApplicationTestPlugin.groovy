@@ -32,9 +32,11 @@ import groovy.transform.TypeCheckingMode
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
+import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
@@ -65,9 +67,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         GrailsWebApplicationContext applicationContext = new GrailsWebApplicationContext()
 
         DefaultGrailsApplication grailsApplication = new DefaultGrailsApplication()
-        if(callerInfo.description instanceof Description) {
-            executeDoWithConfigCallback(runtime, grailsApplication, (Description)callerInfo.description)
-        }
+        executeDoWithConfigCallback(runtime, grailsApplication, callerInfo)
         grailsApplication.initialise()
         grailsApplication.setApplicationContext(applicationContext)
         if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
@@ -76,9 +76,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         grailsApplication.applicationContext = applicationContext
         runtime.putValue("grailsApplication", grailsApplication)
         registerBeans(runtime, grailsApplication)
-        if(callerInfo.description instanceof Description) {
-            executeDoWithSpringCallback(runtime, grailsApplication, (Description)callerInfo.description)
-        }
+        executeDoWithSpringCallback(runtime, grailsApplication, callerInfo)
         applicationContext.refresh()
 
         GrailsWebApplicationContext mainContext = new GrailsWebApplicationContext(applicationContext)
@@ -110,26 +108,28 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     }
     
     @CompileStatic(TypeCheckingMode.SKIP)
-    void executeDoWithSpringCallback(TestRuntime runtime, DefaultGrailsApplication grailsApplication, Description testDescription) {
-        def testClass=testDescription.testClass
-        MetaProperty doWithSpringProperty=testClass.getMetaClass().hasProperty(testClass, "doWithSpring")
-        if(doWithSpringProperty && Modifier.isStatic(doWithSpringProperty?.modifiers)) {
-            def closure=testClass.doWithSpring.clone()
+    void executeDoWithSpringCallback(TestRuntime runtime, DefaultGrailsApplication grailsApplication, Map callerInfo) {
+        def testInstanceOrClass=callerInfo.testInstance ?: callerInfo.testClass
+        MetaProperty doWithSpringProperty=testInstanceOrClass.getMetaClass().hasProperty(testInstanceOrClass, "doWithSpring")
+        boolean atClassLevel=(testInstanceOrClass instanceof Class) as boolean
+        if(doWithSpringProperty != null && (!atClassLevel || Modifier.isStatic(doWithSpringProperty.getModifiers()))) {
+            def closure=doWithSpringProperty.getProperty(testInstanceOrClass)
             runtime.publishEvent("defineBeans", [closure: closure], [immediateDelivery: true])
         }
     }
     
     @CompileStatic(TypeCheckingMode.SKIP)
-    void executeDoWithConfigCallback(TestRuntime runtime, DefaultGrailsApplication grailsApplication, Description testDescription) {
-        def testClass=testDescription.testClass
+    void executeDoWithConfigCallback(TestRuntime runtime, DefaultGrailsApplication grailsApplication, Map callerInfo) {
+        def testInstanceOrClass=callerInfo.testInstance ?: callerInfo.testClass
         def configClosure
-        MetaProperty doWithConfigProperty=testClass.getMetaClass().hasProperty(testClass, "doWithConfig")
-        if(doWithConfigProperty && Modifier.isStatic(doWithConfigProperty?.modifiers)) {
-            configClosure=testClass.doWithConfig.clone()
+        MetaProperty doWithConfigProperty=testInstanceOrClass.getMetaClass().hasProperty(testInstanceOrClass, "doWithConfig")
+        boolean atClassLevel=(testInstanceOrClass instanceof Class) as boolean
+        if(doWithConfigProperty != null && (!atClassLevel || Modifier.isStatic(doWithConfigProperty.getModifiers()))) {
+            configClosure=doWithConfigProperty.getProperty(testInstanceOrClass)
         } else {
-            MetaMethod doWithConfigMetaMethod=testClass.getMetaClass().respondsTo(testClass, "doWithConfig")?.find{it}
-            if(doWithConfigMetaMethod?.isStatic()) {
-                configClosure={config -> testClass.doWithConfig(config) }
+            MetaMethod doWithConfigMetaMethod=testInstanceOrClass.getMetaClass().respondsTo(testInstanceOrClass, "doWithConfig")?.find{it}
+            if(doWithConfigMetaMethod && (!atClassLevel || doWithConfigMetaMethod.isStatic())) {
+                configClosure={config -> testInstanceOrClass.doWithConfig(config) }
             }
         }
         if(configClosure) {
@@ -212,41 +212,59 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             runtime.removeValue("servletContext")
             
             Promises.promiseFactory = null
+            
+            Holders.clear()
+            ConfigurationHelper.clearCachedConfigs()
         }
     }
     
     public void onTestEvent(TestEvent event) {
+        TestRuntime runtime = event.runtime
         switch(event.name) {
             case 'beforeClass':
             case 'before':
-                // trigger grailsApplication initialization by requesting value
-                event.runtime.getValue("grailsApplication", event.arguments)
+                Description testDescription = (Description)event.arguments?.description
+                boolean requiresFreshContext = doesRequireFreshContext(testDescription) 
+                if(requiresFreshContext) {
+                    shutdownApplicationContext(runtime)
+                }
+                if(!requiresFreshContext || event.name=='before') {
+                    // trigger grailsApplication initialization by requesting value
+                    runtime.getValue("grailsApplication", event.arguments)
+                }
                 break
             case 'afterClass':
-                shutdownApplicationContext(event.runtime)
+                shutdownApplicationContext(runtime)
                 break
             case 'after':
-                resetGrailsApplication(event.runtime)
+                resetGrailsApplication(runtime)
                 break
             case 'grailsApplicationRequested':
                 initialState()
-                initGrailsApplication(event.runtime, (Map)event.arguments.callerInfo)
+                initGrailsApplication(runtime, (Map)event.arguments.callerInfo)
                 break
             case 'valueMissing':
                 if(event.arguments.name=='grailsApplication') {
-                    event.runtime.publishEvent('grailsApplicationRequested', [callerInfo: event.arguments.callerInfo])
+                    runtime.publishEvent('grailsApplicationRequested', [callerInfo: event.arguments.callerInfo])
                 }
                 break
             case 'defineBeans':
-                defineBeans(event.runtime, (Closure)event.arguments.closure)
+                defineBeans(runtime, (Closure)event.arguments.closure)
                 break
             case 'mockCodec':   
-                mockCodec(event.runtime, (Class)event.arguments.codecClass)
+                mockCodec(runtime, (Class)event.arguments.codecClass)
                 break
             case 'mockForConstraintsTests':   
-                mockForConstraintsTests(event.runtime, (Class)event.arguments.clazz, (List)event.arguments.instances)
+                mockForConstraintsTests(runtime, (Class)event.arguments.clazz, (List)event.arguments.instances)
                 break
         }
+    }
+    
+    boolean doesRequireFreshContext(Description testDescription) {
+        if(testDescription?.getAnnotation(FreshRuntime)) {
+            return true
+        }
+        return false
     }
     
     public void close(TestRuntime runtime) {
