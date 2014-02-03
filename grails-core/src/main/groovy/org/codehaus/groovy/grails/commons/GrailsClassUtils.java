@@ -1248,7 +1248,7 @@ public class GrailsClassUtils {
         if(enhancedAnnotation != null) {
             final String[] enhancedFor = enhancedAnnotation.enhancedFor();
             if(enhancedFor != null) {
-                hasBeenEnhanced = ArrayUtils.contains(enhancedFor, featureName);
+                hasBeenEnhanced = GrailsArrayUtils.contains(enhancedFor, featureName);
             }
         }
         return hasBeenEnhanced;

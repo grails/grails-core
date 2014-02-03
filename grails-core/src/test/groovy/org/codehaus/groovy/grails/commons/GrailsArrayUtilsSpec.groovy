@@ -23,6 +23,15 @@ import spock.lang.Specification
  */
 class GrailsArrayUtilsSpec extends Specification {
 
+    void 'Test contains(Object[], Object) method'() {
+        expect:
+            GrailsArrayUtils.contains(['one', 'two'] as String[], "one")
+            GrailsArrayUtils.contains(['one', 'two'] as String[], "two")
+            !GrailsArrayUtils.contains(['one', 'two'] as String[], "three")
+            !GrailsArrayUtils.contains(null, "one")
+            !GrailsArrayUtils.contains([] as String[], "one")
+    }
+    
     void "Test toString() method"() {
         expect:
             GrailsArrayUtils.toString([1,2,3] as int[]) == '{1, 2, 3}'

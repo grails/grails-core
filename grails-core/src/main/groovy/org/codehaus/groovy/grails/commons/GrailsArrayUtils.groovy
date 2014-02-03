@@ -17,11 +17,11 @@
 package org.codehaus.groovy.grails.commons
 
 import groovy.transform.CompileStatic
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
-import org.springframework.util.Assert
-import org.springframework.util.ObjectUtils
 
 import java.lang.reflect.Array
+
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
+import org.springframework.util.ObjectUtils
 
 /**
  * Utility methods for working with Arrays
@@ -161,4 +161,11 @@ abstract class GrailsArrayUtils {
         }
     }
 
+    public static boolean contains(Object[] array, Object elementToSearchFor) {
+        boolean found = false
+        if(array) {
+            found = DefaultGroovyMethods.contains(array, elementToSearchFor)
+        }
+        found
+    }
 }

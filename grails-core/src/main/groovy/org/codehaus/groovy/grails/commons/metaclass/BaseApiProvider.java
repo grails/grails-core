@@ -75,7 +75,7 @@ public abstract class BaseApiProvider {
                         {
                             CachedClass[] paramTypes = super.getParameterTypes();
                             if(paramTypes.length > 0) {
-                                setParametersTypes((CachedClass[]) ArrayUtils.subarray(paramTypes, 1, paramTypes.length));
+                                setParametersTypes((CachedClass[]) GrailsArrayUtils.subarray(paramTypes, 1, paramTypes.length));
                             }
                         }
                         
