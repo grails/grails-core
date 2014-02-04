@@ -38,7 +38,8 @@ dependencies {
     runtime 'oro:oro:2.0.8' // Required by commons-validator
     runtime 'cglib:cglib:2.2.2' // Used to generate proxies for classes via Spring AOP
     runtime 'asm:asm:3.3.1'
-    runtime 'aopalliance:aopalliance:1.0'
+    runtime 'aopalliance:aopalliance:1.0',
+            "org.aspectj:aspectjrt:$aspectjVersion"
 
     runtime "org.springframework:spring-jms:${springVersion}", {
         ext.notInPom = true
