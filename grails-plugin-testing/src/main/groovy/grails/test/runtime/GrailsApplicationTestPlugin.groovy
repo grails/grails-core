@@ -216,6 +216,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             Holders.clear()
             ConfigurationHelper.clearCachedConfigs()
         }
+        runtime.publishEvent("closeRuntime")
     }
     
     public void onTestEvent(TestEvent event) {
@@ -234,7 +235,9 @@ class GrailsApplicationTestPlugin implements TestPlugin {
                 }
                 break
             case 'afterClass':
-                shutdownApplicationContext(runtime)
+                if(!runtime.shared) {
+                    shutdownApplicationContext(runtime)
+                }
                 break
             case 'after':
                 resetGrailsApplication(runtime)

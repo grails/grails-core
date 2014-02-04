@@ -17,14 +17,14 @@
 package grails.test.runtime
 
 import grails.test.mixin.TestRuntimeAwareMixin
-import grails.test.mixin.support.MixinInstance;
+import grails.test.mixin.support.MixinInstance
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import java.lang.reflect.Field
-import java.lang.reflect.Modifier;
+import java.lang.reflect.Modifier
 
-import org.springframework.util.ReflectionUtils;
+import org.springframework.util.ReflectionUtils
 
 /**
  * TestRuntimeFactory is a singleton that contains the TestPlugin registry and has methods 
@@ -55,9 +55,9 @@ class TestRuntimeFactory {
 
     @CompileStatic(TypeCheckingMode.SKIP)
     static TestRuntime getRuntimeForTestClass(Class<?> testClass) {
-        Class<?> currentClass = testClass
         Set<TestRuntimeAwareMixin> allInstances = [] as Set
         Set<String> allFeatures = [] as Set
+        Class<?> currentClass = testClass
         while(currentClass != Object && currentClass != null) {
             currentClass.getDeclaredFields().each { Field field ->
                 if(field.getAnnotation(MixinInstance.class) != null && Modifier.isStatic(field.getModifiers())) {
@@ -71,22 +71,29 @@ class TestRuntimeFactory {
             }
             currentClass = currentClass.getSuperclass()
         }
-        TestRuntime runtime = getRuntime(allFeatures)
+        SharedRuntime sharedRuntimeAnnotation = findSharedRuntimeAnnotation(testClass)
+        TestRuntime runtime
+        if(sharedRuntimeAnnotation==null) {
+            runtime = INSTANCE.findOrCreateRuntimeForTestClass(testClass, allFeatures)
+        } else {
+            runtime = INSTANCE.findOrCreateSharedRuntime(sharedRuntimeAnnotation.value(), allFeatures)
+        }
         allInstances.each { testMixinInstance ->
             testMixinInstance.runtime = runtime
         }
         runtime
     }
+
+    private static SharedRuntime findSharedRuntimeAnnotation(Class testClass) {
+        SharedRuntime sharedRuntimeAnnotation = testClass.getAnnotation(SharedRuntime)
+        Class<?> currentClass = testClass
+        while(currentClass != Object && currentClass != null && sharedRuntimeAnnotation == null) {
+            sharedRuntimeAnnotation = currentClass.getPackage()?.getAnnotation(SharedRuntime)
+            currentClass = currentClass.getSuperclass()
+        }
+        return sharedRuntimeAnnotation
+    }
     
-    static TestRuntime getRuntime(String... features) {
-        getRuntime(features as Set)
-    }
-
-    static TestRuntime getRuntime(Set<String> features) {
-        ExpandoMetaClass.enableGlobally()
-        INSTANCE.getTestRuntimeForFeatures(features)
-    }
-
     static void addPluginClass(Class<? extends TestPlugin> pluginClass) {
         INSTANCE.addTestPluginClass(pluginClass)
     }
@@ -94,20 +101,50 @@ class TestRuntimeFactory {
     static void removePlugin(Class<? extends TestPlugin> pluginClass) {
         INSTANCE.removeTestPluginClass(pluginClass)
     }
-
-    private TestRuntime getTestRuntimeForFeatures(Set<String> features) {
-        if(activeRuntime) {
-            if(!activeRuntime.features.containsAll(features)) {
-                Set<String> combinedFeatures = [] as Set
-                combinedFeatures.addAll(activeRuntime.features)
-                combinedFeatures.addAll(features)
-                activeRuntime.changeFeaturesAndPlugins(combinedFeatures, resolveFeaturesToPlugins(combinedFeatures))
-            }
-            return activeRuntime
+    
+    private TestRuntime findOrCreateSharedRuntime(Class<? extends SharedRuntimeConfigurer> sharedRuntimeConfigurer, Set<String> features) {
+        TestRuntime runtime=sharedRuntimes.get(sharedRuntimeConfigurer)
+        if(runtime==null) {
+            SharedRuntimeConfigurer configurerInstance=(SharedRuntimeConfigurer)sharedRuntimeConfigurer.newInstance()
+            runtime = createRuntimeForFeatures(configurerInstance.getRequiredFeatures() as Set, true)
+            sharedRuntimes.put(sharedRuntimeConfigurer, runtime)
         }
-        TestRuntime runtime = new TestRuntime(features, resolveFeaturesToPlugins(features))
-        activeRuntime = runtime
+        checkRuntimeFeatures(runtime, features)
         runtime
+    }
+
+    private TestRuntime findOrCreateRuntimeForTestClass(Class testClass, Set<String> features) {
+        TestRuntime runtime=activeRuntimes.get(testClass)
+        if(runtime==null) {
+            runtime = createRuntimeForFeatures(features, null, false)
+            activeRuntimes.put(testClass, runtime)
+        } else {
+            checkRuntimeFeatures(runtime, features)
+        }
+        runtime
+    }
+    
+    private void checkRuntimeFeatures(TestRuntime runtime, Set<String> features) {
+        if(features && !runtime.features.containsAll(features)) {
+            Set<String> missingFeatures = [] as Set
+            missingFeatures.addAll(features)
+            missingFeatures.removeAll(runtime.features)
+            throw new TestRuntimeFactoryException("Current shared runtime doesn't contain required feature:" + missingFeatures.join(',')) 
+        }
+    }
+        
+    private TestRuntime createRuntimeForFeatures(Set features, boolean shared) {
+        TestRuntime runtime
+        if(features) {
+            runtime = new TestRuntime(features, resolveFeaturesToPlugins(features), shared)
+        } else {
+            // setup runtime with all available plugins
+            Map<String, TestPlugin> featureToPlugin = resolvePlugins()
+            Set<String> allFeatures = new LinkedHashSet(featureToPlugin.keySet())
+            List<TestPlugin> allPlugins = resolveTransitiveDependencies(allFeatures, featureToPlugin)
+            runtime = new TestRuntime(allFeatures, allPlugins, shared)
+        }
+        return runtime
     }
 
     private List resolveFeaturesToPlugins(Set features) {
@@ -231,15 +268,26 @@ class TestRuntimeFactory {
     }
     
     // cached runtimes for sharing runtimes across test classes
-    private TestRuntime activeRuntime=null
-
+    private Map<Class, TestRuntime> sharedRuntimes=new HashMap<Class, TestRuntime>()
+    
+    private Map<Class, TestRuntime> activeRuntimes=new HashMap<Class, TestRuntime>()
+    
     static void removeRuntime(TestRuntime runtime) {
         INSTANCE.removeTestRuntime(runtime)
     }
 
     private void removeTestRuntime(TestRuntime runtime) {
-        if(activeRuntime==runtime) {
-            activeRuntime=null
+        removeRuntimeFromMap(sharedRuntimes, runtime)
+        removeRuntimeFromMap(activeRuntimes, runtime)
+    }
+
+    private removeRuntimeFromMap(Map<Class, TestRuntime> cachedRuntimeMap, TestRuntime runtime) {
+        for(Iterator iterator=cachedRuntimeMap.entrySet().iterator();iterator.hasNext();) {
+            Map.Entry entry=iterator.next()
+            if(entry.value==runtime) {
+                iterator.remove()
+                return
+            }
         }
     }
 }

@@ -39,9 +39,15 @@ class TestRuntime {
     List<TestPlugin> plugins
     private Map<String, Object> registry = [:]
     private boolean runtimeClosed = false
+    private boolean shared
     
-    public TestRuntime(Set<String> features, List<TestPlugin> plugins) {
+    public TestRuntime(Set<String> features, List<TestPlugin> plugins, boolean shared) {
         changeFeaturesAndPlugins(features, plugins)
+        this.@shared=shared
+    }
+    
+    public boolean isShared() {
+        return this.@shared
     }
     
     public void changeFeaturesAndPlugins(Set<String> features, List<TestPlugin> plugins) {
@@ -170,14 +176,27 @@ class TestRuntime {
     }
     
     protected void deliverEvent(TestEvent event) {
-        if(event.stopDelivery) {
-            return
-        }
+        handleSpecialEventsBeforeDelivery(event)
         for(TestPlugin plugin : (event.reverseOrderDelivery ? plugins.reverse() : plugins)) {
-            plugin.onTestEvent(event)
             if(event.stopDelivery) {
                 break
             }
+            plugin.onTestEvent(event)
+        }
+        handleSpecialEventsAfterDelivery(event)
+    }
+    
+    private void handleSpecialEventsBeforeDelivery(TestEvent event) {
+
+    }
+    
+    private void handleSpecialEventsAfterDelivery(TestEvent event) {
+        switch(event.name) {
+            case 'closeRuntime':
+                if(!event.stopDelivery) {
+                    close()
+                }
+                break
         }
     }
     
@@ -195,10 +214,9 @@ class TestRuntime {
 
     protected void afterClass(Class testClass, Description description, Throwable throwable) {
         publishEvent("afterClass", [testClass: testClass, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
-        close()
     }
 
-    private synchronized void close() {
+    public synchronized void close() {
         if(!runtimeClosed) {
             for(TestPlugin plugin : plugins) {
                 try {
