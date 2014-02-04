@@ -27,6 +27,7 @@ dependencies {
     compile "junit:junit:${junitVersion}"
 
     compile "org.springframework:spring-webmvc:${springVersion}"
+    compile "org.springframework:spring-context-support:${springVersion}"
 
     // Required for JSP support
     compile 'javax.servlet:jsp-api:2.0', {
@@ -39,6 +40,9 @@ dependencies {
 
     runtime 'taglibs:standard:1.1.2'
     runtime "javax.servlet:jstl:1.1.2"
+    runtime "org.aspectj:aspectjrt:$aspectjVersion",
+            "org.aspectj:aspectjweaver:$aspectjVersion"
+
 
     optional "org.apache.ant:ant:${antVersion}"
     optional "jline:jline:$jlineVersion"

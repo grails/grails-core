@@ -1249,6 +1249,41 @@ class GrailsWebDataBinderSpec extends Specification {
         command.errors.errorCount == 1
         command.errors['myLongList'].code == 'typeMismatch'
     }
+    
+    void 'Test binding to indexes of a List of Long which leaves gaps in the List'() {
+        given:
+        def obj = new SomeNonDomainClass()
+        
+        when:
+        binder.bind obj, ['listOfLong[1]': 1, 'listOfLong[5]': 5, 'listOfLong[3]': 3] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfLong.size() == 6
+        obj.listOfLong[0] == null
+        obj.listOfLong[1] == 1
+        obj.listOfLong[2] == null
+        obj.listOfLong[3] == 3
+        obj.listOfLong[4] == null
+        obj.listOfLong[5] == 5
+    }
+    
+    
+    void 'Test binding to indexes of a List of domain objects which leaves gaps in the List'() {
+        given:
+        def obj = new CollectionContainer()
+        
+        when:
+        binder.bind obj, ['listOfWidgets[1]': ['isBindable': 'one'], 'listOfWidgets[5]': ['isBindable': 'five'], 'listOfWidgets[3]': ['isBindable': 'three']] as SimpleMapDataBindingSource
+        
+        then:
+        obj.listOfWidgets.size() == 6
+        obj.listOfWidgets[0] == null
+        obj.listOfWidgets[1].isBindable == 'one'
+        obj.listOfWidgets[2] == null
+        obj.listOfWidgets[3].isBindable == 'three'
+        obj.listOfWidgets[4] == null
+        obj.listOfWidgets[5].isBindable == 'five'
+    }
 }
 
 @Entity
