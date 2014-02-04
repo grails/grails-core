@@ -27,6 +27,7 @@ dependencies {
     compile "junit:junit:${junitVersion}"
 
     compile "org.springframework:spring-webmvc:${springVersion}"
+    compile "org.springframework:spring-context-support:${springVersion}"
 
     // Required for JSP support
     compile 'javax.servlet:jsp-api:2.0', {
