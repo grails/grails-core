@@ -165,7 +165,7 @@ class GrailsMock {
      * Checks that all the expected methods have been called. Throws an
      * assertion failure if any expected method call has not occurred.
      */
-    def verify() {
+    void verify() {
         demand.expectation.verify()
     }
 }
