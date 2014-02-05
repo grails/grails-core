@@ -16,7 +16,7 @@
 
 package grails.test.runtime;
 
-import groovy.transform.CompileStatic;
+import groovy.transform.TypeChecked
 
 import org.junit.rules.TestRule
 import org.junit.runner.Description
@@ -31,6 +31,7 @@ import org.junit.runners.model.Statement
  *
  */
 //@CompileStatic
+@TypeChecked
 class TestRuntimeJunitAdapter {
     static {
         ExpandoMetaClass.enableGlobally()
@@ -42,12 +43,12 @@ class TestRuntimeJunitAdapter {
                 return new Statement() {
                     public void evaluate() throws Throwable {
                         TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testInstance.getClass())
-                        runtime.before(testInstance, description)
+                        before(runtime, testInstance, description)
                         try {
                             statement.evaluate()
                         } catch (Throwable t) {
                             try {
-                                runtime.after(testInstance, description, t)
+                                after(runtime, testInstance, description, t)
                             } catch (Throwable t2) {
                                 // ignore
                             } finally {
@@ -55,7 +56,7 @@ class TestRuntimeJunitAdapter {
                                 throw t
                             }
                         }
-                        runtime.after(testInstance, description, null)
+                        after(runtime, testInstance, description, null)
                     }
                 }
             }
@@ -68,12 +69,12 @@ class TestRuntimeJunitAdapter {
                 return new Statement() {
                     public void evaluate() throws Throwable {
                         TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testClass)
-                        runtime.beforeClass(testClass, description)
+                        beforeClass(runtime, testClass, description)
                         try {
                             statement.evaluate()
                         } catch (Throwable t) {
                             try {
-                                runtime.afterClass(testClass, description, t)
+                                afterClass(runtime, testClass, description, t)
                             } catch (Throwable t2) {
                                 // ignore
                             } finally {
@@ -81,7 +82,7 @@ class TestRuntimeJunitAdapter {
                                 throw t
                             }
                         }
-                        runtime.afterClass(testClass, description, null)
+                        afterClass(runtime, testClass, description, null)
                     }
                 }
             }
@@ -90,11 +91,29 @@ class TestRuntimeJunitAdapter {
     
     public void setUp(Object testInstance) {
         TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testInstance.getClass())
-        runtime.setUp(testInstance)
+        beforeClass(runtime, testInstance.getClass(), Description.createSuiteDescription(testInstance.getClass()))
+        before(runtime, testInstance, Description.createTestDescription(testInstance.getClass(), "setUp", testInstance.getClass().getAnnotations()))
     }
     
     public void tearDown(Object testInstance) {
         TestRuntime runtime = TestRuntimeFactory.getRuntimeForTestClass(testInstance.getClass())
-        runtime.tearDown(testInstance)
+        after(runtime, testInstance, Description.createTestDescription(testInstance.getClass(), "tearDown", testInstance.getClass().getAnnotations()), null)
+        afterClass(runtime, testInstance.getClass(), Description.createSuiteDescription(testInstance.getClass()), null)
+    }
+    
+    protected void before(TestRuntime runtime, Object testInstance, Description description) {
+        runtime.publishEvent("before", [testInstance: testInstance, description: description], [immediateDelivery: true])
+    }
+
+    protected void after(TestRuntime runtime, Object testInstance, Description description, Throwable throwable) {
+        runtime.publishEvent("after", [testInstance: testInstance, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
+    }
+
+    protected void beforeClass(TestRuntime runtime, Class testClass, Description description) {
+        runtime.publishEvent("beforeClass", [testClass: testClass, description: description], [immediateDelivery: true])
+    }
+
+    protected void afterClass(TestRuntime runtime, Class testClass, Description description, Throwable throwable) {
+        runtime.publishEvent("afterClass", [testClass: testClass, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
     }
 }

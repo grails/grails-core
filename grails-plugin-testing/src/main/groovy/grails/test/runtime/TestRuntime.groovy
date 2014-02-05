@@ -282,22 +282,6 @@ class TestRuntime {
         }
     }
     
-    protected void before(Object testInstance, Description description) {
-        publishEvent("before", [testInstance: testInstance, description: description], [immediateDelivery: true])
-    }
-
-    protected void after(Object testInstance, Description description, Throwable throwable) {
-        publishEvent("after", [testInstance: testInstance, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
-    }
-
-    protected void beforeClass(Class testClass, Description description) {
-        publishEvent("beforeClass", [testClass: testClass, description: description], [immediateDelivery: true])
-    }
-
-    protected void afterClass(Class testClass, Description description, Throwable throwable) {
-        publishEvent("afterClass", [testClass: testClass, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
-    }
-
     public synchronized void close() {
         if(!runtimeClosed) {
             for(TestPlugin plugin : plugins) {
@@ -314,16 +298,6 @@ class TestRuntime {
             deferredEvents.clear()
             TestRuntimeFactory.removeRuntime(this)
         }
-    }
-
-    public void setUp(Object testInstance) {
-        beforeClass(testInstance.getClass(), Description.createSuiteDescription(testInstance.getClass()))
-        before(testInstance, Description.createTestDescription(testInstance.getClass(), "setUp", testInstance.getClass().getAnnotations()))
-    }
-
-    public void tearDown(Object testInstance) {
-        after(testInstance, Description.createTestDescription(testInstance.getClass(), "tearDown", testInstance.getClass().getAnnotations()), null)
-        afterClass(testInstance.getClass(), Description.createSuiteDescription(testInstance.getClass()), null)
     }
 
     public boolean isClosed() {
