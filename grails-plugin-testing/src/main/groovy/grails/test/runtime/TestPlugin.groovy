@@ -36,6 +36,8 @@ package grails.test.runtime;
  * The overriding plugin might have to provide all of the features of the other plugin when the plugin provides several features.
  * Custom plugins can be registered to the single {@link TestRuntimeFactory} in static initializer blocks of the test class.
  * 
+ * The plugin class can also implement TestEventInterceptor. In that case the instance will be also registered as an event interceptor.
+ * 
  * @author Lari Hotari
  * @since 2.4.0
  *

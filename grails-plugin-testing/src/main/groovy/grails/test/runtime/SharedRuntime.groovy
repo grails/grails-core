@@ -20,6 +20,9 @@ public @interface SharedRuntime {
     /**
      * All tests annotated with this annotation and same value() will use the same shared TestRuntime instance.
      * 
+     * The SharedRuntimeConfigurer class can also implement TestEventInterceptor. 
+     * In that case the instance will be registered as an event interceptor.
+     * 
      * @return
      */
     Class<? extends SharedRuntimeConfigurer> value() default DefaultSharedRuntimeConfigurer

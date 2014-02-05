@@ -16,13 +16,13 @@
 
 package grails.test.runtime;
 
+import java.util.List;
+
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 import groovy.transform.TypeCheckingMode
 
-import org.junit.rules.TestRule
 import org.junit.runner.Description
-import org.junit.runners.model.Statement
 
 /**
  * TestRuntime is the container for the test runtime state
@@ -37,11 +37,18 @@ import org.junit.runners.model.Statement
 class TestRuntime {
     Set<String> features
     List<TestPlugin> plugins
+    private List<TestEventInterceptor> interceptors
+    private List<TestEventInterceptor> pluginsRegisteredAsInterceptors
     private Map<String, Object> registry = [:]
     private boolean runtimeClosed = false
     private boolean shared
     
-    public TestRuntime(Set<String> features, List<TestPlugin> plugins, boolean shared) {
+    protected TestRuntime(Set<String> features, List<TestPlugin> plugins, TestEventInterceptor interceptor, boolean shared) {
+        this.interceptors=new ArrayList<TestEventInterceptor>()
+        interceptors.add(new TestRuntimeEventInterceptor())
+        if(interceptor != null) {
+            interceptors.add(interceptor)
+        }
         changeFeaturesAndPlugins(features, plugins)
         this.@shared=shared
     }
@@ -51,8 +58,59 @@ class TestRuntime {
     }
     
     public void changeFeaturesAndPlugins(Set<String> features, List<TestPlugin> plugins) {
+        if(pluginsRegisteredAsInterceptors) {
+            interceptors.removeAll(pluginsRegisteredAsInterceptors)
+        }
         this.features = new LinkedHashSet<String>(features).asImmutable()
         this.plugins =  new ArrayList<TestPlugin>(plugins).asImmutable()
+        pluginsRegisteredAsInterceptors=new ArrayList(plugins.findAll { it instanceof TestEventInterceptor })
+        interceptors.addAll(pluginsRegisteredAsInterceptors)
+    }
+    
+    public void addInterceptor(TestEventInterceptor interceptor) {
+        if(!interceptors.contains(interceptor)) {
+            interceptors.add(interceptor)
+        }
+    }
+    
+    public void removeInterceptor(TestEventInterceptor interceptor) {
+        interceptors.remove(interceptor)
+    }
+    
+    @CompileStatic
+    private class TestRuntimeEventInterceptor implements TestEventInterceptor {
+        private void eventProcessed(TestEvent event) {
+            switch(event.name) {
+                case 'closeRuntime':
+                    if(!event.stopDelivery) {
+                        close()
+                    }
+                    break
+            }
+        }
+        
+        @Override
+        public void eventPublished(TestEvent event) {
+            
+        }
+    
+        @Override
+        public void eventsProcessed(TestEvent event, List<TestEvent> consequenceEvents) {
+            eventProcessed(event)
+            for(TestEvent consequenceEvent : consequenceEvents) {
+                eventProcessed(event)
+            }
+        }
+    
+        @Override
+        public void eventDelivered(TestEvent event) {
+            
+        }
+    
+        @Override
+        public void mutateDeferredEvents(TestEvent initialEvent, List<TestEvent> deferredEvents) {
+            
+        }
     }
     
     public Object getValue(String name, Map callerInfo = [:]) {
@@ -121,11 +179,11 @@ class TestRuntime {
         }
     }
     
-    protected boolean inEventLoop = false
+    protected TestEvent currentInitialEvent = null
     protected List<TestEvent> deferredEvents = new ArrayList<TestEvent>()
     
     public void publishEvent(String name, Map arguments = [:], Map extraEventProperties = [:]) {
-        doPublishEvent(createEvent([runtime: this, name: name, arguments: arguments] + extraEventProperties))
+        doPublishEvent(createEvent([runtime: this, name: name, arguments: arguments, parentEvent: currentInitialEvent] + extraEventProperties))
     }
     
     @CompileStatic(TypeCheckingMode.SKIP)
@@ -133,70 +191,94 @@ class TestRuntime {
         new TestEvent(properties)
     }
 
-    protected synchronized doPublishEvent(TestEvent event) {
-        if(inEventLoop) {
+    protected synchronized void doPublishEvent(TestEvent event) {
+        handleEventPublished(event)
+        if(event.stopDelivery) {
+            return
+        }
+        if(currentInitialEvent != null) {
             if(event.immediateDelivery) {
                 List<TestEvent> previousDeferredEvents = deferredEvents
+                TestEvent previousInitialEvent = currentInitialEvent
                 try {
                     deferredEvents = new ArrayList<TestEvent>()
                     processEvents(event)
                 } finally {
                     deferredEvents = previousDeferredEvents
+                    currentInitialEvent = previousInitialEvent
                 }
             } else {
                 deferredEvents.add(event)
             }
         } else {
             try {
-                inEventLoop = true
                 processEvents(event)
             } finally {
-                inEventLoop = false
+                currentInitialEvent = null
             }
         }
     }
 
     private processEvents(TestEvent event) {
+        currentInitialEvent = event
         deliverEvent(event)
-        executeEventLoop()
+        List<TestEvent> handledDeferredEvents=executeEventLoop(event)
+        currentInitialEvent = null
+        handleEventProcessed(event, handledDeferredEvents)
     }
 
-    protected executeEventLoop() {
+    protected List<TestEvent> executeEventLoop(TestEvent initialEvent) {
+        List<TestEvent> handledDeferredEvents=new ArrayList<TestEvent>()
         while(true) {
             List<TestEvent> currentLoopEvents = new ArrayList<TestEvent>(deferredEvents)
             deferredEvents.clear()
-            if(currentLoopEvents) {
+            if(initialEvent != null) {
+                filterDeferredEvents(initialEvent, currentLoopEvents)
+            }
+            if(currentLoopEvents && !runtimeClosed) {
                 for(TestEvent deferredEvent : currentLoopEvents) {
                     deliverEvent(deferredEvent)
+                    handledDeferredEvents.add(deferredEvent)
                 }
             } else {
                 break
             }
         }
+        handledDeferredEvents
     }
     
     protected void deliverEvent(TestEvent event) {
-        handleSpecialEventsBeforeDelivery(event)
         for(TestPlugin plugin : (event.reverseOrderDelivery ? plugins.reverse() : plugins)) {
             if(event.stopDelivery) {
                 break
             }
             plugin.onTestEvent(event)
         }
-        handleSpecialEventsAfterDelivery(event)
+        handleEventDelivered(event)
+        event.delivered = true
     }
     
-    private void handleSpecialEventsBeforeDelivery(TestEvent event) {
+    private void filterDeferredEvents(TestEvent initialEvent, List<TestEvent> deferredEvents) {
+        for(TestEventInterceptor interceptor : interceptors) {
+            interceptor.mutateDeferredEvents(initialEvent, deferredEvents)
+        }
+    }
+    
+    private void handleEventPublished(TestEvent event) {
+        for(TestEventInterceptor interceptor : interceptors) {
+            interceptor.eventPublished(event)
+        }
+    }
+    
+    private void handleEventDelivered(TestEvent event) {
+        for(TestEventInterceptor interceptor : interceptors) {
+            interceptor.eventDelivered(event)
+        }
+    }
 
-    }
-    
-    private void handleSpecialEventsAfterDelivery(TestEvent event) {
-        switch(event.name) {
-            case 'closeRuntime':
-                if(!event.stopDelivery) {
-                    close()
-                }
-                break
+    private void handleEventProcessed(TestEvent event, List<TestEvent> handledDeferredEvents) {
+        for(TestEventInterceptor interceptor : (event.reverseOrderDelivery ? interceptors.reverse() : interceptors)) {
+            interceptor.eventsProcessed(event, handledDeferredEvents)
         }
     }
     
@@ -228,6 +310,8 @@ class TestRuntime {
             registry.clear()
             plugins = null
             runtimeClosed = true
+            currentInitialEvent = null
+            deferredEvents.clear()
             TestRuntimeFactory.removeRuntime(this)
         }
     }

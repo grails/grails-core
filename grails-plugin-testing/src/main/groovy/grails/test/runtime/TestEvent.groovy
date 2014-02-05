@@ -57,4 +57,12 @@ class TestEvent {
      * for example this is used for "after" and "afterClass" event to reverse the order of handling compared to "before" and "beforeClass" events 
      */
     boolean reverseOrderDelivery
+    /**
+     * this contains the event that created this event . This is null for the first event.
+     */
+    TestEvent parentEvent
+    /**
+     * this flag is set after the event has been delivered
+     */
+    boolean delivered
 }

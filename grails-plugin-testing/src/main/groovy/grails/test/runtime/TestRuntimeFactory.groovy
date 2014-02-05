@@ -106,7 +106,9 @@ class TestRuntimeFactory {
         TestRuntime runtime=sharedRuntimes.get(sharedRuntimeConfigurer)
         if(runtime==null) {
             SharedRuntimeConfigurer configurerInstance=(SharedRuntimeConfigurer)sharedRuntimeConfigurer.newInstance()
-            runtime = createRuntimeForFeatures(configurerInstance.getRequiredFeatures() as Set, true)
+            runtime = createRuntimeForFeatures(configurerInstance.getRequiredFeatures() as Set,
+                    configurerInstance instanceof TestEventInterceptor ? (TestEventInterceptor)configurerInstance : null,
+                    true)
             sharedRuntimes.put(sharedRuntimeConfigurer, runtime)
         }
         checkRuntimeFeatures(runtime, features)
@@ -133,16 +135,16 @@ class TestRuntimeFactory {
         }
     }
         
-    private TestRuntime createRuntimeForFeatures(Set features, boolean shared) {
+    private TestRuntime createRuntimeForFeatures(Set features, TestEventInterceptor interceptor, boolean shared) {
         TestRuntime runtime
         if(features) {
-            runtime = new TestRuntime(features, resolveFeaturesToPlugins(features), shared)
+            runtime = new TestRuntime(features, resolveFeaturesToPlugins(features), interceptor, shared)
         } else {
             // setup runtime with all available plugins
             Map<String, TestPlugin> featureToPlugin = resolvePlugins()
             Set<String> allFeatures = new LinkedHashSet(featureToPlugin.keySet())
             List<TestPlugin> allPlugins = resolveTransitiveDependencies(allFeatures, featureToPlugin)
-            runtime = new TestRuntime(allFeatures, allPlugins, shared)
+            runtime = new TestRuntime(allFeatures, allPlugins, interceptor, shared)
         }
         return runtime
     }
