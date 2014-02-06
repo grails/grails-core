@@ -59,6 +59,28 @@ class CodecSpec extends Specification {
         then:"The content it output is raw form"
             content == '&quot;&lt;script&gt;&quot;<script>'
     }
+    
+    @Issue("GRAILS-11078")
+    void "encodeAsHTML should not call the equals method of the object"() {
+        given:
+            def sample=new MySample()
+        when:
+            def result=sample.encodeAsHTML()
+        then:
+            result == 'Hello'
+    }
+    
+    private static class MySample {
+        @Override
+        public String toString() {
+            return 'Hello';
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            throw new RuntimeException("equals shouldn't be called")
+        }
+    } 
 
     void "output should be safe at the end"() {
     }
