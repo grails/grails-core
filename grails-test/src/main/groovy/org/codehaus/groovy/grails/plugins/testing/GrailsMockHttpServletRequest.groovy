@@ -78,7 +78,25 @@ class GrailsMockHttpServletRequest extends MockHttpServletRequest implements Mul
     @Override
     void setContentType(String newContentType) {
         super.setContentType(newContentType)
-        setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, [new MimeType(newContentType)] as MimeType[])
+        def webRequest = getAttribute(GrailsApplicationAttributes.WEB_REQUEST)
+        def mimeType
+        if(webRequest instanceof GrailsWebRequest) {
+            def application = webRequest.attributes?.grailsApplication
+            if(application) {
+                def configuredMimeTypes = application?.config?.grails?.mime?.types
+                def matchingEntry = configuredMimeTypes.find { extension, name ->
+                    name == newContentType
+                }
+                if(matchingEntry) {
+                    mimeType = new MimeType(matchingEntry.value, matchingEntry.key)
+                }
+            }
+        }
+        
+        if(!mimeType) {
+            mimeType = new MimeType(newContentType)
+        }
+        setAttribute(GrailsApplicationAttributes.REQUEST_FORMATS, [mimeType] as MimeType[])
     }
 
     /**
