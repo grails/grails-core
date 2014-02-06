@@ -33,7 +33,7 @@ class CodecMetaClassSupport {
     static final Object[] EMPTY_ARGS = []
     static final String ENCODE_AS_PREFIX="encodeAs"
     static final String DECODE_PREFIX="decode"
-
+    
     /**
      * Adds "encodeAs*" and "decode*" metamethods for given codecClass
      *
@@ -55,7 +55,7 @@ class CodecMetaClassSupport {
                 ->
                 def encoder = codecClass.getEncoder()
                 if (encoder) {
-                    return encoder.encode(delegate != NullObject.NullObject ? delegate : null)
+                    return encoder.encode(CodecMetaClassSupport.filterNullObject(delegate))
                 }
 
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
@@ -68,7 +68,7 @@ class CodecMetaClassSupport {
                 ->
                 def decoder = codecClass.getDecoder()
                 if (decoder) {
-                    return decoder.decode(delegate != NullObject.NullObject ? delegate : null)
+                    return decoder.decode(CodecMetaClassSupport.filterNullObject(delegate))
                 }
 
                 // note the call to delegate.getClass() instead of the more groovy delegate.class.
@@ -81,13 +81,13 @@ class CodecMetaClassSupport {
             // Resolve codec methods once only at startup
             def encoder = codecClass.getEncoder()
             if (encoder) {
-                encoderClosure = { -> encoder.encode(delegate != NullObject.NullObject ? delegate : null) }
+                encoderClosure = { -> encoder.encode(CodecMetaClassSupport.filterNullObject(delegate)) }
             } else {
                 encoderClosure = { -> throw new MissingMethodException(encodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }
             def decoder = codecClass.getDecoder()
             if (decoder) {
-                decoderClosure = { -> decoder.decode(delegate != NullObject.NullObject ? delegate : null) }
+                decoderClosure = { -> decoder.decode(CodecMetaClassSupport.filterNullObject(delegate)) }
             } else {
                 decoderClosure = { -> throw new MissingMethodException(decodeMethodName, delegate.getClass(), EMPTY_ARGS) }
             }
@@ -102,6 +102,22 @@ class CodecMetaClassSupport {
         if(codecClass.decoder) {
             addAliasMetaMethods(codecClass.decoder.codecIdentifier.codecAliases, decodeMethodNameClosure, decoderClosure)
         }
+    }
+
+    /**
+     * returns given parameter if it's not a Groovy NullObject (and is not null)
+     * 
+     * The check is made by looking at the Object's class, since NullObject.is & equals give wrong results (Groovy bug?).
+     * 
+     * A NullObject get's passed to the closure in delegate perhaps because of a Groovy bug or feature
+     * This happens when a NullObject's MetaMethod is called.
+     * 
+     * @param delegate
+     * @return
+     */
+    @CompileStatic
+    private static Object filterNullObject(Object delegate) {
+        delegate != null && delegate.getClass() != NullObject ? delegate : null
     }
 
     @CompileStatic
