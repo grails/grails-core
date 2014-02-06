@@ -111,6 +111,19 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
      * the value is the contents of the template. Allows loading of templates without using the file system
      */
     static Map<String, String> views = groovyPages
+    
+    static FORM_CONTENT_TYPE = MimeType.FORM.name
+    static ALL_CONTENT_TYPE = MimeType.ALL.name
+    static HTML_CONTENT_TYPE = MimeType.HTML.name
+    static XHTML_CONTENT_TYPE = MimeType.XHTML.name
+    static XML_CONTENT_TYPE = MimeType.XML.name
+    static JSON_CONTENT_TYPE = MimeType.JSON.name
+    static TEXT_XML_CONTENT_TYPE = MimeType.TEXT_XML.name
+    static TEXT_JSON_CONTENT_TYPE = MimeType.TEXT_JSON.name
+    static HAL_JSON_CONTENT_TYPE = MimeType.HAL_JSON.name
+    static HAL_XML_CONTENT_TYPE = MimeType.HAL_XML.name
+    static ATOM_XML_CONTENT_TYPE = MimeType.ATOM_XML.name
+
 
     /**
      * The {@link MockHttpSession} instance
