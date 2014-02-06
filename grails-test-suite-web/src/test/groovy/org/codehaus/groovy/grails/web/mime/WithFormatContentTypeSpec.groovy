@@ -8,12 +8,12 @@ import spock.lang.Specification
 @TestFor(FormatController)
 class WithFormatContentTypeSpec extends Specification {
 
-    void setupSpec() {
+    static doWithConfig(config) {
         // unit tests in real applications will not need to do 
         // this because the real Config.groovy will be loaded
-        grailsApplication.config.grails.mime.types = [(MimeType.ALL.extension): MimeType.ALL.name,
-                                                      (MimeType.FORM.extension): MimeType.FORM.name,
-                                                      (MimeType.JSON.extension): MimeType.JSON.name]
+        config.grails.mime.types = [(MimeType.ALL.extension): MimeType.ALL.name,
+                                    (MimeType.FORM.extension): MimeType.FORM.name,
+                                    (MimeType.JSON.extension): MimeType.JSON.name]
     }
     
     @Issue('GRAILS-11093')
