@@ -16,7 +16,7 @@
 
 package grails.test.runtime;
 
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 
@@ -29,39 +29,41 @@ import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
  */
 @CompileStatic
 public class MetaClassCleanerTestPlugin implements TestPlugin {
+    private static final String META_CLASS_REGISTRY_LISTENER = "metaClassRegistryListener"
     String[] requiredFeatures = []
     String[] providedFeatures = ['metaClassCleaner']
     int ordinal = 0
 
-    protected MetaClassRegistryCleaner metaClassRegistryListener
-
-    protected void registerMetaClassRegistryWatcher() {
-        metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
+    protected void registerMetaClassRegistryWatcher(TestRuntime runtime) {
+        MetaClassRegistryCleaner metaClassRegistryListener = MetaClassRegistryCleaner.createAndRegister()
+        runtime.putValue(META_CLASS_REGISTRY_LISTENER, metaClassRegistryListener)
     }
 
-    void cleanupModifiedMetaClasses() {
-        metaClassRegistryListener?.clean()
-    }
-
-    void deregisterMetaClassCleaner() {
-        if (metaClassRegistryListener != null) {
+    protected void deregisterMetaClassCleaner(TestRuntime runtime) {
+        if (runtime.containsValueFor(META_CLASS_REGISTRY_LISTENER)) {
+            MetaClassRegistryCleaner metaClassRegistryListener =  (MetaClassRegistryCleaner)runtime.getValue(META_CLASS_REGISTRY_LISTENER)
             MetaClassRegistryCleaner.cleanAndRemove(metaClassRegistryListener)
-            metaClassRegistryListener = null
+            runtime.removeValue(META_CLASS_REGISTRY_LISTENER)
         }
     }
 
     public void onTestEvent(TestEvent event) {
+        TestRuntime runtime=event.runtime
         switch(event.name) {
-            case 'beforeClass':
-                registerMetaClassRegistryWatcher()
+            case 'startRuntime':
+                registerMetaClassRegistryWatcher(runtime)
                 break
-            case 'afterClass':
-                deregisterMetaClassCleaner()
+            case 'closeRuntime':
+                deregisterMetaClassCleaner(runtime)
+                break
+            case 'startFreshRuntime':
+                deregisterMetaClassCleaner(runtime)
+                registerMetaClassRegistryWatcher(runtime)
                 break
         }
     }
     
     public void close(TestRuntime runtime) {
-        deregisterMetaClassCleaner()
+        deregisterMetaClassCleaner(runtime)
     }
 }

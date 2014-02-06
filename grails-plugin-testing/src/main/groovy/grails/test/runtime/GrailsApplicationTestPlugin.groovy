@@ -16,8 +16,6 @@
 
 package grails.test.runtime;
 
-import java.lang.reflect.Modifier;
-
 import grails.async.Promises
 import grails.spring.BeanBuilder
 import grails.test.MockUtils
@@ -29,20 +27,20 @@ import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
+import java.lang.reflect.Modifier
+
 import org.codehaus.groovy.grails.commons.ApplicationAttributes
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.CodecArtefactHandler
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
+import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.converters.ConvertersPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintEvalUtils
 import org.grails.async.factory.SynchronousPromiseFactory
-import org.junit.runner.Description
 import org.springframework.beans.CachedIntrospectionResults
 import org.springframework.beans.factory.support.BeanDefinitionRegistry
 import org.springframework.context.ApplicationContext
@@ -191,6 +189,8 @@ class GrailsApplicationTestPlugin implements TestPlugin {
     
     void shutdownApplicationContext(TestRuntime runtime) {
         if(runtime.containsValueFor("grailsApplication")) {
+            resetGrailsApplication(runtime)
+            
             DefaultGrailsApplication grailsApplication = (DefaultGrailsApplication)runtime.getValue("grailsApplication")
             ApplicationContext applicationContext = grailsApplication.getParentContext()
             
@@ -216,28 +216,18 @@ class GrailsApplicationTestPlugin implements TestPlugin {
             Holders.clear()
             ConfigurationHelper.clearCachedConfigs()
         }
-        runtime.publishEvent("closeRuntime")
     }
     
     public void onTestEvent(TestEvent event) {
         TestRuntime runtime = event.runtime
         switch(event.name) {
-            case 'beforeClass':
-            case 'before':
-                Description testDescription = (Description)event.arguments?.description
-                boolean requiresFreshContext = doesRequireFreshContext(testDescription) 
-                if(requiresFreshContext) {
-                    shutdownApplicationContext(runtime)
-                }
-                if(!requiresFreshContext || event.name=='before') {
-                    // trigger grailsApplication initialization by requesting value
-                    runtime.getValue("grailsApplication", event.arguments)
-                }
+            case 'requestFreshRuntime':
+            case 'closeRuntime':
+                shutdownApplicationContext(runtime)
                 break
-            case 'afterClass':
-                if(!runtime.shared) {
-                    shutdownApplicationContext(runtime)
-                }
+            case 'before':
+                // trigger grailsApplication initialization by requesting value
+                runtime.getValue("grailsApplication", event.arguments)
                 break
             case 'after':
                 resetGrailsApplication(runtime)
@@ -263,12 +253,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         }
     }
     
-    boolean doesRequireFreshContext(Description testDescription) {
-        if(testDescription?.getAnnotation(FreshRuntime)) {
-            return true
-        }
-        return false
-    }
     
     public void close(TestRuntime runtime) {
         

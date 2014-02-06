@@ -102,7 +102,9 @@ class TestRuntimeJunitAdapter {
     }
     
     protected void before(TestRuntime runtime, Object testInstance, Description description) {
-        runtime.publishEvent("before", [testInstance: testInstance, description: description], [immediateDelivery: true])
+        def eventArguments = [testInstance: testInstance, description: description]
+        handleFreshContextAnnotation(runtime, description, eventArguments)
+        runtime.publishEvent("before", eventArguments, [immediateDelivery: true])
     }
 
     protected void after(TestRuntime runtime, Object testInstance, Description description, Throwable throwable) {
@@ -110,10 +112,28 @@ class TestRuntimeJunitAdapter {
     }
 
     protected void beforeClass(TestRuntime runtime, Class testClass, Description description) {
-        runtime.publishEvent("beforeClass", [testClass: testClass, description: description], [immediateDelivery: true])
+        def eventArguments = [testClass: testClass, description: description]
+        handleFreshContextAnnotation(runtime, description, eventArguments)
+        runtime.publishEvent("beforeClass", eventArguments, [immediateDelivery: true])
     }
 
     protected void afterClass(TestRuntime runtime, Class testClass, Description description, Throwable throwable) {
         runtime.publishEvent("afterClass", [testClass: testClass, description: description, throwable: throwable], [immediateDelivery: true, reverseOrderDelivery: true])
+        if(!runtime.shared) {
+            runtime.requestClose()
+        }
+    }
+    
+    protected handleFreshContextAnnotation(TestRuntime runtime, Description description, Map eventArguments) {
+        if(doesRequireFreshContext(description)) {
+            runtime.publishEvent('requestFreshRuntime', eventArguments, [immediateDelivery: true])
+        }
+    }
+
+    protected boolean doesRequireFreshContext(Description testDescription) {
+        if(testDescription?.getAnnotation(FreshRuntime)) {
+            return true
+        }
+        return false
     }
 }

@@ -16,13 +16,9 @@
 
 package grails.test.runtime;
 
-import java.util.List;
-
 import groovy.transform.CompileStatic
 import groovy.transform.Immutable
 import groovy.transform.TypeCheckingMode
-
-import org.junit.runner.Description
 
 /**
  * TestRuntime is the container for the test runtime state
@@ -42,6 +38,7 @@ class TestRuntime {
     private Map<String, Object> registry = [:]
     private boolean runtimeClosed = false
     private boolean shared
+    private boolean runtimeStarted = false
     
     protected TestRuntime(Set<String> features, List<TestPlugin> plugins, TestEventInterceptor interceptor, boolean shared) {
         this.interceptors=new ArrayList<TestEventInterceptor>()
@@ -84,6 +81,11 @@ class TestRuntime {
                 case 'closeRuntime':
                     if(!event.stopDelivery) {
                         close()
+                    }
+                    break
+                case 'requestFreshRuntime':
+                    if(!event.stopDelivery) {
+                        publishEvent('startFreshRuntime')
                     }
                     break
             }
@@ -186,12 +188,20 @@ class TestRuntime {
         doPublishEvent(createEvent([runtime: this, name: name, arguments: arguments, parentEvent: currentInitialEvent] + extraEventProperties))
     }
     
+    public void requestClose() {
+        publishEvent("closeRuntime")
+    }
+    
     @CompileStatic(TypeCheckingMode.SKIP)
     protected TestEvent createEvent(Map properties) {
         new TestEvent(properties)
     }
 
     protected synchronized void doPublishEvent(TestEvent event) {
+        if(runtimeClosed) {
+            throw new IllegalStateException("TestRuntime has already been closed.")
+        }
+        sendStartRuntimeEventOnFirstEvent(event)
         handleEventPublished(event)
         if(event.stopDelivery) {
             return
@@ -216,6 +226,13 @@ class TestRuntime {
             } finally {
                 currentInitialEvent = null
             }
+        }
+    }
+
+    private sendStartRuntimeEventOnFirstEvent(TestEvent event) {
+        if(!runtimeStarted) {
+            runtimeStarted=true
+            publishEvent('startRuntime', [initialEvent: event], [immediateDelivery: true])
         }
     }
 
@@ -282,7 +299,7 @@ class TestRuntime {
         }
     }
     
-    public synchronized void close() {
+    protected void close() {
         if(!runtimeClosed) {
             for(TestPlugin plugin : plugins) {
                 try {
