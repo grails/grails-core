@@ -76,7 +76,6 @@ class DomainClassTestPlugin implements TestPlugin {
         applicationContext.addApplicationListener applicationContext.getBean(GrailsDomainClassCleaner)
         applicationContext.addApplicationListener new DomainEventListener(simpleDatastore)
         applicationContext.addApplicationListener new AutoTimestampEventListener(simpleDatastore)
-        ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
     }
 
     protected void cleanupDatastore() {
@@ -87,6 +86,7 @@ class DomainClassTestPlugin implements TestPlugin {
     protected void connectDatastore(TestRuntime runtime, GrailsApplication grailsApplication) {
         ConfigurableWebApplicationContext applicationContext = (ConfigurableWebApplicationContext)grailsApplication.parentContext
         SimpleMapDatastore simpleDatastore = applicationContext.getBean(SimpleMapDatastore)
+        ConstrainedProperty.registerNewConstraint("unique", new UniqueConstraintFactory(simpleDatastore))
         Session currentSession = DatastoreUtils.bindSession(simpleDatastore.connect())
         runtime.putValue("domainClassCurrentSession", currentSession)
     }
