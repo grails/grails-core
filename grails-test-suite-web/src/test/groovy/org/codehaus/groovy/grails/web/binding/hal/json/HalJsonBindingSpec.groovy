@@ -19,7 +19,7 @@ class HalJsonBindingSpec extends Specification {
     }
 }
 '''
-        request.contentType = 'application/hal+json'
+        request.contentType = HAL_JSON_CONTENT_TYPE
         def model = controller.createPerson()
     then:
         model.person instanceof Person
