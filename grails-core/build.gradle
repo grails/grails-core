@@ -35,12 +35,15 @@ dependencies {
         ext.notInPom = true
     }
 
-    runtime 'oro:oro:2.0.8' // Required by commons-validator
+    runtime 'oro:oro:2.0.8' // Required by commons-validator. TODO: split validation out of grails-core
     runtime 'cglib:cglib:2.2.2' // Used to generate proxies for classes via Spring AOP
     runtime 'asm:asm:3.3.1'
+
+    // Used by Spring AOP
     runtime 'aopalliance:aopalliance:1.0',
             "org.aspectj:aspectjrt:$aspectjVersion"
 
+    // legacy, and not included in published POM
     runtime "org.springframework:spring-jms:${springVersion}", {
         ext.notInPom = true
     }

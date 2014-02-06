@@ -21,21 +21,10 @@ import groovy.lang.Writable;
 import groovy.util.slurpersupport.GPathResult;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
-import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
-import org.codehaus.groovy.grails.support.MockApplicationContext;
-import org.codehaus.groovy.grails.support.MockResourceLoader;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
-import org.springframework.mock.web.MockServletContext;
-import org.springframework.util.Assert;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -105,52 +94,7 @@ public class GrailsUtil {
         GRAILS_VERSION = version;
     }
 
-    /**
-     * <p>Bootstraps a Grails application from the current classpath. The method will look for an
-     * applicationContext.xml file in the classpath that must contain a bean of type
-     * GrailsApplication and id grailsApplication.
-     *
-     * <p>The method will then bootstrap Grails with the GrailsApplication and load all Grails plug-ins found in the path
-     *
-     * @return The Grails ApplicationContext instance
-     */
-    public static ApplicationContext bootstrapGrailsFromClassPath() {
-        LOG.info("Loading Grails environment");
-        ApplicationContext parent = new ClassPathXmlApplicationContext("applicationContext.xml");
-        DefaultGrailsApplication application = parent.getBean("grailsApplication", DefaultGrailsApplication.class);
 
-        return createGrailsApplicationContext(parent, application);
-    }
-
-    private static ApplicationContext createGrailsApplicationContext(ApplicationContext parent, GrailsApplication application) {
-        GrailsRuntimeConfigurator config = new GrailsRuntimeConfigurator(application,parent);
-        MockServletContext servletContext = new MockServletContext(new MockResourceLoader());
-        ConfigurableApplicationContext appCtx = (ConfigurableApplicationContext)config.configure(servletContext);
-        servletContext.setAttribute(ApplicationAttributes.APPLICATION_CONTEXT, appCtx);
-        Assert.notNull(appCtx);
-        return appCtx;
-    }
-
-    /**
-     * Bootstraps Grails with the given GrailsApplication instance.
-     *
-     * @param application The GrailsApplication instance
-     * @return A Grails ApplicationContext
-     */
-    public static ApplicationContext bootstrapGrailsFromApplication(GrailsApplication application) {
-        MockApplicationContext parent = new MockApplicationContext();
-        parent.registerMockBean(GrailsApplication.APPLICATION_ID, application);
-        return createGrailsApplicationContext(parent, application);
-    }
-
-    /**
-     * Bootstraps Grails from the given parent ApplicationContext which should contain a bean definition called "grailsApplication"
-     * of type GrailsApplication.
-     */
-    public static ApplicationContext bootstrapGrailsFromParentContext(ApplicationContext parent) {
-        DefaultGrailsApplication application = parent.getBean("grailsApplication", DefaultGrailsApplication.class);
-        return createGrailsApplicationContext(parent, application);
-    }
 
     /**
      * Retrieves the current execution environment.
