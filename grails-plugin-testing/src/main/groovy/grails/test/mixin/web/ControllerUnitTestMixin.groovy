@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.api.ControllerTagLibraryApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersApi
 import org.codehaus.groovy.grails.plugins.web.api.ControllersMimeTypesApi
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.pages.GroovyPageUtils
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.FlashScope
@@ -50,24 +51,36 @@ import org.springframework.mock.web.MockServletContext
  */
 @groovy.transform.CompileStatic
 class ControllerUnitTestMixin extends GrailsUnitTestMixin {
-    private static final Set<String> REQUIRED_FEATURES = (["controller"] as Set).asImmutable() 
-    
+    private static final Set<String> REQUIRED_FEATURES = (["controller"] as Set).asImmutable()
+
+    static String FORM_CONTENT_TYPE = MimeType.FORM.name
+    static String ALL_CONTENT_TYPE = MimeType.ALL.name
+    static String HTML_CONTENT_TYPE = MimeType.HTML.name
+    static String XHTML_CONTENT_TYPE = MimeType.XHTML.name
+    static String XML_CONTENT_TYPE = MimeType.XML.name
+    static String JSON_CONTENT_TYPE = MimeType.JSON.name
+    static String TEXT_XML_CONTENT_TYPE = MimeType.TEXT_XML.name
+    static String TEXT_JSON_CONTENT_TYPE = MimeType.TEXT_JSON.name
+    static String HAL_JSON_CONTENT_TYPE = MimeType.HAL_JSON.name
+    static String HAL_XML_CONTENT_TYPE = MimeType.HAL_XML.name
+    static String ATOM_XML_CONTENT_TYPE = MimeType.ATOM_XML.name
+
     public ControllerUnitTestMixin(Set<String> features) {
         super((REQUIRED_FEATURES + features) as Set)
     }
-    
+
     public ControllerUnitTestMixin() {
         super(REQUIRED_FEATURES)
     }
-    
+
     GrailsWebRequest getWebRequest() {
         (GrailsWebRequest)runtime.getValue("webRequest")
     }
-    
+
     GrailsMockHttpServletRequest getRequest() {
         return (GrailsMockHttpServletRequest)getWebRequest().getCurrentRequest()
     }
-    
+
     GrailsMockHttpServletResponse getResponse() {
         return (GrailsMockHttpServletResponse)getWebRequest().getCurrentResponse()
     }
@@ -83,18 +96,6 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     Map<String, String> getViews() {
         getGroovyPages()
     }
-
-    static String FORM_CONTENT_TYPE = MimeType.FORM.name
-    static String ALL_CONTENT_TYPE = MimeType.ALL.name
-    static String HTML_CONTENT_TYPE = MimeType.HTML.name
-    static String XHTML_CONTENT_TYPE = MimeType.XHTML.name
-    static String XML_CONTENT_TYPE = MimeType.XML.name
-    static String JSON_CONTENT_TYPE = MimeType.JSON.name
-    static String TEXT_XML_CONTENT_TYPE = MimeType.TEXT_XML.name
-    static String TEXT_JSON_CONTENT_TYPE = MimeType.TEXT_JSON.name
-    static String HAL_JSON_CONTENT_TYPE = MimeType.HAL_JSON.name
-    static String HAL_XML_CONTENT_TYPE = MimeType.HAL_XML.name
-    static String ATOM_XML_CONTENT_TYPE = MimeType.ATOM_XML.name
 
     /**
      * The {@link MockHttpSession} instance
