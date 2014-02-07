@@ -353,6 +353,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                 GrailsASTUtils.error(source, methodNode, formattedMessage);
             }
         }
+        wrapMethodBodyWithExceptionHandling(classNode, methodNode);
 
         MethodNode method = null;
         if (methodNode.getParameters().length > 0) {
@@ -364,9 +365,9 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
                     addOriginalMethodCall(methodNode, initializeActionParameters(
                             classNode, methodNode, methodNode.getName(), parameters, source, context)));
             GrailsASTUtils.copyAnnotations(methodNode, method);
-            annotateActionMethodAndWrapWithExceptionHandling(classNode, parameters, method);
+            annotateActionMethod(classNode, parameters, method);
         } else {
-            annotateActionMethodAndWrapWithExceptionHandling(classNode, parameters, methodNode);
+            annotateActionMethod(classNode, parameters, methodNode);
         }
 
         return method;
@@ -444,13 +445,13 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
             final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC,
                     new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
-
-            annotateActionMethodAndWrapWithExceptionHandling(controllerClassNode, parameters, methodNode);
+            wrapMethodBodyWithExceptionHandling(controllerClassNode, methodNode);
+            annotateActionMethod(controllerClassNode, parameters, methodNode);
             controllerClassNode.addMethod(methodNode);
         }
     }
 
-    protected void annotateActionMethodAndWrapWithExceptionHandling(ClassNode controllerClassNode, final Parameter[] parameters, final MethodNode methodNode) {
+    protected void annotateActionMethod(ClassNode controllerClassNode, final Parameter[] parameters, final MethodNode methodNode) {
 
         if (isCommandObjectAction(parameters)) {
             ListExpression initArray = new ListExpression();
@@ -464,7 +465,6 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
         } else {
             methodNode.addAnnotation(ACTION_ANNOTATION_NODE);
         }
-        wrapMethodBodyWithExceptionHandling(controllerClassNode, methodNode);
     }
 
     protected BlockStatement getCodeToHandleAllowedMethods(ClassNode controllerClass, MethodNode methodNode) {
