@@ -83,7 +83,19 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     Map<String, String> getViews() {
         getGroovyPages()
     }
-    
+
+    static String FORM_CONTENT_TYPE = MimeType.FORM.name
+    static String ALL_CONTENT_TYPE = MimeType.ALL.name
+    static String HTML_CONTENT_TYPE = MimeType.HTML.name
+    static String XHTML_CONTENT_TYPE = MimeType.XHTML.name
+    static String XML_CONTENT_TYPE = MimeType.XML.name
+    static String JSON_CONTENT_TYPE = MimeType.JSON.name
+    static String TEXT_XML_CONTENT_TYPE = MimeType.TEXT_XML.name
+    static String TEXT_JSON_CONTENT_TYPE = MimeType.TEXT_JSON.name
+    static String HAL_JSON_CONTENT_TYPE = MimeType.HAL_JSON.name
+    static String HAL_XML_CONTENT_TYPE = MimeType.HAL_XML.name
+    static String ATOM_XML_CONTENT_TYPE = MimeType.ATOM_XML.name
+
     /**
      * The {@link MockHttpSession} instance
      */

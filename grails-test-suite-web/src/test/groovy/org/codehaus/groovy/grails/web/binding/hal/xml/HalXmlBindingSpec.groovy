@@ -23,7 +23,7 @@ class HalXmlBindingSpec extends Specification {
     </resource>
 </resource>'''
 
-        request.contentType = 'application/hal+xml'
+        request.contentType = HAL_XML_CONTENT_TYPE
         def model = controller.createPerson()
     then:
         model.person instanceof Person
