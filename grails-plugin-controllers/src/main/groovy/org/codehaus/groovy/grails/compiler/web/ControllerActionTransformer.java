@@ -439,7 +439,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
 
             final MethodNode methodNode = new MethodNode(closureProperty.getName(), Modifier.PUBLIC,
                     new ClassNode(Object.class), ZERO_PARAMETERS, EMPTY_CLASS_ARRAY, newMethodCode);
-
+            wrapMethodBodyWithExceptionHandling(controllerClassNode, methodNode);
             annotateActionMethod(controllerClassNode, parameters, methodNode);
             controllerClassNode.addMethod(methodNode);
         }

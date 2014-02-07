@@ -41,6 +41,15 @@ class ControllerExceptionHandlerSpec extends Specification {
         response.contentAsString == 'A SQLException Was Handled'
     }
 
+    void 'Test exception handler which renders a String from command object closure action'() {
+        when:
+        params.exceptionToThrow = 'java.sql.SQLException'
+        controller.testClosureActionWithCommandObject()
+
+        then:
+        response.contentAsString == 'A SQLException Was Handled'
+    }
+
     void 'Test exception handler which renders a String from action with typed parameter'() {
         when:
         params.exceptionToThrow = 'java.sql.SQLException'
@@ -176,6 +185,11 @@ class ErrorHandlersController extends SomeAbstractController {
     }
 
     def testActionWithCommandObject(MyCommand co) {
+        def exceptionClass = Class.forName(co.exceptionToThrow)
+        throw exceptionClass.newInstance()
+    }
+
+    def testClosureActionWithCommandObject = { MyCommand co ->
         def exceptionClass = Class.forName(co.exceptionToThrow)
         throw exceptionClass.newInstance()
     }
