@@ -34,6 +34,7 @@ class MimeType {
     public static final String BEAN_NAME = "mimeTypes"
 
     public static final MimeType ALL = new MimeType("*/*", "all")
+    public static final MimeType FORM = new MimeType("application/x-www-form-urlencoded", "form")
     public static final MimeType HTML = new MimeType('text/html', "html")
     public static final MimeType XHTML = new MimeType("application/xhtml+xml", "html")
     public static final MimeType XML = new MimeType('application/xml', "xml")
