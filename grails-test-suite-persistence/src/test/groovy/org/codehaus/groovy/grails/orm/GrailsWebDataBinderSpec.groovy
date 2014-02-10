@@ -1158,6 +1158,17 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.listOfWidgets[4] == null
         obj.listOfWidgets[5].isBindable == 'five'
     }
+    
+    void 'Test binding to a TimeZone property'() {
+        given:
+        def obj = new Widget()
+        
+        when:
+        binder.bind obj, [timeZone: 'Europe/Berlin'] as SimpleMapDataBindingSource
+        
+        then:
+        obj.timeZone == TimeZone.getTimeZone('Europe/Berlin')
+    }
 }
 
 @Entity
@@ -1234,9 +1245,11 @@ class Widget implements Comparable {
         result
     })
     List listOfIntegers = []
+    TimeZone timeZone
 
     static constraints = {
         isNotBindable bindable: false
+        timeZone nullable: true
     }
 
     int compareTo(Object rhs) {
