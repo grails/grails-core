@@ -22,6 +22,7 @@ import grails.validation.DeferredBindingActions
 import grails.validation.Validateable
 
 import org.apache.commons.lang.builder.CompareToBuilder
+import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 import org.grails.databinding.BindUsing
 import org.grails.databinding.BindingFormat
@@ -29,7 +30,6 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
-import org.springframework.context.support.StaticMessageSource
 
 import spock.lang.Issue
 import spock.lang.Specification
@@ -41,48 +41,9 @@ import com.google.gson.internal.LazilyParsedNumber
 class GrailsWebDataBinderSpec extends Specification {
 
     GrailsWebDataBinder binder
-    def messageSource
 
     void setup() {
-        binder = new GrailsWebDataBinder(grailsApplication)
-        messageSource = new StaticMessageSource()
-        binder.messageSource = messageSource
-    }
-
-    void 'Test string trimming'() {
-        given:
-        def author = new Author()
-
-        when:
-        binder.bind author, new SimpleMapDataBindingSource([name: '   Jeff Scott Brown ', stringWithSpecialBinding: '   Jeff Scott Brown '])
-
-        then:
-        author.name == 'Jeff Scott Brown'
-        author.stringWithSpecialBinding == 'Jeff Scott Brown'
-
-        when:
-        def actualName = 'Jeff Scott Brown'
-        binder.bind author, new SimpleMapDataBindingSource([name: "   ${actualName} ", stringWithSpecialBinding: "   ${actualName} "])
-
-        then:
-        author.name == 'Jeff Scott Brown'
-        author.stringWithSpecialBinding == 'Jeff Scott Brown'
-
-        when:
-        binder.trimStrings = false
-        binder.bind author, new SimpleMapDataBindingSource([name: '  Jeff Scott Brown   ', stringWithSpecialBinding: '  Jeff Scott Brown   '])
-
-        then:
-        author.name == '  Jeff Scott Brown   '
-        author.stringWithSpecialBinding == 'Jeff Scott Brown'
-
-        when:
-        binder.trimStrings = false
-        binder.bind author, new SimpleMapDataBindingSource([name: "  ${actualName}   ", stringWithSpecialBinding: "  ${actualName}   "])
-
-        then:
-        author.name == '  Jeff Scott Brown   '
-        author.stringWithSpecialBinding == 'Jeff Scott Brown'
+        binder = grailsApplication.mainContext.getBean(DataBindingUtils.DATA_BINDER_BEAN_NAME)
     }
 
     void 'Test binding an invalid String to an object reference does not result in an empty instance being bound'() {
@@ -196,7 +157,6 @@ class GrailsWebDataBinderSpec extends Specification {
     
     void 'Test binding null id to a domain class reference in a non-domain class'() {
         given:
-        def binder = new GrailsWebDataBinder(grailsApplication)
         def nonDomainClass = new SomeNonDomainClass()
         
         when:
@@ -502,50 +462,6 @@ class GrailsWebDataBinderSpec extends Specification {
         team.members.betsy.name == 'Sarah Elizabeth Brown'
     }
 
-    void 'Test autoGrowCollectionLimit with Maps of String'() {
-        given:
-        def team = new Team()
-        binder.autoGrowCollectionLimit = 2
-        def bindingSource = [:]
-        bindingSource['states[MO]'] = 'Missouri'
-        bindingSource['states[IL]'] = 'Illinois'
-        bindingSource['states[VA]'] = 'Virginia'
-        bindingSource['states[CA]'] = 'California'
-
-        when:
-        binder.bind team, new SimpleMapDataBindingSource(bindingSource)
-
-        then:
-        team.states.size() == 2
-        team.states.containsKey('MO')
-        team.states.containsKey('IL')
-        team.states.MO == 'Missouri'
-        team.states.IL == 'Illinois'
-    }
-
-    void 'Test autoGrowCollectionLimit with Maps of domain objects'() {
-        given:
-        def team = new Team()
-        binder.autoGrowCollectionLimit = 2
-        def bindingSource = [:]
-        bindingSource['members[jeff]'] = [name: 'Jeff Scott Brown']
-        bindingSource['members[betsy]'] = [name: 'Sarah Elizabeth Brown']
-        bindingSource['members[jake]'] = [name: 'Jacob Ray Brown']
-        bindingSource['members[zack]'] = [name: 'Zachary Scott Brown']
-
-        when:
-        binder.bind team, new SimpleMapDataBindingSource(bindingSource)
-
-        then:
-        team.members.size() == 2
-        team.members.containsKey('jeff')
-        team.members.containsKey('betsy')
-        team.members.jeff instanceof Author
-        team.members.betsy instanceof Author
-        team.members.jeff.name == 'Jeff Scott Brown'
-        team.members.betsy.name == 'Sarah Elizabeth Brown'
-    }
-
     void 'Test binding to Set with subscript'() {
         given:
         def pub = new Publisher()
@@ -685,7 +601,6 @@ class GrailsWebDataBinderSpec extends Specification {
         a3.id != null
 
         when:
-        def binder = new GrailsWebDataBinder(grailsApplication)
         binder.bind publisher, new SimpleMapDataBindingSource(['authors': [
                                 [id: a3.id, name: 'Author Tres'],
                                 [id: a1.id, name: 'Author Uno'],
@@ -717,7 +632,6 @@ class GrailsWebDataBinderSpec extends Specification {
         a3.id != null
 
         when:
-        def binder = new GrailsWebDataBinder(grailsApplication)
         binder.bind publisher, new SimpleMapDataBindingSource(['authors': [
                                 [id: a3.id, name: 'Author Tres'],
                                 [id: a1.id, name: 'Author Uno'],
@@ -739,7 +653,6 @@ class GrailsWebDataBinderSpec extends Specification {
     void 'Test binding a List of Maps to a persistent Set'() {
         when:
         def publisher = new Publisher(name: 'Some Publisher')
-        def binder = new GrailsWebDataBinder(grailsApplication)
         binder.bind publisher, new SimpleMapDataBindingSource(['authors': [
                                 [name: 'Author One'],
                                 [name: 'Author Two'],
@@ -867,44 +780,6 @@ class GrailsWebDataBinderSpec extends Specification {
         sortedSetOfWidgets[2].isBindable == 'Is Uno (SortedSet)'
     }
 
-    void 'Test binding format code'() {
-        given:
-        messageSource.addMessage 'my.date.format', Locale.US, 'MMddyyyy'
-        messageSource.addMessage 'my.date.format', Locale.UK, 'ddMMyyyy'
-        def child = new Child()
-
-        when:
-        binder = new GrailsWebDataBinder(grailsApplication)  {
-            Locale getLocale() {
-                Locale.US
-            }
-        }
-        binder.messageSource = messageSource
-        binder.bind child, new SimpleMapDataBindingSource([birthDate: '11151969'])
-        def birthDate = child.birthDate
-
-        then:
-        Calendar.NOVEMBER == birthDate.month
-        15 == birthDate.date
-        69 == birthDate.year
-
-        when:
-        binder = new GrailsWebDataBinder(grailsApplication) {
-            Locale getLocale() {
-                Locale.UK
-            }
-        }
-        binder.messageSource = messageSource
-        child.birthDate = null
-        binder.bind child, new SimpleMapDataBindingSource([birthDate: '15111969'])
-        birthDate = child.birthDate
-
-        then:
-        Calendar.NOVEMBER == birthDate.month
-        15 == birthDate.date
-        69 == birthDate.year
-    }
-
     void 'Test that binding errors are populated on a @Validateable instance'() {
         given:
         def obj = new SomeValidateableClass()
@@ -991,7 +866,6 @@ class GrailsWebDataBinderSpec extends Specification {
     
     void 'Test binding a List<String>'() {
         given:
-        def binder = new GrailsWebDataBinder(grailsApplication)
         def obj = new CollectionContainer()
         
         when:
@@ -1284,6 +1158,17 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.listOfWidgets[4] == null
         obj.listOfWidgets[5].isBindable == 'five'
     }
+    
+    void 'Test binding to a TimeZone property'() {
+        given:
+        def obj = new Widget()
+        
+        when:
+        binder.bind obj, [timeZone: 'Europe/Berlin'] as SimpleMapDataBindingSource
+        
+        then:
+        obj.timeZone == TimeZone.getTimeZone('Europe/Berlin')
+    }
 }
 
 @Entity
@@ -1360,9 +1245,11 @@ class Widget implements Comparable {
         result
     })
     List listOfIntegers = []
+    TimeZone timeZone
 
     static constraints = {
         isNotBindable bindable: false
+        timeZone nullable: true
     }
 
     int compareTo(Object rhs) {
