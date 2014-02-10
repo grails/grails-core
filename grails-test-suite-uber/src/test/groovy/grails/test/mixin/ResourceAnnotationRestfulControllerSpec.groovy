@@ -139,7 +139,7 @@ class Video {
         when:"A valid domain instance is passed to the update action"
             def video = domainClass.newInstance(title: 'Title').save(flush: true)
             response.reset()
-            request.contentType = 'application/x-www-form-urlencoded'
+            request.contentType = FORM_CONTENT_TYPE
             params.id = video.id
             params.title = 'Game of Thrones'
             controller.update()

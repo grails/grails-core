@@ -19,7 +19,7 @@ class WithFormatContentTypeSpec extends Specification {
     @Issue('GRAILS-11093')
     void 'Test specifying contentType'() {
         when: 'content type is specified'
-        request.contentType = MimeType.FORM.name
+        request.contentType = FORM_CONTENT_TYPE
         controller.index()
         
         then: 'the corresponding block is executed'
