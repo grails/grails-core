@@ -6,7 +6,7 @@ buildscript {
 	//mavenRepo(urls: 'http://evgeny-goldin.org/artifactory/repo/')
     }
     dependencies {
-        classpath "commons-io:commons-io:2.1"
+        classpath "commons-io:commons-io:2.2"
         //classpath "com.goldin.plugins:gradle:0.1-RC3" // http://evgeny-goldin.com/wiki/Gradle-duplicates-plugin
     }
 }
@@ -26,7 +26,7 @@ ext {
     commonsBeanUtilsVersion = "1.8.3"
     commonsCliVersion = "1.2"
     commonsCollectionsVersion = "3.2.1"
-    commonsIOVersion = "2.1"
+    commonsIOVersion = "2.2"
     commonsLangVersion = "2.6"
     datastoreVersion = "2.0.7.RELEASE"
     gantVersion = "1.9.6"
