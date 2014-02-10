@@ -178,7 +178,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("com.googlecode.concurrentlinkedhashmap", "concurrentlinkedhashmap-lru", "1.3.1"),
                             ModuleRevisionId.newInstance("commons-codec", "commons-codec", "1.5"),
                             ModuleRevisionId.newInstance("commons-collections", "commons-collections", "3.2.1"),
-                            ModuleRevisionId.newInstance("commons-io", "commons-io", "2.1"),
+                            ModuleRevisionId.newInstance("commons-io", "commons-io", "2.2"),
                             ModuleRevisionId.newInstance("commons-lang", "commons-lang", "2.6"),
                             ModuleRevisionId.newInstance("javax.transaction", "jta", "1.1"),
                             ModuleRevisionId.newInstance("org.hibernate.javax.persistence", "hibernate-jpa-2.0-api", "1.0.1.Final"),
@@ -286,7 +286,7 @@ public class GrailsCoreDependencies {
                             ModuleRevisionId.newInstance("org.aspectj", "aspectjrt", "1.6.10"),
                             ModuleRevisionId.newInstance("cglib", "cglib", "2.2"),
                             ModuleRevisionId.newInstance("asm", "asm", "3.1"),
-                            ModuleRevisionId.newInstance("commons-fileupload", "commons-fileupload", "1.2.2"),
+                            ModuleRevisionId.newInstance("commons-fileupload", "commons-fileupload", "1.3.1"),
                             ModuleRevisionId.newInstance("oro", "oro", "2.0.8"),
                             // data source
 
