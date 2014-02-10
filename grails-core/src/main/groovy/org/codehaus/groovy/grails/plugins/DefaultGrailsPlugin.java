@@ -44,6 +44,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsArrayUtils;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
 import org.codehaus.groovy.grails.core.io.SpringResource;
@@ -365,14 +366,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
         }
         catch (IllegalArgumentException e) {
             if (GrailsUtil.isDevelopmentEnv()) {
-                LOG.debug("Cannot load plug-in resource watch list from [" + DefaultGroovyMethods.inspect(watchedResourcePatternReferences) +
+                LOG.debug("Cannot load plug-in resource watch list from [" + GrailsArrayUtils.toString(watchedResourcePatternReferences) +
                         "]. This means that the plugin " + this +
                         ", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
         }
         catch (IOException e) {
             if (GrailsUtil.isDevelopmentEnv()) {
-                LOG.debug("Cannot load plug-in resource watch list from [" + DefaultGroovyMethods.inspect(watchedResourcePatternReferences) +
+                LOG.debug("Cannot load plug-in resource watch list from [" + GrailsArrayUtils.toString(watchedResourcePatternReferences) +
                         "]. This means that the plugin " + this +
                         ", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
             }
@@ -586,9 +587,7 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
                 try {
                     Resource[] resources = resolver.getResources(resourcesReference);
                     if (resources.length > 0) {
-                        List<Resource> newList = Arrays.asList(watchedResources);
-                        newList.addAll(Arrays.asList(resources));
-                        watchedResources = newList.toArray(new Resource[newList.size()]);
+                        watchedResources = (Resource[])GrailsArrayUtils.addAll(watchedResources, resources);
                     }
                 }
                 catch (Exception ignored) {
