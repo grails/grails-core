@@ -29,8 +29,10 @@ import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
+import org.codehaus.groovy.grails.transaction.ChainedTransactionManagerPostProcessor
 import org.springframework.beans.factory.BeanIsNotAFactoryException
 import org.springframework.context.ApplicationContext
+import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
@@ -52,6 +54,11 @@ class DataSourceGrailsPlugin {
     def watchedResources = "file:./grails-app/conf/DataSource.groovy"
 
     def doWithSpring = {
+        if (!parentCtx?.containsBean('transactionManager')) {
+            chainedTransactionManagerPostProcessor(ChainedTransactionManagerPostProcessor) {
+                config = application.config
+            }
+        }
         transactionManagerPostProcessor(TransactionManagerPostProcessor)
 
         def dsConfigs = [:]
@@ -165,6 +172,9 @@ class DataSourceGrailsPlugin {
 
         "$lazyName"(LazyConnectionDataSourceProxy, ref(unproxiedName))
         "$datasourceName"(TransactionAwareDataSourceProxy, ref(lazyName))
+        
+        // transactionManager beans will get overridden in Hibernate plugin
+        "transactionManager$suffix"(DataSourceTransactionManager, ref(lazyName))
     }
 
     String resolvePassword(ds, application) {
