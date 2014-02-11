@@ -266,6 +266,10 @@ public class ChainedTransactionManagerTests {
 
 			}
 		}
+
+        public String getName() {
+            return name;
+        }
 	}
 
 	static class TransactionManagerMatcher extends
