@@ -517,7 +517,7 @@ class AetherDependencyManagerSpec extends Specification {
                 authentication = credentials {
                     username = "foo"
                     password = "bar"
-                    id = "repo.grails.org/grails/core"
+                    id = "repo_grails_org_grails_core"
                 }
                 repositories {
                     repository  = mavenRepo("http://repo.grails.org/grails/core" )
@@ -525,7 +525,7 @@ class AetherDependencyManagerSpec extends Specification {
             }
         then:"The credentials are correctly populated"
             authentication != null
-            repository.id == 'repo.grails.org/grails/core'
+            repository.id == 'repo_grails_org_grails_core'
             repository.url == "http://repo.grails.org/grails/core"
             repository.authentication == authentication
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null
