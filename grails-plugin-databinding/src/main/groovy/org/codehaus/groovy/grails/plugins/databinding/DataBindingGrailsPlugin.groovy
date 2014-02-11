@@ -27,6 +27,7 @@ import org.codehaus.groovy.grails.web.binding.bindingsource.HalXmlDataBindingSou
 import org.codehaus.groovy.grails.web.binding.bindingsource.JsonDataBindingSourceCreator
 import org.codehaus.groovy.grails.web.binding.bindingsource.XmlDataBindingSourceCreator
 import org.grails.databinding.converters.DateConversionHelper
+import org.grails.databinding.converters.TimeZoneConverter
 import org.grails.databinding.converters.web.LocaleAwareBigDecimalConverter
 import org.grails.databinding.converters.web.LocaleAwareNumberConverter
 
@@ -59,6 +60,8 @@ class DataBindingGrailsPlugin {
             }
         }
 
+        timeZoneConverter(TimeZoneConverter)
+        
         defaultDateConverter(DateConversionHelper) {
             if(databindingConfig?.dateFormats instanceof List) {
                 formatStrings = databindingConfig.dateFormats
