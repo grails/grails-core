@@ -15,9 +15,8 @@
  */
 package org.codehaus.groovy.grails.transaction;
 
-import static java.util.Arrays.*;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -81,7 +80,8 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 		Assert.isTrue(transactionManagers.length > 0, "At least one PlatformTransactionManager must be given!");
 
 		this.synchronizationManager = synchronizationManager;
-		this.transactionManagers = asList(transactionManagers);
+		this.transactionManagers = new ArrayList<PlatformTransactionManager>();
+		this.transactionManagers.addAll(Arrays.asList(transactionManagers));
 	}
 
 	/*
@@ -223,4 +223,8 @@ public class ChainedTransactionManager implements PlatformTransactionManager {
 	private int lastTransactionManagerIndex() {
 		return transactionManagers.size() - 1;
 	}
+
+    public List<PlatformTransactionManager> getTransactionManagers() {
+        return transactionManagers;
+    }
 }
