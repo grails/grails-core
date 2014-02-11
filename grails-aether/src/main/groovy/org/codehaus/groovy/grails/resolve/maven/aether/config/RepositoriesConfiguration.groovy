@@ -55,12 +55,24 @@ class RepositoriesConfiguration {
         }
     }
 
-    void inherit(boolean b) {
-        inherits(b)
+    /**
+     * See {@link #inherits(boolean)}
+     */
+    @Deprecated
+    void inherit(boolean inheritRepositories) {
+        inherits(inheritRepositories)
     }
-    void inherits(boolean b) {
-        // TODO
+
+    /**
+     * Whether repository definitions are inherited from plugins
+     *
+     * @param inheritRepositories True if repositories should be inherited from plugins
+     */
+    @Deprecated
+    void inherits(boolean inheritRepositories) {
+        // No-op. With Aether we do not read dependency descriptors from plugins, so this method is redundant for Aether.
     }
+
     void grailsPlugins() {
         // noop.. not supported
     }
