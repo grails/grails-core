@@ -397,6 +397,21 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         obj.email = 'foo@bar.com'
         assert obj.validate()
     }
+    
+    void testContentTypeConstantsAreAddedToTheTest() {
+        assert FORM_CONTENT_TYPE == 'application/x-www-form-urlencoded'
+        assert MULTIPART_FORM_CONTENT_TYPE == 'multipart/form-data'
+        assert ALL_CONTENT_TYPE == '*/*'
+        assert HTML_CONTENT_TYPE == 'text/html'
+        assert XHTML_CONTENT_TYPE == 'application/xhtml+xml'
+        assert XML_CONTENT_TYPE == 'application/xml'
+        assert JSON_CONTENT_TYPE == 'application/json'
+        assert TEXT_XML_CONTENT_TYPE == 'text/xml'
+        assert TEXT_JSON_CONTENT_TYPE == 'text/json'
+        assert HAL_JSON_CONTENT_TYPE == 'application/hal+json'
+        assert HAL_XML_CONTENT_TYPE == 'application/hal+xml'
+        assert ATOM_XML_CONTENT_TYPE == 'application/atom+xml'
+    }
 }
 
 @Artefact("Controller")
