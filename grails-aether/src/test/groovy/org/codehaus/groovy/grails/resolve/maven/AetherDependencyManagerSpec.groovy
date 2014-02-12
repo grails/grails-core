@@ -30,9 +30,31 @@ import spock.lang.Specification
  */
 class AetherDependencyManagerSpec extends Specification {
 
+    @Issue('GRAILS-11055')
+    void "Test that a transitive dependency excluded with the map syntax is actually excluded"() {
+        given:"A dependency with an exclusion"
+            def dependencyManager = new AetherDependencyManager()
+            dependencyManager.parseDependencies {
+                repositories {
+                    grailsCentral()
+                }
+                plugins {
+                    compile(":jasper:1.7.0") {
+                        excludes([group: 'org.apache.poi', name: 'poi'])
+                    }
+                }
+            }
+
+        when:"The dependency is resolved"
+            def report = dependencyManager.resolve('compile')
+        then:"The transitive dependency is excluded"
+            report.pluginZips.any { File f -> f.name.contains('jasper')}
+            !report.jarFiles.any { File f -> f.name.contains('poi')}
+    }
+
     @Issue('GRAILS-10638')
     void "Test that a dependency included in both compile and test scopes ends up in both scopes"() {
-        given:"A dependency manager with a dependency that contains exclusions"
+        given:"A dependency manager with a dependency that contains the dependency in both scopes"
             def dependencyManager = new AetherDependencyManager()
             dependencyManager.parseDependencies {
                 repositories {
@@ -43,11 +65,11 @@ class AetherDependencyManagerSpec extends Specification {
                     test 'mysql:mysql-connector-java:5.1.24'
                 }
             }
-        when:"The grails dependencies are obtained"
+        when:"The compile and test scopes are obtained"
             def compileFiles = dependencyManager.resolve('compile').allArtifacts
             def testFiles = dependencyManager.resolve('test').allArtifacts
 
-        then:"The exclusions are present"
+        then:"The dependency is present in both scopes"
             compileFiles.size() == 1
             testFiles.size() == 1
 
@@ -69,7 +91,7 @@ class AetherDependencyManagerSpec extends Specification {
                 compile 'org.grails:grails-test:2.3.2'
             }
         }
-        when:"The grails dependencies are obtained"
+        when:"The compile and test scopes are obtained"
             def compileFiles = dependencyManager.resolve('compile').allArtifacts
             def testFiles = dependencyManager.resolve('test').allArtifacts
 
@@ -171,7 +193,7 @@ class AetherDependencyManagerSpec extends Specification {
     }
 
     void "Test customize repository policy"() {
-        given:"A dependency manager with a dependency that contains exclusions"
+        given:"A dependency manager with a custom repository policy"
             def dependencyManager = new AetherDependencyManager()
             dependencyManager.parseDependencies {
                 repositories {
@@ -193,7 +215,7 @@ class AetherDependencyManagerSpec extends Specification {
     }
 
     void "Test grails dependency transitive setting"() {
-        given:"A dependency manager with a dependency that contains exclusions"
+        given:"A dependency manager with a dependency that has transitive resolves disabled"
             def dependencyManager = new AetherDependencyManager()
             dependencyManager.parseDependencies {
                 dependencies {
@@ -495,7 +517,7 @@ class AetherDependencyManagerSpec extends Specification {
                 authentication = credentials {
                     username = "foo"
                     password = "bar"
-                    id = "repo.grails.org/grails/core"
+                    id = "repo_grails_org_grails_core"
                 }
                 repositories {
                     repository  = mavenRepo("http://repo.grails.org/grails/core" )
@@ -503,7 +525,7 @@ class AetherDependencyManagerSpec extends Specification {
             }
         then:"The credentials are correctly populated"
             authentication != null
-            repository.id == 'repo.grails.org/grails/core'
+            repository.id == 'repo_grails_org_grails_core'
             repository.url == "http://repo.grails.org/grails/core"
             repository.authentication == authentication
             dependencyManager.session.authenticationSelector.getAuthentication(repository) != null

@@ -41,9 +41,11 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.access.BootstrapException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.util.Assert;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -194,6 +196,11 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
             }
         }
 
+        if(webContext instanceof ConfigurableWebApplicationContext) {
+            ConfigurableWebApplicationContext configurableContext = (ConfigurableWebApplicationContext) webContext;
+            postProcessWebApplicationContext(configurableContext);
+            applyInitializers(configurableContext);
+        }
         interceptors = establishInterceptors(webContext);
 
         return webContext;

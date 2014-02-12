@@ -54,6 +54,7 @@ class ControllerUnitTestMixin extends GrailsUnitTestMixin {
     private static final Set<String> REQUIRED_FEATURES = (["controller"] as Set).asImmutable()
 
     static String FORM_CONTENT_TYPE = MimeType.FORM.name
+    static String MULTIPART_FORM_CONTENT_TYPE = MimeType.MULTIPART_FORM.name
     static String ALL_CONTENT_TYPE = MimeType.ALL.name
     static String HTML_CONTENT_TYPE = MimeType.HTML.name
     static String XHTML_CONTENT_TYPE = MimeType.XHTML.name

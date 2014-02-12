@@ -65,7 +65,7 @@ class DependencyConfiguration {
 
     void exclude(Map<String,String> exc) {
         List<Exclusion> exclusions = getExclusionList()
-        exclusions << new Exclusion(exc.group, exc.name, exc.classifier, exc.extension)
+        exclusions << new Exclusion(exc.group ?: WILD_CARD, exc.name ?: WILD_CARD, exc.classifier ?: WILD_CARD, exc.extension ?: WILD_CARD)
         dependency = dependency.setExclusions(exclusions)
     }
 
