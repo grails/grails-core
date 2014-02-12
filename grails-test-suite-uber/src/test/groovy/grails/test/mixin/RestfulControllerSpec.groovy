@@ -190,7 +190,7 @@ class VideoController {
         video.save flush:true
 
         request.withFormat {
-            form {
+            form multipartForm {
                 flash.message = message(code: 'default.created.message', args: [message(code: 'video.label', default: 'Video'), video.id])
                 redirect video
             }
@@ -217,7 +217,7 @@ class VideoController {
         video.save flush:true
 
         request.withFormat {
-            form {
+            form multipartForm {
                 flash.message = message(code: 'default.updated.message', args: [message(code: 'Video.label', default: 'Video'), video.id])
                 redirect video
             }
@@ -235,7 +235,7 @@ class VideoController {
         video.delete flush:true
 
         request.withFormat {
-            form {
+            form multipartForm {
                 flash.message = message(code: 'default.deleted.message', args: [message(code: 'Video.label', default: 'Video'), video.id])
                 redirect action:"index", method:"GET"
             }
@@ -245,7 +245,7 @@ class VideoController {
 
     protected void notFound() {
         request.withFormat {
-            form {
+            form multipartForm {
                 flash.message = message(code: 'default.not.found.message', args: [message(code: 'video.label', default: 'Video'), params.id])
                 redirect action: "index", method: "GET"
             }
