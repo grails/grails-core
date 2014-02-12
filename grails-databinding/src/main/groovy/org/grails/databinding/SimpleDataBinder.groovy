@@ -568,8 +568,11 @@ class SimpleDataBinder implements DataBinder {
             propertyType = mbp.field?.type
             propertyGetter = mbp.getter
         }
-        if (propertyType == null) {
+        if (propertyType == null || propertyType == Object) {
             propertyType = metaProperty.type
+            if(propertyType == null || propertyType == Object) {
+                propertyType = getField(obj.getClass(), propName)?.type ?: Object
+            }
         }
         if (propertyValue == null || propertyType == Object || propertyType.isAssignableFrom(propertyValue.getClass())) {
             if (convertCollectionElements && ((!(propertyValue instanceof Range) && propertyValue instanceof Collection && Collection.isAssignableFrom(propertyType) && propertyGetter))) {
