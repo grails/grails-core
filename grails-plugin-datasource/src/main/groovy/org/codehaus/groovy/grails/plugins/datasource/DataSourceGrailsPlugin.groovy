@@ -19,8 +19,6 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
 
-import java.sql.Connection
-
 import javax.sql.DataSource
 
 import org.apache.commons.logging.Log
@@ -30,8 +28,6 @@ import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
 import org.codehaus.groovy.grails.transaction.ChainedTransactionManagerPostProcessor
-import org.springframework.beans.factory.BeanIsNotAFactoryException
-import org.springframework.context.ApplicationContext
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
@@ -74,9 +70,11 @@ class DataSourceGrailsPlugin {
                 dsConfigs[name] = value
             }
         }
-
+        
         createDatasource.delegate = delegate
         dsConfigs.each { name, ds -> createDatasource name, ds }
+        
+        embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
     }
 
     def createDatasource = { String datasourceName, ds ->
@@ -269,55 +267,8 @@ class DataSourceGrailsPlugin {
     }
 
     def onShutdown = { event ->
-
-        ApplicationContext appCtx = event.ctx
-
-        appCtx.getBeansOfType(DataSource).each { String name, DataSource dataSource ->
-            shutdownDatasource dataSource, name, appCtx
-        }
-
         if (Metadata.getCurrent().isWarDeployed() || Environment.isFork()) {
             deregisterJDBCDrivers()
-        }
-    }
-
-    void shutdownDatasource(DataSource dataSource, String name, ctx) {
-        Connection connection
-        try {
-            connection = dataSource.getConnection()
-            try {
-                def dbName = connection.metaData.databaseProductName
-                if (dbName == 'HSQL Database Engine' || dbName == 'H2') {
-                    connection.createStatement().executeUpdate('SHUTDOWN')
-                }
-            } catch (e) {
-                // already closed, ignore
-            }
-        }
-        catch (e) {
-            log.error "Error shutting down datasource: $e.message", e
-        }
-        finally {
-            try { connection?.close() } catch (ignored) {}
-            try {
-                if (dataSource.respondsTo('close')) {
-                    boolean shouldClose = true
-                    try {
-                        def factory = ctx.getBean('&' + name)
-                        if (factory instanceof JndiObjectFactoryBean) {
-                            shouldClose = false
-                        }
-                    }
-                    catch (BeanIsNotAFactoryException e) {
-                        // not using JNDI
-                    }
-
-                    if (shouldClose) {
-                        dataSource.close()
-                    }
-                }
-            }
-            catch (ignored) {}
         }
     }
 
