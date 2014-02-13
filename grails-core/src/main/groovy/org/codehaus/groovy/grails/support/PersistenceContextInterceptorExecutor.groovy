@@ -65,7 +65,11 @@ class PersistenceContextInterceptorExecutor {
 
     private static void destroyPersistenceContextInternal(Collection<PersistenceContextInterceptor> interceptors) {
         for (PersistenceContextInterceptor i in interceptors) {
-            i.destroy()
+            try {
+                i.destroy()
+            } catch (e) {
+                // ignore exception
+            }
         }
     }
 
