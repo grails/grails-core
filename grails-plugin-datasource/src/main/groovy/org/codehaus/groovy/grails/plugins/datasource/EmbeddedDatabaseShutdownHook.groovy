@@ -3,10 +3,13 @@ package org.codehaus.groovy.grails.plugins.datasource
 import groovy.sql.Sql
 import groovy.transform.CompileStatic
 
+import java.sql.Connection
+
 import javax.sql.DataSource
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.springframework.beans.BeansException
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -71,7 +74,7 @@ class EmbeddedDatabaseShutdownHook implements SmartLifecycle, ApplicationContext
             String url = urlProperty.getProperty(dataSource)
             if(url && (url.startsWith('jdbc:h2:') || url.startsWith('jdbc:hsqldb:'))) {
                 // don't shutdown remote servers
-                if(!(url.startsWith('jdbc:hsqldb:h') || url.startsWith('jdbc:h2:tcp') || url.startsWith('jdbc:h2:ssl'))) {
+                if(!(url.startsWith('jdbc:hsqldb:h') || url.startsWith('jdbc:h2:tcp:') || url.startsWith('jdbc:h2:ssl:'))) {
                     return true
                 }
             }
@@ -80,20 +83,24 @@ class EmbeddedDatabaseShutdownHook implements SmartLifecycle, ApplicationContext
     }
 
     protected shutdownEmbeddedDatabase(DataSource dataSource) {
-        Sql sql
         try {
-            sql = new Sql(dataSource)
+            addShutdownOperation(dataSource.getConnection())
+        } catch (e) {
+            log.error "Error shutting down datasource", e
+        }
+    }
+
+    protected addShutdownOperation(Connection connection) {
+        // delay the operation until Grails Application is stopping and shutdown hooks are called
+        ShutdownOperations.addOperation {
             try {
+                Sql sql = new Sql(connection)
                 sql.executeUpdate('SHUTDOWN')
             } catch (e) {
                 // already closed, ignore
+            } finally {
+                try { connection?.close() } catch (ignored) {}
             }
-        }
-        catch (e) {
-            log.error "Error shutting down datasource: $e.message", e
-        }
-        finally {
-            try { sql?.close() } catch (ignored) {}
-        }
+        } as Runnable
     }
 }
