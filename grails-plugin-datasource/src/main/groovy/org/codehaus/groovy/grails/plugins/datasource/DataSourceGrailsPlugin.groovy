@@ -19,6 +19,7 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
 
+import javax.management.MBeanServer
 import javax.sql.DataSource
 
 import org.apache.commons.logging.Log
@@ -32,6 +33,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
+import org.springframework.jmx.support.JmxUtils
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.util.ClassUtils
 
@@ -75,6 +77,26 @@ class DataSourceGrailsPlugin {
         dsConfigs.each { name, ds -> createDatasource name, ds }
         
         embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
+
+        this.registerTomcatJMXMBeans(application, delegate)
+    }
+
+    void registerTomcatJMXMBeans(application, beanBuilderDelegate) {
+        if(!(application.config?.dataSource?.containsKey('jmxExport') && !application.config.dataSource.jmxExport)) {
+            try {
+                def jmxMBeanServer = JmxUtils.locateMBeanServer()
+                if(jmxMBeanServer) {
+                    beanBuilderDelegate.tomcatJDBCPoolMBeanExporter(TomcatJDBCPoolMBeanExporter) { bean ->
+                        grailsApplication = application
+                        server = jmxMBeanServer
+                    }
+                }
+            } catch(e) {
+                if(!Environment.isDevelopmentMode() && Environment.isWarDeployed()) {
+                    log.warn("Cannot locate JMX MBeanServer. Disabling autoregistering dataSource pools to JMX.", e)
+                }
+            }
+        }
     }
 
     def createDatasource = { String datasourceName, ds ->

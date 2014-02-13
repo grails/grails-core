@@ -1,5 +1,6 @@
 dataSource {
     pooled = true
+    jmxExport = true
     driverClassName = "org.h2.Driver"
     username = "sa"
     password = ""
@@ -33,6 +34,7 @@ environments {
                // Documentation for Tomcat JDBC Pool
                // http://tomcat.apache.org/tomcat-7.0-doc/jdbc-pool.html#Common_Attributes
                // https://tomcat.apache.org/tomcat-7.0-doc/api/org/apache/tomcat/jdbc/pool/PoolConfiguration.html
+               jmxEnabled = true
                initialSize = 5
                maxActive = 50
                minIdle = 5
@@ -55,6 +57,7 @@ environments {
                abandonWhenPercentageFull = 100 // settings are active only when pool is full
                removeAbandonedTimeout = 120000
                removeAbandoned = true
+               // use JMX console to change this setting at runtime
                logAbandoned = false // causes stacktrace recording overhead, use only for debugging
                /*
                // JDBC driver properties

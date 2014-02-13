@@ -1,7 +1,12 @@
 def tomcatVersion = '7.0.50'
 dependencies {
-
-    compile "org.springframework:spring-jdbc:${springVersion}"
+    compile("org.springframework:spring-jdbc:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+    
+    compile("org.springframework:spring-context:${springVersion}") {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
 
     compile "org.apache.tomcat:tomcat-jdbc:$tomcatVersion", {
         exclude group:'org.apache.tomcat', module:'tomcat-juli'
