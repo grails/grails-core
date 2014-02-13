@@ -141,7 +141,14 @@ class ControllersRestApi {
 
                 return render(controller,[status: statusCode ?: 404 ])
             }
-
+            if(value instanceof Collection &&
+               value.size() == 0 &&
+               mimeType &&
+               mimeType != MimeType.ALL &&
+               mimeType != MimeType.HTML) {
+                return render(controller,[status: statusCode ?: HttpStatus.NO_CONTENT.value() ])
+            }
+                
             final valueType = value.getClass()
             if (registry.isContainerType(valueType)) {
                 renderer = registry.findContainerRenderer(mimeType,valueType, value)

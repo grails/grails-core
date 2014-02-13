@@ -22,11 +22,12 @@ import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
 
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
-import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.support.proxy.ProxyHandler
+import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.springframework.web.servlet.ModelAndView
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 @TestFor(BookController)
@@ -231,6 +232,29 @@ class RespondMethodSpec extends Specification{
         modelAndView.model.containsKey('bookList')
         modelAndView.model.extra == true
         modelAndView.viewName == 'showWithModel'
+    }
+    
+    @Issue('GRAILS-10683')
+    void "Test responding to a REST call with an empty collection"() {
+
+        when:"The respond method is used to render an empty collection in XML"
+        response.format = 'xml'
+        controller.index()
+
+        then:"The response status should be 204"
+        response.status == 204
+        !model
+        response.contentType == null
+    }
+    
+    @Issue('GRAILS-10683')
+    void "Test responding to an HTML call with an empty collection"() {
+        when:"The respond method is used to render an empty collection in HTML"
+        response.format = 'html'
+        controller.index()
+
+        then:"The response status should be 200"
+        response.status == 200
     }
 }
 
