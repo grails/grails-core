@@ -252,7 +252,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
         }
 
         try {
-            packageConfigFiles(basedir)
+            packageConfigFiles(basedir, true)
         } catch (Throwable e) {
             throw new PackagingException("Error occurred packaging configuration files: ${e.message}", e)
         }
@@ -522,12 +522,12 @@ class GrailsProjectPackager extends BaseSettingsApi {
      *
      * @param from Where to package from
      */
-    void packageConfigFiles(from) {
+    void packageConfigFiles(from, overwrite = false) {
         def ant = new GrailsConsoleAntBuilder()
         def targetPath = buildSettings.resourcesDir.path
         def dir = new File(from , "grails-app/conf")
         if (dir.exists()) {
-            ant.copy(todir:targetPath, failonerror:false) {
+            ant.copy(todir:targetPath, failonerror:false, overwrite: overwrite) {
                 fileset(dir:dir.path) {
                     exclude(name:"**/*.groovy")
                     exclude(name:"**/log4j*")
@@ -539,14 +539,14 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
         dir = new File(dir, "hibernate")
         if (dir.exists()) {
-            ant.copy(todir:targetPath, failonerror:false) {
+            ant.copy(todir:targetPath, failonerror:false, overwrite: overwrite) {
                 fileset(dir:dir.path, includes:"**/*")
             }
         }
 
         dir = new File(from, "src/groovy")
         if (dir.exists()) {
-            ant.copy(todir:targetPath, failonerror:false) {
+            ant.copy(todir:targetPath, failonerror:false, overwrite: overwrite) {
                 fileset(dir:dir.path) {
                     exclude(name:"**/*.groovy")
                     exclude(name:"**/*.java")
@@ -556,7 +556,7 @@ class GrailsProjectPackager extends BaseSettingsApi {
 
         dir = new File(from, "src/java")
         if (dir.exists()) {
-            ant.copy(todir:targetPath, failonerror:false) {
+            ant.copy(todir:targetPath, failonerror:false, overwrite: overwrite) {
                 fileset(dir:dir.path) {
                     exclude(name:"**/*.java")
                 }
