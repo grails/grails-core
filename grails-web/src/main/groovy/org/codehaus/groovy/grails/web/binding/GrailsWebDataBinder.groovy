@@ -515,7 +515,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     if (otherSide != null && List.isAssignableFrom(otherSide.getType()) && !property.isOptional()) {
                         DeferredBindingActions.addBindingAction(new Runnable() {
                             void run() {
-                                if (otherSide.isOneToMany()) {
+                                if (obj[propName] != null && otherSide.isOneToMany()) {
                                     Collection collection = GrailsMetaClassUtils.getPropertyIfExists(obj[propName], otherSide.name, Collection)
                                     if (collection == null || !collection.contains(obj)) {
                                         def methodName = 'addTo' + GrailsNameUtils.getClassName(otherSide.name)
