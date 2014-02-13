@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBe
 import org.codehaus.groovy.grails.plugins.support.aware.PluginManagerAwareBeanPostProcessor
 import org.codehaus.groovy.grails.support.ClassEditor
 import org.codehaus.groovy.grails.support.DevelopmentShutdownHook
+import org.codehaus.groovy.grails.support.PropertiesEditor
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.springframework.beans.factory.config.CustomEditorConfigurer
 import org.springframework.beans.factory.config.MethodInvokingFactoryBean
@@ -116,7 +117,8 @@ class CoreGrailsPlugin {
         }
 
         customEditors(CustomEditorConfigurer) {
-            customEditors = [(Class.name): ClassEditor.name]
+            customEditors = [(Class.name): ClassEditor.name,
+                             (Properties.name): PropertiesEditor.name]
         }
 
         proxyHandler(DefaultProxyHandler)

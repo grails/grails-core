@@ -24,6 +24,7 @@ import javax.sql.DataSource
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
@@ -32,6 +33,7 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy
+import org.springframework.jmx.support.JmxUtils
 import org.springframework.jndi.JndiObjectFactoryBean
 import org.springframework.util.ClassUtils
 
@@ -75,6 +77,28 @@ class DataSourceGrailsPlugin {
         dsConfigs.each { name, ds -> createDatasource name, ds }
         
         embeddedDatabaseShutdownHook(EmbeddedDatabaseShutdownHook)
+
+        this.registerTomcatJMXMBeans(application, delegate)
+    }
+
+    void registerTomcatJMXMBeans(application, beanBuilderDelegate) {
+        if(!(application.config?.dataSource?.containsKey('jmxExport') && !application.config.dataSource.jmxExport)) {
+            try {
+                def jmxMBeanServer = JmxUtils.locateMBeanServer()
+                if(jmxMBeanServer) {
+                    beanBuilderDelegate.tomcatJDBCPoolMBeanExporter(TomcatJDBCPoolMBeanExporter) { bean ->
+                        if (application instanceof GrailsApplication) {
+                            grailsApplication = application
+                        }
+                        server = jmxMBeanServer
+                    }
+                }
+            } catch(e) {
+                if(!Environment.isDevelopmentMode() && Environment.isWarDeployed()) {
+                    log.warn("Cannot locate JMX MBeanServer. Disabling autoregistering dataSource pools to JMX.", e)
+                }
+            }
+        }
     }
 
     def createDatasource = { String datasourceName, ds ->
