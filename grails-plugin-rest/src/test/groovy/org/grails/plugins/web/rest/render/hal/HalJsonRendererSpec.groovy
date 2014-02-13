@@ -733,6 +733,37 @@ class HalJsonRendererSpec extends Specification{
 
     }
 
+    @Issue('GRAILS-11100')
+    void "Test that the HAL renderer ignores null values for embedded single ended domain objects" () {
+        given:"A HAL renderer"
+        HalJsonRenderer renderer = getRenderer()
+        renderer.prettyPrint = true
+
+        when:"A domain object is rendered"
+        def webRequest = GrailsWebUtil.bindMockWebRequest()
+        webRequest.request.setAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE, "/product/Macbook")
+        def response = webRequest.response
+        def renderContext = new ServletRenderContext(webRequest)
+        def product = new Product(name: "MacBook", numberInStock: 10, category: null)
+        renderer.render(product, renderContext)
+
+        then:"The resulting HAL is correct"
+        response.contentType == GrailsWebUtil.getContentType(HalJsonRenderer.MIME_TYPE.name, GrailsWebUtil.DEFAULT_ENCODING)
+        response.contentAsString =='''{
+  "_links": {
+    "self": {
+      "href": "http://localhost/products",
+      "hreflang": "en",
+      "type": "application/hal+json"
+    }
+  },
+  "name": "MacBook",
+  "numberInStock": 10,
+  "_embedded": {}
+}'''
+    }
+
+
     protected HalJsonCollectionRenderer getCollectionRenderer() {
         def renderer = new HalJsonCollectionRenderer(Product)
         renderer.mappingContext = mappingContext

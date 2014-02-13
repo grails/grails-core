@@ -236,11 +236,11 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
             for (entry in associationMap.entrySet()) {
                 final property = entry.key
                 final isSingleEnded = property instanceof ToOne
-                writer.name(property.name)
 
                 if (isSingleEnded) {
                     Object value = entry.value
                     if (value != null) {
+                        writer.name(property.name)
                         final associatedEntity = property.associatedEntity
                         if (associatedEntity) {
                             writtenObjects << value
@@ -249,6 +249,7 @@ class HalJsonRenderer<T> extends AbstractLinkingRenderer<T> {
                         }
                     }
                 } else {
+                    writer.name(property.name)
                     final associatedEntity = property.associatedEntity
                     if (associatedEntity) {
                         writer.beginArray()
