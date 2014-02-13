@@ -55,11 +55,10 @@ grails {
             }
         }
         // escapes all not-encoded output at final stage of outputting
-        filteringCodecForContentType {
-            //'text/html' = 'html'
-        }
+        // filteringCodecForContentType.'text/html' = 'html'
     }
 }
+
  
 grails.converters.encoding = "UTF-8"
 // scaffolding templates configuration

@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import groovy.util.ConfigObject;
+
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,7 +43,7 @@ public class FilteringCodecsByContentTypeSettings {
     public void initialize(GrailsApplication grailsApplication) {
         contentTypeToEncoderMapping=null;
         contentTypePatternToEncoderMapping=null;
-        Object codecForContentTypeConfig = grailsApplication.getFlatConfig().get(CONFIG_PROPERTY_CODEC_FOR_CONTENT_TYPE);
+        Object codecForContentTypeConfig = getConfigSettings(grailsApplication.getConfig());
         if (codecForContentTypeConfig != null) {
             if (codecForContentTypeConfig instanceof Map) {
                 contentTypeToEncoderMapping=new LinkedHashMap<String, Encoder>();
@@ -79,5 +81,20 @@ public class FilteringCodecsByContentTypeSettings {
             }
         }
         return contentTypeToEncoderMapping.get(WILDCARD_CONTENT_TYPE);
+    }
+    
+    protected Object getConfigSettings(ConfigObject config) {
+        Object settings = null;
+        if(config != null) {
+            Object grailsConfig = config.get("grails");
+            if(grailsConfig instanceof Map) {
+                Object viewsConfig = ((Map)grailsConfig).get("views");
+                if(viewsConfig instanceof Map) {
+                    settings = ((Map)viewsConfig).get("filteringCodecForContentType");
+                }
+            }
+        }
+        
+        return settings;
     }
 }
