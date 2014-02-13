@@ -19,12 +19,12 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import grails.util.Metadata
 
-import javax.management.MBeanServer
 import javax.sql.DataSource
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.apache.tomcat.jdbc.pool.DataSource as TomcatDataSource
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException
 import org.codehaus.groovy.grails.orm.support.TransactionManagerPostProcessor
@@ -87,7 +87,9 @@ class DataSourceGrailsPlugin {
                 def jmxMBeanServer = JmxUtils.locateMBeanServer()
                 if(jmxMBeanServer) {
                     beanBuilderDelegate.tomcatJDBCPoolMBeanExporter(TomcatJDBCPoolMBeanExporter) { bean ->
-                        grailsApplication = application
+                        if (application instanceof GrailsApplication) {
+                            grailsApplication = application
+                        }
                         server = jmxMBeanServer
                     }
                 }
