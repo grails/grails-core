@@ -193,7 +193,7 @@ class RestfulController<T> {
      */
     protected boolean handleReadOnly() {
         if(readOnly) {
-            render status: HttpStatus.NOT_FOUND.value()
+            render status: HttpStatus.METHOD_NOT_ALLOWED.value()
             return true
         } else {
             return false
