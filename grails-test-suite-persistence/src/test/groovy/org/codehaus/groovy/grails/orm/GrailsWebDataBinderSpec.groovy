@@ -1169,6 +1169,25 @@ class GrailsWebDataBinderSpec extends Specification {
         then:
         obj.timeZone == TimeZone.getTimeZone('Europe/Berlin')
     }
+    
+    void 'Test binding to a typed List of non-domain objects'() {
+        given:
+        def obj = new DocumentHolder()
+        
+        when:
+        binder.bind obj, [objectIds: ['two', 'four', 'six', 'eight']] as SimpleMapDataBindingSource
+        
+        then:
+        obj.objectIds.size() == 4
+        obj.objectIds[0] instanceof ObjectId
+        obj.objectIds[0].value == 'two'
+        obj.objectIds[1] instanceof ObjectId
+        obj.objectIds[1].value == 'four'
+        obj.objectIds[2] instanceof ObjectId
+        obj.objectIds[2].value == 'six'
+        obj.objectIds[3] instanceof ObjectId
+        obj.objectIds[3].value == 'eight'
+    }
 }
 
 @Entity
@@ -1293,6 +1312,18 @@ class CollectionContainer {
     Collection collectionOfWidgets
     List<String> listOfStrings
     List<Long> listOfLong
+}
+
+class DocumentHolder {
+    List<ObjectId> objectIds
+}
+
+class ObjectId {
+    String value
+    
+    ObjectId(String str) {
+        value = str
+    }
 }
 
 class PrimitiveContainer {
