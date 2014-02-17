@@ -179,7 +179,7 @@ class CountryTagLib {
         "nld":"Netherlands",
         "bes":"Bonaire, Sint Eustatius and Saba",
         "cuw":"Curaçao",
-        "sxm":"Sint Maarten (Dutch part)"
+        "sxm":"Sint Maarten (Dutch part)",
         "abw":"Aruba",
         "ncl":"New Caledonia",
         "vut":"Vanuatu",
