@@ -205,7 +205,9 @@ public class GrailsConsole {
      */
     protected Terminal createTerminal() {
         terminal = TerminalFactory.create();
-        terminal.setEchoEnabled(true);
+        if(isWindows()) {
+            terminal.setEchoEnabled(true);
+        }
         return terminal;
     }
 
