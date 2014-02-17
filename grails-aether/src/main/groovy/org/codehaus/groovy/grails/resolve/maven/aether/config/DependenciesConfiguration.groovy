@@ -41,7 +41,7 @@ class DependenciesConfiguration {
     public static final String SCOPE_OPTIONAL = "optional"
     public static final String SCOPE_TEST = "test"
     public static final String SCOPE_BUILD = "build"
-    public static final String ALL_SCOPES = [SCOPE_COMPILE, SCOPE_RUNTIME, SCOPE_PROVIDED, SCOPE_TEST, SCOPE_OPTIONAL,SCOPE_BUILD]
+    public static final List ALL_SCOPES = [SCOPE_COMPILE, SCOPE_RUNTIME, SCOPE_PROVIDED, SCOPE_TEST, SCOPE_OPTIONAL,SCOPE_BUILD]
 
     AetherDependencyManager dependencyManager
     ExclusionDependencySelector exclusionDependencySelector
