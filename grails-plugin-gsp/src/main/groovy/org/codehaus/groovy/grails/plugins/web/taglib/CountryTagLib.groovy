@@ -269,7 +269,7 @@ class CountryTagLib {
         "wsm":"Samoa",
         "yem":"Yemen",
         "srb":"Serbia",
-        "mne":"Montenegro"
+        "mne":"Montenegro",
         "zmb":"Zambia",
     ]
 
