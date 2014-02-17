@@ -178,6 +178,16 @@ class ConfigurationHelper {
         if (isLocations(locations)) {
             mergeInLocations(config, (List)locations, resolver, classLoader)
         }
+
+        // Sets defaults for non-present settings
+        initDefaultConfiguration(config)
+    }
+
+    static void initDefaultConfiguration(ConfigObject config) {
+        def resourcesConfig = config.grails.resources
+        if(!resourcesConfig.adhoc.excludes) {
+            resourcesConfig.adhoc.excludes = ['/WEB-INF/**']
+        }
     }
 
     private static getLocations(ConfigObject config) {
