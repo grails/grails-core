@@ -1188,6 +1188,25 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.objectIds[3] instanceof ObjectId
         obj.objectIds[3].value == 'eight'
     }
+    
+    void 'Test binding to a typed array of non-domain objects'() {
+        given:
+        def obj = new DocumentHolder()
+        
+        when:
+        binder.bind obj, [objectIds: ['two', 'four', 'six', 'eight'] as String[]] as SimpleMapDataBindingSource
+        
+        then:
+        obj.objectIds.size() == 4
+        obj.objectIds[0] instanceof ObjectId
+        obj.objectIds[0].value == 'two'
+        obj.objectIds[1] instanceof ObjectId
+        obj.objectIds[1].value == 'four'
+        obj.objectIds[2] instanceof ObjectId
+        obj.objectIds[2].value == 'six'
+        obj.objectIds[3] instanceof ObjectId
+        obj.objectIds[3].value == 'eight'
+    }
 }
 
 @Entity
