@@ -177,7 +177,9 @@ class CountryTagLib {
         "nru":"Nauru",
         "npl":"Nepal",
         "nld":"Netherlands",
-        "ant":"Netherlands Antilles",
+        "bes":"Bonaire, Sint Eustatius and Saba",
+        "cuw":"Curaçao",
+        "sxm":"Sint Maarten (Dutch part)"
         "abw":"Aruba",
         "ncl":"New Caledonia",
         "vut":"Vanuatu",
@@ -266,7 +268,8 @@ class CountryTagLib {
         "wlf":"Wallis and Futuna",
         "wsm":"Samoa",
         "yem":"Yemen",
-        "scg":"Serbia and Montenegro",
+        "srb":"Serbia",
+        "mne":"Montenegro"
         "zmb":"Zambia",
     ]
 
