@@ -25,6 +25,7 @@ import org.apache.log4j.Appender
 import org.apache.log4j.ConsoleAppender
 import org.apache.log4j.FileAppender
 import org.apache.log4j.HTMLLayout
+import org.apache.log4j.Layout
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.apache.log4j.Logger
@@ -49,7 +50,7 @@ class Log4jConfig {
     static final PatternLayout DEFAULT_PATTERN_LAYOUT = new PatternLayout(
         conversionPattern: '%d [%t] %-5p %c{2} %x - %m%n')
 
-    static final LAYOUTS = [xml: XMLLayout, html: HTMLLayout, simple: SimpleLayout, pattern: PatternLayout]
+    static final Map<String,Class<Layout>> LAYOUTS = [xml: XMLLayout, html: HTMLLayout, simple: SimpleLayout, pattern: PatternLayout]
     static final APPENDERS = [jdbc: JDBCAppender, "null": NullAppender, console: ConsoleAppender,
                               file: FileAppender, rollingFile: RollingFileAppender]
 
@@ -94,6 +95,7 @@ class Log4jConfig {
         PropertyConfigurator.configure(defaultLog4j)
     }
 
+    @CompileStatic
     def propertyMissing(String name) {
         if (LAYOUTS.containsKey(name)) {
             return LAYOUTS[name].newInstance()
@@ -190,6 +192,7 @@ class Log4jConfig {
      * an extension of LinkedHashMap, and thus returns its sub-keys in order of
      * definition.
      */
+    @CompileStatic
     def configure(Map callables) {
         configure(callables.values())
     }
@@ -208,6 +211,7 @@ class Log4jConfig {
         }
     }
 
+    @CompileStatic
     def configure(Closure callable) {
 
         Logger root = Logger.getRootLogger()
@@ -226,7 +230,7 @@ class Log4jConfig {
             callable.call(root)
 
             if (!root.allAppenders.hasMoreElements()) {
-                root.addAppender appenders['stdout']
+                root.addAppender( (Appender)appenders['stdout'] )
             }
             Logger logger = Logger.getLogger("StackTrace")
             logger.additivity = false
@@ -252,9 +256,10 @@ class Log4jConfig {
         return consoleAppender
     }
 
-    private createFullstackTraceAppender() {
+    @CompileStatic
+    private Appender createFullstackTraceAppender() {
         if (appenders.stacktrace) {
-            return appenders.stacktrace
+            return (Appender)appenders.stacktrace
         }
 
         def fileAppender = new FileAppender(layout:DEFAULT_PATTERN_LAYOUT, name:"stacktraceLog")
@@ -338,34 +343,42 @@ log4j = {
         }
     }
 
+    @CompileStatic
     def off(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.OFF)
     }
 
+    @CompileStatic
     def fatal(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.FATAL)
     }
 
+    @CompileStatic
     def error(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.ERROR)
     }
 
+    @CompileStatic
     def warn(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.WARN)
     }
 
+    @CompileStatic
     def info(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.INFO)
     }
 
+    @CompileStatic
     def debug(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.DEBUG)
     }
 
+    @CompileStatic
     def trace(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.TRACE)
     }
 
+    @CompileStatic
     def all(Map appenderAndPackages) {
         setLogLevelForAppenderToPackageMap(appenderAndPackages, Level.ALL)
     }
@@ -388,52 +401,61 @@ log4j = {
         }
     }
 
+    @CompileStatic
     def eachLogger(packages, Closure callable) {
         if (packages instanceof String || packages instanceof GString) {
-            Logger logger = Logger.getLogger(packages)
+            Logger logger = Logger.getLogger((String)packages)
             callable(logger)
         }
         else {
             for (p in packages) {
-                p = p?.toString()
-                if (p) {
-                    Logger logger = Logger.getLogger(p)
+                String name = p?.toString()
+                if (name) {
+                    Logger logger = Logger.getLogger(name)
                     callable(logger)
                 }
             }
         }
     }
 
+    @CompileStatic
     def off(Object[] packages) {
-        eachLogger(packages) { logger -> logger.level = Level.OFF }
+        eachLogger(packages) { Logger logger -> logger.level = Level.OFF }
     }
 
+    @CompileStatic
     def fatal(Object[] packages) {
-        eachLogger(packages) { logger -> logger.level = Level.FATAL }
+        eachLogger(packages) { Logger logger -> logger.level = Level.FATAL }
     }
 
+    @CompileStatic
     def error(Object[] packages) {
-        eachLogger(packages) { logger -> logger.level = Level.ERROR }
+        eachLogger(packages) { Logger logger -> logger.level = Level.ERROR }
     }
 
+    @CompileStatic
     def warn(Object[] packages) {
-        eachLogger(packages) { logger -> logger.level = Level.WARN }
+        eachLogger(packages) { Logger logger -> logger.level = Level.WARN }
     }
 
+    @CompileStatic
     def info(Object[] packages) {
-        eachLogger(packages) { logger -> logger.level = Level.INFO }
+        eachLogger(packages) { Logger logger -> logger.level = Level.INFO }
     }
 
+    @CompileStatic
     def debug(Object[] packages) {
         eachLogger(packages) { Logger logger -> logger.level = Level.DEBUG }
     }
 
+    @CompileStatic
     def trace(Object[] packages) {
-        eachLogger(packages) { logger -> logger.level = Level.TRACE }
+        eachLogger(packages) { Logger logger -> logger.level = Level.TRACE }
     }
 
+    @CompileStatic
     def all(Object[] packages) {
-        eachLogger(packages) { logger -> logger.level = Level.ALL }
+        eachLogger(packages) { Logger logger -> logger.level = Level.ALL }
     }
 
     def removeAppender(String name) {

@@ -351,6 +351,8 @@ class SimpleDataBinder implements DataBinder {
         }
     }
 
+        
+    @CompileStatic(TypeCheckingMode.SKIP)
     protected initializeArray(obj, String propertyName, Class arrayType, int index) {
         Object[] array = obj[propertyName]
         if (array == null && index < autoGrowCollectionLimit) {
