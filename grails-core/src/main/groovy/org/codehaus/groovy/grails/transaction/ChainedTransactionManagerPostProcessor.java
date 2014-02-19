@@ -57,6 +57,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     private static final String TRANSACTION_MANAGER = "transactionManager";
     
     private ConfigObject config;
+    private boolean chainedTransactionManagerBeanWasAdded = false;
     
     public ChainedTransactionManagerPostProcessor(ConfigObject config) {
         this(config, null, null);
@@ -95,7 +96,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     
     @Override
     public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
-        if(beanFactory.containsBean(TRANSACTION_MANAGER) && beanFactory.isTypeMatch(TRANSACTION_MANAGER, ChainedTransactionManager.class)) {
+        if(chainedTransactionManagerBeanWasAdded && beanFactory.containsBean(TRANSACTION_MANAGER) && beanFactory.isTypeMatch(TRANSACTION_MANAGER, ChainedTransactionManager.class)) {
             registerAdditionalTransactionManagers(beanFactory);
         }
     }
@@ -119,8 +120,9 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        if (registry.containsBeanDefinition(TRANSACTION_MANAGER) && countChainableTransactionManagerBeans(registry) > 1 && !hasJtaTransactionManager(registry)) {
+        if (registry.containsBeanDefinition(TRANSACTION_MANAGER) && countChainableTransactionManagerBeans(registry) > 1 && !hasJtaOrChainedTransactionManager(registry)) {
             addChainedTransactionManager(registry);
+            chainedTransactionManagerBeanWasAdded = true;
         }
     }
 
@@ -132,15 +134,24 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
         registry.registerBeanDefinition(TRANSACTION_MANAGER, beanDefinition);
     }
 
-    protected boolean hasJtaTransactionManager(BeanDefinitionRegistry registry) {
-        if(!registry.containsBeanDefinition(TRANSACTION_MANAGER)) {
+    protected boolean hasJtaOrChainedTransactionManager(BeanDefinitionRegistry registry) {
+        Class<?> transactionManagerBeanClass = resolveTransactionManagerClass(registry);
+        if (transactionManagerBeanClass == null) {
             return false;
+        }
+        boolean isJtaTransactionManager = JtaTransactionManager.class.isAssignableFrom(transactionManagerBeanClass);
+        boolean isChainedTransactionManager = ChainedTransactionManager.class.isAssignableFrom(transactionManagerBeanClass);
+        return isJtaTransactionManager || isChainedTransactionManager;
+    }
+
+    protected Class<?> resolveTransactionManagerClass(BeanDefinitionRegistry registry) {
+        if(!registry.containsBeanDefinition(TRANSACTION_MANAGER)) {
+            return null;
         }
         BeanDefinition transactionManagerBeanDefinition = registry.getBeanDefinition(TRANSACTION_MANAGER);
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();            
         Class<?> transactionManagerBeanClass = ClassUtils.resolveClassName(transactionManagerBeanDefinition.getBeanClassName(), classLoader);
-        boolean isJtaTransactionManager = JtaTransactionManager.class.isAssignableFrom(transactionManagerBeanClass);
-        return isJtaTransactionManager;
+        return transactionManagerBeanClass;
     }
 
     protected int countChainableTransactionManagerBeans(BeanDefinitionRegistry registry) {
