@@ -55,6 +55,7 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
     private static final Pattern SUFFIX_PATTERN = Pattern.compile("^transactionManager_(.+)$");
     private static final String PRIMARY_TRANSACTION_MANAGER = "$primaryTransactionManager";
     private static final String TRANSACTION_MANAGER = "transactionManager";
+    private static final String READONLY = "readOnly";
     
     private ConfigObject config;
     private boolean chainedTransactionManagerBeanWasAdded = false;
@@ -177,10 +178,18 @@ public class ChainedTransactionManagerPostProcessor implements BeanDefinitionReg
             return false;
         }
         ConfigObject dsConfig = dsConfigs.get(suffix);
-        if (dsConfig != null && dsConfig.containsKey(TRANSACTIONAL)) {
-            Object transactionalValue = dsConfig.get(TRANSACTIONAL);
-            if (transactionalValue instanceof Boolean) {
-                return !((Boolean)transactionalValue).booleanValue();
+        if (dsConfig != null) {
+            if(dsConfig.containsKey(TRANSACTIONAL)) {
+                Object transactionalValue = dsConfig.get(TRANSACTIONAL);
+                if (transactionalValue instanceof Boolean) {
+                    return !((Boolean)transactionalValue).booleanValue();
+                }
+            }
+            if(dsConfig.containsKey(READONLY)) {
+                Object readOnlyValue = dsConfig.get(READONLY);
+                if (readOnlyValue instanceof Boolean) {
+                    return ((Boolean)readOnlyValue).booleanValue();
+                }
             }
         }
         return false;
