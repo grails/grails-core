@@ -48,6 +48,8 @@ class ConfigurationHelper {
     private static Holder<Map<Integer, ConfigObject>> cachedConfigs = new Holder<Map<Integer, ConfigObject>>('cachedConfigs')
     public static final int DEV_CACHE_KEY = -1
 
+    static final List DEFAULT_RESOURCES_PLUGIN_EXCLUDES = ['**/WEB-INF/**', '**/META-INF/**', '**/*.class', '**/*.jar', '**/*.properties', '**/*.groovy', '**/*.gsp', '**/*.java']
+
     @CompileStatic
     static ConfigObject loadConfigFromClasspath(String environment) {
         loadConfigFromClasspath(null, environment)
@@ -184,9 +186,19 @@ class ConfigurationHelper {
     }
 
     static void initDefaultConfiguration(ConfigObject config) {
-        def resourcesConfig = config.grails.resources
-        if(!resourcesConfig.adhoc.excludes) {
-            resourcesConfig.adhoc.excludes = ['/WEB-INF/**']
+        configureResourcesPluginExcludes(config)
+    }
+
+    private static configureResourcesPluginExcludes(ConfigObject config) {
+        if (!config.grails.config.defaults.skipResourcesAdhocExcludes) {
+            def resourcesConfig = config.grails.resources
+            def configuredExcludes = resourcesConfig.adhoc.excludes
+            def modifiedExcludes = [] as Set
+            if(configuredExcludes instanceof Collection || configuredExcludes?.getClass()?.isArray()) {
+                configuredExcludes.each { modifiedExcludes.add(it.toString()) }
+            }
+            modifiedExcludes.addAll(DEFAULT_RESOURCES_PLUGIN_EXCLUDES)
+            resourcesConfig.adhoc.excludes = modifiedExcludes as List
         }
     }
 
