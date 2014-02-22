@@ -28,6 +28,8 @@ import org.codehaus.groovy.grails.support.proxy.ProxyHandler;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.marshaller.ClosureObjectMarshaller;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Mutable Converter Configuration with an priority sorted set of ObjectMarshallers
@@ -38,6 +40,8 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
 @SuppressWarnings("rawtypes")
 public class DefaultConverterConfiguration<C extends Converter> implements ConverterConfiguration<C> {
 
+	private static final Logger log = LoggerFactory.getLogger(DefaultConverterConfiguration.class);
+	
     public static final int DEFAULT_PRIORITY = 0;
 
     private static final AtomicInteger MARSHALLER_SEQUENCE = new AtomicInteger(0);
@@ -129,6 +133,10 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public void registerObjectMarshaller(ObjectMarshaller<C> marshaller, int priority) {
+    	log.debug("[{}] registerObjectMarshaller({},{})", new Object[] {
+    			getClass().getSimpleName(),
+    			marshaller.getClass().getSimpleName(),
+    			priority});
         objectMarshallers.add(new Entry(marshaller, priority));
     }
 
@@ -141,7 +149,16 @@ public class DefaultConverterConfiguration<C extends Converter> implements Conve
     }
 
     public ObjectMarshaller<C> getMarshaller(Object o) {
-        for (Entry entry : objectMarshallers) {
+        ObjectMarshaller<C> marshaller = findMarshallerFor(o);
+        log.debug("[getMarshaller] found marshaller {} for object with class {}", new Object[] {
+        		marshaller.getClass().getSimpleName(),
+        		o.getClass().getSimpleName()
+        });
+        return marshaller;
+    }
+    
+    private ObjectMarshaller<C> findMarshallerFor(Object o) {
+    	for (Entry entry : objectMarshallers) {
             if (entry.marshaller.supports(o)) {
                 return entry.marshaller;
             }

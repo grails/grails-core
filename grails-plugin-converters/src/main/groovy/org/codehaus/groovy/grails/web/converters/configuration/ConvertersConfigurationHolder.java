@@ -23,6 +23,8 @@ import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.exceptions.ConverterException;
 import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Singleton which holds all default and named configurations for the Converter classes.
@@ -32,6 +34,8 @@ import org.codehaus.groovy.grails.web.converters.marshaller.ObjectMarshaller;
  */
 @SuppressWarnings({"unchecked","rawtypes"})
 public class ConvertersConfigurationHolder {
+	
+	private static final Logger log = LoggerFactory.getLogger(ConvertersConfigurationHolder.class);
 
     public static final String CONVERTERS_DEFAULT_ENCODING = "UTF-8";
 
@@ -78,13 +82,20 @@ public class ConvertersConfigurationHolder {
     }
 
     public static <C extends Converter> ConverterConfiguration<C> getConverterConfiguration(Class<C> converterClass) throws ConverterException {
+    	log.debug("entering getConverterConfiguration({})", new Object[] {converterClass});
         ConverterConfiguration<C> cfg = getThreadLocalConverterConfiguration(converterClass);
+        
         if (cfg == null) {
-            cfg = getInstance().defaultConfiguration.get(converterClass);
-        }
-        if (cfg == null) {
-            cfg = new DefaultConverterConfiguration();
-        }
+        	log.debug("getThreadLocalConverterConfiguration returned null, continue lookup...");
+        	cfg = getInstance().defaultConfiguration.get(converterClass);
+        	
+        	if (cfg == null) {
+        		log.debug("defaultConfiguration.get({}) returned null, initializing DefaultConverterConfiguration", new Object[] {converterClass});
+        		cfg = new DefaultConverterConfiguration();
+        	}        	
+        	setTheadLocalConverterConfiguration(converterClass, cfg);
+        }        
+        log.debug("exiting with cfg = {}", new Object[] {cfg});
         return cfg;
     }
 

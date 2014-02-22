@@ -61,13 +61,13 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
     }
 
     private void initJSONConfiguration(GrailsApplication application) {
-        LOG.debug("Initializing default JSON Converters Configuration...");
-        //Fixme: load registered marshallers if any were registered before default converters were initialized
-        ConverterConfiguration<JSON> tmpCfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
-        System.out.println(String.format("tmpCfg.getOrderedObjectMarshallers().size() = %d", tmpCfg.getOrderedObjectMarshallers().size()));        
-        
+        LOG.debug("Initializing default JSON Converters Configuration...");        
 
         List<ObjectMarshaller<JSON>> marshallers = new ArrayList<ObjectMarshaller<JSON>>();
+        
+        ConverterConfiguration<JSON> previousConfiguration = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);        
+        marshallers.addAll(previousConfiguration.getOrderedObjectMarshallers());
+        
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.ArrayMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.ByteArrayMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.CollectionMarshaller());
@@ -115,7 +115,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         ConvertersConfigurationHolder.setDefaultConfiguration(JSON.class, new ChainedConverterConfiguration<JSON>(cfg, proxyHandler));
     }
 
-    private void initDeepJSONConfiguration(GrailsApplication application) {
+	private void initDeepJSONConfiguration(GrailsApplication application) {
         GrailsConfig grailsConfig = new GrailsConfig(application);
         DefaultConverterConfiguration<JSON> deepConfig = new DefaultConverterConfiguration<JSON>(ConvertersConfigurationHolder.getConverterConfiguration(JSON.class), getProxyHandler());
         deepConfig.registerObjectMarshaller(new org.codehaus.groovy.grails.web.converters.marshaller.json.DeepDomainClassMarshaller(includeDomainVersionProperty(grailsConfig, "json"), getProxyHandler(), application));
@@ -126,6 +126,10 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         LOG.debug("Initializing default XML Converters Configuration...");
 
         List<ObjectMarshaller<XML>> marshallers = new ArrayList<ObjectMarshaller<XML>>();
+        
+        ConverterConfiguration<XML> previousConfiguration = ConvertersConfigurationHolder.getConverterConfiguration(XML.class);        
+        marshallers.addAll(previousConfiguration.getOrderedObjectMarshallers());
+        
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.Base64ByteArrayMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.ArrayMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.xml.CollectionMarshaller());

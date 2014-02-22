@@ -24,6 +24,8 @@ import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigu
 import org.codehaus.groovy.grails.web.converters.configuration.ObjectMarshallerRegisterer
 import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Allows the "obj as XML" and "obj as JSON" syntax.
@@ -34,6 +36,8 @@ import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrors
  * @since 0.6
  */
 class ConvertersGrailsPlugin {
+	
+	private static final Logger log = LoggerFactory.getLogger(ConvertersGrailsPlugin.class)
 
     def version = GrailsUtil.getGrailsVersion()
 
@@ -48,6 +52,8 @@ class ConvertersGrailsPlugin {
     def dependsOn = [controllers: version, domainClass: version]
 
     def doWithSpring = {
+		log.debug 'entering doWithSpring to register some converter beans...'
+		
         jsonErrorsMarshaller(JsonErrorsMarshaller)
 
         xmlErrorsMarshaller(XmlErrorsMarshaller)
@@ -65,14 +71,17 @@ class ConvertersGrailsPlugin {
         }
 
         instanceConvertersControllersApi(ConvertersControllersApi)
+		
+		log.debug 'exiting doWithSpring - beans registered'
     }
 
     def doWithDynamicMethods = {applicationContext ->
+		log.debug 'entering doWithDynamicMethods'
 
         applicationContext.convertersConfigurationInitializer.initialize(application)
 
         ConvertersPluginSupport.enhanceApplication(application, applicationContext)
 
-        log.debug "Converters Plugin configured successfully"
+        log.debug 'Converters Plugin configured successfully'
     }
 }
