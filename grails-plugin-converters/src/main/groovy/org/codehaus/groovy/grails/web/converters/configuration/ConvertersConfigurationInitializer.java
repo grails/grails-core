@@ -62,6 +62,10 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
 
     private void initJSONConfiguration(GrailsApplication application) {
         LOG.debug("Initializing default JSON Converters Configuration...");
+        //Fixme: load registered marshallers if any were registered before default converters were initialized
+        ConverterConfiguration<JSON> tmpCfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
+        System.out.println(String.format("tmpCfg.getOrderedObjectMarshallers().size() = %d", tmpCfg.getOrderedObjectMarshallers().size()));        
+        
 
         List<ObjectMarshaller<JSON>> marshallers = new ArrayList<ObjectMarshaller<JSON>>();
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.ArrayMarshaller());
@@ -94,7 +98,7 @@ public class ConvertersConfigurationInitializer implements ApplicationContextAwa
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.GroovyBeanMarshaller());
         marshallers.add(new org.codehaus.groovy.grails.web.converters.marshaller.json.GenericJavaBeanMarshaller());
 
-        DefaultConverterConfiguration<JSON> cfg = new DefaultConverterConfiguration<JSON>(marshallers, proxyHandler);
+        DefaultConverterConfiguration<JSON> cfg = new DefaultConverterConfiguration<JSON>(marshallers, proxyHandler);        
         cfg.setEncoding(grailsConfig.get("grails.converters.encoding", "UTF-8"));
         String defaultCirRefBehaviour = grailsConfig.get("grails.converters.default.circular.reference.behaviour", "DEFAULT");
         cfg.setCircularReferenceBehaviour(Converter.CircularReferenceBehaviour.valueOf(
