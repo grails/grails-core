@@ -134,6 +134,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
         WebApplicationContext ctx;
         try {
             webSpringConfig = createWebRuntimeSpringConfiguration(application, parent, application.getClassLoader());
+            webSpringConfig.setBeanFactory(new OptimizedAutowireCapableBeanFactory());
 
             if (context != null) {
                 webSpringConfig.setServletContext(context);
