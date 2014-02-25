@@ -2,23 +2,19 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.GrailsNameUtils
 import grails.util.GrailsWebUtil
+import grails.util.Holders
 import grails.util.Metadata
 import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsDomainClass
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
-import org.codehaus.groovy.grails.plugins.DefaultPluginMetaManager
 import org.codehaus.groovy.grails.plugins.DomainClassGrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
-import org.codehaus.groovy.grails.plugins.PluginMetaManager
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -109,7 +105,6 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
 
         dependentPlugins.each { mockManager.registerMockPlugin(it); it.manager = mockManager }
         mockManager.doArtefactConfiguration()
-        ctx.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
 
         ga.initialise()
 
@@ -157,9 +152,9 @@ abstract class AbstractGrailsControllerTests extends GroovyTestCase {
         RequestContextHolder.setRequestAttributes(null)
         ExpandoMetaClass.disableGlobally()
 
-        ConfigurationHolder.config = null
-        ApplicationHolder.application = null
-        PluginManagerHolder.setPluginManager(null)
+        Holders.config = null
+        Holders.grailsApplication = null
+        Holders.setPluginManager(null)
 
         super.tearDown()
     }

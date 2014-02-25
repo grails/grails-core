@@ -1,7 +1,6 @@
 package org.codehaus.groovy.grails.web.pages
 
 import org.codehaus.groovy.grails.web.taglib.AbstractGrailsTagTests
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 
 /**
  * Tests rendering of static content.

@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.commons.cfg
 
 import grails.util.Environment
 import grails.util.Holder
+import grails.util.Holders
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 
@@ -24,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.core.io.ResourceLoader
@@ -113,7 +113,7 @@ class ConfigurationHelper {
 
             initConfig(co, null, classLoader)
             getCachedConfigs().put(cacheKey, co)
-            ConfigurationHolder.config = co
+            Holders.config = co
         }
 
         return co

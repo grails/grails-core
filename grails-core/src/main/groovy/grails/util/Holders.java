@@ -26,7 +26,6 @@ import javax.servlet.ServletContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
@@ -41,7 +40,6 @@ public class Holders {
     private static final Log LOG = LogFactory.getLog(Holders.class);
     private static final String APPLICATION_BEAN_NAME = "grailsApplication";
 
-    private static Holder<GrailsResourceLoader> resourceLoaders = new Holder<GrailsResourceLoader>("ResourceLoader");
     private static Holder<GrailsPluginManager> pluginManagers = new Holder<GrailsPluginManager>("PluginManager");
     private static Holder<Boolean> pluginManagersInCreation = new Holder<Boolean>("PluginManagers in creation");
     private static Holder<ConfigObject> configs = new Holder<ConfigObject>("config");
@@ -58,7 +56,6 @@ public class Holders {
     }
 
     public static void clear() {
-        resourceLoaders.set(null);
         pluginManagers.set(null);
         pluginManagersInCreation.set(null);
         configs.set(null);
@@ -124,18 +121,6 @@ public class Holders {
         return flatConfig == null ? Collections.emptyMap() : flatConfig;
     }
 
-    public static GrailsResourceLoader getResourceLoader() {
-        return getResourceLoader(false);
-    }
-
-    public static GrailsResourceLoader getResourceLoader(boolean mappedOnly) {
-        return get(resourceLoaders, "resourceLoader", mappedOnly);
-    }
-
-    public static void setResourceLoader(GrailsResourceLoader resourceLoader) {
-        resourceLoaders.set(resourceLoader);
-    }
-
     public static void setPluginManagerInCreation(boolean inCreation) {
         pluginManagersInCreation.set(inCreation);
     }
@@ -182,7 +167,6 @@ public class Holders {
         setPluginManager(null);
         setGrailsApplication(null);
         setServletContext(null);
-        setResourceLoader(null);
         setPluginManager(null);
         setPluginManagerInCreation(false);
     }

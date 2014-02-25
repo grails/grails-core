@@ -1,10 +1,11 @@
 package grails.test
 
+import grails.util.Holders
+
 import static org.junit.Assert.*
 import grails.persistence.Entity
 import grails.test.mixin.Mock
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.junit.Test
 
 /**
@@ -15,13 +16,13 @@ class MockUtilsAndHasManyTests extends GroovyTestCase {
 
     @Override
     protected void setUp() {
-        ApplicationHolder.application = null
+        Holders.grailsApplication = null
     }
 
     @Override
     protected void tearDown() {
         super.tearDown()
-        ApplicationHolder.application = null
+        Holders.grailsApplication = null
     }
 
     void testMockDomainWithHasMany() {
@@ -37,7 +38,7 @@ class MagazineTests extends GrailsUnitTestCase {
     @Override
     protected void tearDown() {
         super.tearDown()
-        ApplicationHolder.application = null
+        Holders.grailsApplication = null
     }
 
     void testSomething() {

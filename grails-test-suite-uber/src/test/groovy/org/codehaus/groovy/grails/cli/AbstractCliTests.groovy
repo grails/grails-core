@@ -3,10 +3,9 @@ package org.codehaus.groovy.grails.cli
 import gant.Gant
 import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
+import grails.util.Holders
 import org.codehaus.gant.GantBinding
 import org.codehaus.groovy.grails.cli.support.GrailsRootLoader
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 
 abstract class AbstractCliTests extends GroovyTestCase {
     String scriptName
@@ -56,8 +55,8 @@ abstract class AbstractCliTests extends GroovyTestCase {
         ExpandoMetaClass.disableGlobally()
 
         BuildSettingsHolder.settings = null
-        ConfigurationHolder.config = null
-        PluginManagerHolder.pluginManager = null
+        Holders.config = null
+        Holders.pluginManager = null
         ant = null
     }
 

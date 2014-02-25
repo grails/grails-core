@@ -141,7 +141,6 @@ hibernate {
 
         def parent = createMockApplicationContext()
         parent.registerMockBean("grailsApplication", ga)
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
 
         def springConfig = new org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration(parent)
         springConfig.servletContext = createMockServletContext()
@@ -159,7 +158,6 @@ hibernate {
 
         def parent = createMockApplicationContext()
         parent.registerMockBean("grailsApplication", ga)
-        parent.registerMockBean(PluginMetaManager.BEAN_ID, new DefaultPluginMetaManager())
         def springConfig = new org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration(parent)
         springConfig.servletContext = createMockServletContext()
 

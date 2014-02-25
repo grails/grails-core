@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.commons;
 
 import grails.util.Environment;
+import grails.util.Holders;
 import groovy.util.slurpersupport.GPathResult;
 
 import java.io.InputStream;
@@ -24,8 +25,6 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.compiler.GrailsClassLoader;
-import org.codehaus.groovy.grails.compiler.support.GrailsResourceLoader;
 import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.springframework.beans.factory.FactoryBean;
@@ -71,13 +70,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
                     GPathResult node = (GPathResult) grailsClasses.getAt(i);
                     String className = node.text();
                     try {
-                        Class<?> clazz;
-                        if (classLoader instanceof GrailsClassLoader) {
-                            clazz = classLoader.loadClass(className);
-                        }
-                        else {
-                            clazz = Class.forName(className, true, classLoader);
-                        }
+                        Class<?> clazz = Class.forName(className, true, classLoader);
                         classes.add(clazz);
                     }
                     catch (ClassNotFoundException e) {
@@ -109,7 +102,7 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
             grailsApplication = new DefaultGrailsApplication();
         }
 
-        ApplicationHolder.setApplication(grailsApplication);
+        Holders.setGrailsApplication(grailsApplication);
     }
 
     public GrailsApplication getObject() {
@@ -122,15 +115,6 @@ public class GrailsApplicationFactoryBean implements FactoryBean<GrailsApplicati
 
     public boolean isSingleton() {
         return true;
-    }
-
-    /**
-     * @deprecated No longer used will be removed in a future release
-     * @param resourceLoader
-     */
-    @Deprecated
-    public void setGrailsResourceLoader(GrailsResourceLoader resourceLoader) {
-        // do nothing
     }
 
     public void setGrailsDescriptor(Resource r) {

@@ -1,22 +1,19 @@
 package org.codehaus.groovy.grails.commons.spring;
 
+import grails.util.Holders;
 import grails.util.Metadata;
 import groovy.lang.ExpandoMetaClass;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import junit.framework.TestCase;
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder;
-import org.codehaus.groovy.grails.commons.ConfigurationHolder;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.validation.GrailsDomainClassValidator;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
-import org.junit.Ignore;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -33,9 +30,9 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
     @Override
     protected void setUp() throws Exception {
         ExpandoMetaClass.enableGlobally();
-        ConfigurationHolder.setConfig(null);
-        ApplicationHolder.setApplication(null);
-        PluginManagerHolder.setPluginManager(null);
+        Holders.setConfig(null);
+        Holders.setGrailsApplication(null);
+        Holders.setPluginManager(null);
 
         super.setUp();
     }

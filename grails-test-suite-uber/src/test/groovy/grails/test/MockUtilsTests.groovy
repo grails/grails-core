@@ -15,11 +15,9 @@
 package grails.test
 
 import grails.persistence.Entity
-
-import org.codehaus.groovy.grails.commons.ApplicationHolder
+import grails.util.Holders
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
@@ -49,8 +47,8 @@ class MockUtilsTests extends GroovyTestCase {
         MockUtils.TEST_INSTANCES.clear()
         metaTestHelper.setUp()
         errorsMap = new IdentityHashMap()
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: {-> 'hibernate' }] as GrailsPlugin)
+        Holders.pluginManager = new MockGrailsPluginManager()
+        Holders.pluginManager.registerMockPlugin([getName: {-> 'hibernate' }] as GrailsPlugin)
     }
 
     protected void tearDown() {
@@ -58,8 +56,8 @@ class MockUtilsTests extends GroovyTestCase {
         metaTestHelper.tearDown()
         MockUtils.resetIds()
         MockUtils.TEST_INSTANCES.clear()
-        PluginManagerHolder.pluginManager = null
-        ApplicationHolder.application = null
+        Holders.pluginManager = null
+        Holders.grailsApplication = null
     }
 
     /**

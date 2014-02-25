@@ -16,7 +16,6 @@
 
 package grails.test.spock
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 import org.codehaus.groovy.grails.test.support.GrailsTestAutowirer
 import org.codehaus.groovy.grails.test.support.GrailsTestTransactionInterceptor
 import org.codehaus.groovy.grails.test.support.GrailsTestRequestEnvironmentInterceptor
@@ -27,7 +26,6 @@ import spock.lang.Specification
 import spock.lang.Shared
 import spock.lang.Stepwise
 import org.codehaus.groovy.grails.test.spock.GrailsSpecTestType
-import groovy.transform.CompileStatic
 import org.springframework.context.ApplicationContext
 import grails.util.Holders
 

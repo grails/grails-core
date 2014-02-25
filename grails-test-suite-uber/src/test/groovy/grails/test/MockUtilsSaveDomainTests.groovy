@@ -14,11 +14,10 @@
  */
 package grails.test
 
+import grails.util.Holders
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.springframework.validation.Errors
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 class MockUtilsSaveDomainTests extends GroovyTestCase {
 
@@ -34,15 +33,15 @@ class MockUtilsSaveDomainTests extends GroovyTestCase {
     protected void setUp() {
         metaTestHelper.setUp()
         errorsMap = new IdentityHashMap()
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+        Holders.pluginManager = new MockGrailsPluginManager()
+        Holders.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
     }
 
     protected void tearDown() {
         metaTestHelper.tearDown()
         MockUtils.resetIds()
-        PluginManagerHolder.pluginManager = null
-        ApplicationHolder.application = null
+        Holders.pluginManager = null
+        Holders.grailsApplication = null
     }
 
     /**

@@ -1,6 +1,6 @@
 package org.codehaus.groovy.grails.web.mime
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 
@@ -32,7 +32,7 @@ grails.mime.types = [ xml: ['text/xml', 'application/xml'],
 
     protected void tearDown() {
         config = null
-        ConfigurationHolder.setConfig null
+        Holders.setConfig null
     }
 
     void testXmlContentTypeWithCharset() {

@@ -15,6 +15,7 @@
  */
 package grails.test
 
+import grails.util.Holders
 import org.codehaus.groovy.grails.web.converters.marshaller.json.ValidationErrorsMarshaller as JsonErrorsMarshaller
 import org.codehaus.groovy.grails.web.converters.marshaller.xml.ValidationErrorsMarshaller as XmlErrorsMarshaller
 
@@ -24,7 +25,6 @@ import grails.util.GrailsNameUtils
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.converters.ConverterUtil
 import org.codehaus.groovy.grails.web.converters.configuration.ConvertersConfigurationInitializer
@@ -71,9 +71,9 @@ class GrailsUnitTestCase extends GroovyTestCase {
         def jsonErrorMarshaller = new JsonErrorsMarshaller()
         JSON.registerObjectMarshaller(jsonErrorMarshaller)
 
-        previousConfig = ConfigurationHolder.config
+        previousConfig = Holders.config
 
-        PluginManagerHolder.pluginManager = [hasGrailsPlugin: { String name -> true }] as GrailsPluginManager
+        Holders.pluginManager = [hasGrailsPlugin: { String name -> true }] as GrailsPluginManager
         registerMetaClass(ValidationErrors)
         ValidationErrors.metaClass.getAt = {String field ->
             def code = getFieldError(field)?.code
@@ -88,7 +88,7 @@ class GrailsUnitTestCase extends GroovyTestCase {
         GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
         ShutdownOperations.runOperations()
         MockUtils.TEST_INSTANCES.clear()
-        ConfigurationHolder.config = previousConfig
+        Holders.config = previousConfig
         MockUtils.resetIds()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
     }
@@ -198,8 +198,8 @@ class GrailsUnitTestCase extends GroovyTestCase {
     }
 
     protected ConfigObject mockConfig(String config) {
-        ConfigurationHolder.config = new ConfigSlurper().parse(config)
-        return ConfigurationHolder.config
+        Holders.config = new ConfigSlurper().parse(config)
+        return Holders.config
     }
 
     /**

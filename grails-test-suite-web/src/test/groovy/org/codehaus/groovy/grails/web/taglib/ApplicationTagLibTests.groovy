@@ -1,11 +1,11 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.GrailsUtil
+import grails.util.Holders
 import grails.util.MockRequestDataValueProcessor
 
 import javax.servlet.http.Cookie
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.codehaus.groovy.grails.plugins.web.taglib.ApplicationTagLib
 import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
 import org.codehaus.groovy.grails.support.MockApplicationContext
@@ -590,7 +590,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
     void testAbsoluteWithContextPathAndNullConfig() {
         unRegisterRequestDataValueProcessor()
-        ConfigurationHolder.config = null
+        Holders.config = null
         request.contextPath = "/foo"
         request.serverPort = 8080
         def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
@@ -601,7 +601,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testAbsoluteWithContextPathAndNullConfigAndRequestDataValueProcessor() {
-        ConfigurationHolder.config = null
+        Holders.config = null
         request.contextPath = "/foo"
         request.serverPort = 8080
         def template = '<g:createLink action="testAction" controller="testController" absolute="true" />'
@@ -613,7 +613,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
 
     void testAbsoluteFalseWithContextPathAndNullConfig() {
         unRegisterRequestDataValueProcessor()
-        ConfigurationHolder.config = null
+        Holders.config = null
         request.contextPath = "/foo"
         request.serverPort = 8080
         def template = '<g:createLink action="testAction" controller="testController" absolute="false" />'
@@ -624,7 +624,7 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
     }
 
     void testAbsoluteFalseWithContextPathAndNullConfigAndRequestDataValueProcessor() {
-        ConfigurationHolder.config = null
+        Holders.config = null
         request.contextPath = "/foo"
         request.serverPort = 8080
         def template = '<g:createLink action="testAction" controller="testController" absolute="false" />'

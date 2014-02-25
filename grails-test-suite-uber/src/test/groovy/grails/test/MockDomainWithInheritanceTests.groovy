@@ -1,8 +1,8 @@
 package grails.test
 
 import grails.persistence.*
+import grails.util.Holders
 
-import org.codehaus.groovy.grails.commons.ApplicationHolder
 
 /**
  * @author Graeme Rocher
@@ -12,7 +12,7 @@ class MockDomainWithInheritanceTests extends GroovyTestCase {
 
     @Override
     protected void tearDown() {
-        ApplicationHolder.application = null
+        Holders.grailsApplication = null
     }
 
     void testMockDomainWithInheritance() {
@@ -34,7 +34,7 @@ class PersonTests extends GrailsUnitTestCase {
     @Override
     protected void tearDown() {
         super.tearDown()
-        ApplicationHolder.application = null
+        Holders.grailsApplication = null
     }
 
     void testLoadingPersonInstance() {

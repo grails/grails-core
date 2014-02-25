@@ -16,8 +16,7 @@ package grails.test
 
 import grails.converters.JSON
 import grails.converters.XML
-import org.codehaus.groovy.grails.commons.ApplicationHolder
-import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import grails.util.Holders
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.PluginManagerHolder
@@ -30,13 +29,13 @@ class GrailsUnitTestCaseTests extends GroovyTestCase {
 
     @Override
     protected void setUp() {
-        ConfigurationHolder.setConfig null
+        Holders.setConfig null
     }
 
     @Override
     protected void tearDown() {
-        ApplicationHolder.setApplication null
-        ConfigurationHolder.setConfig null
+        Holders.grailsApplication = null
+        Holders.setConfig null
     }
 
     void testMockConfig() {
@@ -182,13 +181,13 @@ class TestUnitTestCase extends GrailsUnitTestCase {
 
     protected void setUp() {
         super.setUp()
-        PluginManagerHolder.pluginManager = new MockGrailsPluginManager()
-        PluginManagerHolder.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
+        Holders.pluginManager = new MockGrailsPluginManager()
+        Holders.pluginManager.registerMockPlugin([getName: { -> 'hibernate' }] as GrailsPlugin)
     }
 
     protected void tearDown() {
         super.tearDown()
-        PluginManagerHolder.pluginManager = null
+        Holders.pluginManager = null
     }
 
     void testMockInstances1() {
@@ -372,13 +371,13 @@ class GrailsUnitTestClass {
     }
 
     void testConfig() {
-        assert ConfigurationHolder.config.foo.bar == "good"
-        assert ConfigurationHolder.flatConfig["foo.bar"] == "good"
+        assert Holders.config.foo.bar == "good"
+        assert Holders.flatConfig["foo.bar"] == "good"
     }
 
     void testEmptyConfig() {
-        assert ConfigurationHolder.config == null
-        assert ConfigurationHolder.flatConfig.size() == 0
+        assert Holders.config == null
+        assert Holders.flatConfig.size() == 0
     }
 
     static constraints = {
