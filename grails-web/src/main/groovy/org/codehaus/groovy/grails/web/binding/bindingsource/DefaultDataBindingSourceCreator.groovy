@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap
+import org.codehaus.groovy.grails.commons.utils.LazyBeanMap
 
 import javax.servlet.http.HttpServletRequest
 
@@ -52,7 +53,7 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
         } else if(bindingSource instanceof Map) {
             dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource))
         } else {
-            dataBindingSource = new SimpleMapDataBindingSource(new LazyMetaPropertyMap(bindingSource))
+            dataBindingSource = new SimpleMapDataBindingSource(new LazyBeanMap(bindingSource))
         }
         dataBindingSource
     }
