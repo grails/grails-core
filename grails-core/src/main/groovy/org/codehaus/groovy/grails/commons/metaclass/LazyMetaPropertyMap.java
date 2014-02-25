@@ -19,6 +19,7 @@ import groovy.lang.GroovySystem;
 import groovy.lang.MetaBeanProperty;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaProperty;
+import groovy.transform.CompileStatic;
 import groovy.util.MapEntry;
 
 import java.lang.reflect.Modifier;
@@ -42,6 +43,7 @@ import org.springframework.util.Assert;
  * @author Graeme Rocher
  */
 @SuppressWarnings({"unchecked","rawtypes"})
+@CompileStatic
 public class LazyMetaPropertyMap implements Map {
 
     private MetaClass metaClass;

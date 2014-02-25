@@ -42,7 +42,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections.Predicate;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ClassHelper;
@@ -90,6 +89,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector
 import org.codehaus.groovy.grails.web.binding.DefaultASTDatabindingHelper;
 import org.codehaus.groovy.grails.web.controllers.DefaultControllerExceptionHandlerMetaData;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
 import org.grails.databinding.bindingsource.DataBindingSourceCreationException;
@@ -230,11 +230,12 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             if (methodShouldBeConfiguredAsControllerAction(method)) {
                 final List<MethodNode> declaredMethodsWithThisName = classNode.getDeclaredMethods(method.getName());
                 if(declaredMethodsWithThisName != null) {
-                    final int numberOfNonExceptionHandlerMethodsWithThisName = org.apache.commons.collections.CollectionUtils.countMatches(declaredMethodsWithThisName, new Predicate() {
-                        public boolean evaluate(Object object) {
+                    final int numberOfNonExceptionHandlerMethodsWithThisName = DefaultGroovyMethods.count(declaredMethodsWithThisName, new Closure(this) {
+                        @Override
+                        public Object call(Object object) {
                             return !isExceptionHandlingMethod((MethodNode) object);
                         }
-                    });
+                    }).intValue();
                     if (numberOfNonExceptionHandlerMethodsWithThisName > 1) {
                         String message = "Controller actions may not be overloaded.  The [" +
                                 method.getName() +

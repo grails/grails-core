@@ -21,10 +21,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.ListIterator;
+import java.util.*;
 
 import javax.servlet.GenericServlet;
 import javax.servlet.Servlet;
@@ -43,8 +40,6 @@ import javax.servlet.jsp.el.ExpressionEvaluator;
 import javax.servlet.jsp.el.VariableResolver;
 import javax.servlet.jsp.tagext.BodyContent;
 
-import org.apache.commons.collections.ArrayStack;
-import org.apache.commons.collections.iterators.IteratorEnumeration;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.util.Assert;
@@ -58,16 +53,26 @@ import org.springframework.web.context.request.RequestContextHolder;
  */
 public class GroovyPagesPageContext extends PageContext {
 
+    private static final Enumeration EMPTY_ENUMERATION = new Enumeration() {
+        @Override
+        public boolean hasMoreElements() {
+            return false;
+        }
+
+        @Override
+        public Object nextElement() {
+            return new NoSuchElementException();
+        }
+    };
     private ServletContext servletContext;
     private Servlet servlet;
     private HttpServletRequest request;
     private HttpServletResponse response;
     private ServletConfig servletconfig;
     private Binding pageScope;
-    private static final IteratorEnumeration EMPTY_ENUMERATION = new IteratorEnumeration();
     private GrailsWebRequest webRequest;
     private JspWriter jspOut;
-    private ArrayStack outStack = new ArrayStack();
+    private Deque outStack = new ArrayDeque();
     @SuppressWarnings("rawtypes")
     private List tags = new ArrayList();
     private HttpSession session;
@@ -360,7 +365,18 @@ public class GroovyPagesPageContext extends PageContext {
     public Enumeration getAttributeNamesInScope(int scope) {
         switch (scope) {
             case PAGE_SCOPE:
-                return new IteratorEnumeration(pageScope.getVariables().keySet().iterator());
+                final Iterator i = pageScope.getVariables().keySet().iterator();
+                return new Enumeration() {
+                    @Override
+                    public boolean hasMoreElements() {
+                        return i.hasNext();
+                    }
+
+                    @Override
+                    public Object nextElement() {
+                        return i.next();
+                    }
+                };
             case REQUEST_SCOPE:
                 return request.getAttributeNames();
             case SESSION_SCOPE:
@@ -368,7 +384,9 @@ public class GroovyPagesPageContext extends PageContext {
                 if (httpSession != null) {
                     return httpSession.getAttributeNames();
                 }
-                return EMPTY_ENUMERATION;
+                else {
+                    return EMPTY_ENUMERATION;
+                }
             case APPLICATION_SCOPE:
                 return servletContext.getAttributeNames();
         }

@@ -16,11 +16,12 @@
 package org.codehaus.groovy.grails.web.metaclass
 
 import grails.web.UrlConverter
+import org.springframework.beans.MutablePropertyValues
+import org.springframework.validation.DataBinder
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.apache.commons.beanutils.BeanUtils
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.util.WebUtils
@@ -41,8 +42,9 @@ class ForwardMethod {
 
     String forward(HttpServletRequest request, HttpServletResponse response, Map params) {
         def urlInfo = new ForwardUrlMappingInfo()
-        BeanUtils.populate(urlInfo, params)
-        
+        DataBinder binder = new DataBinder(urlInfo)
+        binder.bind(new MutablePropertyValues(params))
+
         GrailsWebRequest webRequest = GrailsWebRequest.lookup(request)
 
         if (webRequest) {

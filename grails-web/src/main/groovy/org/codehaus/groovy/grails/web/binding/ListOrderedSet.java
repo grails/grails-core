@@ -16,16 +16,9 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.collections.iterators.AbstractIteratorDecorator;
-import org.apache.commons.collections.list.UnmodifiableList;
 import org.apache.commons.collections.set.AbstractSerializableSetDecorator;
 import org.springframework.util.Assert;
 
@@ -38,8 +31,11 @@ import org.springframework.util.Assert;
  * @author Stephen Colebourne
  * @author Henning P. Schmiedehausen
  * @author Graeme Rocher
+ *
+ * @deprecated Used by old Spring binder which has been replaced
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
+@Deprecated
 public class ListOrderedSet extends AbstractSerializableSetDecorator implements List {
     private static final long serialVersionUID = -228664372470420141L;
 
@@ -120,7 +116,7 @@ public class ListOrderedSet extends AbstractSerializableSetDecorator implements 
      * @return an unmodifiable list view
      */
     public List asList() {
-        return UnmodifiableList.decorate(setOrder);
+        return Collections.unmodifiableList(setOrder);
     }
 
     //-----------------------------------------------------------------------

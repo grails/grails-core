@@ -25,7 +25,7 @@ import grails.util.Environment
 import grails.util.GrailsWebUtil
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
-import org.apache.commons.beanutils.PropertyUtils
+import org.codehaus.groovy.grails.commons.ClassPropertyFetcher
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler
 import org.codehaus.groovy.grails.support.proxy.DefaultProxyHandler
 import org.codehaus.groovy.grails.support.proxy.EntityProxyHandler
@@ -181,7 +181,7 @@ abstract class AbstractLinkingRenderer<T> extends AbstractIncludeExcludeRenderer
 
             } else if ((a instanceof ToOne) && (proxyHandler instanceof EntityProxyHandler)) {
                 if (associatedEntity) {
-                    final proxy = PropertyUtils.getProperty(object, propertyName)
+                    final proxy = ClassPropertyFetcher.forClass(object.getClass()).getPropertyValue(object, propertyName)
                     final id = proxyHandler.getProxyIdentifier(proxy)
                     final href = linkGenerator.link(resource: associatedEntity.decapitalizedName, id: id, method: HttpMethod.GET, absolute: absoluteLinks)
                     final associationTitle = getLinkTitle(associatedEntity, locale)

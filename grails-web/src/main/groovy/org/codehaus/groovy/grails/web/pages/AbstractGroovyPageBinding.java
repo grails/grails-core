@@ -17,16 +17,14 @@ package org.codehaus.groovy.grails.web.pages;
 
 import groovy.lang.Binding;
 
-import java.util.AbstractSet;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
-import org.apache.commons.collections.keyvalue.AbstractMapEntry;
-import org.apache.commons.collections.set.UnmodifiableSet;
-
+/**
+ * Abstract super class for GroovyPage bindings
+ *
+ * @author Graeme Rocher
+ * @author Lari Hotari
+ */
 @SuppressWarnings("rawtypes")
 public abstract class AbstractGroovyPageBinding extends Binding {
     public AbstractGroovyPageBinding() {
@@ -120,11 +118,12 @@ public abstract class AbstractGroovyPageBinding extends Binding {
         }
 
         public Set entrySet() {
-            return UnmodifiableSet.decorate(new AbstractSet() {
+            return Collections.unmodifiableSet(new AbstractSet() {
                 @Override
                 public Iterator iterator() {
                     return entryIterator();
                 }
+
                 @Override
                 public int size() {
                     return binding.getVariableNames().size();
@@ -150,12 +149,25 @@ public abstract class AbstractGroovyPageBinding extends Binding {
         }
     }
 
-    protected static class BindingMapEntry extends AbstractMapEntry {
+    protected static class BindingMapEntry implements Map.Entry {
         private AbstractGroovyPageBinding binding;
 
+        private Object key;
+        private Object value;
         protected BindingMapEntry(AbstractGroovyPageBinding binding, Object key, Object value) {
-            super(key, value);
             this.binding = binding;
+            this.key = key;
+            this.value = value;
+        }
+
+        @Override
+        public Object getKey() {
+            return key;
+        }
+
+        @Override
+        public Object getValue() {
+            return value;
         }
 
         @Override
@@ -163,8 +175,28 @@ public abstract class AbstractGroovyPageBinding extends Binding {
             String key = String.valueOf(getKey());
             Object oldValue = binding.getVariable(key);
             binding.setVariable(key, value);
-            super.setValue(value);
+            this.value = value;
             return oldValue;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof Map.Entry)) {
+                return false;
+            }
+            Map.Entry other = (Map.Entry) obj;
+            return
+                    (getKey() == null ? other.getKey() == null : getKey().equals(other.getKey())) &&
+                            (getValue() == null ? other.getValue() == null : getValue().equals(other.getValue()));
+        }
+
+        @Override
+        public int hashCode() {
+            return (getKey() == null ? 0 : getKey().hashCode()) ^
+                    (getValue() == null ? 0 : getValue().hashCode());
         }
     }
 }

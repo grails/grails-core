@@ -16,10 +16,10 @@
 package org.codehaus.groovy.grails.web.binding.bindingsource
 
 import groovy.transform.CompileStatic
+import org.codehaus.groovy.grails.commons.metaclass.LazyMetaPropertyMap
 
 import javax.servlet.http.HttpServletRequest
 
-import org.apache.commons.beanutils.BeanMap
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils
 import org.codehaus.groovy.grails.web.mime.MimeType
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap
@@ -52,7 +52,7 @@ class DefaultDataBindingSourceCreator implements DataBindingSourceCreator {
         } else if(bindingSource instanceof Map) {
             dataBindingSource = new SimpleMapDataBindingSource(DataBindingUtils.convertPotentialGStrings((Map) bindingSource))
         } else {
-            dataBindingSource = new SimpleMapDataBindingSource(new BeanMap(bindingSource))
+            dataBindingSource = new SimpleMapDataBindingSource(new LazyMetaPropertyMap(bindingSource))
         }
         dataBindingSource
     }

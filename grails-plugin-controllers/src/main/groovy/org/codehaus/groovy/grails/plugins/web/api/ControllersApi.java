@@ -33,7 +33,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.collections.Predicate;
 import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
@@ -475,9 +474,9 @@ public class ControllersApi extends CommonWebApi {
         if(exceptionHandlerMetaDataInstances != null && exceptionHandlerMetaDataInstances.size() > 0) {
 
             // find all of the handler methods which could accept this exception type
-            final List<ControllerExceptionHandlerMetaData> matches = (List<ControllerExceptionHandlerMetaData>) org.apache.commons.collections.CollectionUtils.select(exceptionHandlerMetaDataInstances, new Predicate() {
+            final List<ControllerExceptionHandlerMetaData> matches = (List<ControllerExceptionHandlerMetaData>) DefaultGroovyMethods.findAll(exceptionHandlerMetaDataInstances, new Closure(this) {
                 @Override
-                public boolean evaluate(Object object) {
+                public Object call(Object object) {
                     ControllerExceptionHandlerMetaData md = (ControllerExceptionHandlerMetaData) object;
                     return md.getExceptionType().isAssignableFrom(exceptionType);
                 }

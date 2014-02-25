@@ -43,7 +43,6 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -436,7 +435,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                 renderTemplateForModel(t, modelObject, target, out);
             }
             else {
-                Writable w = t.make(new BeanMap(target));
+                Writable w = t.make();
                 w.writeTo(out);
             }
             out.flush();
@@ -513,7 +512,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             template.make((Map) modelObject).writeTo(out);
         }
         else {
-            template.make(new BeanMap(target)).writeTo(out);
+            template.make().writeTo(out);
         }
     }
 
@@ -571,9 +570,6 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         Map model;
         if (modelObject instanceof Map) {
             model = (Map) modelObject;
-        }
-        else if (target instanceof GroovyObject) {
-            model = new BeanMap(target);
         }
         else {
             model = new HashMap();

@@ -43,10 +43,6 @@ dependencies {
     runtime 'aopalliance:aopalliance:1.0',
             "org.aspectj:aspectjrt:$aspectjVersion"
 
-    // legacy, and not included in published POM
-    runtime "org.springframework:spring-jms:${springVersion}", {
-        ext.notInPom = true
-    }
     runtime ( 'xalan:serializer:2.7.1' ) {
         exclude group: 'xml-apis', module:'xml-apis'
     }
