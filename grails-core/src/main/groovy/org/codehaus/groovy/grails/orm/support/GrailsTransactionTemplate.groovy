@@ -17,6 +17,8 @@
 package org.codehaus.groovy.grails.orm.support
 
 import groovy.transform.CompileStatic
+
+import org.codehaus.groovy.grails.transaction.GrailsTransactionAttribute;
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.TransactionException
@@ -68,6 +70,12 @@ class GrailsTransactionTemplate {
                             }
                         } else {
                             return new ThrowableHolder(e)
+                        }
+                    } finally {
+                        if(transactionAttribute instanceof GrailsTransactionAttribute && 
+                            transactionAttribute.isInheritRollbackOnly() &&
+                            status.isRollbackOnly()) {
+                            status.setRollbackOnly()
                         }
                     }
                 }

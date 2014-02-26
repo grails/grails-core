@@ -137,4 +137,14 @@ public @interface Transactional {
      * <p>Similar to {@link org.springframework.transaction.interceptor.NoRollbackRuleAttribute#NoRollbackRuleAttribute(String exceptionName)}
      */
     String[] noRollbackForClassName() default {};
+    
+    
+    /**
+     * In Spring, when there are nested transaction calls, the execution of the outermost callback will throw UnexpectedRollbackException if TransactionStatus.setRollbackOnly() was called in a nested transaction callback.
+     * 
+     * This feature will make the setRollbackOnly state get inherited to parent level transaction template calls and therefore prevent UnexpectedRollbackException.
+     * The default value is true.
+     *   
+     */
+    boolean inheritRollbackOnly() default true;
 }
