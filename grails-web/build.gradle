@@ -54,7 +54,6 @@ dependencies {
         exclude group:'commons-cli', module:'commons-cli'
     }
 
-
     optional('commons-el:commons-el:1.0') {
         exclude module:'commons-logging'
     }
