@@ -17,6 +17,7 @@ dependencies {
     compile('commons-fileupload:commons-fileupload:1.3.1')
     compile "commons-io:commons-io:${commonsIOVersion}"
     compile "commons-lang:commons-lang:$commonsLangVersion"
+    compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
 
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
         exclude group: 'commons-logging', module:'commons-logging'
@@ -44,6 +45,7 @@ dependencies {
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
 
+
     optional "org.apache.ant:ant:${antVersion}"
     optional "jline:jline:$jlineVersion"
     optional "org.fusesource.jansi:jansi:$jansiVersion"
@@ -52,7 +54,7 @@ dependencies {
         exclude group:'commons-cli', module:'commons-cli'
     }
 
-    optional "commons-collections:commons-collections:${commonsCollectionsVersion}"
+
     optional('commons-el:commons-el:1.0') {
         exclude module:'commons-logging'
     }
