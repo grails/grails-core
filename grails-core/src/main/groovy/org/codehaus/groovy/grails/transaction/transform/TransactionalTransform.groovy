@@ -23,8 +23,8 @@ import groovy.transform.CompileStatic
 
 import java.lang.reflect.Modifier
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
+import javax.annotation.PostConstruct
+import javax.annotation.PreDestroy
 
 import org.codehaus.groovy.ast.*
 import org.codehaus.groovy.ast.expr.*
@@ -37,6 +37,7 @@ import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector
 import org.codehaus.groovy.grails.orm.support.GrailsTransactionTemplate
 import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+import org.codehaus.groovy.grails.transaction.GrailsTransactionAttribute
 import org.codehaus.groovy.syntax.Token
 import org.codehaus.groovy.syntax.Types
 import org.codehaus.groovy.transform.ASTTransformation
@@ -141,7 +142,7 @@ class TransactionalTransform implements ASTTransformation{
         
         BlockStatement methodBody = new BlockStatement()
 
-        final transactionAttributeClassNode = ClassHelper.make(RuleBasedTransactionAttribute)
+        final transactionAttributeClassNode = ClassHelper.make(GrailsTransactionAttribute)
         final transactionAttributeVar = new VariableExpression('$transactionAttribute', transactionAttributeClassNode)
         methodBody.addStatement(
             new ExpressionStatement(

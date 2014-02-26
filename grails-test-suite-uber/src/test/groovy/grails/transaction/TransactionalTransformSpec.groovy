@@ -29,6 +29,7 @@ import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor
 import org.springframework.jdbc.datasource.DataSourceTransactionManager
 import org.springframework.jdbc.datasource.DriverManagerDataSource
 import org.springframework.transaction.TransactionStatus
+import org.springframework.transaction.UnexpectedRollbackException
 import org.springframework.transaction.support.DefaultTransactionStatus
 import org.springframework.transaction.support.TransactionSynchronizationManager
 
@@ -476,7 +477,83 @@ new BookService()
             bean.name == 'Grails'
             bean.isActive() == false
     }
+    
+    @Issue(['GRAILS-11145', 'GRAILS-11134'])
+    void "Test inheritRollbackOnly attribute"() {
+        given:
+            def bookService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+    import org.springframework.transaction.PlatformTransactionManager
+    import org.springframework.transaction.TransactionStatus
+    import org.springframework.transaction.annotation.Isolation
+    import org.springframework.transaction.annotation.Propagation
+
+    @Transactional
+    class BookService {
+
+        void updateBook() {
+            doNestedUpdate()
+        }
+
+        void doNestedUpdate() {
+            transactionStatus.setRollbackOnly()
+        }
+    }
+
+    new BookService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+        when:"A transactional method containing setRollbackOnly in nested transaction template is called"
+            bookService.updateBook()
+        then:"The test passes without UnexpectedRollbackException"
+            1==1
+    }
+    
+    @Issue(['GRAILS-11145', 'GRAILS-11134'])
+    void "Test disabling inheritRollbackOnly"() {
+        given:
+            def bookService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.codehaus.groovy.grails.orm.support.TransactionManagerAware
+    import org.springframework.transaction.PlatformTransactionManager
+    import org.springframework.transaction.TransactionStatus
+    import org.springframework.transaction.annotation.Isolation
+    import org.springframework.transaction.annotation.Propagation
+
+    @Transactional(inheritRollbackOnly=false)
+    class BookService {
+
+        void updateBook() {
+            doNestedUpdate()
+        }
+
+        void doNestedUpdate() {
+            transactionStatus.setRollbackOnly()
+        }
+
+        void doRollback() {
+            transactionStatus.setRollbackOnly()
+        }
+    }
+
+    new BookService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+        when:"A transactional method containing setRollbackOnly in nested transaction template is called"
+            bookService.updateBook()
+        then:"UnexpectedRollbackException is thrown"
+            thrown UnexpectedRollbackException
+        when:
+             bookService.doRollback()
+        then:"no exception should be thrown when there are no nested transactions"
+             1==1
+    }
+
 }
+
 
 @Transactional
 class TransactionalTransformSpecService implements InitializingBean {
