@@ -5,7 +5,7 @@ configurations {
 }
 
 dependencies {
-    archive "org.springsource.springloaded:springloaded-core:$springLoadedVersion"
+    archive "org.springframework:springloaded:$springLoadedVersion"
 }
 
 task copyScript(type: Copy) {
@@ -21,10 +21,10 @@ task copyScript(type: Copy) {
         filter(ReplaceTokens, tokens: ['grails.version': grailsVersion])
         filter(ReplaceTokens, tokens: ['starter.main.class': 'org.grails.wrapper.GrailsWrapper'])
         filter(ReplaceTokens, tokens: ['starter.classpath': '@wrapperDir@/grails-wrapper-runtime-@grailsVersion@.jar:@wrapperDir@:.'])
-        filter(ReplaceTokens, tokens: ['agent.string': '-javaagent:@wrapperDir@/springloaded-core-@springLoadedVersion@.jar @springLoadedCommonOptions@ -Dspringloaded=\$SPRINGLOADED_PARAMS'])
+        filter(ReplaceTokens, tokens: ['agent.string': '-javaagent:@wrapperDir@/springloaded-@springLoadedVersion@.jar @springLoadedCommonOptions@ -Dspringloaded=\$SPRINGLOADED_PARAMS'])
         filter(ReplaceTokens, tokens: ['startup.command': 'startGrails $STARTER_MAIN_CLASS "$@"'])
         filter(ReplaceTokens, tokens: ['windows.starter.classpath': '@wrapperDir@/grails-wrapper-runtime-@grailsVersion@.jar;@wrapperDir@;.'])
-        filter(ReplaceTokens, tokens: ['windows.agent.string': '-javaagent:@wrapperDir@/springloaded-core-@springLoadedVersion@.jar @springLoadedCommonOptions@ -Dspringloaded=\\"%SPRINGLOADED_PARAMS%\\"'.toString()])
+        filter(ReplaceTokens, tokens: ['windows.agent.string': '-javaagent:@wrapperDir@/springloaded-@springLoadedVersion@.jar @springLoadedCommonOptions@ -Dspringloaded=\\"%SPRINGLOADED_PARAMS%\\"'.toString()])
         fileMode = 0755
     }
 
