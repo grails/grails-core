@@ -53,22 +53,15 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.AnnotationDomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
-import org.codehaus.groovy.grails.commons.GrailsDomainClass;
-import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.commons.GrailsDomainConfigurationUtil;
-import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
@@ -719,7 +712,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean shouldPropertyValueSkipAutoCreate(Object propertyValue) {
-        return (propertyValue instanceof Map) || ((propertyValue instanceof String) && StringUtils.isBlank((String) propertyValue));
+        return (propertyValue instanceof Map) || ((propertyValue instanceof String) && GrailsStringUtils.isBlank((String) propertyValue));
     }
 
     private Collection decorateCollectionForDomainAssociation(Collection c, final Class referencedType) {
@@ -871,9 +864,9 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             String path = propertyName.replaceAll("\\[.+?\\]", "");
             if (path.indexOf(PATH_SEPARATOR) > -1) {
                 // transform x.y.z into value of x.y and path z
-                String nestedProp = StringUtils.substringBeforeLast(propertyName, ".");
+                String nestedProp = GrailsStringUtils.substringBeforeLast(propertyName, ".");
                 target = bean.getPropertyValue(nestedProp);
-                path = StringUtils.substringAfterLast(path, ".");
+                path = GrailsStringUtils.substringAfterLast(path, ".");
             }
             if(target != null) {
                 type = getReferencedTypeForCollection(path, target);
@@ -1170,17 +1163,17 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     }
 
     private boolean propertyStartsWithFieldMarkerPrefix(PropertyValue pv, String fieldMarkerPrefix) {
-        String propertyName = pv.getName().indexOf(PATH_SEPARATOR) > -1 ? StringUtils.substringAfterLast(pv.getName(), ".") : pv.getName();
+        String propertyName = pv.getName().indexOf(PATH_SEPARATOR) > -1 ? GrailsStringUtils.substringAfterLast(pv.getName(), ".") : pv.getName();
         return propertyName.startsWith(fieldMarkerPrefix);
     }
 
     private String stripFieldMarkerPrefix(String path, String fieldMarkerPrefix) {
-        String[] pathElements = StringUtils.split(path, PATH_SEPARATOR);
+        String[] pathElements = path.split("\\" + PATH_SEPARATOR);
         for (int i = 0; i < pathElements.length; i++) {
             if (pathElements[i].startsWith(fieldMarkerPrefix)) {
                 pathElements[i] = pathElements[i].substring(fieldMarkerPrefix.length());
             }
         }
-        return StringUtils.join(pathElements, PATH_SEPARATOR);
+        return DefaultGroovyMethods.join(pathElements, String.valueOf(PATH_SEPARATOR));
     }
 }

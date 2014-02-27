@@ -40,11 +40,11 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
+import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
@@ -52,6 +52,7 @@ import org.codehaus.groovy.grails.web.taglib.GroovySyntaxTag;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 
 /**
  * NOTE: Based on work done by the GSP standalone project (https://gsp.dev.java.net/).
@@ -226,7 +227,7 @@ public class GroovyPageParser implements Tokens {
         if (config != null) {
             Object sitemeshPreprocessEnabled = config.get(GroovyPageParser.CONFIG_PROPERTY_GSP_SITEMESH_PREPROCESS);
             if (sitemeshPreprocessEnabled != null) {
-                final boolean enableSitemeshPreprocessing = BooleanUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim());
+                final boolean enableSitemeshPreprocessing = GrailsStringUtils.toBoolean(String.valueOf(sitemeshPreprocessEnabled).trim());
                 setEnableSitemeshPreprocessing(enableSitemeshPreprocessing);
             }
         }
@@ -299,7 +300,7 @@ public class GroovyPageParser implements Tokens {
 
     private boolean isSitemeshPreprocessingEnabled(String gspFilePreprocessDirective) {
         if (gspFilePreprocessDirective != null) {
-            return BooleanUtils.toBoolean(gspFilePreprocessDirective.trim());
+            return GrailsStringUtils.toBoolean(gspFilePreprocessDirective.trim());
         }
         return enableSitemeshPreprocessing;
     }
@@ -978,7 +979,7 @@ public class GroovyPageParser implements Tokens {
         String lastNamespaceInStack = tm.namespace;
 
         // if the tag name is blank then it has been closed by the start tag ie <tag />
-        if (StringUtils.isBlank(tagName)) {
+        if (GrailsStringUtils.isBlank(tagName)) {
             tagName = lastInStack;
         }
 
@@ -1265,7 +1266,7 @@ public class GroovyPageParser implements Tokens {
     }
 
     private String readStream(InputStream in) throws IOException {
-        return IOUtils.toString(in, gspEncoding);
+        return GrailsIOUtils.toString(in, gspEncoding != null ? gspEncoding : "UTF-8");
     }
 
     private void script(boolean gsp) {

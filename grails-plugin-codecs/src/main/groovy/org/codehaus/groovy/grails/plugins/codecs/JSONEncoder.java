@@ -17,9 +17,9 @@ package org.codehaus.groovy.grails.plugins.codecs;
 
 import grails.converters.JSON;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.support.encoding.CodecIdentifier;
 import org.codehaus.groovy.grails.support.encoding.DefaultCodecIdentifier;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.springframework.util.ClassUtils;
 
 /**
@@ -78,7 +78,7 @@ public class JSONEncoder extends AbstractCharReplacementEncoder {
         }
         if(ch < ' ') {
             // escape all other control characters
-            return "\\u" + StringUtils.leftPad(Integer.toHexString(ch), 4, '0');
+            return "\\u" + StringGroovyMethods.padLeft(Integer.toHexString(ch), 4, "0");
         }
         return null;
     }

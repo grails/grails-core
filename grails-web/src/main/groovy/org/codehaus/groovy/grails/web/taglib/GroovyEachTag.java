@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
@@ -27,7 +27,7 @@ public class GroovyEachTag extends GroovySyntaxTag {
 
     public void doStartTag() {
         String in = attributes.get(ATTRIBUTE_IN);
-        if (StringUtils.isBlank(in)) {
+        if (GrailsStringUtils.isBlank(in)) {
             throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_IN + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 

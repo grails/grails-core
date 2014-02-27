@@ -1,6 +1,5 @@
 package org.codehaus.groovy.grails.plugins.i18n;
 
-import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.commons.test.*
 import org.codehaus.groovy.grails.commons.*
 import org.codehaus.groovy.grails.commons.spring.*
@@ -45,16 +44,16 @@ class I18nGrailsPluginTests extends AbstractGrailsMockTests {
         assert !field.get(messageSource)
 
         def messageSourceString = messageSource?.toString()
-        assert StringUtils.contains(messageSourceString, "messages")
-        assert StringUtils.contains(messageSourceString, "messages-site")
-        assert StringUtils.contains(messageSourceString, "foo-site")
-        assert StringUtils.contains(messageSourceString, "foo-bar")
-        assert StringUtils.contains(messageSourceString, "project")
-        assert !StringUtils.contains(messageSourceString, "messages.properties")
-        assert !StringUtils.contains(messageSourceString, "project.properties")
-        assert !StringUtils.contains(messageSourceString, "project_nl.properties")
-        //assert !StringUtils.contains(messageSource, "nobundle")
-        assert !StringUtils.contains(messageSourceString, "nobundle.txt")
-        assert !StringUtils.contains(messageSourceString, "nobundle.xml")
+        assert messageSourceString.contains( "messages")
+        assert messageSourceString.contains( "messages-site")
+        assert messageSourceString.contains( "foo-site")
+        assert messageSourceString.contains( "foo-bar")
+        assert messageSourceString.contains( "project")
+        assert !messageSourceString.contains( "messages.properties")
+        assert !messageSourceString.contains( "project.properties")
+        assert !messageSourceString.contains( "project_nl.properties")
+        //assers(messageSource, "n.contains(bundle")
+        assert !messageSourceString.contains( "nobundle.txt")
+        assert !messageSourceString.contains( "nobundle.xml")
     }
 }

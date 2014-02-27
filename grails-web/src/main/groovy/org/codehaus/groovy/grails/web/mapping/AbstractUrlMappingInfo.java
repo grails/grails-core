@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -107,7 +107,7 @@ public abstract class AbstractUrlMappingInfo implements UrlMappingInfo{
         }
 
         String id = getId();
-        if (!StringUtils.isBlank(id)) try {
+        if (!GrailsStringUtils.isBlank(id)) try {
             dispatchParams.put(GrailsWebRequest.ID_PARAMETER, URLDecoder.decode(id, encoding));
         }
         catch (UnsupportedEncodingException e) {

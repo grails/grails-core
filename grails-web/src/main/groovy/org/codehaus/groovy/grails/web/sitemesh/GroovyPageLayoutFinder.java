@@ -23,12 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -102,7 +100,7 @@ public class GroovyPageLayoutFinder {
 
             Decorator d = null;
 
-            if (StringUtils.isBlank(layoutName)) {
+            if (GrailsStringUtils.isBlank(layoutName)) {
                 GroovyObject controller = (GroovyObject)request.getAttribute(GrailsApplicationAttributes.CONTROLLER);
                 if (controller != null) {
                     String controllerName = (String)controller.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY);
@@ -159,7 +157,7 @@ public class GroovyPageLayoutFinder {
     }
 
     public Decorator getNamedDecorator(HttpServletRequest request, String name, boolean viewMustExist) {
-        if (StringUtils.isBlank(name) || NONE_LAYOUT.equals(name)) {
+        if (GrailsStringUtils.isBlank(name) || NONE_LAYOUT.equals(name)) {
             return null;
         }
 
@@ -206,11 +204,11 @@ public class GroovyPageLayoutFinder {
             d = getNamedDecorator(request, layoutProperty.toString());
         }
         else {
-            if (d == null && !StringUtils.isBlank(actionUri)) {
+            if (d == null && !GrailsStringUtils.isBlank(actionUri)) {
                 d = getNamedDecorator(request, actionUri.substring(1), true);
             }
 
-            if (d == null && !StringUtils.isBlank(controllerName)) {
+            if (d == null && !GrailsStringUtils.isBlank(controllerName)) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Action layout not found, trying controller");
                 }
@@ -239,21 +237,23 @@ public class GroovyPageLayoutFinder {
         }
 
         @Override
-        public int hashCode() {
-            return new HashCodeBuilder().append(actionUri).append(controllerName).toHashCode();
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            LayoutCacheKey that = (LayoutCacheKey) o;
+
+            if (!actionUri.equals(that.actionUri)) return false;
+            if (!controllerName.equals(that.controllerName)) return false;
+
+            return true;
         }
 
         @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-
-            LayoutCacheKey other = (LayoutCacheKey)obj;
-            return new EqualsBuilder()
-                .append(other.actionUri, actionUri)
-                .append(other.controllerName, controllerName)
-                .isEquals();
+        public int hashCode() {
+            int result = controllerName.hashCode();
+            result = 31 * result + actionUri.hashCode();
+            return result;
         }
     }
 

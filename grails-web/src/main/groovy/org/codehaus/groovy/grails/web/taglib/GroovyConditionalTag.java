@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 abstract class GroovyConditionalTag extends GroovySyntaxTag {
@@ -47,7 +47,7 @@ abstract class GroovyConditionalTag extends GroovySyntaxTag {
 
     protected String attributeValueOrNull(String attributeName) {
         String attributeValue = attributes.get(attributeName);
-        return StringUtils.isBlank(attributeValue) ? null : attributeValue;
+        return GrailsStringUtils.isBlank(attributeValue) ? null : attributeValue;
     }
 
     private String environmentExpressionOrTrue(String envAttributeValue) {

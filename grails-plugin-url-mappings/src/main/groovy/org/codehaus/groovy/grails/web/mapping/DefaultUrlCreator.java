@@ -25,8 +25,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.servlet.mvc.DefaultRequestStateLookupStrategy;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsRequestStateLookupStrategy;
@@ -123,8 +123,8 @@ public class DefaultUrlCreator implements UrlCreator {
         GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
 
         if (parameterValues == null) parameterValues = new HashMap<String, String>();
-        boolean blankController = StringUtils.isBlank(controller);
-        boolean blankAction = StringUtils.isBlank(action);
+        boolean blankController = GrailsStringUtils.isBlank(controller);
+        boolean blankAction = GrailsStringUtils.isBlank(action);
 
         if (!blankController) {
             parameterValues.put(GrailsControllerClass.CONTROLLER, controller);

@@ -15,11 +15,12 @@
  */
 package org.codehaus.groovy.grails.web.pages;
 
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.Array;
 
-import org.apache.commons.lang.StringUtils;
 
 /**
  * A PrintWriter used in the generation of GSP pages that allows printing to the target output
@@ -49,7 +50,7 @@ public class GSPWriter extends PrintWriter {
     }
 
     public void printlnToResponse(String outVarName, String s) {
-        if (StringUtils.isEmpty(s)) {
+        if (GrailsStringUtils.isEmpty(s)) {
             return;
         }
 

@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.util;
 
+import org.codehaus.groovy.grails.commons.GrailsArrayUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,7 +30,6 @@ import java.nio.charset.CodingErrorAction;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import org.apache.commons.lang.ArrayUtils;
 
 /**
  * An in-memory buffer that provides OutputStream and InputStream interfaces.
@@ -131,7 +132,7 @@ public class StreamByteBuffer {
                 int len = charbuffer.remaining();
                 char[] ch = charbuffer.array();
                 if (len != ch.length) {
-                    ch = ArrayUtils.subarray(ch, 0, len);
+                    ch = (char[])GrailsArrayUtils.subarray(ch, 0, len);
                 }
                 str = StringCharArrayAccessor.createString(ch);
             }

@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener;
@@ -190,7 +190,7 @@ public class GrailsWebUtil {
         if (name.indexOf(';') > -1 && CHARSET_IN_CONTENT_TYPE_REGEXP.matcher(name).find()) {
             return name;
         }
-        if (StringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
+        if (GrailsStringUtils.isBlank(encoding)) encoding = DEFAULT_ENCODING;
         return name + CHARSET_ATTRIBUTE + encoding;
     }
 }

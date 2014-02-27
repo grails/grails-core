@@ -205,7 +205,7 @@ class GrailsParameterMapTests extends GroovyTestCase {
         assertEquals 42.0f, map.float('bad', 42.0f)
         assertEquals 42.0f, map.float('nonexistent', 42.0f)
 
-        assertEquals false, map.boolean('one')
+        assertEquals true, map.boolean('one')
         assertEquals true, map.boolean('nonexistent', Boolean.TRUE)
         assertEquals false, map.boolean('nonexistent', Boolean.FALSE)
         assertEquals true, map.boolean('bool')

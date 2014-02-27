@@ -22,6 +22,19 @@ import spock.lang.Specification
  */
 class GrailsStringUtilsSpec extends Specification{
 
+    void "Test toBoolean"() {
+        expect:
+            GrailsStringUtils.toBoolean("on") == true
+            GrailsStringUtils.toBoolean("yes") == true
+            GrailsStringUtils.toBoolean("true") == true
+            GrailsStringUtils.toBoolean("1") == true
+            GrailsStringUtils.toBoolean("ON") == true
+            GrailsStringUtils.toBoolean("Yes") == true
+            GrailsStringUtils.toBoolean("TRue") == true
+            GrailsStringUtils.toBoolean("false") == false
+            GrailsStringUtils.toBoolean("0") == false
+            GrailsStringUtils.toBoolean("off") == false
+    }
     void "Test substringBefore method"() {
         expect:
             GrailsStringUtils.substringBefore("abc", "a")   == ""

@@ -20,8 +20,8 @@ import grails.util.GrailsUtil
 import grails.util.Metadata
 import groovy.transform.CompileStatic
 
-import org.apache.commons.io.FilenameUtils
 import org.codehaus.groovy.grails.commons.GrailsApplication
+import org.codehaus.groovy.grails.commons.GrailsStringUtils
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware
 import org.codehaus.groovy.grails.web.mapping.LinkGenerator
@@ -315,7 +315,7 @@ class ApplicationTagLib implements ApplicationContextAware, InitializingBean, Gr
         def uri = attrs.remove('uri')
         def type = attrs.remove('type')
         if (!type) {
-            type = FilenameUtils.getExtension(uri)
+            type = GrailsStringUtils.getFilenameExtension(uri)
         }
 
         def typeInfo = SUPPORTED_TYPES[type]?.clone()

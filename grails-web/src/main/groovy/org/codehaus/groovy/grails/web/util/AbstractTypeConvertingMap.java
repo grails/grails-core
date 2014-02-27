@@ -30,10 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang.BooleanUtils;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.util.HashCodeHelper;
 
 /**
  * An category for use with maps that want type conversion capabilities
@@ -103,11 +103,11 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder(23, 31);
+        int hashCode = HashCodeHelper.initHash();
         for (Object entry : wrappedMap.entrySet()) {
-            builder.append(entry);
+            hashCode = HashCodeHelper.updateHash(hashCode, entry);
         }
-        return builder.toHashCode();
+        return hashCode;
     }
 
     /**
@@ -336,7 +336,7 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
             try {
                 String string = o.toString();
                 if (string != null) {
-                    return BooleanUtils.toBoolean(string);
+                    return GrailsStringUtils.toBoolean(string);
                 }
             }
             catch (Exception e) {}

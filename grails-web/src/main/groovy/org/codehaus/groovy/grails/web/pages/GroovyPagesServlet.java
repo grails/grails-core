@@ -26,7 +26,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.BinaryGrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
@@ -126,7 +126,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         request.setAttribute(GroovyPagesServlet.SERVLET_INSTANCE, this);
 
         String pageName = (String)request.getAttribute(GrailsApplicationAttributes.GSP_TO_RENDER);
-        if (StringUtils.isBlank(pageName)) {
+        if (GrailsStringUtils.isBlank(pageName)) {
             pageName = groovyPagesTemplateEngine.getCurrentRequestUri(request);
         }
 

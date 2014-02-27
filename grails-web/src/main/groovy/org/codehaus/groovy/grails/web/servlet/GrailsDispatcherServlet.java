@@ -236,6 +236,8 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
     @Override
     public void destroy() {
         WebApplicationContext webContext = getWebApplicationContext();
+        if(!((ConfigurableApplicationContext)webContext).isRunning()) return;
+
         GrailsApplication grailsApplication = webContext.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
 
         GrailsClass[] bootstraps =  grailsApplication.getArtefacts(BootstrapArtefactHandler.TYPE);

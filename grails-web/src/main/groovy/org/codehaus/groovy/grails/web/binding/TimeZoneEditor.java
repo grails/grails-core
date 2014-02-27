@@ -15,10 +15,11 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+
 import java.beans.PropertyEditorSupport;
 import java.util.TimeZone;
 
-import org.apache.commons.lang.StringUtils;
 
 /**
  * A Property editor for converting instances of java.util.TimeZone.
@@ -29,7 +30,7 @@ public class TimeZoneEditor extends PropertyEditorSupport {
 
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
-        if (StringUtils.isBlank(text)) {
+        if (GrailsStringUtils.isBlank(text)) {
             setValue(null);
         }
         try {

@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.commons.lang.StringUtils;
 
 import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap;
 import com.googlecode.concurrentlinkedhashmap.Weigher;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
  * Implements caching layer for UrlCreator
@@ -199,10 +199,10 @@ public class UrlCreatorCache {
                         value = String.valueOf(entry.getValue());
                     }
                     else if (entry.getValue() instanceof Collection) {
-                        value = StringUtils.join((Collection)entry.getValue(), ',');
+                        value = DefaultGroovyMethods.join((Collection) entry.getValue(), ",");
                     }
                     else if (entry.getValue() instanceof Object[]) {
-                        value = StringUtils.join((Object[])entry.getValue(), ',');
+                        value = DefaultGroovyMethods.join((Object[])entry.getValue(), ",");
                     }
                     else {
                         value = String.valueOf(entry.getValue());

@@ -35,10 +35,10 @@ import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.VersionComparator;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
@@ -424,10 +424,10 @@ public class RegexUrlMapping extends AbstractUrlMapping {
 
         if (paramValues == null) paramValues = new HashMap();
 
-        boolean hasController = !StringUtils.isBlank(controller);
-        boolean hasAction = !StringUtils.isBlank(action);
-        boolean hasPlugin = !StringUtils.isBlank(pluginName);
-        boolean hasNamespace = !StringUtils.isBlank(namespace);
+        boolean hasController = !GrailsStringUtils.isBlank(controller);
+        boolean hasAction = !GrailsStringUtils.isBlank(action);
+        boolean hasPlugin = !GrailsStringUtils.isBlank(pluginName);
+        boolean hasNamespace = !GrailsStringUtils.isBlank(namespace);
 
         try {
             if (hasController) {

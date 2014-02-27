@@ -40,11 +40,7 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mime.MimeType;
@@ -261,7 +257,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             forwardUrl.append(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
             forwardUrl.append(SLASH).append(info.getControllerName());
 
-            if (!StringUtils.isBlank(info.getActionName())) {
+            if (!GrailsStringUtils.isBlank(info.getActionName())) {
                 forwardUrl.append(SLASH).append(info.getActionName());
             }
             forwardUrl.append(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION);
@@ -706,7 +702,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      */
     public static String getForwardURI(HttpServletRequest request) {
         String result = (String) request.getAttribute(WebUtils.FORWARD_REQUEST_URI_ATTRIBUTE);
-        if (StringUtils.isBlank(result)) result = request.getRequestURI();
+        if (GrailsStringUtils.isBlank(result)) result = request.getRequestURI();
         return result;
     }
 

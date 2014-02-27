@@ -29,9 +29,9 @@ import java.util.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.web.converters.AbstractConverter;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.converters.ConverterUtil;
@@ -51,6 +51,7 @@ import org.codehaus.groovy.grails.web.json.JSONWriter;
 import org.codehaus.groovy.grails.web.json.PathCapturingJSONWriterWrapper;
 import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
 import org.codehaus.groovy.grails.web.mime.MimeType;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 
 /**
  * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON.
@@ -253,21 +254,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(Reader reader) throws ConverterException {
-//        TODO: Migrate to new javacc based parser
-//        JSONParser parser = new JSONParser(reader);
-//        try {
-//            return parser.parseJSON();
-//        }
-//        catch (ParseException e) {
-//            throw new ConverterException("Error parsing JSON: " + e.getMessage(), e);
-//        }
-
-        try {
-            return parse(IOUtils.toString(reader));
-        }
-        catch (IOException e) {
-            throw new ConverterException(e);
-        }
+        return parse(GrailsIOUtils.toString(reader));
     }
 
     /**
@@ -278,7 +265,6 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(String source) throws ConverterException {
-        // TODO: Migrate to new javacc based parser
         try {
             final Object value = new JSONTokener(source).nextValue();
             if (value instanceof JSONElement) {
@@ -302,20 +288,7 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
      * @throws ConverterException when the JSON content is not valid
      */
     public static JSONElement parse(InputStream is, String encoding) throws ConverterException {
-//        TODO: Migrate to new javacc based parser
-//        JSONParser parser = new JSONParser(is, encoding);
-//        try {
-//            return parser.parseJSON();
-//        }
-//        catch (ParseException e) {
-//            throw new ConverterException("Error parsing JSON: " + e.getMessage(), e);
-//        }
-        try {
-            return parse(IOUtils.toString(is, encoding));
-        }
-        catch (IOException e) {
-            throw new ConverterException(e);
-        }
+          return parse(GrailsIOUtils.toString(is, encoding));
     }
 
     /**

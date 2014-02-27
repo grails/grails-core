@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
@@ -97,7 +97,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     public abstract boolean isAllowPrecedingContent();
 
     protected String calculateExpression(String expr) {
-        Assert.isTrue(!StringUtils.isBlank(expr), "Argument [expr] cannot be null or blank");
+        Assert.isTrue(!GrailsStringUtils.isBlank(expr), "Argument [expr] cannot be null or blank");
 
         expr = expr.trim();
         if ((expr.startsWith("\"") && expr.endsWith("\"")) ||
@@ -121,8 +121,8 @@ public abstract class GroovySyntaxTag implements GrailsTag {
         var = extractAttributeValue(var);
         status = extractAttributeValue(status);
 
-        boolean hasStatus = !StringUtils.isBlank(status);
-        boolean hasVar = !StringUtils.isBlank(var);
+        boolean hasStatus = !GrailsStringUtils.isBlank(status);
+        boolean hasVar = !GrailsStringUtils.isBlank(var);
         if (hasStatus && !hasVar) {
             throw new GrailsTagException(ERROR_NO_VAR_WITH_STATUS, parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
@@ -164,7 +164,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     protected void endEachMethod() {
         String status = attributes.get(ATTRIBUTES_STATUS);
         status = extractAttributeValue(status);
-        boolean hasStatus = !StringUtils.isBlank(status);
+        boolean hasStatus = !GrailsStringUtils.isBlank(status);
 
         if (hasStatus) {
             out.println(status +"++");
@@ -174,7 +174,7 @@ public abstract class GroovySyntaxTag implements GrailsTag {
     }
 
     private String extractAttributeValue(String attr) {
-        if (StringUtils.isBlank(attr)) {
+        if (GrailsStringUtils.isBlank(attr)) {
             return "";
         }
         if (((attr.startsWith("\"") && attr.endsWith("\"")) || (attr.startsWith("'") && attr.endsWith("'"))) && attr.length() > 1) {

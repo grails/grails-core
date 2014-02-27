@@ -24,15 +24,11 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletContext;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
-import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
 import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter;
@@ -173,7 +169,7 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                 }
 
                 InputStream in = null;
-                if (!StringUtils.isBlank(url)) {
+                if (!GrailsStringUtils.isBlank(url)) {
                     in = servletContext.getResourceAsStream(url);
                     LOG.debug("Attempting to display code snippet found in url " + url);
                 }
