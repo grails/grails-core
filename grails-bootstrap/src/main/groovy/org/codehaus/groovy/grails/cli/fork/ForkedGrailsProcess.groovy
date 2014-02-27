@@ -205,7 +205,7 @@ abstract class ForkedGrailsProcess {
             } catch (e) {
                 final grailsHome = executionContext.grailsHome
                 if (grailsHome && grailsHome.exists()) {
-                    def agentHome = new File(grailsHome, "lib/org.springsource.springloaded/springloaded-core/jars")
+                    def agentHome = new File(grailsHome, "lib/org.springframework/springloaded/jars")
                     final agentJar = agentHome.listFiles().find { File f -> f.name.endsWith(".jar") && !f.name.contains('sources') && !f.name.contains('javadoc')}
                     if (agentJar) {
                         setReloadingAgent(agentJar)
