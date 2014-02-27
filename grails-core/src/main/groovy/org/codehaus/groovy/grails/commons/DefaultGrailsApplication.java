@@ -47,6 +47,7 @@ import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.SpringFactoriesLoader;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -187,11 +188,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             registerArtefactHandler(tagLibArtefactHandler);
         }
 
-        final BootstrapArtefactHandler bootstrapArtefactHandler = new BootstrapArtefactHandler();
-        if (!hasArtefactHandler(bootstrapArtefactHandler.getType())) {
-            registerArtefactHandler(bootstrapArtefactHandler);
-        }
-
         final CodecArtefactHandler codecArtefactHandler = new CodecArtefactHandler();
         if (!hasArtefactHandler(codecArtefactHandler.getType())) {
             registerArtefactHandler(codecArtefactHandler);
@@ -200,6 +196,12 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         final UrlMappingsArtefactHandler urlMappingsArtefactHandler = new UrlMappingsArtefactHandler();
         if (!hasArtefactHandler(urlMappingsArtefactHandler.getType())) {
             registerArtefactHandler(urlMappingsArtefactHandler);
+        }
+
+        List<ArtefactHandler> additionalArtefactHandlers = SpringFactoriesLoader.loadFactories(ArtefactHandler.class, getClassLoader());
+
+        for (ArtefactHandler artefactHandler : additionalArtefactHandlers) {
+            registerArtefactHandler(artefactHandler);
         }
 
         updateArtefactHandlers();
