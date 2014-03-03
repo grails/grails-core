@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.project.plugins
 
 import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
+import grails.util.BuildSettingsHolder
 import grails.util.Holders
 import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
@@ -29,6 +30,7 @@ import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
+import org.codehaus.groovy.grails.plugins.PluginManagerLoader
 
 /**
  * Loads the PluginManager and sets appropriate state
@@ -37,7 +39,7 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
  * @since 2.2
  */
 @CompileStatic
-class GrailsProjectPluginLoader extends BaseSettingsApi {
+class GrailsProjectPluginLoader extends BaseSettingsApi implements PluginManagerLoader {
 
     private static final GrailsConsole grailsConsole = GrailsConsole.getInstance()
     GrailsApplication grailsApplication
@@ -47,6 +49,12 @@ class GrailsProjectPluginLoader extends BaseSettingsApi {
         super(buildSettings, buildEventListener,false)
         this.grailsApplication = grailsApplication
         this.classLoader = classLoader
+    }
+
+    GrailsProjectPluginLoader(GrailsApplication grailsApplication, BuildSettings buildSettings = BuildSettingsHolder.settings) {
+        super(buildSettings, false)
+        this.grailsApplication = grailsApplication
+        this.classLoader = grailsApplication.classLoader
     }
 
     @CompileStatic

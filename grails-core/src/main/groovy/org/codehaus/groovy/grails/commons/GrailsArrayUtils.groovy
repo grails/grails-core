@@ -31,31 +31,31 @@ import org.springframework.util.ObjectUtils
 @CompileStatic
 abstract class GrailsArrayUtils {
 
-    static String toString(Object... array) {
+    static String toString(Object[] array) {
         ObjectUtils.nullSafeToString(array)
     }
 
-    static String toString(int... array) {
+    static String toString(int[] array) {
         ObjectUtils.nullSafeToString(array)
     }
 
-    static String toString(boolean... array) {
+    static String toString(boolean[] array) {
         ObjectUtils.nullSafeToString(array)
     }
 
-    static String toString(float... array) {
+    static String toString(float[] array) {
         ObjectUtils.nullSafeToString(array)
     }
 
-    static String toString(short... array) {
+    static String toString(short[] array) {
         ObjectUtils.nullSafeToString(array)
     }
 
-    static String toString(byte... array) {
+    static String toString(byte[] array) {
         ObjectUtils.nullSafeToString(array)
     }
 
-    static String toString(char... array) {
+    static String toString(char[] array) {
         ObjectUtils.nullSafeToString(array)
     }
 

@@ -744,7 +744,7 @@ public class GrailsClassUtils {
      */
     @SuppressWarnings("rawtypes")
     public static boolean isStaticProperty(Class clazz, String propertyName) {
-        Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(propertyName), null);
+        Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(propertyName), (Class[])null);
         if (getter != null) {
             return isPublicStatic(getter);
         }
@@ -817,7 +817,7 @@ public class GrailsClassUtils {
      * @return The value if there is one, or null if unset OR there is no such property
      */
     public static Object getStaticPropertyValue(Class<?> clazz, String name) {
-        Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(name), null);
+        Method getter = BeanUtils.findDeclaredMethod(clazz, getGetterName(name), (Class[])null);
         try {
             if (getter != null) {
                 return getter.invoke(null);

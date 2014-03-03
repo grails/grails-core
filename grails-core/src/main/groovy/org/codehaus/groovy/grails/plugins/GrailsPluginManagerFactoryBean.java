@@ -15,8 +15,6 @@
  */
 package org.codehaus.groovy.grails.plugins;
 
-import grails.util.BuildSettings;
-import grails.util.BuildSettingsHolder;
 import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.util.slurpersupport.GPathResult;
@@ -27,7 +25,6 @@ import java.util.List;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.io.support.IOUtils;
-import org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -45,6 +42,7 @@ import org.springframework.util.Assert;
  */
 public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginManager>, InitializingBean, ApplicationContextAware {
 
+    public static final String PLUGIN_LOADER_CLASS = "org.codehaus.groovy.grails.project.plugins.GrailsProjectPluginLoader";
     private GrailsApplication application;
     private GrailsPluginManager pluginManager;
     private Resource descriptor;
@@ -69,8 +67,11 @@ public class GrailsPluginManagerFactoryBean implements FactoryBean<GrailsPluginM
             Assert.state(descriptor != null, "Cannot create PluginManager, /WEB-INF/grails.xml not found!");
 
             if (!descriptor.exists()) {
-                BuildSettings buildSettings = BuildSettingsHolder.getSettings();
-                GrailsProjectPluginLoader pluginLoader = new GrailsProjectPluginLoader(application, application.getClassLoader(),buildSettings, null);
+                PluginManagerLoader pluginLoader =  (PluginManagerLoader) application
+                                                                            .getClassLoader()
+                                                                            .loadClass(PLUGIN_LOADER_CLASS)
+                                                                            .getConstructor(GrailsApplication.class)
+                                                                            .newInstance(application);
                 pluginManager = pluginLoader.loadPlugins();
             }
             else {
