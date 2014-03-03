@@ -136,7 +136,8 @@ class ControllersRestApi {
                     if(statusCode != null) {
                         context.setStatus(HttpStatus.valueOf(statusCode))
                     }
-                    return errorsRenderer.render(errors, context)
+                    errorsRenderer.render(errors, context)
+                    return
                 }
 
                 return render(controller,[status: statusCode ?: 404 ])

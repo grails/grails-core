@@ -132,14 +132,16 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
         if (proxyHandler != null) {
             object = proxyHandler.unwrapIfProxy(object)
         }
-        def targetClass = object instanceof Class ? (Class) object : object.getClass()
-        targetClass = getTargetClassForContainer(targetClass, object)
-        def originalKey = new ContainerRendererCacheKey(containerType, targetClass, mimeType)
+
+        def originalTargetClass = object instanceof Class ? (Class) object : object.getClass()
+        originalTargetClass = getTargetClassForContainer(originalTargetClass, object)
+        def originalKey = new ContainerRendererCacheKey(containerType, originalTargetClass, mimeType)
 
         Renderer<C> renderer = (Renderer<C>)containerRendererCache.get(originalKey)
 
         if (renderer == null) {
             def key = originalKey
+            def targetClass = originalTargetClass
 
             while (targetClass != null) {
 
@@ -164,7 +166,8 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
             }
 
             if (renderer == null) {
-                final interfaces = GrailsClassUtils.getAllInterfaces(object)
+                final interfaces = GrailsClassUtils.getAllInterfacesForClass(originalTargetClass)
+            outer:
                 for(Class i in interfaces) {
                     key = new ContainerRendererCacheKey(containerType, i, mimeType)
                     renderer = containerRenderers.get(key)
@@ -174,7 +177,7 @@ class DefaultRendererRegistry extends ClassAndMimeTypeRegistry<Renderer, Rendere
                         for(Class ci in containerInterfaces) {
                             key = new ContainerRendererCacheKey(ci, i, mimeType)
                             renderer = containerRenderers.get(key)
-                            if (renderer != null) break
+                            if (renderer != null) break outer
                         }
                     }
                 }
