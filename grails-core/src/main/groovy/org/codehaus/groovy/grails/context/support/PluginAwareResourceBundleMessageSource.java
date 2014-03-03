@@ -63,6 +63,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
     private static final Resource[] NO_RESOURCES = {};
 
     private static final String WEB_INF_PLUGINS_PATH = "/WEB-INF/plugins/";
+    private static final String GRAILS_APP_I18N_PATH_COMPONENT = "/grails-app/i18n/";
     protected GrailsApplication application;
     protected GrailsPluginManager pluginManager;
     protected List<String> pluginBaseNames = new ArrayList<String>();
@@ -109,7 +110,10 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
                 }
 
                 final String baseName = GrailsStringUtils.substringBefore(GrailsStringUtils.getFileBasename(pluginBundle.getFilename()), "_");
-                pluginBaseNames.add(basePath + "/grails-app/i18n/" + baseName);
+                String pathToAdd = basePath + GRAILS_APP_I18N_PATH_COMPONENT + baseName;
+                if(!pluginBaseNames.contains(pathToAdd)) {
+                    pluginBaseNames.add(pathToAdd);
+                }
             }
         }
     }
@@ -164,6 +168,7 @@ public class PluginAwareResourceBundleMessageSource extends ReloadableResourceBu
      * @return The absolute path to the "inline" plugin or {@code null} if the plugin is not being used "inline".
      */
     protected String getInlinePluginPath(GrailsPlugin grailsPlugin) {
+        if(Environment.isWarDeployed()) return null;
         try {
             final GrailsPluginInfo pluginInfo = pluginBuildSettings.getPluginInfoForName(grailsPlugin.getFileSystemShortName());
             if (pluginInfo != null) {
