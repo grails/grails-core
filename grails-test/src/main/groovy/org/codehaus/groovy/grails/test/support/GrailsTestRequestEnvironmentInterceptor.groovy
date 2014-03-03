@@ -17,7 +17,8 @@ package org.codehaus.groovy.grails.test.support
 
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
-
+import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
+import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.context.ServletContextHolder
@@ -45,7 +46,14 @@ class GrailsTestRequestEnvironmentInterceptor {
      */
     void init(String controllerName = DEFAULT_CONTROLLER_NAME) {
         def request = new GrailsMockHttpServletRequest()
+        if(applicationContext.containsBean("requestMimeTypesApi")) {
+            request.requestMimeTypesApi = applicationContext.getBean("requestMimeTypesApi", RequestMimeTypesApi)
+        }
         def response = new GrailsMockHttpServletResponse()
+        if(applicationContext.containsBean("responseMimeTypesApi")) {
+            response.responseMimeTypesApi = applicationContext.getBean("responseMimeTypesApi", ResponseMimeTypesApi)
+        }
+
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
         ServletContextHolder.servletContext = webRequest.servletContext
         webRequest.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
