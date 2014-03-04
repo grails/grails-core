@@ -1218,6 +1218,27 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.objectIds[3] instanceof ObjectId
         obj.objectIds[3].value == 'eight'
     }
+    
+    @Issue('GRAILS-11174')
+    void 'Test binding null to a Date marked with @BindingFormat'() {
+        given:
+        def obj = new DataBindingBook()
+        
+        when:
+        binder.bind obj, [datePublished: null] as SimpleMapDataBindingSource
+        
+        then:
+        obj.datePublished == null
+        !obj.hasErrors()
+        
+        when:
+        obj.datePublished = new Date()
+        binder.bind obj, [datePublished: null] as SimpleMapDataBindingSource
+        
+        then:
+        obj.datePublished == null
+        !obj.hasErrors()
+    }
 }
 
 @Entity
@@ -1328,6 +1349,8 @@ class DataBindingBook {
     String title
     List importantPageNumbers
     List topics
+    @BindingFormat("MMddyyyy")
+    Date datePublished
     static hasMany = [topics: String, importantPageNumbers: Integer]
 }
 
