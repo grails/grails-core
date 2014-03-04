@@ -31,6 +31,7 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
  * Date: Jan 10, 2004
  */
 class GroovyPageScanner implements Tokens {
+    private static final int DEFAULT_MAX_HTML_LENGTH = 64000;
     private String text;
     private int end1;
     private int begin1;
@@ -42,6 +43,7 @@ class GroovyPageScanner implements Tokens {
     private List<Integer> lineNumberPositions;
     private int lastLineNumberIndex = -1;
     private String pageName = "Unknown";
+    private int maxHtmlLength = DEFAULT_MAX_HTML_LENGTH;
 
     GroovyPageScanner(String text) {
         Strip strip = new Strip(text);
@@ -117,6 +119,7 @@ class GroovyPageScanner implements Tokens {
             char c = text.charAt(end1++);
             char c1 = left > 1 ? text.charAt(end1) : 0;
             char c2 = left > 2 ? text.charAt(end1 + 1) : 0;
+            int tokenLength = end1 - begin1;
 
             switch (state) {
                 case HTML:
@@ -167,6 +170,10 @@ class GroovyPageScanner implements Tokens {
 
                     if (c == '@' && c1 == '{') {
                         return found(GDIRECT, 2);
+                    }
+                    
+                    if (tokenLength > maxHtmlLength) {
+                        return found(HTML, 0);
                     }
 
                     break;
@@ -291,5 +298,13 @@ class GroovyPageScanner implements Tokens {
         state = HTML;
         lastNamespace = null;
         lastLineNumberIndex = -1;
+    }
+
+    public int getMaxHtmlLength() {
+        return maxHtmlLength;
+    }
+
+    public void setMaxHtmlLength(int maxHtmlLength) {
+        this.maxHtmlLength = maxHtmlLength;
     }
 }
