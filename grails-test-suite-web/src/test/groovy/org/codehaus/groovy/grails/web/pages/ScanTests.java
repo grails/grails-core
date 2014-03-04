@@ -40,4 +40,17 @@ public class ScanTests extends TestCase {
             }
         }
     }
+    
+    public void testMaxHtmlLength() {
+        String gsp = "0123456789ABCDEFGHIJK";
+        GroovyPageScanner scanner = new GroovyPageScanner(gsp);
+        scanner.setMaxHtmlLength(10);
+        assertEquals(GroovyPageScanner.HTML, scanner.nextToken());
+        assertEquals("0123456789", scanner.getToken());
+        assertEquals(GroovyPageScanner.HTML, scanner.nextToken());
+        assertEquals("ABCDEFGHIJ", scanner.getToken());
+        assertEquals(GroovyPageScanner.HTML, scanner.nextToken());
+        assertEquals("K", scanner.getToken());
+        assertEquals(GroovyPageScanner.EOF, scanner.nextToken());
+    }
 }
