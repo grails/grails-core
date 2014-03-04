@@ -188,7 +188,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         info.configure(webRequest);
                         UrlConverter urlConverterToUse = urlConverter;
                         GrailsApplication grailsApplicationToUse = application;
-                        GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo(webRequest, info, urlConverterToUse, grailsApplicationToUse);
+                        GrailsClass controller = WebUtils.passControllerForUrlMappingInfoInRequest(webRequest, info, urlConverterToUse, grailsApplicationToUse);
 
                         if(controller == null && info.getViewName()==null && info.getURI()==null) continue;
                     }
