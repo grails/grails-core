@@ -90,7 +90,6 @@ class GrailsWebDataBinderBindingXmlSpec extends Specification {
         binder.bind obj, xml
         
         then:
-        println obj.errors
         !obj.hasErrors()
         obj.somethings?.size() == 1
         obj.somethings[0].name == 'One'
