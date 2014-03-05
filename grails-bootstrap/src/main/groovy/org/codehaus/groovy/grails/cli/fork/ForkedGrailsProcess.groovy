@@ -186,7 +186,7 @@ abstract class ForkedGrailsProcess {
     }
 
     /**
-     * @return Whether this process is a reserve process. A reserve process is an additional JVM, bootstrapped and idle that can resume execution at a later date
+     * @return Whether this process should be launched using a running daemon process. 
      */
     protected boolean isDaemonProcess() {
         System.getProperty("grails.fork.daemon")!=null
