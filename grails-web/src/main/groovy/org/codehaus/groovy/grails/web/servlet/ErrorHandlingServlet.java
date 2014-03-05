@@ -149,7 +149,7 @@ public class ErrorHandlingServlet extends GrailsDispatcherServlet {
             WrappedResponseHolder.setWrappedResponse(response);
             String viewName = urlMappingInfo.getViewName();
             if (viewName == null || viewName.endsWith(GSP_SUFFIX) || viewName.endsWith(JSP_SUFFIX)) {
-                GrailsClass controller = WebUtils.getConfiguredControllerForUrlMappingInfo( webRequest, urlMappingInfo,
+                GrailsClass controller = WebUtils.passControllerForUrlMappingInfoInRequest( webRequest, urlMappingInfo,
                                                                                             webRequest.getApplicationContext().getBean(UrlConverter.BEAN_NAME, UrlConverter.class),
                                                                                             webRequest.getAttributes().getGrailsApplication());
                 if(controller != null) {

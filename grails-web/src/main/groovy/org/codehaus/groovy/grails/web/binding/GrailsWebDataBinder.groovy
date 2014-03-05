@@ -279,7 +279,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                 }
             } else if(Collection.isAssignableFrom(metaProperty.type)) {
                 def referencedType = getReferencedTypeForCollection(propName, obj)
-                if(referencedType && isDomainClass(referencedType)) {
+                if(referencedType) {
                     def listValue
                     if(val instanceof List) {
                         listValue = (List)val
@@ -301,13 +301,15 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                         def itemsWhichNeedBinding = []
                         listValue.each { item ->
                             def persistentInstance
-                            if(item instanceof Map || item instanceof DataBindingSource) {
-                                def idValue = getIdentifierValueFrom(item)
-                                if(idValue != null) {
-                                    persistentInstance = getPersistentInstance(referencedType, idValue)
-                                    if(persistentInstance != null) {
-                                        bind persistentInstance, new SimpleMapDataBindingSource(item), listener
-                                        itemsWhichNeedBinding << persistentInstance
+                            if(isDomainClass(referencedType)) {
+                                if(item instanceof Map || item instanceof DataBindingSource) {
+                                    def idValue = getIdentifierValueFrom(item)
+                                    if(idValue != null) {
+                                        persistentInstance = getPersistentInstance(referencedType, idValue)
+                                        if(persistentInstance != null) {
+                                            bind persistentInstance, new SimpleMapDataBindingSource(item), listener
+                                            itemsWhichNeedBinding << persistentInstance
+                                        }
                                     }
                                 }
                             }

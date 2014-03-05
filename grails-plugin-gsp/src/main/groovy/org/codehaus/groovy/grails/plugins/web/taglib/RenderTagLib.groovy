@@ -89,7 +89,12 @@ class RenderTagLib implements RequestConstants {
                     view: attrs.view,
                     id: attrs.id,
                     params: attrs.params)
-
+            if (attrs.namespace != null) {
+                mapping.namespace = attrs.namespace
+            }
+            if (attrs.plugin != null) {
+                mapping.pluginName = attrs.plugin
+            }
             out << WebUtils.includeForUrlMappingInfo(request, response, mapping, attrs.model ?: [:])?.content
         }
     }

@@ -41,6 +41,8 @@ class ForwardMethodSpec extends Specification {
         request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE) >> { 'foo' }
         request.getAttribute(GrailsApplicationAttributes.WEB_REQUEST) >> { webRequest }
         request.getRequestDispatcher(_) >> { dispatcher }
+        def parameters = [:]
+        request.getParameterMap() >> { parameters }
     }
     
     def 'Test forward request with controller and action params and url converter'() {

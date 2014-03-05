@@ -64,6 +64,14 @@ class ForwardMethod {
             if(params.action) {
                 urlInfo.actionName = convert(webRequest, params.action)
             }
+            
+            if(params.namespace) {
+                urlInfo.namespace = params.namespace
+            }
+            
+            if(params.plugin) {
+                urlInfo.pluginName = params.plugin
+            }
         }
          
         def model = params.model instanceof Map ? params.model : Collections.EMPTY_MAP

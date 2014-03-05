@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.binding;
 
+import grails.util.CollectionUtils;
 import grails.util.GrailsNameUtils;
 
 import java.lang.reflect.Modifier;
@@ -30,6 +31,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import grails.web.controllers.ControllerMethod;
+
 import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -72,6 +74,8 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
        add(new ClassNode(String.class));
        add(new ClassNode(URL.class));
     }};
+    
+    private static final Set<String> DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT = CollectionUtils.newSet("id", "version", "dateCreated", "lastUpdated");
 
     public void injectDatabindingCode(final SourceUnit source, final GeneratorContext context, final ClassNode classNode) {
         addDefaultDatabindingWhitelistField(source, classNode);
@@ -249,7 +253,7 @@ public class DefaultASTDatabindingHelper implements ASTDatabindingHelper {
                 fieldNode.getType().equals(new ClassNode(Object.class))) {
             shouldInclude = false;
         } else if (isDomainClass) {
-            if ("id".equals(fieldName) || "version".equals(fieldName)) {
+            if (DOMAIN_CLASS_PROPERTIES_TO_EXCLUDE_BY_DEFAULT.contains(fieldName)) {
                 shouldInclude = false;
             }
         }
