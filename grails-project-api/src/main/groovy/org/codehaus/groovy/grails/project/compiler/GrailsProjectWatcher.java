@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.compiler;
+package org.codehaus.groovy.grails.project.compiler;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import grails.util.Environment;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.tools.ant.BuildException;
@@ -28,6 +29,7 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.grails.cli.agent.GrailsPluginManagerReloadPlugin;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
+import org.codehaus.groovy.grails.compiler.DirectoryWatcher;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
@@ -48,15 +50,12 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
     private static final Log LOG = LogFactory.getLog(GrailsProjectWatcher.class);
     private static final Map<String, ClassUpdate> classChangeEventQueue = new ConcurrentHashMap<String, ClassUpdate>();
     private static boolean active = false;
-    private static boolean reloadInProgress = false;
     public static final String SPRING_LOADED_PLUGIN_CLASS = "org.springsource.loaded.Plugins";
 
     private List<String> compilerExtensions;
     private GrailsPluginManager pluginManager;
     private GrailsProjectCompiler compiler;
     private Map<File, GrailsPlugin> descriptorToPluginMap = new ConcurrentHashMap<File, GrailsPlugin>();
-    private static MultipleCompilationErrorsException currentCompilationError = null;
-    private static Throwable currentReloadError = null;
     private static List<String> reloadExcludes;
     private static List<String> reloadIncludes;
 
@@ -82,24 +81,8 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         initPluginWatchPatterns();
     }
 
-    public static MultipleCompilationErrorsException getCurrentCompilationError() {
-        return currentCompilationError;
-    }
-
-    public static Throwable getCurrentReloadError() {
-        return currentReloadError;
-    }
-
-    public static void setCurrentReloadError(Throwable currentReloadError) {
-        GrailsProjectWatcher.currentReloadError = currentReloadError;
-    }
-
     public static boolean isReloadingAgentPresent() {
         return ClassUtils.isPresent(SPRING_LOADED_PLUGIN_CLASS, GrailsProjectWatcher.class.getClassLoader());
-    }
-
-    public static boolean isReloadInProgress() {
-        return reloadInProgress;
     }
 
     /**
@@ -259,13 +242,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
                 classChangeEventQueue.put(className, new ClassUpdate() {
                     public void run(Class<?> cls) {
                         try {
-                            reloadInProgress = true;
+                            System.setProperty("grails.reloading.in.progress", "true");
                             pluginManager.informOfClassChange(file, cls);
                         } catch (Exception e) {
                             LOG.error("Failed to reload file [" + file + "] with error: " + e.getMessage(), e);
                         }
                         finally {
-                            reloadInProgress = false;
+                            System.setProperty("grails.reloading.in.progress", "false");
                         }
                     }
                 });
@@ -277,13 +260,13 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         try {
             if (isSourceFile(file)) {
                 compiler.compileAll();
-                currentCompilationError = null;
+                Environment.currentCompilationError = null;
                 ClassPropertyFetcher.clearClassPropertyFetcherCache();
             }
         }
         catch (MultipleCompilationErrorsException e) {
             LOG.error("Compilation Error: " + e.getMessage());
-            currentCompilationError = e;
+            Environment.currentCompilationError = e;
         }
         catch(CompilationFailedException e) {
             LOG.error("Compilation Error: " + e.getMessage());
@@ -291,7 +274,7 @@ public class GrailsProjectWatcher extends DirectoryWatcher {
         catch(BuildException e) {
             Throwable cause = e.getCause();
             if (cause instanceof MultipleCompilationErrorsException) {
-                currentCompilationError = (MultipleCompilationErrorsException) cause;
+                Environment.currentCompilationError = (MultipleCompilationErrorsException) cause;
             }
             LOG.error("Compilation Error: " + e.getCause().getMessage());
         }

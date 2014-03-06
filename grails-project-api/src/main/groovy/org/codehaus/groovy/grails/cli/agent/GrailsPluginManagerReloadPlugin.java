@@ -15,10 +15,10 @@
  */
 package org.codehaus.groovy.grails.cli.agent;
 
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher;
 import org.springsource.loaded.Plugins;
 import org.springsource.loaded.ReloadEventProcessorPlugin;
 import org.codehaus.groovy.grails.commons.ClassPropertyFetcher;
-import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher;
 import org.springframework.beans.CachedIntrospectionResults;
 import java.beans.Introspector;
 

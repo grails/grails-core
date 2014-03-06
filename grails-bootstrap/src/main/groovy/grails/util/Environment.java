@@ -22,6 +22,7 @@ import groovy.lang.MissingMethodException;
 import java.util.Locale;
 import java.util.Map;
 
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 /**
@@ -93,10 +94,28 @@ public enum Environment {
     private static Holder<Environment> cachedCurrentEnvironment = new Holder<Environment>("Environment");
     private static final boolean cachedHasGrailsHome = System.getProperty("grails.home") != null;
     private static boolean initializingState = false;
+    public static Throwable currentReloadError = null;
+    public static MultipleCompilationErrorsException currentCompilationError = null;
     private String name;
 
     Environment() {
         initialize();
+    }
+
+    public static void setCurrentReloadError(Throwable currentReloadError) {
+        Environment.currentReloadError = currentReloadError;
+    }
+
+    public static MultipleCompilationErrorsException getCurrentCompilationError() {
+        return currentCompilationError;
+    }
+
+    public static Throwable getCurrentReloadError() {
+        return currentReloadError;
+    }
+
+    public static boolean isReloadInProgress() {
+        return Boolean.getBoolean("grails.reloading.in.progress");
     }
 
     private void initialize() {

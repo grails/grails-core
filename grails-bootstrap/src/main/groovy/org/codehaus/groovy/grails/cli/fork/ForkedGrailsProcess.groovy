@@ -847,7 +847,10 @@ class ExecutionContext implements Serializable {
         }
 
         buildDependencies = isolatedBuildDependencies
+
         runtimeDependencies = new ArrayList<>(settings.runtimeDependencies)
+        def projectApiJar = settings.buildDependencies.find { File f -> f.name.contains('grails-project-api')}
+        runtimeDependencies.add projectApiJar
         runtimeDependencies.addAll settings.pluginRuntimeDependencies
         runtimeDependencies.addAll settings.applicationJars
         providedDependencies = new ArrayList<>(settings.providedDependencies)

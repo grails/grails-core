@@ -38,7 +38,6 @@ import org.codehaus.groovy.grails.commons.ArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration;
-import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.exceptions.PluginException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -408,11 +407,11 @@ public abstract class AbstractGrailsPluginManager implements GrailsPluginManager
                         else {
                             grailsPlugin.notifyOfEvent(GrailsPlugin.EVENT_ON_CHANGE, cls);
                         }
-                        GrailsProjectWatcher.setCurrentReloadError(null);
+                        Environment.setCurrentReloadError(null);
                     } catch (Exception e) {
                         LOG.error("Plugin " + grailsPlugin + " could not reload changes to file [" +
                                 file + "]: " + e.getMessage(), e);
-                        GrailsProjectWatcher.setCurrentReloadError(e);
+                        Environment.setCurrentReloadError(e);
                     }
                 }
             }

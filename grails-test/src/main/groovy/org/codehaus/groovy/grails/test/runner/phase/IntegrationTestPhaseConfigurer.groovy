@@ -20,11 +20,10 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.cli.support.MetaClassRegistryCleaner
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
-import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptorExecutor
-import org.codehaus.groovy.grails.test.GrailsTestType
 import org.codehaus.groovy.grails.test.runner.GrailsProjectTestCompiler
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
 

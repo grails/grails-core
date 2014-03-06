@@ -19,7 +19,7 @@ import grails.build.logging.GrailsConsole
 import grails.util.BuildSettings
 import grails.util.PluginBuildSettings
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
-import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.test.GrailsTestType
 
 /**

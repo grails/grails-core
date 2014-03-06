@@ -31,7 +31,7 @@ import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
 import org.codehaus.groovy.grails.cli.support.GrailsBuildEventListener
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
-import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.compiler.PackagingException
 import org.codehaus.groovy.grails.io.support.Resource
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo

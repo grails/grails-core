@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletContext;
@@ -44,7 +43,6 @@ import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodInvocation;
-import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
@@ -358,7 +356,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     }
 
     private void checkDevelopmentReloadingState(HttpServletRequest request) {
-        while(GrailsProjectWatcher.isReloadInProgress()) {
+        while(Environment.isReloadInProgress()) {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
@@ -366,11 +364,11 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             }
         }
         if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return;
-        MultipleCompilationErrorsException compilationError = GrailsProjectWatcher.getCurrentCompilationError();
+        MultipleCompilationErrorsException compilationError = Environment.getCurrentCompilationError();
         if (compilationError != null) {
             throw compilationError;
         }
-        Throwable currentReloadError = GrailsProjectWatcher.getCurrentReloadError();
+        Throwable currentReloadError = Environment.getCurrentReloadError();
         if (currentReloadError != null) {
             throw new RuntimeException(currentReloadError);
         }

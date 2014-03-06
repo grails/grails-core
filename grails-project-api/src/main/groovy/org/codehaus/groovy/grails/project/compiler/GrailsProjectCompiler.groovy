@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.codehaus.groovy.grails.compiler
+package org.codehaus.groovy.grails.project.compiler
 
 import grails.util.BuildSettings
 import grails.util.Environment
@@ -28,6 +28,8 @@ import org.codehaus.groovy.control.Phases
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.fork.compile.ForkedGrailsCompiler
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
+import org.codehaus.groovy.grails.compiler.DirectoryWatcher
+import org.codehaus.groovy.grails.compiler.Grailsc
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareInjectionOperation
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo
