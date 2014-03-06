@@ -4,6 +4,7 @@ import grails.persistence.Entity
 import grails.test.mixin.Mock
 import grails.test.mixin.TestMixin
 import grails.test.mixin.domain.DomainClassUnitTestMixin
+import grails.validation.Validateable
 
 import org.codehaus.groovy.grails.web.binding.GrailsWebDataBinder
 
@@ -71,6 +72,61 @@ class GrailsWebDataBinderBindingXmlSpec extends Specification {
         writer.books[1].publisher == 'Publisher Two'
         writer.books[1].title == 'Book Two'
     }
+    
+    @Issue('GRAILS-11175')
+    void 'Test binding a single XML child element to a List in a non domain class'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def obj = new CommandObject()
+        
+        when:
+        def xml = new XmlSlurper().parseText("""
+  <commandObject>
+    <somethings>
+        <something><name>One</name></something>
+    </somethings>
+  </commandObject>
+""")
+        binder.bind obj, xml
+        
+        then:
+        !obj.hasErrors()
+        obj.somethings?.size() == 1
+        obj.somethings[0].name == 'One'
+    }
+    
+    @Issue('GRAILS-11175')
+    void 'Test binding multiple XML child elements to a List in a non domain class'() {
+        given:
+        def binder = new GrailsWebDataBinder(grailsApplication)
+        def obj = new CommandObject()
+        
+        when:
+        def xml = new XmlSlurper().parseText("""
+  <commandObject>
+    <somethings>
+        <something><name>One</name></something>
+        <something><name>Two</name></something>
+    </somethings>
+  </commandObject>
+""")
+        binder.bind obj, xml
+        
+        then:
+        !obj.hasErrors()
+        obj.somethings?.size() == 2
+        obj.somethings[0].name == 'One'
+        obj.somethings[1].name == 'Two'
+    }
+}
+
+@Validateable
+class CommandObject {
+    List<Something> somethings
+}
+
+class Something {
+    String name
 }
 
 @Entity

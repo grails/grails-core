@@ -33,17 +33,23 @@ import org.grails.databinding.events.DataBindingListenerAdapter
 
 import spock.lang.Issue
 import spock.lang.Specification
+import spock.lang.Unroll
 
 import com.google.gson.internal.LazilyParsedNumber
 
 @TestMixin(DomainClassUnitTestMixin)
 @Mock([Foo, AssociationBindingAuthor, AssociationBindingPage, AssociationBindingBook, Author, Child, CollectionContainer, DataBindingBook, Fidget, Parent, Publication, Publisher, Team, Widget])
 class GrailsWebDataBinderSpec extends Specification {
+    private static Locale defaultLocale = Locale.getDefault()
 
     GrailsWebDataBinder binder
 
     void setup() {
         binder = grailsApplication.mainContext.getBean(DataBindingUtils.DATA_BINDER_BEAN_NAME)
+    }
+    
+    void cleanup() {
+        Locale.setDefault(defaultLocale)
     }
 
     void 'Test binding an invalid String to an object reference does not result in an empty instance being bound'() {
@@ -92,8 +98,10 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.stringWithSpecialBinding == ''
     }
 
-    void 'Test binding to primitives from Strings'() {
+    @Unroll
+    void 'Test binding to primitives from Strings when locale is #locale'() {
         given:
+        Locale.setDefault(locale)
         def obj = new PrimitiveContainer()
 
         when:
@@ -103,8 +111,8 @@ class GrailsWebDataBinderSpec extends Specification {
             someShort: '2',
             someInt: '3',
             someLong: '4',
-            someFloat: '5.5',
-            someDouble: '6.6']))
+            someFloat: '5.5'.replace('.', decimalSeparator),
+            someDouble: '6.6'.replace('.', decimalSeparator)]))
 
         then:
         obj.someBoolean == true
@@ -115,6 +123,9 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.someLong == 4
         obj.someFloat == 5.5
         obj.someDouble == 6.6
+        where:
+        locale << [Locale.getInstance("fi", "FI", ""), Locale.getInstance("en", "US", "")]
+        decimalSeparator << [',', '.']
     }
 
     void 'Test binding null to id of element nested in a List'() {
@@ -1207,6 +1218,27 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.objectIds[3] instanceof ObjectId
         obj.objectIds[3].value == 'eight'
     }
+    
+    @Issue('GRAILS-11174')
+    void 'Test binding null to a Date marked with @BindingFormat'() {
+        given:
+        def obj = new DataBindingBook()
+        
+        when:
+        binder.bind obj, [datePublished: null] as SimpleMapDataBindingSource
+        
+        then:
+        obj.datePublished == null
+        !obj.hasErrors()
+        
+        when:
+        obj.datePublished = new Date()
+        binder.bind obj, [datePublished: null] as SimpleMapDataBindingSource
+        
+        then:
+        obj.datePublished == null
+        !obj.hasErrors()
+    }
 }
 
 @Entity
@@ -1317,6 +1349,8 @@ class DataBindingBook {
     String title
     List importantPageNumbers
     List topics
+    @BindingFormat("MMddyyyy")
+    Date datePublished
     static hasMany = [topics: String, importantPageNumbers: Integer]
 }
 
