@@ -17,7 +17,6 @@ package org.grails.databinding.converters
 
 import groovy.transform.CompileStatic
 
-import org.apache.commons.lang.StringUtils
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.StructuredBindingEditor
 
@@ -37,16 +36,16 @@ abstract class AbstractStructuredDateBindingEditor<T> implements StructuredBindi
         def dayString = (String) fieldValues.getPropertyValue(prefix + "day")
         def hourString = (String) fieldValues.getPropertyValue(prefix + "hour")
         def minuteString = (String) fieldValues.getPropertyValue(prefix + "minute")
-        if (StringUtils.isBlank(yearString) &&
-            StringUtils.isBlank(monthString) &&
-            StringUtils.isBlank(dayString) &&
-            StringUtils.isBlank(hourString) &&
-            StringUtils.isBlank(minuteString)) {
+        if (yearString &&
+            monthString &&
+            dayString &&
+            hourString &&
+            minuteString) {
             return null
         }
         def year
         try {
-            assert !StringUtils.isBlank(yearString), "Can't populate a date without a year"
+            assert yearString, "Can't populate a date without a year"
 
             year = Integer.parseInt(yearString)
 
