@@ -38,6 +38,7 @@ import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
+import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 
 /**
@@ -199,7 +200,7 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
         if (stream != null) {
             GroovyClassLoader gcl = new GroovyClassLoader();
             try {
-                Class<?> scriptClass = gcl.parseClass(IOGroovyMethods.getText(stream, "UTF-8"));
+                Class<?> scriptClass = gcl.parseClass(GrailsIOUtils.toString(stream, "UTF-8"));
                 Script script = (Script)scriptClass.newInstance();
                 script.run();
                 Binding binding = script.getBinding();
@@ -220,9 +221,6 @@ public class DefaultConstraintEvaluator implements ConstraintsEvaluator {
             catch (IllegalAccessException e) {
                 LOG.error("Illegal access error evaluating constraints for class [" + className + "]: " + e.getMessage(), e);
                 return null;
-            }
-            catch (IOException e) {
-                LOG.error("IO error evaluating constraints for class [" + className + "]: " + e.getMessage(), e);
             }
         }
         return null;

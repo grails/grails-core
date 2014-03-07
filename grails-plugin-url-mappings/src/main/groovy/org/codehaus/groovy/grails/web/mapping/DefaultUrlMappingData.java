@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.util.Assert;
 
 /**
@@ -66,7 +65,7 @@ public class DefaultUrlMappingData implements UrlMappingData {
     }
 
     private String configureUrlPattern(String urlPattern) {
-        return StringUtils.replace(urlPattern, "(*)**", CAPTURED_DOUBLE_WILDCARD);
+        return urlPattern.replace( "(*)**", CAPTURED_DOUBLE_WILDCARD);
     }
 
     private DefaultUrlMappingData(String urlPattern, String[] logicalUrls, String[] tokens, List<Boolean> optionalTokens) {

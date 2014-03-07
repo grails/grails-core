@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-import org.apache.commons.io.output.NullWriter;
 import org.objenesis.ObjenesisStd;
 import org.objenesis.instantiator.ObjectInstantiator;
 import org.slf4j.Logger;
@@ -45,7 +44,22 @@ public class GrailsPrintWriterAdapter extends PrintWriter implements GrailsWrapp
     }
 
     public GrailsPrintWriterAdapter(Writer wrapped) {
-        super(new NullWriter());
+        super(new Writer() {
+            @Override
+            public void write(char[] cbuf, int off, int len) throws IOException {
+                // no-op
+            }
+
+            @Override
+            public void flush() throws IOException {
+                // no-op
+            }
+
+            @Override
+            public void close() throws IOException {
+                // no-op
+            }
+        });
         setTarget(wrapped);
     }
 

@@ -22,7 +22,7 @@ import java.util.Map;
 import javax.servlet.jsp.JspException;
 import javax.servlet.jsp.JspTagException;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.taglib.GrailsTagRegistry;
 import org.codehaus.groovy.grails.web.taglib.RenderInputTag;
@@ -46,10 +46,10 @@ public class JspRenderInputTag extends RequestContextAwareTag {
     @Override
     protected int doStartTagInternal() throws Exception {
 
-        if (StringUtils.isBlank(property)) {
+        if (GrailsStringUtils.isBlank(property)) {
             throw new JspTagException("Tag [renderInput] missing required attribute [property]");
         }
-        if (StringUtils.isBlank(bean)) {
+        if (GrailsStringUtils.isBlank(bean)) {
             throw new JspTagException("Tag [renderInput] missing required attribute [bean]");
         }
 

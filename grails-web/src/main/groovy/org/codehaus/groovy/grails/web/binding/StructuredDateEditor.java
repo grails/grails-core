@@ -23,7 +23,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.springframework.beans.propertyeditors.CustomDateEditor;
 import org.springframework.util.Assert;
 
@@ -61,16 +61,16 @@ public class StructuredDateEditor extends CustomDateEditor implements Structured
         String dayString = (String) fieldValues.get("day");
         String hourString = (String) fieldValues.get("hour");
         String minuteString = (String) fieldValues.get("minute");
-        if (StringUtils.isBlank(yearString)
-                && StringUtils.isBlank(monthString)
-                && StringUtils.isBlank(dayString)
-                && StringUtils.isBlank(hourString)
-                && StringUtils.isBlank(minuteString)) {
+        if (GrailsStringUtils.isBlank(yearString)
+                && GrailsStringUtils.isBlank(monthString)
+                && GrailsStringUtils.isBlank(dayString)
+                && GrailsStringUtils.isBlank(hourString)
+                && GrailsStringUtils.isBlank(minuteString)) {
             return null;
         }
         int year;
         try {
-            Assert.isTrue(!StringUtils.isBlank(yearString), "Can't populate a date without a year");
+            Assert.isTrue(!GrailsStringUtils.isBlank(yearString), "Can't populate a date without a year");
 
             year = Integer.parseInt(yearString);
 

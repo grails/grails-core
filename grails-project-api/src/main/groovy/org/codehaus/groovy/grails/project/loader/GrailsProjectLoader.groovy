@@ -31,7 +31,7 @@ import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext
 import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.GrailsWebApplicationContext
-import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.core.io.PluginPathAwareFileSystemResourceLoader
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager

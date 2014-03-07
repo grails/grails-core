@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
 
 /**
  * Gant script containing the Grails classpath setup.

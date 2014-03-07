@@ -20,7 +20,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
-import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.project.creation.GrailsProjectCleaner
 import org.codehaus.groovy.grails.project.packaging.GrailsProjectPackager
 import org.codehaus.groovy.grails.test.GrailsTestTargetPattern

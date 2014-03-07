@@ -18,7 +18,7 @@ package org.codehaus.groovy.grails.web.binding;
 import java.beans.PropertyEditorSupport;
 import java.util.Currency;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 
 /**
  * A Property editor for converting instances of java.util.Currency.
@@ -29,7 +29,7 @@ public class CurrencyEditor extends PropertyEditorSupport {
 
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
-        if (StringUtils.isBlank(text)) {
+        if (GrailsStringUtils.isBlank(text)) {
             setValue(null);
         }
         try {

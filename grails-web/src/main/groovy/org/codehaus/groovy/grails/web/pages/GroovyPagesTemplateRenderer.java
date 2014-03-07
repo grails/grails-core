@@ -31,8 +31,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.lang.StringUtils;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.support.encoding.EncodedAppenderWriterFactory;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
@@ -86,7 +86,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
         Assert.state(groovyPagesTemplateEngine != null, "Property [groovyPagesTemplateEngine] must be set!");
 
         String templateName = getStringValue(attrs, "template");
-        if (StringUtils.isBlank(templateName)) {
+        if (GrailsStringUtils.isBlank(templateName)) {
             throw new GrailsTagException("Tag [render] is missing required attribute [template]");
         }
 
@@ -105,7 +105,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     private Template findAndCacheTemplate(GrailsWebRequest webRequest, GroovyPageBinding pageScope, String templateName,
             String contextPath, String pluginName, String uri) throws IOException {
 
-        String templatePath = StringUtils.isNotEmpty(contextPath) ? GrailsResourceUtils.appendPiecesForUri(contextPath, templateName) : templateName;
+        String templatePath = GrailsStringUtils.isNotEmpty(contextPath) ? GrailsResourceUtils.appendPiecesForUri(contextPath, templateName) : templateName;
         GroovyPageScriptSource scriptSource;
         if (pluginName == null) {
             scriptSource = groovyPageLocator.findTemplateInBinding(templatePath, pageScope);
@@ -175,7 +175,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
             b.putAll((Map)attrs.get("model"));
         }
         if (attrs.containsKey("bean")) {
-            if (StringUtils.isNotBlank(var)) {
+            if (GrailsStringUtils.isNotBlank(var)) {
                 b.put(var, attrs.get("bean"));
             }
             else {
@@ -187,12 +187,12 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
             Iterator<?> iterator = InvokerHelper.asIterator(attrs.get("collection"));
             while (iterator.hasNext()) {
                 Object it = iterator.next();
-                if (key == null && StringUtils.isBlank(var) && it != null) {
+                if (key == null && GrailsStringUtils.isBlank(var) && it != null) {
                     key = GrailsNameUtils.getPropertyName(it.getClass());
                 }
                 Map itmap = new LinkedHashMap<String, Object>();
                 itmap.putAll(b);
-                if (StringUtils.isNotBlank(var)) {
+                if (GrailsStringUtils.isNotBlank(var)) {
                     itmap.put(var, it);
                 }
                 else {

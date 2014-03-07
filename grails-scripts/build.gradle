@@ -17,7 +17,8 @@ dependencies {
             project(':grails-plugin-controllers'),
             project(':grails-plugin-log4j'),
             project(":grails-test"),
-            project(":grails-plugin-testing")
+            project(":grails-plugin-testing"),
+            project(":grails-project-api"),
             project(":grails-resources")
 
     compile "org.fusesource.jansi:jansi:$jansiVersion",

@@ -26,10 +26,10 @@ import java.security.PrivilegedAction;
 import java.util.Collections;
 import java.util.Map;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
@@ -178,7 +178,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
             }
         }
         finally {
-            IOUtils.closeQuietly(input);
+            GrailsIOUtils.closeQuietly(input);
         }
     }
 
@@ -200,7 +200,7 @@ public class GroovyPageMetaInfo implements GrailsApplicationAware {
             }
         }
         finally {
-            IOUtils.closeQuietly(input);
+            GrailsIOUtils.closeQuietly(input);
         }
     }
 

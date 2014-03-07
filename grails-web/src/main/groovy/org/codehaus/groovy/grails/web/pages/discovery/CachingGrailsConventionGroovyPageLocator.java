@@ -20,8 +20,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.springframework.core.io.ByteArrayResource;
@@ -129,23 +127,37 @@ public class CachingGrailsConventionGroovyPageLocator extends GrailsConventionGr
             return new GroovyPageLocatorCacheKey(uri, pluginNameInCacheKey, binding != null ? binding.getPluginContextPath() : null);
         }
 
+
         @Override
-        public final int hashCode() {
-            return new HashCodeBuilder().append(contextPath).append(pluginName).append(uri).toHashCode();
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            GroovyPageLocatorCacheKey that = (GroovyPageLocatorCacheKey) o;
+
+            if (contextPath != null ? !contextPath.equals(that.contextPath) : that.contextPath != null) {
+                return false;
+            }
+            if (pluginName != null ? !pluginName.equals(that.pluginName) : that.pluginName != null) {
+                return false;
+            }
+            if (uri != null ? !uri.equals(that.uri) : that.uri != null) {
+                return false;
+            }
+
+            return true;
         }
 
         @Override
-        public final boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (obj == null) return false;
-            if (getClass() != obj.getClass()) return false;
-
-            GroovyPageLocatorCacheKey other = (GroovyPageLocatorCacheKey)obj;
-            return new EqualsBuilder()
-                .append(other.contextPath, contextPath)
-                .append(other.pluginName, pluginName)
-                .append(other.uri, uri)
-                .isEquals();
+        public int hashCode() {
+            int result = uri != null ? uri.hashCode() : 0;
+            result = 31 * result + (pluginName != null ? pluginName.hashCode() : 0);
+            result = 31 * result + (contextPath != null ? contextPath.hashCode() : 0);
+            return result;
         }
     }
 

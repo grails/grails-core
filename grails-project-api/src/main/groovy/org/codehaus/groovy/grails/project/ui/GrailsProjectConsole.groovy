@@ -19,7 +19,7 @@ import grails.util.BuildSettings
 import grails.util.Environment
 import groovy.transform.CompileStatic
 import groovy.ui.Console
-import org.codehaus.groovy.grails.compiler.GrailsProjectCompiler
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectCompiler
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 
 import java.awt.Window
@@ -27,7 +27,7 @@ import java.awt.Window
 import org.codehaus.groovy.grails.cli.api.BaseSettingsApi
 import org.codehaus.groovy.grails.cli.interactive.InteractiveMode
 import org.codehaus.groovy.grails.commons.GrailsApplication
-import org.codehaus.groovy.grails.compiler.GrailsProjectWatcher
+import org.codehaus.groovy.grails.project.compiler.GrailsProjectWatcher
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.project.loader.GrailsProjectLoader
 import org.codehaus.groovy.grails.support.PersistenceContextInterceptor

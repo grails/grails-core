@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper;
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsConfigurationException;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor;
@@ -187,11 +188,6 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
             registerArtefactHandler(tagLibArtefactHandler);
         }
 
-        final BootstrapArtefactHandler bootstrapArtefactHandler = new BootstrapArtefactHandler();
-        if (!hasArtefactHandler(bootstrapArtefactHandler.getType())) {
-            registerArtefactHandler(bootstrapArtefactHandler);
-        }
-
         final CodecArtefactHandler codecArtefactHandler = new CodecArtefactHandler();
         if (!hasArtefactHandler(codecArtefactHandler.getType())) {
             registerArtefactHandler(codecArtefactHandler);
@@ -200,6 +196,12 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         final UrlMappingsArtefactHandler urlMappingsArtefactHandler = new UrlMappingsArtefactHandler();
         if (!hasArtefactHandler(urlMappingsArtefactHandler.getType())) {
             registerArtefactHandler(urlMappingsArtefactHandler);
+        }
+
+        List<ArtefactHandler> additionalArtefactHandlers = GrailsFactoriesLoader.loadFactories(ArtefactHandler.class, getClassLoader());
+
+        for (ArtefactHandler artefactHandler : additionalArtefactHandlers) {
+            registerArtefactHandler(artefactHandler);
         }
 
         updateArtefactHandlers();

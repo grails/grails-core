@@ -26,10 +26,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.binding.StructuredDateEditor;
@@ -39,6 +39,7 @@ import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.grails.databinding.DataBindingSource;
 import org.grails.databinding.SimpleMapDataBindingSource;
 import org.springframework.context.ApplicationContext;
@@ -90,7 +91,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
             String contentType = request.getContentType();
             if ("application/x-www-form-urlencoded".equals(contentType)) {
                 try {
-                    String contents = IOUtils.toString(request.getReader());
+                    String contents = GrailsIOUtils.toString(request.getReader());
                     request.setAttribute(REQUEST_BODY_PARSED, true);
                     requestMap.putAll(WebUtils.fromQueryString(contents));
                 } catch (Exception e) {

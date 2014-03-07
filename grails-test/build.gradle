@@ -13,6 +13,7 @@ dependencies {
     compile project(":grails-plugin-converters"), project(":grails-plugin-mimetypes")
 
     compile project(":grails-web")
+    compile project(":grails-project-api")
 
     compile("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
         ext.notInPom = true

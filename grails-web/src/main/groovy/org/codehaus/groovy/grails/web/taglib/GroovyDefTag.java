@@ -17,7 +17,7 @@ package org.codehaus.groovy.grails.web.taglib;
 
 import grails.util.GrailsUtil;
 
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 
 /**
@@ -32,12 +32,12 @@ public class GroovyDefTag extends GroovySyntaxTag {
 
     public void doStartTag() {
         String expr = attributes.get(ATTRIBUTE_VALUE);
-        if (StringUtils.isBlank(expr)) {
+        if (GrailsStringUtils.isBlank(expr)) {
             throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VALUE + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 
         String var = attributes.get(ATTRIBUTE_VAR);
-        if (StringUtils.isBlank(var)) {
+        if (GrailsStringUtils.isBlank(var)) {
             throw new GrailsTagException("Tag [" + TAG_NAME + "] missing required attribute [" + ATTRIBUTE_VAR + "]", parser.getPageName(), parser.getCurrentOutputLineNumber());
         }
 

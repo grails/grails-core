@@ -21,9 +21,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginInfo;
 import org.codehaus.groovy.grails.support.StaticResourceLoader;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
@@ -143,7 +143,7 @@ public class GroovyPageResourceLoader extends StaticResourceLoader {
     }
 
     protected boolean compareFilePaths(File f1, File f2) {
-        return FilenameUtils.normalizeNoEndSeparator(f1.getAbsolutePath()).equals(FilenameUtils.normalizeNoEndSeparator(f2.getAbsolutePath()));
+        return GrailsStringUtils.pathEquals(f1.getAbsolutePath(), f2.getAbsolutePath());
     }
 
     protected String buildPluginViewPath(String pluginBaseDirectory, String pluginName, String pathRelativeToPlugin) {

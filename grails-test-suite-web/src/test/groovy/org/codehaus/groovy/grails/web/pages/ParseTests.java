@@ -11,13 +11,13 @@ import java.io.InputStream;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.io.IOUtils;
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestContextHolder;
 
@@ -200,7 +200,7 @@ public class ParseTests extends TestCase {
         InputStream in = parse.parse();
         ParsedResult result = new ParsedResult();
         result.parser = parse;
-        result.generatedGsp = IOUtils.toString(in, enc.toString());
+        result.generatedGsp = IOGroovyMethods.getText(in, enc.toString());
         result.htmlParts = parse.getHtmlPartsArray();
         return result;
     }

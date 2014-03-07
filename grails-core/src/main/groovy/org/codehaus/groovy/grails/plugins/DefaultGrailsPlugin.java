@@ -368,14 +368,14 @@ public class DefaultGrailsPlugin extends AbstractGrailsPlugin implements ParentA
             if (GrailsUtil.isDevelopmentEnv()) {
                 LOG.debug("Cannot load plug-in resource watch list from [" + GrailsArrayUtils.toString(watchedResourcePatternReferences) +
                         "]. This means that the plugin " + this +
-                        ", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
+                        ", will not be able to auto-reload changes effectively. Try running grails upgrade.: " + e.getMessage());
             }
         }
         catch (IOException e) {
             if (GrailsUtil.isDevelopmentEnv()) {
                 LOG.debug("Cannot load plug-in resource watch list from [" + GrailsArrayUtils.toString(watchedResourcePatternReferences) +
                         "]. This means that the plugin " + this +
-                        ", will not be able to auto-reload changes effectively. Try runnng grails upgrade.: " + e.getMessage());
+                        ", will not be able to auto-reload changes effectively. Try running grails upgrade.: " + e.getMessage());
             }
         }
     }

@@ -20,9 +20,9 @@ import grails.util.Environment
 import grails.util.GrailsUtil
 import groovy.transform.CompileStatic
 
-import org.apache.commons.lang.StringUtils
 import org.apache.commons.logging.LogFactory
 import org.codehaus.groovy.grails.cli.logging.GrailsConsoleAntBuilder
+import org.codehaus.groovy.grails.commons.GrailsStringUtils
 import org.codehaus.groovy.grails.context.support.PluginAwareResourceBundleMessageSource
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
@@ -129,12 +129,12 @@ class I18nGrailsPlugin {
                     // Extract the file path of the file's parent directory
                     // that comes after "grails-app/i18n".
                     if (resource instanceof ContextResource) {
-                        path = StringUtils.substringAfter(resource.getPathWithinContext(), baseDir)
+                        path = GrailsStringUtils.substringAfter(resource.getPathWithinContext(), baseDir)
                     } else if (resource instanceof FileSystemResource) {
-                        path = StringUtils.substringAfter(resource.getPath(), baseDir)
+                        path = GrailsStringUtils.substringAfter(resource.getPath(), baseDir)
                     }
                     else if (resource instanceof ClassPathResource) {
-                        path = StringUtils.substringAfter(resource.getPath(), baseDir)
+                        path = GrailsStringUtils.substringAfter(resource.getPath(), baseDir)
                     }
                 }
 

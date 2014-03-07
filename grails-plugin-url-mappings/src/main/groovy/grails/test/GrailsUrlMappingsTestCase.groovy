@@ -15,9 +15,9 @@
  */
 package grails.test
 
-import org.apache.commons.lang.StringUtils
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.GrailsControllerClass
+import org.codehaus.groovy.grails.commons.GrailsStringUtils
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingsHolder
 import org.springframework.beans.BeanUtils
@@ -85,7 +85,7 @@ class GrailsUrlMappingsTestCase extends GroovyTestCase {
         BeanUtils.getPropertyDescriptors(instance.class).findAll {
             GrailsClassUtils.getPropertyOrStaticPropertyOrFieldValue(instance, it.name) instanceof Closure
         }.collect {
-        StringUtils.substringBeforeLast(it.name, "Flow")
+            GrailsStringUtils.substringBeforeLast(it.name, "Flow")
         }
     }
 

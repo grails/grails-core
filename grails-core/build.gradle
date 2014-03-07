@@ -68,18 +68,21 @@ dependencies {
         exclude group:"org.codehaus.gant", module:"gant_groovy1.8"
     }
 
-    optional "org.apache.ant:ant:${antVersion}"
-    optional "jline:jline:$jlineVersion"
-    optional "org.fusesource.jansi:jansi:$jansiVersion"
-
-    optional("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
-        exclude group:'commons-cli', module:'commons-cli'
-    }
     compile project(":grails-spring"), {
         exclude group:'org.springframework', module:'spring-tx'
         exclude group:'org.springframework', module:'spring-web'
         exclude group:'org.grails', module:'grails-bootstrap'
     }
+
+    // These dependencies are not required, but due to a Groovy compiler bug they are loaded by Groovy and hence
+    // have to be on the path for compilation even though they shouldn't be
+    optional "org.apache.ant:ant:${antVersion}"
+    optional "jline:jline:$jlineVersion"
+    optional "org.fusesource.jansi:jansi:$jansiVersion"
+    optional("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
+        exclude group:'commons-cli', module:'commons-cli'
+    }
+
 }
 
 sourceSets {

@@ -20,8 +20,6 @@ import groovy.lang.GroovyObject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.springframework.util.Assert;
 
 /**
@@ -47,29 +45,33 @@ public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport {
             this.keyPart2 = keyPart2;
         }
 
+
         @Override
-        public boolean equals(final Object that) {
-            if (this == that) {
+        public boolean equals(Object o) {
+            if (this == o) {
                 return true;
             }
-
-            if (that == null) {
+            if (o == null || getClass() != o.getClass()) {
                 return false;
             }
 
-            if (getClass() != that.getClass()) {
+            TupleStringKey that = (TupleStringKey) o;
+
+            if (keyPart1 != null ? !keyPart1.equals(that.keyPart1) : that.keyPart1 != null) {
+                return false;
+            }
+            if (keyPart2 != null ? !keyPart2.equals(that.keyPart2) : that.keyPart2 != null) {
                 return false;
             }
 
-            TupleStringKey thatKey=(TupleStringKey)that;
-            return new EqualsBuilder().append(keyPart1, thatKey.keyPart1)
-                                      .append(keyPart2, thatKey.keyPart2)
-                                      .isEquals();
+            return true;
         }
 
         @Override
         public int hashCode() {
-            return new HashCodeBuilder().append(keyPart1).append(keyPart2).toHashCode();
+            int result = keyPart1 != null ? keyPart1.hashCode() : 0;
+            result = 31 * result + (keyPart2 != null ? keyPart2.hashCode() : 0);
+            return result;
         }
     }
 
@@ -83,27 +85,23 @@ public class DefaultGroovyPagesUriService extends GroovyPagesUriSupport {
         }
 
         @Override
-        public boolean equals(final Object that) {
-            if (this == that) {
-                return true;
-            }
-            if (that == null) {
-                return false;
-            }
-            if (getClass() != that.getClass()) {
-                return false;
-            }
-            ControllerObjectKey thatKey=(ControllerObjectKey)that;
-            return new EqualsBuilder().append(controllerHashCode, thatKey.controllerHashCode)
-                                      .append(controllerClassName, thatKey.controllerClassName)
-                                      .isEquals();
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ControllerObjectKey that = (ControllerObjectKey) o;
+
+            if (controllerHashCode != that.controllerHashCode) return false;
+            if (!controllerClassName.equals(that.controllerClassName)) return false;
+
+            return true;
         }
 
         @Override
         public int hashCode() {
-            return new HashCodeBuilder().append(controllerHashCode)
-                                        .append(controllerClassName)
-                                        .toHashCode();
+            int result = (int) (controllerHashCode ^ (controllerHashCode >>> 32));
+            result = 31 * result + controllerClassName.hashCode();
+            return result;
         }
     }
 

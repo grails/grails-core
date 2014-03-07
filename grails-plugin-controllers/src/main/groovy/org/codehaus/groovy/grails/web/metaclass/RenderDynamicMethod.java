@@ -43,12 +43,11 @@ import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.commons.metaclass.AbstractDynamicMethodInvocation;
+import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
+import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.converters.Converter;
@@ -235,7 +234,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                         try {
                             if (o instanceof File) {
                                 File f = (File) o;
-                                input = FileUtils.openInputStream(f);
+                                input = GrailsIOUtils.openStream(f);
                             }
                             else if (o instanceof InputStream) {
                                 input = (InputStream) o;
@@ -244,7 +243,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
                                 input = new ByteArrayInputStream((byte[])o);
                             }
                             else {
-                                input = FileUtils.openInputStream(new File(o.toString()));
+                                input = GrailsIOUtils.openStream(new File(o.toString()));
                             }
                             IOUtils.copy(input, response.getOutputStream());
                         } catch (IOException e) {
@@ -344,7 +343,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private boolean detectContentTypeFromFileName(GrailsWebRequest webRequest, HttpServletResponse response, Map argMap, String fileName) {
         MimeUtility mimeUtility = lookupMimeUtility(webRequest);
         if (mimeUtility != null) {
-            MimeType mimeType = mimeUtility.getMimeTypeForExtension(FilenameUtils.getExtension(fileName));
+            MimeType mimeType = mimeUtility.getMimeTypeForExtension(GrailsStringUtils.getFilenameExtension(fileName));
             if (mimeType != null) {
                 String contentType = mimeType.getName();
                 Object encodingObj = argMap.get(ARGUMENT_ENCODING);
@@ -520,7 +519,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         if (colObject instanceof Collection) {
             Collection c = (Collection) colObject;
             for (Object o : c) {
-                if (StringUtils.isBlank(var)) {
+                if (GrailsStringUtils.isBlank(var)) {
                     binding.put(DEFAULT_ARGUMENT, o);
                 }
                 else {
@@ -530,7 +529,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
             }
         }
         else {
-            if (StringUtils.isBlank(var)) {
+            if (GrailsStringUtils.isBlank(var)) {
                 binding.put(DEFAULT_ARGUMENT, colObject);
             }
             else {
@@ -542,7 +541,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     }
 
     private void renderTemplateForBean(Template template, Map binding, Object bean, String varName, Writer out) throws IOException {
-        if (StringUtils.isBlank(varName)) {
+        if (GrailsStringUtils.isBlank(varName)) {
             binding.put(DEFAULT_ARGUMENT, bean);
         }
         else {
