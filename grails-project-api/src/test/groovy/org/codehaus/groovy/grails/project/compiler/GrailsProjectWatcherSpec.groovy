@@ -1,12 +1,10 @@
-package org.codehaus.groovy.grails.compiler
+package org.codehaus.groovy.grails.project.compiler
 
 import spock.lang.Specification
 import org.junit.runner.RunWith
 import org.spockframework.runtime.Sputnik
 import grails.util.PluginBuildSettings
 import grails.util.BuildSettings
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.io.support.GrailsResourceUtils
 
 @RunWith(Sputnik)
 class GrailsProjectWatcherSpec extends Specification {
