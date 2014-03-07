@@ -57,6 +57,14 @@ class Dependency {
         }
     }
 
+    Dependency(String group, String name, String version, boolean inherited, boolean transitive ) {
+        this.group = group
+        this.name = name
+        this.version = version
+        this.inherited = inherited
+        this.transitive = transitive
+    }
+
     List<Dependency> excludes = []
 
     /**
