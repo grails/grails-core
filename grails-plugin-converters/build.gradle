@@ -1,6 +1,5 @@
 dependencies {
     compile "commons-lang:commons-lang:$commonsLangVersion"
-    compile "commons-io:commons-io:${commonsIOVersion}"
 
     compile project(":grails-web"),
             project(':grails-plugin-domain-class')
