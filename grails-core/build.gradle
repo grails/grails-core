@@ -5,7 +5,7 @@ dependencies {
 
     compile 'javax.servlet:javax.servlet-api:3.0.1', provided
     compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
-    compile( "commons-validator:commons-validator:1.3.1" ) {
+    compile( "commons-validator:commons-validator:1.4.0" ) {
         exclude group: 'xml-apis', module:'xml-apis'
         exclude group: 'commons-digester', module:'commons-digester'
         exclude group: 'commons-logging', module:'commons-logging'
@@ -35,7 +35,7 @@ dependencies {
         ext.notInPom = true
     }
 
-    runtime 'oro:oro:2.0.8' // Required by commons-validator. TODO: split validation out of grails-core
+
     runtime 'cglib:cglib:2.2.2' // Used to generate proxies for classes via Spring AOP
     runtime 'asm:asm:3.3.1'
 

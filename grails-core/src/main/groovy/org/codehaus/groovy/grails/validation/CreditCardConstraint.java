@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
-import org.apache.commons.validator.CreditCardValidator;
+import org.apache.commons.validator.routines.CreditCardValidator;
 import org.springframework.validation.Errors;
 
 /**
