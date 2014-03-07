@@ -16,7 +16,6 @@
 
 import groovy.xml.MarkupBuilder
 
-import org.apache.commons.io.FilenameUtils
 
 /**
  * Refreshes application dependencies, installing any necessary plugins as necessary
@@ -76,7 +75,10 @@ private handleArtifactReport(allReports, xml) {
         def mrid = downloadReport.dependency
         xml.dependency(group:mrid.group, name:mrid.name, version:mrid.version) {
             xml.jar downloadReport.file
-            def baseName = FilenameUtils.getBaseName(downloadReport.file.name)
+
+
+            def fileName = downloadReport.file.name
+            def baseName = fileName.substring(0, fileName.lastIndexOf('.'))
             def sourceJar = allReports.find { "$baseName-sources.jar" == it.file?.name}
             if (sourceJar) {
                 xml.source sourceJar.file

@@ -3,8 +3,6 @@ configurations {
 }
 dependencies {
     compile "commons-lang:commons-lang:$commonsLangVersion"
-    compile "commons-io:commons-io:${commonsIOVersion}"
-
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
         exclude group: 'commons-logging', module:'commons-logging'
     }
