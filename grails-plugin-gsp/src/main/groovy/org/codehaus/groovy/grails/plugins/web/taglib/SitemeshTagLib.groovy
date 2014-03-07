@@ -66,7 +66,7 @@ class SitemeshTagLib implements RequestConstants {
                 writer << ' '
                 writer << k
                 writer << '="'
-                writer << InvokerHelper.invokeMethod(v.toString(), "encodeAsHTML", null)
+                writer << InvokerHelper.invokeMethod(v ? v.toString() : "", "encodeAsHTML", null)
                 writer << '"'
             }
         }
