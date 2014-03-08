@@ -36,8 +36,6 @@ import org.slf4j.LoggerFactory
  * @since 0.6
  */
 class ConvertersGrailsPlugin {
-	
-	private static final Logger log = LoggerFactory.getLogger(ConvertersGrailsPlugin.class)
 
     def version = GrailsUtil.getGrailsVersion()
 
