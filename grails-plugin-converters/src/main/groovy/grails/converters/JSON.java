@@ -53,8 +53,8 @@ import org.codehaus.groovy.grails.web.json.JSONWriter;
 import org.codehaus.groovy.grails.web.json.PathCapturingJSONWriterWrapper;
 import org.codehaus.groovy.grails.web.json.PrettyPrintJSONWriter;
 import org.codehaus.groovy.grails.web.mime.MimeType;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * A converter that converts domain classes, Maps, Lists, Arrays, POJOs and POGOs to JSON.
@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JSON extends AbstractConverter<JSONWriter> implements IncludeExcludeConverter<JSONWriter> {
 
-    private final static Logger log = LoggerFactory.getLogger(JSON.class);
+    private final static Log log = LogFactory.getLog(JSON.class);
     private static final String CACHED_JSON = "org.codehaus.groovy.grails.CACHED_JSON_REQUEST_CONTENT";
 
     protected Object target;
@@ -443,9 +443,10 @@ public class JSON extends AbstractConverter<JSONWriter> implements IncludeExclud
     }
 
     public static void registerObjectMarshaller(ObjectMarshaller<JSON> om) throws ConverterException {
-    	log.debug("entering registerObjectMarshaller({})", new Object[] {om});    	
-        ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);        
-        log.debug("[registerObjectMarshaller] cfg = {}", new Object[] {cfg});
+    	if (log.isDebugEnabled()) {
+    		log.debug(String.format("entering registerObjectMarshaller(%s)", om.getClass().getSimpleName()));
+    	}    	
+    	ConverterConfiguration<JSON> cfg = ConvertersConfigurationHolder.getConverterConfiguration(JSON.class);
         
         if (cfg == null) {
             throw new ConverterException("Default Configuration not found for class " + JSON.class.getName());

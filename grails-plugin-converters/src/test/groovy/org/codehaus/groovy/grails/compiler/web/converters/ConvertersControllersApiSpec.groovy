@@ -17,9 +17,7 @@ class ConvertersControllersApiSpec extends Specification {
                 boolean shouldInject(URL url) { true }
             }
             gcl.classInjectors = [transformer] as ClassInjector[]
-
-        when:
-            def cls = gcl.parseClass('''
+			def cls = gcl.parseClass('''
 
 import grails.converters.*
 
@@ -31,7 +29,10 @@ class RenderTestController {
 }
 
 ''')
+
+        when:					
             def controller = cls.newInstance()
+			println "controller = ${controller?.dump()}"
             def response
             try {
                 GrailsWebUtil.bindMockWebRequest()
