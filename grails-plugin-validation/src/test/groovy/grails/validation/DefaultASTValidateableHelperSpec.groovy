@@ -1,5 +1,8 @@
 package grails.validation
 
+import grails.util.Holders
+import org.springframework.web.context.support.GenericWebApplicationContext
+
 import static org.junit.Assert.*
 
 import org.codehaus.groovy.ast.ClassNode
@@ -7,10 +10,8 @@ import org.codehaus.groovy.classgen.GeneratorContext
 import org.codehaus.groovy.control.SourceUnit
 import org.codehaus.groovy.grails.compiler.injection.ClassInjector
 import org.codehaus.groovy.grails.compiler.injection.GrailsAwareClassLoader
-import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.WebApplicationContext
 
@@ -55,17 +56,17 @@ class DefaultASTValidateableHelperSpec extends Specification {
         }
         ''')
 
-        def applicationContext = new MockApplicationContext()
-        applicationContext.registerMockBean ConstraintsEvaluator.BEAN_NAME, new DefaultConstraintEvaluator()
-
         def servletContext = new MockServletContext()
+        def applicationContext = new GenericWebApplicationContext(servletContext)
+        applicationContext.defaultListableBeanFactory.registerSingleton(ConstraintsEvaluator.BEAN_NAME, new DefaultConstraintEvaluator())
+        applicationContext.refresh()
         servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext
 
-        ServletContextHolder.servletContext = servletContext
+        Holders.servletContext = servletContext
     }
 
     def cleanupSpec() {
-        ServletContextHolder.servletContext = null
+        Holders.servletContext = null
     }
 
     void 'Test constraints property'() {

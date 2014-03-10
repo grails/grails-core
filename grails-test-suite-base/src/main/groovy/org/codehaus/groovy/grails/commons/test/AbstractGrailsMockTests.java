@@ -24,7 +24,6 @@ import java.io.IOException;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.support.MockApplicationContext;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.StaticMessageSource;
@@ -57,7 +56,7 @@ public abstract class AbstractGrailsMockTests extends GroovyTestCase {
 
         System.out.println("Setting up test");
         ctx = new MockApplicationContext();
-        ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl);
+        ctx.registerMockBean(GrailsApplication.CLASS_LOADER_BEAN, gcl);
         onSetUp();
         ga = new DefaultGrailsApplication(gcl.getLoadedClasses(),gcl);
         ga.getMetadata().put(Metadata.APPLICATION_NAME, getClass().getName());

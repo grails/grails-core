@@ -1,10 +1,10 @@
 package org.codehaus.groovy.grails.web.mapping
 
+import org.springframework.context.support.GenericApplicationContext
+import org.springframework.web.context.support.GenericWebApplicationContext
 import spock.lang.Specification
 import org.springframework.mock.web.MockServletContext
-import org.springframework.web.context.support.WebApplicationContextUtils
 import org.springframework.web.context.WebApplicationContext
-import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 
@@ -24,8 +24,9 @@ class UrlMappingsBindingSpec extends Specification{
 
     protected DefaultUrlMappingEvaluator getEvaluator() {
         final servletContext = new MockServletContext()
-        final ctx = new MockApplicationContext()
-        ctx.registerMockBean(GrailsApplication.APPLICATION_ID, new DefaultGrailsApplication())
+        final ctx = new GenericWebApplicationContext(servletContext)
+        ctx.defaultListableBeanFactory.registerSingleton(GrailsApplication.APPLICATION_ID,new DefaultGrailsApplication())
+        ctx.refresh()
         servletContext.setAttribute(WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, ctx)
         return new DefaultUrlMappingEvaluator(servletContext)
     }

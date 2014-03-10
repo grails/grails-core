@@ -25,7 +25,7 @@ import org.codehaus.groovy.grails.aop.framework.autoproxy.GroovyAwareInfrastruct
 import org.codehaus.groovy.grails.commons.cfg.GrailsPlaceholderConfigurer
 import org.codehaus.groovy.grails.commons.cfg.MapBasedSmartPropertyOverrideConfigurer
 import org.codehaus.groovy.grails.commons.spring.DefaultRuntimeSpringConfiguration
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfigUtilties
 import org.codehaus.groovy.grails.commons.spring.RuntimeSpringConfiguration
 import org.codehaus.groovy.grails.core.io.DefaultResourceLocator
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAwareBeanPostProcessor
@@ -165,7 +165,7 @@ class CoreGrailsPlugin {
         }
         else if (event.source instanceof Class) {
             RuntimeSpringConfiguration springConfig = event.ctx != null ? new DefaultRuntimeSpringConfiguration(event.ctx) : new DefaultRuntimeSpringConfiguration()
-            GrailsRuntimeConfigurator.reloadSpringResourcesConfig(springConfig, application, event.source)
+            RuntimeSpringConfigUtilties.reloadSpringResourcesConfig(springConfig, application, event.source)
             springConfig.registerBeansWithContext(event.ctx)
         }
     }

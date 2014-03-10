@@ -1,6 +1,8 @@
 package org.codehaus.groovy.grails.web.servlet.filter
 
 import grails.util.GrailsWebUtil
+import grails.util.Holders
+
 import javax.servlet.Filter
 import javax.servlet.ServletContext
 import javax.servlet.http.HttpServletRequest
@@ -12,7 +14,6 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.mapping.DefaultUrlMappingEvaluator
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.springframework.mock.web.MockFilterConfig
@@ -52,7 +53,7 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
     }
 
     void tearDown() {
-        ServletContextHolder.setServletContext(null)
+        Holders.setServletContext(null)
     }
 
     protected void onSetup() {}

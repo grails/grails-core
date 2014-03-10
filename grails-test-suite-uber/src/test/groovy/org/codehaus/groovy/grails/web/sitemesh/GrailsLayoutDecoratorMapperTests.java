@@ -52,7 +52,8 @@ public class GrailsLayoutDecoratorMapperTests extends TestCase {
         GrailsConventionGroovyPageLocator pageLocator = new GrailsConventionGroovyPageLocator();
         pageLocator.setApplicationContext(appCtx);
 
-        GroovyPagesTemplateEngine gpte = new GroovyPagesTemplateEngine(appCtx.getServletContext());
+        GroovyPagesTemplateEngine gpte = new GroovyPagesTemplateEngine();
+        gpte.setServletContext(appCtx.getServletContext());
         gpte.setApplicationContext(appCtx);
         gpte.afterPropertiesSet();
 

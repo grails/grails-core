@@ -19,6 +19,7 @@ import java.lang.reflect.Constructor;
 
 import javax.servlet.ServletContext;
 
+import grails.util.Holders;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.ApplicationAttributes;
@@ -86,7 +87,7 @@ public class GrailsConfigUtils {
     }
 
     public static WebApplicationContext configureWebApplicationContext(ServletContext servletContext, WebApplicationContext parent) {
-        ServletContextHolder.setServletContext(servletContext);
+        Holders.setServletContext(servletContext);
         GrailsApplication application = (GrailsApplication)parent.getBean(GrailsApplication.APPLICATION_ID);
 
         if (LOG.isDebugEnabled()) {

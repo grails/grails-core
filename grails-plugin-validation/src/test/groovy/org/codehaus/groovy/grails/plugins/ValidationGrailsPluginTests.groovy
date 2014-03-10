@@ -1,8 +1,6 @@
 package org.codehaus.groovy.grails.plugins
 
-import org.codehaus.groovy.grails.plugins.ValidationGrailsPlugin
-import org.codehaus.groovy.grails.support.MockApplicationContext
-import org.codehaus.groovy.grails.validation.Validateable
+import org.springframework.context.support.GenericApplicationContext
 import org.springframework.context.support.StaticMessageSource
 
 class ValidationGrailsPluginTests extends GroovyTestCase {
@@ -17,8 +15,9 @@ class ValidationGrailsPluginTests extends GroovyTestCase {
 
     protected void setUp() {
         super.setUp()
-        MockApplicationContext mockCtx = new MockApplicationContext()
-        mockCtx.registerMockBean('messageSource', new StaticMessageSource())
+        GenericApplicationContext mockCtx = new GenericApplicationContext()
+        mockCtx.defaultListableBeanFactory.registerSingleton('messageSource', new StaticMessageSource())
+        mockCtx.refresh()
 
         def application = [:]
         application.config = [:]

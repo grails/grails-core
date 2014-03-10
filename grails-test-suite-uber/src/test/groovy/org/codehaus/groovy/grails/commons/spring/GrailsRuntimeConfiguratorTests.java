@@ -73,20 +73,20 @@ public class GrailsRuntimeConfiguratorTests extends TestCase {
 
         // test class editor setup
         assertNotNull(ctx);
-        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN) instanceof GroovyClassLoader);
+        assertTrue(ctx.getBean(GrailsApplication.CLASS_LOADER_BEAN) instanceof GroovyClassLoader);
 
         // test exception resolver
-        GrailsExceptionResolver er = getBean(ctx, GrailsRuntimeConfigurator.EXCEPTION_HANDLER_BEAN);
+        GrailsExceptionResolver er = getBean(ctx, GrailsApplication.EXCEPTION_HANDLER_BEAN);
 
         assertNotNull(er);
         ModelAndView mv = er.resolveException(new MockHttpServletRequest(),new MockHttpServletResponse(),null, new Exception());
         assertEquals("/error",mv.getViewName());
 
         // test multipart support
-        assertTrue(ctx.getBean(GrailsRuntimeConfigurator.MULTIPART_RESOLVER_BEAN) instanceof CommonsMultipartResolver);
+        assertTrue(ctx.getBean(GrailsApplication.MULTIPART_RESOLVER_BEAN) instanceof CommonsMultipartResolver);
 
         // test message source
-        MessageSource ms = getBean(ctx, GrailsRuntimeConfigurator.MESSAGE_SOURCE_BEAN);
+        MessageSource ms = getBean(ctx, GrailsApplication.MESSAGE_SOURCE_BEAN);
         assertNotNull(ms);
 
         // test domain class setup correctly in the ctx

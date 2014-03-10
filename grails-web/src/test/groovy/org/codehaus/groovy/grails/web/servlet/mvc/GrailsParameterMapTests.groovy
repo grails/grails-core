@@ -2,10 +2,11 @@ package org.codehaus.groovy.grails.web.servlet.mvc
 
 import grails.util.GrailsWebUtil
 
-import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.springframework.context.support.StaticMessageSource
 import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.mock.web.MockServletContext
 import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.support.GenericWebApplicationContext
 
 class GrailsParameterMapTests extends GroovyTestCase {
 
@@ -15,9 +16,10 @@ class GrailsParameterMapTests extends GroovyTestCase {
     void testDateMessageSourceFormat() {
 
         try {
-            MockApplicationContext ctx = new MockApplicationContext()
+            GenericWebApplicationContext ctx = new GenericWebApplicationContext(new MockServletContext())
             final messageSource = new StaticMessageSource()
-            ctx.registerMockBean("messageSource", messageSource)
+            ctx.defaultListableBeanFactory.registerSingleton("messageSource", messageSource)
+            ctx.refresh()
             final webRequest = grails.util.GrailsWebUtil.bindMockWebRequest(ctx)
             messageSource.addMessage("date.myDate.format", webRequest.locale, "yyMMdd")
             def request = webRequest.currentRequest

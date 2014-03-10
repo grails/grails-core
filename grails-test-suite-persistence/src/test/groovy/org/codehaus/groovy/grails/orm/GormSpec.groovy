@@ -1,16 +1,15 @@
 package org.codehaus.groovy.grails.orm
 
+import grails.util.Holders
 import grails.util.Metadata
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.cfg.ConfigurationHelper
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.hibernate.EntityMode
 import org.hibernate.Session
@@ -97,7 +96,7 @@ abstract class GormSpec extends Specification {
 
         ExpandoMetaClass.disableGlobally()
         RequestContextHolder.setRequestAttributes(null)
-        PluginManagerHolder.setPluginManager(null)
+        Holders.setPluginManager(null)
     }
 
     protected void unregisterHibernateSession() {
@@ -117,7 +116,7 @@ abstract class GormSpec extends Specification {
     }
 
     protected void registerHibernateSession() {
-        sessionFactory = applicationContext.getBean(GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN)
+        sessionFactory = applicationContext.getBean(GrailsApplication.SESSION_FACTORY_BEAN)
         bindSessionFactory sessionFactory
         session = sessionFactory.currentSession
     }

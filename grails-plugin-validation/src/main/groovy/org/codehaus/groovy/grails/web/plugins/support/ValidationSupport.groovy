@@ -15,9 +15,9 @@
  */
 package org.codehaus.groovy.grails.web.plugins.support
 
+import grails.util.Holders
 import grails.validation.ValidationErrors
 
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.grails.datastore.gorm.support.BeforeValidateHelper
 import org.springframework.validation.FieldError
 import org.springframework.web.context.support.WebApplicationContextUtils
@@ -37,7 +37,7 @@ class ValidationSupport {
         if (constraints) {
             def ctx
 
-            def sch = ServletContextHolder.servletContext
+            def sch = Holders.servletContext
             if (sch) {
                 ctx = WebApplicationContextUtils.getWebApplicationContext(sch)
             }

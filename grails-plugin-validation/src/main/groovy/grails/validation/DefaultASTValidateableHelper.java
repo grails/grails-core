@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import grails.util.Holders;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -47,7 +48,6 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
 import org.codehaus.groovy.grails.compiler.injection.ASTValidationErrorsHelper;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
-import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport;
 import org.codehaus.groovy.syntax.Token;
 import org.codehaus.groovy.syntax.Types;
@@ -98,7 +98,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final String evaluateMethodName = "evaluate";
 
             final BlockStatement ifConstraintsPropertyIsNullBlockStatement = new BlockStatement();
-            final Expression declareServletContextExpression = new DeclarationExpression(new VariableExpression(servletContextHolderVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(ServletContextHolder.class), "getServletContext", new ArgumentListExpression()));
+            final Expression declareServletContextExpression = new DeclarationExpression(new VariableExpression(servletContextHolderVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(Holders.class), "getServletContext", new ArgumentListExpression()));
             final Expression declareApplicationContextExpression = new DeclarationExpression(new VariableExpression(applicationContextVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new StaticMethodCallExpression(new ClassNode(WebApplicationContextUtils.class), "getWebApplicationContext", new ArgumentListExpression(new VariableExpression(servletContextHolderVariableName))));
             final Expression declareConstraintsEvaluatorExpression = new DeclarationExpression(new VariableExpression(constraintsEvaluatorVariableName, ClassHelper.OBJECT_TYPE), Token.newSymbol(Types.EQUALS, 0, 0), new MethodCallExpression(new VariableExpression(applicationContextVariableName), "getBean", new ArgumentListExpression(new ConstantExpression(ConstraintsEvaluator.BEAN_NAME))));
             final Expression initializeConstraintsFieldExpression = new BinaryExpression(new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), Token.newSymbol(Types.EQUALS, 0, 0), new MethodCallExpression(new VariableExpression(constraintsEvaluatorVariableName), evaluateMethodName, new ArgumentListExpression(new VariableExpression("this"))));

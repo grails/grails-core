@@ -21,7 +21,6 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.encoding.Encoder
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter
@@ -262,7 +261,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         JstlUtils.exposeLocalizationContext webRequest.getRequest(), null
 
         servletContext = webRequest.servletContext
-        ServletContextHolder.servletContext = servletContext
+        Holders.servletContext = servletContext
 
         springConfig.servletContext = servletContext
 
@@ -311,7 +310,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
         onDestroy()
         ga.mainContext.close()
 
-        ServletContextHolder.servletContext = null
+        Holders.servletContext = null
         GroovyPageMetaInfo.DEFAULT_PLUGIN_PATH = ""
     }
 

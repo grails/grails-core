@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.plugins.web
 
+import grails.util.Holders
 import grails.util.Metadata
 import grails.util.MockHttpServletResponse
 import grails.web.CamelCaseUrlConverter
@@ -13,7 +14,6 @@ import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
 import org.codehaus.groovy.grails.commons.spring.WebRuntimeSpringConfiguration
 import org.codehaus.groovy.grails.plugins.DefaultGrailsPlugin
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
 import org.codehaus.groovy.grails.support.MockApplicationContext
 import org.codehaus.groovy.grails.support.MockResourceLoader
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
@@ -58,7 +58,7 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ga.initialise()
         ga.setApplicationContext(ctx)
         ctx.registerMockBean(GrailsApplication.APPLICATION_ID, ga)
-        ctx.registerMockBean(GrailsRuntimeConfigurator.CLASS_LOADER_BEAN, gcl)
+        ctx.registerMockBean(GrailsApplication.CLASS_LOADER_BEAN, gcl)
 
         ctx.registerMockBean("manager", mockManager)
 
@@ -85,6 +85,6 @@ abstract class AbstractGrailsPluginTests extends GroovyTestCase {
         ga.mainContext.close()
         pluginsToLoad = []
         ExpandoMetaClass.disableGlobally()
-        PluginManagerHolder.setPluginManager null
+        Holders.setPluginManager null
     }
 }

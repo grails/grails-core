@@ -163,6 +163,18 @@ public interface GrailsApplication extends ApplicationContextAware {
     String CONFIG_CLASS = "Config";
     String DATA_SOURCE_CLASS = "DataSource";
     String PROJECT_META_FILE = "application.properties";
+    String TRANSACTION_MANAGER_BEAN = "transactionManager";
+    String HIBERNATE_PROPERTIES_BEAN = "hibernateProperties";
+    String SESSION_FACTORY_BEAN = "sessionFactory";
+    String DATA_SOURCE_BEAN = "dataSource";
+    String MESSAGE_SOURCE_BEAN = "messageSource";
+    String MULTIPART_RESOLVER_BEAN = "multipartResolver";
+    String EXCEPTION_HANDLER_BEAN = "exceptionHandler";
+    String CUSTOM_EDITORS_BEAN = "customEditors";
+    String CLASS_EDITOR_BEAN = "classEditor";
+    String CLASS_LOADER_BEAN = "classLoader";
+    String DIALECT_DETECTOR_BEAN = "dialectDetector";
+    String OPEN_SESSION_IN_VIEW_INTERCEPTOR_BEAN = "openSessionInViewInterceptor";
 
     /**
      * Returns the ConfigObject instance.

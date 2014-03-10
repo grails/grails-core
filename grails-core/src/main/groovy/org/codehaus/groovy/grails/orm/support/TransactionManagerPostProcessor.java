@@ -15,7 +15,7 @@
  */
 package org.codehaus.groovy.grails.orm.support;
 
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
@@ -70,8 +70,8 @@ public class TransactionManagerPostProcessor extends InstantiationAwareBeanPostP
     }
 
     private void initialize() {
-        if (beanFactory.containsBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN)) {
-            transactionManager = beanFactory.getBean(GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN, PlatformTransactionManager.class);
+        if (beanFactory.containsBean(GrailsApplication.TRANSACTION_MANAGER_BEAN)) {
+            transactionManager = beanFactory.getBean(GrailsApplication.TRANSACTION_MANAGER_BEAN, PlatformTransactionManager.class);
         } else {
             // Fetch the names of all the beans that are of type
             // PlatformTransactionManager. Note that we have to pass

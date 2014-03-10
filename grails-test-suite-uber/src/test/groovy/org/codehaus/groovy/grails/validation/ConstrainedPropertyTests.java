@@ -1,5 +1,6 @@
 package org.codehaus.groovy.grails.validation;
 
+import grails.util.Holders;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyObject;
 import groovy.lang.IntRange;
@@ -17,7 +18,6 @@ import junit.framework.TestCase;
 import org.codehaus.groovy.grails.commons.DefaultGrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.plugins.MockGrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder;
 import org.codehaus.groovy.grails.test.support.MockHibernatePluginHelper;
 import org.springframework.validation.BindException;
 import org.springframework.validation.Errors;
@@ -30,14 +30,14 @@ public class ConstrainedPropertyTests extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         MockGrailsPluginManager pluginManager = new MockGrailsPluginManager();
-        PluginManagerHolder.setPluginManager(pluginManager);
+        Holders.setPluginManager(pluginManager);
         pluginManager.registerMockPlugin(MockHibernatePluginHelper.FAKE_HIBERNATE_PLUGIN);
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        PluginManagerHolder.setPluginManager(null);
+        Holders.setPluginManager(null);
     }
 
     public int getTestValidatorValue() {

@@ -2,7 +2,7 @@ package org.codehaus.groovy.grails.plugins.web
 
 import grails.spring.BeanBuilder
 import grails.util.GrailsWebUtil
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator
+import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.springframework.beans.factory.NoSuchBeanDefinitionException
 import org.springframework.web.multipart.commons.CommonsMultipartResolver
 
@@ -105,7 +105,7 @@ class FormTagLib {
 
         assertTrue ga.config.grails.disableCommonsMultipart
         shouldFail(NoSuchBeanDefinitionException) {
-            appCtx.getBean(GrailsRuntimeConfigurator.MULTIPART_RESOLVER_BEAN)
+            appCtx.getBean(GrailsApplication.MULTIPART_RESOLVER_BEAN)
         }
 
         tearDown()
@@ -114,7 +114,7 @@ class FormTagLib {
 
         assertTrue ga.config.grails.disableCommonsMultipart.size() == 0
 
-        assertTrue appCtx.getBean(GrailsRuntimeConfigurator.MULTIPART_RESOLVER_BEAN) instanceof CommonsMultipartResolver
+        assertTrue appCtx.getBean(GrailsApplication.MULTIPART_RESOLVER_BEAN) instanceof CommonsMultipartResolver
     }
 
     void testBeansWhenNotWarDeployedAndDevelopmentEnv() {

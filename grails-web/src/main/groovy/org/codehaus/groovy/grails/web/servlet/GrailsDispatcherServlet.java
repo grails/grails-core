@@ -15,24 +15,17 @@
  */
 package org.codehaus.groovy.grails.web.servlet;
 
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.codehaus.groovy.grails.commons.BootstrapArtefactHandler;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsBootstrapClass;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsClassUtils;
+import com.opensymphony.module.sitemesh.Decorator;
+import com.opensymphony.sitemesh.Content;
+import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
+import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
+import grails.util.Holders;
+import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.spring.GrailsApplicationContext;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
-import org.codehaus.groovy.grails.web.context.ServletContextHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
@@ -55,23 +48,16 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.MultipartResolver;
-import org.springframework.web.servlet.DispatcherServlet;
-import org.springframework.web.servlet.HandlerAdapter;
-import org.springframework.web.servlet.HandlerExecutionChain;
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.LocaleResolver;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.ModelAndViewDefiningException;
-import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.*;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
 import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.NestedServletException;
 
-import com.opensymphony.module.sitemesh.Decorator;
-import com.opensymphony.sitemesh.Content;
-import com.opensymphony.sitemesh.compatability.OldDecorator2NewDecorator;
-import com.opensymphony.sitemesh.webapp.SiteMeshWebAppContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Locale;
 
 /**
  * Handles incoming requests for Grails.
@@ -176,7 +162,7 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
         Assert.notNull(parent, "Grails requires a parent ApplicationContext, is the /WEB-INF/applicationContext.xml file missing?");
         setApplication(parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class));
 
-        ServletContextHolder.setServletContext(getServletContext());
+        Holders.setServletContext(getServletContext());
 
         WebApplicationContext webContext;
         if (wac instanceof GrailsApplicationContext) {

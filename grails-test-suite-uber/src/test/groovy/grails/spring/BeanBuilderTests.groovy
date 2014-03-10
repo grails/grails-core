@@ -15,7 +15,7 @@
  */
 package grails.spring
 
-import org.codehaus.groovy.grails.plugins.PluginManagerHolder
+import grails.util.Holders
 import org.springframework.aop.SpringProxy
 import org.springframework.beans.factory.BeanIsAbstractException
 import org.springframework.beans.factory.ObjectFactory
@@ -36,7 +36,7 @@ class BeanBuilderTests extends GroovyTestCase {
     @Override
     protected void setUp() {
         super.setUp()
-        PluginManagerHolder.setPluginManager null
+        Holders.setPluginManager null
     }
 
     void testImportSpringXml() {

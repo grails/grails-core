@@ -1,5 +1,6 @@
 dependencies {
     compile project(':grails-core')
+    compile project(':grails-web')
     compile "org.apache.ant:ant:${antVersion}"
     compile "jline:jline:$jlineVersion"
     compile "org.fusesource.jansi:jansi:$jansiVersion"

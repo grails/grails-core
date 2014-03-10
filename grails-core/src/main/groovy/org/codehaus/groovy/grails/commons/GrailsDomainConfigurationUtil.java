@@ -40,7 +40,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.codehaus.groovy.grails.commons.spring.GrailsRuntimeConfigurator;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.util.StringUtils;
@@ -331,10 +330,10 @@ public class GrailsDomainConfigurationUtil {
                 GrailsDomainClassProperty.MAPPED_BY, 
                 GrailsDomainClassProperty.BELONGS_TO,
                 GrailsDomainClassProperty.ERRORS,
-                GrailsRuntimeConfigurator.TRANSACTION_MANAGER_BEAN,
-                GrailsRuntimeConfigurator.DATA_SOURCE_BEAN,
-                GrailsRuntimeConfigurator.SESSION_FACTORY_BEAN,
-                GrailsRuntimeConfigurator.MESSAGE_SOURCE_BEAN,
+                GrailsApplication.TRANSACTION_MANAGER_BEAN,
+                GrailsApplication.DATA_SOURCE_BEAN,
+                GrailsApplication.SESSION_FACTORY_BEAN,
+                GrailsApplication.MESSAGE_SOURCE_BEAN,
                 "applicationContext",
                 PROPERTIES_PROPERTY);
         CONFIGURATIONAL_PROPERTIES = Collections.unmodifiableSet(configurational);

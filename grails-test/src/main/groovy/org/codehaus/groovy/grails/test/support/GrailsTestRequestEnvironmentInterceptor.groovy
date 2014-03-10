@@ -15,13 +15,13 @@
  */
 package org.codehaus.groovy.grails.test.support
 
+import grails.util.Holders
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletRequest
 import org.codehaus.groovy.grails.plugins.testing.GrailsMockHttpServletResponse
 import org.codehaus.groovy.grails.plugins.web.api.RequestMimeTypesApi
 import org.codehaus.groovy.grails.plugins.web.api.ResponseMimeTypesApi
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.context.ServletContextHolder
 import org.springframework.web.context.request.RequestContextHolder
 
 import org.springframework.context.ApplicationContext
@@ -55,7 +55,7 @@ class GrailsTestRequestEnvironmentInterceptor {
         }
 
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
-        ServletContextHolder.servletContext = webRequest.servletContext
+        Holders.servletContext = webRequest.servletContext
         webRequest.servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, applicationContext)
         webRequest.controllerName = controllerName
     }
