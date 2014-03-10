@@ -1,8 +1,4 @@
 dependencies {
-    compile "commons-lang:commons-lang:$commonsLangVersion"
-    compile ("commons-beanutils:commons-beanutils:${commonsBeanUtilsVersion}") {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
     compile project(":grails-core"),
             project(":grails-web"),
             project(":grails-async"),
