@@ -553,6 +553,10 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
     private void renderView(GrailsWebRequest webRequest, Map argMap, Object target, GroovyObject controller) {
         String viewName = argMap.get(ARGUMENT_VIEW).toString();
         String viewUri = webRequest.getAttributes().getNoSuffixViewURI((GroovyObject) target, viewName);
+        String contextPath = getContextPath(webRequest, argMap);
+        if(contextPath != null) {
+            viewUri = contextPath + viewUri;
+        }
         Object modelObject = argMap.get(ARGUMENT_MODEL);
         if (modelObject != null) {
             modelObject = argMap.get(ARGUMENT_MODEL);
