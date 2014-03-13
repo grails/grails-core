@@ -17,7 +17,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     compile 'opensymphony:sitemesh:2.4'
-
+    compile "junit:junit:${junitVersion}"
 
     compile "org.springframework:spring-webmvc:${springVersion}"
     compile "org.springframework:spring-context-support:${springVersion}"
@@ -44,7 +44,7 @@ dependencies {
             "org.aspectj:aspectjweaver:$aspectjVersion"
 
 
-    optional "junit:junit:${junitVersion}"
+
     optional "org.apache.ant:ant:${antVersion}"
     optional "jline:jline:$jlineVersion"
     optional "org.fusesource.jansi:jansi:$jansiVersion"
