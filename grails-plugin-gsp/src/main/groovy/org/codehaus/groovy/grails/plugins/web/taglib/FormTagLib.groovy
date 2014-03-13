@@ -1050,8 +1050,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         if (selected) {
             writer << 'selected="selected" '
         }
-        if(keyDisabled && !selected)
-        {
+        if(keyDisabled && !selected) {
             writer << 'disabled="disabled" '
         }
     }
