@@ -905,6 +905,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         def from = attrs.remove('from')
         def keys = attrs.remove('keys')
         def optionKey = attrs.remove('optionKey')
+        def optionDisabled = attrs.remove('optionDisabled')
         def optionValue = attrs.remove('optionValue')
         def value = attrs.remove('value')
         if (value instanceof Collection && attrs.multiple == null) {
@@ -935,6 +936,7 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
 
         // create options from list
         from.eachWithIndex {el, i ->
+            def keyDisabled
             def keyValue
             writer << '<option '
             if (keys) {
@@ -954,7 +956,15 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
                     keyValue = el[optionKey]
                     keyValueObject = el
                 }
-                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, keyValueObject)
+                if(optionDisabled) {
+                    if (optionDisabled instanceof Closure) {
+                        keyDisabled = optionDisabled(el)
+                    }
+                    else {
+                        keyDisabled = el[optionDisabled]
+                    }
+                }
+                writeValueAndCheckIfSelected(attrs.name, keyValue, value, writer, keyValueObject,keyDisabled)
             }
             else {
                 keyValue = el
@@ -1003,8 +1013,11 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
     private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer) {
         writeValueAndCheckIfSelected(selectName, keyValue, value, writer, null)
     }
-
     private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer, el) {
+        writeValueAndCheckIfSelected(selectName, keyValue, value, writer, el, null)
+    }
+
+    private void writeValueAndCheckIfSelected(selectName, keyValue, value, writer, el, keyDisabled) {
 
         boolean selected = false
         def keyClass = keyValue?.getClass()
@@ -1036,6 +1049,10 @@ class FormTagLib implements ApplicationContextAware, InitializingBean {
         writer << "value=\"${keyValue}\" "
         if (selected) {
             writer << 'selected="selected" '
+        }
+        if(keyDisabled && !selected)
+        {
+            writer << 'disabled="disabled" '
         }
     }
 
