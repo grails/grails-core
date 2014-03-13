@@ -30,7 +30,6 @@ import java.net.URL;
 
 import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
-import org.codehaus.groovy.grails.web.pages.GroovyPageParser;
 import org.codehaus.groovy.grails.web.util.StreamByteBuffer;
 import org.codehaus.groovy.runtime.DefaultGroovyMethodsSupport;
 import org.springframework.core.io.Resource;
@@ -43,6 +42,8 @@ import org.springframework.core.io.Resource;
  * @since 0.4
  */
 public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
+
+    private static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
 
     /**
      * Creates the specified Template using the given Spring Resource
@@ -70,7 +71,7 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
     @Override
     public final Template createTemplate(Reader reader) throws IOException {
         StreamByteBuffer buf=new StreamByteBuffer();
-        GrailsIOUtils.copy(reader, new OutputStreamWriter(buf.getOutputStream(), GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING));
+        GrailsIOUtils.copy(reader, new OutputStreamWriter(buf.getOutputStream(), GROOVY_SOURCE_CHAR_ENCODING));
         return createTemplate(buf.getInputStream());
     }
 
@@ -86,7 +87,7 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
 
     @Override
     public Template createTemplate(String templateText) throws CompilationFailedException, ClassNotFoundException, IOException {
-        return createTemplate(new ByteArrayInputStream(templateText.getBytes(GroovyPageParser.GROOVY_SOURCE_CHAR_ENCODING)));
+        return createTemplate(new ByteArrayInputStream(templateText.getBytes(GROOVY_SOURCE_CHAR_ENCODING)));
     }
 
     @Override
