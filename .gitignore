@@ -75,3 +75,5 @@ target
 /grails-web-jsp/bin/
 /grails-web-mvc/bin/
 /grails-web-sitemesh/bin/
+/grails-project-api/bin/
+/grails-web-common/bin/
