@@ -39,7 +39,6 @@ import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.grails.web.util.WebUtils;
-import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.grails.databinding.DataBindingSource;
 import org.grails.databinding.SimpleMapDataBindingSource;
 import org.springframework.context.ApplicationContext;
