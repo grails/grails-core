@@ -16,17 +16,19 @@
 package org.codehaus.groovy.grails.web.servlet;
 
 import groovy.lang.GroovyObject;
-import org.codehaus.groovy.grails.commons.ApplicationAttributes;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
-import org.springframework.context.MessageSource;
-import org.springframework.validation.Errors;
+
+import java.io.Writer;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.Writer;
+
+import org.codehaus.groovy.grails.commons.ApplicationAttributes;
+import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
+import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
+import org.springframework.context.MessageSource;
+import org.springframework.validation.Errors;
 
 /**
  * Defines the names of and methods to retrieve Grails specific request and servlet attributes.
@@ -144,7 +146,7 @@ public interface GrailsApplicationAttributes extends ApplicationAttributes {
     /**
      * @return Retrieves the shared GSP template engine
      */
-    GroovyPagesTemplateEngine getPagesTemplateEngine();
+    ResourceAwareTemplateEngine getPagesTemplateEngine();
 
     /**
      * Retrieves a Grails tag library from the request for the named tag in
