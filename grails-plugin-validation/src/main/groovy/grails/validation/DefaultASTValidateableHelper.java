@@ -17,13 +17,15 @@ package grails.validation;
 
 import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
 import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.ZERO_PARAMETERS;
+import grails.util.Holders;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import grails.util.Holders;
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
@@ -33,7 +35,9 @@ import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
 import org.codehaus.groovy.ast.expr.CastExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.EmptyExpression;
 import org.codehaus.groovy.ast.expr.Expression;
@@ -47,6 +51,7 @@ import org.codehaus.groovy.ast.stmt.ReturnStatement;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.grails.compiler.injection.ASTErrorsHelper;
 import org.codehaus.groovy.grails.compiler.injection.ASTValidationErrorsHelper;
+import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.codehaus.groovy.grails.web.plugins.support.ValidationSupport;
 import org.codehaus.groovy.syntax.Token;
@@ -108,6 +113,46 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(declareApplicationContextExpression));
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(declareConstraintsEvaluatorExpression));
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(initializeConstraintsFieldExpression));
+            
+            final Set<FieldNode> fields = getFieldsToEnsureConstraintsFor(classNode);
+            for (final FieldNode field : fields) {
+                final String fieldName = field.getName();
+                final String cpName = "$" + fieldName + "$constrainedProperty";
+                final ArgumentListExpression constrainedPropertyConstructorArgumentList = new ArgumentListExpression();
+                constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(classNode));
+                constrainedPropertyConstructorArgumentList.addExpression(new ConstantExpression(fieldName));
+                constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(field.getType()));
+                final ConstructorCallExpression constrainedPropertyCtorCallExpression = new ConstructorCallExpression(
+                        new ClassNode(ConstrainedProperty.class), constrainedPropertyConstructorArgumentList);
+                final Expression declareConstrainedPropertyExpression = new DeclarationExpression(
+                        new VariableExpression(cpName, ClassHelper.OBJECT_TYPE),
+                        Token.newSymbol(Types.EQUALS, 0, 0),
+                        constrainedPropertyCtorCallExpression);
+                final ArgumentListExpression applyConstraintMethodArgumentList = new ArgumentListExpression();
+                applyConstraintMethodArgumentList.addExpression(new ConstantExpression(ConstrainedProperty.NULLABLE_CONSTRAINT));
+                applyConstraintMethodArgumentList.addExpression(new ConstantExpression(false));
+                final Expression applyNullableConstraintMethodCallExpression = new MethodCallExpression(
+                        new VariableExpression(cpName), "applyConstraint", applyConstraintMethodArgumentList);
+                final ArgumentListExpression putMethodArgumentList = new ArgumentListExpression();
+                putMethodArgumentList.addExpression(new ConstantExpression(fieldName));
+                putMethodArgumentList.addExpression(new VariableExpression(cpName));
+                final MethodCallExpression addToConstraintsMapExpression = new MethodCallExpression(
+                        new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), "put", putMethodArgumentList);
+                final BlockStatement addNullableConstraintBlock = new BlockStatement();
+                addNullableConstraintBlock.addStatement(new ExpressionStatement(declareConstrainedPropertyExpression));
+                addNullableConstraintBlock.addStatement(new ExpressionStatement(applyNullableConstraintMethodCallExpression));
+                addNullableConstraintBlock.addStatement(new ExpressionStatement(addToConstraintsMapExpression));
+
+                final Expression constraintsMapContainsKeyExpression = new MethodCallExpression(
+                        new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME),
+                        "containsKey", new ArgumentListExpression(new ConstantExpression(fieldName)));
+                final BooleanExpression ifPropertyIsAlreadyConstrainedExpression = new BooleanExpression(constraintsMapContainsKeyExpression);
+                final Statement ifPropertyIsAlreadyConstrainedStatement = new IfStatement(
+                        ifPropertyIsAlreadyConstrainedExpression,
+                        new ExpressionStatement(new EmptyExpression()),
+                        addNullableConstraintBlock);
+                ifConstraintsPropertyIsNullBlockStatement.addStatement(ifPropertyIsAlreadyConstrainedStatement);
+            }
 
             final BlockStatement methodBlockStatement = new BlockStatement();
             methodBlockStatement.addStatement(ifConstraintsPropertyIsNullStatement);
@@ -122,6 +167,22 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
                 classNode.redirect().addMethod(methodNode);
             }
         }
+    }
+
+    protected Set<FieldNode> getFieldsToEnsureConstraintsFor(final ClassNode classNode) {
+        final Set<FieldNode> fieldsToConstrain = new HashSet<FieldNode>();
+        List<FieldNode> allFields = classNode.getFields();
+        for(final FieldNode field : allFields) {
+            if(!field.isStatic()) {
+                fieldsToConstrain.add(field);
+            }
+        }
+        final ClassNode superClass = classNode.getSuperClass();
+        if (!superClass.equals(new ClassNode(Object.class))) {
+            fieldsToConstrain.addAll(getFieldsToEnsureConstraintsFor(superClass));
+        }
+
+        return fieldsToConstrain;
     }
 
     protected void addValidateMethod(final ClassNode classNode) {

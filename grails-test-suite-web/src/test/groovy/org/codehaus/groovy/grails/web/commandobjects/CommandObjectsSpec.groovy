@@ -166,28 +166,6 @@ class CommandObjectsSpec extends Specification {
         model.artist.errors.errorCount == 0
     }
 
-    void "Test nullability"() {
-        when:
-        def model = controller.methodActionWithArtist()
-        def nameErrorCodes = model.artist?.errors?.getFieldError('name')?.codes?.toList()
-
-        then:
-        model.artist
-        model.artist.name == null
-        nameErrorCodes
-        'artistCommand.name.nullable.error' in nameErrorCodes
-
-        when:
-        model = controller.closureActionWithArtist()
-        nameErrorCodes = model.artist?.errors?.getFieldError('name')?.codes?.toList()
-
-        then:
-        model.artist
-        model.artist.name == null
-        nameErrorCodes
-        'artistCommand.name.nullable.error' in nameErrorCodes
-    }
-
     void 'Test beforeValidate gets invoked'() {
         when:
         def model = controller.methodAction()
