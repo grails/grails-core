@@ -7,6 +7,7 @@ import grails.util.ClosureToMapPopulator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluatorFactoryBean
 
+import spock.lang.Issue
 import spock.lang.Specification
 
 @TestFor(TestController)
@@ -76,6 +77,20 @@ class CommandObjectsSpec extends Specification {
         widget.errors.errorCount == 2
         widget.errors.getFieldError('width').rejectedValue == 'some bad value'
     }
+    
+    @Issue('GRAILS-11218')
+    void 'Test nested parameter names that match the command object class name'() {
+        when: 'the top level of nested request parameters match the name of the command object class name minus the word "Command"'
+        params.'widget.height' = 8
+        def model = controller.methodActionWithWidgetCommand()
+        
+        then: 'everything below the top level of the request parameter name is used for binding to that command object'
+        model.widget.height == 8
+    }
+    
+    void 'Test binding to multiple command object types which have overlapping property names'() {
+        
+    }
 
     void 'Test non validateable command object'() {
         when:
@@ -124,6 +139,7 @@ class CommandObjectsSpec extends Specification {
         model.person.name == 'Emerson'
     }
 
+    @Issue('GRAILS-11218')
     void "Test binding to multiple command objects with param name prefixes"() {
         when:
         controller.params.person = [name: 'Emerson']
