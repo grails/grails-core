@@ -17,6 +17,7 @@ package org.codehaus.groovy.grails.web.mapping
 
 import grails.util.Environment
 import grails.util.GrailsNameUtils
+import grails.util.GrailsWebUtil
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
@@ -105,7 +106,21 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                     writer << cp
                 }
             }
-            writer << attrs.get(ATTRIBUTE_URI).toString()
+            def uri = attrs.get(ATTRIBUTE_URI).toString()
+            writer << uri
+            
+            def paramsAttribute = attrs.get(ATTRIBUTE_PARAMS)
+            Map params = paramsAttribute && (paramsAttribute instanceof Map) ? (Map)paramsAttribute : null
+            if(params) {
+                def charset = GrailsWebUtil.DEFAULT_ENCODING
+                def paramString = params.collect { k, v -> 
+                    def encodedKey = URLEncoder.encode(k as String, charset)
+                    def encodedValue = URLEncoder.encode(v as String, charset)
+                    "$encodedKey=$encodedValue"
+                }.join('&')
+                writer << (uri.indexOf('?') >= 0 ? '&' : '?')
+                writer << paramString
+            }
         }
         else if (attrs.get(ATTRIBUTE_RELATIVE_URI) != null) {
             String relativeUri = attrs.get(ATTRIBUTE_RELATIVE_URI)

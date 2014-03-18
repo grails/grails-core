@@ -796,4 +796,22 @@ class ApplicationTagLibTests extends AbstractGrailsTagTests {
             appCtx.getBean(FormTagLib.name).requestDataValueProcessor = null
         }
     }
+    
+    void testCreateLinkWithUriAndParams() {
+        unRegisterRequestDataValueProcessor()
+        def template = '''<g:createLink uri="/some/path" params="[width:21, height:12]"/>'''
+        assertOutputEquals '/some/path?width=21&height=12', template
+    }
+    
+    void testCreateLinkWithParamsAndUriContainsRequestParams() {
+        unRegisterRequestDataValueProcessor()
+        def template = '''<g:createLink uri="/some/path?name=JSB" params="[width:21, height:12]"/>'''
+        assertOutputEquals '/some/path?name=JSB&width=21&height=12', template
+    }
+
+    void testUrlEncodingParamsCreateLinkWithUri() {
+        unRegisterRequestDataValueProcessor()
+        def template = '''<g:createLink uri="/some/path" params="['some height':12, name: 'Jeff Brown']"/>'''
+        assertOutputEquals '/some/path?some+height=12&name=Jeff+Brown', template
+    }
 }
