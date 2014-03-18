@@ -19,6 +19,7 @@ import grails.validation.DeferredBindingActions;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,17 +27,17 @@ import java.util.Map;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
 import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -44,6 +45,8 @@ import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.handler.DispatcherServletWebRequest;
@@ -60,7 +63,8 @@ import org.springframework.web.util.UrlPathHelper;
  * @since 0.4
  */
 public class GrailsWebRequest extends DispatcherServletWebRequest implements ParameterInitializationCallback {
-
+    private static final Class<? extends GrailsApplicationAttributes> grailsApplicationAttributesClass = GrailsFactoriesLoader.loadFactoryClasses(GrailsApplicationAttributes.class, GrailsWebRequest.class.getClassLoader()).get(0);
+    private static final Constructor<? extends GrailsApplicationAttributes> grailsApplicationAttributesConstructor = ClassUtils.getConstructorIfAvailable(grailsApplicationAttributesClass, ServletContext.class);
     private GrailsApplicationAttributes attributes;
     private GrailsParameterMap params;
     private GrailsParameterMap originalParams;
@@ -85,7 +89,12 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
 
     public GrailsWebRequest(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext) {
         super(request, response);
-        attributes = new DefaultGrailsApplicationAttributes(servletContext);
+        try {
+            attributes = grailsApplicationAttributesConstructor.newInstance(servletContext);
+        }
+        catch (Exception e) {
+            ReflectionUtils.rethrowRuntimeException(e);
+        }
         inheritEncodingStateRegistry();
     }
 
