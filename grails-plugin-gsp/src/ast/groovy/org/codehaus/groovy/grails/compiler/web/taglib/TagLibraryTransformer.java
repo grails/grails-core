@@ -16,13 +16,31 @@
 package org.codehaus.groovy.grails.compiler.web.taglib;
 
 import groovy.lang.Closure;
+
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
-import org.codehaus.groovy.ast.expr.*;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.ClassExpression;
+import org.codehaus.groovy.ast.expr.ClosureExpression;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.Expression;
+import org.codehaus.groovy.ast.expr.MapExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.ExpressionStatement;
+import org.codehaus.groovy.ast.stmt.ReturnStatement;
+import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.SourceUnit;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.compiler.injection.AbstractGrailsArtefactTransformer;
@@ -32,15 +50,6 @@ import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import java.lang.Override;
-import java.lang.String;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 /**
  * Enhances tag library classes with the appropriate API at compile time.
  *
@@ -49,6 +58,8 @@ import java.util.regex.Pattern;
  */
 @AstTransformer
 public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
+
+    protected static final String GET_TAG_LIB_NAMESPACE_METHOD_NAME = "$getTagLibNamespace";
 
     public static Pattern TAGLIB_PATTERN = Pattern.compile(".+/" +
             GrailsResourceUtils.GRAILS_APP_DIR + "/taglib/(.+)TagLib\\.groovy");
@@ -108,16 +119,26 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
                 namespace = initialExpression.getText();
             }
         }
+        
+        
+        addGetTagLibNamespaceMethod(classNode, namespace);
 
         MethodCallExpression tagLibraryLookupMethodCall = new MethodCallExpression(new VariableExpression(apiInstanceProperty), "getTagLibraryLookup", ZERO_ARGS);
         for (PropertyNode tag : tags) {
             String tagName = tag.getName();
-            addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, namespace, tagName);
+            addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, tagName);
             addAttributesAndStringBodyMethod(classNode, tagName);
-            addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, namespace, tagName, false);
-            addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, namespace, tagName, true, false);
-            addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, namespace, tagName, false, false);
+            addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, tagName, false);
+            addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, tagName, true, false);
+            addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, tagName, false, false);
         }
+    }
+
+    private void addGetTagLibNamespaceMethod(final ClassNode classNode, final String namespace) {
+        final ConstantExpression namespaceConstantExpression = new ConstantExpression(namespace);
+        Statement returnNamespaceStatement = new ReturnStatement(namespaceConstantExpression);
+        final MethodNode m = new MethodNode(GET_TAG_LIB_NAMESPACE_METHOD_NAME, Modifier.PROTECTED, new ClassNode(String.class), Parameter.EMPTY_ARRAY, null, returnNamespaceStatement);
+        classNode.addMethod(m);
     }
 
     private void addAttributesAndStringBodyMethod(ClassNode classNode, String tagName) {
@@ -131,19 +152,19 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
         classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, MAP_CHARSEQUENCE_PARAMETERS, null, methodBody));
     }
 
-    private void addAttributesAndBodyMethod(ClassNode classNode, MethodCallExpression tagLibraryLookupMethodCall, String namespace, String tagName) {
-        addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, namespace, tagName, true);
+    private void addAttributesAndBodyMethod(ClassNode classNode, MethodCallExpression tagLibraryLookupMethodCall, String tagName) {
+        addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, tagName, true);
     }
 
-    private void addAttributesAndBodyMethod(ClassNode classNode, MethodCallExpression tagLibraryLookupMethodCall, String namespace, String tagName, boolean includeBody) {
-        addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, namespace, tagName, includeBody, true);
+    private void addAttributesAndBodyMethod(ClassNode classNode, MethodCallExpression tagLibraryLookupMethodCall, String tagName, boolean includeBody) {
+        addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, tagName, includeBody, true);
     }
 
-    private void addAttributesAndBodyMethod(ClassNode classNode, MethodCallExpression tagLibraryLookupMethodCall, String namespace, String tagName, boolean includeBody, boolean includeAttrs) {
+    private void addAttributesAndBodyMethod(ClassNode classNode, MethodCallExpression tagLibraryLookupMethodCall, String tagName, boolean includeBody, boolean includeAttrs) {
         BlockStatement methodBody = new BlockStatement();
         ArgumentListExpression arguments = new ArgumentListExpression();
         arguments.addExpression(tagLibraryLookupMethodCall)
-                 .addExpression(new ConstantExpression(namespace))
+                 .addExpression(new MethodCallExpression(new VariableExpression("this"), GET_TAG_LIB_NAMESPACE_METHOD_NAME, new ArgumentListExpression()))
                  .addExpression(new ConstantExpression(tagName))
                  .addExpression(includeAttrs ? ATTRS_EXPRESSION : new MapExpression())
                  .addExpression(includeBody ? BODY_EXPRESSION : NULL_EXPRESSION)

@@ -3,7 +3,6 @@ package org.codehaus.groovy.grails.web.taglib
 import grails.artefact.Artefact
 import grails.test.mixin.Mock
 import grails.test.mixin.TestFor
-import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
@@ -12,7 +11,6 @@ import spock.lang.Specification
 class ControllerTagLibMethodInheritanceSpec extends Specification {
 
     @Issue('GRAILS-10031')
-    @Ignore
     void 'Test calling an inherited tag which invokes a method overridden in the subclass'() {
         when:
         def content = applyTemplate('${second.myTag()}')
