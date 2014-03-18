@@ -82,8 +82,8 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             packager.createConfig()
             if (warMode) {
 
-                // need to swap out the args map so any test phase/targetting patterns
-                // aren't intepreted as the war name.
+                // need to swap out the args map so any test phase/targeting patterns
+                // aren't interpreted as the war name.
                 if( !Environment.isFork() ) {
                     projectRunner.warCreator.packageWar()
                 }
