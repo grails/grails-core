@@ -82,8 +82,8 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             packager.createConfig()
             if (warMode) {
 
-                // need to swap out the args map so any test phase/targetting patterns
-                // aren't intepreted as the war name.
+                // need to swap out the args map so any test phase/targeting patterns
+                // aren't interpreted as the war name.
                 if( !Environment.isFork() ) {
                     projectRunner.warCreator.packageWar()
                 }
@@ -116,7 +116,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                 }
                 else {
                     final console = GrailsConsole.getInstance()
-                    console.updateStatus("Waiting for server availablility")
+                    console.updateStatus("Waiting for server availability")
                     int maxWait = 10000
                     int timeout = 0
                     while(true) {
