@@ -17,20 +17,22 @@ package grails.validation;
 
 import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.EMPTY_CLASS_ARRAY;
 import static org.codehaus.groovy.grails.compiler.injection.GrailsArtefactClassInjector.ZERO_PARAMETERS;
+import grails.util.GrailsNameUtils;
 import grails.util.Holders;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
 import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.BinaryExpression;
 import org.codehaus.groovy.ast.expr.BooleanExpression;
@@ -114,14 +116,15 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(declareConstraintsEvaluatorExpression));
             ifConstraintsPropertyIsNullBlockStatement.addStatement(new ExpressionStatement(initializeConstraintsFieldExpression));
             
-            final Set<FieldNode> fields = getFieldsToEnsureConstraintsFor(classNode);
-            for (final FieldNode field : fields) {
-                final String fieldName = field.getName();
-                final String cpName = "$" + fieldName + "$constrainedProperty";
+            final Map<String, ClassNode> propertiesToConstrain = getPropertiesToEnsureConstraintsFor(classNode);
+            for (final Map.Entry<String, ClassNode> entry : propertiesToConstrain.entrySet()) {
+                final String propertyName = entry.getKey();
+                final ClassNode propertyType = entry.getValue();
+                final String cpName = "$" + propertyName + "$constrainedProperty";
                 final ArgumentListExpression constrainedPropertyConstructorArgumentList = new ArgumentListExpression();
                 constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(classNode));
-                constrainedPropertyConstructorArgumentList.addExpression(new ConstantExpression(fieldName));
-                constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(field.getType()));
+                constrainedPropertyConstructorArgumentList.addExpression(new ConstantExpression(propertyName));
+                constrainedPropertyConstructorArgumentList.addExpression(new ClassExpression(propertyType));
                 final ConstructorCallExpression constrainedPropertyCtorCallExpression = new ConstructorCallExpression(
                         new ClassNode(ConstrainedProperty.class), constrainedPropertyConstructorArgumentList);
                 final Expression declareConstrainedPropertyExpression = new DeclarationExpression(
@@ -134,7 +137,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
                 final Expression applyNullableConstraintMethodCallExpression = new MethodCallExpression(
                         new VariableExpression(cpName), "applyConstraint", applyConstraintMethodArgumentList);
                 final ArgumentListExpression putMethodArgumentList = new ArgumentListExpression();
-                putMethodArgumentList.addExpression(new ConstantExpression(fieldName));
+                putMethodArgumentList.addExpression(new ConstantExpression(propertyName));
                 putMethodArgumentList.addExpression(new VariableExpression(cpName));
                 final MethodCallExpression addToConstraintsMapExpression = new MethodCallExpression(
                         new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME), "put", putMethodArgumentList);
@@ -145,7 +148,7 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
 
                 final Expression constraintsMapContainsKeyExpression = new MethodCallExpression(
                         new VariableExpression(CONSTRAINED_PROPERTIES_PROPERTY_NAME),
-                        "containsKey", new ArgumentListExpression(new ConstantExpression(fieldName)));
+                        "containsKey", new ArgumentListExpression(new ConstantExpression(propertyName)));
                 final BooleanExpression ifPropertyIsAlreadyConstrainedExpression = new BooleanExpression(constraintsMapContainsKeyExpression);
                 final Statement ifPropertyIsAlreadyConstrainedStatement = new IfStatement(
                         ifPropertyIsAlreadyConstrainedExpression,
@@ -169,19 +172,47 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
         }
     }
 
-    protected Set<FieldNode> getFieldsToEnsureConstraintsFor(final ClassNode classNode) {
-        final Set<FieldNode> fieldsToConstrain = new HashSet<FieldNode>();
-        List<FieldNode> allFields = classNode.getFields();
-        for(final FieldNode field : allFields) {
-            if(!field.isStatic()) {
-                fieldsToConstrain.add(field);
+    /**
+     * Retrieves a Map describing all of the properties which need to be constrained for the class
+     * represented by classNode.  The keys in the Map will be property names and the values are the
+     * type of the corresponding property.
+     * 
+     * @param classNode the class to inspect
+     * @return a Map describing all of the properties which need to be constrained
+     */
+    protected Map<String, ClassNode> getPropertiesToEnsureConstraintsFor(final ClassNode classNode) {
+        final Map<String, ClassNode> fieldsToConstrain = new HashMap<String, ClassNode>();
+        final List<FieldNode> allFields = classNode.getFields();
+        for (final FieldNode field : allFields) {
+            if (!field.isStatic()) {
+                    final PropertyNode property = classNode.getProperty(field.getName());
+                    if(property != null) {
+                        fieldsToConstrain.put(field.getName(), field.getType());
+                    }
             }
         }
-        final ClassNode superClass = classNode.getSuperClass();
-        if (!superClass.equals(new ClassNode(Object.class))) {
-            fieldsToConstrain.addAll(getFieldsToEnsureConstraintsFor(superClass));
+        final Map<String, MethodNode> declaredMethodsMap = classNode.getDeclaredMethodsMap();
+        for (Entry<String, MethodNode> methodEntry : declaredMethodsMap.entrySet()) {
+            final MethodNode value = methodEntry.getValue();
+            if (!value.isStatic() && value.isPublic() && classNode.equals(value.getDeclaringClass())) {
+                Parameter[] parameters = value.getParameters();
+                if (parameters != null && parameters.length == 1) {
+                    final String methodName = value.getName();
+                    if (methodName.startsWith("set")) {
+                        final Parameter parameter = parameters[0];
+                        final ClassNode paramType = parameter.getType();
+                        final String restOfMethodName = methodName.substring(3);
+                        final String propertyName = GrailsNameUtils.getPropertyName(restOfMethodName);
+                        fieldsToConstrain.put(propertyName, paramType);
+                    }
+                }
+            }
         }
 
+        final ClassNode superClass = classNode.getSuperClass();
+        if (!superClass.equals(new ClassNode(Object.class))) {
+            fieldsToConstrain.putAll(getPropertiesToEnsureConstraintsFor(superClass));
+        }
         return fieldsToConstrain;
     }
 

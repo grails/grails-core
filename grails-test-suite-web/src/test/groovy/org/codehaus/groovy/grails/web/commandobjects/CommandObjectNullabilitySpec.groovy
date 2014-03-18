@@ -17,10 +17,18 @@ class CommandObjectNullabilitySpec extends Specification {
         then:
         widget
         widget.hasErrors()
-        widget.errors.errorCount == 3
+        widget.errors.errorCount == 5
         widget.errors.getFieldError('explicitlyNonNullableProperty').code == 'nullable'
         widget.errors.getFieldError('implicitlyNonNullableConstrainedProperty').code == 'nullable'
         widget.errors.getFieldError('implicitlyNonNullableUnconstrainedProperty').code == 'nullable'
+        widget.errors.getFieldError('privatePropertyWithPublicGetterAndSetter').code == 'nullable'
+        widget.errors.getFieldError('publicPropertyWithNoField').code == 'nullable'
+        
+        and:
+        !widget.errors.getFieldError('staticPublicPropertyWithNoField')
+        !widget.errors.getFieldError('someStaticProperty')
+        !widget.errors.getFieldError('explicitlyNullableProperty')
+        !widget.errors.getFieldError('privatePropertyWithNoSetterOrGetter')
     }
 
     @Issue('GRAILS-9686')
@@ -32,13 +40,21 @@ class CommandObjectNullabilitySpec extends Specification {
         then:
         widget
         widget.hasErrors()
-        widget.errors.errorCount == 6
+        widget.errors.errorCount == 8
         widget.errors.getFieldError('explicitlyNonNullableProperty').code == 'nullable'
         widget.errors.getFieldError('implicitlyNonNullableConstrainedProperty').code == 'nullable'
         widget.errors.getFieldError('implicitlyNonNullableUnconstrainedProperty').code == 'nullable'
         widget.errors.getFieldError('subclassExplicitlyNonNullableProperty').code == 'nullable'
         widget.errors.getFieldError('subclassImplicitlyNonNullableConstrainedProperty').code == 'nullable'
         widget.errors.getFieldError('subclassImplicitlyNonNullableUnconstrainedProperty').code == 'nullable'
+        widget.errors.getFieldError('privatePropertyWithPublicGetterAndSetter').code == 'nullable'
+        widget.errors.getFieldError('publicPropertyWithNoField').code == 'nullable'
+        
+        and:
+        !widget.errors.getFieldError('staticPublicPropertyWithNoField')
+        !widget.errors.getFieldError('someStaticProperty')
+        !widget.errors.getFieldError('explicitlyNullableProperty')
+        !widget.errors.getFieldError('privatePropertyWithNoSetterOrGetter')
     }
 }
 
@@ -60,8 +76,31 @@ class Widget {
     String implicitlyNonNullableConstrainedProperty
     String implicitlyNonNullableUnconstrainedProperty
     static String someStaticProperty
+    private String privatePropertyWithNoSetterOrGetter
+    private String privatePropertyWithPublicGetterAndSetter
     
+    public void setPrivatePropertyWithPublicGetterAndSetter(String s) {
+        privatePropertyWithPublicGetterAndSetter = s
+    }
     
+    public String getPrivatePropertyWithPublicGetterAndSetter() {
+        privatePropertyWithPublicGetterAndSetter
+    }
+    
+    public void setPublicPropertyWithNoField(String s) {
+    }
+    
+    public String getPublicPropertyWithNoField() {
+        null
+    }
+
+    public static void setStaticPublicPropertyWithNoField(String s) {
+    }
+    
+    public static String getStaticPublicPropertyWithNoField() {
+        null
+    }
+
     static constraints = {
         explicitlyNullableProperty nullable: true
         explicitlyNonNullableProperty nullable: false
