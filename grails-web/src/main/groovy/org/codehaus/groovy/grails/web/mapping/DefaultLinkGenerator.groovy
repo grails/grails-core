@@ -106,6 +106,17 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
                 }
             }
             writer << attrs.get(ATTRIBUTE_URI).toString()
+            
+            final paramsAttribute = attrs.get(ATTRIBUTE_PARAMS)
+            Map params = paramsAttribute && (paramsAttribute instanceof Map) ? (Map)paramsAttribute : null
+            if(params) {
+                StringBuilder paramsString = new StringBuilder('?')
+                params.each { k, v ->
+                    paramsString.append "${k}=${v}&"
+                }
+                // get rid of the trailing question mark
+                writer << paramsString.toString()[0..-2]
+            }
         }
         else if (attrs.get(ATTRIBUTE_RELATIVE_URI) != null) {
             String relativeUri = attrs.get(ATTRIBUTE_RELATIVE_URI)
