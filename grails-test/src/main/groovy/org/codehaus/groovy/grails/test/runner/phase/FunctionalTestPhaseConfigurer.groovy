@@ -81,7 +81,6 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
 
             packager.createConfig()
             if (warMode) {
-
                 // need to swap out the args map so any test phase/targetting patterns
                 // aren't intepreted as the war name.
                 if( !Environment.isFork() ) {
@@ -94,15 +93,18 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                 else {
                     projectRunner.runWar()
                 }
+                initFunctionalBaseUrl()
             } else {
                 final config = projectRunner.projectPackager.packageApplication()
                 testExecutionContext.setVariable("config", config)
+
                 if (https) {
                     projectRunner.runAppHttps()
                 }
                 else {
                     projectRunner.runApp()
                 }
+                initFunctionalBaseUrl()
 
                 if (!isForkedRun) {
                     try {
@@ -136,16 +138,8 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         }
         else {
             existingServer = true
+            initFunctionalBaseUrl()
         }
-
-        if (baseUrl) {
-            functionalBaseUrl = baseUrl
-        } else {
-            functionalBaseUrl = httpsBaseUrl ? projectRunner.urlHttps : projectRunner.url
-            functionalBaseUrl += '/'
-        }
-
-        System.setProperty(buildSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
     }
 
     @Override
@@ -175,5 +169,16 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             registryCleaner.clean()
             GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
         }
+    }
+
+    private void initFunctionalBaseUrl () {
+        if (baseUrl) {
+            functionalBaseUrl = baseUrl
+        } else {
+            functionalBaseUrl = httpsBaseUrl ? projectRunner.urlHttps : projectRunner.url
+            functionalBaseUrl += '/'
+        }
+
+        System.setProperty(buildSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
     }
 }
