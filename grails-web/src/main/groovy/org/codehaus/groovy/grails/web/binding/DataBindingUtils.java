@@ -192,7 +192,7 @@ public class DataBindingUtils {
      * @param object The object to bind to
      * @param source The source object
      * @param include The list of properties to include
-     * @param exclude The list of properties to exclud
+     * @param exclude The list of properties to exclude
      * @param filter The prefix to filter by
      *
      * @return A BindingResult or null if it wasn't successful
@@ -216,7 +216,7 @@ public class DataBindingUtils {
      * @param object The object to bind to
      * @param source The source object
      * @param include The list of properties to include
-     * @param exclude The list of properties to exclud
+     * @param exclude The list of properties to exclude
      * @param filter The prefix to filter by
      *
      * @see org.codehaus.groovy.grails.commons.GrailsDomainClass
