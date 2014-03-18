@@ -20,6 +20,7 @@ import groovy.transform.TypeChecked
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
+import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.pages.GroovyPageConfig
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack
@@ -181,25 +182,8 @@ class WithCodecHelper {
         codecName == null ? null : encoders[codecName]
     }
 
-    /**
-     * Lookup encoder.
-     *
-     * @param grailsApplication the grailsApplication instance
-     * @param codecName the codec name
-     * @return the encoder instance
-     */
     static Encoder lookupEncoder(GrailsApplication grailsApplication, String codecName) {
-        ApplicationContext ctx = grailsApplication != null ? grailsApplication.getMainContext() : null
-        if(ctx != null) {
-            try {
-                CodecLookup codecLookup = ctx.getBean("codecLookup", CodecLookup.class)
-                return codecLookup.lookupEncoder(codecName)
-            } catch (NoSuchBeanDefinitionException e) {
-                // ignore missing codecLookup bean in tests
-                log.debug("codecLookup bean is missing from test context.", e)
-            }
-        }
-        return null
+        CodecLookupHelper.lookupEncoder(grailsApplication, codecName)
     }
 
     static Map<String, Object> mergeSettingsAndMakeCanonical(Object currentSettings,

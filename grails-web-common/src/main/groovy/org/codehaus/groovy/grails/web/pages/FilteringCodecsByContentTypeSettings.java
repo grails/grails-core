@@ -23,8 +23,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 
 public class FilteringCodecsByContentTypeSettings {
     private static final String WILDCARD_CONTENT_TYPE = "*/*";
@@ -51,7 +51,7 @@ public class FilteringCodecsByContentTypeSettings {
                 Map codecForContentTypeMapping=(Map)codecForContentTypeConfig;
                 for(Iterator i=codecForContentTypeMapping.entrySet().iterator();i.hasNext();) {
                     Map.Entry entry=(Map.Entry)i.next();
-                    Encoder encoder=WithCodecHelper.lookupEncoder(grailsApplication, String.valueOf(entry.getValue()));
+                    Encoder encoder=CodecLookupHelper.lookupEncoder(grailsApplication, String.valueOf(entry.getValue()));
                     if (entry.getKey() instanceof Pattern) {
                         contentTypePatternToEncoderMapping.put((Pattern)entry.getKey(), encoder);
                     } else {

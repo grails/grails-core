@@ -32,6 +32,7 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsCodecClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
+import org.codehaus.groovy.grails.support.encoding.CodecLookupHelper;
 import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
@@ -41,7 +42,6 @@ import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyEditorRegistrySupport;
 import org.springframework.context.ApplicationContext;
@@ -473,7 +473,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         return filteringEncoder != null ? filteringEncoder.getCodecIdentifier().getCodecName() : null;
     }
     public void setFilteringCodec(String codecName) {
-        filteringEncoder=codecName != null ? WithCodecHelper.lookupEncoder(attributes.getGrailsApplication(), codecName) : null;
+        filteringEncoder=codecName != null ? CodecLookupHelper.lookupEncoder(attributes.getGrailsApplication(), codecName) : null;
     }
 
     public Encoder lookupFilteringEncoder() {
