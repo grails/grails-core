@@ -88,10 +88,6 @@ class CommandObjectsSpec extends Specification {
         model.widget.height == 8
     }
     
-    void 'Test binding to multiple command object types which have overlapping property names'() {
-        
-    }
-
     void 'Test non validateable command object'() {
         when:
         controller.params.name = 'Beardfish'
