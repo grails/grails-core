@@ -1,13 +1,16 @@
 package org.codehaus.groovy.grails.web.mime
 
 import grails.util.Holders
+
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication
 import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
+import org.junit.Ignore
 
 /**
  * @author Graeme Rocher
  * @since 1.0
  */
+@Ignore
 class AcceptHeaderParserTests extends GroovyTestCase {
 
     def config

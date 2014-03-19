@@ -11,6 +11,7 @@ import org.codehaus.groovy.grails.plugins.web.mimes.MimeTypesFactoryBean
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -18,6 +19,7 @@ import spock.lang.Unroll
 /**
  * Tests for {@link RequestMimeTypesApi}
  */
+@Ignore
 class RequestAndResponseMimeTypesApiSpec extends Specification{
     def requestMimeTypesApiInstance
     def responseMimeTypesApiInstance
