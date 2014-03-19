@@ -105,7 +105,7 @@ class TestRuntimeFactory {
     private TestRuntime findOrCreateSharedRuntime(Class<? extends SharedRuntimeConfigurer> sharedRuntimeConfigurer, Set<String> features) {
         TestRuntime runtime=sharedRuntimes.get(sharedRuntimeConfigurer)
         if(runtime==null) {
-            SharedRuntimeConfigurer configurerInstance=(SharedRuntimeConfigurer)sharedRuntimeConfigurer.newInstance()
+            SharedRuntimeConfigurer configurerInstance=(SharedRuntimeConfigurer)((Class)sharedRuntimeConfigurer).newInstance()
             runtime = createRuntimeForFeatures(configurerInstance.getRequiredFeatures() as Set,
                     configurerInstance instanceof TestEventInterceptor ? (TestEventInterceptor)configurerInstance : null,
                     true)
@@ -227,7 +227,7 @@ class TestRuntimeFactory {
     // maps feature to plugin with lowest ordinal (highest priority)
     private Map<String, TestPlugin> resolvePlugins() {
         Map<String, List<TestPlugin>> featureToPlugins = [:]
-        List<TestPlugin> availablePlugins = availablePluginClasses.collect { Class<? extends TestPlugin> clazz -> clazz.newInstance() }
+        List<TestPlugin> availablePlugins = availablePluginClasses.collect { Class<? extends TestPlugin> clazz -> ((Class)clazz).newInstance() }
         for(TestPlugin plugin : availablePlugins) {
             for(String feature : plugin.getProvidedFeatures()) {
                 def pluginList = featureToPlugins.get(feature)
