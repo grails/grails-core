@@ -82,11 +82,31 @@ class WebMetaUtils {
         }
     }
 
+    /**
+     * Use getCommandObjectBindingSourceForPrefix instead.  
+     * 
+     * @see #getCommandObjectBindingSourceForPrefix(String, DataBindingSource)
+     * @deprecated
+     */
+    @Deprecated
     static DataBindingSource getCommandObjectBindingSource(Class commandObjectClass, DataBindingSource params) {
         def commandParamsKey = convertTypeNameToParamsPrefix(commandObjectClass)
+        getCommandObjectBindingSourceForPrefix commandParamsKey, params
+    }
+
+    /**
+     * Return a DataBindingSource for a command object which has a parameter name matching the specified prefix.
+     * If params include something like widget.name=Thing and prefix is widget then the returned binding source
+     * will include name=thing, not widget.name=Thing.
+     * 
+     * @param prefix The parameter name for the command object
+     * @param params The original binding source associated with the request
+     * @return The binding source suitable for binding to a command object with a parameter name matching the specified prefix.
+     */
+    static DataBindingSource getCommandObjectBindingSourceForPrefix(String prefix, DataBindingSource params) {
         def commandParams = params
-        if (params != null && commandParamsKey != null) {
-            def innerValue = params[commandParamsKey]
+        if (params != null && prefix != null) {
+            def innerValue = params[prefix]
             if(innerValue instanceof DataBindingSource) {
                 commandParams = innerValue
             } else if(innerValue instanceof Map) {
@@ -95,7 +115,6 @@ class WebMetaUtils {
         }
         commandParams
     }
-
     private static String convertTypeNameToParamsPrefix(Class clazz) {
         def result = clazz?.simpleName?.replaceAll(/(\B[A-Z])/, '-$1')?.toLowerCase()
         if (result?.endsWith("-command")) {

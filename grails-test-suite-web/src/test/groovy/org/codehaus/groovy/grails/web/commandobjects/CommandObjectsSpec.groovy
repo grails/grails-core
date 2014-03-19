@@ -79,7 +79,7 @@ class CommandObjectsSpec extends Specification {
     }
     
     @Issue('GRAILS-11218')
-    void 'Test nested parameter names that match the command object class name'() {
+    void 'Test nested parameter names that match the command object parameter name'() {
         when: 'the top level of nested request parameters match the name of the command object class name minus the word "Command"'
         params.'widget.height' = 8
         def model = controller.methodActionWithWidgetCommand()
@@ -400,11 +400,11 @@ class CommandObjectsSpec extends Specification {
 
 @Artefact('Controller')
 class TestController {
-    def closureAction = { PersonCommand p ->
+    def closureAction = { Person p ->
         [person: p]
     }
 
-    def methodAction(PersonCommand p) {
+    def methodAction(Person p) {
         [person: p]
     }
 
@@ -416,11 +416,11 @@ class TestController {
         [command: co]
     }
 
-    def closureActionWithArtist = { ArtistCommand a ->
+    def closureActionWithArtist = { Artist a ->
         [artist: a]
     }
 
-    def methodActionWithArtist(ArtistCommand a) {
+    def methodActionWithArtist(Artist a) {
         [artist: a]
     }
 
@@ -432,20 +432,20 @@ class TestController {
         [artist: a]
     }
 
-    def closureActionWithMultipleCommandObjects = { PersonCommand p, ArtistCommand a ->
-        [person: p, artist: a]
+    def closureActionWithMultipleCommandObjects = { Person person, Artist artist ->
+        [person: person, artist: artist]
     }
 
-    def methodActionWithMultipleCommandObjects(PersonCommand p, ArtistCommand a)  {
-        [person: p, artist: a]
+    def methodActionWithMultipleCommandObjects(Person person, Artist artist)  {
+        [person: person, artist: artist]
     }
 
     def methodActionWithSomeCommand(SomeCommand co) {
         [commandObject: co]
     }
 
-    def methodActionWithWidgetCommand(WidgetCommand co) {
-        [widget: co]
+    def methodActionWithWidgetCommand(WidgetCommand widget) {
+        [widget: widget]
     }
 
     def closureActionWithNonValidateableCommandObjectWithAValidateMethod = { ClassWithNoValidateMethod co ->
@@ -492,12 +492,12 @@ class SomeCommand {
     }
 }
 
-class ArtistCommand {
+class Artist {
     String name
     static constraints = { name shared: 'isProg' }
 }
 
-class ArtistSubclass extends ArtistCommand {
+class ArtistSubclass extends Artist {
     String bandName
     static constraints = { bandName matches: /[A-Z].*/ }
 }
@@ -510,7 +510,7 @@ class SubClassController extends MyAbstractController {
     def index = { [name: 'Subclass Controller'] }
 }
 
-class PersonCommand {
+class Person {
     String name
     def theAnswer
     def beforeValidateCounter = 0

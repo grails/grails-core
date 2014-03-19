@@ -410,10 +410,10 @@ public class ControllersApi extends CommonWebApi {
      * @return the initialized command object or null if the command object is a domain class, the body or
      * parameters included an id and no corresponding record was found in the database.
      */
-    public Object initializeCommandObject(final Object controllerInstance, final Class type) throws Exception {
+    public Object initializeCommandObject(final Object controllerInstance, final Class type, final String commandObjectParameterName) throws Exception {
         final HttpServletRequest request = getRequest(controllerInstance);
         final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(controllerInstance), type, request);
-        final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSource(type, dataBindingSource);
+        final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSourceForPrefix(commandObjectParameterName, dataBindingSource);
         final Object commandObjectInstance;
         Object entityIdentifierValue = null;
         if(DomainClassArtefactHandler.isDomainClass(type)) {
