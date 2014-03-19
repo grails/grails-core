@@ -230,7 +230,7 @@ public class ControllerActionTransformer implements GrailsArtefactClassInjector,
             if (methodShouldBeConfiguredAsControllerAction(method)) {
                 final List<MethodNode> declaredMethodsWithThisName = classNode.getDeclaredMethods(method.getName());
                 if(declaredMethodsWithThisName != null) {
-                    final int numberOfNonExceptionHandlerMethodsWithThisName = DefaultGroovyMethods.count(declaredMethodsWithThisName, new Closure(this) {
+                    final int numberOfNonExceptionHandlerMethodsWithThisName = DefaultGroovyMethods.count((Iterable)declaredMethodsWithThisName, new Closure(this) {
                         @Override
                         public Object call(Object object) {
                             return !isExceptionHandlingMethod((MethodNode) object);
