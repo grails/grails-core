@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.taglib.jsp;
 
+import grails.util.Holders;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
 
@@ -41,8 +42,6 @@ import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.springframework.beans.BeanWrapper;
@@ -81,7 +80,6 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
     private FastStringPrintWriter sw;
     private PrintWriter out;
     private JspWriter jspWriter;
-    private GrailsApplicationAttributes grailsAttributes;
     private GrailsApplication application;
     private ApplicationContext appContext;
     private static final String TAG_LIBS_ATTRIBUTE = "org.codehaus.groovy.grails.TAG_LIBS";
@@ -152,9 +150,8 @@ public class JspInvokeGrailsTagLibTag extends BodyTagSupport implements DynamicA
 
     private void initPageState() {
         if (application == null) {
-            grailsAttributes = new DefaultGrailsApplicationAttributes(pageContext.getServletContext());
-            application = grailsAttributes.getGrailsApplication();
-            appContext = grailsAttributes.getApplicationContext();
+            application = Holders.getGrailsApplication();
+            appContext = application != null ? application.getMainContext() : null;
         }
     }
 
