@@ -28,7 +28,11 @@ class LegacyTocStrategy {
 
         // Search the given directory for all gdoc files and order them based
         // on their section numbers.
-        files = files?.sort(sectionNumberComparator) ?: []
+        if(files) {
+            Collections.sort files, sectionNumberComparator
+        } else {
+            files = []
+        }
 
         // A tree of book sections, where 'book' is a list of the top-level
         // sections and each of those has a list of sub-sections and so on.
