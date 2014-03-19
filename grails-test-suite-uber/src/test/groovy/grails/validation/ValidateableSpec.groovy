@@ -5,11 +5,11 @@ import grails.test.mixin.support.GrailsUnitTestMixin
 
 import org.springframework.validation.FieldError
 
+import spock.lang.Ignore
 import spock.lang.Issue
 import spock.lang.Specification
 
 @TestMixin(GrailsUnitTestMixin)
-@spock.lang.Ignore
 class ValidateableSpec extends Specification {
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
@@ -84,6 +84,7 @@ class ValidateableSpec extends Specification {
     }
     
     @Issue('GRAILS-10871')
+    @Ignore
     void 'Test that binding failures are retained during validation and that the corresponding property is not validated'() {
         given:
         def validateable = new MyValidateable()
