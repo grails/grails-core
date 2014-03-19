@@ -571,7 +571,7 @@ class SimpleDataBinder implements DataBinder {
         def propertyGetter
         if (metaProperty instanceof MetaBeanProperty) {
             def mbp = (MetaBeanProperty)metaProperty
-            propertyType = mbp.field?.type
+            propertyType = mbp.getter?.returnType ?: mbp.field?.type
             propertyGetter = mbp.getter
         }
         if (propertyType == null || propertyType == Object) {

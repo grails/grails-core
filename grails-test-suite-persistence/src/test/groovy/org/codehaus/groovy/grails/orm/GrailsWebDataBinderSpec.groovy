@@ -1239,6 +1239,17 @@ class GrailsWebDataBinderSpec extends Specification {
         obj.datePublished == null
         !obj.hasErrors()
     }
+    
+    @Issue('GRAILS-11238')
+    void 'Test binding to a property that hides a field of a different type'() {
+        when:
+        def holder = new AlbumHolder()
+        def album = new Album(title: 'Some Album')
+        binder.bind holder, [album: album] as SimpleMapDataBindingSource
+        
+        then:
+        holder.album.title == 'Some Album'
+    }
 }
 
 @Entity
@@ -1477,6 +1488,19 @@ class NonDomainClassWithMapProperty {
 
 class Album {
     String title
+}
+
+class AlbumHolder {
+    // see GRAILS-11238
+    String album
+    
+    void setAlbum(Album a) {
+        album = a.title
+    }
+    
+    Album getAlbum() {
+        return new Album(title: album)
+    }
 }
 
 @Validateable
