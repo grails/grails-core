@@ -31,7 +31,7 @@ import org.codehaus.groovy.grails.cli.support.ScriptBindingInitializer
  * @author Graeme Rocher
  * @since 2.3
  */
-@CompileStatic
+// @CompileStatic
 abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
 
     ForkedGrailsProjectClassExecutor(BuildSettings buildSettings) {
@@ -130,7 +130,7 @@ abstract class ForkedGrailsProjectClassExecutor extends ForkedGrailsProcess {
     abstract int runInstance(instance)
 }
 
-@CompileStatic
+// @CompileStatic
 class IncludeTargets {
     ClassLoader classLoader
     Binding binding

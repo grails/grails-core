@@ -34,7 +34,7 @@ import com.googlecode.concurrentlinkedhashmap.ConcurrentLinkedHashMap
  * @author Graeme Rocher
  * @since 2.3
  */
-@CompileStatic
+//@CompileStatic
 abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
 
     private static final MimeTypeProvider NULL_RESOLVE = new MimeTypeProvider() {

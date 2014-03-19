@@ -35,7 +35,7 @@ import org.springframework.context.ApplicationContext
  * @author Lari Hotari
  * @since 2.3
  */
-@CompileStatic
+//@CompileStatic
 class WithCodecHelper {
     private static final Logger log = LoggerFactory.getLogger(WithCodecHelper)
 
