@@ -49,7 +49,8 @@ class ResolveException extends RuntimeException {
                 unresolvedDependencies << dl.artifact.moduleRevisionId
             }
         }
-        def dependencies = unresolvedDependencies.collect { ModuleRevisionId mid ->
+        def dependencies = unresolvedDependencies.collect {
+            ModuleRevisionId mid = (ModuleRevisionId)it
             "- ${mid.organisation}:${mid.name}:${mid.revision}"
         }.join(System.getProperty("line.separator"))
         return """Failed to resolve dependencies (Set log level to 'warn' in BuildConfig.groovy for more information):

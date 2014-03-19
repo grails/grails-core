@@ -67,7 +67,7 @@ class SimpleDataBinder implements DataBinder {
 
     protected Map<Class, StructuredBindingEditor> structuredEditors = new HashMap<Class, StructuredBindingEditor>()
     ConversionService conversionService
-    protected Map<Class, List<ValueConverter>> conversionHelpers = [:].withDefault { Class c -> [] }
+    protected Map<Class, List<ValueConverter>> conversionHelpers = [:].withDefault { c -> [] }
     protected Map<Class, FormattedValueConverter> formattedValueConvertersionHelpers = new HashMap<Class, FormattedValueConverter>()
     protected static final List<Class> BASIC_TYPES = [
         String,
@@ -258,7 +258,7 @@ class SimpleDataBinder implements DataBinder {
     }
 
     protected isOkToBind(String propName, List whiteList, List blackList) {
-        'metaClass' != propName && !blackList?.contains(propName) && (!whiteList || whiteList.contains(propName) || whiteList.find { String it -> it.startsWith(propName + '.')})
+        'metaClass' != propName && !blackList?.contains(propName) && (!whiteList || whiteList.contains(propName) || whiteList.find { it -> it?.toString()?.startsWith(propName + '.')})
     }
 
     protected IndexedPropertyReferenceDescriptor getIndexedPropertyReferenceDescriptor(propName) {

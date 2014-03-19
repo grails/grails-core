@@ -323,7 +323,7 @@ class RepositoriesConfigurer extends AbstractDependencyManagementConfigurer {
         def resolver
         // Fix for GRAILS-5805
         synchronized(dependencyManager.chainResolver.resolvers) {
-            resolver = dependencyManager.chainResolver.resolvers.any { DependencyResolver it -> it.name == name }
+            resolver = dependencyManager.chainResolver.resolvers.any { it -> ((DependencyResolver)it).name == name }
         }
         if (resolver) {
             Message.debug("Dependency resolver $name already defined. Ignoring...")
