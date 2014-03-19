@@ -222,11 +222,11 @@ class GrailsWebDataBinder extends SimpleDataBinder {
 
     protected getIdentifierValueFrom(source) {
         def idValue = null
-        if(source instanceof DataBindingSource && source.hasIdentifier()) {
+        if(source instanceof DataBindingSource && ((DataBindingSource)source).hasIdentifier()) {
             idValue = source.getIdentifierValue()
         } else if(source instanceof CharSequence){
             idValue = source
-        } else if(source instanceof Map && source.containsKey('id')) {
+        } else if(source instanceof Map && ((Map)source).containsKey('id')) {
             idValue = source['id']
         } else if(source instanceof Number) {
             idValue = source.toString()
@@ -283,7 +283,7 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                     def listValue
                     if(val instanceof List) {
                         listValue = (List)val
-                    } else if(val instanceof GPathResultMap && val.size() == 1) {
+                    } else if(val instanceof GPathResultMap && ((GPathResultMap)val).size() == 1) {
                         def mapValue = (GPathResultMap)val
                         def valueInMap = mapValue[mapValue.keySet()[0]]
                         if(valueInMap instanceof List) {

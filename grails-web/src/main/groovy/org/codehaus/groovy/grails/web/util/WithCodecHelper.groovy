@@ -100,7 +100,8 @@ class WithCodecHelper {
             Map<String, Encoder> encoders = [:]
             codecInfoMap.each { String codecWriterName, Object codecName ->
                 if (codecName instanceof String && !encoders.containsKey(codecName)) {
-                    encoders.put(codecName, lookupEncoder(grailsApplication, codecName))
+                    String codecNameString = codecName as String
+                    encoders.put(codecNameString, lookupEncoder(grailsApplication, codecNameString))
                 }
             }
             builder.outEncoder(lookupEncoderFromMap(encoders, (String)codecInfoMap.get(GroovyPageConfig.OUT_CODEC_NAME)))

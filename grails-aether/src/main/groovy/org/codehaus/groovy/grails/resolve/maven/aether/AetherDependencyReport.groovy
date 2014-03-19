@@ -67,14 +67,15 @@ class AetherDependencyReport implements DependencyReport {
 
     List<ResolvedArtifactReport> getResolvedArtifacts() {
         List<ResolvedArtifactReport> reports = []
-        resolveResult.getNodes().each { DependencyNode node ->
+        resolveResult.getNodes().each { 
+            DependencyNode node = (DependencyNode)it
             final dependency = node.dependency
             def f = dependency?.artifact?.file
             if (f) {
                 final artifact = dependency.artifact
                 final grailsDependency = new Dependency(artifact.groupId, artifact.artifactId, artifact.version)
                 grailsDependency.classifier = artifact.classifier
-                reports << new ResolvedArtifactReport(grailsDependency, f)
+                reports << new ResolvedArtifactReport(grailsDependency, (File)f)
             }
         }
         return reports

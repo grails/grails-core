@@ -62,10 +62,11 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
                 List tokenWithArgs = t.split(';').toList()
                 Map<String, String> params = [:]
                 final paramsList = tokenWithArgs.size() > 1 ? tokenWithArgs[1..-1] : []
-                paramsList.each{ String it ->
-                    def i = it.indexOf('=')
+                paramsList.each{ it ->
+                    String theString = it as String
+                    def i = theString.indexOf('=')
                     if (i > -1) {
-                        params[it[0..i-1].trim()] = it[i+1..-1].trim()
+                        params[theString[0..i-1].trim()] = theString[i+1..-1].trim()
                     }
                 }
                 if (params) {

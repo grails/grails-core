@@ -117,13 +117,15 @@ abstract class ClassAndMimeTypeRegistry<R extends MimeTypeProvider, K> {
         R findObject = null
         final objectList = registeredObjectsByType.get(currentClass)
         if (objectList) {
-            findObject = (R)objectList.find { MimeTypeProvider r ->
+            findObject = (R)objectList.find { 
+                MimeTypeProvider r = (MimeTypeProvider)it
                 r.mimeTypes.any { MimeType mt ->
                     mt  == mimeType
                 }
             }
             if(findObject == null) {
-                findObject = (R)objectList.find { MimeTypeProvider r ->
+                findObject = (R)objectList.find {
+                    MimeTypeProvider r = (MimeTypeProvider)it
                     r.mimeTypes.any { MimeType mt ->
                         mt.name == mimeType.name
                     }
