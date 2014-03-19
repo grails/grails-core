@@ -14,7 +14,7 @@ class ValidateableSpec extends Specification {
 
     void 'Test validate can be invoked in a unit test with no special configuration'() {
         when: 'an object is valid'
-        def validateable = new MyValidateable(name: 'Kirk', age: 47)
+        def validateable = new MyValidateable(name: 'Kirk', age: 47, town: 'STL')
 
         then: 'validate() returns true and there are no errors'
         validateable.validate()
@@ -28,7 +28,7 @@ class ValidateableSpec extends Specification {
         !validateable.validate()
         validateable.hasErrors()
         validateable.errors.errorCount == 1
-        validateable.errors['name'].code == 'matches.invalid'
+        validateable.errors.getFieldError('name').code == 'matches.invalid'
 
         when: 'the clearErrors() is called'
         validateable.clearErrors()
@@ -51,7 +51,7 @@ class ValidateableSpec extends Specification {
         mockForConstraintsTests MyValidateable
 
         when: 'an object is valid'
-        def validateable = new MyValidateable(name: 'Kirk', age: 47)
+        def validateable = new MyValidateable(name: 'Kirk', age: 47, town: 'STL')
 
         then: 'validate() returns true and there are no errors'
         validateable.validate()
@@ -108,12 +108,36 @@ class ValidateableSpec extends Specification {
         validateable.errors.getFieldError('age').rejectedValue == 'forty two'
         validateable.errors.getFieldError('name').rejectedValue == 'lower case'
     }
+    
+    void 'Test that only the expected properties are constrained'() {
+        when:
+        def constraints = MyValidateable.constraints
+        
+        then:
+        constraints.size() == 3
+        constraints.containsKey 'name'
+        constraints.containsKey 'town'
+        constraints.containsKey 'age'
+        
+        and:
+        constraints.name.appliedConstraints.size() == 2
+        constraints.age.appliedConstraints.size() == 2
+        constraints.town.appliedConstraints.size() == 1
+        
+        and:
+        constraints.name.hasAppliedConstraint 'matches'
+        constraints.name.hasAppliedConstraint 'nullable'
+        constraints.age.hasAppliedConstraint 'range'
+        constraints.age.hasAppliedConstraint 'nullable'
+        constraints.town.hasAppliedConstraint 'nullable'
+    }
 }
 
 @Validateable
 class MyValidateable {
     String name
     Integer age
+    String town
 
     static constraints = {
         name matches: /[A-Z].*/
