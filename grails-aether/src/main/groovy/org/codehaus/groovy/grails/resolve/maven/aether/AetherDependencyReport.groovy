@@ -29,7 +29,7 @@ import org.eclipse.aether.util.graph.visitor.PreorderNodeListGenerator
  * @author Graeme Rocher
  * @since 2.3
  */
-//@CompileStatic
+@CompileStatic
 class AetherDependencyReport implements DependencyReport {
 
     PreorderNodeListGenerator resolveResult

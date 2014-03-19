@@ -28,7 +28,7 @@ import org.apache.ivy.core.resolve.IvyNode
  * @author Graeme Rocher
  * @since 2.0
  */
-// @CompileStatic
+@CompileStatic
 class ResolveException extends RuntimeException {
 
     ResolveReport resolveReport
