@@ -35,7 +35,7 @@ import org.springframework.util.StringUtils;
 public class DirectoryWatcher extends Thread {
 
     public static final String SVN_DIR_NAME = ".svn";
-    protected Collection<String> extensions = new ConcurrentLinkedQueue<String>();
+    private Collection<String> extensions = new ConcurrentLinkedQueue<String>();
     private List<FileChangeListener> listeners = new ArrayList<FileChangeListener>();
 
     private Map<File, Long> lastModifiedMap = new ConcurrentHashMap<File, Long>();
