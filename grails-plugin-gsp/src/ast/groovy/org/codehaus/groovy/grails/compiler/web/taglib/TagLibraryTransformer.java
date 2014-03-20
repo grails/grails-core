@@ -50,6 +50,7 @@ import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
@@ -170,7 +171,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
                  .addExpression(new ConstantExpression(tagName))
                  .addExpression(includeAttrs ? new CastExpression(ClassHelper.make(Map.class), ATTRS_EXPRESSION) : new MapExpression())
                  .addExpression(includeBody ? BODY_EXPRESSION : NULL_EXPRESSION)
-                 .addExpression(CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL);
+                 .addExpression(new CastExpression(ClassHelper.make(GrailsWebRequest.class), CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL));
 
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(GROOVY_PAGE_CLASS_NODE),"captureTagOutput", arguments)));
 
