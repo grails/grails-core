@@ -24,11 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.codehaus.groovy.ast.ClassHelper;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
+import org.codehaus.groovy.ast.expr.CastExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -123,7 +125,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
         
         addGetTagLibNamespaceMethod(classNode, namespace);
 
-        MethodCallExpression tagLibraryLookupMethodCall = new MethodCallExpression(new VariableExpression(apiInstanceProperty), "getTagLibraryLookup", ZERO_ARGS);
+        MethodCallExpression tagLibraryLookupMethodCall = new MethodCallExpression(new VariableExpression(apiInstanceProperty, ClassHelper.make(TagLibraryApi.class)), "getTagLibraryLookup", ZERO_ARGS);
         for (PropertyNode tag : tags) {
             String tagName = tag.getName();
             addAttributesAndBodyMethod(classNode, tagLibraryLookupMethodCall, tagName);
@@ -146,7 +148,7 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
         ArgumentListExpression arguments = new ArgumentListExpression();
         ArgumentListExpression constructorArgs = new ArgumentListExpression();
         constructorArgs.addExpression(BODY_EXPRESSION);
-        arguments.addExpression(ATTRS_EXPRESSION)
+        arguments.addExpression(new CastExpression(ClassHelper.make(Map.class), ATTRS_EXPRESSION))
                  .addExpression(new ConstructorCallExpression(new ClassNode(GroovyPage.ConstantClosure.class), constructorArgs));
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new VariableExpression("this"), tagName, arguments)));
         classNode.addMethod(new MethodNode(tagName, Modifier.PUBLIC,OBJECT_CLASS, MAP_CHARSEQUENCE_PARAMETERS, null, methodBody));
@@ -166,9 +168,9 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
         arguments.addExpression(tagLibraryLookupMethodCall)
                  .addExpression(new MethodCallExpression(new VariableExpression("this"), GET_TAG_LIB_NAMESPACE_METHOD_NAME, new ArgumentListExpression()))
                  .addExpression(new ConstantExpression(tagName))
-                 .addExpression(includeAttrs ? ATTRS_EXPRESSION : new MapExpression())
+                 .addExpression(includeAttrs ? new CastExpression(ClassHelper.make(Map.class), ATTRS_EXPRESSION) : new MapExpression())
                  .addExpression(includeBody ? BODY_EXPRESSION : NULL_EXPRESSION)
-                 .addExpression(CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL);
+                 .addExpression(CURRENT_REQUEST_METHOD_CALL);
 
         methodBody.addStatement(new ExpressionStatement(new MethodCallExpression(new ClassExpression(GROOVY_PAGE_CLASS_NODE),"captureTagOutput", arguments)));
 
