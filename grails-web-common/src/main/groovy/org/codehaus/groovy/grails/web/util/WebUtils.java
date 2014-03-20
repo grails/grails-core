@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.web.util;
 
 import grails.util.GrailsWebUtil;
+import grails.web.CamelCaseUrlConverter;
 import grails.web.UrlConverter;
 import groovy.lang.Binding;
 
@@ -40,18 +41,19 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import grails.web.CamelCaseUrlConverter;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsClass;
+import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.GrailsUrlPathHelper;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
@@ -81,7 +83,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final String ENABLE_FILE_EXTENSIONS = "grails.mime.file.extensions";
     public static final String DISPATCH_ACTION_PARAMETER = "_action_";
     public static final String SEND_ALLOW_HEADER_FOR_INVALID_HTTP_METHOD = "grails.http.invalid.method.allow.header";
-
+    static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
+    static final String RENDERING_VIEW = "org.grails.rendering.view";
+    static final String GRAILS_DISPATCH_EXTENSION = ".dispatch";
+    static final String GRAILS_SERVLET_PATH = "/grails";
+    
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils
                 .getRequiredWebApplicationContext(servletContext);
@@ -153,12 +159,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      */
     public static String getRequestURIForGrailsDispatchURI(HttpServletRequest request) {
         UrlPathHelper pathHelper = new UrlPathHelper();
-        if (request.getRequestURI().endsWith(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION)) {
+        if (request.getRequestURI().endsWith(GRAILS_DISPATCH_EXTENSION)) {
             String path = pathHelper.getPathWithinApplication(request);
-            if (path.startsWith(GrailsUrlPathHelper.GRAILS_SERVLET_PATH)) {
-                path = path.substring(GrailsUrlPathHelper.GRAILS_SERVLET_PATH.length(),path.length());
+            if (path.startsWith(GRAILS_SERVLET_PATH)) {
+                path = path.substring(GRAILS_SERVLET_PATH.length(),path.length());
             }
-            return path.substring(0, path.length() - GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION.length());
+            return path.substring(0, path.length() - GRAILS_DISPATCH_EXTENSION.length());
         }
         return pathHelper.getPathWithinApplication(request);
     }
@@ -256,13 +262,13 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             }
         }
         else {
-            forwardUrl.append(GrailsUrlPathHelper.GRAILS_SERVLET_PATH);
+            forwardUrl.append(GRAILS_SERVLET_PATH);
             forwardUrl.append(SLASH).append(info.getControllerName());
 
             if (!GrailsStringUtils.isBlank(info.getActionName())) {
                 forwardUrl.append(SLASH).append(info.getActionName());
             }
-            forwardUrl.append(GrailsUrlPathHelper.GRAILS_DISPATCH_EXTENSION);
+            forwardUrl.append(GRAILS_DISPATCH_EXTENSION);
         }
 
         final Map parameters = info.getParameters();
@@ -378,13 +384,13 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         if (webRequest != null) {
             currentPageBinding = (Binding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
             webRequest.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
-            currentLayoutAttribute = webRequest.getAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, 0);
+            currentLayoutAttribute = webRequest.getAttribute(LAYOUT_ATTRIBUTE, 0);
             if (currentLayoutAttribute != null) {
-                webRequest.removeAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, 0);
+                webRequest.removeAttribute(LAYOUT_ATTRIBUTE, 0);
             }
-            currentRenderingView = webRequest.getAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, 0);
+            currentRenderingView = webRequest.getAttribute(RENDERING_VIEW, 0);
             if (currentRenderingView != null) {
-                webRequest.removeAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, 0);
+                webRequest.removeAttribute(RENDERING_VIEW, 0);
             }
             currentController = webRequest.getControllerName();
             currentAction = webRequest.getActionName();
@@ -407,10 +413,10 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
             if (webRequest!=null) {
                 webRequest.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE,currentPageBinding, 0);
                 if (currentLayoutAttribute != null) {
-                    webRequest.setAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE, currentLayoutAttribute, 0);
+                    webRequest.setAttribute(LAYOUT_ATTRIBUTE, currentLayoutAttribute, 0);
                 }
                 if (currentRenderingView != null) {
-                    webRequest.setAttribute(GrailsLayoutDecoratorMapper.RENDERING_VIEW, currentRenderingView, 0);
+                    webRequest.setAttribute(RENDERING_VIEW, currentRenderingView, 0);
                 }
                 webRequest.getParameterMap().clear();
                 webRequest.getParameterMap().putAll(currentParams);
