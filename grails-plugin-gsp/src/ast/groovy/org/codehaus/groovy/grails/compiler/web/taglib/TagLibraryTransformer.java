@@ -48,7 +48,7 @@ import org.codehaus.groovy.grails.compiler.injection.AstTransformer;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.springframework.web.context.request.RequestContextHolder;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * Enhances tag library classes with the appropriate API at compile time.
@@ -79,9 +79,9 @@ public class TagLibraryTransformer extends AbstractGrailsArtefactTransformer {
     private static final ClassNode GROOVY_PAGE_CLASS_NODE = new ClassNode(GroovyPage.class);
     private static final VariableExpression ATTRS_EXPRESSION = new VariableExpression(ATTRS_ARGUMENT);
     private static final VariableExpression BODY_EXPRESSION = new VariableExpression(BODY_ARGUMENT);
-    private static final MethodCallExpression CURRENT_REQUEST_ATTRIBUTES_METHOD_CALL =
-        new MethodCallExpression(new ClassExpression(new ClassNode(RequestContextHolder.class)),
-                "currentRequestAttributes", ZERO_ARGS);
+    private static final MethodCallExpression CURRENT_REQUEST_METHOD_CALL =
+        new MethodCallExpression(new ClassExpression(new ClassNode(GrailsWebRequest.class)),
+                "lookup", ZERO_ARGS);
     private static final Expression NULL_EXPRESSION = new ConstantExpression(null);
     private static final String NAMESPACE_PROPERTY = "namespace";
     private static final ClassNode CLOSURE_CLASS_NODE = new ClassNode(Closure.class);
