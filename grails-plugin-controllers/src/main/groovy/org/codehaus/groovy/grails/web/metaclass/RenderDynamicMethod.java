@@ -50,13 +50,13 @@ import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.io.support.IOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPlugin;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.converters.Converter;
 import org.codehaus.groovy.grails.web.json.JSONElement;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeUtility;
 import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.mvc.ActionResultTransformer;
@@ -392,7 +392,7 @@ public class RenderDynamicMethod extends AbstractDynamicMethodInvocation {
         String templateUri = webRequest.getAttributes().getTemplateURI(controller, templateName);
 
         // retrieve gsp engine
-        GroovyPagesTemplateEngine engine = webRequest.getAttributes().getPagesTemplateEngine();
+        ResourceAwareTemplateEngine engine = webRequest.getAttributes().getPagesTemplateEngine();
         try {
             Template t = engine.createTemplateForUri(new String[]{
                     GrailsResourceUtils.appendPiecesForUri(contextPath, templateUri),
