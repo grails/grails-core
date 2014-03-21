@@ -31,7 +31,7 @@ import groovy.transform.CompileStatic
 @CompileStatic
 class GrailsIntegrationTestCompiler extends Grailsc{
 
-    public GrailsTestCompiler() {
+    public GrailsIntegrationTestCompiler() {
         setEncoding("UTF-8");
     }
 
