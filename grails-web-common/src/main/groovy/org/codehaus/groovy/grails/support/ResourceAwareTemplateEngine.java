@@ -107,4 +107,6 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
             DefaultGroovyMethodsSupport.closeWithWarning(input);
         }
     }
+    
+    abstract public Template createTemplateForUri(String[] uris);
 }
