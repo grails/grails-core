@@ -413,6 +413,10 @@ class ControllerUnitTestMixinTests extends GroovyTestCase {
         assert HAL_XML_CONTENT_TYPE == 'application/hal+xml'
         assert ATOM_XML_CONTENT_TYPE == 'application/atom+xml'
     }
+    
+    void testDefaultRequestMethod() {
+        assert request.method == 'GET'
+    }
 }
 
 class TestController {
