@@ -148,15 +148,14 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
             projectRunner.stopServer()
         }
 
-        functionalBaseUrl = null
-        System.setProperty(BuildSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
+        clearFunctionalBaseUrl()
+
         if (registryCleaner) {
             MetaClassRegistryCleaner.cleanAndRemove(registryCleaner)
         }
     }
 
-
-    private void initFunctionalBaseUrl () {
+    private void initFunctionalBaseUrl() {
         if (baseUrl) {
             functionalBaseUrl = baseUrl
         } else {
@@ -165,6 +164,11 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         }
 
         System.setProperty(buildSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
+    }
+
+    private void clearFunctionalBaseUrl() {
+        functionalBaseUrl = null
+        System.setProperty(BuildSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
     }
 
     private static void initPersistenceContext() {
