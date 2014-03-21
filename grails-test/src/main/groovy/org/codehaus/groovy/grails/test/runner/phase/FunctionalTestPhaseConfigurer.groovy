@@ -110,24 +110,10 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                 initFunctionalBaseUrl()
 
                 if (!isForkedRun) {
-                    initPersistenceContext ()
+                    initPersistenceContext()
                 }
                 else {
-                    final console = GrailsConsole.getInstance()
-                    console.updateStatus("Waiting for server availability")
-                    int maxWait = 10000
-                    int timeout = 0
-                    while(true) {
-                        if (timeout>maxWait) break
-                        try {
-                            new URL(functionalBaseUrl).getText(connectTimeout:1000, readTimeout:1000, "UTF-8")
-                            break
-                        } catch (Throwable e) {
-                            console.indicateProgress()
-                            timeout += 1000
-                            sleep(1000)
-                        }
-                    }
+                    waitForServer()
                 }
             }
 
@@ -135,6 +121,25 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         else {
             existingServer = true
             initFunctionalBaseUrl()
+        }
+    }
+
+    private void waitForServer() {
+        final console = GrailsConsole.getInstance()
+        console.updateStatus("Waiting for server availability")
+        
+        int maxWait = 10000
+        int timeout = 0
+        while (true) {
+            if (timeout > maxWait) break
+            try {
+                new URL(functionalBaseUrl).getText(connectTimeout: 1000, readTimeout: 1000, "UTF-8")
+                break
+            } catch (Throwable e) {
+                console.indicateProgress()
+                timeout += 1000
+                sleep(1000)
+            }
         }
     }
 
