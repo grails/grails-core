@@ -110,14 +110,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
                 initFunctionalBaseUrl()
 
                 if (!isForkedRun) {
-                    try {
-                        def appCtx = Holders.applicationContext
-                        PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
-                    } catch (IllegalStateException e) {
-                        // no appCtx configured, ignore
-                    } catch (IllegalArgumentException e) {
-                        // no appCtx configured, ignore
-                    }
+                    initPersistenceContext ()
                 }
                 else {
                     final console = GrailsConsole.getInstance()
@@ -148,18 +141,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
     @Override
     void cleanup(Binding testExecutionContext, Map<String, Object> testOptions) {
         if (!warMode && !isForkedRun) {
-            GrailsWebApplicationContext appCtx
-            try {
-                appCtx = (GrailsWebApplicationContext)Holders.applicationContext
-            } catch (IllegalStateException e ) {
-                // no configured app ctx
-            } catch (IllegalArgumentException e ) {
-                // no configured app ctx
-            }
-            if (appCtx) {
-                PersistenceContextInterceptorExecutor.destroyPersistenceContext(appCtx)
-                appCtx?.close()
-            }
+            destroyPersistenceContext()
         }
 
         if (!existingServer) {
@@ -173,6 +155,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         }
     }
 
+
     private void initFunctionalBaseUrl () {
         if (baseUrl) {
             functionalBaseUrl = baseUrl
@@ -182,5 +165,31 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         }
 
         System.setProperty(buildSettings.FUNCTIONAL_BASE_URL_PROPERTY, functionalBaseUrl)
+    }
+
+    private static void initPersistenceContext() {
+        try {
+            def appCtx = Holders.applicationContext
+            PersistenceContextInterceptorExecutor.initPersistenceContext(appCtx)
+        } catch (IllegalStateException ignored) {
+            // no appCtx configured, ignore
+        } catch (IllegalArgumentException ignored) {
+            // no appCtx configured, ignore
+        }
+    }
+
+    private static void destroyPersistenceContext() {
+        GrailsWebApplicationContext appCtx
+        try {
+            appCtx = (GrailsWebApplicationContext)Holders.applicationContext
+        } catch (IllegalStateException ignored) {
+            // no configured app ctx
+        } catch (IllegalArgumentException ignored) {
+            // no configured app ctx
+        }
+        if (appCtx) {
+            PersistenceContextInterceptorExecutor.destroyPersistenceContext(appCtx)
+            appCtx?.close()
+        }
     }
 }
