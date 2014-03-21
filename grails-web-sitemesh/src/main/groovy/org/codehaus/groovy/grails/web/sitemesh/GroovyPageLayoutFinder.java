@@ -30,7 +30,7 @@ import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.io.support.GrailsResourceUtils;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.view.GroovyPageView;
+import org.codehaus.groovy.grails.web.servlet.view.AbstractGrailsView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 
@@ -173,7 +173,7 @@ public class GroovyPageLayoutFinder {
             view = viewResolver.resolveViewName(GrailsResourceUtils.appendPiecesForUri(LAYOUTS_PATH, name),
                     request.getLocale());
             // it's only possible to check that GroovyPageView exists
-            if (viewMustExist && !(view instanceof GroovyPageView)) {
+            if (viewMustExist && !(view instanceof AbstractGrailsView)) {
                 view = null;
             }
         }

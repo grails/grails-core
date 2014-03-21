@@ -35,7 +35,6 @@ import org.springframework.core.io.Resource;
 import org.springframework.scripting.ScriptSource;
 import org.springframework.util.Assert;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.servlet.view.AbstractUrlBasedView;
 
 /**
  * A Spring View that renders Groovy Server Pages to the response. It requires an instance
@@ -54,7 +53,7 @@ import org.springframework.web.servlet.view.AbstractUrlBasedView;
  * @author Graeme Rocher
  * @since 0.4
  */
-public class GroovyPageView extends AbstractUrlBasedView {
+public class GroovyPageView extends AbstractGrailsView {
 
     private static final Log LOG = LogFactory.getLog(GroovyPageView.class);
     protected GroovyPagesTemplateEngine templateEngine;
@@ -251,5 +250,9 @@ public class GroovyPageView extends AbstractUrlBasedView {
         if (template instanceof GroovyPageTemplate) {
             ((GroovyPageTemplate)template).setAllowSettingContentType(true);
         }
+    }
+    
+    public void rethrowRenderException(Throwable ex, String message) {
+        throw new GroovyPagesException(message, ex);
     }
 }
