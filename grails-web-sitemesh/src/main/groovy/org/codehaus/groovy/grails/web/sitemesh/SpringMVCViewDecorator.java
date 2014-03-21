@@ -21,8 +21,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.view.AbstractGrailsView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.AbstractUrlBasedView;
 
@@ -71,7 +71,12 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
                     }
                 } catch (Exception e) {
                     cleanRequestAttributes(request);
-                    throw new GroovyPagesException("Error applying layout : " + getName(), e);
+                    String message = "Error applying layout : " + getName();
+                    if(view instanceof AbstractGrailsView) {
+                        ((AbstractGrailsView)view).rethrowRenderException(e, message);
+                    } else {
+                        throw new RuntimeException(message, e);
+                    }
                 }
             } finally {
                 if (!dispatched) {
