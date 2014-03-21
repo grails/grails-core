@@ -79,7 +79,6 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         }
 
         registryCleaner = MetaClassRegistryCleaner.createAndRegister()
-        GroovySystem.metaClassRegistry.addMetaClassRegistryChangeEventListener(registryCleaner)
 
         if (!isServerRunning) {
 
