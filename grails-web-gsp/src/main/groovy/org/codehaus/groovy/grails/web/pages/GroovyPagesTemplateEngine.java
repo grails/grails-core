@@ -202,6 +202,14 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         return new int[0];
     }
 
+    public int mapStackLineNumber(String url, int lineNumber) {
+        int[] lineNumbers = calculateLineNumbersForPage(null, url);
+        if (lineNumber < lineNumbers.length) {
+            lineNumber = lineNumbers[lineNumber - 1];
+        }
+        return lineNumber;
+    }
+    
     /**
      * Creates a Template for the given Spring Resource instance
      *
