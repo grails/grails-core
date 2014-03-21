@@ -14,6 +14,7 @@ class GrailsParameterMapBindingSpec extends Specification {
     void 'Test binding body to command object'() {
         when: 'the body contains JSON'
         request.json = '{"name":"JSON Name"}'
+        request.method = 'POST'
         controller.bindToCommandObject()
         
         then: 'the JSON is used for binding'
@@ -22,6 +23,7 @@ class GrailsParameterMapBindingSpec extends Specification {
     
     void 'Test binding request parameters to command object'() {
         when: 'request parameters are present'
+        request.method = 'POST'
         params.name = 'Request Parameter Name'
         controller.bindToCommandObject()
         
@@ -31,6 +33,7 @@ class GrailsParameterMapBindingSpec extends Specification {
     
     void 'Test binding body to command object when request parameters are also present'() {
         when: 'the body contains JSON and request parameters are present'
+        request.method = 'POST'
         request.json = '{"name":"JSON Name"}'
         params.name = 'Request Parameter Name'
         controller.bindToCommandObject()

@@ -67,10 +67,8 @@ class BindingRequestMethodSpec extends Specification {
         model = controller.someActionWhichAcceptsAnEmployee()
         employee = model.employee
 
-        then: 'Data binding should have happened'
-        employee.firstName == 'Zachary'
-        employee.lastName == 'Brown'
-        employee.id == null
+        then: 'no instance should have been created'
+        employee == null
 
         when: 'Submitting a PUT request with no id'
         request.method = 'PUT'
@@ -80,10 +78,8 @@ class BindingRequestMethodSpec extends Specification {
         model = controller.someActionWhichAcceptsAnEmployee()
         employee = model.employee
 
-        then: 'Data binding should have happened'
-        employee.firstName == 'Zack'
-        employee.lastName == 'Browning'
-        employee.id == null
+        then: 'no instance should have been created'
+        employee == null
 
         when: 'Submitting a POST request with no id'
         request.method = 'POST'
