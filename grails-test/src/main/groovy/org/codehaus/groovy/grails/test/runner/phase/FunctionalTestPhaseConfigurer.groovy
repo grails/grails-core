@@ -169,8 +169,7 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         functionalBaseUrl = null
         System.setProperty(BuildSettings.FUNCTIONAL_BASE_URL_PROPERTY, '')
         if (registryCleaner) {
-            registryCleaner.clean()
-            GroovySystem.metaClassRegistry.removeMetaClassRegistryChangeEventListener(registryCleaner)
+            MetaClassRegistryCleaner.cleanAndRemove(registryCleaner)
         }
     }
 
