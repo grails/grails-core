@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.lang.reflect.Constructor;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,15 +29,22 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
-import org.codehaus.groovy.grails.commons.*;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.commons.GrailsStringUtils;
+import org.codehaus.groovy.grails.commons.ServiceArtefactHandler;
+import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.exceptions.GrailsException;
 import org.codehaus.groovy.grails.exceptions.SourceCodeAware;
+import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.FastStringPrintWriter;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
@@ -47,6 +55,8 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
  * @since 0.1
  */
 public class GrailsWrappedRuntimeException extends GrailsException {
+    private static final Class<? extends GrailsApplicationAttributes> grailsApplicationAttributesClass = GrailsFactoriesLoader.loadFactoryClasses(GrailsApplicationAttributes.class, GrailsWebRequest.class.getClassLoader()).get(0);
+    private static final Constructor<? extends GrailsApplicationAttributes> grailsApplicationAttributesConstructor = ClassUtils.getConstructorIfAvailable(grailsApplicationAttributesClass, ServletContext.class);
 
     private static final long serialVersionUID = 7284065617154554366L;
     private static final Pattern PARSE_DETAILS_STEP1 = Pattern.compile("\\((\\w+)\\.groovy:(\\d+)\\)");
@@ -158,12 +168,15 @@ public class GrailsWrappedRuntimeException extends GrailsException {
                     }
                     else {
                         url = gspFile;
-                        GrailsApplicationAttributes attrs = new DefaultGrailsApplicationAttributes(servletContext);
-                        GroovyPagesTemplateEngine engine = attrs.getPagesTemplateEngine();
-                        int[] lineNumbers = engine.calculateLineNumbersForPage(servletContext,url);
-                        if (lineNumber < lineNumbers.length) {
-                            lineNumber = lineNumbers[lineNumber - 1];
+                        GrailsApplicationAttributes attrs = null;
+                        try {
+                            attrs = grailsApplicationAttributesConstructor.newInstance(servletContext);
                         }
+                        catch (Exception e) {
+                            ReflectionUtils.rethrowRuntimeException(e);
+                        }
+                        ResourceAwareTemplateEngine engine = attrs.getPagesTemplateEngine();
+                        lineNumber = engine.mapStackLineNumber(url, lineNumber);
                     }
                     fileLocation = "grails-app" + urlPrefix + fileName;
                 }

@@ -109,4 +109,6 @@ public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
     }
     
     abstract public Template createTemplateForUri(String[] uris);
+    
+    abstract public int mapStackLineNumber(String url, int lineNumber);
 }
