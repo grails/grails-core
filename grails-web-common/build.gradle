@@ -1,9 +1,3 @@
-configurations {
-    testRuntime {
-        extendsFrom testCompile
-    }
-}
-
 dependencies {
     compile project(":grails-core"),
             project(":grails-spring"),
@@ -48,4 +42,12 @@ dependencies {
     compile 'org.objenesis:objenesis:1.4'
 }
 
-test.configuration = configurations.testRuntime
+eclipse {
+    classpath {
+        file {
+            whenMerged { classpath ->
+                classpath.entries.remove(classpath.entries.find { it.path == '/grails-web'})
+            }
+        }
+    }
+}

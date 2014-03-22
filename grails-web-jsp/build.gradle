@@ -1,8 +1,5 @@
 configurations {
     jsp21.extendsFrom compile
-    testRuntime {
-        extendsFrom testCompile
-    }    
 }
 
 dependencies {
@@ -45,9 +42,8 @@ eclipse {
                     classpath.entries.remove(jsp21)
                     classpath.entries << jsp21
                 }
+                classpath.entries.remove(classpath.entries.find { it.path == '/grails-web'})
             }
         }
     }
 }
-
-test.configuration = configurations.testRuntime

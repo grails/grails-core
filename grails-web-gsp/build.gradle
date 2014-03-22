@@ -1,8 +1,5 @@
 configurations {
     optional
-    testRuntime {
-    	extendsFrom testCompile
-    }
 }
 
 
@@ -22,4 +19,14 @@ sourceSets {
 
 javadoc.classpath += files(configurations.optional)
 test.configuration = configurations.testRuntime
+
+eclipse {
+    classpath {
+        file {
+            whenMerged { classpath ->
+                classpath.entries.remove(classpath.entries.find { it.path == '/grails-web'})
+            }
+        }
+    }
+}
 
