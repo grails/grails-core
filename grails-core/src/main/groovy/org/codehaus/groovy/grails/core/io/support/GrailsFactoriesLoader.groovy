@@ -47,6 +47,10 @@ class GrailsFactoriesLoader {
     private static final Log logger = LogFactory.getLog(GrailsFactoriesLoader)
 
     private static ConcurrentMap<Integer, Map<String,String[]>> loadedPropertiesForClassLoader = new ConcurrentHashMap<Integer, Map<String,String[]>>()
+    
+    private static final Object[] NO_ARGUMENTS = [] as Object[]
+    
+    
     /**
      * Load the factory implementations of the given type from the default location,
      * using the given class loader.
@@ -54,8 +58,11 @@ class GrailsFactoriesLoader {
      * @param factoryClass the interface or abstract class representing the factory
      * @param classLoader the ClassLoader to use for loading (can be {@code null} to use the default)
      */
-    static <T> List<T> loadFactories(Class<T> factoryClass, ClassLoader classLoader = GrailsFactoriesLoader.class.classLoader, Object[] arguments = null) {
-        List<T> results = loadFactoryClasses(factoryClass, classLoader).collect { Class<? extends T> clazz -> clazz.newInstance(arguments) }
+    static <T> List<T> loadFactories(Class<T> factoryClass, ClassLoader classLoader = GrailsFactoriesLoader.class.classLoader, Object[] arguments = NO_ARGUMENTS) {
+        boolean hasArguments = !(arguments != null && arguments.length==0)
+        List<T> results = loadFactoryClasses(factoryClass, classLoader).collect { Class<? extends T> clazz ->
+            hasArguments ? clazz.newInstance(arguments) : clazz.newInstance() 
+        }
         OrderComparator.sort(results)
         results
     }
