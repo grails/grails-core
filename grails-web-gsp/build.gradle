@@ -1,11 +1,17 @@
 configurations {
     optional
+    testRuntime {
+    	extendsFrom testCompile
+    }
 }
+
 
 dependencies {
     compile project(":grails-web-common"), project(":grails-web-mvc")
     
     optional "org.apache.ant:ant:${antVersion}"
+
+    testRuntime project(":grails-web")
 }
 
 sourceSets {
@@ -15,3 +21,5 @@ sourceSets {
 }
 
 javadoc.classpath += files(configurations.optional)
+test.configuration = configurations.testRuntime
+
