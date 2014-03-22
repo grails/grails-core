@@ -39,10 +39,10 @@ import org.codehaus.groovy.grails.commons.DefaultGrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsClassUtils;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginUtils;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.servlet.DefaultGrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
@@ -463,7 +463,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
-        this.grailsAttributes = new DefaultGrailsApplicationAttributes(servletContext);
+        this.grailsAttributes = GrailsFactoriesLoader.loadFactories(GrailsApplicationAttributes.class, getClass().getClassLoader(), servletContext).get(0);
     }
 
     public void setGrailsApplication(GrailsApplication application) {
