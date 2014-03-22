@@ -9,7 +9,7 @@ import org.springframework.core.io.FileSystemResource
  * @author Graeme Rocher
  * @since 1.0
  */
-class MockRootLoaderTagLibraryResolver extends TagLibraryResolver {
+class MockRootLoaderTagLibraryResolver extends TagLibraryResolverImpl {
 
     protected RootLoader resolveRootLoader() {
         def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())

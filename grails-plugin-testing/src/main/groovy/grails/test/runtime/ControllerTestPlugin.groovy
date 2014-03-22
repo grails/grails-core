@@ -51,7 +51,7 @@ import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
-import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
+import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolverImpl
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.grails.plugins.web.rest.api.ControllersRestApi
 import org.grails.plugins.web.rest.render.DefaultRendererRegistry
@@ -108,7 +108,7 @@ class ControllerTestPlugin implements TestPlugin {
             def lazyBean = { bean ->
                 bean.lazyInit = true
             }
-            jspTagLibraryResolver(TagLibraryResolver, lazyBean)
+            jspTagLibraryResolver(TagLibraryResolverImpl, lazyBean)
             gspTagLibraryLookup(LazyTagLibraryLookup, lazyBean)
             groovyPageLocator(GrailsConventionGroovyPageLocator) {
                 resourceLoader = new GroovyPageUnitTestResourceLoader(groovyPages)
