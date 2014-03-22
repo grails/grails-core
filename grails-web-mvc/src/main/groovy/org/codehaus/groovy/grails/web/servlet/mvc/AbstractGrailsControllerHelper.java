@@ -463,7 +463,7 @@ public abstract class AbstractGrailsControllerHelper implements ApplicationConte
 
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
-        this.grailsAttributes = GrailsFactoriesLoader.loadFactories(GrailsApplicationAttributes.class, getClass().getClassLoader(), servletContext).get(0);
+        this.grailsAttributes = GrailsFactoriesLoader.loadFactoriesWithArguments(GrailsApplicationAttributes.class, getClass().getClassLoader(), servletContext).get(0);
     }
 
     public void setGrailsApplication(GrailsApplication application) {

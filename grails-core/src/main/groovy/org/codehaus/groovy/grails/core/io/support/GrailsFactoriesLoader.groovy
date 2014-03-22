@@ -58,7 +58,11 @@ class GrailsFactoriesLoader {
      * @param factoryClass the interface or abstract class representing the factory
      * @param classLoader the ClassLoader to use for loading (can be {@code null} to use the default)
      */
-    static <T> List<T> loadFactories(Class<T> factoryClass, ClassLoader classLoader = GrailsFactoriesLoader.class.classLoader, Object[] arguments = NO_ARGUMENTS) {
+    static <T> List<T> loadFactories(Class<T> factoryClass, ClassLoader classLoader = GrailsFactoriesLoader.class.classLoader) {
+        loadFactoriesWithArguments(factoryClass, classLoader, NO_ARGUMENTS)
+    }
+
+    static <T> List<T> loadFactoriesWithArguments(Class<T> factoryClass, ClassLoader classLoader, Object[] arguments) {
         boolean hasArguments = !(arguments != null && arguments.length==0)
         List<T> results = new ArrayList<T>() 
         for(Class<? extends T> clazz : loadFactoryClasses(factoryClass, classLoader)) {

@@ -109,7 +109,7 @@ public class GroovyPagesServlet extends FrameworkServlet implements PluginManage
         context.setAttribute(SERVLET_INSTANCE, this);
 
         final WebApplicationContext webApplicationContext = getWebApplicationContext();
-        grailsAttributes = GrailsFactoriesLoader.loadFactories(GrailsApplicationAttributes.class, getClass().getClassLoader(), context).get(0);
+        grailsAttributes = GrailsFactoriesLoader.loadFactoriesWithArguments(GrailsApplicationAttributes.class, getClass().getClassLoader(), context).get(0);
         webApplicationContext.getAutowireCapableBeanFactory().autowireBeanProperties(this, AutowireCapableBeanFactory.AUTOWIRE_BY_TYPE, false);
         groovyPagesTemplateEngine = webApplicationContext.getBean(GroovyPagesTemplateEngine.BEAN_ID,
                 GroovyPagesTemplateEngine.class);
