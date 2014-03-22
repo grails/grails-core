@@ -158,6 +158,7 @@ class ControllerTestPlugin implements TestPlugin {
         // TODO: which is correct mainContext or parentContext ?
         def applicationContext = (WebApplicationContext)grailsApplication.mainContext
         GrailsMockHttpServletRequest request = new GrailsMockHttpServletRequest((ServletContext)runtime.getValue("servletContext"))
+        request.method = 'GET'
         request.requestMimeTypesApi = new TestRequestMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext)
         GrailsMockHttpServletResponse response = new GrailsMockHttpServletResponse(responseMimeTypesApi: new TestResponseMimeTypesApi(grailsApplication: grailsApplication, applicationContext: applicationContext))
         GrailsWebRequest webRequest = GrailsWebUtil.bindMockWebRequest(applicationContext, request, response)
