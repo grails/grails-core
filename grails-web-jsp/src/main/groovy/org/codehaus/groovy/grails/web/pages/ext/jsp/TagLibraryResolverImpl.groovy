@@ -41,7 +41,7 @@ import org.xmlpull.v1.XmlPullParser
  *
  * @author Graeme Rocher
  */
-class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware {
+class TagLibraryResolverImpl implements ServletContextAware, GrailsApplicationAware, TagLibraryResolver {
 
     private tagLibs = [:]
     private tagLibLocations = [:]
@@ -95,7 +95,7 @@ class TagLibraryResolver implements ServletContextAware, GrailsApplicationAware 
                 jspTagLib = loadJspTagLib(uri, loc, new InputStreamReader(getTldFromServletContext(loc), "UTF-8"))
             }
             else {
-                def jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : resolveRootLoader().getURLs()
+                def jarURLs = grailsApplication.isWarDeployed() ? getJarsFromServletContext() : resolveRootLoader()?.getURLs()
                 for (url in jarURLs) {
                     if (url.file.endsWith(".jar")) {
                         jspTagLib = attempLoadTagLibFromJAR(uri, url, new ZipInputStream(url.openStream()))

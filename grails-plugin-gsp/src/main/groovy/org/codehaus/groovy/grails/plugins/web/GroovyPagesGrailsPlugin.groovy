@@ -52,7 +52,7 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGrailsConventionGroovyPageLocator
 import org.codehaus.groovy.grails.web.pages.discovery.CachingGroovyPageStaticResourceLocator
-import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolver
+import org.codehaus.groovy.grails.web.pages.ext.jsp.TagLibraryResolverImpl
 import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
@@ -103,7 +103,7 @@ class GroovyPagesGrailsPlugin {
      */
     def doWithSpring = {
         // resolves JSP tag libraries
-        jspTagLibraryResolver(TagLibraryResolver)
+        jspTagLibraryResolver(TagLibraryResolverImpl)
         // resolves GSP tag libraries
         gspTagLibraryLookup(TagLibraryLookup)
 

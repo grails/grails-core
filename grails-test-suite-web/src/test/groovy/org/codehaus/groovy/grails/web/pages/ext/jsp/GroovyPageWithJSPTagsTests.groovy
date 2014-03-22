@@ -19,7 +19,7 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests {
         GroovySystem.metaClassRegistry.removeMetaClass HttpServletRequest
         GroovySystem.metaClassRegistry.removeMetaClass MockHttpServletRequest
         String parentPath = System.getProperty("user.dir").endsWith("grails-core") ? "" : "../"
-        TagLibraryResolver.metaClass.resolveRootLoader = {->
+        TagLibraryResolverImpl.metaClass.resolveRootLoader = {->
             def rootLoader = new RootLoader([] as URL[], Thread.currentThread().getContextClassLoader())
             def res = new FileSystemResource("${parentPath}lib/taglibs/standard/jars/standard-1.1.2.jar")
             rootLoader.addURL res.getURL()
