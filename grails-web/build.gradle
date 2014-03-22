@@ -4,4 +4,5 @@ dependencies {
     compile project(":grails-web-jsp")
     compile project(":grails-web-mvc")
     compile project(":grails-web-sitemesh")
+    compile "junit:junit:${junitVersion}"
 }
