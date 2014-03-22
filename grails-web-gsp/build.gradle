@@ -1,0 +1,25 @@
+configurations {
+    optional
+    testRuntime {
+    	extendsFrom testCompile
+    }
+}
+
+
+dependencies {
+    compile project(":grails-web-common"), project(":grails-web-mvc")
+    
+    optional "org.apache.ant:ant:${antVersion}"
+
+    testRuntime project(":grails-web")
+}
+
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+}
+
+javadoc.classpath += files(configurations.optional)
+test.configuration = configurations.testRuntime
+

@@ -71,3 +71,9 @@ target
 /grails-plugin-log4j/bin/
 /grails-plugin-logging/bin/
 /grails-logging/bin/
+/grails-web-gsp/bin/
+/grails-web-jsp/bin/
+/grails-web-mvc/bin/
+/grails-web-sitemesh/bin/
+/grails-project-api/bin/
+/grails-web-common/bin/
