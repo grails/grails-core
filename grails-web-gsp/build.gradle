@@ -1,3 +1,17 @@
+configurations {
+    optional
+}
+
 dependencies {
     compile project(":grails-web-common"), project(":grails-web-mvc")
+    
+    optional "org.apache.ant:ant:${antVersion}"
 }
+
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+}
+
+javadoc.classpath += files(configurations.optional)
