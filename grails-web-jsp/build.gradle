@@ -1,6 +1,5 @@
 configurations {
     jsp21.extendsFrom compile
-    optional
 }
 
 dependencies {
@@ -20,9 +19,6 @@ dependencies {
 }
 
 sourceSets {
-    main {
-        compileClasspath += files(configurations.optional)
-    }
     jsp21 {
         compileClasspath = files(configurations.jsp21, main.output)
         groovy.srcDirs = ['src/jsp21/groovy']
@@ -30,7 +26,6 @@ sourceSets {
     }
 }
 
-javadoc.classpath += files(configurations.optional)
 jar {
     from compileJsp21Groovy.outputs.files
 }
