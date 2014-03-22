@@ -1,10 +1,14 @@
 configurations {
     jsp21.extendsFrom compile
+    testRuntime {
+        extendsFrom testCompile
+    }    
 }
 
 dependencies {
     compile project(":grails-web-common")
     compile project(":grails-web-gsp")
+    testRuntime project(":grails-web")
 
     // Required for JSP support
     jsp21 'javax.servlet.jsp:jsp-api:2.1'
@@ -45,3 +49,5 @@ eclipse {
         }
     }
 }
+
+test.configuration = configurations.testRuntime

@@ -1,3 +1,10 @@
+configurations {
+    testRuntime {
+    	extendsFrom testCompile
+    }
+}
 dependencies {
     compile project(":grails-web-common"), project(":grails-web-sitemesh")
+    testRuntime project(":grails-web")
 }
+test.configuration = configurations.testRuntime
