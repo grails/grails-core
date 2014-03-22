@@ -60,8 +60,9 @@ class GrailsFactoriesLoader {
      */
     static <T> List<T> loadFactories(Class<T> factoryClass, ClassLoader classLoader = GrailsFactoriesLoader.class.classLoader, Object[] arguments = NO_ARGUMENTS) {
         boolean hasArguments = !(arguments != null && arguments.length==0)
-        List<T> results = loadFactoryClasses(factoryClass, classLoader).collect { Class<? extends T> clazz ->
-            hasArguments ? clazz.newInstance(arguments) : clazz.newInstance() 
+        List<T> results = new ArrayList<T>() 
+        for(Class<? extends T> clazz : loadFactoryClasses(factoryClass, classLoader)) {
+            results.add(hasArguments ? clazz.newInstance(arguments) : clazz.newInstance()) 
         }
         OrderComparator.sort(results)
         results
