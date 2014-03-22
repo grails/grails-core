@@ -414,9 +414,10 @@ public class ControllersApi extends CommonWebApi {
         final HttpServletRequest request = getRequest(controllerInstance);
         final DataBindingSource dataBindingSource = DataBindingUtils.createDataBindingSource(getGrailsApplication(controllerInstance), type, request);
         final DataBindingSource commandObjectBindingSource = WebMetaUtils.getCommandObjectBindingSourceForPrefix(commandObjectParameterName, dataBindingSource);
-        final Object commandObjectInstance;
+        Object commandObjectInstance = null;
         Object entityIdentifierValue = null;
-        if(DomainClassArtefactHandler.isDomainClass(type)) {
+        final boolean isDomainClass = DomainClassArtefactHandler.isDomainClass(type);
+        if(isDomainClass) {
             entityIdentifierValue = commandObjectBindingSource.getIdentifierValue();
             if(entityIdentifierValue == null) {
                 final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
@@ -429,9 +430,12 @@ public class ControllersApi extends CommonWebApi {
                 entityIdentifierValue = null;
             }
         }
+        
+        final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
+        
         if(entityIdentifierValue != null) {
             commandObjectInstance = InvokerHelper.invokeStaticMethod(type, "get", entityIdentifierValue);
-        } else {
+        } else if(requestMethod == HttpMethod.POST || !isDomainClass){ 
             commandObjectInstance = type.newInstance();
         }
 
@@ -439,7 +443,6 @@ public class ControllersApi extends CommonWebApi {
             final boolean shouldDoDataBinding;
 
             if(entityIdentifierValue != null) {
-                final HttpMethod requestMethod = HttpMethod.valueOf(request.getMethod());
                 switch(requestMethod) {
                     case PATCH:
                     case POST:
