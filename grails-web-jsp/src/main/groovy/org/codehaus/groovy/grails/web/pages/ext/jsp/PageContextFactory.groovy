@@ -38,7 +38,7 @@ class PageContextFactory {
         def classLoader = Thread.currentThread().getContextClassLoader()
 
         if (PC.metaClass.getMetaMethod('getElContext', [] as Class[])) {
-            pageContextClass = classLoader.loadClass('org.codehaus.groovy.grails.web.pages.ext.jsp.GrooovyPagesPageContext21')
+            pageContextClass = classLoader.loadClass('org.codehaus.groovy.grails.web.pages.ext.jsp.GroovyPagesPageContext21')
         }
         else {
             pageContextClass = classLoader.loadClass('org.codehaus.groovy.grails.web.pages.ext.jsp.GroovyPagesPageContext')
