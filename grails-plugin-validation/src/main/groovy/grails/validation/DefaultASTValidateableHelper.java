@@ -210,8 +210,8 @@ public class DefaultASTValidateableHelper implements ASTValidateableHelper{
             final BlockStatement validateMethodCode = new BlockStatement();
             final ArgumentListExpression validateInstanceArguments = new ArgumentListExpression();
             validateInstanceArguments.addExpression(new VariableExpression("this"));
-            validateInstanceArguments.addExpression(new VariableExpression(fieldsToValidateParameterName));
-            final ClassNode validationSupportClassNode = new ClassNode(ValidationSupport.class);
+            validateInstanceArguments.addExpression(new VariableExpression(fieldsToValidateParameterName, ClassHelper.LIST_TYPE));
+            final ClassNode validationSupportClassNode = ClassHelper.make(ValidationSupport.class);
             final StaticMethodCallExpression invokeValidateInstanceExpression = new StaticMethodCallExpression(validationSupportClassNode, "validateInstance", validateInstanceArguments);
             validateMethodCode.addStatement(new ExpressionStatement(invokeValidateInstanceExpression));
             final Parameter fieldsToValidateParameter = new Parameter(new ClassNode(List.class), fieldsToValidateParameterName);
