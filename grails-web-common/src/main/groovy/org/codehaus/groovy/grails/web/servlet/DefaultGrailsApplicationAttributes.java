@@ -35,7 +35,6 @@ import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
-import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -54,7 +53,8 @@ import org.springframework.web.util.UrlPathHelper;
  * @since 0.3
  */
 public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttributes {
-
+    protected static final String DEFAULT_NAMESPACE = "g";
+    
     private static Log LOG = LogFactory.getLog(DefaultGrailsApplicationAttributes.class);
 
     private UrlPathHelper urlHelper = new UrlPathHelper();
@@ -223,11 +223,11 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName) {
-        return getTagLibraryForTag(request, response, tagName, GroovyPage.DEFAULT_NAMESPACE);
+        return getTagLibraryForTag(request, response, tagName, DEFAULT_NAMESPACE);
     }
 
     public GroovyObject getTagLibraryForTag(HttpServletRequest request, HttpServletResponse response,String tagName, String namespace) {
-        String nonNullNamesapce = namespace == null ? GroovyPage.DEFAULT_NAMESPACE : namespace;
+        String nonNullNamesapce = namespace == null ? DEFAULT_NAMESPACE : namespace;
         String fullTagName = nonNullNamesapce + ":" + tagName;
 
         GrailsTagLibClass tagLibClass = (GrailsTagLibClass) getGrailsApplication().getArtefactForFeature(

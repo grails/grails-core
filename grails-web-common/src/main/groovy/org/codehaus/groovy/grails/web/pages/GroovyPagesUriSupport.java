@@ -39,6 +39,8 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
     private static final String SLASH_UNDR = "/_";
     private static final String BLANK = "";
     private static final String UNDERSCORE = "_";
+    protected static final String EXTENSION = ".gsp";    
+    protected static final String SUFFIX = ".gsp";    
 
     /**
      * Obtains a template URI for the given controller instance and template name
@@ -118,7 +120,7 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
            .append(pathToTemplate)
            .append(UNDERSCORE)
            .append(templateName);
-        return buf.append(GroovyPage.EXTENSION).toString();
+        return buf.append(EXTENSION).toString();
     }
 
     /**
@@ -141,7 +143,7 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
             buf.append(SLASH_UNDR);
             buf.append(templateName.substring(1,templateName.length()));
         }
-        String uri = buf.append(GroovyPage.EXTENSION).toString();
+        String uri = buf.append(EXTENSION).toString();
         buf.close();
         return uri;
     }
@@ -212,7 +214,7 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
             buf.append(SLASH).append(viewName);
         }
 
-        return includeSuffix ? buf.append(GroovyPage.SUFFIX).toString() : buf.toString();
+        return includeSuffix ? buf.append(SUFFIX).toString() : buf.toString();
     }
 
     private String getAbsoluteViewURIInternal(String viewName, FastStringWriter buf, boolean includeSuffix) {
@@ -228,7 +230,7 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
             buf.append(viewName.substring(1,viewName.length()));
         }
         if (includeSuffix) {
-            buf.append(GroovyPage.SUFFIX).toString();
+            buf.append(SUFFIX).toString();
         }
         return buf.toString();
     }
