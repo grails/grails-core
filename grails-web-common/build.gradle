@@ -15,9 +15,6 @@ dependencies {
     compile "org.springframework:spring-webmvc:${springVersion}"
     compile "org.springframework:spring-context-support:${springVersion}"
 
-    // Needed by GSP tag library resolver
-    compile 'xpp3:xpp3_min:1.1.4c'
-
     compile 'com.google.code.gson:gson:2.2.4'
 
     // Required for AspectJ support
