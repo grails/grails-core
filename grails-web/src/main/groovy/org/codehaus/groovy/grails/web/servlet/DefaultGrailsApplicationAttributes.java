@@ -28,14 +28,14 @@ import javax.servlet.http.HttpSession;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.GrailsControllerClass;
+import org.codehaus.groovy.grails.commons.GrailsTagLibClass;
 import org.codehaus.groovy.grails.commons.TagLibArtefactHandler;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.grails.web.pages.DefaultGroovyPagesUriService;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
-import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesUriService;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -63,7 +63,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     private ApplicationContext appContext;
 
     // Beans used very often
-    private GroovyPagesTemplateEngine pagesTemplateEngine;
+    private ResourceAwareTemplateEngine pagesTemplateEngine;
     private GrailsApplication grailsApplication;
     private GroovyPagesUriService groovyPagesUriService;
     private MessageSource messageSource;
@@ -83,7 +83,7 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
     private void initBeans() {
         if (appContext != null) {
-            pagesTemplateEngine = fetchBeanFromAppCtx(GroovyPagesTemplateEngine.BEAN_ID);
+            pagesTemplateEngine = fetchBeanFromAppCtx(ResourceAwareTemplateEngine.BEAN_ID);
             pluginManager = fetchBeanFromAppCtx(GrailsPluginManager.BEAN_NAME);
             grailsApplication = fetchBeanFromAppCtx(GrailsApplication.APPLICATION_ID);
             groovyPagesUriService = fetchBeanFromAppCtx(GroovyPagesUriService.BEAN_ID);
@@ -208,12 +208,12 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         return (Errors)request.getAttribute(ERRORS);
     }
 
-    public GroovyPagesTemplateEngine getPagesTemplateEngine() {
+    public ResourceAwareTemplateEngine getPagesTemplateEngine() {
         if (pagesTemplateEngine != null) {
             return pagesTemplateEngine;
         }
         if (LOG.isWarnEnabled()) {
-            LOG.warn("No bean named [" + GroovyPagesTemplateEngine.BEAN_ID + "] defined in Spring application context!");
+            LOG.warn("No bean named [" + ResourceAwareTemplateEngine.BEAN_ID + "] defined in Spring application context!");
         }
         return null;
     }

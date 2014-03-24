@@ -42,7 +42,7 @@ import org.springframework.core.io.Resource;
  * @since 0.4
  */
 public abstract class ResourceAwareTemplateEngine extends TemplateEngine {
-
+    public static final String BEAN_ID = "groovyPagesTemplateEngine";
     private static final String GROOVY_SOURCE_CHAR_ENCODING = "UTF-8";
 
     /**
