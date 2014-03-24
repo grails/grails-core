@@ -57,6 +57,7 @@ import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
 import org.codehaus.groovy.grails.web.servlet.view.GrailsViewResolver
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
+import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
 import org.springframework.beans.factory.config.PropertiesFactoryBean
 import org.springframework.context.ApplicationContext
 import org.springframework.web.servlet.view.JstlView
@@ -311,7 +312,7 @@ class GroovyPagesGrailsPlugin {
 
         enhanceClasses(application.tagLibClasses*.clazz, ctx.instanceTagLibraryApi)
         application.tagLibClasses.each { taglibClass ->
-            WebMetaUtils.enhanceTagLibMetaClass(taglibClass, gspTagLibraryLookup)
+            TagLibraryMetaUtils.enhanceTagLibMetaClass(taglibClass, gspTagLibraryLookup)
         }
     }
 
@@ -336,7 +337,7 @@ class GroovyPagesGrailsPlugin {
                 lookup.registerTagLib(taglibClass)
 
                 enhanceClasses([taglibClass.clazz], ctx.instanceTagLibraryApi)
-                WebMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.gspTagLibraryLookup)
+                TagLibraryMetaUtils.enhanceTagLibMetaClass(taglibClass, ctx.gspTagLibraryLookup)
             }
         } else if (application.isArtefactOfType(ControllerArtefactHandler.TYPE, event.source)) {
             enhanceClasses([event.source], ctx.instanceControllerTagLibraryApi)
