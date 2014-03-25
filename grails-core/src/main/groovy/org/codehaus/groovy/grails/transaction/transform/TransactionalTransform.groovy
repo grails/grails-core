@@ -16,6 +16,8 @@
 
 package org.codehaus.groovy.grails.transaction.transform
 
+import org.codehaus.groovy.ast.stmt.Statement
+
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
 import grails.transaction.NotTransactional;
 import grails.transaction.Transactional
@@ -46,7 +48,7 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.interceptor.NoRollbackRuleAttribute
 import org.springframework.transaction.interceptor.RollbackRuleAttribute
-import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute
+
 
 /**
  * This AST transform reads the {@link grails.transaction.Transactional} annotation and transforms method calls by
@@ -73,7 +75,7 @@ class TransactionalTransform implements ASTTransformation{
 
         AnnotatedNode parent = (AnnotatedNode) astNodes[1];
         AnnotationNode annotationNode = (AnnotationNode) astNodes[0];
-        if (!MY_TYPE.equals(annotationNode.getClassNode())) {
+        if (!isTransactionAnnotation(annotationNode)) {
             return;
         }
 
@@ -90,6 +92,10 @@ class TransactionalTransform implements ASTTransformation{
             weaveTransactionalBehavior(source, parent, annotationNode)
         }
 
+    }
+
+    protected boolean isTransactionAnnotation(AnnotationNode annotationNode) {
+        MY_TYPE.equals(annotationNode.getClassNode())
     }
 
     public void weaveTransactionalBehavior(SourceUnit source, ClassNode classNode, AnnotationNode annotationNode) {
@@ -159,9 +165,11 @@ class TransactionalTransform implements ASTTransformation{
         addCompileStaticAnnotation(methodNode)
         
         applyTransactionalAttributeSettings(annotationNode, transactionAttributeVar, methodBody)
-        
-        final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")] as Parameter[]
-        final callCallExpression = new ClosureExpression(executeMethodParameterTypes, new ExpressionStatement(originalMethodCall))
+
+
+        def transactionStatusParam = new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")
+        final executeMethodParameterTypes = [transactionStatusParam] as Parameter[]
+        final callCallExpression = new ClosureExpression(executeMethodParameterTypes, createTransactionalMethodCallBody(transactionStatusParam, originalMethodCall))
 
         final constructorArgs = new ArgumentListExpression()
         constructorArgs.addExpression(new PropertyExpression(buildThisExpression(), PROPERTY_TRANSACTION_MANAGER))
@@ -180,8 +188,8 @@ class TransactionalTransform implements ASTTransformation{
 
         final methodArgs = new ArgumentListExpression()
         methodArgs.addExpression(callCallExpression)
-        final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, METHOD_EXECUTE, methodArgs)
-        final executeMethodNode = transactionTemplateClassNode.getMethod("execute", executeMethodParameterTypes)
+        final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, getTransactionTemplateMethodName(), methodArgs)
+        final executeMethodNode = transactionTemplateClassNode.getMethod(getTransactionTemplateMethodName(), executeMethodParameterTypes)
         executeMethodCallExpression.setMethodTarget(executeMethodNode)
         
         if(methodNode.getReturnType() != ClassHelper.VOID_TYPE) {
@@ -192,6 +200,14 @@ class TransactionalTransform implements ASTTransformation{
         
         methodNode.setCode(methodBody)
         processVariableScopes(source, classNode, methodNode)
+    }
+
+    protected String getTransactionTemplateMethodName() {
+        "execute"
+    }
+
+    protected Statement createTransactionalMethodCallBody(Parameter transactionStatusParam, MethodCallExpression originalMethodCall) {
+        new ExpressionStatement(originalMethodCall)
     }
 
     protected applyTransactionalAttributeSettings(AnnotationNode annotationNode, VariableExpression transactionAttributeVar, BlockStatement methodBody) {

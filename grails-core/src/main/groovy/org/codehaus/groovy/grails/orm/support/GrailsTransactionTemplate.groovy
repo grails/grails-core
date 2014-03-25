@@ -54,6 +54,32 @@ class GrailsTransactionTemplate {
         this.transactionAttribute = transactionAttribute
     }
 
+    Object executeAndRollback(Closure action) throws TransactionException {
+        try {
+            Object result = transactionTemplate.execute(new TransactionCallback() {
+                Object doInTransaction(TransactionStatus status) {
+                    try {
+                        return action.call(status)
+                    }
+                    catch (Throwable e) {
+                        return new ThrowableHolder(e)
+                    } finally {
+                        status.setRollbackOnly()
+                    }
+                }
+            })
+
+            if (result instanceof ThrowableHolder) {
+                throw result.getThrowable()
+            } else {
+                return result
+            }
+        }
+        catch (ThrowableHolderException e) {
+            throw e.getCause()
+        }
+    }
+
     Object execute(Closure action) throws TransactionException {
         try {
             Object result = transactionTemplate.execute(new TransactionCallback() {

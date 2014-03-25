@@ -552,6 +552,32 @@ new BookService()
              1==1
     }
 
+    void "Test rollback transformation"() {
+        given:
+        def bookService = new GroovyShell().evaluate('''
+    import grails.transaction.*
+    import org.springframework.transaction.TransactionStatus
+
+    @Rollback
+    class BookService {
+
+
+        TransactionStatus doRollback() {
+            def status = transactionStatus
+            return  transactionStatus
+        }
+    }
+
+    new BookService()
+    ''')
+            final transactionManager = getPlatformTransactionManager()
+            bookService.transactionManager = transactionManager
+        when:"A method is called"
+            TransactionStatus status = bookService.doRollback()
+        then:"Then the transaction has been rolled back"
+            status.isRollbackOnly()
+    }
+
 }
 
 
