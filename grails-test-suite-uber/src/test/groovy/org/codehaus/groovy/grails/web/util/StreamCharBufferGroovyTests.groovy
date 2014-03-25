@@ -1,11 +1,10 @@
 package org.codehaus.groovy.grails.web.util
 
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 
 class StreamCharBufferGroovyTests extends GroovyTestCase {
 
     protected void setUp() {
-        WebMetaUtils.registerStreamCharBufferMetaClass()
+        StreamCharBufferMetaUtils.registerStreamCharBufferMetaClass()
     }
 
     void testStringDelegatingMetaClass() {

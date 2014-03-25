@@ -36,10 +36,10 @@ import org.codehaus.groovy.grails.web.pages.GroovyPageBinding;
 import org.codehaus.groovy.grails.web.pages.GroovyPageOutputStack;
 import org.codehaus.groovy.grails.web.pages.GroovyPageRequestBinding;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException;
+import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,7 +135,7 @@ public class TagLibraryApi extends CommonWebApi {
             }
 
             if (tagLibrary != null && !developmentMode) {
-                WebMetaUtils.registerMethodMissingForTags(mc, lookup, usednamespace, methodName);
+                TagLibraryMetaUtils.registerMethodMissingForTags(mc, lookup, usednamespace, methodName);
             }
 
             if (tagLibrary != null) {
@@ -180,7 +180,7 @@ public class TagLibraryApi extends CommonWebApi {
 
             if (result != null && !developmentMode) {
                 MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
-                WebMetaUtils.registerPropertyMissingForTag(mc, name, result);
+                TagLibraryMetaUtils.registerPropertyMissingForTag(mc, name, result);
             }
 
             if (result != null) {
@@ -190,7 +190,7 @@ public class TagLibraryApi extends CommonWebApi {
 
         throw new MissingPropertyException(name, instance.getClass());
     }
-
+    
     private String getNamespace(Object instance) {
         GrailsApplication grailsApplication = getGrailsApplication(null);
         if (grailsApplication != null) {

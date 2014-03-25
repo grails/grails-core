@@ -29,8 +29,8 @@ import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.web.pages.GroovyPage;
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup;
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
 import org.codehaus.groovy.grails.web.taglib.NamespacedTagDispatcher;
+import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils;
 import org.codehaus.groovy.grails.web.util.WithCodecHelper;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,7 +83,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
             if (tagLibrary != null) {
                 if (!developmentMode) {
                     MetaClass controllerMc = GrailsMetaClassUtils.getMetaClass(instance);
-                    WebMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
+                    TagLibraryMetaUtils.registerMethodMissingForTags(controllerMc, lookup, GroovyPage.DEFAULT_NAMESPACE, methodName);
                 }
                 List<MetaMethod> respondsTo = tagLibrary.getMetaClass().respondsTo(tagLibrary, methodName, args);
                 if (respondsTo.size()>0) {
@@ -107,7 +107,7 @@ public class ControllerTagLibraryApi extends CommonWebApi {
         NamespacedTagDispatcher namespacedTagDispatcher = lookup.lookupNamespaceDispatcher(propertyName);
         if (namespacedTagDispatcher != null) {
             if (!developmentMode) {
-                WebMetaUtils.registerPropertyMissingForTag(GrailsMetaClassUtils.getMetaClass(instance),propertyName, namespacedTagDispatcher);
+                TagLibraryMetaUtils.registerPropertyMissingForTag(GrailsMetaClassUtils.getMetaClass(instance),propertyName, namespacedTagDispatcher);
             }
             return namespacedTagDispatcher;
         }

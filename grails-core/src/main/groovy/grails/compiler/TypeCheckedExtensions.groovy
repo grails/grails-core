@@ -32,37 +32,35 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
 
     @Override
     public Object run() {
-        setup {
-            methodNotFound { receiver, name, argList, argTypes, call ->
-                def dynamicCall
-                if(receiver == CLASS_Type) {
-                    def genericsTypes = receiver.genericsTypes
-                    if(genericsTypes) {
-                        def staticMethodCallTargetType = genericsTypes[0].type
-                        if(staticMethodCallTargetType) {
-                            def sourceUnit = staticMethodCallTargetType?.module?.context
-                            if(GrailsASTUtils.isDomainClass(staticMethodCallTargetType, sourceUnit)) {
-                                switch(name) {
-                                    case ~/countBy[A-Z].*/:
-                                        dynamicCall = makeDynamicGormCall(call, Integer_TYPE, staticMethodCallTargetType)
-                                        break
-                                    case ~/findAllBy[A-Z].*/:
-                                    case ~/listOrderBy[A-Z].*/:
-                                        def returnType = parameterizedType(LIST_TYPE, staticMethodCallTargetType)
-                                        dynamicCall = makeDynamicGormCall(call, returnType, staticMethodCallTargetType)
-                                        break
-                                    case ~/findBy[A-Z].*/:
-                                    case ~/findOrCreateBy[A-Z].*/:
-                                    case ~/findOrSaveBy[A-Z].*/:
-                                        dynamicCall = makeDynamicGormCall(call, staticMethodCallTargetType, staticMethodCallTargetType)
-                                        break
-                                }
+        methodNotFound { receiver, name, argList, argTypes, call ->
+            def dynamicCall
+            if(receiver == CLASS_Type) {
+                def genericsTypes = receiver.genericsTypes
+                if(genericsTypes) {
+                    def staticMethodCallTargetType = genericsTypes[0].type
+                    if(staticMethodCallTargetType) {
+                        def sourceUnit = staticMethodCallTargetType?.module?.context
+                        if(GrailsASTUtils.isDomainClass(staticMethodCallTargetType, sourceUnit)) {
+                            switch(name) {
+                                case ~/countBy[A-Z].*/:
+                                    dynamicCall = makeDynamicGormCall(call, Integer_TYPE, staticMethodCallTargetType)
+                                    break
+                                case ~/findAllBy[A-Z].*/:
+                                case ~/listOrderBy[A-Z].*/:
+                                    def returnType = parameterizedType(LIST_TYPE, staticMethodCallTargetType)
+                                    dynamicCall = makeDynamicGormCall(call, returnType, staticMethodCallTargetType)
+                                    break
+                                case ~/findBy[A-Z].*/:
+                                case ~/findOrCreateBy[A-Z].*/:
+                                case ~/findOrSaveBy[A-Z].*/:
+                                    dynamicCall = makeDynamicGormCall(call, staticMethodCallTargetType, staticMethodCallTargetType)
+                                    break
                             }
                         }
                     }
                 }
-                return dynamicCall
             }
+            return dynamicCall
         }
         return null
     }

@@ -26,8 +26,8 @@ import org.codehaus.groovy.grails.commons.metaclass.MetaClassEnhancer
 import org.codehaus.groovy.grails.plugins.web.api.TagLibraryApi
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils
 import org.codehaus.groovy.grails.web.util.GrailsPrintWriter
+import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
 import org.junit.Assert
 
 /**
@@ -85,7 +85,7 @@ class GroovyPageUnitTestMixin extends ControllerUnitTestMixin {
             enhancer.addApi(applicationContext.getBean('instanceTagLibraryApi'))
             MetaClass mc = GrailsMetaClassUtils.getMetaClass(tagLib)
             enhancer.enhance(mc)
-            WebMetaUtils.enhanceTagLibMetaClass(tagLib, tagLookup)
+            TagLibraryMetaUtils.enhanceTagLibMetaClass(tagLib, tagLookup)
         }
 
         defineBeans(true) {

@@ -18,8 +18,6 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import groovy.transform.CompileStatic
 
-import org.apache.commons.lang.WordUtils
-import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
@@ -186,9 +184,14 @@ class SitemeshTagLib implements RequestConstants {
                 smpage.addProperty("meta.${attrs.name.toLowerCase()}", val)
             }
             else if (attrs['http-equiv']) {
-                smpage.addProperty("meta.http-equiv.${attrs['http-equiv']}", val)
-                smpage.addProperty("meta.http-equiv.${attrs['http-equiv'].toLowerCase()}", val)
-                smpage.addProperty("meta.http-equiv.${WordUtils.capitalize(attrs['http-equiv'],['-'] as char[])}", val)
+                String httpEquiv = attrs['http-equiv'] as String
+                def httpEquivFormats = [httpEquiv, httpEquiv.toLowerCase()]
+                if(httpEquiv.equalsIgnoreCase('content-type')) {
+                    httpEquivFormats << 'Content-Type'
+                }
+                for (def httpEquivFormat : httpEquivFormats) {
+                    smpage.addProperty("meta.http-equiv.${httpEquivFormat}", val)
+                }
             }
         }
     }
