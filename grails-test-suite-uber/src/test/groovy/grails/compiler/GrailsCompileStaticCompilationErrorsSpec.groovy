@@ -121,6 +121,7 @@ class SomeClass {
         c
     }
     
+    @Issue('GRAILS-11242')
     void 'Test compiling @Validateable'() {
         given:
         def gcl = new GroovyClassLoader()
@@ -142,6 +143,35 @@ class SomeClass {
 ''')
         then: 'no errors are thrown'
         c
+    }
+    
+    @Issue('GRAILS-11242')
+    void 'Test compiling @Validateable which contains unrelated type checking error'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when:
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+@grails.validation.Validateable
+class SomeClass {
+    String name
+
+    def someMethod() {
+        someDynamicMethod()
+    }
+
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+}
+''')
+        then: 'errors are thrown'
+        MultipleCompilationErrorsException e = thrown()
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#someDynamicMethod'
+
     }
 }
 

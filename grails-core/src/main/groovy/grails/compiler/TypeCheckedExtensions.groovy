@@ -52,6 +52,7 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
             if(currentScope.constraintsClosureCode) {
                 def constraintsProperty = classNode.getField('constraints')
                 constraintsProperty.initialExpression.code = currentScope.constraintsClosureCode
+                currentScope.checkingConstraintsClosure = true
                 withTypeChecker { 
                     visitClosureExpression constraintsProperty.initialExpression 
                 }
@@ -61,7 +62,7 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
 
         methodNotFound { receiver, name, argList, argTypes, call ->
             def dynamicCall
-            if(currentScope.constraintsClosureCode) {
+            if(currentScope.constraintsClosureCode && currentScope.checkingConstraintsClosure) {
                 dynamicCall = makeDynamic (call)
             }
             dynamicCall
