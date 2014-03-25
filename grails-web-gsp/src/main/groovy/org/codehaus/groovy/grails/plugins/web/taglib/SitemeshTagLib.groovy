@@ -18,6 +18,7 @@ package org.codehaus.groovy.grails.plugins.web.taglib
 import grails.artefact.Artefact
 import groovy.transform.CompileStatic
 
+import org.codehaus.groovy.grails.web.pages.FastStringWriter;
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
@@ -32,12 +33,12 @@ import com.opensymphony.module.sitemesh.RequestConstants
  * @since 1.2
  */
 @Artefact("TagLibrary")
+@CompileStatic
 class SitemeshTagLib implements RequestConstants {
     protected static final String GSP_SITEMESH_PAGE = 'org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter.GSP_SITEMESH_PAGE'
 
     static namespace = 'sitemesh'
 
-    @CompileStatic
     def captureTagContent(Writer writer, String tagname, Map attrs, Object body, boolean noEndTagForEmpty=false) {
         def content = null
         if (body != null) {
@@ -97,16 +98,16 @@ class SitemeshTagLib implements RequestConstants {
         content
     }
 
-    @CompileStatic
     def StreamCharBuffer wrapContentInBuffer(Object content) {
         if (content instanceof Closure) {
             content = content()
         }
         if (!(content instanceof StreamCharBuffer)) {
             // the body closure might be a string constant, so wrap it in a StreamCharBuffer in that case
-            def newbuffer = new StreamCharBuffer()
+            FastStringWriter stringWriter=new FastStringWriter()
+            stringWriter.print((Object)content)
+            StreamCharBuffer newbuffer = stringWriter.buffer
             newbuffer.setPreferSubChunkWhenWritingToOtherBuffer(true)
-            InvokerHelper.write(newbuffer.writer, content)
             return newbuffer
         } else {
             return (StreamCharBuffer)content
@@ -116,15 +117,19 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the &lt;head&gt; tag.
      */
-    Closure captureHead = { attrs, body ->
+    Closure captureHead = { Map attrs, body ->
         def content = captureTagContent(out, 'head', attrs, body)
 
         if (content != null) {
-            GSPSitemeshPage smpage=request[GSP_SITEMESH_PAGE]
+            GSPSitemeshPage smpage = findGSPSitemeshPage(request)
             if (smpage) {
                 smpage.setHeadBuffer(wrapContentInBuffer(content))
             }
         }
+    }
+
+    protected GSPSitemeshPage findGSPSitemeshPage(javax.servlet.http.HttpServletRequest request) {
+        (GSPSitemeshPage)request.getAttribute(GSP_SITEMESH_PAGE)
     }
 
     /**
@@ -132,8 +137,8 @@ class SitemeshTagLib implements RequestConstants {
      *
      * &lt;sitemesh:parameter name="foo" value="bar" /&gt;
      */
-    Closure parameter = { attrs, body ->
-        GSPSitemeshPage smpage=request[GSP_SITEMESH_PAGE]
+    Closure parameter = { Map attrs, body ->
+        GSPSitemeshPage smpage=findGSPSitemeshPage(request)
         def name = attrs.name?.toString()
         def val = attrs.value?.toString()
         if (smpage && name && val != null) {
@@ -144,15 +149,15 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the &lt;body&gt; tag.
      */
-    Closure captureBody = { attrs, body ->
+    Closure captureBody = { Map attrs, body ->
         def content = captureTagContent(out, 'body', attrs, body)
         if (content != null) {
-            GSPSitemeshPage smpage = request[GSP_SITEMESH_PAGE]
+            GSPSitemeshPage smpage = findGSPSitemeshPage(request)
             if (smpage) {
                 smpage.setBodyBuffer(wrapContentInBuffer(content))
                 if (attrs) {
                     attrs.each { k, v ->
-                        smpage.addProperty("body.${k.toLowerCase()}", v?.toString())
+                        smpage.addProperty("body.${k?.toString()?.toLowerCase()}", v?.toString())
                     }
                 }
             }
@@ -162,11 +167,11 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the individual &lt;content&gt; tags.
      */
-    Closure captureContent = { attrs, body ->
+    Closure captureContent = { Map attrs, body ->
         if (body != null) {
-            GSPSitemeshPage smpage=request[GSP_SITEMESH_PAGE]
+            GSPSitemeshPage smpage=findGSPSitemeshPage(request)
             if (smpage && attrs.tag) {
-                smpage.setContentBuffer(attrs.tag, wrapContentInBuffer(body))
+                smpage.setContentBuffer(attrs.tag as String, wrapContentInBuffer(body))
             }
         }
     }
@@ -174,14 +179,14 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the individual &lt;meta&gt; tags.
      */
-    Closure captureMeta = { attrs, body ->
+    Closure captureMeta = { Map attrs, body ->
         def content = captureTagContent(out, 'meta', attrs, body, true)
-        GSPSitemeshPage smpage = request[GSP_SITEMESH_PAGE]
+        GSPSitemeshPage smpage = findGSPSitemeshPage(request)
         def val = attrs.content?.toString()
         if (attrs && smpage && val != null) {
             if (attrs.name) {
                 smpage.addProperty("meta.${attrs.name}", val)
-                smpage.addProperty("meta.${attrs.name.toLowerCase()}", val)
+                smpage.addProperty("meta.${attrs.name.toString().toLowerCase()}", val)
             }
             else if (attrs['http-equiv']) {
                 String httpEquiv = attrs['http-equiv'] as String
@@ -199,8 +204,8 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Captures the &lt;title&gt; tag.
      */
-    Closure captureTitle = { attrs, body ->
-        GSPSitemeshPage smpage = request[GSP_SITEMESH_PAGE]
+    Closure captureTitle = { Map attrs, body ->
+        GSPSitemeshPage smpage = findGSPSitemeshPage(request)
         def content = captureTagContent(out, 'title', attrs, body)
         if (smpage && content != null) {
             smpage.addProperty('title', content?.toString())
@@ -211,14 +216,14 @@ class SitemeshTagLib implements RequestConstants {
     /**
      * Wraps the title tag so that the buffer can be cleared out from the head buffer
      */
-    Closure wrapTitleTag = { attrs, body ->
+    Closure wrapTitleTag = { Map attrs, body ->
         if (body != null) {
-            GSPSitemeshPage smpage=request[GSP_SITEMESH_PAGE]
+            GSPSitemeshPage smpage=findGSPSitemeshPage(request)
             if (smpage) {
                 def wrapped = wrapContentInBuffer(body)
                 smpage.setTitleBuffer(wrapped)
                 out << wrapped
-            } else {
+            } else if (body instanceof Closure) {
                 out << body()
             }
         }
