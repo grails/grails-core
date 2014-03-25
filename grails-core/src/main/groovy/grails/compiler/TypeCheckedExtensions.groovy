@@ -38,36 +38,14 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
 
         finish { scopeExit() }
 
-        beforeVisitClass { classNode ->
-            def constraintsProperty = classNode.getField('constraints')
-            if(constraintsProperty && constraintsProperty.isStatic() && constraintsProperty.initialExpression instanceof ClosureExpression) {
-                newScope {
-                    constraintsClosureCode = constraintsProperty.initialExpression.code
-                }
-                constraintsProperty.initialExpression.code = new EmptyStatement()
-            }
-        }
+        handleValidateableConstraints()
 
-        afterVisitClass { classNode ->
-            if(currentScope.constraintsClosureCode) {
-                def constraintsProperty = classNode.getField('constraints')
-                constraintsProperty.initialExpression.code = currentScope.constraintsClosureCode
-                currentScope.checkingConstraintsClosure = true
-                withTypeChecker { 
-                    visitClosureExpression constraintsProperty.initialExpression 
-                }
-                scopeExit()
-            }
-        }
+        handleDynamicFinders()
+        
+        null
+    }
 
-        methodNotFound { receiver, name, argList, argTypes, call ->
-            def dynamicCall
-            if(currentScope.constraintsClosureCode && currentScope.checkingConstraintsClosure) {
-                dynamicCall = makeDynamic (call)
-            }
-            dynamicCall
-        }
-
+    protected handleDynamicFinders() {
         methodNotFound { receiver, name, argList, argTypes, call ->
             def dynamicCall
             if(receiver == CLASS_Type) {
@@ -98,12 +76,41 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
             }
             return dynamicCall
         }
-        return null
     }
 
     protected makeDynamicGormCall(call, returnTypeNode, domainClassTypeNode) {
         def dynamicCall = makeDynamic(call, returnTypeNode)
         dynamicCall.declaringClass = domainClassTypeNode
         dynamicCall
+    }
+
+    protected handleValidateableConstraints() {
+        beforeVisitClass { classNode ->
+            def constraintsProperty = classNode.getField('constraints')
+            if(constraintsProperty && constraintsProperty.isStatic() && constraintsProperty.initialExpression instanceof ClosureExpression) {
+                newScope {
+                    constraintsClosureCode = constraintsProperty.initialExpression.code
+                }
+                constraintsProperty.initialExpression.code = new EmptyStatement()
+            }
+        }
+
+        afterVisitClass { classNode ->
+            if(currentScope.constraintsClosureCode) {
+                def constraintsProperty = classNode.getField('constraints')
+                constraintsProperty.initialExpression.code = currentScope.constraintsClosureCode
+                currentScope.checkingConstraintsClosure = true
+                withTypeChecker { visitClosureExpression constraintsProperty.initialExpression }
+                scopeExit()
+            }
+        }
+
+        methodNotFound { receiver, name, argList, argTypes, call ->
+            def dynamicCall
+            if(currentScope.constraintsClosureCode && currentScope.checkingConstraintsClosure) {
+                dynamicCall = makeDynamic (call)
+            }
+            dynamicCall
+        }
     }
 }
