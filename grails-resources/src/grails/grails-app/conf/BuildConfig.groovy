@@ -59,7 +59,7 @@ grails.project.dependency.resolution = {
         // plugins for the compile step
         compile ":scaffolding:2.0.3"
         compile ':cache:1.1.1'
-        compile ":asset-pipeline:1.6.4"
+        compile ":asset-pipeline:1.7.2"
 
         // plugins needed at runtime but not for compilation
         runtime ":hibernate4:4.3.4.2" // or ":hibernate:3.6.10.11"
@@ -67,10 +67,9 @@ grails.project.dependency.resolution = {
         runtime ":jquery:1.11.0.2"
 
         // Uncomment these to enable additional asset-pipeline capabilities
-        //compile ":sass-asset-pipeline:1.5.5"
-        //compile ":less-asset-pipeline:1.5.4"
-        //compile ":coffee-asset-pipeline:1.5.0"
-        //compile ":handlebars-asset-pipeline:1.3.0.1"
-
+        //compile ":sass-asset-pipeline:1.7.1"
+        //compile ":less-asset-pipeline:1.7.0"
+        //compile ":coffee-asset-pipeline:1.7.0"
+        //compile ":handlebars-asset-pipeline:1.3.0.3"
     }
 }
