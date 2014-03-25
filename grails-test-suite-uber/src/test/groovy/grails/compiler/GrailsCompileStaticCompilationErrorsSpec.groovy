@@ -120,6 +120,29 @@ class SomeClass {
         then: 'no errors are thrown'
         c
     }
+    
+    void 'Test compiling @Validateable'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a class marked with @GrailsCompileStatic invokes dynamic finders on a non-domain class inside of a method marked with TypeCheckingMode.SKIP'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+import groovy.transform.TypeCheckingMode
+
+@GrailsCompileStatic
+@grails.validation.Validateable
+class SomeClass {
+    String name
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+    }
 }
 
 @Entity

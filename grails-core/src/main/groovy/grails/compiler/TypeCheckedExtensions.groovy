@@ -20,6 +20,8 @@ import static org.codehaus.groovy.ast.ClassHelper.Integer_TYPE
 import static org.codehaus.groovy.ast.ClassHelper.LIST_TYPE
 
 import org.codehaus.groovy.ast.ClassHelper
+import org.codehaus.groovy.ast.expr.ClosureExpression
+import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport.TypeCheckingDSL
 
@@ -32,6 +34,39 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
 
     @Override
     public Object run() {
+        setup { newScope() }
+
+        finish { scopeExit() }
+
+        beforeVisitClass { classNode ->
+            def constraintsProperty = classNode.getField('constraints')
+            if(constraintsProperty && constraintsProperty.isStatic() && constraintsProperty.initialExpression instanceof ClosureExpression) {
+                newScope {
+                    constraintsClosureCode = constraintsProperty.initialExpression.code
+                }
+                constraintsProperty.initialExpression.code = new EmptyStatement()
+            }
+        }
+
+        afterVisitClass { classNode ->
+            if(currentScope.constraintsClosureCode) {
+                def constraintsProperty = classNode.getField('constraints')
+                constraintsProperty.initialExpression.code = currentScope.constraintsClosureCode
+                withTypeChecker { 
+                    visitClosureExpression constraintsProperty.initialExpression 
+                }
+                scopeExit()
+            }
+        }
+
+        methodNotFound { receiver, name, argList, argTypes, call ->
+            def dynamicCall
+            if(currentScope.constraintsClosureCode) {
+                dynamicCall = makeDynamic (call)
+            }
+            dynamicCall
+        }
+
         methodNotFound { receiver, name, argList, argTypes, call ->
             def dynamicCall
             if(receiver == CLASS_Type) {
