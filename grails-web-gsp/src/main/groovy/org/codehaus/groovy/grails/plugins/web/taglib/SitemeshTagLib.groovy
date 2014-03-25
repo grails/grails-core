@@ -20,7 +20,6 @@ import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.web.pages.SitemeshPreprocessor
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
-import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.runtime.InvokerHelper
 
@@ -34,6 +33,7 @@ import com.opensymphony.module.sitemesh.RequestConstants
  */
 @Artefact("TagLibrary")
 class SitemeshTagLib implements RequestConstants {
+    protected static final String GSP_SITEMESH_PAGE = 'org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter.GSP_SITEMESH_PAGE'
 
     static namespace = 'sitemesh'
 
@@ -120,7 +120,7 @@ class SitemeshTagLib implements RequestConstants {
         def content = captureTagContent(out, 'head', attrs, body)
 
         if (content != null) {
-            GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+            GSPSitemeshPage smpage=request[GSP_SITEMESH_PAGE]
             if (smpage) {
                 smpage.setHeadBuffer(wrapContentInBuffer(content))
             }
@@ -133,7 +133,7 @@ class SitemeshTagLib implements RequestConstants {
      * &lt;sitemesh:parameter name="foo" value="bar" /&gt;
      */
     Closure parameter = { attrs, body ->
-        GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+        GSPSitemeshPage smpage=request[GSP_SITEMESH_PAGE]
         def name = attrs.name?.toString()
         def val = attrs.value?.toString()
         if (smpage && name && val != null) {
@@ -147,7 +147,7 @@ class SitemeshTagLib implements RequestConstants {
     Closure captureBody = { attrs, body ->
         def content = captureTagContent(out, 'body', attrs, body)
         if (content != null) {
-            GSPSitemeshPage smpage = request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+            GSPSitemeshPage smpage = request[GSP_SITEMESH_PAGE]
             if (smpage) {
                 smpage.setBodyBuffer(wrapContentInBuffer(content))
                 if (attrs) {
@@ -164,7 +164,7 @@ class SitemeshTagLib implements RequestConstants {
      */
     Closure captureContent = { attrs, body ->
         if (body != null) {
-            GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+            GSPSitemeshPage smpage=request[GSP_SITEMESH_PAGE]
             if (smpage && attrs.tag) {
                 smpage.setContentBuffer(attrs.tag, wrapContentInBuffer(body))
             }
@@ -176,7 +176,7 @@ class SitemeshTagLib implements RequestConstants {
      */
     Closure captureMeta = { attrs, body ->
         def content = captureTagContent(out, 'meta', attrs, body, true)
-        GSPSitemeshPage smpage = request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+        GSPSitemeshPage smpage = request[GSP_SITEMESH_PAGE]
         def val = attrs.content?.toString()
         if (attrs && smpage && val != null) {
             if (attrs.name) {
@@ -200,7 +200,7 @@ class SitemeshTagLib implements RequestConstants {
      * Captures the &lt;title&gt; tag.
      */
     Closure captureTitle = { attrs, body ->
-        GSPSitemeshPage smpage = request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+        GSPSitemeshPage smpage = request[GSP_SITEMESH_PAGE]
         def content = captureTagContent(out, 'title', attrs, body)
         if (smpage && content != null) {
             smpage.addProperty('title', content?.toString())
@@ -213,7 +213,7 @@ class SitemeshTagLib implements RequestConstants {
      */
     Closure wrapTitleTag = { attrs, body ->
         if (body != null) {
-            GSPSitemeshPage smpage=request[GrailsPageFilter.GSP_SITEMESH_PAGE]
+            GSPSitemeshPage smpage=request[GSP_SITEMESH_PAGE]
             if (smpage) {
                 def wrapped = wrapContentInBuffer(body)
                 smpage.setTitleBuffer(wrapped)
