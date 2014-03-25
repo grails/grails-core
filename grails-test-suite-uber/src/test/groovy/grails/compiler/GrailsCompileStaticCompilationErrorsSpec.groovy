@@ -60,7 +60,6 @@ class SomeClass {
     }
 
     @Issue('GRAILS-11056')
-    @Ignore
     void 'Test compiling invalid dynamic finder calls'() {
         given:
         def gcl = new GroovyClassLoader()
