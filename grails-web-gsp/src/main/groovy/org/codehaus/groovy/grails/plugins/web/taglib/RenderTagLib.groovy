@@ -16,42 +16,54 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
+import groovy.transform.CompileStatic
 
+import org.codehaus.groovy.grails.support.encoding.CodecLookup
+import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.mapping.UrlMapping
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
+import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.GroovyPageParser
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
+import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import org.codehaus.groovy.grails.web.util.TypeConvertingMap
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpStatus
 import org.springframework.util.StringUtils
 import org.springframework.web.servlet.support.RequestContextUtils as RCU
 
 import com.opensymphony.module.sitemesh.Factory
+import com.opensymphony.module.sitemesh.Page
 import com.opensymphony.module.sitemesh.RequestConstants
+import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
 
 /**
  * Tags to help rendering of views and layouts.
  *
  * @author Graeme Rocher
  */
+@CompileStatic
 @Artefact("TagLibrary")
 class RenderTagLib implements RequestConstants {
     GroovyPagesTemplateRenderer groovyPagesTemplateRenderer
     ErrorsViewStackTracePrinter errorsViewStackTracePrinter
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
+    TagLibraryLookup gspTagLibraryLookup
+    CodecLookup codecLookup
 
-    protected getPage() {
-        return getRequest().getAttribute(PAGE)
+    protected AbstractHTMLPage getPage() {
+        return (AbstractHTMLPage)getRequest().getAttribute(PAGE)
     }
     
     protected boolean isSitemeshPreprocessMode() {
@@ -73,26 +85,27 @@ class RenderTagLib implements RequestConstants {
      * @attr view The name of the view. Cannot be specified in combination with controller/action/id
      * @attr model A model to pass onto the included controller in the request
      */
-    Closure include = { attrs, body ->
+    Closure include = { Map attrs, body ->
         if (attrs.action && !attrs.controller) {
             def controller = request?.getAttribute(GrailsApplicationAttributes.CONTROLLER)
-            def controllerName = controller?.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY)
+            def controllerName = ((GroovyObject)controller)?.getProperty(ControllerDynamicMethods.CONTROLLER_NAME_PROPERTY)
             attrs.controller = controllerName
         }
 
         if (attrs.controller || attrs.view) {
-            def mapping = new ForwardUrlMappingInfo(controller: attrs.controller,
-                    action: attrs.action,
-                    view: attrs.view,
-                    id: attrs.id,
-                    params: attrs.params)
+            def mapping = new ForwardUrlMappingInfo(controller: attrs.controller as String,
+                    action: attrs.action as String,
+                    view: attrs.view as String,
+                    id: attrs.id as String,
+                    params: attrs.params as Map)
+            
             if (attrs.namespace != null) {
-                mapping.namespace = attrs.namespace
+                mapping.namespace = attrs.namespace as String
             }
             if (attrs.plugin != null) {
-                mapping.pluginName = attrs.plugin
+                mapping.pluginName = attrs.plugin as String
             }
-            out << WebUtils.includeForUrlMappingInfo(request, response, mapping, attrs.model ?: [:])?.content
+            out << WebUtils.includeForUrlMappingInfo(request, response, mapping, (Map)(attrs.model ?: [:]))?.content
         }
     }
 
@@ -114,20 +127,21 @@ class RenderTagLib implements RequestConstants {
      * @attr params Optional. The params to pass onto the page object
      * @attr parse Optional. If true, Sitemesh parser will always be used to parse the content.
      */
-    Closure applyLayout = { attrs, body ->
+    Closure applyLayout = { Map attrs, body ->
         if (!groovyPagesTemplateEngine) throw new IllegalStateException("Property [groovyPagesTemplateEngine] must be set!")
         def oldPage = getPage()
-        def contentType = attrs.contentType ? attrs.contentType : "text/html"
+        String contentType = attrs.contentType ? attrs.contentType as String : "text/html"
 
-        def pageParams = attrs.params instanceof Map ? attrs.params : [:]
-        def viewModel = attrs.model instanceof Map ? attrs.model : [:]
-        def content = ""
+        Map pageParams = attrs.params instanceof Map ? (Map)attrs.params : [:]
+        Map viewModel = attrs.model instanceof Map ? (Map)attrs.model : [:]
+        Object content = null
         GSPSitemeshPage gspSiteMeshPage = null
         if (attrs.url) {
-            content = new URL(attrs.url).getText("UTF-8")
+            content = new URL(attrs.url as String).getText("UTF-8")
         }
         else if (attrs.action && attrs.controller) {
-            content = g.include(action: attrs.action, controller: attrs.controller, params: pageParams, model: viewModel)
+            def includeAttrs = [action: attrs.action, controller: attrs.controller, params: pageParams, model: viewModel]
+            content = GroovyPage.captureTagOutput(gspTagLibraryLookup, 'g', 'include', includeAttrs, null, webRequest)
         }
         else {
             def oldGspSiteMeshPage = request.getAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE)
@@ -135,7 +149,7 @@ class RenderTagLib implements RequestConstants {
                 gspSiteMeshPage = new GSPSitemeshPage()
                 request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, gspSiteMeshPage)
                 if (attrs.view || attrs.template) {
-                    content = render(attrs)
+                    content = GroovyPage.captureTagOutput(gspTagLibraryLookup, 'g', 'render', attrs, null, webRequest)
                 }
                 else {
                     def bodyClosure = GroovyPage.createOutputCapturingClosure(this, body, webRequest)
@@ -146,9 +160,9 @@ class RenderTagLib implements RequestConstants {
                     gspSiteMeshPage.setUsed(isSitemeshPreprocessMode())
                 }
                 else if (content != null) {
-                    def buf = new StreamCharBuffer()
-                    buf.writer.write(content)
-                    gspSiteMeshPage.setPageBuffer(buf)
+                    FastStringWriter stringWriter=new FastStringWriter()
+                    stringWriter.print((Object)content)
+                    gspSiteMeshPage.setPageBuffer(stringWriter.buffer)
                     gspSiteMeshPage.setUsed(isSitemeshPreprocessMode())
                 }
             }
@@ -156,31 +170,40 @@ class RenderTagLib implements RequestConstants {
                 request.setAttribute(GrailsPageFilter.GSP_SITEMESH_PAGE, oldGspSiteMeshPage)
             }
         }
+        if(content==null) {
+            content=''
+        }
 
-        def page = null
-        if (!attrs.boolean('parse') && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
+        Page page = null
+        if (!((TypeConvertingMap)attrs).boolean('parse') && gspSiteMeshPage != null && gspSiteMeshPage.isUsed()) {
             page = gspSiteMeshPage
         }
         else {
             def parser = getFactory().getPageParser(contentType)
-            page = parser.parse(content.toCharArray())
+            char[] charArray
+            if(content instanceof StreamCharBuffer) {
+                charArray = ((StreamCharBuffer)content).toCharArray()
+            } else {
+                charArray = content.toString().toCharArray()
+            }
+            page = parser.parse(charArray)
         }
 
         def decoratorMapper = getFactory().getDecoratorMapper()
         if (decoratorMapper) {
-            def d = decoratorMapper.getNamedDecorator(request, attrs.name)
+            def d = decoratorMapper.getNamedDecorator(request, attrs.name as String)
             if (d && d.page) {
                 pageParams.each { k, v ->
-                    page.addProperty(k, v?.toString())
+                    page.addProperty(k as String, v as String)
                 }
                 try {
-                    request[PAGE] = page
+                    request.setAttribute(PAGE, page)
                     def t = groovyPagesTemplateEngine.createTemplate(d.getPage())
                     def w = t.make(viewModel)
                     w.writeTo(out)
                 }
                 finally {
-                    request[PAGE] = oldPage
+                    request.setAttribute(PAGE, oldPage)
                 }
             }
         }
@@ -188,6 +211,10 @@ class RenderTagLib implements RequestConstants {
 
     private Factory getFactory() {
         return FactoryHolder.getFactory()
+    }
+    
+    private callLink(Map attrs, Object body) {
+        GroovyPage.captureTagOutput(gspTagLibraryLookup, 'g', 'link', attrs, body, webRequest)
     }
 
     /**
@@ -201,18 +228,18 @@ class RenderTagLib implements RequestConstants {
      * @attr default the default value to use if the property is null
      * @attr writeEntireProperty if true, writes the property in the form 'foo = "bar"', otherwise renders 'bar'
      */
-    Closure pageProperty = { attrs ->
+    Closure pageProperty = { Map attrs ->
         if (!attrs.name) {
             throwTagError("Tag [pageProperty] is missing required attribute [name]")
         }
 
-        def propertyName = attrs.name
+        String propertyName = attrs.name as String
         def htmlPage = getPage()
         def propertyValue
 
         if (htmlPage instanceof GSPSitemeshPage) {
             // check if there is an component content buffer
-            propertyValue = htmlPage.getContentBuffer(propertyName)
+            propertyValue = ((GSPSitemeshPage)htmlPage).getContentBuffer(propertyName)
         }
 
         if (!propertyValue) {
@@ -249,30 +276,31 @@ class RenderTagLib implements RequestConstants {
      * @attr name REQUIRED the property name
      * @attr equals optional value to test against
      */
-    Closure ifPageProperty = { attrs, body ->
+    Closure ifPageProperty = { Map attrs, body ->
         if (!attrs.name) {
             return
         }
 
         def htmlPage = getPage()
-        def names = ((attrs.name instanceof List) ? attrs.name : [attrs.name])
+        List names = ((attrs.name instanceof List) ? (List)attrs.name : [attrs.name])
 
         def invokeBody = true
         for (i in 0..<names.size()) {
+            String propertyName = names[i] as String
             def propertyValue = null
             if (htmlPage instanceof GSPSitemeshPage) {
                 // check if there is an component content buffer
-                propertyValue = htmlPage.getContentBuffer(names[i])
+                propertyValue = htmlPage.getContentBuffer(propertyName)
             }
 
             if (!propertyValue) {
-                propertyValue = htmlPage.getProperty(names[i])
+                propertyValue = htmlPage.getProperty(propertyName)
             }
 
             if (propertyValue) {
                 if (attrs.containsKey('equals')) {
                     if (attrs.equals instanceof List) {
-                        invokeBody = attrs.equals[i] == propertyValue
+                        invokeBody = ((List)attrs.equals)[i] == propertyValue
                     }
                     else {
                         invokeBody = attrs.equals == propertyValue
@@ -284,7 +312,7 @@ class RenderTagLib implements RequestConstants {
                 break
             }
         }
-        if (invokeBody) {
+        if (invokeBody && body instanceof Closure) {
             out << body()
         }
     }
@@ -298,7 +326,7 @@ class RenderTagLib implements RequestConstants {
      *
      * @attr default the value to use if the title isn't specified in the GSP
      */
-    Closure layoutTitle = { attrs ->
+    Closure layoutTitle = { Map attrs ->
         String title = page.title
         if (!title && attrs.'default') title = attrs.'default'
         if (title) out << title
@@ -311,7 +339,7 @@ class RenderTagLib implements RequestConstants {
      *
      * @emptyTag
      */
-    Closure layoutBody = { attrs ->
+    Closure layoutBody = { Map attrs ->
         getPage().writeBody(out)
     }
 
@@ -322,7 +350,7 @@ class RenderTagLib implements RequestConstants {
      *
      * @emptyTag
      */
-    Closure layoutHead = { attrs ->
+    Closure layoutHead = { Map attrs ->
         getPage().writeHead(out)
     }
 
@@ -350,7 +378,8 @@ class RenderTagLib implements RequestConstants {
      * @attr mapping The named URL mapping to use to rewrite the link
      * @attr fragment The link fragment (often called anchor tag) to use
      */
-    Closure paginate = { attrs ->
+    Closure paginate = { Map attrsMap ->
+        TypeConvertingMap attrs = (TypeConvertingMap)attrsMap
         def writer = out
         if (attrs.total == null) {
             throwTagError("Tag [paginate] is missing required attribute [total]")
@@ -367,14 +396,14 @@ class RenderTagLib implements RequestConstants {
         if (!offset) offset = (attrs.int('offset') ?: 0)
         if (!max) max = (attrs.int('max') ?: 10)
 
-        def linkParams = [:]
-        if (attrs.params) linkParams.putAll(attrs.params)
+        Map linkParams = [:]
+        if (attrs.params instanceof Map) linkParams.putAll((Map)attrs.params)
         linkParams.offset = offset - max
         linkParams.max = max
         if (params.sort) linkParams.sort = params.sort
         if (params.order) linkParams.order = params.order
 
-        def linkTagAttrs = [:]
+        Map linkTagAttrs = [:]
         def action
         if (attrs.containsKey('mapping')) {
             linkTagAttrs.mapping = attrs.mapping
@@ -404,26 +433,26 @@ class RenderTagLib implements RequestConstants {
 
         // determine paging variables
         def steps = maxsteps > 0
-        int currentstep = (offset / max) + 1
+        int currentstep = ((offset / max) as int) + 1
         int firststep = 1
-        int laststep = Math.round(Math.ceil(total / max))
+        int laststep = Math.round(Math.ceil(total / max)) as int
 
         // display previous link when not on firststep unless omitPrev is true
         if (currentstep > firststep && !attrs.boolean('omitPrev')) {
-            linkTagAttrs.class = 'prevLink'
+            linkTagAttrs.put('class', 'prevLink')
             linkParams.offset = offset - max
-            writer << link(linkTagAttrs.clone()) {
+            writer << callLink((Map)linkTagAttrs.clone()) {
                 (attrs.prev ?: messageSource.getMessage('paginate.prev', null, messageSource.getMessage('default.paginate.prev', null, 'Previous', locale), locale))
             }
         }
 
         // display steps when steps are enabled and laststep is not firststep
         if (steps && laststep > firststep) {
-            linkTagAttrs.class = 'step'
+            linkTagAttrs.put('class', 'step')
 
             // determine begin and endstep paging variables
-            int beginstep = currentstep - Math.round(maxsteps / 2) + (maxsteps % 2)
-            int endstep = currentstep + Math.round(maxsteps / 2) - 1
+            int beginstep = currentstep - (Math.round(maxsteps / 2.0d) as int) + (maxsteps % 2)
+            int endstep = currentstep + (Math.round(maxsteps / 2.0d) as int) - 1
 
             if (beginstep < firststep) {
                 beginstep = firststep
@@ -440,7 +469,7 @@ class RenderTagLib implements RequestConstants {
             // display firststep link when beginstep is not firststep
             if (beginstep > firststep && !attrs.boolean('omitFirst')) {
                 linkParams.offset = 0
-                writer << link(linkTagAttrs.clone()) {firststep.toString()}
+                writer << callLink((Map)linkTagAttrs.clone()) {firststep.toString()}
             }
             //show a gap if beginstep isn't immediately after firststep, and if were not omitting first or rev
             if (beginstep > firststep+1 && (!attrs.boolean('omitFirst') || !attrs.boolean('omitPrev')) ) {
@@ -448,13 +477,13 @@ class RenderTagLib implements RequestConstants {
             }
 
             // display paginate steps
-            (beginstep..endstep).each { i ->
+            (beginstep..endstep).each { int i ->
                 if (currentstep == i) {
                     writer << "<span class=\"currentStep\">${i}</span>"
                 }
                 else {
                     linkParams.offset = (i - 1) * max
-                    writer << link(linkTagAttrs.clone()) {i.toString()}
+                    writer << callLink((Map)linkTagAttrs.clone()) {i.toString()}
                 }
             }
 
@@ -465,15 +494,15 @@ class RenderTagLib implements RequestConstants {
             // display laststep link when endstep is not laststep
             if (endstep < laststep && !attrs.boolean('omitLast')) {
                 linkParams.offset = (laststep - 1) * max
-                writer << link(linkTagAttrs.clone()) { laststep.toString() }
+                writer << callLink((Map)linkTagAttrs.clone()) { laststep.toString() }
             }
         }
 
         // display next link when not on laststep unless omitNext is true
         if (currentstep < laststep && !attrs.boolean('omitNext')) {
-            linkTagAttrs.class = 'nextLink'
+            linkTagAttrs.put('class', 'nextLink')
             linkParams.offset = offset + max
-            writer << link(linkTagAttrs.clone()) {
+            writer << callLink((Map)linkTagAttrs.clone()) {
                 (attrs.next ? attrs.next : messageSource.getMessage('paginate.next', null, messageSource.getMessage('default.paginate.next', null, 'Next', locale), locale))
             }
         }
@@ -505,7 +534,7 @@ class RenderTagLib implements RequestConstants {
      * @attr params A map containing URL query parameters
      * @attr class CSS class name
      */
-    Closure sortableColumn = { attrs ->
+    Closure sortableColumn = { Map attrs ->
         def writer = out
         if (!attrs.property) {
             throwTagError("Tag [sortableColumn] is missing required attribute [property]")
@@ -526,10 +555,10 @@ class RenderTagLib implements RequestConstants {
         def order = params.order
 
         // add sorting property and params to link params
-        def linkParams = [:]
+        Map linkParams = [:]
         if (params.id) linkParams.put("id", params.id)
         def paramsAttr = attrs.remove("params")
-        if (paramsAttr) linkParams.putAll(paramsAttr)
+        if (paramsAttr instanceof Map) linkParams.putAll(paramsAttr)
         linkParams.sort = property
 
         // propagate "max" and "offset" standard params
@@ -537,9 +566,9 @@ class RenderTagLib implements RequestConstants {
         if (params.offset) linkParams.offset = params.offset
 
         // determine and add sorting order for this column to link params
-        attrs.class = (attrs.class ? "${attrs.class} sortable" : "sortable")
+        attrs['class'] = (attrs['class'] ? "${attrs['class']} sortable" : "sortable")
         if (property == sort) {
-            attrs.class = attrs.class + " sorted " + order
+            attrs['class'] = (attrs['class'] as String) + " sorted " + order
             if (order == "asc") {
                 linkParams.order = "desc"
             }
@@ -552,9 +581,9 @@ class RenderTagLib implements RequestConstants {
         }
 
         // determine column title
-        def title = attrs.remove("title")
-        def titleKey = attrs.remove("titleKey")
-        def mapping = attrs.remove('mapping')
+        String title = attrs.remove("title") as String
+        String titleKey = attrs.remove("titleKey") as String
+        Object mapping = attrs.remove('mapping')
         if (titleKey) {
             if (!title) title = titleKey
             def messageSource = grailsAttributes.messageSource
@@ -564,18 +593,23 @@ class RenderTagLib implements RequestConstants {
 
         writer << "<th "
         // process remaining attributes
+        Encoder htmlEncoder = codecLookup.lookupEncoder('HTML')
         attrs.each { k, v ->
-            writer << "${k}=\"${v?.encodeAsHTML()}\" "
+            writer << k
+            writer << "=\""
+            writer << htmlEncoder.encode(v)
+            writer << "\" "
         }
         writer << '>'
-        def linkAttrs = [params: linkParams]
+        Map linkAttrs = [:]
+        linkAttrs.params = linkParams
         if (mapping) {
             linkAttrs.mapping = mapping
         }
 
         linkAttrs.action = action
         
-        writer << link(linkAttrs) {
+        writer << callLink((Map)linkAttrs) {
             title
         }
         writer << '</th>'
@@ -596,7 +630,7 @@ class RenderTagLib implements RequestConstants {
      * @attr var The variable name of the bean to be referenced in the template
      * @attr plugin The plugin to look for the template in
      */
-    Closure render = { attrs, body ->
+    Closure render = { Map attrs, body ->
         groovyPagesTemplateRenderer.render(getWebRequest(), getPageScope(), attrs, body, getOut())
     }
 
@@ -605,24 +639,26 @@ class RenderTagLib implements RequestConstants {
      *
      * @attr exception REQUIRED The exception to render
      */
-    def renderException = { attrs ->
-        def exception = attrs.exception
-
-        if (!(exception instanceof Throwable)) {
+    Closure renderException = { Map attrs ->
+        if (!(attrs?.exception instanceof Throwable)) {
               return
         }
+        Throwable exception = (Throwable)attrs.exception
+        
+        Encoder htmlEncoder = codecLookup.lookupEncoder('HTML')
 
         def currentOut = out
-        currentOut << """<h1>Error ${prettyPrintStatus(request.'javax.servlet.error.status_code')}</h1>
+        int statusCode = request.getAttribute('javax.servlet.error.status_code') as int
+        currentOut << """<h1>Error ${prettyPrintStatus(statusCode)}</h1>
 <dl class="error-details">
-<dt>URI</dt><dd>${request.forwardURI ?: request.'javax.servlet.error.request_uri'}</dd>
+<dt>URI</dt><dd>${htmlEncoder.encode(WebUtils.getForwardURI(request) ?: request.getAttribute('javax.servlet.error.request_uri'))}</dd>
 """
 
         def root = GrailsExceptionResolver.getRootCause(exception)
         currentOut << "<dt>Class</dt><dd>${root?.getClass()?.name ?: exception.getClass().name}</dd>"
-        currentOut << "<dt>Message</dt><dd>${exception.message?.encodeAsHTML()}</dd>"
+        currentOut << "<dt>Message</dt><dd>${htmlEncoder.encode(exception.message)}</dd>"
         if (root != null && root != exception && root.message != exception.message) {
-            currentOut << "<dt>Caused by</dt><dd>${root.message?.encodeAsHTML()}</dd>"
+            currentOut << "<dt>Caused by</dt><dd>${htmlEncoder.encode(root.message)}</dd>"
         }
         currentOut << "</dl>"
 
@@ -632,7 +668,7 @@ class RenderTagLib implements RequestConstants {
         if (StringUtils.hasText(trace.trim())) {
             currentOut << "<h2>Trace</h2>"
             currentOut << '<pre class="stack">'
-            currentOut << trace.encodeAsHTML()
+            currentOut << htmlEncoder.encode(trace)
             currentOut << '</pre>'
         }
     }
