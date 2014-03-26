@@ -15,10 +15,6 @@
  */
 package grails.compiler
 
-import static org.codehaus.groovy.ast.ClassHelper.CLASS_Type
-import static org.codehaus.groovy.ast.ClassHelper.Integer_TYPE
-import static org.codehaus.groovy.ast.ClassHelper.LIST_TYPE
-
 import org.codehaus.groovy.ast.ClassNode
 import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
