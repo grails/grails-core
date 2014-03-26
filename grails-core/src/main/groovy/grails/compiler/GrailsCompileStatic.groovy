@@ -24,6 +24,8 @@ import groovy.transform.CompileStatic
  *
  */
 @AnnotationCollector
-@CompileStatic(extensions=['grails.compiler.TypeCheckedExtensions'])
+@CompileStatic(extensions=['grails.compiler.ValidateableTypeCheckingExtension', 
+                           'grails.compiler.CriteriaTypeCheckingExtension',
+                           'grails.compiler.DynamicFinderTypeCheckingExtension'])
 @interface GrailsCompileStatic {
 }
