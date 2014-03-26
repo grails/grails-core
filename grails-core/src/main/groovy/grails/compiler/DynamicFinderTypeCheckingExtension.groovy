@@ -35,10 +35,6 @@ class DynamicFinderTypeCheckingExtension extends TypeCheckingDSL {
 
     @Override
     public Object run() {
-        setup { newScope() }
-
-        finish { scopeExit() }
-        
         methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
             def dynamicCall
             if(receiver == CLASS_Type) {
