@@ -20,8 +20,11 @@ import static org.codehaus.groovy.ast.ClassHelper.Integer_TYPE
 import static org.codehaus.groovy.ast.ClassHelper.LIST_TYPE
 
 import org.codehaus.groovy.ast.ClassHelper
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
 import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ClosureExpression
+import org.codehaus.groovy.ast.expr.MethodCall
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
@@ -50,7 +53,7 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
     }
 
     protected handleDynamicFinders() {
-        methodNotFound { receiver, name, argList, argTypes, call ->
+        methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
             def dynamicCall
             if(receiver == CLASS_Type) {
                 def genericsTypes = receiver.genericsTypes
@@ -82,14 +85,14 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
         }
     }
 
-    protected makeDynamicGormCall(call, returnTypeNode, domainClassTypeNode) {
+    protected makeDynamicGormCall(MethodCall call, ClassNode returnTypeNode, ClassNode domainClassTypeNode) {
         def dynamicCall = makeDynamic(call, returnTypeNode)
         dynamicCall.declaringClass = domainClassTypeNode
         dynamicCall
     }
 
     protected handleValidateableConstraints() {
-        beforeVisitClass { classNode ->
+        beforeVisitClass { ClassNode classNode ->
             def constraintsProperty = classNode.getField('constraints')
             if(constraintsProperty && constraintsProperty.isStatic() && constraintsProperty.initialExpression instanceof ClosureExpression) {
                 newScope {
@@ -99,7 +102,7 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
             }
         }
 
-        afterVisitClass { classNode ->
+        afterVisitClass { ClassNode classNode ->
             if(currentScope.constraintsClosureCode) {
                 def constraintsProperty = classNode.getField('constraints')
                 constraintsProperty.initialExpression.code = currentScope.constraintsClosureCode
@@ -109,7 +112,7 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
             }
         }
 
-        methodNotFound { receiver, name, argList, argTypes, call ->
+        methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
             def dynamicCall
             if(currentScope.constraintsClosureCode && currentScope.checkingConstraintsClosure) {
                 dynamicCall = makeDynamic (call)
@@ -119,7 +122,7 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
     }
 
     protected handleCriteriaQueries() {
-        methodNotFound { receiver, name, argList, argTypes, call ->
+        methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
             def dynamicCall
             if(currentScope.processingCriteriaClosure) {
                 dynamicCall = makeDynamic (call)
@@ -127,13 +130,13 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
             dynamicCall
         }
         
-        afterMethodCall { call ->
+        afterMethodCall { MethodCall call ->
             if(isCriteriaCall(call)) {
                 scopeExit()
             }
         }
         
-        beforeMethodCall { call ->
+        beforeMethodCall { MethodCall call ->
             if(isCriteriaCall(call)) {
                 newScope {
                     processingCriteriaClosure = true
@@ -142,7 +145,7 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
         }
     }
     
-    protected boolean isCriteriaCall(call) {
+    protected boolean isCriteriaCall(MethodCall call) {
         call instanceof MethodCallExpression && 
             call.objectExpression instanceof ClassExpression && 
             GrailsASTUtils.isDomainClass(call.objectExpression.type, null) && 
