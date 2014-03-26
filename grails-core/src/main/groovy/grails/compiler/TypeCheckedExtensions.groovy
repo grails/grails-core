@@ -20,7 +20,9 @@ import static org.codehaus.groovy.ast.ClassHelper.Integer_TYPE
 import static org.codehaus.groovy.ast.ClassHelper.LIST_TYPE
 
 import org.codehaus.groovy.ast.ClassHelper
+import org.codehaus.groovy.ast.expr.ClassExpression
 import org.codehaus.groovy.ast.expr.ClosureExpression
+import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.stmt.EmptyStatement
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport.TypeCheckingDSL
@@ -39,7 +41,9 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
         finish { scopeExit() }
 
         handleValidateableConstraints()
-
+        
+        handleCriteriaQueries()
+        
         handleDynamicFinders()
         
         null
@@ -112,5 +116,36 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
             }
             dynamicCall
         }
+    }
+
+    protected handleCriteriaQueries() {
+        methodNotFound { receiver, name, argList, argTypes, call ->
+            def dynamicCall
+            if(currentScope.processingCriteriaClosure) {
+                dynamicCall = makeDynamic (call)
+            }
+            dynamicCall
+        }
+        
+        afterMethodCall { call ->
+            if(isCriteriaCall(call)) {
+                scopeExit()
+            }
+        }
+        
+        beforeMethodCall { call ->
+            if(isCriteriaCall(call)) {
+                newScope {
+                    processingCriteriaClosure = true
+                }
+            }
+        }
+    }
+    
+    protected boolean isCriteriaCall(call) {
+        call instanceof MethodCallExpression && 
+            call.objectExpression instanceof ClassExpression && 
+            GrailsASTUtils.isDomainClass(call.objectExpression.type, null) && 
+            (call.method.value == 'withCriteria' || call.method.value == 'createCriteria')
     }
 }

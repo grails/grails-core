@@ -172,6 +172,37 @@ class SomeClass {
         e.message.contains 'Cannot find matching method grails.compiler.SomeClass#someDynamicMethod'
 
     }
+    
+    @Issue('GRAILS-11255')
+    void 'Test compiling a class which invokes a criteria query on a domain class'() {
+        given:
+        def gcl = new GroovyClassLoader()
+        
+        when:
+        def c = gcl.parseClass('''
+package grails.compiler
+
+import groovy.transform.TypeCheckingMode
+
+@GrailsCompileStatic
+class SomeClass {
+
+    def someMethod() {
+        Person.withCriteria {
+            eq 'name', 'Anakin'
+        }
+     
+        Person.createCriteria {
+            eq 'name', 'Anakin'
+        }
+     
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+        
+    }
 }
 
 @Entity
