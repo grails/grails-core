@@ -20,7 +20,7 @@ import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
 
 import org.codehaus.groovy.grails.commons.GrailsMetaClassUtils
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
+import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
 
 @CompileStatic
 class GroovyPagesMetaUtils {
@@ -68,7 +68,7 @@ class GroovyPagesMetaUtils {
 
     static void registerMethodMissingWorkaroundsForDefaultNamespace(MetaClass mc, TagLibraryLookup gspTagLibraryLookup) {
         // hasErrors gets mixed up by hasErrors method without this metaclass modification
-        registerMethodMissingForTags(mc, gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, 'hasErrors', false)
+        TagLibraryMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, 'hasErrors', false)
     }
 
     static addTagLibMethodToMetaClass(final GroovyObject tagBean, final MetaMethod method, final MetaClass mc) {
@@ -121,28 +121,6 @@ class GroovyPagesMetaUtils {
             synchronized(mc) {
                 ((GroovyObject)mc).setProperty(method.name, methodMissingClosure)
             }
-        }
-    }
-
-    // copied from /grails-plugin-controllers/src/main/groovy/org/codehaus/groovy/grails/web/plugins/support/WebMetaUtils.groovy
-    private static void registerMethodMissingForTags(final MetaClass emc, final TagLibraryLookup gspTagLibraryLookup, final String namespace, final String name, final boolean addAll) {
-        GroovyObject mc = (GroovyObject)emc
-        mc.setProperty(name, {Map attrs, Closure body ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, GrailsWebRequest.lookup())
-        })
-        mc.setProperty(name, {Map attrs, CharSequence body ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, new GroovyPage.ConstantClosure(body), GrailsWebRequest.lookup())
-        })
-        mc.setProperty(name, {Map attrs ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, GrailsWebRequest.lookup())
-        })
-        if (addAll) {
-            mc.setProperty(name, {Closure body ->
-                GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, GrailsWebRequest.lookup())
-            })
-            mc.setProperty(name, {->
-                GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, GrailsWebRequest.lookup())
-            })
         }
     }
 }
