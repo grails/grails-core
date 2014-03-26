@@ -16,10 +16,7 @@
 package org.codehaus.groovy.grails.plugins.web.taglib
 
 import grails.artefact.Artefact
-import grails.util.Holders
 
-import org.apache.commons.lang.WordUtils
-import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
@@ -641,6 +638,7 @@ class RenderTagLib implements RequestConstants {
     }
 
     private String prettyPrintStatus(int statusCode) {
-        "$statusCode: ${WordUtils.capitalizeFully(HttpStatus.valueOf(statusCode).name().replaceAll('_', ' '))}"
+        String httpStatusReason = HttpStatus.valueOf(statusCode).getReasonPhrase()
+        "$statusCode: ${httpStatusReason}"
     }
 }
