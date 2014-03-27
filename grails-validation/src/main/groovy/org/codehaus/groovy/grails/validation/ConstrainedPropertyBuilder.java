@@ -16,6 +16,7 @@
 package org.codehaus.groovy.grails.validation;
 
 import grails.util.GrailsUtil;
+import grails.validation.Constrained;
 import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MissingMethodException;
@@ -40,7 +41,7 @@ import org.springframework.beans.InvalidPropertyException;
  */
 public class ConstrainedPropertyBuilder extends BuilderSupport {
 
-    private Map<String, ConstrainedProperty> constrainedProperties = new LinkedHashMap<String, ConstrainedProperty>();
+    private Map<String, Constrained> constrainedProperties = new LinkedHashMap<String, Constrained>();
     private Map<String, String> sharedConstraints = new HashMap<String, String>();
     private int order = 1;
     private Class<?> targetClass;
@@ -100,7 +101,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
             String property = (String)name;
             ConstrainedProperty cp;
             if (constrainedProperties.containsKey(property)) {
-                cp = constrainedProperties.get(property);
+                cp = (ConstrainedProperty)constrainedProperties.get(property);
             }
             else {
                 Class<?> propertyType = classPropertyFetcher.getPropertyType(property);
@@ -244,7 +245,7 @@ public class ConstrainedPropertyBuilder extends BuilderSupport {
         return createNode(name,Collections.EMPTY_MAP,value);
     }
 
-    public Map<String, ConstrainedProperty> getConstrainedProperties() {
+    public Map<String, Constrained> getConstrainedProperties() {
         return constrainedProperties;
     }
 }

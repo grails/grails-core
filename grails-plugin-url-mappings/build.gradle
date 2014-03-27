@@ -7,7 +7,7 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
 
-    compile project(":grails-web"), project(":grails-plugin-controllers")
+    compile project(":grails-web"), project(":grails-plugin-controllers"), project(":grails-validation")
     optional "junit:junit:${junitVersion}"
     optional "org.fusesource.jansi:jansi:$jansiVersion"
     optional "jline:jline:$jlineVersion"

@@ -136,4 +136,22 @@ class GrailsFactoriesLoader {
             throw new IllegalArgumentException("Cannot instantiate factory class: $factoryClass.name", ex);
         }
     }
+
+    static <T> T loadFactory(Class<T> factoryClass, ClassLoader classLoader = GrailsFactoriesLoader.class.classLoader) {
+        def all = loadFactories(factoryClass, classLoader)
+        if(all) {
+            return all.get(0)
+        }
+    }
+
+    static <T> T loadFactory(Class<T> factoryClass, Object... arguments) {
+        loadFactory(factoryClass, GrailsFactoriesLoader.class.classLoader, arguments)
+    }
+
+    static <T> T loadFactory(Class<T> factoryClass, ClassLoader classLoader, Object... arguments) {
+        def all = loadFactoriesWithArguments(factoryClass, classLoader, arguments)
+        if(all) {
+            return (T)all.get(0)
+        }
+    }
 }

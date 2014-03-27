@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.mapping
 
+import grails.validation.Constrained
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 
 /**

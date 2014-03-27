@@ -26,9 +26,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import grails.validation.Constrained;
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
 import org.springframework.core.style.ToStringCreator;
 import org.springframework.util.ClassUtils;
 import org.springframework.validation.Errors;
@@ -212,8 +212,8 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
      * @see org.codehaus.groovy.grails.domain.GrailsDomainClassProperty#isRequired()
      */
     public boolean isOptional() {
-        ConstrainedProperty constrainedProperty = (ConstrainedProperty) domainClass.getConstrainedProperties().get(name);
-        return (constrainedProperty != null) && constrainedProperty.isNullable();
+        Constrained constrained = (Constrained) domainClass.getConstrainedProperties().get(name);
+        return (constrained != null) && constrained.isNullable();
     }
 
     /* (non-Javadoc)
@@ -577,14 +577,19 @@ public class DefaultGrailsDomainClassProperty implements GrailsDomainClassProper
             properties = createDomainClassProperties(descriptors);
 
             ConstraintsEvaluator constraintsEvaluator = getConstraintsEvaluator();
-            constraints = constraintsEvaluator.evaluate(type, properties);
+            if(constraintsEvaluator != null) {
+                constraints = constraintsEvaluator.evaluate(type, properties);
+            }
+            else {
+                constraints = Collections.emptyMap();
+            }
         }
 
         private ConstraintsEvaluator getConstraintsEvaluator() {
             if (domainClass instanceof DefaultGrailsDomainClass) {
                 return ((DefaultGrailsDomainClass) domainClass).getConstraintsEvaluator();
             }
-            return new DefaultConstraintEvaluator();
+            return GrailsFactoriesLoader.loadFactory(ConstraintsEvaluator.class);
         }
 
         private GrailsDomainClassProperty[] createDomainClassProperties(PropertyDescriptor[] descriptors) {

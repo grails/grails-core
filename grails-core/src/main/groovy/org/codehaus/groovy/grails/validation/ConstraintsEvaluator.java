@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import grails.validation.Constrained;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 
@@ -30,7 +31,7 @@ public interface ConstraintsEvaluator {
 
     String PROPERTY_NAME = "constraints";
     String CONSTRAINTS_GROOVY_SCRIPT = "Constraints.groovy";
-    String BEAN_NAME = "orgGrailsBeansConstraintsEvaluator";
+    String BEAN_NAME = "org.grails.beans.ConstraintsEvaluator";
 
     /**
      * The default constraints to use
@@ -44,7 +45,7 @@ public interface ConstraintsEvaluator {
      * @param cls The class to evaluate constraints for
      * @return A map of constrained properties
      */
-    Map<String, ConstrainedProperty> evaluate(@SuppressWarnings("rawtypes") Class cls);
+    Map<String, Constrained> evaluate(@SuppressWarnings("rawtypes") Class cls);
 
     /**
      * Evaluate constraints for the given class
@@ -52,7 +53,7 @@ public interface ConstraintsEvaluator {
      * @param cls The class to evaluate constraints for
      * @return A map of constrained properties
      */
-    Map<String, ConstrainedProperty> evaluate(GrailsDomainClass cls);
+    Map<String, Constrained> evaluate(GrailsDomainClass cls);
 
     /**
      * Evaluate constraints for the given object and properties
@@ -61,7 +62,7 @@ public interface ConstraintsEvaluator {
      * @param properties The domain class properties
      * @return A map of constraints
      */
-    Map<String, ConstrainedProperty> evaluate(Object object, GrailsDomainClassProperty[] properties);
+    Map<String, Constrained> evaluate(Object object, GrailsDomainClassProperty[] properties);
 
     /**
      * Evaluate constraints for the given Class and properties
@@ -70,5 +71,5 @@ public interface ConstraintsEvaluator {
      * @param properties The domain class properties
      * @return A map of constraints
      */
-    Map<String, ConstrainedProperty> evaluate(Class<?> cls, GrailsDomainClassProperty[] properties);
+    Map<String, Constrained> evaluate(Class<?> cls, GrailsDomainClassProperty[] properties);
 }

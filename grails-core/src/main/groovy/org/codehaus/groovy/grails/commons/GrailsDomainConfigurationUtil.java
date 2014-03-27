@@ -40,8 +40,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
-import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator;
+import grails.validation.Constrained;
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
+import org.codehaus.groovy.grails.validation.ConstraintsEvaluator;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 
@@ -356,13 +357,21 @@ public class GrailsDomainConfigurationUtil {
      *
      * @return A Map of constraints
      *
-     * @deprecated Use {@link DefaultConstraintEvaluator} instead
+     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance,
+    public static Map<String, Constrained> evaluateConstraints(Object instance,
             GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
         final Class<?> theClass = instance.getClass();
-        return new DefaultConstraintEvaluator(defaultConstraints).evaluate(theClass, properties);
+        return getConstraintMap(properties, defaultConstraints, theClass);
+    }
+
+    private static Map<String, Constrained> getConstraintMap(GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints, Class<?> theClass) {
+        ConstraintsEvaluator constraintsEvaluator = GrailsFactoriesLoader.loadFactory(ConstraintsEvaluator.class, defaultConstraints);
+        if(constraintsEvaluator != null) {
+            return constraintsEvaluator.evaluate(theClass, properties);
+        }
+        return Collections.emptyMap();
     }
 
     /**
@@ -374,12 +383,12 @@ public class GrailsDomainConfigurationUtil {
      *
      * @return A Map of constraints
      *
-     * @deprecated Use {@link DefaultConstraintEvaluator} instead
+     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(final Class<?> theClass,
+    public static Map<String, Constrained> evaluateConstraints(final Class<?> theClass,
             GrailsDomainClassProperty[] properties, Map<String, Object> defaultConstraints) {
-        return new DefaultConstraintEvaluator(defaultConstraints).evaluate(theClass, properties);
+        return getConstraintMap(properties, defaultConstraints, theClass);
     }
 
     /**
@@ -390,10 +399,10 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      *
-     * @deprecated Use {@link DefaultConstraintEvaluator} instead
+     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance,
+    public static Map<String, Constrained> evaluateConstraints(Object instance,
             GrailsDomainClassProperty[] properties) {
         return evaluateConstraints(instance, properties,null);
     }
@@ -405,10 +414,10 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      *
-     * @deprecated Use {@link DefaultConstraintEvaluator} instead
+     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Object instance) {
+    public static Map<String, Constrained> evaluateConstraints(Object instance) {
         return evaluateConstraints(instance, null, null);
     }
 
@@ -419,10 +428,10 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      *
-     * @deprecated Use {@link DefaultConstraintEvaluator} instead
+     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass) {
+    public static Map<String, Constrained> evaluateConstraints(Class<?> theClass) {
         return evaluateConstraints(theClass, null, null);
     }
 
@@ -433,10 +442,10 @@ public class GrailsDomainConfigurationUtil {
      * @return A Map of constraints
      *          When the bean cannot be introspected
      *
-     * @deprecated Use {@link DefaultConstraintEvaluator} instead
+     * @deprecated Use {@link org.codehaus.groovy.grails.validation.ConstraintsEvaluator} instead
      */
     @Deprecated
-    public static Map<String, ConstrainedProperty> evaluateConstraints(Class<?> theClass,
+    public static Map<String, Constrained> evaluateConstraints(Class<?> theClass,
             GrailsDomainClassProperty[] properties) {
         return evaluateConstraints(theClass, properties, null);
     }

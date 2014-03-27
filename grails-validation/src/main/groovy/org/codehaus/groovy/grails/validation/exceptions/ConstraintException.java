@@ -15,14 +15,13 @@
  */
 package org.codehaus.groovy.grails.validation.exceptions;
 
-import org.codehaus.groovy.grails.exceptions.GrailsException;
 
 /**
  * Thrown when an error occurs applying a constraint to a property.
  *
  * @author Graeme Rocher
  */
-public class ConstraintException extends GrailsException {
+public class ConstraintException extends RuntimeException {
 
     private static final long serialVersionUID = -4866968714197516789L;
 

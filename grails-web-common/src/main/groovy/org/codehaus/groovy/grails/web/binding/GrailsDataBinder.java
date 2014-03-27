@@ -57,7 +57,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
+import grails.validation.Constrained;
 import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -423,7 +423,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         PropertyValue[] valueArray = mpvs.getPropertyValues();
         for (PropertyValue propertyValue : valueArray) {
             if (BLANK.equals(propertyValue.getValue())) {
-                ConstrainedProperty cp = getConstrainedPropertyForPropertyValue(constrainedProperties, propertyValue);
+                Constrained cp = getConstrainedPropertyForPropertyValue(constrainedProperties, propertyValue);
                 if (shouldNullifyBlankString(propertyValue, cp)) {
                     propertyValue.setConvertedValue(null);
                 }
@@ -431,7 +431,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         }
     }
 
-    private ConstrainedProperty getConstrainedPropertyForPropertyValue(Map constrainedProperties, PropertyValue propertyValue) {
+    private Constrained getConstrainedPropertyForPropertyValue(Map constrainedProperties, PropertyValue propertyValue) {
         final String propertyName = propertyValue.getName();
         if (propertyName.indexOf(PATH_SEPARATOR) > -1) {
             String[] propertyNames = propertyName.split("\\.");
@@ -440,13 +440,13 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
             if (value != null) {
                 Map nestedConstrainedProperties = resolveConstrainedProperties(value);
                 if (nestedConstrainedProperties != null) {
-                    return (ConstrainedProperty)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
+                    return (Constrained)nestedConstrainedProperties.get(propertyNames[propertyNames.length-1]);
                 }
             }
             return null;
         }
 
-        return (ConstrainedProperty)constrainedProperties.get(propertyName);
+        return (Constrained)constrainedProperties.get(propertyName);
     }
 
     private Map resolveConstrainedProperties(Object object) {
@@ -502,7 +502,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         return obj;
     }
 
-    private boolean shouldNullifyBlankString(PropertyValue propertyValue, ConstrainedProperty cp) {
+    private boolean shouldNullifyBlankString(PropertyValue propertyValue, Constrained cp) {
         return cp != null && cp.isNullable() && BLANK.equals(propertyValue.getValue());
     }
 

@@ -15,6 +15,7 @@
  */
 package org.codehaus.groovy.grails.validation;
 
+import grails.validation.Constrained;
 import groovy.lang.MissingPropertyException;
 import groovy.lang.Range;
 
@@ -61,7 +62,7 @@ import org.springframework.validation.Errors;
  * @since 07-Nov-2005
  */
 @SuppressWarnings("serial")
-public class ConstrainedProperty {
+public class ConstrainedProperty implements Constrained {
 
     static final String DEFAULT_NULL_MESSAGE_CODE = "default.null.message";
     static final String DEFAULT_INVALID_MIN_SIZE_MESSAGE_CODE = "default.invalid.min.size.message";
@@ -303,6 +304,7 @@ public class ConstrainedProperty {
      * @param constraintName The name of the constraint to check
      * @return Returns true if the specified constraint name is being applied to this property
      */
+    @Override
     public boolean hasAppliedConstraint(String constraintName) {
         return appliedConstraints.containsKey(constraintName);
     }
@@ -310,6 +312,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the propertyType.
      */
+    @Override
     public Class<?> getPropertyType() {
         return propertyType;
     }
@@ -317,6 +320,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the max.
      */
+    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Comparable getMax() {
         Comparable maxValue = null;
@@ -375,6 +379,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the min.
      */
+    @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Comparable getMin() {
         Comparable minValue = null;
@@ -433,6 +438,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the inList.
      */
+    @Override
     @SuppressWarnings("rawtypes")
     public List getInList() {
         InListConstraint c = (InListConstraint)appliedConstraints.get(IN_LIST_CONSTRAINT);
@@ -462,6 +468,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the range.
      */
+    @Override
     @SuppressWarnings("rawtypes")
     public Range getRange() {
         RangeConstraint c = (RangeConstraint)appliedConstraints.get(RANGE_CONSTRAINT);
@@ -499,6 +506,7 @@ public class ConstrainedProperty {
     /**
      * @return The scale, if defined for this property; null, otherwise
      */
+    @Override
     public Integer getScale() {
         ScaleConstraint scaleConstraint = (ScaleConstraint)appliedConstraints.get(SCALE_CONSTRAINT);
         return scaleConstraint == null ? null : scaleConstraint.getScale();
@@ -507,6 +515,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the size.
      */
+    @Override
     @SuppressWarnings("rawtypes")
     public Range getSize() {
         SizeConstraint c = (SizeConstraint)appliedConstraints.get(SIZE_CONSTRAINT);
@@ -536,6 +545,7 @@ public class ConstrainedProperty {
     /**
      * @return the blank.
      */
+    @Override
     public boolean isBlank() {
         Object cons = appliedConstraints.get(BLANK_CONSTRAINT);
         return cons == null || (Boolean)((BlankConstraint)cons).getParameter();
@@ -568,6 +578,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the email.
      */
+    @Override
     public boolean isEmail() {
         if (isNotValidStringType()) {
             throw new MissingPropertyException("Email constraint only applies to a String property",
@@ -610,6 +621,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the creditCard.
      */
+    @Override
     public boolean isCreditCard() {
         if (isNotValidStringType()) {
             throw new MissingPropertyException("CreditCard constraint only applies to a String property",
@@ -648,6 +660,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the matches.
      */
+    @Override
     public String getMatches() {
         if (isNotValidStringType()) {
             throw new MissingPropertyException("Matches constraint only applies to a String property",
@@ -684,6 +697,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the notEqual.
      */
+    @Override
     public Object getNotEqual() {
         NotEqualConstraint c = (NotEqualConstraint)appliedConstraints.get(NOT_EQUAL_CONSTRAINT);
         return c == null ? null : c.getNotEqualTo();
@@ -692,6 +706,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the maxSize.
      */
+    @Override
     public Integer getMaxSize() {
         Integer maxSize = null;
 
@@ -724,6 +739,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the minSize.
      */
+    @Override
     public Integer getMinSize() {
         Integer minSize = null;
 
@@ -773,6 +789,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the nullable.
      */
+    @Override
     public boolean isNullable() {
         if (appliedConstraints.containsKey(NULLABLE_CONSTRAINT)) {
             NullableConstraint nc = (NullableConstraint)appliedConstraints.get(NULLABLE_CONSTRAINT);
@@ -814,6 +831,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the url.
      */
+    @Override
     public boolean isUrl() {
         if (isNotValidStringType()) {
             throw new MissingPropertyException("URL constraint can only be applied to a String property",
@@ -850,6 +868,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the display.
      */
+    @Override
     public boolean isDisplay() {
         return display;
     }
@@ -864,6 +883,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the editable.
      */
+    @Override
     public boolean isEditable() {
         return editable;
     }
@@ -878,6 +898,7 @@ public class ConstrainedProperty {
     /**
      * @return Returns the order.
      */
+    @Override
     public int getOrder() {
         return order;
     }
@@ -889,6 +910,7 @@ public class ConstrainedProperty {
         this.order = order;
     }
 
+    @Override
     public String getFormat() {
         return format;
     }
@@ -897,6 +919,7 @@ public class ConstrainedProperty {
         this.format = format;
     }
 
+    @Override
     public boolean isPassword() {
         return password;
     }
@@ -967,6 +990,7 @@ public class ConstrainedProperty {
      * @param constraintName The name of the constraint
      * @return true if the constraint is supported
      */
+    @Override
     public boolean supportsContraint(String constraintName) {
 
         if (!constraints.containsKey(constraintName)) {
@@ -993,6 +1017,7 @@ public class ConstrainedProperty {
      *
      * @throws ConstraintException Thrown when the specified constraint is not supported by this ConstrainedProperty. Use <code>supportsContraint(String constraintName)</code> to check before calling
      */
+    @Override
     public void applyConstraint(String constraintName, Object constrainingValue) {
 
         if (constraints.containsKey(constraintName)) {
@@ -1022,6 +1047,11 @@ public class ConstrainedProperty {
             throw new ConstraintException("Constraint [" + constraintName + "] is not supported for property [" +
                     propertyName + "] of class [" + owningClass + "] with type [" + propertyType + "]");
         }
+    }
+
+    @Override
+    public Class getOwner() {
+        return this.owningClass;
     }
 
     private Constraint instantiateConstraint(String constraintName, boolean validate) throws InstantiationException, IllegalAccessException {

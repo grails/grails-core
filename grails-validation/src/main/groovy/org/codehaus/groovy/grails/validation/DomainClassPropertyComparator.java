@@ -17,9 +17,9 @@ package org.codehaus.groovy.grails.validation;
 import java.util.Comparator;
 import java.util.Map;
 
+import grails.validation.Constrained;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
-import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.springframework.util.Assert;
 
 /**
@@ -53,8 +53,8 @@ public class DomainClassPropertyComparator implements Comparator {
         GrailsDomainClassProperty prop1 = (GrailsDomainClassProperty)o1;
         GrailsDomainClassProperty prop2 = (GrailsDomainClassProperty)o2;
 
-        ConstrainedProperty cp1 = (ConstrainedProperty)constrainedProperties.get(prop1.getName());
-        ConstrainedProperty cp2 = (ConstrainedProperty)constrainedProperties.get(prop2.getName());
+        Constrained cp1 = (Constrained)constrainedProperties.get(prop1.getName());
+        Constrained cp2 = (Constrained)constrainedProperties.get(prop2.getName());
 
         if (cp1 == null & cp2 == null) {
             return prop1.getName().compareTo(prop2.getName());
