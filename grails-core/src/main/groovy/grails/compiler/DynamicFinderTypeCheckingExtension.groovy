@@ -19,20 +19,21 @@ import static org.codehaus.groovy.ast.ClassHelper.CLASS_Type
 import static org.codehaus.groovy.ast.ClassHelper.Integer_TYPE
 import static org.codehaus.groovy.ast.ClassHelper.LIST_TYPE
 
-import org.codehaus.groovy.ast.ClassHelper
+import org.codehaus.groovy.ast.ClassNode
+import org.codehaus.groovy.ast.expr.ArgumentListExpression
+import org.codehaus.groovy.ast.expr.MethodCall
 import org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils
 import org.codehaus.groovy.transform.stc.GroovyTypeCheckingExtensionSupport.TypeCheckingDSL
-
 
 /**
  *
  * @since 2.4
  */
-class TypeCheckedExtensions extends TypeCheckingDSL {
+class DynamicFinderTypeCheckingExtension extends TypeCheckingDSL {
 
     @Override
     public Object run() {
-        methodNotFound { receiver, name, argList, argTypes, call ->
+        methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
             def dynamicCall
             if(receiver == CLASS_Type) {
                 def genericsTypes = receiver.genericsTypes
@@ -62,10 +63,10 @@ class TypeCheckedExtensions extends TypeCheckingDSL {
             }
             return dynamicCall
         }
-        return null
+        null
     }
 
-    protected makeDynamicGormCall(call, returnTypeNode, domainClassTypeNode) {
+    protected makeDynamicGormCall(MethodCall call, ClassNode returnTypeNode, ClassNode domainClassTypeNode) {
         def dynamicCall = makeDynamic(call, returnTypeNode)
         dynamicCall.declaringClass = domainClassTypeNode
         dynamicCall

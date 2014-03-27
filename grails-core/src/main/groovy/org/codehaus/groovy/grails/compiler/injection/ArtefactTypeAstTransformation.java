@@ -43,36 +43,76 @@ import org.codehaus.groovy.transform.GroovyASTTransformation;
 @GroovyASTTransformation(phase = CompilePhase.CANONICALIZATION)
 public class ArtefactTypeAstTransformation extends AbstractArtefactTypeAstTransformation {
     private static final ClassNode MY_TYPE = new ClassNode(Artefact.class);
-    private static final String MY_TYPE_NAME = "@" + MY_TYPE.getNameWithoutPackage();
 
     public void visit(ASTNode[] astNodes, SourceUnit sourceUnit) {
-        if (!(astNodes[0] instanceof AnnotationNode) || !(astNodes[1] instanceof AnnotatedNode)) {
+        AnnotatedNode parent = (AnnotatedNode) astNodes[1];
+        AnnotationNode node = (AnnotationNode) astNodes[0];
+        
+        if (!(node instanceof AnnotationNode) || !(parent instanceof AnnotatedNode)) {
             throw new RuntimeException("Internal error: wrong types: $node.class / $parent.class");
         }
 
-        AnnotatedNode parent = (AnnotatedNode) astNodes[1];
-        AnnotationNode node = (AnnotationNode) astNodes[0];
-        if (!MY_TYPE.equals(node.getClassNode()) || !(parent instanceof ClassNode)) {
+        if (!isArtefactAnnotationNode(node) || !(parent instanceof ClassNode)) {
             return;
         }
 
         ClassNode cNode = (ClassNode) parent;
-        String cName = cNode.getName();
         if (cNode.isInterface()) {
-            throw new RuntimeException("Error processing interface '" + cName + "'. " +
-                    MY_TYPE_NAME + " not allowed for interfaces.");
+            throw new RuntimeException("Error processing interface '" + cNode.getName() + "'. @" +
+                    getAnnotationType().getNameWithoutPackage() + " not allowed for interfaces.");
         }
 
-        Expression value = node.getMember("value");
+        if(isApplied(cNode)) {
+            return;
+        }
+        
+        String artefactType = resolveArtefactType(sourceUnit, node, cNode);
+        performInjectionOnArtefactType(sourceUnit, cNode, artefactType);
+        postProcess(sourceUnit, node, cNode, artefactType);
+        
+        markApplied(cNode);        
+    }
+
+    protected boolean isApplied(ClassNode cNode) {
+        return GrailsASTUtils.isApplied(cNode, getAstAppliedMarkerClass());
+    }
+
+    protected void markApplied(ClassNode classNode) {
+        GrailsASTUtils.markApplied(classNode, getAstAppliedMarkerClass());
+    }
+
+    protected Class<?> getAstAppliedMarkerClass() {
+        return ArtefactTypeAstTransformation.class;
+    }
+
+    protected void postProcess(SourceUnit sourceUnit, AnnotationNode annotationNode, ClassNode classNode, String artefactType) {
+        if(!MY_TYPE.equals(annotationNode.getClassNode())) {
+            // add @Artefact annotation to resulting class so that "short cut" annotations like @TagLib 
+            // also produce an @Artefact annotation in the resulting class file
+            AnnotationNode annotation=new AnnotationNode(MY_TYPE);
+            annotation.addMember("value", new ConstantExpression(artefactType));
+            classNode.addAnnotation(annotation);
+        }
+    }
+
+    protected String resolveArtefactType(SourceUnit sourceUnit, AnnotationNode annotationNode, ClassNode classNode) {
+        Expression value = annotationNode.getMember("value");
 
         if (value != null && (value instanceof ConstantExpression)) {
             ConstantExpression ce = (ConstantExpression) value;
-            String artefactType = ce.getText();
-            performInjectionOnArtefactType(sourceUnit, cNode, artefactType);
+            return ce.getText();
         }
         else {
-            throw new RuntimeException("Class ["+cName+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
+            throw new RuntimeException("Class ["+classNode.getName()+"] contains an invalid @Artefact annotation. No artefact found for value specified.");
         }
+    }
+
+    protected boolean isArtefactAnnotationNode(AnnotationNode annotationNode) {
+        return getAnnotationType().equals(annotationNode.getClassNode());
+    }
+
+    protected ClassNode getAnnotationType() {
+        return MY_TYPE;
     }
 
     public void performInjectionOnArtefactType(SourceUnit sourceUnit, ClassNode cNode, String artefactType) {

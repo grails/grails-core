@@ -25,7 +25,7 @@ class TagLibraryMetaUtils {
     }
 
     @CompileStatic
-    static registerMethodMissingForTags(MetaClass metaClass, TagLibraryLookup gspTagLibraryLookup, String namespace, String name) {
+    static registerMethodMissingForTags(MetaClass metaClass, TagLibraryLookup gspTagLibraryLookup, String namespace, String name, boolean addAll=true) {
         GroovyObject mc = (GroovyObject)metaClass;
         mc.setProperty(name) {Map attrs, Closure body ->
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, body, GrailsWebRequest.lookup())
@@ -36,11 +36,13 @@ class TagLibraryMetaUtils {
         mc.setProperty(name) {Map attrs ->
             GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, attrs, null, GrailsWebRequest.lookup())
         }
-        mc.setProperty(name) {Closure body ->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, GrailsWebRequest.lookup())
-        }
-        mc.setProperty(name) {->
-            GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, GrailsWebRequest.lookup())
+        if (addAll) {
+            mc.setProperty(name) {Closure body ->
+                GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], body, GrailsWebRequest.lookup())
+            }
+            mc.setProperty(name) {->
+                GroovyPage.captureTagOutput(gspTagLibraryLookup, namespace, name, [:], null, GrailsWebRequest.lookup())
+            }
         }
     }
 
