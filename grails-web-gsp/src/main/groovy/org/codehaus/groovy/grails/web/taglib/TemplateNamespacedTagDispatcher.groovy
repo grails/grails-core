@@ -15,43 +15,38 @@
  */
 package org.codehaus.groovy.grails.web.taglib
 
+import java.util.Map;
+
 import grails.util.Environment
+import groovy.lang.ExpandoMetaClass;
 import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 @CompileStatic
 class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
-    protected GroovyObject renderTagLib
-
     private boolean developmentMode = Environment.current.isDevelopmentMode()
 
     TemplateNamespacedTagDispatcher(Class callingType, GrailsApplication application, TagLibraryLookup lookup) {
-        super(GroovyPage.DEFAULT_NAMESPACE, callingType, application, lookup)
-        renderTagLib = lookup.lookupTagLibrary(GroovyPage.DEFAULT_NAMESPACE, 'render')
+        super(GroovyPage.TEMPLATE_NAMESPACE, callingType, application, lookup)
     }
 
     def methodMissing(String name, Object args) {
-        List<MetaMethod> methods=renderTagLib.getMetaClass().respondsTo(renderTagLib, 'render', (Object[])args)
-        if (methods) {
-            MetaMethod method = methods.first()
-            synchronized(this) {
-                if (developmentMode) {
-                    ((GroovyObject)getMetaClass()).setProperty(name, { Object[] varArgs ->
-                        renderTagLib.invokeMethod("render", argsToAttrs(name, varArgs))
-                    })
-                } else {
-                    ((GroovyObject)getMetaClass()).setProperty(name, { Object[] varArgs ->
-                        method.invoke(renderTagLib, argsToAttrs(name, varArgs))
-                    })
-                }
-            }
-            return method.invoke(renderTagLib, argsToAttrs(name, args))
-        }
+        ((GroovyObject)getMetaClass()).setProperty(name, { Object[] varArgs ->
+            callRender(argsToAttrs(name, varArgs), filterBodyAttr(varArgs))
+        })
+        callRender(argsToAttrs(name, args), filterBodyAttr(args))
+    }
+    
+    protected void registerTagMetaMethods(ExpandoMetaClass emc) {
+        
+    }
 
-        throw new MissingMethodException(name, type, args)
+    protected callRender(Map attrs, Object body) {
+        GroovyPage.captureTagOutput(lookup, GroovyPage.DEFAULT_NAMESPACE, 'render', attrs, body, GrailsWebRequest.lookup())
     }
 
     protected Map argsToAttrs(String name, Object args) {
@@ -69,5 +64,19 @@ class TemplateNamespacedTagDispatcher extends NamespacedTagDispatcher {
             }
         }
         attr
+    }
+    
+    protected Object filterBodyAttr(Object args) {
+        if (args instanceof Object[]) {
+            Object[] tagArgs = ((Object[])args)
+            if (tagArgs.length > 0) {
+                for(Object arg : tagArgs) {
+                    if(!(arg instanceof Map)) {
+                        return arg
+                    }
+                }
+            }
+        }
+        return null
     }
 }

@@ -53,6 +53,10 @@ class NamespacedTagDispatcher extends GroovyObjectSupport {
         ExpandoMetaClass emc = new ExpandoMetaClass(getClass(), false, true)
         emc.initialize()
         setMetaClass(emc)
+        registerTagMetaMethods(emc)
+    }
+
+    protected void registerTagMetaMethods(ExpandoMetaClass emc) {
         TagLibraryMetaUtils.registerTagMetaMethods(emc, lookup, namespace)
     }
 
