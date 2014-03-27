@@ -16,12 +16,13 @@
 package org.codehaus.groovy.grails.web.taglib
 
 import grails.util.Environment
-import groovy.transform.CompileStatic;
+import groovy.transform.CompileStatic
 
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.web.pages.GroovyPage
 import org.codehaus.groovy.grails.web.pages.GroovyPagesMetaUtils
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
+import org.codehaus.groovy.grails.web.util.TagLibraryMetaUtils
 
 /**
  * Allows dispatching to namespaced tag libraries and is used within controllers and tag libraries
@@ -52,9 +53,7 @@ class NamespacedTagDispatcher extends GroovyObjectSupport {
         ExpandoMetaClass emc = new ExpandoMetaClass(getClass(), false, true)
         emc.initialize()
         setMetaClass(emc)
-        if (namespace == GroovyPage.DEFAULT_NAMESPACE) {
-            GroovyPagesMetaUtils.registerMethodMissingWorkaroundsForDefaultNamespace(emc, lookup)
-        }
+        TagLibraryMetaUtils.registerTagMetaMethods(emc, lookup, namespace)
     }
 
     def methodMissing(String name, Object args) {

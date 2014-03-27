@@ -18,7 +18,6 @@ package org.codehaus.groovy.grails.plugins.web.api;
 import grails.util.Environment;
 import groovy.lang.Closure;
 import groovy.lang.GroovyObject;
-import groovy.lang.GroovySystem;
 import groovy.lang.MetaClass;
 import groovy.lang.MetaMethod;
 import groovy.lang.MissingMethodException;
@@ -179,7 +178,7 @@ public class TagLibraryApi extends CommonWebApi {
             }
 
             if (result != null && !developmentMode) {
-                MetaClass mc = GroovySystem.getMetaClassRegistry().getMetaClass(instance.getClass());
+                MetaClass mc = InvokerHelper.getMetaClass(instance);
                 TagLibraryMetaUtils.registerPropertyMissingForTag(mc, name, result);
             }
 

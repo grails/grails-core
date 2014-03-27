@@ -31,6 +31,7 @@ class GroovyPagesMetaUtils {
     }
 
     static void registerMethodMissingForGSP(final MetaClass emc, final TagLibraryLookup gspTagLibraryLookup) {
+        if(gspTagLibraryLookup==null) return
         final boolean addMethodsToMetaClass = !Environment.isDevelopmentMode()
 
         GroovyObject mc = (GroovyObject)emc
@@ -39,7 +40,8 @@ class GroovyPagesMetaUtils {
                 methodMissingForTagLib(emc, emc.getTheClass(), gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, name, args, addMethodsToMetaClass)
             })
         }
-        registerMethodMissingWorkaroundsForDefaultNamespace(emc, gspTagLibraryLookup)
+        TagLibraryMetaUtils.registerTagMetaMethods(emc, gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE)
+        TagLibraryMetaUtils.registerNamespaceMetaProperties(emc, gspTagLibraryLookup)
     }
 
     private static Object[] makeObjectArray(Object args) {
@@ -64,11 +66,6 @@ class GroovyPagesMetaUtils {
             }
         }
         throw new MissingMethodException(name, type, args)
-    }
-
-    static void registerMethodMissingWorkaroundsForDefaultNamespace(MetaClass mc, TagLibraryLookup gspTagLibraryLookup) {
-        // hasErrors gets mixed up by hasErrors method without this metaclass modification
-        TagLibraryMetaUtils.registerMethodMissingForTags(mc, gspTagLibraryLookup, GroovyPage.DEFAULT_NAMESPACE, 'hasErrors', false)
     }
 
     static addTagLibMethodToMetaClass(final GroovyObject tagBean, final MetaMethod method, final MetaClass mc) {

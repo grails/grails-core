@@ -179,6 +179,14 @@ public class TagLibraryLookup implements ApplicationContextAware, GrailsApplicat
     public Set<String> getAvailableNamespaces() {
         return namespaceDispatchers.keySet();
     }
+    
+    public Set<String> getAvailableTags(String namespace) {
+        Map<String, Object>tags = tagNamespaces.get(namespace);
+        if (tags == null) {
+            return Collections.emptySet();
+        }
+        return tags.keySet();        
+    }
 
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
