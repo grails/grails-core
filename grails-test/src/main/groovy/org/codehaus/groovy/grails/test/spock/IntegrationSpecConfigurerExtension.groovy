@@ -38,7 +38,7 @@ import org.spockframework.runtime.model.FeatureInfo
  */
 @CompileStatic
 class IntegrationSpecConfigurerExtension extends AbstractAnnotationDrivenExtension<Annotation> {
-    @Override
+
     void visitSpecAnnotation(Annotation annotation, SpecInfo spec) {
         final context = Holders.getApplicationContext()
         if(context) {
