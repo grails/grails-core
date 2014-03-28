@@ -606,7 +606,6 @@ class AetherDependencyManager implements DependencyManager {
         dependency.group == 'org.grails.plugins' || dependency.extension == 'zip'
     }
 
-    @Override
     DependencyManager createCopy(BuildSettings buildSettings = null) {
         AetherDependencyManager dependencyManager = new AetherDependencyManager()
         dependencyManager.repositories = this.repositories
