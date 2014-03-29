@@ -62,6 +62,8 @@ class FunctionalTestPhaseConfigurer extends DefaultTestPhaseConfigurer {
         Holders.grailsApplication = null
 
         warMode = testOptions.war ? true : false
+        https = testOptions.https ? true : false
+        
         final packager = projectRunner.projectPackager
         packager.packageApplication()
         final isServerRunning = projectRunner.isServerRunning()
