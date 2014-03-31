@@ -91,6 +91,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         
         Holders.setServletContext servletContext
         Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
+        Holders.setGrailsApplication(grailsApplication)
         runtime.putValue("servletContext", servletContext)
         
         applicationInitialized(runtime, grailsApplication)
