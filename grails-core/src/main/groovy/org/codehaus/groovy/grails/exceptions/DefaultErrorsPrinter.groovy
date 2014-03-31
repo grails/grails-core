@@ -20,7 +20,6 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage
 import org.codehaus.groovy.grails.core.io.ResourceLocator
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
-import org.springframework.web.util.NestedServletException
 
 /**
  * Default implementation of the {@link StackTracePrinter} interface.
@@ -58,7 +57,7 @@ class DefaultErrorsPrinter extends DefaultStackTracePrinter implements CodeSnipp
         while (cause) {
 
             if (!cause.stackTrace) break
-            if (cause instanceof NestedServletException) {
+            if (cause.getClass().name == 'org.springframework.web.util.NestedServletException') {
                 cause = cause.cause
                 continue
             }

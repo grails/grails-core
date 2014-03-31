@@ -3,7 +3,6 @@ configurations {
 }
 dependencies {
 
-    compile 'javax.servlet:javax.servlet-api:3.0.1', provided
     compile 'org.hibernate.javax.persistence:hibernate-jpa-2.1-api:1.0.0.Final'
     compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
         exclude group: 'commons-logging', module:'commons-logging'
@@ -12,10 +11,6 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     compile("org.springframework:spring-tx:${springVersion}") {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
-    // TODO: Remove spring-web as a dependency (Holders.servletContext and GrailsEnvironment move to grails-web)
-    compile("org.springframework:spring-web:${springVersion}") {
         exclude group: 'commons-logging', module:'commons-logging'
     }
     compile("org.springframework:spring-beans:${springVersion}") {
@@ -28,7 +23,6 @@ dependencies {
         exclude group: 'commons-logging', module:'commons-logging'
         ext.notInPom = true
     }
-
 
     runtime 'cglib:cglib:2.2.2' // Used to generate proxies for classes via Spring AOP
     runtime 'asm:asm:3.3.1'

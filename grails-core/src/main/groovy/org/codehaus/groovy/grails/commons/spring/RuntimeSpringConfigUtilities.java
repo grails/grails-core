@@ -31,9 +31,9 @@ import org.springframework.util.ClassUtils;
  * @since 2.4
  * @author Graeme Rocher
  */
-public class RuntimeSpringConfigUtilties {
+public class RuntimeSpringConfigUtilities {
 
-    private static final Log LOG = LogFactory.getLog(RuntimeSpringConfigUtilties.class);
+    private static final Log LOG = LogFactory.getLog(RuntimeSpringConfigUtilities.class);
     public static final String GRAILS_URL_MAPPINGS = "grailsUrlMappings";
     public static final String SPRING_RESOURCES_XML = "/WEB-INF/spring/resources.xml";
     public static final String SPRING_RESOURCES_GROOVY = "/WEB-INF/spring/resources.groovy";

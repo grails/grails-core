@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -119,7 +118,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
     private ApplicationContext parentCtx;
     private PathMatchingResourcePatternResolver resolver;
     private Map<GrailsPlugin, String[]> delayedEvictions = new HashMap<GrailsPlugin, String[]>();
-    private ServletContext servletContext;
     private Map<String, Set<GrailsPlugin>> pluginToObserverMap = new HashMap<String, Set<GrailsPlugin>>();
 
     private PluginFilter pluginFilter;
@@ -789,14 +787,6 @@ public class DefaultGrailsPluginManager extends AbstractGrailsPluginManager {
                 }
             }
         }
-    }
-
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
-    }
-
-    public ServletContext getServletContext() {
-        return servletContext;
     }
 
     void setPluginFilter(PluginFilter pluginFilter) {

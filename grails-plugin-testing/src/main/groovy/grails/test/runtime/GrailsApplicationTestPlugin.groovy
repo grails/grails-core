@@ -26,6 +26,7 @@ import grails.web.CamelCaseUrlConverter
 import grails.web.UrlConverter
 import groovy.transform.CompileStatic
 import groovy.transform.TypeCheckingMode
+import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 
 import java.lang.reflect.Modifier
 
@@ -89,6 +90,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         mainContext.servletContext = servletContext
         
         Holders.setServletContext servletContext
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
         runtime.putValue("servletContext", servletContext)
         
         applicationInitialized(runtime, grailsApplication)

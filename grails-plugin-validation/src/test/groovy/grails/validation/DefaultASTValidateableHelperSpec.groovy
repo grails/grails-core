@@ -1,6 +1,7 @@
 package grails.validation
 
 import grails.util.Holders
+import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 import org.springframework.web.context.support.GenericWebApplicationContext
 
 import static org.junit.Assert.*
@@ -63,10 +64,11 @@ class DefaultASTValidateableHelperSpec extends Specification {
         servletContext.setAttribute WebApplicationContext.ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE, applicationContext
 
         Holders.servletContext = servletContext
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
     }
 
     def cleanupSpec() {
-        Holders.servletContext = null
+        Holders.clear()
     }
 
     void 'Test constraints property'() {

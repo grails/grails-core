@@ -53,7 +53,7 @@ abstract class AbstractServletFilterTests extends GroovyTestCase {
     }
 
     void tearDown() {
-        Holders.setServletContext(null)
+        Holders.clear()
     }
 
     protected void onSetup() {}

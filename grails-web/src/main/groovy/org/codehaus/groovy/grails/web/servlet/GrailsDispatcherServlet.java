@@ -26,6 +26,7 @@ import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.lifecycle.ShutdownOperations;
 import org.codehaus.groovy.grails.web.context.GrailsConfigUtils;
+import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsContentBufferingResponse;
 import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder;
@@ -54,6 +55,7 @@ import org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAda
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.util.NestedServletException;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -157,21 +159,23 @@ public class GrailsDispatcherServlet extends DispatcherServlet {
 
     @Override
     protected WebApplicationContext createWebApplicationContext(WebApplicationContext parent) throws BeansException {
-        WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(getServletContext());
+        ServletContext servletContext = getServletContext();
+        WebApplicationContext wac = WebApplicationContextUtils.getWebApplicationContext(servletContext);
         // construct the SpringConfig for the container managed application
         Assert.notNull(parent, "Grails requires a parent ApplicationContext, is the /WEB-INF/applicationContext.xml file missing?");
         setApplication(parent.getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class));
 
-        Holders.setServletContext(getServletContext());
+        Holders.setServletContext(servletContext);
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
 
         WebApplicationContext webContext;
         if (wac instanceof GrailsApplicationContext) {
             webContext = wac;
         }
         else {
-            webContext = GrailsConfigUtils.configureWebApplicationContext(getServletContext(), parent);
+            webContext = GrailsConfigUtils.configureWebApplicationContext(servletContext, parent);
             try {
-                GrailsConfigUtils.executeGrailsBootstraps(application, webContext, getServletContext());
+                GrailsConfigUtils.executeGrailsBootstraps(application, webContext, servletContext);
             }
             catch (Exception e) {
                 if (e instanceof BeansException) {

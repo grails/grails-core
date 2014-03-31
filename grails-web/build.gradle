@@ -12,14 +12,4 @@ dependencies {
     runtime "org.springframework:spring-aspects:${springVersion}"
     runtime "org.aspectj:aspectjrt:$aspectjVersion",
             "org.aspectj:aspectjweaver:$aspectjVersion"
-
-    /*
-    optional "org.apache.ant:ant:${antVersion}"
-    optional "jline:jline:$jlineVersion"
-    optional "org.fusesource.jansi:jansi:$jansiVersion"
-
-    optional("org.codehaus.gant:gant_groovy1.8:${gantVersion}") {
-        exclude group:'commons-cli', module:'commons-cli'
-    }
-    */
 }

@@ -4,6 +4,7 @@ import grails.test.MockUtils
 import grails.util.GrailsWebUtil
 import grails.util.Holders
 import grails.util.Metadata
+import org.codehaus.groovy.grails.web.context.ServletEnvironmentGrailsApplicationDiscoveryStrategy
 
 import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
@@ -262,6 +263,7 @@ abstract class AbstractGrailsTagTests extends GroovyTestCase {
 
         servletContext = webRequest.servletContext
         Holders.servletContext = servletContext
+        Holders.addApplicationDiscoveryStrategy(new ServletEnvironmentGrailsApplicationDiscoveryStrategy(servletContext));
 
         springConfig.servletContext = servletContext
 

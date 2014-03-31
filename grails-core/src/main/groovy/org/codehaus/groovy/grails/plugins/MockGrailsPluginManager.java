@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 
 import org.codehaus.groovy.grails.commons.DefaultGrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -38,12 +37,8 @@ import org.springframework.util.Assert;
  * @since 0.4
  */
 public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
-    private ServletContext servletContext;
     private boolean checkForChangesExpected = false;
 
-    public ServletContext getServletContext() {
-        return servletContext;
-    }
 
     public MockGrailsPluginManager(GrailsApplication application) {
         super(application);
@@ -114,10 +109,6 @@ public class MockGrailsPluginManager extends AbstractGrailsPluginManager {
     @SuppressWarnings("rawtypes")
     public void informObservers(String pluginName, Map event) {
         // do nothing
-    }
-
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
     }
 
     public void expectCheckForChanges() {

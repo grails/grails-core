@@ -19,17 +19,18 @@ import groovy.util.ConfigObject;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
+import org.codehaus.groovy.grails.support.GrailsApplicationDiscoveryStrategy;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 /**
  * @author Burt Beckwith
@@ -38,14 +39,17 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class Holders {
 
     private static final Log LOG = LogFactory.getLog(Holders.class);
-    private static final String APPLICATION_BEAN_NAME = "grailsApplication";
+    private static final String APPLICATION_BEAN_NAME = GrailsApplication.APPLICATION_ID;
 
     private static Holder<GrailsPluginManager> pluginManagers = new Holder<GrailsPluginManager>("PluginManager");
     private static Holder<Boolean> pluginManagersInCreation = new Holder<Boolean>("PluginManagers in creation");
     private static Holder<ConfigObject> configs = new Holder<ConfigObject>("config");
     private static Holder<Map<?, ?>> flatConfigs = new Holder<Map<?, ?>>("flat config");
-    private static Holder<ServletContext> servletContexts;
+
+    private static List<GrailsApplicationDiscoveryStrategy> applicationDiscoveryStrategies = GrailsFactoriesLoader.loadFactories(GrailsApplicationDiscoveryStrategy.class);
+    private static Holder servletContexts;
     static {
+
         createServletContextsHolder();
     }
 
@@ -53,6 +57,10 @@ public class Holders {
 
     private Holders() {
         // static only
+    }
+
+    public static void addApplicationDiscoveryStrategy(GrailsApplicationDiscoveryStrategy strategy) {
+        applicationDiscoveryStrategies.add(strategy);
     }
 
     public static void clear() {
@@ -63,18 +71,25 @@ public class Holders {
         if (servletContexts != null) {
             servletContexts.set(null);
         }
+        applicationDiscoveryStrategies.clear();
     }
 
-    public static void setServletContext(final ServletContext servletContext) {
+    public static void setServletContext(final Object servletContext) {
         servletContexts.set(servletContext);
     }
 
-    public static ServletContext getServletContext() {
+    public static Object getServletContext() {
         return get(servletContexts, "servletContext");
     }
 
     public static ApplicationContext getApplicationContext() {
-        return WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
+        for(GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+            ApplicationContext applicationContext = strategy.findApplicationContext();
+            if(applicationContext != null) {
+                return applicationContext;
+            }
+        }
+        throw new IllegalStateException("Could not find ApplicationContext, configure Grails correctly first");
     }
 
     /**
@@ -82,23 +97,23 @@ public class Holders {
      * @return The ApplicationContext or null if it doesn't exist
      */
     public static ApplicationContext findApplicationContext() {
-        ServletContext servletContext = getServletContext();
-        if(servletContext != null) {
-            return WebApplicationContextUtils.getWebApplicationContext(servletContext);
+        for(GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+            ApplicationContext applicationContext = strategy.findApplicationContext();
+            if(applicationContext != null) {
+                return applicationContext;
+            }
         }
         return null;
     }
 
     public static GrailsApplication getGrailsApplication() {
-        try {
-            return (GrailsApplication)getApplicationContext().getBean(APPLICATION_BEAN_NAME);
+        for(GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
+            GrailsApplication grailsApplication = strategy.findGrailsApplication();
+            if(grailsApplication != null) {
+                return grailsApplication;
+            }
         }
-        catch (IllegalStateException e) {
-            return applicationSingleton;
-        }
-        catch (IllegalArgumentException e) {
-            return applicationSingleton;
-        }
+        return applicationSingleton;
     }
 
     public static void setGrailsApplication(GrailsApplication application) {
@@ -183,7 +198,7 @@ public class Holders {
     private static void createServletContextsHolder() {
         try {
             Class<?> clazz = Holders.class.getClassLoader().loadClass("org.codehaus.groovy.grails.web.context.WebRequestServletHolder");
-            servletContexts = (Holder<ServletContext>)clazz.newInstance();
+            servletContexts = (Holder)clazz.newInstance();
         }
         catch (ClassNotFoundException e) {
             // shouldn't happen

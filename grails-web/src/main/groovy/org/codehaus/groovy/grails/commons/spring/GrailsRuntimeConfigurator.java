@@ -16,12 +16,8 @@
 package org.codehaus.groovy.grails.commons.spring;
 
 import grails.spring.BeanBuilder;
-import grails.util.CollectionUtils;
 import grails.util.Environment;
 import grails.util.Holders;
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.Script;
 
 import java.util.List;
 import java.util.Map;
@@ -50,10 +46,6 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
-
-import javax.servlet.ServletContext;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Handles the runtime configuration of the Grails ApplicationContext.
@@ -321,20 +313,20 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * @param config The config instance
      */
     public static void loadExternalSpringConfig(RuntimeSpringConfiguration config, final GrailsApplication application) {
-        RuntimeSpringConfigUtilties.loadExternalSpringConfig(config, application);
+        RuntimeSpringConfigUtilities.loadExternalSpringConfig(config, application);
     }
 
     public static BeanBuilder reloadSpringResourcesConfig(RuntimeSpringConfiguration config, GrailsApplication application, Class<?> groovySpringResourcesClass) throws InstantiationException, IllegalAccessException {
-        return RuntimeSpringConfigUtilties.reloadSpringResourcesConfig(config, application,groovySpringResourcesClass);
+        return RuntimeSpringConfigUtilities.reloadSpringResourcesConfig(config, application, groovySpringResourcesClass);
     }
 
     public static void loadSpringGroovyResources(RuntimeSpringConfiguration config, GrailsApplication application) {
-        RuntimeSpringConfigUtilties.loadExternalSpringConfig(config, application);
+        RuntimeSpringConfigUtilities.loadExternalSpringConfig(config, application);
     }
 
     public static void loadSpringGroovyResourcesIntoContext(RuntimeSpringConfiguration config, GrailsApplication application,
             GenericApplicationContext context) {
-        RuntimeSpringConfigUtilties.loadSpringGroovyResourcesIntoContext(config, application, context);
+        RuntimeSpringConfigUtilities.loadSpringGroovyResourcesIntoContext(config, application, context);
     }
 
     public void setLoadExternalPersistenceConfig(boolean b) {
@@ -357,7 +349,7 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
      * Resets the GrailsRumtimeConfigurator.
      */
     public static void reset() {
-        RuntimeSpringConfigUtilties.reset();
+        RuntimeSpringConfigUtilities.reset();
     }
 
     // for testing
