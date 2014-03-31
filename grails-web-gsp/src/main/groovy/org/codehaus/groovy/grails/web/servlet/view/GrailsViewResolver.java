@@ -27,10 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
-import org.codehaus.groovy.grails.plugins.PluginManagerAware;
-import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
@@ -49,7 +45,7 @@ import org.springframework.web.servlet.view.InternalResourceViewResolver;
  * @author Graeme Rocher
  * @since 0.1
  */
-public class GrailsViewResolver extends InternalResourceViewResolver implements PluginManagerAware, GrailsApplicationAware {
+public class GrailsViewResolver extends InternalResourceViewResolver {
     private static final Log LOG = LogFactory.getLog(GrailsViewResolver.class);
 
     public static final String GSP_SUFFIX = ".gsp";
@@ -60,7 +56,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
 
     // no need for static cache since GrailsViewResolver is in app context
     private Map<String, CacheEntry<View>> VIEW_CACHE = new ConcurrentHashMap<String, CacheEntry<View>>();
-    private GrailsApplication grailsApplication;
     private boolean developmentMode = GrailsUtil.isDevelopmentEnv();
     private long cacheTimeout=-1;
 
@@ -151,10 +146,6 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         HttpServletRequest request = webRequest.getCurrentRequest();
         GroovyObject controller = webRequest.getAttributes().getController(request);
 
-        if (grailsApplication == null) {
-            grailsApplication = getApplicationContext().getBean(GrailsApplication.APPLICATION_ID, GrailsApplication.class);
-        }
-
         GroovyPageScriptSource scriptSource;
         if (controller == null) {
             scriptSource = groovyPageLocator.findViewByPath(viewName);
@@ -198,16 +189,8 @@ public class GrailsViewResolver extends InternalResourceViewResolver implements 
         return view;
     }
 
-    public void setPluginManager(GrailsPluginManager pluginManager) {
-        // ignored, here for compatibility
-    }
-
     public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
-    }
-
-    public void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication;
     }
 
     public long getCacheTimeout() {
