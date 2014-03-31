@@ -19,8 +19,6 @@ import grails.util.Holders
 import grails.validation.ValidationErrors
 import groovy.transform.CompileStatic
 
-import javax.servlet.ServletContext
-
 import org.codehaus.groovy.grails.validation.ConstrainedProperty
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.grails.datastore.gorm.support.BeforeValidateHelper
@@ -77,8 +75,7 @@ class ValidationSupport {
     
     @CompileStatic
     static Map<String, ConstrainedProperty> getConstrainedPropertiesForClass(Class<?> clazz) {
-        ServletContext sc = Holders.servletContext
-        BeanFactory ctx = WebApplicationContextUtils.getWebApplicationContext(sc)
+        BeanFactory ctx = Holders.applicationContext
         ConstraintsEvaluator evaluator = ctx.getBean(ConstraintsEvaluator.BEAN_NAME, ConstraintsEvaluator)
         evaluator.evaluate clazz
     }

@@ -5,6 +5,7 @@ dependencies {
             project(":grails-databinding"),
             project(':grails-plugin-domain-class')
 
+    compile 'javax.servlet:javax.servlet-api:3.0.1', provided
     compile('commons-fileupload:commons-fileupload:1.3.1')
     compile "commons-collections:commons-collections:${commonsCollectionsVersion}"
 

@@ -135,7 +135,6 @@ public class GrailsRuntimeConfigurator implements ApplicationContextAware {
 
             if (context != null) {
                 webSpringConfig.setServletContext(context);
-                pluginManager.setServletContext(context);
             }
             if (!pluginManager.isInitialised()) {
                 pluginManager.loadPlugins();
