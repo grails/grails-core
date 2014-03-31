@@ -57,6 +57,8 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -85,7 +87,7 @@ import org.springframework.web.context.support.ServletContextResource;
  *
  * @since 0.1
  */
-public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean {
+public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean, ApplicationListener<ContextRefreshedEvent> {
 
     public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = "grails.gsp.disable.caching.resources";
     public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = "grails.gsp.enable.reload";
@@ -838,5 +840,12 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
 
     public void setServletContext(ServletContext servletContext) {
         this.servletContext = servletContext;
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        if(servletContext != null && servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)==null) {
+            servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, event.getApplicationContext());
+        }
     }
 }
