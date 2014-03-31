@@ -47,7 +47,7 @@ public class Holders {
     private static Holder<ConfigObject> configs = new Holder<ConfigObject>("config");
     private static Holder<Map<?, ?>> flatConfigs = new Holder<Map<?, ?>>("flat config");
 
-    private static List<GrailsApplicationDiscoveryStrategy> applicationDiscoveryStrategies = GrailsFactoriesLoader.loadFactories(GrailsApplicationDiscoveryStrategy.class);
+    private static List<GrailsApplicationDiscoveryStrategy> applicationDiscoveryStrategies = GrailsFactoriesLoader.loadFactories(GrailsApplicationDiscoveryStrategy.class, Holders.class.getClassLoader());
     private static Holder servletContexts;
     static {
 
@@ -73,6 +73,7 @@ public class Holders {
             servletContexts.set(null);
         }
         applicationDiscoveryStrategies.clear();
+        applicationSingleton = null;
     }
 
     public static void setServletContext(final Object servletContext) {
