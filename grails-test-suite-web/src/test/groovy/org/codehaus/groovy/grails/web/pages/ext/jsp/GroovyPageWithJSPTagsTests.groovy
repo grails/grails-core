@@ -32,7 +32,7 @@ class GroovyPageWithJSPTagsTests extends AbstractGrailsTagTests {
     }
 
     protected void onDestroy() {
-        GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolver
+        GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolverImpl
     }
 
     // test for GRAILS-4573

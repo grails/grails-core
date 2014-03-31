@@ -25,7 +25,7 @@ class IterativeJspTagTests extends GroovyTestCase {
 
     protected void tearDown() {
         RequestContextHolder.setRequestAttributes null
-        GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolver
+        GroovySystem.metaClassRegistry.removeMetaClass TagLibraryResolverImpl
     }
 
     void testIterativeTag() {
