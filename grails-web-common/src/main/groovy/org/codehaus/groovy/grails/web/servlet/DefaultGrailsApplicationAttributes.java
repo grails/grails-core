@@ -74,33 +74,30 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
         if (context != null) {
             appContext = (ApplicationContext)context.getAttribute(APPLICATION_CONTEXT);
         }
-        initBeans();
     }
 
     public ApplicationContext getApplicationContext() {
         return appContext;
     }
 
-    private void initBeans() {
-        if (appContext != null) {
-            pagesTemplateEngine = fetchBeanFromAppCtx(ResourceAwareTemplateEngine.BEAN_ID);
+    private GrailsPluginManager getPluginManager() {
+        if(pluginManager==null) {
             pluginManager = fetchBeanFromAppCtx(GrailsPluginManager.BEAN_NAME);
-            grailsApplication = fetchBeanFromAppCtx(GrailsApplication.APPLICATION_ID);
-            groovyPagesUriService = fetchBeanFromAppCtx(GroovyPagesUriService.BEAN_ID);
-            messageSource = fetchBeanFromAppCtx("messageSource");
         }
-        else {
-            LOG.warn("ApplicationContext not found in " + APPLICATION_CONTEXT + " attribute of servlet context.");
-        }
-        if (groovyPagesUriService == null) {
-            groovyPagesUriService = new DefaultGroovyPagesUriService();
-        }
+        return pluginManager;
     }
 
     @SuppressWarnings("unchecked")
     private <T> T fetchBeanFromAppCtx(String name) {
+        if(appContext==null) {
+            return null;
+        }
         try {
-            return (T)appContext.getBean(name);
+            if(appContext.containsBean(name)) {
+                return (T)appContext.getBean(name);
+            } else {
+                return null;
+            }
         }
         catch(BeansException e) {
             LOG.warn("Bean named '" + name + "' is missing.");
@@ -110,8 +107,8 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
     public String getPluginContextPath(HttpServletRequest request) {
         GroovyObject controller = getController(request);
-        if (controller != null) {
-            String path = pluginManager.getPluginPathForInstance(controller);
+        if (controller != null && getPluginManager() != null) {
+            String path = getPluginManager().getPluginPathForInstance(controller);
             return path == null ? "" : path;
         }
 
@@ -191,12 +188,12 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
 
     public String getTemplateUri(CharSequence templateName, ServletRequest request) {
         Assert.notNull(templateName, "Argument [template] cannot be null");
-        return groovyPagesUriService.getTemplateURI(getControllerName(request), templateName.toString());
+        return getGroovyPagesUriService().getTemplateURI(getControllerName(request), templateName.toString());
     }
 
     public String getViewUri(String viewName, HttpServletRequest request) {
         Assert.notNull(viewName, "Argument [view] cannot be null");
-        return groovyPagesUriService.getDeployedViewURI(getControllerName(request), viewName);
+        return getGroovyPagesUriService().getDeployedViewURI(getControllerName(request), viewName);
     }
 
     public String getControllerActionUri(ServletRequest request) {
@@ -209,16 +206,19 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public ResourceAwareTemplateEngine getPagesTemplateEngine() {
-        if (pagesTemplateEngine != null) {
-            return pagesTemplateEngine;
+        if (pagesTemplateEngine == null) {
+            pagesTemplateEngine = fetchBeanFromAppCtx(ResourceAwareTemplateEngine.BEAN_ID);
         }
-        if (LOG.isWarnEnabled()) {
+        if (pagesTemplateEngine == null && LOG.isWarnEnabled()) {
             LOG.warn("No bean named [" + ResourceAwareTemplateEngine.BEAN_ID + "] defined in Spring application context!");
         }
-        return null;
+        return pagesTemplateEngine;
     }
 
     public GrailsApplication getGrailsApplication() {
+        if(grailsApplication==null) {
+            grailsApplication = fetchBeanFromAppCtx(GrailsApplication.APPLICATION_ID);
+        }
         return grailsApplication;
     }
 
@@ -248,18 +248,27 @@ public class DefaultGrailsApplicationAttributes implements GrailsApplicationAttr
     }
 
     public String getNoSuffixViewURI(GroovyObject controller, String viewName) {
-        return groovyPagesUriService.getNoSuffixViewURI(controller, viewName);
+        return getGroovyPagesUriService().getNoSuffixViewURI(controller, viewName);
     }
 
     public String getTemplateURI(GroovyObject controller, String templateName) {
-        return groovyPagesUriService.getTemplateURI(controller, templateName);
+        return getGroovyPagesUriService().getTemplateURI(controller, templateName);
     }
 
     public GroovyPagesUriService getGroovyPagesUriService() {
+        if (groovyPagesUriService == null) {
+            groovyPagesUriService = fetchBeanFromAppCtx(GroovyPagesUriService.BEAN_ID);
+            if (groovyPagesUriService == null) {
+                groovyPagesUriService = new DefaultGroovyPagesUriService();
+            }
+        }
         return groovyPagesUriService;
     }
 
     public MessageSource getMessageSource() {
+        if(messageSource==null) {
+            messageSource = fetchBeanFromAppCtx("messageSource");
+        }
         return messageSource;
     }
 }
