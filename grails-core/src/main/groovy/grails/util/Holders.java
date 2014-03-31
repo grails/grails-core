@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.support.GrailsApplicationDiscoveryStrategy;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.Lifecycle;
 import org.springframework.util.Assert;
 
 /**
@@ -85,8 +86,11 @@ public class Holders {
     public static ApplicationContext getApplicationContext() {
         for(GrailsApplicationDiscoveryStrategy strategy : applicationDiscoveryStrategies) {
             ApplicationContext applicationContext = strategy.findApplicationContext();
-            if(applicationContext != null) {
-                return applicationContext;
+            if(applicationContext != null ) {
+                boolean running = ((Lifecycle) applicationContext).isRunning();
+                if(running) {
+                    return applicationContext;
+                }
             }
         }
         throw new IllegalStateException("Could not find ApplicationContext, configure Grails correctly first");
