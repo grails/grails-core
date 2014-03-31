@@ -20,6 +20,7 @@ import groovy.text.Template;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,6 +35,7 @@ import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.core.io.Resource;
 import org.springframework.scripting.ScriptSource;
 import org.springframework.util.Assert;
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 
 /**
@@ -80,7 +82,26 @@ public class GroovyPageView extends AbstractGrailsView {
         Assert.state(templateEngine != null, "No GroovyPagesTemplateEngine found in ApplicationContext!");
 
         exposeModelAsRequestAttributes(model, request);
-        renderWithTemplateEngine(templateEngine,model, response, request); // new ModelExposingHttpRequestWrapper(request, model)
+        
+        renderWithinGrailsWebRequest(model, request, response);
+    }
+
+    protected void renderWithinGrailsWebRequest(Map model, HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        try {
+            if(!(requestAttributes instanceof GrailsWebRequest)) {
+                RequestContextHolder.setRequestAttributes(createGrailsWebRequest(request, response, getServletContext()));
+            }
+            renderWithTemplateEngine(templateEngine, model, response, request);
+        } finally {
+            RequestContextHolder.setRequestAttributes(requestAttributes);
+        }
+    }
+
+    protected GrailsWebRequest createGrailsWebRequest(HttpServletRequest request, HttpServletResponse response,
+            ServletContext servletContext) {
+        return new GrailsWebRequest(request, response, servletContext);
     }
 
     /**

@@ -33,6 +33,8 @@ import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageScriptSource;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scripting.ScriptSource;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.View;
@@ -141,10 +143,13 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
     protected View createGrailsView(String viewName) throws Exception {
         // try GSP if res is null
 
+        GroovyObject controller = null;
+        
         GrailsWebRequest webRequest = WebUtils.retrieveGrailsWebRequest();
-
-        HttpServletRequest request = webRequest.getCurrentRequest();
-        GroovyObject controller = webRequest.getAttributes().getController(request);
+        if(webRequest != null) {
+            HttpServletRequest request = webRequest.getCurrentRequest();
+            controller = webRequest.getAttributes().getController(request);
+        }
 
         GroovyPageScriptSource scriptSource;
         if (controller == null) {
@@ -154,18 +159,18 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
             scriptSource = groovyPageLocator.findView(controller, viewName);
         }
         if (scriptSource != null) {
-            return createGroovyPageView(webRequest, scriptSource.getURI(), scriptSource);
+            return createGroovyPageView(scriptSource.getURI(), scriptSource);
         }
 
         return createFallbackView(viewName);
     }
 
-    private View createGroovyPageView(GrailsWebRequest webRequest, String gspView, ScriptSource scriptSource) {
+    private View createGroovyPageView(String gspView, ScriptSource scriptSource) {
         if (LOG.isDebugEnabled()) {
             LOG.debug("Resolved GSP view at URI [" + gspView + "]");
         }
         GroovyPageView gspSpringView = new GroovyPageView();
-        gspSpringView.setServletContext(webRequest.getServletContext());
+        gspSpringView.setServletContext(getServletContext());
         gspSpringView.setUrl(gspView);
         gspSpringView.setApplicationContext(getApplicationContext());
         gspSpringView.setTemplateEngine(templateEngine);
@@ -189,6 +194,8 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
         return view;
     }
 
+    @Autowired(required=true)
+    @Qualifier(GroovyPagesTemplateEngine.BEAN_ID)
     public void setTemplateEngine(GroovyPagesTemplateEngine templateEngine) {
         this.templateEngine = templateEngine;
     }

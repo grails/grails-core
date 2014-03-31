@@ -694,7 +694,11 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
      * request.
      */
     public static GrailsWebRequest retrieveGrailsWebRequest() {
-        return (GrailsWebRequest) RequestContextHolder.currentRequestAttributes();
+        RequestAttributes attributes = RequestContextHolder.currentRequestAttributes();
+        if(attributes instanceof GrailsWebRequest) {
+            return (GrailsWebRequest)attributes;
+        }
+        return null;
     }
 
     /**
