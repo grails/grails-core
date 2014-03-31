@@ -134,6 +134,8 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         }
         if(configClosure) {
             configClosure(grailsApplication.config)
+            // reset flatConfig
+            grailsApplication.configChanged() 
         }
     }
 

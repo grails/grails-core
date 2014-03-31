@@ -797,9 +797,11 @@ public class DefaultGrailsApplication extends GroovyObjectSupport implements Gra
         // not thread safe
         flatConfig = co.flatten(new LinkedHashMap());
         final ArtefactHandler[] handlers = getArtefactHandlers();
-        for (ArtefactHandler handler : handlers) {
-            if (handler instanceof GrailsConfigurationAware) {
-                ((GrailsConfigurationAware)handler).setConfiguration(co);
+        if(handlers != null) {
+            for (ArtefactHandler handler : handlers) {
+                if (handler instanceof GrailsConfigurationAware) {
+                    ((GrailsConfigurationAware)handler).setConfiguration(co);
+                }
             }
         }
     }
