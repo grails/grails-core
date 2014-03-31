@@ -274,17 +274,7 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
                     }
                     if (methodName == 'getLocales') {
                         def iterator = Locale.getAvailableLocales().iterator()
-                        return new Enumeration() {
-                            @Override
-                            boolean hasMoreElements() {
-                                iterator.hasNext()
-                            }
-
-                            @Override
-                            Object nextElement() {
-                                iterator.next()
-                            }
-                        }
+                        PageRenderRequestCreator.iteratorAsEnumeration(iterator)
                     }
 
                     if (methodName == 'getParameter') {
@@ -311,6 +301,20 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
                     return null
                 }
             })
+        }
+        
+        private static Enumeration iteratorAsEnumeration(Iterator iterator) {
+            new Enumeration() {
+                @Override
+                boolean hasMoreElements() {
+                    iterator.hasNext()
+                }
+
+                @Override
+                Object nextElement() {
+                    iterator.next()
+                }
+            }
         }
     }
 
