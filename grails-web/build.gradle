@@ -5,10 +5,6 @@ dependencies {
     compile project(":grails-web-mvc")
     compile project(":grails-web-sitemesh")
 
-
-    // TODO: remove this dependency - http://jira.grails.org/browse/GRAILS-11253
-    compile "junit:junit:${junitVersion}"
-
     // Required for AspectJ support
     runtime "org.springframework:spring-aspects:${springVersion}"
     runtime "org.aspectj:aspectjrt:$aspectjVersion",
