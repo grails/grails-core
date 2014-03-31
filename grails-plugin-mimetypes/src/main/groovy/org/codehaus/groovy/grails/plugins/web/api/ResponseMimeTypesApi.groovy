@@ -125,8 +125,8 @@ class ResponseMimeTypesApi {
             }
             if (formatOverride) {
                 def allMimes = getMimeTypes()
-                MimeType mime = allMimes.find { MimeType it -> it.extension == formatOverride }
-                result = mime ? mime : getMimeTypes()[0]
+                MimeType mime = allMimes?.find { MimeType it -> it.extension == formatOverride }
+                result = mime ? mime : allMimes?.find { it }
 
                 // Save the evaluated format as a request attribute.
                 // This is a blatant hack because we should to this
