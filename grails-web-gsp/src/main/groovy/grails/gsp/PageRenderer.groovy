@@ -25,7 +25,6 @@ import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-import org.apache.commons.collections.iterators.IteratorEnumeration
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.discovery.GrailsConventionGroovyPageLocator
@@ -274,7 +273,18 @@ class PageRenderer implements ApplicationContextAware, ServletContextAware {
                         return Locale.getDefault()
                     }
                     if (methodName == 'getLocales') {
-                        return new IteratorEnumeration(Locale.getAvailableLocales().iterator())
+                        def iterator = Locale.getAvailableLocales().iterator()
+                        return new Enumeration() {
+                            @Override
+                            boolean hasMoreElements() {
+                                iterator.hasNext()
+                            }
+
+                            @Override
+                            Object nextElement() {
+                                iterator.next()
+                            }
+                        }
                     }
 
                     if (methodName == 'getParameter') {
