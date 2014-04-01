@@ -203,6 +203,10 @@ subprojects { project ->
 
     test {
         excludes = ["**/*TestCase.class", "**/*\$*.class"]
+        if(System.getProperty("debug.tests")) {
+            jvmArgs '-Xmx2g', '-Xdebug', '-Xnoagent', '-Djava.compiler=NONE',
+                    '-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005'
+        }
     }
 
     if(!isTestSuite) {
