@@ -99,6 +99,7 @@ class GrailsApplicationTestPlugin implements TestPlugin {
 
     void initialState() {
         ExpandoMetaClass.enableGlobally()
+        Holders.clear()
         ClassPropertyFetcher.clearClassPropertyFetcherCache()
         CachedIntrospectionResults.clearClassLoader(this.getClass().classLoader)
         Promises.promiseFactory = new SynchronousPromiseFactory()
