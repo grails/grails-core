@@ -30,7 +30,7 @@ import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.grails.databinding.errors.BindingError
 import org.grails.databinding.events.DataBindingListenerAdapter
-import spock.lang.Ignore
+
 import spock.lang.Issue
 import spock.lang.Specification
 import spock.lang.Unroll
@@ -993,7 +993,6 @@ class GrailsWebDataBinderSpec extends Specification {
         pub.widgets[3] instanceof Widget
     }
 
-    @Ignore // TODO: Investigate this
     void 'Test @BindUsing on a List<Integer>'() {
         given:
         def widget = new Widget()
@@ -1326,7 +1325,7 @@ class Widget implements Comparable {
         }
         result
     })
-    List listOfIntegers = []
+    List<Integer> listOfIntegers = []
     TimeZone timeZone
 
     static constraints = {
