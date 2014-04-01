@@ -58,7 +58,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
 
     // no need for static cache since GrailsViewResolver is in app context
     private Map<String, CacheEntry<View>> VIEW_CACHE = new ConcurrentHashMap<String, CacheEntry<View>>();
-    private boolean developmentMode = GrailsUtil.isDevelopmentEnv();
+    private boolean allowGrailsViewCaching = !GrailsUtil.isDevelopmentEnv();
     private long cacheTimeout=-1;
 
     /**
@@ -84,7 +84,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
             viewName = viewName.substring(0, viewName.length() - GSP_SUFFIX.length());
         }
 
-        if (developmentMode) {
+        if (!allowGrailsViewCaching) {
             return createGrailsView(viewName);
         }
 
@@ -206,5 +206,13 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
 
     public void setCacheTimeout(long cacheTimeout) {
         this.cacheTimeout = cacheTimeout;
+    }
+
+    public boolean isAllowGrailsViewCaching() {
+        return allowGrailsViewCaching;
+    }
+
+    public void setAllowGrailsViewCaching(boolean allowGrailsViewCaching) {
+        this.allowGrailsViewCaching = allowGrailsViewCaching;
     }
 }

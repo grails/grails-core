@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.web.pages.GSPResponseWriter;
 import org.codehaus.groovy.grails.web.pages.GroovyPageTemplate;
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
+import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.sitemesh.GrailsLayoutDecoratorMapper;
 import org.springframework.core.io.Resource;
@@ -89,13 +90,20 @@ public class GroovyPageView extends AbstractGrailsView {
     protected void renderWithinGrailsWebRequest(Map model, HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
+        boolean attributesChanged = false;
         try {
             if(!(requestAttributes instanceof GrailsWebRequest)) {
-                RequestContextHolder.setRequestAttributes(createGrailsWebRequest(request, response, getServletContext()));
+                GrailsWebRequest webRequest = createGrailsWebRequest(request, response, getServletContext());
+                RequestContextHolder.setRequestAttributes(webRequest);
+                attributesChanged = true;
+                request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
             }
             renderWithTemplateEngine(templateEngine, model, response, request);
         } finally {
-            RequestContextHolder.setRequestAttributes(requestAttributes);
+            if(attributesChanged) {
+                request.removeAttribute(GrailsApplicationAttributes.WEB_REQUEST);
+                RequestContextHolder.setRequestAttributes(requestAttributes);
+            }
         }
     }
 
