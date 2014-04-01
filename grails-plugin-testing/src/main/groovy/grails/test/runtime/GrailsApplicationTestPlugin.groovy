@@ -72,7 +72,6 @@ class GrailsApplicationTestPlugin implements TestPlugin {
         if(!grailsApplication.metadata[Metadata.APPLICATION_NAME]) {
             grailsApplication.metadata[Metadata.APPLICATION_NAME] = "GrailsUnitTestMixin"
         }
-        grailsApplication.applicationContext = applicationContext
         runtime.putValue("grailsApplication", grailsApplication)
         registerBeans(runtime, grailsApplication)
         executeDoWithSpringCallback(runtime, grailsApplication, callerInfo)
