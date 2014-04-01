@@ -37,7 +37,7 @@ import org.codehaus.groovy.grails.support.encoding.DefaultEncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistry;
 import org.codehaus.groovy.grails.support.encoding.EncodingStateRegistryLookup;
-import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
+import org.codehaus.groovy.grails.web.beans.PropertyEditorRegistryUtils;
 import org.codehaus.groovy.grails.web.pages.FilteringCodecsByContentTypeSettings;
 import org.codehaus.groovy.grails.web.servlet.FlashScope;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
@@ -371,7 +371,7 @@ public class GrailsWebRequest extends DispatcherServletWebRequest implements Par
         PropertyEditorRegistry registry = (PropertyEditorRegistry) servletRequest.getAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY);
         if (registry == null) {
             registry = new PropertyEditorRegistrySupport();
-            GrailsDataBinder.registerCustomEditors(this, registry, RequestContextUtils.getLocale(servletRequest));
+            PropertyEditorRegistryUtils.registerCustomEditors(this, registry, RequestContextUtils.getLocale(servletRequest));
             servletRequest.setAttribute(GrailsApplicationAttributes.PROPERTY_REGISTRY, registry);
         }
         return registry;

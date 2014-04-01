@@ -1,6 +1,7 @@
 dependencies {
     compile project(":grails-web-common")
     compile project(":grails-web-gsp")
+    compile project(":grails-web-databinding")
     compile project(":grails-web-jsp")
     compile project(":grails-web-mvc")
     compile project(":grails-web-sitemesh")

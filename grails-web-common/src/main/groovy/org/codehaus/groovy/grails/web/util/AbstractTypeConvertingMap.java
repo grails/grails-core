@@ -31,9 +31,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
-import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.util.HashCodeHelper;
+import org.grails.databinding.DataBinder;
 
 /**
  * An category for use with maps that want type conversion capabilities
@@ -357,10 +357,10 @@ public abstract class AbstractTypeConvertingMap extends GroovyObjectSupport impl
     /**
      * Obtains a date for the parameter name using the default format
      * @param name
-     * @return The date (in the {@link GrailsDataBinder#DEFAULT_DATE_FORMAT}) or null
+     * @return The date (in the {@link org.grails.databinding.DataBinder#DEFAULT_DATE_FORMAT}) or null
      */
     public Date getDate(String name) {
-        return getDate(name, GrailsDataBinder.DEFAULT_DATE_FORMAT);
+        return getDate(name, DataBinder.DEFAULT_DATE_FORMAT);
     }
 
     /**

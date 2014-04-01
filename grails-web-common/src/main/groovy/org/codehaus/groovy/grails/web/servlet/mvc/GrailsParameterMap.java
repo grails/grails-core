@@ -30,15 +30,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
 import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
-import org.codehaus.groovy.grails.web.binding.DataBindingUtils;
-import org.codehaus.groovy.grails.web.binding.GrailsDataBinder;
 import org.codehaus.groovy.grails.web.binding.StructuredDateEditor;
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
+import org.codehaus.groovy.grails.web.mime.MimeTypeUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap;
 import org.codehaus.groovy.grails.web.util.WebUtils;
+import org.grails.databinding.DataBinder;
 import org.grails.databinding.DataBindingSource;
 import org.grails.databinding.SimpleMapDataBindingSource;
 import org.springframework.context.ApplicationContext;
@@ -125,7 +125,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
         if(context.containsBean(MimeTypeResolver.BEAN_NAME))
             mimeTypeResolver = context.getBean(MimeTypeResolver.BEAN_NAME, MimeTypeResolver.class);
 
-        MimeType mimeType = DataBindingUtils.resolveMimeType(this, mimeTypeResolver);
+        MimeType mimeType = MimeTypeUtils.resolveMimeType(this, mimeTypeResolver);
         return dataBindingSourceRegistry != null ? dataBindingSourceRegistry.createDataBindingSource(mimeType, targetType, this) : new SimpleMapDataBindingSource(this);
     }
 
@@ -270,7 +270,7 @@ public class GrailsParameterMap extends TypeConvertingMap implements Cloneable {
             }
         }
 
-        DateFormat dateFormat = new SimpleDateFormat(GrailsDataBinder.DEFAULT_DATE_FORMAT,
+        DateFormat dateFormat = new SimpleDateFormat(DataBinder.DEFAULT_DATE_FORMAT,
                 LocaleContextHolder.getLocale());
         StructuredDateEditor editor = new StructuredDateEditor(dateFormat, true);
         try {

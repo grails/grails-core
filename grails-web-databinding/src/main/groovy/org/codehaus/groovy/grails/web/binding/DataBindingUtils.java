@@ -32,10 +32,14 @@ import org.codehaus.groovy.grails.commons.DomainClassArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.commons.GrailsDomainClass;
 import org.codehaus.groovy.grails.commons.GrailsDomainClassProperty;
+import org.codehaus.groovy.grails.core.io.support.GrailsFactoriesLoader;
 import org.codehaus.groovy.grails.web.binding.bindingsource.DataBindingSourceRegistry;
 import org.codehaus.groovy.grails.web.binding.bindingsource.DefaultDataBindingSourceRegistry;
+import org.codehaus.groovy.grails.web.binding.spring.SpringWebDataBinder;
+import org.codehaus.groovy.grails.web.binding.spring.SpringWebDataBinderCreator;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
+import org.codehaus.groovy.grails.web.mime.MimeTypeUtils;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.grails.databinding.CollectionDataBindingSource;
@@ -62,6 +66,8 @@ public class DataBindingUtils {
     public static final String DATA_BINDER_BEAN_NAME = "grailsWebDataBinder";
     private static final String BLANK = "";
     private static final Map<Class, List> CLASS_TO_BINDING_INCLUDE_LIST = new ConcurrentHashMap<Class, List>();
+
+    private static final SpringWebDataBinderCreator springBinderCreator = GrailsFactoriesLoader.loadFactory(SpringWebDataBinderCreator.class);
 
     /**
      * Associations both sides of any bidirectional relationships found in the object and source map to bind
@@ -254,17 +260,17 @@ public class DataBindingUtils {
             if (source instanceof GrailsParameterMap) {
                 GrailsParameterMap parameterMap = (GrailsParameterMap) source;
                 HttpServletRequest request = parameterMap.getRequest();
-                GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
+                SpringWebDataBinder dataBinder = createDataBinder(object, include, exclude, request);
                 dataBinder.bind(parameterMap, filter);
                 bindingResult = dataBinder.getBindingResult();
             } else if (source instanceof HttpServletRequest) {
                 HttpServletRequest request = (HttpServletRequest) source;
-                GrailsDataBinder dataBinder = createDataBinder(object, include, exclude, request);
+                SpringWebDataBinder dataBinder = createDataBinder(object, include, exclude, request);
                 performBindFromRequest(dataBinder, request, filter);
                 bindingResult = dataBinder.getBindingResult();
             } else if (source instanceof Map) {
                 Map propertyMap = convertPotentialGStrings((Map) source);
-                GrailsDataBinder binder = createDataBinder(object, include, exclude, null);
+                SpringWebDataBinder binder = createDataBinder(object, include, exclude, null);
                 performBindFromPropertyValues(binder, new MutablePropertyValues(propertyMap), filter);
                 bindingResult = binder.getBindingResult();
             }
@@ -272,7 +278,7 @@ public class DataBindingUtils {
             else {
                 GrailsWebRequest webRequest = (GrailsWebRequest) RequestContextHolder.getRequestAttributes();
                 if (webRequest != null) {
-                    GrailsDataBinder binder = createDataBinder(object, include, exclude, webRequest.getCurrentRequest());
+                    SpringWebDataBinder binder = createDataBinder(object, include, exclude, webRequest.getCurrentRequest());
                     HttpServletRequest request = webRequest.getCurrentRequest();
                     performBindFromRequest(binder, request, filter);
                     bindingResult = binder.getBindingResult();
@@ -370,24 +376,7 @@ public class DataBindingUtils {
     }
 
     public static MimeType resolveMimeType(Object bindingSource, MimeTypeResolver mimeTypeResolver) {
-        final MimeType mimeType;
-        if(mimeTypeResolver != null) {
-            MimeType resolvedMimeType = mimeTypeResolver.resolveRequestMimeType();
-            mimeType = resolvedMimeType != null ? resolvedMimeType : MimeType.ALL;
-        }
-        else if(bindingSource instanceof HttpServletRequest) {
-            HttpServletRequest req = (HttpServletRequest) bindingSource;
-            String contentType = req.getContentType();
-            if(contentType != null) {
-                mimeType = new MimeType(contentType);
-            }
-            else {
-                mimeType = MimeType.ALL;
-            }
-        } else {
-            mimeType = MimeType.ALL;
-        }
-        return mimeType;
+        return MimeTypeUtils.resolveMimeType(bindingSource, mimeTypeResolver);
     }
 
     private static DataBinder getGrailsWebDataBinder(final GrailsApplication grailsApplication) {
@@ -406,7 +395,7 @@ public class DataBindingUtils {
         return dataBinder;
     }
 
-    private static void performBindFromPropertyValues(GrailsDataBinder binder, MutablePropertyValues mutablePropertyValues, String filter) {
+    private static void performBindFromPropertyValues(SpringWebDataBinder binder, MutablePropertyValues mutablePropertyValues, String filter) {
         if (filter != null) {
             binder.bind(mutablePropertyValues,filter);
         }
@@ -415,7 +404,7 @@ public class DataBindingUtils {
         }
     }
 
-    private static void performBindFromRequest(GrailsDataBinder binder, HttpServletRequest request,String filter) {
+    private static void performBindFromRequest(SpringWebDataBinder binder, HttpServletRequest request,String filter) {
         if (filter != null) {
             binder.bind(request,filter);
         }
@@ -424,16 +413,22 @@ public class DataBindingUtils {
         }
     }
 
-    private static GrailsDataBinder createDataBinder(Object object, List include, List exclude, HttpServletRequest request) {
-        GrailsDataBinder binder;
-        if (request == null) {
-            binder = GrailsDataBinder.createBinder(object, object.getClass().getName());
+    private static SpringWebDataBinder createDataBinder(Object object, List include, List exclude, HttpServletRequest request) {
+
+        SpringWebDataBinder binder;
+        if(springBinderCreator != null) {
+            if (request == null) {
+                binder = springBinderCreator.createBinder(object, object.getClass().getName());
+            }
+            else {
+                binder = springBinderCreator.createBinder(object, object.getClass().getName(), request);
+            }
+            includeExcludeFields(binder, include, exclude);
+            return binder;
         }
         else {
-            binder = GrailsDataBinder.createBinder(object, object.getClass().getName(), request);
+            throw new IllegalStateException("Cannot use Spring data binder. 'grails-web-databinding-spring' missing from classpath." );
         }
-        includeExcludeFields(binder, include, exclude);
-        return binder;
     }
 
     @SuppressWarnings("unchecked")
@@ -452,13 +447,13 @@ public class DataBindingUtils {
         return value;
     }
 
-    private static void includeExcludeFields(GrailsDataBinder dataBinder, List allowed, List disallowed) {
+    private static void includeExcludeFields(SpringWebDataBinder dataBinder, List allowed, List disallowed) {
         updateAllowed(dataBinder, allowed);
         updateDisallowed(dataBinder, allowed, disallowed);
     }
 
     @SuppressWarnings("unchecked")
-    private static void updateAllowed(GrailsDataBinder binder, List allowed) {
+    private static void updateAllowed(SpringWebDataBinder binder, List allowed) {
         if (allowed == null) {
             return;
         }
@@ -472,7 +467,7 @@ public class DataBindingUtils {
     }
 
     @SuppressWarnings("unchecked")
-    private static void updateDisallowed(GrailsDataBinder binder, List allowed, List disallowed) {
+    private static void updateDisallowed(SpringWebDataBinder binder, List allowed, List disallowed) {
         if (disallowed == null) {
             return;
         }

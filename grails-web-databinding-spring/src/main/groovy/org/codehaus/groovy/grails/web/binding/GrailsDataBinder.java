@@ -29,18 +29,11 @@ import groovy.lang.MissingPropertyException;
 
 import java.beans.PropertyDescriptor;
 import java.beans.PropertyEditor;
-import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.net.URI;
-import java.text.DateFormat;
-import java.text.NumberFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Currency;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -58,6 +51,8 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.*;
 import org.codehaus.groovy.grails.commons.metaclass.CreateDynamicMethod;
 import grails.validation.Constrained;
+import org.codehaus.groovy.grails.web.beans.PropertyEditorRegistryUtils;
+import org.codehaus.groovy.grails.web.binding.spring.SpringWebDataBinder;
 import org.codehaus.groovy.grails.web.json.JSONObject;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
@@ -65,6 +60,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.MetaClassHelper;
 import org.codehaus.groovy.runtime.metaclass.ThreadManagedMetaBeanProperty;
+import org.grails.databinding.DataBinder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -73,21 +69,16 @@ import org.springframework.beans.InvalidPropertyException;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.PropertyAccessor;
 import org.springframework.beans.PropertyAccessorUtils;
-import org.springframework.beans.PropertyEditorRegistrar;
 import org.springframework.beans.PropertyEditorRegistry;
 import org.springframework.beans.PropertyValue;
 import org.springframework.beans.PropertyValues;
 import org.springframework.beans.TypeMismatchException;
-import org.springframework.beans.propertyeditors.CustomDateEditor;
-import org.springframework.beans.propertyeditors.CustomNumberEditor;
 import org.springframework.beans.propertyeditors.LocaleEditor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Validator;
 import org.springframework.web.bind.ServletRequestDataBinder;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
-import org.springframework.web.context.WebApplicationContext;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.support.ByteArrayMultipartFileEditor;
 import org.springframework.web.multipart.support.StringMultipartFileEditor;
@@ -110,12 +101,12 @@ import org.springframework.web.servlet.support.RequestContextUtils;
  * @author Graeme Rocher
  */
 @SuppressWarnings("rawtypes")
-public class GrailsDataBinder extends ServletRequestDataBinder {
+public class GrailsDataBinder extends ServletRequestDataBinder implements SpringWebDataBinder {
 
     private static final String BIND_EVENT_LISTENERS = "org.codehaus.groovy.grails.BIND_EVENT_LISTENERS";
-    private static final String PROPERTY_EDITOR_REGISTRARS = "org.codehaus.groovy.grails.PROPERTY_EDITOR_REGISTRARS";
+
     private static final Log LOG = LogFactory.getLog(GrailsDataBinder.class);
-    private static final String JSON_DATE_FORMAT = "yyyy-MM-dd'T'hh:mm:ss'Z'";
+
 
     protected BeanWrapper bean;
 
@@ -131,7 +122,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
     private static final char PATH_SEPARATOR = '.';
     private static final String IDENTIFIER_SUFFIX = ".id";
     private List<String> transients = Collections.emptyList();
-    public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
+    public static final String DEFAULT_DATE_FORMAT = DataBinder.DEFAULT_DATE_FORMAT;
     private static final Object[] NO_HINTS = {};
 
     private GrailsDomainClass domainClass;
@@ -160,35 +151,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
         setIgnoreInvalidFields(true);
     }
 
-    /**
-     * Collects all PropertyEditorRegistrars in the application context and
-     * calls them to register their custom editors
-     *
-     * @param servletContext
-     * @param registry The PropertyEditorRegistry instance
-     */
-    private static void registerCustomEditors(ServletContext servletContext, PropertyEditorRegistry registry) {
-        if (servletContext == null) {
-            return;
-        }
 
-        WebApplicationContext context = WebApplicationContextUtils.getWebApplicationContext(servletContext);
-        if (context == null) {
-            return;
-        }
-
-        @SuppressWarnings("unchecked")
-        Map<String, PropertyEditorRegistrar> editors = (Map<String, PropertyEditorRegistrar>)servletContext.getAttribute(PROPERTY_EDITOR_REGISTRARS);
-        if (editors == null) {
-            editors = context.getBeansOfType(PropertyEditorRegistrar.class);
-            if (!Environment.isDevelopmentMode()) {
-                servletContext.setAttribute(PROPERTY_EDITOR_REGISTRARS, editors);
-            }
-        }
-        for (PropertyEditorRegistrar editorRegistrar : editors.values()) {
-            editorRegistrar.registerCustomEditors(registry);
-        }
-    }
 
     /**
      * Utility method for creating a GrailsDataBinder instance
@@ -251,30 +214,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
      * @param locale
      */
     public static void registerCustomEditors(GrailsWebRequest grailsWebRequest, PropertyEditorRegistry registry, Locale locale) {
-        // Formatters for the different number types.
-        NumberFormat floatFormat = NumberFormat.getInstance(locale);
-        NumberFormat integerFormat = NumberFormat.getIntegerInstance(locale);
-
-        DateFormat dateFormat = new SimpleDateFormat(DEFAULT_DATE_FORMAT, locale);
-
-        registry.registerCustomEditor(Date.class, new CustomDateEditor(dateFormat,true));
-        registry.registerCustomEditor(BigDecimal.class, new CustomNumberEditor(BigDecimal.class, floatFormat, true));
-        registry.registerCustomEditor(BigInteger.class, new CustomNumberEditor(BigInteger.class, floatFormat, true));
-        registry.registerCustomEditor(Double.class, new CustomNumberEditor(Double.class, floatFormat, true));
-        registry.registerCustomEditor(double.class, new CustomNumberEditor(Double.class, floatFormat, true));
-        registry.registerCustomEditor(Float.class, new CustomNumberEditor(Float.class, floatFormat, true));
-        registry.registerCustomEditor(float.class, new CustomNumberEditor(Float.class, floatFormat, true));
-        registry.registerCustomEditor(Long.class, new CustomNumberEditor(Long.class, integerFormat, true));
-        registry.registerCustomEditor(long.class, new CustomNumberEditor(Long.class, integerFormat, true));
-        registry.registerCustomEditor(Integer.class, new CustomNumberEditor(Integer.class, integerFormat, true));
-        registry.registerCustomEditor(int.class, new CustomNumberEditor(Integer.class, integerFormat, true));
-        registry.registerCustomEditor(Short.class, new CustomNumberEditor(Short.class, integerFormat, true));
-        registry.registerCustomEditor(short.class, new CustomNumberEditor(Short.class, integerFormat, true));
-        registry.registerCustomEditor(Date.class, new CompositeEditor(new StructuredDateEditor(dateFormat,true), new CustomDateEditor(new SimpleDateFormat(JSON_DATE_FORMAT), true)));
-        registry.registerCustomEditor(Calendar.class, new StructuredDateEditor(dateFormat,true));
-
-        ServletContext servletContext = grailsWebRequest != null ? grailsWebRequest.getServletContext() : null;
-        registerCustomEditors(servletContext, registry);
+        PropertyEditorRegistryUtils.registerCustomEditors(grailsWebRequest, registry, locale);
     }
 
     /**
@@ -310,10 +250,7 @@ public class GrailsDataBinder extends ServletRequestDataBinder {
 //        binder.setConversionService(conversionService);
 
         final GrailsWebRequest webRequest = GrailsWebRequest.lookup();
-        if (webRequest == null) {
-            registerCustomEditors(null, binder);
-        }
-        else {
+        if (webRequest != null) {
             initializeFromWebRequest(binder, webRequest);
             Locale locale = RequestContextUtils.getLocale(webRequest.getCurrentRequest());
             registerCustomEditors(webRequest, binder, locale);
