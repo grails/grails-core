@@ -35,6 +35,7 @@ import org.codehaus.groovy.grails.web.util.CacheEntry;
 import org.codehaus.groovy.grails.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.Ordered;
 import org.springframework.scripting.ScriptSource;
 import org.springframework.util.Assert;
 import org.springframework.web.servlet.View;
@@ -66,6 +67,7 @@ public class GrailsViewResolver extends InternalResourceViewResolver {
      */
     public GrailsViewResolver() {
         setCache(false);
+        setOrder(Ordered.LOWEST_PRECEDENCE - 20);
     }
 
     public void setGroovyPageLocator(GrailsConventionGroovyPageLocator groovyPageLocator) {
