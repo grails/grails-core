@@ -9,6 +9,7 @@ class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
     GrailsDomainClassProperty prop1Parent
     GrailsDomainClassProperty prop1Child
     GrailsDomainClassProperty prop2Child
+    GrailsDomainClassProperty untypedList
 
     void setUp() {
         GroovySystem.metaClassRegistry.metaClassCreationHandle = new ExpandoMetaClassCreationHandle()
@@ -18,6 +19,7 @@ class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
         prop1Parent = parentClass.getPropertyByName("prop1")
         prop1Child = childClass.getPropertyByName("prop1")
         prop2Child = childClass.getPropertyByName("prop2")
+        untypedList = childClass.getPropertyByName("untypedList")
     }
 
     void testSamePropEquals() {
@@ -43,6 +45,10 @@ class DefaultGrailsDomainClassPropertyTests extends GroovyTestCase {
         assertFalse(prop1Child.equals(null))
         assertFalse(prop1Child.equals("Not a property"))
     }
+    
+    void testReferencedTypeOfUntypedCollection() {
+        assertEquals Object, untypedList.referencedPropertyType
+    }
 }
 
 class ParentClass {
@@ -51,6 +57,7 @@ class ParentClass {
     Integer prop2
     Integer version
     ChildClass prop3
+    List untypedList
 
     ParentClass() {}
 
