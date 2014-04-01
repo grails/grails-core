@@ -71,7 +71,9 @@ test {
                 "**/BindingExcludeTests.class",
                 "**/NestedXmlBindingTests.class",
 		"**/GSPResponseWriterSpec.class",
-		"**/RespondMethodSpec.class"]
+		"**/RespondMethodSpec.class",
+        "**/ContentNegotiationSpec.class",
+        "**/pages/ext/jsp/*.class"]
 }
 
 task isolatedTestsOne(type:Test) {
@@ -79,7 +81,9 @@ task isolatedTestsOne(type:Test) {
 }
 task isolatedTestsTwo(type:Test) {
     includes = ["**/JSONBindingTests.class",
-                "**/AutoParams*MarshallingTests.class"]
+                "**/AutoParams*MarshallingTests.class",
+                "**/ContentNegotiationSpec.class",
+                "**/pages/ext/jsp/*.class"]
 }
 task isolatedTestsThree(type:Test) {
     includes = ["**/JSONBindingToNullTests.class",
@@ -103,7 +107,6 @@ task isolatedRespondMethodTests(type:Test) {
     includes = ["**/RespondMethodSpec.class"]
 }
 test.dependsOn isolatedTestsOne, isolatedTestsTwo, isolatedTestsThree, isolatedTestsFour, isolatedTestsFive, isolatedTestsSix, isolatedTestsSeven, isolatedRespondMethodTests
-
 
 /*
 test {
