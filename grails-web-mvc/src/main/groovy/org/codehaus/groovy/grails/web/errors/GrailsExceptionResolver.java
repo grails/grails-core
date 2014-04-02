@@ -96,6 +96,43 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         return mv;
     }
 
+    public String getRequestLogMessage(Throwable e, HttpServletRequest request) {
+        Throwable cause = getRootCause(e);
+        String exceptionName = cause.getClass().getSimpleName();
+        return getRequestLogMessage(exceptionName, request, cause.getMessage());
+    }
+
+    public String getRequestLogMessage(HttpServletRequest request) {
+        return getRequestLogMessage("Exception", request, null);
+    }
+
+    public void setServletContext(ServletContext servletContext) {
+
+
+        this.servletContext = servletContext;
+    }
+
+    public void setGrailsApplication(GrailsApplication grailsApplication) {
+        this.grailsApplication = grailsApplication;
+        createStackFilterer();
+    }
+    /**
+     * Obtains the root cause of the given exception
+     * @param ex The exception
+     * @return The root cause
+     */
+    public static Throwable getRootCause(Throwable ex) {
+        return ExceptionUtils.getRootCause(ex);
+    }
+
+    public static int extractLineNumber(CompilationFailedException e) {
+        return ExceptionUtils.extractLineNumber(e);
+    }
+
+    public static RuntimeException getFirstRuntimeException(Throwable e) {
+        return ExceptionUtils.getFirstRuntimeException(e);
+    }
+
     protected void filterStackTrace(Exception e) {
         stackFilterer.filter(e, true);
     }
@@ -199,41 +236,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         return e;
     }
 
-    /**
-     * Obtains the root cause of the given exception
-     * @param ex The exception
-     * @return The root cause
-     */
-    public static Throwable getRootCause(Throwable ex) {
-        while (ex.getCause() != null && !ex.equals(ex.getCause())) {
-            ex = ex.getCause();
-        }
-        return ex;
-    }
 
-    public static int extractLineNumber(CompilationFailedException e) {
-        int lineNumber = -1;
-        if (e instanceof MultipleCompilationErrorsException) {
-            MultipleCompilationErrorsException mcee = (MultipleCompilationErrorsException)e;
-            Object message = mcee.getErrorCollector().getErrors().iterator().next();
-            if (message instanceof SyntaxErrorMessage) {
-                SyntaxErrorMessage sem = (SyntaxErrorMessage)message;
-                lineNumber = sem.getCause().getLine();
-            }
-        }
-        return lineNumber;
-    }
-
-    public static RuntimeException getFirstRuntimeException(Throwable e) {
-        if (e instanceof RuntimeException) return (RuntimeException) e;
-
-        Throwable ex = e;
-        while (ex.getCause() != null && !ex.equals(ex.getCause())) {
-            ex = ex.getCause();
-            if (ex instanceof RuntimeException) return (RuntimeException) ex;
-        }
-        return null;
-    }
 
     protected String getRequestLogMessage(String exceptionName, HttpServletRequest request, String message) {
         StringBuilder sb = new StringBuilder();
@@ -298,25 +301,6 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         sb.append("Stacktrace follows:");
 
         return sb.toString();
-    }
-
-    public String getRequestLogMessage(Throwable e, HttpServletRequest request) {
-        Throwable cause = getRootCause(e);
-        String exceptionName = cause.getClass().getSimpleName();
-        return getRequestLogMessage(exceptionName, request, cause.getMessage());
-    }
-
-    public String getRequestLogMessage(HttpServletRequest request) {
-        return getRequestLogMessage("Exception", request, null);
-    }
-
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
-    }
-
-    public void setGrailsApplication(GrailsApplication grailsApplication) {
-        this.grailsApplication = grailsApplication;
-        createStackFilterer();
     }
 
     protected void createStackFilterer() {

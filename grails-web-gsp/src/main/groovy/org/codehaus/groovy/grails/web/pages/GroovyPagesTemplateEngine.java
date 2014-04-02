@@ -42,7 +42,7 @@ import org.codehaus.groovy.grails.commons.GrailsClass;
 import org.codehaus.groovy.grails.compiler.web.pages.GroovyPageClassLoader;
 import org.codehaus.groovy.grails.exceptions.DefaultErrorsPrinter;
 import org.codehaus.groovy.grails.support.ResourceAwareTemplateEngine;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
+import org.codehaus.groovy.grails.web.errors.ExceptionUtils;
 import org.codehaus.groovy.grails.web.pages.discovery.DefaultGroovyPageLocator;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageCompiledScriptSource;
 import org.codehaus.groovy.grails.web.pages.discovery.GroovyPageLocator;
@@ -632,7 +632,7 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
         catch (CompilationFailedException e) {
             LOG.error("Compilation error compiling GSP ["+name+"]:" + e.getMessage(), e);
 
-            int lineNumber = GrailsExceptionResolver.extractLineNumber(e);
+            int lineNumber = ExceptionUtils.extractLineNumber(e);
 
             final int[] lineMappings = metaInfo.getLineNumbers();
             if (lineNumber>0 && lineNumber < lineMappings.length) {

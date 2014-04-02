@@ -24,7 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
 import org.codehaus.groovy.grails.support.encoding.Encoder;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
+import org.codehaus.groovy.grails.web.errors.ExceptionUtils;
 import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTag;
 import org.codehaus.groovy.grails.web.pages.ext.jsp.JspTagLib;
@@ -452,7 +452,7 @@ public abstract class GroovyPage extends Script {
             // The capture* tags are internal tags and not to be displayed to the user
             // hence we don't wrap the exception and simple rethrow it
             if (tagName.matches("capture(Body|Head|Meta|Title|Component)")) {
-                RuntimeException rte = GrailsExceptionResolver.getFirstRuntimeException(e);
+                RuntimeException rte = ExceptionUtils.getFirstRuntimeException(e);
                 if (rte == null) {
                     throwRootCause(tagName, tagNamespace, lineNumber, e);
                 } else {
@@ -510,7 +510,7 @@ public abstract class GroovyPage extends Script {
     }
 
     private void throwRootCause(String tagName, String tagNamespace, int lineNumber, Throwable e) {
-        Throwable cause = GrailsExceptionResolver.getRootCause(e);
+        Throwable cause = ExceptionUtils.getRootCause(e);
         if (cause instanceof GrailsTagException) {
             // catch and rethrow with context
             throw new GrailsTagException(cause.getMessage(), getGroovyPageFileName(), lineNumber);

@@ -21,7 +21,7 @@ import groovy.transform.CompileStatic
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
+import org.codehaus.groovy.grails.web.errors.ExceptionUtils
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.mapping.UrlMapping
 import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils
@@ -654,7 +654,7 @@ class RenderTagLib implements RequestConstants {
 <dt>URI</dt><dd>${htmlEncoder.encode(WebUtils.getForwardURI(request) ?: request.getAttribute('javax.servlet.error.request_uri'))}</dd>
 """
 
-        def root = GrailsExceptionResolver.getRootCause(exception)
+        def root = ExceptionUtils.getRootCause(exception)
         currentOut << "<dt>Class</dt><dd>${root?.getClass()?.name ?: exception.getClass().name}</dd>"
         currentOut << "<dt>Message</dt><dd>${htmlEncoder.encode(exception.message)}</dd>"
         if (root != null && root != exception && root.message != exception.message) {
