@@ -16,17 +16,13 @@
 package org.codehaus.groovy.grails.web.util;
 
 import grails.util.GrailsWebUtil;
-import grails.web.CamelCaseUrlConverter;
 import grails.web.UrlConverter;
-import groovy.lang.Binding;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -34,37 +30,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.commons.GrailsClass;
-import org.codehaus.groovy.grails.commons.GrailsControllerClass;
 import org.codehaus.groovy.grails.commons.GrailsStringUtils;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsParameterMap;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
-import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.ControllerExecutionException;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.WebRequestInterceptor;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
 import org.springframework.web.servlet.handler.WebRequestHandlerInterceptorAdapter;
@@ -83,11 +66,12 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     public static final String ENABLE_FILE_EXTENSIONS = "grails.mime.file.extensions";
     public static final String DISPATCH_ACTION_PARAMETER = "_action_";
     public static final String SEND_ALLOW_HEADER_FOR_INVALID_HTTP_METHOD = "grails.http.invalid.method.allow.header";
-    static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
-    static final String RENDERING_VIEW = "org.grails.rendering.view";
-    static final String GRAILS_DISPATCH_EXTENSION = ".dispatch";
-    static final String GRAILS_SERVLET_PATH = "/grails";
-    
+    public static final String LAYOUT_ATTRIBUTE = "org.grails.layout.name";
+    public static final String RENDERING_VIEW = "org.grails.rendering.view";
+    public static final String GRAILS_DISPATCH_EXTENSION = ".dispatch";
+    public static final String GRAILS_SERVLET_PATH = "/grails";
+    public static final String EXCEPTION_ATTRIBUTE = "exception";
+
     public static ViewResolver lookupViewResolver(ServletContext servletContext) {
         WebApplicationContext wac = WebApplicationContextUtils
                 .getRequiredWebApplicationContext(servletContext);
@@ -141,17 +125,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     /**
-     * Looks up the UrlMappingsHolder instance
-     *
-     * @return The UrlMappingsHolder
-     * @param servletContext The ServletContext object
-     */
-    public static UrlMappingsHolder lookupUrlMappings(ServletContext servletContext) {
-        WebApplicationContext wac = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        return (UrlMappingsHolder)wac.getBean(UrlMappingsHolder.BEAN_ID);
-    }
-
-    /**
      * The Grails dispatch servlet maps URIs like /app/grails/example/index.dispatch. This method infers the
      * controller URI for the dispatch URI so that /app/grails/example/index.dispatch becomes /app/example/index
      *
@@ -189,21 +162,6 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
     }
 
     /**
-     * Resolves a view for the given view and UrlMappingInfo instance
-     *
-     * @param request The request
-     * @param info The info
-     * @param viewName The view name
-     * @param viewResolver The view resolver
-     * @return The view or null
-     * @throws Exception
-     */
-    public static View resolveView(HttpServletRequest request, UrlMappingInfo info, String viewName, ViewResolver viewResolver) throws Exception {
-        String controllerName = info.getControllerName();
-        return resolveView(request, viewName, controllerName, viewResolver);
-    }
-
-    /**
      * Resolves a view for the given view name and controller name
      * @param request The request
      * @param viewName The view name
@@ -234,245 +192,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return viewName;
     }
 
-    /**
-     * Constructs the URI to forward to using the given request and UrlMappingInfo instance
-     *
-     * @param info The UrlMappingInfo
-     * @return The URI to forward to
-     */
-    public static String buildDispatchUrlForMapping(UrlMappingInfo info) {
-        return buildDispatchUrlForMapping(info, false);
-    }
-
-    @SuppressWarnings("rawtypes")
-    private static String buildDispatchUrlForMapping(UrlMappingInfo info, boolean includeParams) {
-        if (info.getURI() != null) {
-            return info.getURI();
-        }
-
-        final StringBuilder forwardUrl = new StringBuilder();
-
-        if (info.getViewName() != null) {
-            String viewName = info.getViewName();
-            if (viewName.startsWith("/")) {
-                forwardUrl.append(viewName);
-            }
-            else {
-                forwardUrl.append(SLASH).append(viewName);
-            }
-        }
-        else {
-            forwardUrl.append(GRAILS_SERVLET_PATH);
-            forwardUrl.append(SLASH).append(info.getControllerName());
-
-            if (!GrailsStringUtils.isBlank(info.getActionName())) {
-                forwardUrl.append(SLASH).append(info.getActionName());
-            }
-            forwardUrl.append(GRAILS_DISPATCH_EXTENSION);
-        }
-
-        final Map parameters = info.getParameters();
-        if (parameters != null && !parameters.isEmpty() && includeParams) {
-            try {
-                forwardUrl.append(toQueryString(parameters));
-            }
-            catch (UnsupportedEncodingException e) {
-                throw new ControllerExecutionException("Unable to include ");
-            }
-        }
-        return forwardUrl.toString();
-    }
-
-    /**
-     * @see org.codehaus.groovy.grails.web.util.WebUtils#forwardRequestForUrlMappingInfo(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.codehaus.groovy.grails.web.mapping.UrlMappingInfo, java.util.Map)
-     */
-    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
-            HttpServletResponse response, UrlMappingInfo info) throws ServletException, IOException {
-        return forwardRequestForUrlMappingInfo(request, response, info, Collections.EMPTY_MAP);
-    }
-
-    /**
-     * @see #forwardRequestForUrlMappingInfo(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse, org.codehaus.groovy.grails.web.mapping.UrlMappingInfo, java.util.Map, boolean)
-     */
-    @SuppressWarnings("rawtypes")
-    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
-            HttpServletResponse response, UrlMappingInfo info, Map model) throws ServletException, IOException {
-        return forwardRequestForUrlMappingInfo(request, response, info, model, false);
-    }
-
-    /**
-     * Forwards a request for the given UrlMappingInfo object and model
-     *
-     * @param request The request
-     * @param response The response
-     * @param info The UrlMappingInfo object
-     * @param model The Model
-     * @param includeParams Whether to include any request parameters
-     * @return The URI forwarded too
-     *
-     * @throws ServletException Thrown when an error occurs executing the forward
-     * @throws IOException Thrown when an error occurs executing the forward
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static String forwardRequestForUrlMappingInfo(HttpServletRequest request,
-            HttpServletResponse response, UrlMappingInfo info, Map model, boolean includeParams) throws ServletException, IOException {
-        exposeRequestAttributes(request, model);
-
-        String forwardUrl = buildDispatchUrlForMapping(info, includeParams);
-
-        //populateParamsForMapping(info);
-        RequestDispatcher dispatcher = request.getRequestDispatcher(forwardUrl);
-
-        // Clear the request attributes that affect view rendering. Otherwise
-        // whatever we forward to may render the wrong thing! Note that we
-        // don't care about the return value because we're delegating
-        // responsibility for rendering the response.
-        final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-        webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-        info.configure(webRequest);
-        passControllerForForwardedRequest(webRequest, info);
-        dispatcher.forward(request, response);
-        return forwardUrl;
-    }
-
-    protected static void passControllerForForwardedRequest(final GrailsWebRequest webRequest,
-            UrlMappingInfo info) {
-        webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-        if (info.getViewName() == null && info.getURI() == null) {
-            GrailsApplication grailsApplicationToUse = webRequest.getAttributes().getGrailsApplication();
-            if(grailsApplicationToUse != null) {
-                WebUtils.passControllerForUrlMappingInfoInRequest(webRequest, info, locateUrlConverter(webRequest), grailsApplicationToUse);
-            }
-        }
-    }
-
-    private static UrlConverter locateUrlConverter(final GrailsWebRequest webRequest) {
-        UrlConverter urlConverter = null;
-        try {
-            urlConverter = webRequest.getAttributes().getApplicationContext().getBean("grailsUrlConverter", UrlConverter.class);
-        } catch (NoSuchBeanDefinitionException e) {
-            urlConverter = new CamelCaseUrlConverter();
-        }
-        return urlConverter;
-    }
-
-    /**
-     * Include whatever the given UrlMappingInfo maps to within the current response
-     *
-     * @param request The request
-     * @param response The response
-     * @param info The UrlMappingInfo
-     * @param model The model
-     *
-     * @return The included content
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static IncludedContent includeForUrlMappingInfo(HttpServletRequest request,
-            HttpServletResponse response, UrlMappingInfo info, Map model) {
-        String includeUrl = buildDispatchUrlForMapping(info, true);
-
-        final GrailsWebRequest webRequest = GrailsWebRequest.lookup(request);
-
-        String currentController = null;
-        String currentAction = null;
-        String currentId = null;
-        ModelAndView currentMv = null;
-        Binding currentPageBinding = null;
-        Map currentParams = null;
-        Object currentLayoutAttribute = null;
-        Object currentRenderingView = null;
-        if (webRequest != null) {
-            currentPageBinding = (Binding) webRequest.getAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
-            webRequest.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE, 0);
-            currentLayoutAttribute = webRequest.getAttribute(LAYOUT_ATTRIBUTE, 0);
-            if (currentLayoutAttribute != null) {
-                webRequest.removeAttribute(LAYOUT_ATTRIBUTE, 0);
-            }
-            currentRenderingView = webRequest.getAttribute(RENDERING_VIEW, 0);
-            if (currentRenderingView != null) {
-                webRequest.removeAttribute(RENDERING_VIEW, 0);
-            }
-            currentController = webRequest.getControllerName();
-            currentAction = webRequest.getActionName();
-            currentId = webRequest.getId();
-            currentParams = new HashMap();
-            currentParams.putAll(webRequest.getParameterMap());
-            currentMv = (ModelAndView)webRequest.getAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-        }
-        try {
-            if (webRequest!=null) {
-                webRequest.getParameterMap().clear();
-                info.configure(webRequest);
-                webRequest.getParameterMap().putAll(info.getParameters());
-                webRequest.removeAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, 0);
-                passControllerForForwardedRequest(webRequest, info);
-            }
-            return includeForUrl(includeUrl, request, response, model);
-        }
-        finally {
-            if (webRequest!=null) {
-                webRequest.setAttribute(GrailsApplicationAttributes.PAGE_SCOPE,currentPageBinding, 0);
-                if (currentLayoutAttribute != null) {
-                    webRequest.setAttribute(LAYOUT_ATTRIBUTE, currentLayoutAttribute, 0);
-                }
-                if (currentRenderingView != null) {
-                    webRequest.setAttribute(RENDERING_VIEW, currentRenderingView, 0);
-                }
-                webRequest.getParameterMap().clear();
-                webRequest.getParameterMap().putAll(currentParams);
-                webRequest.setId(currentId);
-                webRequest.setControllerName(currentController);
-                webRequest.setActionName(currentAction);
-                if (currentMv != null) {
-                    webRequest.setAttribute(GrailsApplicationAttributes.MODEL_AND_VIEW, currentMv, 0);
-                }
-            }
-        }
-    }
-
-    /**
-     * Includes the given URL returning the resulting content as a String
-     *
-     * @param includeUrl The URL to include
-     * @param request The request
-     * @param response The response
-     * @param model The model
-     * @return The content
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static IncludedContent includeForUrl(String includeUrl, HttpServletRequest request,
-            HttpServletResponse response, Map model) {
-        RequestDispatcher dispatcher = request.getRequestDispatcher(includeUrl);
-        HttpServletResponse wrapped = WrappedResponseHolder.getWrappedResponse();
-        response = wrapped != null ? wrapped : response;
-
-        exposeIncludeRequestAttributes(request);
-
-        Map toRestore = exposeRequestAttributesAndReturnOldValues(request, model);
-
-        try {
-            final IncludeResponseWrapper responseWrapper = new IncludeResponseWrapper(response);
-            try {
-                WrappedResponseHolder.setWrappedResponse(responseWrapper);
-                dispatcher.include(request, responseWrapper);
-                if (responseWrapper.getRedirectURL()!=null) {
-                    return new IncludedContent(responseWrapper.getRedirectURL());
-                }
-                return new IncludedContent(responseWrapper.getContentType(), responseWrapper.getContent());
-            }
-            finally {
-                WrappedResponseHolder.setWrappedResponse(wrapped);
-            }
-        }
-        catch (Exception e) {
-            throw new ControllerExecutionException("Unable to execute include: " + e.getMessage(), e);
-        }
-        finally {
-            cleanupIncludeRequestAttributes(request, toRestore);
-        }
-    }
-
-    private static Map<String, Object> exposeRequestAttributesAndReturnOldValues(HttpServletRequest request, Map<String, ?> attributes) {
+    public static Map<String, Object> exposeRequestAttributesAndReturnOldValues(HttpServletRequest request, Map<String, ?> attributes) {
         Assert.notNull(request, "Request must not be null");
         Assert.notNull(attributes, "Attributes Map must not be null");
         Map<String, Object> originalValues = new HashMap<String, Object>();
@@ -488,7 +208,7 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return originalValues;
     }
 
-    private static void cleanupIncludeRequestAttributes(HttpServletRequest request, Map<String, Object> toRestore) {
+    public static void cleanupIncludeRequestAttributes(HttpServletRequest request, Map<String, Object> toRestore) {
         request.removeAttribute(INCLUDE_REQUEST_URI_ATTRIBUTE);
         request.removeAttribute(INCLUDE_CONTEXT_PATH_ATTRIBUTE);
         request.removeAttribute(INCLUDE_SERVLET_PATH_ATTRIBUTE);
@@ -740,43 +460,4 @@ public class WebUtils extends org.springframework.web.util.WebUtils {
         return result;
     }
 
-    @Deprecated
-    public static GrailsClass getConfiguredControllerForUrlMappingInfo(GrailsWebRequest webRequest, UrlMappingInfo info, UrlConverter urlConverterToUse, GrailsApplication grailsApplicationToUse) {
-        return passControllerForUrlMappingInfoInRequest(webRequest, info, urlConverterToUse, grailsApplicationToUse);
-    }
-
-    public static GrailsClass passControllerForUrlMappingInfoInRequest(GrailsWebRequest webRequest, UrlMappingInfo info, UrlConverter urlConverterToUse, GrailsApplication grailsApplicationToUse) {
-        if (info.getViewName() == null && info.getURI() == null) {
-            ControllerArtefactHandler.ControllerCacheKey featureId = getFeatureId(urlConverterToUse, info);
-            GrailsClass controller = grailsApplicationToUse.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
-            if (controller != null) {
-                webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE, controller.getLogicalPropertyName(), WebRequest.SCOPE_REQUEST);
-                webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS, controller, WebRequest.SCOPE_REQUEST);
-                webRequest.setAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, Boolean.TRUE, WebRequest.SCOPE_REQUEST);
-                if(((GrailsControllerClass)controller).getNamespace() != null) {
-                    webRequest.setAttribute(GrailsApplicationAttributes.CONTROLLER_NAMESPACE_ATTRIBUTE, ((GrailsControllerClass)controller).getNamespace(), WebRequest.SCOPE_REQUEST);
-                }
-            } else {
-                webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-            }
-            return controller;
-        } else {
-            webRequest.removeAttribute(GrailsApplicationAttributes.GRAILS_CONTROLLER_CLASS_AVAILABLE, WebRequest.SCOPE_REQUEST);
-            return null;
-        }
-    }
-
-    public static ControllerArtefactHandler.ControllerCacheKey getFeatureId(UrlConverter urlConverter, UrlMappingInfo info) {
-        final String action = info.getActionName() == null ? "" : info.getActionName();
-        final String controllerName = info.getControllerName();
-        final String pluginName = info.getPluginName();
-        final String namespace = info.getNamespace();
-        final String featureUri = getControllerFeatureURI(urlConverter, controllerName, action);
-
-        return new ControllerArtefactHandler.ControllerCacheKey(featureUri, pluginName, namespace);
-    }
-
-    public static String getControllerFeatureURI(UrlConverter urlConverter, String controller, String action) {
-        return SLASH + urlConverter.toUrlElement(controller) + SLASH + urlConverter.toUrlElement(action);
-    }
 }

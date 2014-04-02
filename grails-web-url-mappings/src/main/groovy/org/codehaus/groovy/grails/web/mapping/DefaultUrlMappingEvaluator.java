@@ -15,28 +15,7 @@
  */
 package org.codehaus.groovy.grails.web.mapping;
 
-import groovy.lang.Binding;
-import groovy.lang.Closure;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyObject;
-import groovy.lang.GroovyObjectSupport;
-import groovy.lang.Script;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.servlet.ServletContext;
-
+import groovy.lang.*;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.groovy.grails.commons.GrailsApplication;
@@ -46,11 +25,10 @@ import org.codehaus.groovy.grails.io.support.GrailsIOUtils;
 import org.codehaus.groovy.grails.plugins.GrailsPluginManager;
 import org.codehaus.groovy.grails.plugins.PluginManagerAware;
 import org.codehaus.groovy.grails.plugins.support.aware.ClassLoaderAware;
-import grails.validation.Constrained;
 import org.codehaus.groovy.grails.validation.ConstrainedProperty;
 import org.codehaus.groovy.grails.validation.ConstrainedPropertyBuilder;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.web.plugins.support.WebMetaUtils;
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationContext;
@@ -59,6 +37,13 @@ import org.springframework.http.HttpMethod;
 import org.springframework.util.Assert;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+
+import javax.servlet.ServletContext;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
 
 /**
  * <p>A UrlMapping evaluator that evaluates Groovy scripts that are in the form:</p>
@@ -189,7 +174,7 @@ public class DefaultUrlMappingEvaluator implements UrlMappingEvaluator, ClassLoa
 
     private void configureUrlMappingDynamicObjects(Object object) {
         if (pluginManager != null) {
-            WebMetaUtils.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()), null);
+            ControllerDynamicMethods.registerCommonWebProperties(GrailsMetaClassUtils.getExpandoMetaClass(object.getClass()), null);
         }
     }
 

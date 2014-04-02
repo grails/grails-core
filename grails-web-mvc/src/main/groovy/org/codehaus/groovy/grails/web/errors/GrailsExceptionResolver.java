@@ -40,6 +40,7 @@ import org.codehaus.groovy.grails.exceptions.GrailsRuntimeException;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
 import org.codehaus.groovy.grails.plugins.support.aware.GrailsApplicationAware;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
+import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils;
 import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.exceptions.GrailsMVCException;
@@ -59,7 +60,7 @@ import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
  */
 public class GrailsExceptionResolver extends SimpleMappingExceptionResolver implements ServletContextAware, GrailsApplicationAware {
 
-    public static final String EXCEPTION_ATTRIBUTE = "exception";
+    public static final String EXCEPTION_ATTRIBUTE = WebUtils.EXCEPTION_ATTRIBUTE;
 
     protected static final Log LOG = LogFactory.getLog(GrailsExceptionResolver.class);
     protected static final String LINE_SEPARATOR = System.getProperty("line.separator");
@@ -104,12 +105,12 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
         // expose the servlet 2.3 specs status code request attribute as 500
         request.setAttribute(WebUtils.ERROR_STATUS_CODE_ATTRIBUTE, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
-        mv.addObject(EXCEPTION_ATTRIBUTE, new GrailsWrappedRuntimeException(servletContext, e));
+        mv.addObject(WebUtils.EXCEPTION_ATTRIBUTE, new GrailsWrappedRuntimeException(servletContext, e));
     }
 
     protected UrlMappingsHolder lookupUrlMappings() {
         try {
-            return WebUtils.lookupUrlMappings(servletContext);
+            return UrlMappingUtils.lookupUrlMappings(servletContext);
         }
         catch (Exception ignored) {
             // ignore, no app ctx in this case.
@@ -148,7 +149,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
     protected void forwardRequest(UrlMappingInfo info, HttpServletRequest request, HttpServletResponse response,
             ModelAndView mv, String uri) throws ServletException, IOException {
         info.configure(WebUtils.retrieveGrailsWebRequest());
-        String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(
+        String forwardUrl = UrlMappingUtils.forwardRequestForUrlMappingInfo(
                 request, response, info, mv.getModel());
         if (LOG.isDebugEnabled()) {
             LOG.debug("Matched URI [" + uri + "] to URL mapping [" + info +
@@ -166,7 +167,7 @@ public class GrailsExceptionResolver extends SimpleMappingExceptionResolver impl
 
     protected void resolveView(HttpServletRequest request, UrlMappingInfo info, ModelAndView mv) throws Exception {
         ViewResolver viewResolver = WebUtils.lookupViewResolver(servletContext);
-        View v = WebUtils.resolveView(request, info, info.getViewName(), viewResolver);
+        View v = UrlMappingUtils.resolveView(request, info, info.getViewName(), viewResolver);
         if (v != null) {
             mv.setView(v);
         }

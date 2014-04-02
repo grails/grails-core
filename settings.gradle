@@ -22,6 +22,7 @@ include 'grails-aether',
         'grails-web-gsp',
         'grails-web-sitemesh',
         'grails-web-jsp',
+        'grails-web-url-mappings',
         'grails-wrapper',
 
         // Plugins

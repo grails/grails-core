@@ -2,14 +2,9 @@ dependencies {
     compile project(":grails-core"),
             project(":grails-spring"),
             project(":grails-async"),
-            project(":grails-databinding"),
-            project(':grails-plugin-domain-class')
+            project(":grails-databinding")
 
     compile 'javax.servlet:javax.servlet-api:3.0.1', provided
-
-    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
-        exclude group: 'commons-logging', module:'commons-logging'
-    }
 
     compile "org.springframework:spring-webmvc:${springVersion}"
     compile "org.springframework:spring-context-support:${springVersion}"

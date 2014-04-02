@@ -24,6 +24,7 @@ import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
 import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver
 import org.codehaus.groovy.grails.web.mapping.ForwardUrlMappingInfo
 import org.codehaus.groovy.grails.web.mapping.UrlMapping
+import org.codehaus.groovy.grails.web.mapping.UrlMappingUtils
 import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.codehaus.groovy.grails.web.pages.FastStringWriter
 import org.codehaus.groovy.grails.web.pages.GroovyPage
@@ -32,7 +33,6 @@ import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateEngine
 import org.codehaus.groovy.grails.web.pages.GroovyPagesTemplateRenderer
 import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
@@ -105,7 +105,7 @@ class RenderTagLib implements RequestConstants {
             if (attrs.plugin != null) {
                 mapping.pluginName = attrs.plugin as String
             }
-            out << WebUtils.includeForUrlMappingInfo(request, response, mapping, (Map)(attrs.model ?: [:]))?.content
+            out << UrlMappingUtils.includeForUrlMappingInfo(request, response, mapping, (Map)(attrs.model ?: [:]))?.content
         }
     }
 

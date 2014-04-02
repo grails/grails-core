@@ -15,27 +15,20 @@
  */
 package org.codehaus.groovy.grails.web.plugins.support
 
-import grails.artefact.Enhanced
 import grails.validation.ValidationErrors
-import groovy.transform.CompileStatic
-
-import java.lang.reflect.Method
-
 import org.codehaus.groovy.grails.commons.GrailsApplication
 import org.codehaus.groovy.grails.commons.GrailsClassUtils
-import org.codehaus.groovy.grails.commons.GrailsTagLibClass
 import org.codehaus.groovy.grails.plugins.DomainClassPluginSupport
 import org.codehaus.groovy.grails.validation.ConstraintsEvaluator
 import org.codehaus.groovy.grails.validation.DefaultConstraintEvaluator
-import org.codehaus.groovy.grails.web.pages.GroovyPage
-import org.codehaus.groovy.grails.web.pages.TagLibraryLookup
-import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest
-import org.codehaus.groovy.grails.web.util.StreamCharBuffer
+import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods
 import org.grails.databinding.DataBindingSource
 import org.grails.databinding.SimpleMapDataBindingSource
 import org.springframework.context.ApplicationContext
 import org.springframework.validation.Errors
 import org.springframework.web.context.request.RequestContextHolder as RCH
+
+import java.lang.reflect.Method
 
 /**
  * Provides utility methods used to support meta-programming. In particular commons methods to
@@ -184,34 +177,7 @@ class WebMetaUtils {
      * This creates the difference dynamic methods and properties on the controllers. Most methods
      * are implemented by looking up the current request from the RequestContextHolder (RCH)
      */
-    static registerCommonWebProperties(MetaClass mc, GrailsApplication application) {
-        def paramsObject = {-> RCH.currentRequestAttributes().params }
-        def flashObject = {-> RCH.currentRequestAttributes().flashScope }
-        def sessionObject = {-> RCH.currentRequestAttributes().session }
-        def requestObject = {-> RCH.currentRequestAttributes().currentRequest }
-        def responseObject = {-> RCH.currentRequestAttributes().currentResponse }
-        def servletContextObject = {-> RCH.currentRequestAttributes().servletContext }
-        def grailsAttrsObject = {-> RCH.currentRequestAttributes().attributes }
-
-        // the params object
-        mc.getParams = paramsObject
-        // the flash object
-        mc.getFlash = flashObject
-        // the session object
-        mc.getSession = sessionObject
-        // the request object
-        mc.getRequest = requestObject
-        // the servlet context
-        mc.getServletContext = servletContextObject
-        // the response object
-        mc.getResponse = responseObject
-        // The GrailsApplicationAttributes object
-        mc.getGrailsAttributes = grailsAttrsObject
-        // The GrailsApplication object
-        mc.getGrailsApplication = {-> RCH.currentRequestAttributes().attributes.grailsApplication }
-
-        mc.getActionName = {-> RCH.currentRequestAttributes().actionName }
-        mc.getControllerName = {-> RCH.currentRequestAttributes().controllerName }
-        mc.getWebRequest = {-> RCH.currentRequestAttributes() }
+    static void registerCommonWebProperties(MetaClass mc, GrailsApplication application) {
+        ControllerDynamicMethods.registerCommonWebProperties(mc, application)
     }
 }

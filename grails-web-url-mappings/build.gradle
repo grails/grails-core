@@ -1,0 +1,43 @@
+configurations {
+    optional
+}
+dependencies {
+    compile project(":grails-web-common"),
+            project(":grails-validation")
+
+    compile 'javax.servlet:javax.servlet-api:3.0.1', provided
+    compile("org.grails:grails-datastore-core:$datastoreVersion") {
+        exclude group: 'org.springframework', module:'spring-core'
+        exclude group: 'org.springframework', module:'spring-context'
+        exclude group: 'org.springframework', module:'spring-web'
+        exclude group: 'org.springframework', module:'spring-beans'
+        exclude group: 'org.springframework', module:'spring-tx'
+        exclude group: 'org.slf4j', module:'jcl-over-slf4j'
+        exclude group: 'org.slf4j', module:'jul-to-slf4j'
+        exclude group: 'org.slf4j', module:'slf4j-api'
+        exclude group: 'org.slf4j', module:'slf4j-simple'
+        exclude group: 'org.grails', module:'grails-bootstrap'
+        exclude group: 'org.grails', module:'grails-core'
+        exclude group: 'org.grails', module:'grails-async'
+        exclude group: 'commons-collections', module:'commons-collections'
+        exclude group: 'commons-lang', module:'commons-lang'
+        exclude group: 'javassist', module:'javassist'
+        exclude group: 'org.javassist', module: 'javassist'
+        exclude group: "javax.persistence", module:"persistence-api"
+        exclude group: 'java-persistence', module:'persistence-api'
+    }
+    compile( "com.googlecode.concurrentlinkedhashmap:concurrentlinkedhashmap-lru:${concurrentlinkedhashmapVersion}" ) {
+        exclude group: 'commons-logging', module:'commons-logging'
+    }
+
+    optional "org.fusesource.jansi:jansi:$jansiVersion"
+    optional "jline:jline:$jlineVersion"
+}
+sourceSets {
+    main {
+        compileClasspath += files(configurations.optional)
+    }
+    test {
+        runtimeClasspath += files(configurations.optional)
+    }
+}

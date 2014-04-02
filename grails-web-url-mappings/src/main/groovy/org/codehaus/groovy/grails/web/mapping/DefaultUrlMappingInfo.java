@@ -27,7 +27,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import org.codehaus.groovy.grails.commons.GrailsApplication;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.util.WebUtils;
@@ -191,7 +190,7 @@ public class DefaultUrlMappingInfo extends AbstractUrlMappingInfo {
     }
 
     private String checkDispatchAction(HttpServletRequest request) {
-        if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return null;
+        if (request.getAttribute(WebUtils.EXCEPTION_ATTRIBUTE) != null) return null;
 
         String dispatchActionName = null;
         Enumeration<String> paramNames = tryMultipartParams(request, request.getParameterNames());

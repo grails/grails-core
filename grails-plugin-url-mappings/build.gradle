@@ -9,8 +9,6 @@ dependencies {
 
     compile project(":grails-web"), project(":grails-plugin-controllers"), project(":grails-validation")
     optional "junit:junit:${junitVersion}"
-    optional "org.fusesource.jansi:jansi:$jansiVersion"
-    optional "jline:jline:$jlineVersion"
 }
 sourceSets {
     main {

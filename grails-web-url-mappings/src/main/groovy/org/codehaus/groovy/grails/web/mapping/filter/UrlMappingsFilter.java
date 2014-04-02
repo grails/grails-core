@@ -45,16 +45,10 @@ import org.codehaus.groovy.grails.commons.cfg.GrailsConfig;
 import org.codehaus.groovy.grails.commons.metaclass.DynamicMethodInvocation;
 import org.codehaus.groovy.grails.exceptions.DefaultStackTraceFilterer;
 import org.codehaus.groovy.grails.exceptions.StackTraceFilterer;
-import org.codehaus.groovy.grails.web.errors.GrailsExceptionResolver;
-import org.codehaus.groovy.grails.web.mapping.RegexUrlMapping;
-import org.codehaus.groovy.grails.web.mapping.UrlMapping;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingInfo;
-import org.codehaus.groovy.grails.web.mapping.UrlMappingsHolder;
+import org.codehaus.groovy.grails.web.mapping.*;
 import org.codehaus.groovy.grails.web.mapping.exceptions.UrlMappingException;
-import org.codehaus.groovy.grails.web.metaclass.RedirectDynamicMethod;
 import org.codehaus.groovy.grails.web.mime.MimeType;
 import org.codehaus.groovy.grails.web.mime.MimeTypeResolver;
-import org.codehaus.groovy.grails.web.pages.exceptions.GroovyPagesException;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.HttpHeaders;
 import org.codehaus.groovy.grails.web.servlet.WrappedResponseHolder;
@@ -101,9 +95,9 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
     private UrlConverter urlConverter;
     private Boolean allowHeaderForWrongHttpMethod;
     private UrlMappingsHolder urlMappingsHolder;
-    final DynamicMethodInvocation redirectDynamicMethod = new RedirectDynamicMethod();
     private Boolean cachedGrailsAppWithoutControllersAndRegexMappings = null;
     private UriExclusionCache uriExclusionCache;
+    private LinkGenerator linkGenerator;
     
 
     @Override
@@ -117,7 +111,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         viewResolver = WebUtils.lookupViewResolver(servletContext);
         ApplicationContext mainContext = application.getMainContext();
         urlConverter = mainContext.getBean(UrlConverter.BEAN_NAME, UrlConverter.class);
-        urlMappingsHolder = WebUtils.lookupUrlMappings(servletContext);  
+        urlMappingsHolder = UrlMappingUtils.lookupUrlMappings(servletContext);
         uriExclusionCache = new UriExclusionCache(urlMappingsHolder);
         if (application != null) {
             grailsConfig = new GrailsConfig(application);
@@ -128,6 +122,10 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
             mimeTypeResolver = mimeTypeResolvers.values().iterator().next();
         }
         this.allowHeaderForWrongHttpMethod = grailsConfig.get(WebUtils.SEND_ALLOW_HEADER_FOR_INVALID_HTTP_METHOD, Boolean.TRUE);
+        if(applicationContext.containsBean("grailsLinkGenerator")) {
+            this.linkGenerator = applicationContext.getBean("grailsLinkGenerator",LinkGenerator.class);
+        }
+
         createStackTraceFilterer();
     }
 
@@ -171,7 +169,10 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         }
                         GrailsParameterMap params = webRequest.getParams();
                         redirectArgs.put("params", params);
-                        redirectDynamicMethod.invoke(this, "redirect", new Object[]{ redirectArgs } );
+
+
+                        ResponseRedirector redirector = new ResponseRedirector(linkGenerator);
+                        redirector.redirect(redirectArgs);
                         dispatched = true;
 
                         break;
@@ -186,7 +187,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         info.configure(webRequest);
                         UrlConverter urlConverterToUse = urlConverter;
                         GrailsApplication grailsApplicationToUse = application;
-                        GrailsClass controller = WebUtils.passControllerForUrlMappingInfoInRequest(webRequest, info, urlConverterToUse, grailsApplicationToUse);
+                        GrailsClass controller = UrlMappingUtils.passControllerForUrlMappingInfoInRequest(webRequest, info, urlConverterToUse, grailsApplicationToUse);
 
                         if(controller == null && info.getViewName()==null && info.getURI()==null) continue;
                     }
@@ -212,7 +213,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                         if (info.isParsingRequest()) {
                             webRequest.informParameterCreationListeners();
                         }
-                        String forwardUrl = WebUtils.forwardRequestForUrlMappingInfo(request, response, info);
+                        String forwardUrl = UrlMappingUtils.forwardRequestForUrlMappingInfo(request, response, info);
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("Matched URI [" + uri + "] to URL mapping [" + info + "], forwarding to [" + forwardUrl + "] with response [" + response.getClass() + "]");
                         }
@@ -264,7 +265,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
         Set<HttpMethod> methods = new HashSet<HttpMethod>();
 
         for (UrlMappingInfo urlMappingInfo : urlMappingInfos) {
-            Object featureId = WebUtils.getFeatureId(urlConverter, urlMappingInfo);
+            Object featureId = UrlMappingUtils.getFeatureId(urlConverter, urlMappingInfo);
             GrailsClass controllerClass = application.getArtefactForFeature(ControllerArtefactHandler.TYPE, featureId);
             if(controllerClass != null) {
                 if(urlMappingInfo.getHttpMethod() == null || urlMappingInfo.getHttpMethod().equals(UrlMapping.ANY_HTTP_METHOD)) {
@@ -363,7 +364,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 // ignore
             }
         }
-        if (request.getAttribute(GrailsExceptionResolver.EXCEPTION_ATTRIBUTE) != null) return;
+        if (request.getAttribute(WebUtils.EXCEPTION_ATTRIBUTE) != null) return;
         MultipleCompilationErrorsException compilationError = Environment.getCurrentCompilationError();
         if (compilationError != null) {
             throw compilationError;
@@ -396,7 +397,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                     handlerInterceptor.postHandle(request, response, this, modelAndView);
                 }
 
-                v = WebUtils.resolveView(request, info, modelAndView.getViewName(), viewResolver);
+                v = UrlMappingUtils.resolveView(request, info, modelAndView.getViewName(), viewResolver);
                 v.render(modelAndView.getModel(), request, response);
 
                 // after completion
@@ -409,7 +410,7 @@ public class UrlMappingsFilter extends OncePerRequestFilter {
                 reapplySitemesh(request);
                 for (HandlerInterceptor handlerInterceptor : handlerInterceptors) {
                     try {
-                        handlerInterceptor.afterCompletion(request, response, this, e instanceof Exception ? (Exception)e : new GroovyPagesException(e.getMessage(), e));
+                        handlerInterceptor.afterCompletion(request, response, this, e instanceof Exception ? (Exception)e : new UrlMappingException(e.getMessage(), e));
                     }
                     catch (Exception e1) {
                         UrlMappingException ume = new UrlMappingException("Error executing filter after view error: " + e1.getMessage() + ". Original error: " + e.getMessage(), e1);
