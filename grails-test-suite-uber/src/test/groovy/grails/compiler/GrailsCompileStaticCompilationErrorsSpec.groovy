@@ -203,6 +203,57 @@ class SomeClass {
         c
         
     }
+    
+    void 'Test compiling a domain class with a mapping block'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a domain class marked with @GrailsCompileStatic contains a mapping block'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+@grails.persistence.Entity
+class SomeClass {
+
+    String name
+    static mapping = {
+        table 'name'
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+    }
+
+    
+    void 'Test compiling a domain class with a mapping block and unrelated dynamic code'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when: 'a domain class marked with @GrailsCompileStatic contains a mapping block and unrelated dynamic code'
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+@grails.persistence.Entity
+class SomeClass {
+
+    String name
+    static mapping = {
+        table 'name'
+    }
+
+    def someMethod() {
+       someDynamicMethodCall()
+    }
+}
+''')
+
+        then: 'errors are thrown'
+        MultipleCompilationErrorsException e = thrown()
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#someDynamicMethodCall'
+    }
 }
 
 @Entity
