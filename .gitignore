@@ -34,3 +34,4 @@ target
 /eclipse-build
 
 /.idea/
+/grails-test-suite-uber/configured/
