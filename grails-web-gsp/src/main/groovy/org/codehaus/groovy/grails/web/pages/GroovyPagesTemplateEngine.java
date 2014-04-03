@@ -54,6 +54,7 @@ import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -87,7 +88,7 @@ import org.springframework.web.context.support.ServletContextResource;
  *
  * @since 0.1
  */
-public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean, ApplicationListener<ContextRefreshedEvent> {
+public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine implements ApplicationContextAware, ServletContextAware, InitializingBean, ApplicationListener<ContextRefreshedEvent>, BeanClassLoaderAware {
 
     public static final String CONFIG_PROPERTY_DISABLE_CACHING_RESOURCES = "grails.gsp.disable.caching.resources";
     public static final String CONFIG_PROPERTY_GSP_ENABLE_RELOAD = "grails.gsp.enable.reload";
@@ -846,6 +847,15 @@ public class GroovyPagesTemplateEngine extends ResourceAwareTemplateEngine imple
     public void onApplicationEvent(ContextRefreshedEvent event) {
         if(servletContext != null && servletContext.getAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT)==null) {
             servletContext.setAttribute(GrailsApplicationAttributes.APPLICATION_CONTEXT, event.getApplicationContext());
+        }
+    }
+
+    @Override
+    public void setBeanClassLoader(ClassLoader beanClassLoader) {
+        // support passing BeanClassLoader as parent classloader for templates
+        // don't set the classLoader field if it already has an explicit value
+        if(beanClassLoader != null && this.classLoader == null) {
+            this.classLoader = beanClassLoader;
         }
     }
 }
