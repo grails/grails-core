@@ -12,7 +12,8 @@ dependencies {
 //    compile( project(":grails-web-url-mappings") ) {
 //        exclude group:'org.grails', module:'grails-web-common'
 //    }
-    
+
+    testRuntime( project(":grails-spring") )
     optional "org.apache.ant:ant:${antVersion}"
 }
 
