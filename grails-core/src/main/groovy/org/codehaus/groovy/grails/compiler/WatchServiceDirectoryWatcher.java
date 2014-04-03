@@ -116,6 +116,7 @@ class WatchServiceDirectoryWatcher extends AbstractDirectoryWatcher {
 	public void addWatchFile(File fileToWatch) {
 		if(!isValidFileToMonitor(fileToWatch, Arrays.asList("*"))) return;
 		try {
+            if(!fileToWatch.exists()) return;
 			Path pathToWatch = fileToWatch.toPath().toAbsolutePath();
 			individualWatchedFiles.add(pathToWatch);
 			pathToWatch.getParent().register(watchService, StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
