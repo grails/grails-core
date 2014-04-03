@@ -156,8 +156,8 @@ class TransactionalTransform implements ASTTransformation{
         
         applyTransactionalAttributeSettings(annotationNode, transactionAttributeVar, methodBody)
         
-        final executeMethodParameterTypes = [new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")] as Parameter[]
-        final callCallExpression = new ClosureExpression(executeMethodParameterTypes, new ExpressionStatement(originalMethodCall))
+        final closureParameters = [new Parameter(ClassHelper.make(TransactionStatus), "transactionStatus")] as Parameter[]
+        final callCallExpression = new ClosureExpression(closureParameters, new ExpressionStatement(originalMethodCall))
 
         final constructorArgs = new ArgumentListExpression()
         constructorArgs.addExpression(new PropertyExpression(buildThisExpression(), PROPERTY_TRANSACTION_MANAGER))
@@ -177,7 +177,8 @@ class TransactionalTransform implements ASTTransformation{
         final methodArgs = new ArgumentListExpression()
         methodArgs.addExpression(callCallExpression)
         final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, METHOD_EXECUTE, methodArgs)
-        final executeMethodNode = transactionTemplateClassNode.getMethod("execute", executeMethodParameterTypes)
+        final executeMethodParameters = [new Parameter(ClassHelper.make(Closure), null)] as Parameter[]
+        final executeMethodNode = transactionTemplateClassNode.getMethod("execute", executeMethodParameters)
         executeMethodCallExpression.setMethodTarget(executeMethodNode)
         
         if(methodNode.getReturnType() != ClassHelper.VOID_TYPE) {
