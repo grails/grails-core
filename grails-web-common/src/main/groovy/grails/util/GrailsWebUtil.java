@@ -30,6 +30,7 @@ import org.codehaus.groovy.grails.commons.GrailsStringUtils;
 import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
 import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 import org.codehaus.groovy.grails.web.servlet.mvc.ParameterCreationListener;
+import org.springframework.context.ApplicationContext;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockServletContext;
@@ -131,8 +132,9 @@ public class GrailsWebUtil {
      *
      * @return The GrailsWebRequest instance
      */
-    public static GrailsWebRequest bindMockWebRequest(WebApplicationContext ctx, MockHttpServletRequest request, MockHttpServletResponse response) {
-        GrailsWebRequest webRequest = new GrailsWebRequest(request, response, ctx.getServletContext(), ctx);
+    public static GrailsWebRequest bindMockWebRequest(ApplicationContext ctx, MockHttpServletRequest request, MockHttpServletResponse response) {
+        ServletContext servletContext = ctx instanceof WebApplicationContext && ((WebApplicationContext)ctx).getServletContext() != null ? ((WebApplicationContext)ctx).getServletContext() : request.getServletContext();
+        GrailsWebRequest webRequest = new GrailsWebRequest(request, response, servletContext, ctx);
         request.setAttribute(GrailsApplicationAttributes.WEB_REQUEST, webRequest);
         for (ParameterCreationListener listener: ctx.getBeansOfType(ParameterCreationListener.class).values()) {
             webRequest.addParameterListener(listener);
