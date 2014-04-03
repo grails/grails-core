@@ -19,7 +19,7 @@ package org.codehaus.groovy.grails.transaction.transform
 import org.codehaus.groovy.ast.stmt.Statement
 
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
-import grails.transaction.NotTransactional;
+import grails.transaction.NotTransactional
 import grails.transaction.Transactional
 import groovy.transform.CompileStatic
 
@@ -48,7 +48,6 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.interceptor.NoRollbackRuleAttribute
 import org.springframework.transaction.interceptor.RollbackRuleAttribute
-
 
 /**
  * This AST transform reads the {@link grails.transaction.Transactional} annotation and transforms method calls by
@@ -159,10 +158,6 @@ class TransactionalTransform implements ASTTransformation{
                 )
             )
         )
-        // remove possible @CS & @TC SKIP annotation from original method node
-        removeCompileStaticAnnotations(methodNode)
-        // add @CS annotation to original method node
-        addCompileStaticAnnotation(methodNode)
         
         applyTransactionalAttributeSettings(annotationNode, transactionAttributeVar, methodBody)
 
@@ -189,7 +184,8 @@ class TransactionalTransform implements ASTTransformation{
         final methodArgs = new ArgumentListExpression()
         methodArgs.addExpression(callCallExpression)
         final executeMethodCallExpression = new MethodCallExpression(transactionTemplateVar, getTransactionTemplateMethodName(), methodArgs)
-        final executeMethodNode = transactionTemplateClassNode.getMethod(getTransactionTemplateMethodName(), executeMethodParameterTypes)
+        final executeMethodParameters = [new Parameter(ClassHelper.make(Closure), null)] as Parameter[]
+        final executeMethodNode = transactionTemplateClassNode.getMethod(getTransactionTemplateMethodName(), executeMethodParameters)
         executeMethodCallExpression.setMethodTarget(executeMethodNode)
         
         if(methodNode.getReturnType() != ClassHelper.VOID_TYPE) {
