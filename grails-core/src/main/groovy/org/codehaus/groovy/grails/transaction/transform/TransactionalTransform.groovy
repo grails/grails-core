@@ -17,7 +17,7 @@
 package org.codehaus.groovy.grails.transaction.transform
 
 import static org.codehaus.groovy.grails.compiler.injection.GrailsASTUtils.*
-import grails.transaction.NotTransactional;
+import grails.transaction.NotTransactional
 import grails.transaction.Transactional
 import groovy.transform.CompileStatic
 
@@ -46,7 +46,6 @@ import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.TransactionStatus
 import org.springframework.transaction.interceptor.NoRollbackRuleAttribute
 import org.springframework.transaction.interceptor.RollbackRuleAttribute
-import org.springframework.transaction.interceptor.RuleBasedTransactionAttribute
 
 /**
  * This AST transform reads the {@link grails.transaction.Transactional} annotation and transforms method calls by
