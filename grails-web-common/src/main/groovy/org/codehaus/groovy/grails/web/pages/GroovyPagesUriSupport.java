@@ -17,13 +17,9 @@ package org.codehaus.groovy.grails.web.pages;
 
 import grails.util.GrailsNameUtils;
 import groovy.lang.GroovyObject;
-import groovy.lang.MissingPropertyException;
-import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
-import org.codehaus.groovy.grails.web.metaclass.ControllerDynamicMethods;
-import org.codehaus.groovy.grails.web.servlet.GrailsApplicationAttributes;
-import org.springframework.util.Assert;
 
-import javax.servlet.ServletRequest;
+import org.codehaus.groovy.grails.commons.ControllerArtefactHandler;
+import org.codehaus.groovy.grails.web.servlet.mvc.GrailsWebRequest;
 
 /**
  * Methods to establish template names, paths and so on.
@@ -49,7 +45,6 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
      * @return The template URI
      */
     public String getTemplateURI(GroovyObject controller, String templateName) {
-        Assert.notNull(controller, "Argument [controller] cannot be null");
         return getTemplateURI(getLogicalControllerName(controller),templateName);
     }
 
@@ -64,7 +59,6 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
      * @return The view URI
      */
     public String getViewURI(GroovyObject controller, String viewName) {
-        Assert.notNull(controller, "Argument [controller] cannot be null");
         return getViewURI(getLogicalControllerName(controller), viewName);
     }
 
@@ -75,21 +69,14 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
      * @return The view URI
      */
     public String getNoSuffixViewURI(GroovyObject controller, String viewName) {
-        Assert.notNull(controller, "Argument [controller] cannot be null");
         return getNoSuffixViewURI(getLogicalControllerName(controller), viewName);
     }
 
     public String getLogicalControllerName(GroovyObject controller) {
-        ServletRequest request = null;
-        try {
-            request = (ServletRequest) controller.getProperty(ControllerDynamicMethods.REQUEST_PROPERTY);
-        }
-        catch (MissingPropertyException mpe) {
-            // ignore
-        }
-        String logicalName = request != null ? (String) request.getAttribute(GrailsApplicationAttributes.CONTROLLER_NAME_ATTRIBUTE) : null;
+        GrailsWebRequest webRequest = GrailsWebRequest.lookup();
+        String logicalName = webRequest != null ? webRequest.getControllerName() : null;
         if (logicalName == null) {
-            logicalName = GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE);
+            logicalName = controller != null ? GrailsNameUtils.getLogicalPropertyName(controller.getClass().getName(), ControllerArtefactHandler.TYPE) : null;
         }
         return logicalName;
     }
@@ -101,7 +88,6 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
      * @return The template URI
      */
     public String getTemplateURI(String controllerName, String templateName) {
-
         if (templateName.startsWith(SLASH_STR)) {
             return getAbsoluteTemplateURI(templateName);
         }
@@ -114,9 +100,11 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
             pathToTemplate = templateName.substring(0, lastSlash + 1);
             templateName = templateName.substring(lastSlash + 1);
         }
+        if(controllerName != null) {
+            buf.append(SLASH)
+               .append(controllerName);
+        }
         buf.append(SLASH)
-           .append(controllerName)
-           .append(SLASH)
            .append(pathToTemplate)
            .append(UNDERSCORE)
            .append(templateName);
@@ -209,7 +197,9 @@ public class GroovyPagesUriSupport implements GroovyPagesUriService {
             return getAbsoluteViewURIInternal(viewName, buf, includeSuffix);
         }
 
-        buf.append(SLASH).append(controllerName);
+        if (controllerName != null) {
+            buf.append(SLASH).append(controllerName);
+        }
         if (viewName != null) {
             buf.append(SLASH).append(viewName);
         }
