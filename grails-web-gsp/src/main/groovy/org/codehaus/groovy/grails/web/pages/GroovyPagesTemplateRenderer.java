@@ -67,7 +67,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     private Map<String, GrailsDomainClass> controllerToScaffoldedDomainClassMap;
     private Method generateViewMethod;
     private boolean reloadEnabled;
-    private boolean disableCache = Environment.isDevelopmentMode();
+    private boolean cacheEnabled = !Environment.isDevelopmentMode();
 
     public void afterPropertiesSet() throws Exception {
         if (scaffoldingTemplateGenerator != null) {
@@ -139,7 +139,7 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
                 if (scriptSource != null) {
                     t = groovyPagesTemplateEngine.createTemplate(scriptSource);
                 }
-                boolean allowCaching = !disableCache;
+                boolean allowCaching = cacheEnabled;
                 if (t == null && scaffoldingTemplateGenerator != null) {
                     t = generateScaffoldedTemplate(webRequest, uri);
                     // always enable caching for generated scaffolded template
@@ -297,5 +297,13 @@ public class GroovyPagesTemplateRenderer implements InitializingBean {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setControllerToScaffoldedDomainClassMap(Map map) {
         controllerToScaffoldedDomainClassMap = map;
+    }
+
+    public boolean isCacheEnabled() {
+        return cacheEnabled;
+    }
+
+    public void setCacheEnabled(boolean cacheEnabled) {
+        this.cacheEnabled = cacheEnabled;
     }
 }

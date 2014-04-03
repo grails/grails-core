@@ -284,4 +284,8 @@ public class GroovyPageView extends AbstractGrailsView {
     public void rethrowRenderException(Throwable ex, String message) {
         throw new GroovyPagesException(message, ex);
     }
+
+    public Template getTemplate() {
+        return template;
+    }
 }

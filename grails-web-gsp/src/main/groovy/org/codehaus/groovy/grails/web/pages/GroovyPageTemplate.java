@@ -26,7 +26,7 @@ import java.util.Map;
  * @author Graeme Rocher
  * @since 0.5
  */
-public class GroovyPageTemplate implements Template {
+public class GroovyPageTemplate implements Template, Cloneable {
 
     private GroovyPageMetaInfo metaInfo;
     private boolean allowSettingContentType = false;
@@ -56,5 +56,12 @@ public class GroovyPageTemplate implements Template {
 
     public void setAllowSettingContentType(boolean allowSettingContentType) {
         this.allowSettingContentType = allowSettingContentType;
+    }
+    
+    @Override
+    public Object clone() {
+        GroovyPageTemplate cloned = new GroovyPageTemplate(metaInfo);
+        cloned.setAllowSettingContentType(allowSettingContentType);
+        return cloned;
     }
 }

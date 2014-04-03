@@ -15,6 +15,8 @@
  */
 package org.codehaus.groovy.grails.web.sitemesh;
 
+import groovy.text.Template;
+
 import java.util.Collections;
 
 import javax.servlet.ServletContext;
@@ -93,5 +95,16 @@ public class SpringMVCViewDecorator extends DefaultDecorator implements com.open
         request.removeAttribute(GrailsApplicationAttributes.PAGE_SCOPE);
         request.removeAttribute(GrailsLayoutDecoratorMapper.LAYOUT_ATTRIBUTE);
         request.setAttribute(GrailsPageFilter.ALREADY_APPLIED_KEY, null);
+    }
+
+    public View getView() {
+        return view;
+    }
+    
+    public Template getTemplate() {
+        if(view instanceof AbstractGrailsView) {
+            return ((AbstractGrailsView)view).getTemplate();
+        }
+        return null;
     }
 }

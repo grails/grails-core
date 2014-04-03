@@ -40,6 +40,10 @@ public class FactoryHolder {
         Assert.state(factory != null, "Cannot return Sitemesh factory it has not been set!");
         return factory;
     }
+    
+    public static Factory getSitemeshFactory() {
+        return getFactory();
+    }
 
     public static synchronized void setFactory(Factory factory) {
         holder.set(factory);

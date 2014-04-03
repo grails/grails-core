@@ -15,12 +15,12 @@
  */
 package org.codehaus.groovy.grails.plugins.web.taglib
 
-import com.opensymphony.module.sitemesh.Factory
-import com.opensymphony.module.sitemesh.Page
-import com.opensymphony.module.sitemesh.RequestConstants
-import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
 import grails.artefact.Artefact
+import groovy.text.Template
 import groovy.transform.CompileStatic
+
+import javax.servlet.http.HttpServletRequest
+
 import org.codehaus.groovy.grails.support.encoding.CodecLookup
 import org.codehaus.groovy.grails.support.encoding.Encoder
 import org.codehaus.groovy.grails.web.errors.ErrorsViewStackTracePrinter
@@ -28,12 +28,23 @@ import org.codehaus.groovy.grails.web.errors.ExceptionUtils
 import org.codehaus.groovy.grails.web.pages.*
 import org.codehaus.groovy.grails.web.sitemesh.FactoryHolder
 import org.codehaus.groovy.grails.web.sitemesh.GSPSitemeshPage
+import org.codehaus.groovy.grails.web.sitemesh.GrailsHTMLPageParser
 import org.codehaus.groovy.grails.web.sitemesh.GrailsPageFilter
+import org.codehaus.groovy.grails.web.sitemesh.GroovyPageLayoutFinder
+import org.codehaus.groovy.grails.web.sitemesh.SpringMVCViewDecorator
 import org.codehaus.groovy.grails.web.util.StreamCharBuffer
 import org.codehaus.groovy.grails.web.util.TypeConvertingMap
 import org.codehaus.groovy.grails.web.util.WebUtils
 import org.springframework.http.HttpStatus
 import org.springframework.util.StringUtils
+
+import com.opensymphony.module.sitemesh.Decorator
+import com.opensymphony.module.sitemesh.DecoratorMapper
+import com.opensymphony.module.sitemesh.Factory
+import com.opensymphony.module.sitemesh.Page
+import com.opensymphony.module.sitemesh.PageParser
+import com.opensymphony.module.sitemesh.RequestConstants
+import com.opensymphony.module.sitemesh.parser.AbstractHTMLPage
 
 /**
  * Tags to help rendering of views and layouts.
@@ -48,6 +59,7 @@ class RenderTagLib implements RequestConstants {
     GroovyPagesTemplateEngine groovyPagesTemplateEngine
     TagLibraryLookup gspTagLibraryLookup
     CodecLookup codecLookup
+    GroovyPageLayoutFinder groovyPageLayoutFinder
 
     protected AbstractHTMLPage getPage() {
         return (AbstractHTMLPage)getRequest().getAttribute(PAGE)
@@ -129,7 +141,7 @@ class RenderTagLib implements RequestConstants {
             page = gspSiteMeshPage
         }
         else {
-            def parser = getFactory().getPageParser(contentType)
+            def parser = createPageParser(contentType)
             char[] charArray
             if(content instanceof StreamCharBuffer) {
                 charArray = ((StreamCharBuffer)content).toCharArray()
@@ -139,28 +151,61 @@ class RenderTagLib implements RequestConstants {
             page = parser.parse(charArray)
         }
 
-        def decoratorMapper = getFactory().getDecoratorMapper()
-        if (decoratorMapper) {
-            def d = decoratorMapper.getNamedDecorator(request, attrs.name as String)
-            if (d && d.page) {
-                pageParams.each { k, v ->
-                    page.addProperty(k as String, v as String)
-                }
-                try {
-                    request.setAttribute(PAGE, page)
-                    def t = groovyPagesTemplateEngine.createTemplate(d.getPage())
-                    def w = t.make(viewModel)
-                    w.writeTo(out)
-                }
-                finally {
-                    request.setAttribute(PAGE, oldPage)
-                }
+        def decorator = findDecorator(request, attrs.name as String)
+        if (decorator && decorator.page) {
+            pageParams.each { k, v ->
+                page.addProperty(k as String, v as String)
             }
+            try {
+                request.setAttribute(PAGE, page)
+                Template template = findTemplate(decorator)
+                template.make(viewModel).writeTo(out)
+            }
+            finally {
+                request.setAttribute(PAGE, oldPage)
+            }
+        } else {
+            out << content
         }
     }
 
-    private Factory getFactory() {
-        return FactoryHolder.getFactory()
+    protected Template findTemplate(Decorator decorator) {
+        Template template
+        if(decorator instanceof SpringMVCViewDecorator) {
+            template = ((SpringMVCViewDecorator)decorator).getTemplate()
+            if(template instanceof GroovyPageTemplate) {
+                GroovyPageTemplate gpt = (GroovyPageTemplate)template
+                gpt = (GroovyPageTemplate)gpt.clone()
+                gpt.setAllowSettingContentType(false)
+                template = gpt
+            }
+        } else {
+            template = groovyPagesTemplateEngine.createTemplate(decorator.getPage())
+        }
+        return template
+    }
+
+    protected Decorator findDecorator(HttpServletRequest req, String layoutName) {
+        DecoratorMapper decoratorMapper = sitemeshFactory?.getDecoratorMapper()
+        Decorator d
+        if(decoratorMapper) {
+            d = decoratorMapper.getNamedDecorator(req, layoutName)
+        } else {
+            d = groovyPageLayoutFinder.getNamedDecorator(req, layoutName)
+        }
+        d
+    }
+
+    protected PageParser createPageParser(String contentType) {
+        PageParser parser = sitemeshFactory?.getPageParser(contentType)
+        if(parser == null) {
+            parser = new GrailsHTMLPageParser()
+        }
+        return parser
+    }
+
+    protected Factory getSitemeshFactory() {
+        return FactoryHolder.getSitemeshFactory()
     }
     
     /**
@@ -317,6 +362,7 @@ class RenderTagLib implements RequestConstants {
      */
     Closure render = { Map attrs, body ->
         groovyPagesTemplateRenderer.render(getWebRequest(), getPageScope(), attrs, body, getOut())
+        null
     }
 
     /**
