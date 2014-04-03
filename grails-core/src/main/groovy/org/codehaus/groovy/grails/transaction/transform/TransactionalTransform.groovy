@@ -153,10 +153,6 @@ class TransactionalTransform implements ASTTransformation{
                 )
             )
         )
-        // remove possible @CS & @TC SKIP annotation from original method node
-        removeCompileStaticAnnotations(methodNode)
-        // add @CS annotation to original method node
-        addCompileStaticAnnotation(methodNode)
         
         applyTransactionalAttributeSettings(annotationNode, transactionAttributeVar, methodBody)
         
