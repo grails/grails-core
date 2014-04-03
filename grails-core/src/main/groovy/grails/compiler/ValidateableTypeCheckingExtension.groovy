@@ -57,7 +57,9 @@ class ValidateableTypeCheckingExtension extends TypeCheckingDSL {
         methodNotFound { ClassNode receiver, String name, ArgumentListExpression argList, ClassNode[] argTypes, MethodCall call ->
             def dynamicCall
             if(currentScope.constraintsClosureCode && currentScope.checkingConstraintsClosure) {
-                dynamicCall = makeDynamic (call)
+                if(receiver.getField(name)) {
+                    dynamicCall = makeDynamic (call)
+                }
             }
             dynamicCall
         }

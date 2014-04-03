@@ -173,6 +173,60 @@ class SomeClass {
 
     }
     
+    @Issue('GRAILS-11242')
+    void 'Test compiling @Validateable which attempts to constrain a non existent property'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when:
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+@grails.validation.Validateable
+class SomeClass {
+    String name
+
+    static constraints = {
+        name matches: /[A-Z].*/
+        age range: 1..99
+    }
+}
+''')
+        then: 'errors are thrown'
+        MultipleCompilationErrorsException e = thrown()
+        e.message.contains 'Cannot find matching method grails.compiler.SomeClass#age'
+
+    }
+    
+    
+    @Issue('GRAILS-11242')
+    void 'Test compiling @Validateable which attempts to constrain an inherited property'() {
+        given:
+        def gcl = new GroovyClassLoader()
+
+        when:
+        def c = gcl.parseClass('''
+package grails.compiler
+
+@GrailsCompileStatic
+@grails.validation.Validateable
+class SomeClass {
+    String name
+}
+
+@GrailsCompileStatic
+@grails.validation.Validateable
+class SomeSubClass extends SomeClass {
+    static constraints = {
+        name matches: /[A-Z].*/
+    }
+}
+''')
+        then: 'no errors are thrown'
+        c
+    }
+    
     @Issue('GRAILS-11255')
     void 'Test compiling a class which invokes a criteria query on a domain class'() {
         given:
