@@ -4,9 +4,14 @@ configurations {
 
 
 dependencies {
-    compile project(":grails-web-common"),
-            project(":grails-web-sitemesh"),
-            project(":grails-web-url-mappings")
+    compile( project(":grails-web-common") )
+
+    compile( project(":grails-web-sitemesh") ) {
+        exclude group:'org.grails', module:'grails-web-common'
+    }
+//    compile( project(":grails-web-url-mappings") ) {
+//        exclude group:'org.grails', module:'grails-web-common'
+//    }
     
     optional "org.apache.ant:ant:${antVersion}"
 }

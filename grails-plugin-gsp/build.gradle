@@ -10,8 +10,7 @@ configurations {
 }
 
 dependencies {
-    compile "commons-lang:commons-lang:$commonsLangVersion",
-            sourceSets.ast.output,
+    compile sourceSets.ast.output,
             project(":grails-plugin-codecs"),
             project(":grails-logging")
 

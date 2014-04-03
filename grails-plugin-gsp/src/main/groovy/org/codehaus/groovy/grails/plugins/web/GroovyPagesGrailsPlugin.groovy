@@ -21,6 +21,7 @@ import grails.util.BuildSettings
 import grails.util.BuildSettingsHolder
 import grails.util.Environment
 import grails.util.GrailsUtil
+import org.codehaus.groovy.grails.plugins.web.taglib.UrlMappingTagLib
 
 import java.lang.reflect.Modifier
 
@@ -85,6 +86,7 @@ class GroovyPagesGrailsPlugin {
         FormTagLib,
         JavascriptTagLib,
         RenderTagLib,
+        UrlMappingTagLib,
         ValidationTagLib,
         PluginTagLib,
         SitemeshTagLib
