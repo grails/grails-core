@@ -327,7 +327,7 @@ class DefaultLinkGenerator implements LinkGenerator, PluginManagerAware {
 
         def file = attrs.file?.toString()
         if (file) {
-            if (!(file.startsWith('/') || dir?.endsWith('/'))) {
+            if (!(file.startsWith('/') || (dir != null && dir.endsWith('/')))) {
                 url << '/'
             }
             url << file
