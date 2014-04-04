@@ -113,7 +113,8 @@ class DefaultAcceptHeaderParser implements AcceptHeaderParser {
                 }
             }
         }
-        return mimes.sort(new QualityComparator()) as MimeType[]
+        Collections.sort mimes, new QualityComparator()
+        mimes as MimeType[]
     }
 
 
