@@ -307,7 +307,13 @@ class GrailsWebDataBinder extends SimpleDataBinder {
                                     if(idValue != null) {
                                         persistentInstance = getPersistentInstance(referencedType, idValue)
                                         if(persistentInstance != null) {
-                                            bind persistentInstance, new SimpleMapDataBindingSource(item), listener
+                                            DataBindingSource newBindingSource
+                                            if(item instanceof DataBindingSource) {
+                                                newBindingSource = (DataBindingSource)item
+                                            } else {
+                                                newBindingSource = new SimpleMapDataBindingSource((Map)item)
+                                            }
+                                            bind persistentInstance, newBindingSource, listener
                                             itemsWhichNeedBinding << persistentInstance
                                         }
                                     }
